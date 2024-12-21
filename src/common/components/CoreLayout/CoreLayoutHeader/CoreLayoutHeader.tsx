@@ -5,7 +5,8 @@ import { Separator } from "@/common/components/Separator";
 import { Breadcrumb } from "@/modules/home/components/Breadcrumb";
 import { Button } from "@/common/components/Button";
 import { ThemeToggle } from "@/common/components/ThemeToggle";
-import { AfterclassIcon } from "@/common/components/CustomIcon";
+import { AfterclassIcon, SearchIcon } from "@/common/components/CustomIcon";
+import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
 
 export const CoreLayoutHeader = async () => {
   const session = await auth();
@@ -21,12 +22,19 @@ export const CoreLayoutHeader = async () => {
         <AfterclassIcon className="block text-primary-default md:hidden" />
         <div className="flex items-center gap-4">
           {session ? (
-            <div className="flex items-center gap-2">
-              <div className="overflow-hidden text-ellipsis text-sm text-text-em-mid">
-                <div className="h-4 w-4 rounded-full bg-cyan-800"></div>
+            <>
+              <div className="hidden items-center gap-2 md:flex">
+                <div className="overflow-hidden text-ellipsis text-sm text-text-em-mid">
+                  <div className="h-4 w-4 rounded-full bg-cyan-800"></div>
+                </div>
+                <div>{session.user.email}</div>
               </div>
-              <div>{session.user.email}</div>
-            </div>
+              <div className="block md:hidden">
+                <SearchCmdk asChild>
+                  <SearchIcon className="text-text-on-tertiary" size={20} />
+                </SearchCmdk>
+              </div>
+            </>
           ) : (
             <Button
               as="a"

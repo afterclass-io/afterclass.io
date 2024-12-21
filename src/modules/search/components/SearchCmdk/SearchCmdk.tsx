@@ -1,6 +1,7 @@
 "use client";
 
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useState } from "react";
+import { Slot } from "@radix-ui/react-slot";
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { useRouter } from "next/navigation";
@@ -21,7 +22,13 @@ const hasShownCmdkTooltipAtom = atomWithStorage(
   { getOnInit: true },
 );
 
-export const SearchCmdk = () => {
+export const SearchCmdk = ({
+  asChild,
+  children,
+}: {
+  asChild?: boolean;
+  children?: ReactNode;
+}) => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
@@ -32,6 +39,7 @@ export const SearchCmdk = () => {
   const edgeConfig = useEdgeConfigs();
 
   useEffect(() => {
+    if (asChild) return;
     const timeoutId = setTimeout(() => {
       setIsTooltipOpen(true);
       setHasShownTooltip(true);
@@ -45,6 +53,7 @@ export const SearchCmdk = () => {
   }, [edgeConfig, hasShownTooltip]);
 
   useEffect(() => {
+    if (asChild) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "/") {
         e.preventDefault();
@@ -81,10 +90,14 @@ export const SearchCmdk = () => {
       hasCloseButton={false}
     >
       <Modal.Trigger>
-        <SearchCmdkModalTrigger
-          open={isTooltipOpen}
-          onOpenChange={() => setIsTooltipOpen((prev) => !prev)}
-        />
+        {asChild ? (
+          children
+        ) : (
+          <SearchCmdkModalTrigger
+            open={isTooltipOpen}
+            onOpenChange={() => setIsTooltipOpen((prev) => !prev)}
+          />
+        )}
       </Modal.Trigger>
       <Modal.Content className={content()} data-test="search-cmdk-modal">
         <form onSubmit={onSearchSubmit} className={contentForm()}>
