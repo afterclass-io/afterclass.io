@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { auth } from "@/server/auth";
 
 import { SidebarTrigger } from "@/common/components/Sidebar";
@@ -19,7 +21,12 @@ export const CoreLayoutHeader = async () => {
       />
       <div className="flex w-full items-center justify-between">
         <Breadcrumb className="hidden md:block" />
-        <AfterclassIcon className="block text-primary-default md:hidden" />
+        <Link href="/" className="text-primary-default">
+          <AfterclassIcon
+            className="block text-primary-default md:hidden"
+            size={20}
+          />
+        </Link>
         <div className="flex items-center gap-4">
           {session ? (
             <>
