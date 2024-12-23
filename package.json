@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "concurrently 'next dev' 'bunx tailwindcss -i ./src/common/styles/global.scss -o ./.next/output.css --watch'",
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start",
@@ -91,6 +91,7 @@
     "@typescript-eslint/parser": "^8.1.0",
     "autoprefixer": "10.4.20",
     "chromatic": "11.10.4",
+    "concurrently": "^9.1.0",
     "css-loader": "7.1.2",
     "cypress": "^13.15.1",
     "eslint": "8.57.1",
