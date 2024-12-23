@@ -18,25 +18,29 @@ type FlattenedObject = Record<string, string>;
  */
 export const flattenObject = (
   obj: RecursiveKeyValuePair<string, string>,
-  { parentKey = "", separator = "-", convertHexToRgb = true },
+  { parentKey = "", separator = "-", convertHexToRgb = true } = {},
 ): Record<string, string> => {
   return Object.keys(obj).reduce((acc, key) => {
     const fullKey = parentKey ? `${parentKey}${separator}${key}` : key;
     const value = obj[key];
 
     if (typeof value === "object" && value !== null) {
-      const flattened = flattenObject(value, { parentKey: fullKey, separator });
-      Object.keys(flattened).forEach((subKey) => {
-        const color = convertHexToRgb
-          ? hexToRGB(flattened[subKey])
-          : flattened[subKey];
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        acc[subKey] = subKey.endsWith("-DEFAULT") ? color : flattened[subKey];
+      const flattened = flattenObject(value, {
+        parentKey: fullKey,
+        separator,
+        convertHexToRgb,
       });
-    } else {
-      const color = convertHexToRgb ? hexToRGB(value) : value;
-      acc[fullKey] = color!;
+      Object.keys(flattened).forEach((subKey) => {
+        const flattenedValue = flattened[subKey];
+        if (flattenedValue !== undefined) {
+          acc[subKey] = flattenedValue;
+        }
+      });
+    } else if (value !== undefined) {
+      const convertedValue = convertHexToRgb ? hexToRGB(value) : value;
+      if (convertedValue !== undefined) {
+        acc[fullKey] = convertedValue;
+      }
     }
 
     return acc;
