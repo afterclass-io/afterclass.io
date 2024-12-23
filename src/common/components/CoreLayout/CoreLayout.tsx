@@ -24,10 +24,7 @@ export async function CoreLayout({ children }: CoreLayoutProps) {
       <SidebarInset>
         <CoreLayoutHeader />
         <AnnouncementBanner />
-        <section
-          className="h-full overflow-y-scroll p-6 md:p-12"
-          data-test="scrollable"
-        >
+        <section className="h-full overflow-y-scroll" data-test="scrollable">
           {children}
         </section>
       </SidebarInset>

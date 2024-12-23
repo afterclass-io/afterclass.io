@@ -1,5 +1,7 @@
 import { type PropsWithChildren } from "react";
 
 export default async function SchoolLayout({ children }: PropsWithChildren) {
-  return <div className="mx-auto max-w-screen-lg">{children}</div>;
+  return (
+    <div className="mx-auto my-2 max-w-screen-lg p-4 md:my-8">{children}</div>
+  );
 }

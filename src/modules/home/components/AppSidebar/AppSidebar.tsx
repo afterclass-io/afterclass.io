@@ -28,6 +28,7 @@ import { toTitleCase } from "@/common/functions";
 import Link from "next/link";
 import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
 import { usePathname } from "next/navigation";
+import { useIsMobile } from "@/common/hooks";
 
 type SidebarItemType = {
   label: string;
@@ -35,6 +36,7 @@ type SidebarItemType = {
   href: string;
   exact?: boolean;
   external?: boolean;
+  target?: string;
   showMobileOnly?: boolean;
 };
 
@@ -65,6 +67,8 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       icon: <PlusIcon size={16} />,
       href: "/submit",
       showMobileOnly: true,
+      external: true,
+      target: "_self",
     },
     {
       label: "AfterClass OSS",
@@ -103,6 +107,7 @@ const sidebarItemName = (label: string) =>
 
 export const AppSidebar = () => {
   const pathname = usePathname();
+  const isMobile = useIsMobile();
   return (
     <Sidebar>
       <SidebarHeader>
@@ -159,7 +164,7 @@ export const AppSidebar = () => {
         </SidebarGroup>
 
         {Object.entries(SIDEBAR_OTHER_ITEMS).map(([key, items]) =>
-          items.every((item) => item.showMobileOnly) ? null : (
+          !isMobile && items.every((item) => item.showMobileOnly) ? null : (
             <SidebarGroup key={key}>
               <SidebarGroupLabel>{toTitleCase(key)}</SidebarGroupLabel>
               <SidebarGroupContent>
@@ -178,7 +183,12 @@ export const AppSidebar = () => {
                           as="a"
                           variant="ghost"
                           href={item.href}
-                          target={item.external ? "_blank" : undefined}
+                          target={
+                            item.external
+                              ? (item.target ?? "_blank")
+                              : undefined
+                          }
+                          external={item.external}
                           iconLeft={item.icon}
                           fullWidth
                           className="flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold text-text-em-mid after:!content-none hover:bg-border-elevated hover:text-text-em-high"
