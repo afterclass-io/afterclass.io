@@ -24,3 +24,4 @@ jobs:
         run: bunx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_STG }}
+          DIRECT_URL: ${{ secrets.DATABASE_URL_STG }}
