@@ -23,13 +23,15 @@ export default function ReviewLayout({
       {rating}
       {information}
       {filter}
-      <div className="relative flex w-full justify-center gap-10">
+      <div className="relative flex w-full justify-center gap-6">
         {reviews}
-        <div className="sticky top-0 hidden h-fit max-w-min flex-col items-start gap-6 text-nowrap lg:flex">
+        <div className="sticky top-8 hidden h-fit max-w-min flex-col items-start gap-6 text-nowrap lg:flex">
           <CtaCard
             variant="secondary"
             ctaText="Write a review"
             href="/submit"
+            external
+            target="_self"
             iconLeft={<PlusIcon />}
             iconRight={<EditIcon opacity={0.1} />}
             data-test="cta-write-review"
