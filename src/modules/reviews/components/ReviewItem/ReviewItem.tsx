@@ -40,7 +40,10 @@ export const ReviewItem = ({
     <>
       {isLocked ? (
         <div
-          className={wrapper({ className: "hover:bg-inherit" })}
+          className={wrapper({
+            className: "w-full max-w-full hover:bg-inherit lg:max-w-prose",
+          })}
+          data-variant="full-width"
           data-test="review"
         >
           <ReviewHeader />
