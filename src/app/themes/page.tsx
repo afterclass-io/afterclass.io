@@ -8,9 +8,7 @@ import { flattenObject } from "@/common/tools/tailwind/functions/flattenObject";
 
 type ColorEntry = [string, string];
 type ThemeColors = ColorEntry[];
-type ThemesMap = {
-  [key: string]: ThemeColors;
-};
+type ThemesMap = Record<string, ThemeColors>;
 
 export default function ThemesPage() {
   if (env.NODE_ENV !== "development") notFound();
@@ -50,7 +48,7 @@ export default function ThemesPage() {
                 />
                 <div className="min-w-0">
                   <div className="truncate font-medium">{colorName}</div>
-                  <div className="truncate text-sm text-text-em-low">
+                  <div className="truncate text-sm text-gray-500">
                     {colorValue}
                   </div>
                 </div>
