@@ -29,6 +29,9 @@ model Reviews {
   reviewedUniversity   Universities   @relation(fields: [reviewedUniversityId], references: [id])
   reviewer             Users          @relation(fields: [reviewerId], references: [id])
 
+  @@index([createdAt], type: BTree)
+  @@index([reviewedCourseId], type: BTree)
+  @@index([reviewedProfessorId], type: BTree)
   @@map("reviews")
 }
 
@@ -158,6 +161,8 @@ model Classes {
   course      Courses    @relation(fields: [courseId], references: [id])
   professor   Professors @relation(fields: [professorId], references: [id])
 
+  @@index([courseId], type: BTree)
+  @@index([professorId], type: BTree)
   @@map("classes")
 }
 
@@ -170,6 +175,7 @@ model ReviewVotes {
   review    Reviews  @relation(fields: [reviewId], references: [id])
   voter     Users    @relation(fields: [voterId], references: [id])
 
+  @@index([reviewId], type: BTree)
   @@map("review_votes")
 }
 
@@ -193,6 +199,7 @@ model ReviewLabels {
   label     Labels   @relation(fields: [labelId], references: [id])
   review    Reviews  @relation(fields: [reviewId], references: [id])
 
+  @@index([reviewId], type: BTree)
   @@map("review_labels")
 }
 
