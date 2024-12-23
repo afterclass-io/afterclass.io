@@ -101,7 +101,10 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
           />
         ))
       ) : (
-        <div className="w-full py-6 text-center text-xs text-text-em-mid md:text-sm">
+        <div
+          className="w-full px-3 py-6 text-center text-xs text-text-em-mid md:text-sm"
+          data-variant="full-width"
+        >
           <span>Oh no!</span> Looks like no one has reviewed yet.
           <br />
           Help us out by

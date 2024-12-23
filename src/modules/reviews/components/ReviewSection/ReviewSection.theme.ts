@@ -11,6 +11,7 @@ export const reviewSectionTheme = tv(
         "rounded-3xl",
         "w-fit",
         "flex-initial",
+        "has-[[data-variant=full-width]]:w-full",
       ],
       header: ["flex", "items-center", "justify-between", "p-4", "pb-0"],
       title: ["flex", "font-semibold", "items-center"],
