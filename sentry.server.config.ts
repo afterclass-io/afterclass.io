@@ -14,5 +14,5 @@ Sentry.init({
   debug: false,
 
   integrations: [Sentry.prismaIntegration()],
-  ignoreErrors: [/^UNAUTHORIZED$/],
+  ignoreErrors: [/^UNAUTHORIZED$/, "AbortError"],
 });
