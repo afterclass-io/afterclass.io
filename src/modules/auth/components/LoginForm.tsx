@@ -92,7 +92,6 @@ export const LoginForm = () => {
 
     umami.identify({ email });
     router.push(signinResp.url ?? callbackUrl);
-    router.refresh();
   };
 
   return (
