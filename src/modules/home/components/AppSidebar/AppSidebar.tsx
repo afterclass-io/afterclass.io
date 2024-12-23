@@ -15,6 +15,7 @@ import {
 import { Logo } from "@/common/components/Logo";
 import {
   ChartLineIcon,
+  DealsIcon,
   GithubIcon,
   HelpDeskIcon,
   PlusIcon,
@@ -38,6 +39,7 @@ type SidebarItemType = {
   external?: boolean;
   target?: string;
   showMobileOnly?: boolean;
+  devOnly?: boolean;
 };
 
 type SidebarCategoryType = {
@@ -95,6 +97,12 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       icon: <StatisticsTableIcon size={16} />,
       href: "/statistics",
       external: true,
+    },
+    {
+      label: "Themes",
+      icon: <DealsIcon size={16} />,
+      href: "/themes",
+      devOnly: true,
     },
   ],
 };
@@ -169,37 +177,40 @@ export const AppSidebar = () => {
               <SidebarGroupLabel>{toTitleCase(key)}</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {items.map((item) => (
-                    <SidebarMenuItem key={item.label}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={
-                          item.exact
-                            ? pathname === item.href
-                            : pathname?.startsWith(item.href) // pathname is null in storybook context
-                        }
-                      >
-                        <Button
-                          as="a"
-                          variant="ghost"
-                          href={item.href}
-                          target={
-                            item.external
-                              ? (item.target ?? "_blank")
-                              : undefined
+                  {items.map((item) =>
+                    item.devOnly &&
+                    process.env.NODE_ENV !== "development" ? null : (
+                      <SidebarMenuItem key={item.label}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={
+                            item.exact
+                              ? pathname === item.href
+                              : pathname?.startsWith(item.href) // pathname is null in storybook context
                           }
-                          external={item.external}
-                          iconLeft={item.icon}
-                          fullWidth
-                          className="flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold text-text-em-mid after:!content-none hover:bg-border-elevated hover:text-text-em-high"
-                          data-umami-event={`sidebar-${sidebarItemName(item.label)}`}
-                          data-test={`sidebar-${sidebarItemName(item.label)}`}
                         >
-                          {item.label}
-                        </Button>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                          <Button
+                            as="a"
+                            variant="ghost"
+                            href={item.href}
+                            target={
+                              item.external
+                                ? (item.target ?? "_blank")
+                                : undefined
+                            }
+                            external={item.external}
+                            iconLeft={item.icon}
+                            fullWidth
+                            className="flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold text-text-em-mid after:!content-none hover:bg-border-elevated hover:text-text-em-high"
+                            data-umami-event={`sidebar-${sidebarItemName(item.label)}`}
+                            data-test={`sidebar-${sidebarItemName(item.label)}`}
+                          >
+                            {item.label}
+                          </Button>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ),
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
