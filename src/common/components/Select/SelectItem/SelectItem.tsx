@@ -1,7 +1,6 @@
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-
-import { CheckIcon } from "@/common/components/CustomIcon";
+import PhCheck from "~icons/ph/check";
 import { selectTheme } from "../Select.theme";
 
 export const SelectItem = React.forwardRef<
@@ -13,7 +12,7 @@ export const SelectItem = React.forwardRef<
     <SelectPrimitive.Item ref={ref} className={item({ className })} {...props}>
       <span className={iconWrapper()}>
         <SelectPrimitive.ItemIndicator>
-          <CheckIcon className={icon()} />
+          <PhCheck className={icon()} />
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>

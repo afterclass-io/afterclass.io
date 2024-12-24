@@ -1,5 +1,21 @@
 "use client";
 import * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+import PhStar from "~icons/ph/star";
+import PhChartLine from "~icons/ph/chart-line";
+import PhPlus from "~icons/ph/plus";
+import PhGithubLogo from "~icons/ph/github-logo";
+import PhTelegramLogo from "~icons/ph/telegram-logo";
+import PhHeadset from "~icons/ph/headset";
+import PhChartBar from "~icons/ph/chart-bar";
+import PhPaintBrush from "~icons/ph/paint-brush";
+
+import { env } from "@/env";
+import { toTitleCase } from "@/common/functions";
+import { useIsMobile } from "@/common/hooks";
+
 import {
   Sidebar,
   SidebarHeader,
@@ -12,24 +28,10 @@ import {
   SidebarGroupLabel,
   SidebarFooter,
 } from "@/common/components/Sidebar";
-import { Logo } from "@/common/components/Logo";
-import {
-  ChartLineIcon,
-  DealsIcon,
-  GithubIcon,
-  HelpDeskIcon,
-  PlusIcon,
-  StarLineAltIcon,
-  StatisticsTableIcon,
-  TelegramIcon,
-} from "@/common/components/CustomIcon";
-import { env } from "@/env";
 import { Button } from "@/common/components/Button";
-import { toTitleCase } from "@/common/functions";
-import Link from "next/link";
+import { Logo } from "@/common/components/Logo";
+
 import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
-import { usePathname } from "next/navigation";
-import { useIsMobile } from "@/common/hooks";
 
 type SidebarItemType = {
   label: string;
@@ -51,13 +53,13 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
   main: [
     {
       label: "Reviews",
-      icon: <StarLineAltIcon size={16} />,
+      icon: <PhStar />,
       href: "/",
       exact: true,
     },
     {
       label: "Bid Analytics",
-      icon: <ChartLineIcon />,
+      icon: <PhChartLine />,
       href: "/bidding",
     },
     // Development-only links
@@ -66,7 +68,7 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
   contribute: [
     {
       label: "Write a Review",
-      icon: <PlusIcon size={16} />,
+      icon: <PhPlus />,
       href: "/submit",
       showMobileOnly: true,
       external: true,
@@ -74,7 +76,7 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
     },
     {
       label: "AfterClass OSS",
-      icon: <GithubIcon size={16} />,
+      icon: <PhGithubLogo />,
       href: env.NEXT_PUBLIC_AC_GITHUB_LINK,
       showMobileOnly: true,
     },
@@ -82,25 +84,25 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
   telegram: [
     {
       label: "Channel",
-      icon: <TelegramIcon size={16} />,
+      icon: <PhTelegramLogo />,
       href: env.NEXT_PUBLIC_AC_CHANNEL_LINK,
     },
     {
       label: "Helpdesk",
-      icon: <HelpDeskIcon size={16} />,
+      icon: <PhHeadset />,
       href: env.NEXT_PUBLIC_AC_HELPDESK_LINK,
     },
   ],
   site: [
     {
       label: "Statistics",
-      icon: <StatisticsTableIcon size={16} />,
+      icon: <PhChartBar />,
       href: "/statistics",
       external: true,
     },
     {
       label: "Themes",
-      icon: <DealsIcon size={16} />,
+      icon: <PhPaintBrush />,
       href: "/themes",
       devOnly: true,
     },

@@ -1,14 +1,13 @@
 "use client";
 
 import { type FormEvent, type ReactNode, useEffect, useState } from "react";
-import { Slot } from "@radix-ui/react-slot";
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { useRouter } from "next/navigation";
 
 import { Modal } from "@/common/components/Modal";
 import { Button } from "@/common/components/Button";
-import { SearchIcon } from "@/common/components/CustomIcon";
+import PhMagnifyingGlass from "~icons/ph/magnifying-glass";
 import { Input } from "@/common/components/Input";
 import { useEdgeConfigs } from "@/common/hooks";
 
@@ -105,7 +104,7 @@ export const SearchCmdk = ({
             placeholder="Search for Professors or Courses..."
             className={contentInput()}
             type="text"
-            contentLeft={<SearchIcon className={searchIcon()} />}
+            contentLeft={<PhMagnifyingGlass className={searchIcon()} />}
             wrapperProps={{ className: "border-0 h-full w-full" }}
             onChange={(e) => setSearchTerm(e.target.value)}
             data-test="search-cmdk-input"

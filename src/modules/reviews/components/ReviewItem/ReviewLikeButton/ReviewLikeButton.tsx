@@ -1,5 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import PhThumbsUp from "~icons/ph/thumbs-up";
+import PhThumbsUpFill from "~icons/ph/thumbs-up-fill";
 
 import { api } from "@/common/tools/trpc/react";
 import { Button } from "@/common/components/Button";
@@ -8,8 +11,6 @@ import type {
   ButtonProps,
   ButtonVariants,
 } from "@/common/components/Button";
-import { ThumbUpFilledIcon } from "@/common/components/CustomIcon";
-import { useSession } from "next-auth/react";
 
 export type ReviewLikeButtonProps = ButtonProps &
   ButtonBaseProps &
@@ -24,7 +25,7 @@ export const MockedReviewLikeButton = ({
   <Button
     rounded
     variant="tertiary"
-    iconRight={<ThumbUpFilledIcon />}
+    iconRight={<PhThumbsUp />}
     aria-label="Like"
     {...props}
   >
@@ -72,7 +73,7 @@ export const ReviewLikeButton = ({
     <Button
       rounded
       variant={isLiked ? "secondary" : "tertiary"}
-      iconRight={<ThumbUpFilledIcon />}
+      iconLeft={isLiked ? <PhThumbsUpFill /> : <PhThumbsUp />}
       onClick={handleLike}
       loading={reviewVotesCountQuery.isLoading}
       aria-label="Like"

@@ -1,5 +1,5 @@
 "use client";
-import { SearchIcon } from "@/common/components/CustomIcon";
+import PhMagnifyingGlass from "~icons/ph/magnifying-glass";
 import { Input } from "@/common/components/Input";
 
 import { searchCmdkTheme } from "../SearchCmdk.theme";
@@ -16,7 +16,9 @@ export const SearchCmdkModalTrigger = ({
   return (
     <Input
       className={triggerInput()}
-      contentLeft={<SearchIcon size={16} className={searchIcon()} />}
+      contentLeft={
+        <PhMagnifyingGlass className={searchIcon({ className: "h-4 w-4" })} />
+      }
       contentRight={
         <SearchCmdkOnboardingTooltip open={open} onOpenChange={onOpenChange}>
           <kbd className={kbdStyle()}>/</kbd>

@@ -1,4 +1,3 @@
-import { Icon } from "@iconify-icon/react";
 import {
   Portal,
   Content,
@@ -6,6 +5,7 @@ import {
   Close,
   Overlay,
 } from "@radix-ui/react-dialog";
+import PhXBold from "~icons/ph/x-bold";
 import { type PropsWithChildren } from "react";
 import { Button } from "@/common/components/Button";
 
@@ -53,13 +53,7 @@ export const ModalContent = ({
               <Button
                 className={close()}
                 variant="ghost"
-                iconLeft={
-                  <Icon
-                    icon="ph:x-bold"
-                    className="stroke-current"
-                    height="none"
-                  />
-                }
+                iconLeft={<PhXBold className="stroke-current" height="none" />}
                 aria-label="close"
                 size="sm"
               />

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PhMagnifyingGlass from "~icons/ph/magnifying-glass";
 
 import { auth } from "@/server/auth";
 
@@ -7,7 +8,7 @@ import { Separator } from "@/common/components/Separator";
 import { Breadcrumb } from "@/modules/home/components/Breadcrumb";
 import { Button } from "@/common/components/Button";
 import { ThemeToggle } from "@/common/components/ThemeToggle";
-import { AfterclassIcon, SearchIcon } from "@/common/components/CustomIcon";
+import { AfterclassIcon } from "@/common/components/CustomIcon";
 import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
 
 export const CoreLayoutHeader = async () => {
@@ -38,7 +39,11 @@ export const CoreLayoutHeader = async () => {
               </div>
               <div className="block md:hidden">
                 <SearchCmdk asChild>
-                  <SearchIcon className="text-text-on-tertiary" size={20} />
+                  <PhMagnifyingGlass
+                    className="text-text-on-tertiary"
+                    width={20}
+                    height={20}
+                  />
                 </SearchCmdk>
               </div>
             </>

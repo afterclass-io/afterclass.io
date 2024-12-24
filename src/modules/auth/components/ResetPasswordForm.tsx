@@ -5,17 +5,15 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import PhLockSimple from "~icons/ph/lock-simple";
+import PhEye from "~icons/ph/eye";
+import PhEyeSlash from "~icons/ph/eye-slash";
 
 import { supabase } from "@/server/supabase";
 
 import { Input } from "@/common/components/Input";
 import { Button } from "@/common/components/Button";
 import { Form } from "@/common/components/Form";
-import {
-  LockIcon,
-  EyeIcon,
-  EyeSlashIcon,
-} from "@/common/components/CustomIcon";
 
 const resetPwdFormInputsSchema = z.object({
   password: z
@@ -62,7 +60,7 @@ export const ResetPasswordForm = () => {
                 <Input
                   {...field}
                   disabled={form.formState.isSubmitting}
-                  contentLeft={<LockIcon size={24} />}
+                  contentLeft={<PhLockSimple width={24} height={24} />}
                   contentRight={
                     <button
                       type="button"
@@ -70,9 +68,9 @@ export const ResetPasswordForm = () => {
                       tabIndex={3}
                     >
                       {isPwdVisible ? (
-                        <EyeSlashIcon size={24} />
+                        <PhEyeSlash width={24} height={24} />
                       ) : (
-                        <EyeIcon size={24} />
+                        <PhEye width={24} height={24} />
                       )}
                     </button>
                   }

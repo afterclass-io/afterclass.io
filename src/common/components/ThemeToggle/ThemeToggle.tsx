@@ -1,10 +1,11 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import PhMoon from "~icons/ph/moon";
+import PhSun from "~icons/ph/sun";
 
 import { APP_THEMES } from "@/common/tools/tailwind/themes/appTheme";
 import { Button } from "@/common/components/Button";
-import { MoonIcon, SunIcon } from "@/common/components/CustomIcon";
 
 export const ThemeToggle = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -24,7 +25,7 @@ export const ThemeToggle = () => {
       onClick={handleToggleTheme}
       aria-label="theme-toggle"
       variant="tertiary"
-      iconLeft={theme === APP_THEMES.dark ? <SunIcon /> : <MoonIcon />}
+      iconLeft={theme === APP_THEMES.dark ? <PhSun /> : <PhMoon />}
       disabled={!isMounted}
     />
   ) : (

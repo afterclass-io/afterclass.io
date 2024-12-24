@@ -1,5 +1,5 @@
 import type { ReactNode, ComponentPropsWithoutRef } from "react";
-import { PenIcon } from "@/common/components/CustomIcon";
+import TwemojiPencil from "~icons/twemoji/pencil";
 import { reviewSectionTheme } from "./ReviewSection.theme";
 
 export type ReviewSectionProps = ComponentPropsWithoutRef<"div"> & {
@@ -19,7 +19,7 @@ export const ReviewSection = ({
     <div className={wrapper({ className })} {...props}>
       <div className={header()}>
         <div className={title()}>
-          <PenIcon className={icon()} />
+          <TwemojiPencil className={icon()} />
           <p>Reviews</p>
         </div>
       </div>

@@ -1,9 +1,8 @@
 import Heading from "@/common/components/Heading";
 import { filterToggleSectionTheme } from "../FilterToggleSection.theme";
-import {
-  GraduationCapColoredIcon,
-  BooksColoredIcon,
-} from "@/common/components/CustomIcon";
+
+import TwemojiBlueBook from "~icons/twemoji/blue-book";
+import TwemojiGraduationCap from "~icons/twemoji/graduation-cap";
 
 export const FilterToggleSectionHeader = ({
   type,
@@ -17,12 +16,12 @@ export const FilterToggleSectionHeader = ({
     <div className={sectionHeader()}>
       {type === "course" ? (
         <>
-          <BooksColoredIcon className={headerIcon()} />
+          <TwemojiBlueBook className={headerIcon()} />
           <Heading as="h2">Courses</Heading>
         </>
       ) : (
         <>
-          <GraduationCapColoredIcon className={headerIcon()} />
+          <TwemojiGraduationCap className={headerIcon()} />
           <Heading as="h2">Professors</Heading>
         </>
       )}

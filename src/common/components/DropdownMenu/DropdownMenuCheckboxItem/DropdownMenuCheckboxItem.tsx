@@ -3,7 +3,8 @@
 import * as React from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 
-import { CheckIcon } from "@/common/components/CustomIcon";
+import PhCheck from "~icons/ph/check";
+
 import { dropdownMenuTheme } from "../DropdownMenu.theme";
 
 export const DropdownMenuCheckboxItem = React.forwardRef<
@@ -21,7 +22,7 @@ export const DropdownMenuCheckboxItem = React.forwardRef<
     >
       <span className={checkboxItemIndicatorWrapper()}>
         <DropdownMenuPrimitive.ItemIndicator>
-          <CheckIcon className={checkboxItemCheckIcon()} />
+          <PhCheck className={checkboxItemCheckIcon()} />
         </DropdownMenuPrimitive.ItemIndicator>
       </span>
       {children}

@@ -1,9 +1,7 @@
-import {
-  BooksIcon,
-  GraduationCapIcon,
-  HeartIcon,
-  PencilIcon,
-} from "@/common/components/CustomIcon";
+import PhPencilFill from "~icons/ph/pencil-fill";
+import PhBookBookmarkFill from "~icons/ph/book-bookmark-fill";
+import PhGraduationCapFill from "~icons/ph/graduation-cap-fill";
+import TwemojiBrownHeart from "~icons/twemoji/brown-heart";
 
 const StatItemHorizontal = ({
   label,
@@ -168,7 +166,7 @@ export const OgImageContent = ({
           gap: "1rem",
         }}
       >
-        <HeartIcon size="2rem" />
+        <TwemojiBrownHeart width="2rem" height="2rem" />
         <StatItemHorizontal label="Average Rating" value={rating} />
       </div>
 
@@ -179,16 +177,19 @@ export const OgImageContent = ({
           gap: "1.5rem",
         }}
       >
-        <FilterItemStats icon={<PencilIcon size="2rem" />} stat={reviewCount} />
+        <FilterItemStats
+          icon={<PhPencilFill width="2rem" height="2rem" />}
+          stat={reviewCount}
+        />
         {profCount != null && (
           <FilterItemStats
-            icon={<GraduationCapIcon size="2rem" />}
+            icon={<PhGraduationCapFill width="2rem" height="2rem" />}
             stat={profCount}
           />
         )}
         {courseCount != null && (
           <FilterItemStats
-            icon={<BooksIcon size="2rem" />}
+            icon={<PhBookBookmarkFill width="2rem" height="2rem" />}
             stat={courseCount}
           />
         )}

@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { FilterToggleSection } from "./FilterToggleSection";
 import { type FilterItem } from "./FilterToggleSectionItem";
-import {
-  BooksIcon,
-  GraduationCapIcon,
-  PencilIcon,
-} from "@/common/components/CustomIcon";
+
+import PhBookBookmarkFill from "~icons/ph/book-bookmark-fill";
+import PhGraduationcapFill from "~icons/ph/graduationcap-fill";
+import PhPencilFill from "~icons/ph/pencil-fill";
+
 import { useState } from "react";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
@@ -36,24 +36,24 @@ export const Default: Story = {
               label: "Alexander the Great",
               value: "alexander-the-great",
               filterStats: [
-                { icon: <PencilIcon />, stat: 10 },
-                { icon: <BooksIcon />, stat: 20 },
+                { icon: <PhPencilFill />, stat: 10 },
+                { icon: <PhBookBookmarkFill />, stat: 20 },
               ],
             },
             {
               label: "John Doe",
               value: "john-doe",
               filterStats: [
-                { icon: <PencilIcon />, stat: 10 },
-                { icon: <BooksIcon />, stat: 20 },
+                { icon: <PhPencilFill />, stat: 10 },
+                { icon: <PhBookBookmarkFill />, stat: 20 },
               ],
             },
             {
               label: "Julius Caesar",
               value: "julius-caesar",
               filterStats: [
-                { icon: <PencilIcon />, stat: 10 },
-                { icon: <BooksIcon />, stat: 20 },
+                { icon: <PhPencilFill />, stat: 10 },
+                { icon: <PhBookBookmarkFill />, stat: 20 },
               ],
             },
           ].map((item, index) => (
@@ -93,8 +93,8 @@ export const WithSubHeader: Story = {
               sublabel: "COR1234",
               value: "COR1234",
               filterStats: [
-                { icon: <PencilIcon />, stat: 10 },
-                { icon: <GraduationCapIcon />, stat: 20 },
+                { icon: <PhPencilFill />, stat: 10 },
+                { icon: <PhGraduationcapFill />, stat: 20 },
               ],
             },
             {
@@ -102,8 +102,8 @@ export const WithSubHeader: Story = {
               sublabel: "COR2224",
               value: "COR2224",
               filterStats: [
-                { icon: <PencilIcon />, stat: 10 },
-                { icon: <GraduationCapIcon />, stat: 20 },
+                { icon: <PhPencilFill />, stat: 10 },
+                { icon: <PhGraduationcapFill />, stat: 20 },
               ],
             },
             {
@@ -111,8 +111,8 @@ export const WithSubHeader: Story = {
               sublabel: "IS216",
               value: "COR2224",
               filterStats: [
-                { icon: <PencilIcon />, stat: 10 },
-                { icon: <GraduationCapIcon />, stat: 20 },
+                { icon: <PhPencilFill />, stat: 10 },
+                { icon: <PhGraduationcapFill />, stat: 20 },
               ],
             },
           ].map((item, index) => (

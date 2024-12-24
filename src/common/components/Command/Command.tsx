@@ -14,8 +14,8 @@ import {
   type ComponentPropsWithRef,
 } from "react";
 import { Command as CommandPrimitive } from "cmdk";
+import PhMagnifyingGlass from "~icons/ph/magnifying-glass";
 
-import { SearchIcon } from "@/common/components/CustomIcon";
 import { Modal, type ModalProps } from "@/common/components/Modal";
 import { commandTheme, type CommandVariants } from "./Command.theme";
 
@@ -27,7 +27,7 @@ const CommandInput = forwardRef<
     commandTheme();
   return (
     <div className={commandInputWrapper()} cmdk-input-wrapper="">
-      <SearchIcon className={commandInputIcon()} />
+      <PhMagnifyingGlass className={commandInputIcon()} />
       <CommandPrimitive.Input
         ref={ref}
         className={commandInput({ className })}

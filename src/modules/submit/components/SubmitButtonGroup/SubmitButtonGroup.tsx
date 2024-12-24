@@ -6,7 +6,7 @@ import { useFormContext } from "react-hook-form";
 
 import { Button } from "@/common/components/Button";
 import { Select } from "@/common/components/Select";
-import { ChevronDownIcon } from "@/common/components/CustomIcon";
+import PhCaretDown from "~icons/ph/caret-down";
 import { type ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
 
 import { ReviewerEnum } from "@/modules/submit/types";
@@ -51,7 +51,7 @@ export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
       >
         <Select.Trigger asChild className={selectTrigger()}>
           <Button variant="primary" data-test="review-submit-select-trigger">
-            <ChevronDownIcon className={selectIcon()} />
+            <PhCaretDown className={selectIcon()} />
           </Button>
         </Select.Trigger>
         <Select.Content align="end" sideOffset={8}>

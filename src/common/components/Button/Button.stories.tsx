@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { Button } from "./Button";
-import { StarLineAltIcon } from "@/common/components/CustomIcon";
+import PhStar from "~icons/ph/star";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -51,66 +51,52 @@ const VariantsOfButtonTemplate: Story = {
   render: ({ variant }) => (
     <div className="flex max-w-[320px] flex-wrap gap-3">
       <Button variant={variant}>{variant as string}</Button>
-      <Button variant={variant} size="sm" iconLeft={<StarLineAltIcon />}>
+      <Button variant={variant} size="sm" iconLeft={<PhStar />}>
         Small
       </Button>
-      <Button
-        variant={variant}
-        aria-label="star"
-        iconLeft={<StarLineAltIcon />}
-      />
+      <Button variant={variant} aria-label="star" iconLeft={<PhStar />} />
       <Button
         variant={variant}
         size="sm"
         aria-label="star"
-        iconLeft={<StarLineAltIcon />}
+        iconLeft={<PhStar />}
       />
       <Button variant={variant} loading>
         {variant as string}
       </Button>
-      <Button
-        variant={variant}
-        size="sm"
-        iconLeft={<StarLineAltIcon />}
-        loading
-      >
+      <Button variant={variant} size="sm" iconLeft={<PhStar />} loading>
         Small
       </Button>
       <Button
         variant={variant}
         aria-label="star"
-        iconLeft={<StarLineAltIcon />}
+        iconLeft={<PhStar />}
         loading
       />
       <Button
         variant={variant}
         size="sm"
         aria-label="star"
-        iconLeft={<StarLineAltIcon />}
+        iconLeft={<PhStar />}
         loading
       />
       <Button variant={variant} disabled>
         {variant as string}
       </Button>
-      <Button
-        variant={variant}
-        size="sm"
-        iconLeft={<StarLineAltIcon />}
-        disabled
-      >
+      <Button variant={variant} size="sm" iconLeft={<PhStar />} disabled>
         Small
       </Button>
       <Button
         variant={variant}
         aria-label="star"
-        iconLeft={<StarLineAltIcon />}
+        iconLeft={<PhStar />}
         disabled
       />
       <Button
         variant={variant}
         size="sm"
         aria-label="star"
-        iconLeft={<StarLineAltIcon />}
+        iconLeft={<PhStar />}
         disabled
       />
     </div>

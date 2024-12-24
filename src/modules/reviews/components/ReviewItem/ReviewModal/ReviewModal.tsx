@@ -1,7 +1,8 @@
 "use client";
+import PhShareFat from "~icons/ph/share-fat";
 
 import { Modal } from "@/common/components/Modal";
-import { ShareIcon, ThumbUpFilledIcon } from "@/common/components/CustomIcon";
+
 import { type Review } from "@/modules/reviews/types";
 import { Button } from "@/common/components/Button";
 
@@ -60,15 +61,11 @@ export const ReviewModal = ({
         </Modal.Body>
         <Modal.Footer>
           <div className={likeAndShareWrapper()}>
-            <ReviewLikeButton
-              reviewId={review.id}
-              iconLeft={<ThumbUpFilledIcon />}
-              iconRight={undefined}
-            />
+            <ReviewLikeButton reviewId={review.id} />
             <Button
               rounded
               variant="tertiary"
-              iconLeft={<ShareIcon />}
+              iconLeft={<PhShareFat />}
               aria-label="Share"
               size="sm"
             >

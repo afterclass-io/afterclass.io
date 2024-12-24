@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
+import PhCaretRight from "~icons/ph/caret-right";
 
-import { ChevronRightIcon } from "@/common/components/CustomIcon";
 import { dropdownMenuTheme } from "../DropdownMenu.theme";
 
 export const DropdownMenuSubTrigger = React.forwardRef<
@@ -20,7 +20,7 @@ export const DropdownMenuSubTrigger = React.forwardRef<
       {...props}
     >
       {children}
-      <ChevronRightIcon className={subtriggerIcon()} />
+      <PhCaretRight className={subtriggerIcon()} />
     </DropdownMenuPrimitive.SubTrigger>
   );
 });

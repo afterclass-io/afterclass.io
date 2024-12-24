@@ -9,7 +9,8 @@ import { Input } from "@/common/components/Input";
 import { Button } from "@/common/components/Button";
 import { Form } from "@/common/components/Form";
 import { env } from "@/env";
-import { EnvelopeIcon } from "@/common/components/CustomIcon";
+
+import PhEnvelopeSimple from "~icons/ph/envelope-simple";
 
 import { getUserPlatform } from "../functions";
 import {
@@ -73,7 +74,7 @@ export const ForgotPwdForm = () => {
                 <Input
                   {...field}
                   disabled={form.formState.isSubmitting}
-                  contentLeft={<EnvelopeIcon size={24} />}
+                  contentLeft={<PhEnvelopeSimple width={24} height={24} />}
                   placeholder="john.doe.2023@smu.edu.sg"
                   autoComplete="on"
                   tabIndex={1}

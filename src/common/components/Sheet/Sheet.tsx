@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
+import PhX from "~icons/ph/x";
 
 import { SheetOverlay } from "./SheetOverlay";
 import { SheetHeader } from "./SheetHeader";
@@ -10,7 +11,6 @@ import { SheetTitle } from "./SheetTitle";
 import { SheetDescription } from "./SheetDescription";
 
 import { sheetTheme, type SheetVariants } from "./Sheet.theme";
-import { XCloseIcon } from "@/common/components/CustomIcon";
 
 const Sheet = SheetPrimitive.Root;
 
@@ -40,7 +40,7 @@ const SheetContent = React.forwardRef<
       >
         {children}
         <SheetPrimitive.Close className={close()}>
-          <XCloseIcon className="h-4 w-4" />
+          <PhX className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>

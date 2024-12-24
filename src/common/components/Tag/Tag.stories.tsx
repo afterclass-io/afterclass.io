@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { StarLineAltIcon } from "@/common/components/CustomIcon";
+import PhStar from "~icons/ph/star";
 
 import { Tag } from "./Tag";
 
@@ -11,8 +10,8 @@ const meta = {
   // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
   tags: ["autodocs"],
   args: {
-    contentLeft: <StarLineAltIcon />,
-    contentRight: <StarLineAltIcon />,
+    contentLeft: <PhStar />,
+    contentRight: <PhStar />,
     children: "Default",
   },
   // More on argTypes: https://storybook.js.org/docs/api/argtypes

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 
 import { Breadcrumb } from "./Breadcrumb";
 import { DropdownMenu } from "../DropdownMenu";
-import { ChevronDownIcon } from "../CustomIcon";
+import PhCaretDown from "~icons/ph/caret-down";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -42,7 +42,7 @@ export const WithDropdown: Story = {
           <DropdownMenu>
             <DropdownMenu.Trigger className="flex items-center gap-1">
               All Schools
-              <ChevronDownIcon />
+              <PhCaretDown />
             </DropdownMenu.Trigger>
             <DropdownMenu.Content align="start">
               <DropdownMenu.Item>SMU</DropdownMenu.Item>

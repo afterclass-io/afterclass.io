@@ -1,7 +1,9 @@
 import { auth } from "@/server/auth";
 import { FilterToggleSection } from "@/modules/reviews/components/FilterToggleSection";
 import { api } from "@/common/tools/trpc/server";
-import { BooksIcon, PencilIcon } from "@/common/components/CustomIcon";
+
+import PhPencilFill from "~icons/ph/pencil-fill";
+import PhBookBookmarkFill from "~icons/ph/book-bookmark-fill";
 
 export default async function CourseFilter({
   params,
@@ -23,8 +25,8 @@ export default async function CourseFilter({
         label: professor.name,
         value: professor.slug,
         filterStats: [
-          { icon: <PencilIcon />, stat: professor._count.reviews },
-          { icon: <BooksIcon />, stat: professor._count.classes },
+          { icon: <PhPencilFill />, stat: professor._count.reviews },
+          { icon: <PhBookBookmarkFill />, stat: professor._count.classes },
         ],
       }))}
     />

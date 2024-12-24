@@ -2,7 +2,7 @@ import {
   ratingSectionTheme,
   type RatingSectionVariants,
 } from "./RatingSection.theme";
-import { HeartIcon } from "@/common/components/CustomIcon";
+import TwemojiBrownHeart from "~icons/twemoji/brown-heart";
 import { LockCtaOverlay } from "@/common/components/LockCtaOverlay";
 import { StatItem, type StatItemProps } from "@/common/components/StatItem";
 
@@ -26,7 +26,7 @@ export const RatingSection = ({
       {isLocked && <LockCtaOverlay />}
       <div className={headingContainer()}>
         <div className={headingRating()}>
-          <HeartIcon className={icon()} />
+          <TwemojiBrownHeart className={icon()} />
           <StatItem
             {...headingRatingItem}
             layout="horizontal"
@@ -56,7 +56,7 @@ const RatingSectionSkeleton = () => {
     <div className={wrapper()}>
       <div className={headingContainer()}>
         <div className={headingRating()}>
-          <HeartIcon className={icon()} />
+          <TwemojiBrownHeart className={icon()} />
           <StatItem.Skeleton layout="horizontal" label="Average Rating" />
         </div>
       </div>

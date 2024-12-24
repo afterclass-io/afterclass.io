@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Form } from "@/common/components/Form";
 import { Select } from "./Select";
-import { ChevronDownIcon } from "@/common/components/CustomIcon";
+import PhCaretDown from "~icons/ph/caret-down";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -26,7 +26,7 @@ export const Default: Story = {
       <Select.Trigger className="w-[180px]">
         <Select.Value placeholder="Select a fruit" />
         <Select.Icon asChild>
-          <ChevronDownIcon className="h-4 w-4 opacity-50" />
+          <PhCaretDown className="h-4 w-4 opacity-50" />
         </Select.Icon>
       </Select.Trigger>
       <Select.Content>
@@ -69,7 +69,7 @@ export const AsFormInput: Story = {
                       <Select.Trigger className="w-[180px]">
                         <Select.Value placeholder="Select a fruit" />
                         <Select.Icon asChild>
-                          <ChevronDownIcon className="h-4 w-4 opacity-50" />
+                          <PhCaretDown className="h-4 w-4 opacity-50" />
                         </Select.Icon>
                       </Select.Trigger>
                       <Select.Content>

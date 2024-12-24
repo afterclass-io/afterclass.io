@@ -1,6 +1,7 @@
-import { informationCardTheme } from "./InformationCard.theme";
 import type { ReactNode } from "react";
-import { ClipboardIcon } from "@/common/components/CustomIcon";
+import TwemojiClipboard from "~icons/twemoji/clipboard";
+
+import { informationCardTheme } from "./InformationCard.theme";
 import { InformationCardSkeleton } from "./InformationCardSkeleton";
 import { InformationCardLoginButton } from "./InformationCardLoginButton";
 import { InformationModal } from "./InformationModal";
@@ -18,7 +19,7 @@ export const InformationCard = ({
   return (
     <div className={wrapper()}>
       <div className={header()}>
-        <ClipboardIcon className={icon()} />
+        <TwemojiClipboard className={icon()} />
         <p>Information</p>
       </div>
       <div className={content()}>

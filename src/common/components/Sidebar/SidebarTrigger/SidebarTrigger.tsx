@@ -1,10 +1,10 @@
 "use client";
 import * as React from "react";
+import PhSidebarSimple from "~icons/ph/sidebar-simple";
 
-import { useSidebar } from "../SidebarProvider";
 import { Button, type ButtonProps } from "@/common/components/Button";
+import { useSidebar } from "../SidebarProvider";
 import { sidebarTheme } from "../Sidebar.theme";
-import { Icon } from "@iconify-icon/react/dist/iconify.mjs";
 
 export const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
@@ -21,12 +21,7 @@ export const SidebarTrigger = React.forwardRef<
       variant="ghost"
       className={trigger({ className })}
       aria-label="Toggle Sidebar"
-      iconLeft={
-        <>
-          <Icon icon="uil:bars" />
-          <span className="sr-only">Toggle Sidebar</span>
-        </>
-      }
+      iconLeft={<PhSidebarSimple />}
       onClick={(event) => {
         onClick?.(event);
         toggleSidebar();

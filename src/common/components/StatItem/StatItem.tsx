@@ -1,4 +1,4 @@
-import { LockIcon } from "@/common/components/CustomIcon/LockIcon";
+import PhLockSimple from "~icons/ph/lock-simple";
 import { statItemTheme, type StatItemVariants } from "./StatItem.theme";
 import { Skeleton } from "@/common/components/Skeleton";
 
@@ -30,7 +30,7 @@ export const StatItem = ({
         <span>{label}</span>
       </div>
       {isLocked ? (
-        <LockIcon className={icon()} />
+        <PhLockSimple className={icon()} />
       ) : (
         <div className={ratingClasses()} data-test="stats-value">
           {rating}

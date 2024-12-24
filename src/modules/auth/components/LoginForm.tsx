@@ -6,16 +6,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import PhEnvelopeSimple from "~icons/ph/envelope-simple";
+import PhLockSimple from "~icons/ph/lock-simple";
+import PhEye from "~icons/ph/eye";
+import PhEyeSlash from "~icons/ph/eye-slash";
 
 import { Button } from "@/common/components/Button";
 import { Input } from "@/common/components/Input";
 import { Form } from "@/common/components/Form";
-import {
-  LockIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  EnvelopeIcon,
-} from "@/common/components/CustomIcon";
+
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import useUmami from "@/common/hooks/useUmami";
 
@@ -111,7 +110,7 @@ export const LoginForm = () => {
                 <Input
                   {...field}
                   disabled={form.formState.isSubmitting}
-                  contentLeft={<EnvelopeIcon size={24} />}
+                  contentLeft={<PhEnvelopeSimple width={24} height={24} />}
                   placeholder="john.doe.2023@smu.edu.sg"
                   autoComplete="on"
                   tabIndex={1}
@@ -145,7 +144,7 @@ export const LoginForm = () => {
                 <Input
                   {...field}
                   disabled={form.formState.isSubmitting}
-                  contentLeft={<LockIcon size={24} />}
+                  contentLeft={<PhLockSimple width={24} height={24} />}
                   contentRight={
                     <button
                       type="button"
@@ -153,9 +152,9 @@ export const LoginForm = () => {
                       tabIndex={4}
                     >
                       {isPwdVisible ? (
-                        <EyeSlashIcon size={24} />
+                        <PhEyeSlash width={24} height={24} />
                       ) : (
-                        <EyeIcon size={24} />
+                        <PhEye width={24} height={24} />
                       )}
                     </button>
                   }

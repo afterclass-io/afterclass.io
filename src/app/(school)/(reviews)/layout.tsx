@@ -1,7 +1,11 @@
 import { type ReactNode } from "react";
 
+import PhPlus from "~icons/ph/plus";
+import PhNotePencil from "~icons/ph/note-pencil";
+import PhGithubLogo from "~icons/ph/github-logo";
+
 import { CtaCard } from "@/common/components/CtaCard";
-import { EditIcon, GithubIcon, PlusIcon } from "@/common/components/CustomIcon";
+
 import { env } from "@/env";
 
 export default function ReviewLayout({
@@ -32,8 +36,8 @@ export default function ReviewLayout({
             href="/submit"
             external
             target="_self"
-            iconLeft={<PlusIcon />}
-            iconRight={<EditIcon opacity={0.1} />}
+            iconLeft={<PhPlus />}
+            iconRight={<PhNotePencil opacity={0.1} />}
             data-test="cta-write-review"
             data-umami-event="write-review-cta-btn"
           />
@@ -42,7 +46,7 @@ export default function ReviewLayout({
             ctaText="Contribute to AfterClass OSS"
             href={env.NEXT_PUBLIC_AC_GITHUB_LINK}
             external
-            iconLeft={<GithubIcon />}
+            iconLeft={<PhGithubLogo />}
             data-test="cta-contribute-oss"
             data-umami-event="contribute-oss-cta-btn"
           />

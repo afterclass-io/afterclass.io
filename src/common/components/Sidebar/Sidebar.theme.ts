@@ -317,7 +317,7 @@ export const sidebarTheme = tv({
       "[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
     ],
     separator: ["bg-border-default", "mx-2", "w-auto"],
-    trigger: ["h-7", "w-7", "p-4"],
+    trigger: [],
   },
 
   variants: {

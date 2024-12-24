@@ -2,7 +2,10 @@
 
 import { forwardRef, useId } from "react";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
-import { CheckIcon, MinusIcon } from "@/common/components/CustomIcon";
+
+import PhCheck from "~icons/ph/check";
+import PhMinus from "~icons/ph/minus";
+
 import { checkboxTheme, type CheckboxVariants } from "./Checkbox.theme";
 
 export type CheckedState = CheckboxPrimitive.CheckedState;
@@ -38,9 +41,9 @@ export const Checkbox = forwardRef<HTMLButtonElement, CheckboxProps>(
         >
           <CheckboxPrimitive.Indicator className={checkboxIndicator()}>
             {props.checked === "indeterminate" ? (
-              <MinusIcon className={checkboxIndicatorIcon()} />
+              <PhMinus className={checkboxIndicatorIcon()} />
             ) : (
-              <CheckIcon className={checkboxIndicatorIcon()} />
+              <PhCheck className={checkboxIndicatorIcon()} />
             )}
           </CheckboxPrimitive.Indicator>
         </CheckboxPrimitive.Root>

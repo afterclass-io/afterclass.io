@@ -1,6 +1,5 @@
 import * as React from "react";
-
-import { SlashIcon } from "@/common/components/CustomIcon";
+import PhCaretRight from "~icons/ph/caret-right";
 import { breadcrumbTheme } from "../Breadcrumb.theme";
 
 export const BreadcrumbSeparator = ({
@@ -16,7 +15,7 @@ export const BreadcrumbSeparator = ({
       className={separator({ className })}
       {...props}
     >
-      {children ?? <SlashIcon />}
+      {children ?? <PhCaretRight />}
     </li>
   );
 };

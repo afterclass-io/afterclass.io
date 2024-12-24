@@ -1,6 +1,8 @@
 "use client";
+import { useSession } from "next-auth/react";
+import PhCaretRight from "~icons/ph/caret-right";
 import { Button } from "@/common/components/Button";
-import { ChevronRightIcon, SchoolIcon } from "@/common/components/CustomIcon";
+import { SchoolIcon } from "@/common/components/CustomIcon";
 import {
   type FilterStat,
   FilterItemStats,
@@ -8,7 +10,6 @@ import {
 import Heading from "@/common/components/Heading";
 import { searchResultTheme } from "../SearchResult.theme";
 import { type UniversityAbbreviation } from "@prisma/client";
-import { useSession } from "next-auth/react";
 
 export const SearchResultItem = ({
   href,
@@ -61,7 +62,7 @@ export const SearchResultItem = ({
             ))}
         </div>
       </div>
-      <ChevronRightIcon size={24} className={itemArrow()} />
+      <PhCaretRight width={24} height={24} className={itemArrow()} />
     </Button>
   );
 };

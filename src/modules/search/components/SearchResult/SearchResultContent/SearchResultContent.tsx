@@ -1,13 +1,13 @@
 "use client";
 import { z } from "zod";
 import { useState } from "react";
+import PhPencilFill from "~icons/ph/pencil-fill";
+import PhBookBookmarkFill from "~icons/ph/book-bookmark-fill";
+import PhGraduationCapFill from "~icons/ph/graduation-cap-fill";
+
 import { type SearchCourseResult } from "@/modules/search/functions/searchCourse";
 import { type SearchProfResult } from "@/modules/search/functions/searchProf";
-import {
-  BooksIcon,
-  GraduationCapIcon,
-  PencilIcon,
-} from "@/common/components/CustomIcon";
+
 import { SearchResultList } from "../SearchResultList";
 import { SearchResultItem } from "../SearchResultItem";
 import { SearchResultDivider } from "../SearchResultDivider";
@@ -76,8 +76,8 @@ export const SearchResultContent = ({
               title={c.courseName}
               subtitle={c.courseCode}
               filterStats={[
-                { icon: <PencilIcon />, stat: c.reviewCount },
-                { icon: <GraduationCapIcon />, stat: c.profCount },
+                { icon: <PhPencilFill />, stat: c.reviewCount },
+                { icon: <PhGraduationCapFill />, stat: c.profCount },
               ]}
             />
           ))}
@@ -89,8 +89,8 @@ export const SearchResultContent = ({
               href={`/professor/${p.profSlug}`}
               title={p.profName}
               filterStats={[
-                { icon: <PencilIcon />, stat: p.reviewCount },
-                { icon: <BooksIcon />, stat: p.courseCount },
+                { icon: <PhPencilFill />, stat: p.reviewCount },
+                { icon: <PhBookBookmarkFill />, stat: p.courseCount },
               ]}
             />
           ))}

@@ -1,5 +1,6 @@
+import TwemojiClipboard from "~icons/twemoji/clipboard";
+
 import { informationCardTheme } from "./InformationCard.theme";
-import { ClipboardIcon } from "@/common/components/CustomIcon";
 import { Skeleton } from "@/common/components/Skeleton";
 
 export const InformationCardSkeleton = () => {
@@ -9,7 +10,7 @@ export const InformationCardSkeleton = () => {
   return (
     <div className={wrapper()}>
       <div className={header()}>
-        <ClipboardIcon className={icon()} />
+        <TwemojiClipboard className={icon()} />
         <p>Information</p>
       </div>
       <div className={content()}>

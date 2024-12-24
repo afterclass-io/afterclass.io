@@ -1,4 +1,6 @@
-import { GraduationCapIcon, PencilIcon } from "@/common/components/CustomIcon";
+import PhPencilFill from "~icons/ph/pencil-fill";
+import PhGraduationCapFill from "~icons/ph/graduation-cap-fill";
+
 import { FilterToggleSection } from "@/modules/reviews/components/FilterToggleSection";
 import { api } from "@/common/tools/trpc/server";
 import { auth } from "@/server/auth";
@@ -26,8 +28,8 @@ export default async function ProfessorFilter({
         sublabel: course.code,
         value: course.code,
         filterStats: [
-          { icon: <PencilIcon />, stat: course._count.reviews },
-          { icon: <GraduationCapIcon />, stat: course._count.classes },
+          { icon: <PhPencilFill />, stat: course._count.reviews },
+          { icon: <PhGraduationCapFill />, stat: course._count.classes },
         ],
       }))}
     />

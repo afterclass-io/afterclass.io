@@ -1,7 +1,8 @@
 "use client";
 import { type ElementRef, forwardRef, useState } from "react";
+import PhCheck from "~icons/ph/check";
+import PhCaretDown from "~icons/ph/caret-down";
 
-import { CheckIcon, ChevronDownIcon } from "@/common/components/CustomIcon";
 import { Button } from "@/common/components/Button";
 import { Command } from "@/common/components/Command";
 import { Popover } from "@/common/components/Popover";
@@ -32,7 +33,7 @@ export const Combobox = forwardRef<
           variant="tertiary"
           as="button"
           aria-expanded={open}
-          iconRight={<ChevronDownIcon />}
+          iconRight={<PhCaretDown />}
           className={comboboxTheme()}
           data-test="combobox-trigger"
         >
@@ -73,7 +74,7 @@ export const Combobox = forwardRef<
                   ref={ref}
                   data-test={`combobox-item-${el.value}`}
                 >
-                  <CheckIcon
+                  <PhCheck
                     className={cn(
                       "text-primary-default",
                       isMatched(el.value) ? "visible" : "invisible",

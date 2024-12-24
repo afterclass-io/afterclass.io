@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Input } from "./Input";
-import { StarLineAltIcon } from "@/common/components/CustomIcon";
+
+import PhStar from "~icons/ph/star";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -11,8 +12,8 @@ const meta = {
   // More on argTypes: https://storybook.js.org/docs/api/argtypes
   argTypes: {},
   args: {
-    contentLeft: <StarLineAltIcon />,
-    contentRight: <StarLineAltIcon />,
+    contentLeft: <PhStar />,
+    contentRight: <PhStar />,
     placeholder: "placeholder",
   },
 } satisfies Meta<typeof Input>;
@@ -22,8 +23,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    contentLeft: <StarLineAltIcon />,
-    contentRight: <StarLineAltIcon />,
+    contentLeft: <PhStar />,
+    contentRight: <PhStar />,
     placeholder: "placeholder",
   },
 };

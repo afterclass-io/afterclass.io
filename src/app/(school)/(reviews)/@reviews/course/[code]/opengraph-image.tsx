@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import React from "react";
 
-import { BooksIcon } from "@/common/components/CustomIcon";
+import PhBookBookmarkFill from "~icons/ph/book-bookmark-fill";
 import { OgImage } from "@/modules/opengraph/components/OgImage";
 import { api } from "@/common/tools/trpc/server";
 import { toTitleCase, formatPercentage } from "@/common/functions";
@@ -35,8 +35,9 @@ export default async function Image({ params }: { params: { code: string } }) {
         <OgImage.Header school="SMU" code={params.code} />
         <OgImage.Title
           icon={
-            <BooksIcon
-              size="2.25rem"
+            <PhBookBookmarkFill
+              width="2.25rem"
+              height="2.25rem"
               style={{
                 color: "#7A7A85",
               }}

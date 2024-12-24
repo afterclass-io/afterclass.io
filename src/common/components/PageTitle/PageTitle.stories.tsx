@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import PhBookBookmarkFill from "~icons/ph/book-bookmark-fill";
 
-import { BooksIcon, SchoolIcon } from "@/common/components/CustomIcon";
+import { SchoolIcon } from "@/common/components/CustomIcon";
 
 import { PageTitle } from "./PageTitle";
 import { Tag } from "@/common/components/Tag";
@@ -12,7 +13,7 @@ const meta = {
   // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
   tags: ["autodocs"],
   args: {
-    contentLeft: <BooksIcon className="h-6 w-6" />,
+    contentLeft: <PhBookBookmarkFill className="h-6 w-6" />,
     contentRight: (
       <Tag contentLeft={<SchoolIcon school="SMU" className="h-6 w-6" />}>
         SMU

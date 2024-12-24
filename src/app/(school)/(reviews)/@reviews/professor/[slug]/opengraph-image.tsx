@@ -1,7 +1,8 @@
 import { ImageResponse } from "next/og";
 import React from "react";
 
-import { GraduationCapIcon } from "@/common/components/CustomIcon";
+import PhGraduationCapFill from "~icons/ph/graduation-cap-fill";
+
 import { api } from "@/common/tools/trpc/server";
 import { OgImage } from "@/modules/opengraph/components/OgImage";
 import { toTitleCase, formatPercentage } from "@/common/functions";
@@ -34,8 +35,9 @@ export default async function Image({ params }: { params: { slug: string } }) {
         <OgImage.Header school="SMU" />
         <OgImage.Title
           icon={
-            <GraduationCapIcon
-              size="2.25rem"
+            <PhGraduationCapFill
+              width="2.25rem"
+              height="2.25rem"
               style={{
                 color: "#7A7A85",
               }}

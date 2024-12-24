@@ -5,16 +5,15 @@ import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import PhEye from "~icons/ph/eye";
+import PhEyeSlash from "~icons/ph/eye-slash";
+import PhEnvelopeSimple from "~icons/ph/envelope-simple";
+import PhLockSimple from "~icons/ph/lock-simple";
 
 import { Button } from "@/common/components/Button";
 import { Input } from "@/common/components/Input";
 import { Form } from "@/common/components/Form";
-import {
-  LockIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  EnvelopeIcon,
-} from "@/common/components/CustomIcon";
+
 import { signUpWithEmail } from "@/server/supabase";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 
@@ -86,7 +85,7 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
                 <Input
                   {...field}
                   disabled={form.formState.isSubmitting}
-                  contentLeft={<EnvelopeIcon size={24} />}
+                  contentLeft={<PhEnvelopeSimple width={24} height={24} />}
                   placeholder="john.doe.2023@smu.edu.sg"
                   autoComplete="on"
                   tabIndex={1}
@@ -107,7 +106,7 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
                 <Input
                   {...field}
                   disabled={form.formState.isSubmitting}
-                  contentLeft={<LockIcon size={24} />}
+                  contentLeft={<PhLockSimple width={24} height={24} />}
                   contentRight={
                     <button
                       type="button"
@@ -115,9 +114,9 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
                       tabIndex={5}
                     >
                       {isPwdVisible ? (
-                        <EyeSlashIcon size={24} />
+                        <PhEyeSlash width={24} height={24} />
                       ) : (
-                        <EyeIcon size={24} />
+                        <PhEye width={24} height={24} />
                       )}
                     </button>
                   }
@@ -142,7 +141,7 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
                 <Input
                   {...field}
                   disabled={form.formState.isSubmitting}
-                  contentLeft={<LockIcon size={24} />}
+                  contentLeft={<PhLockSimple width={24} height={24} />}
                   contentRight={
                     <button
                       type="button"
@@ -150,9 +149,9 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
                       tabIndex={6}
                     >
                       {isCfmPwdVisible ? (
-                        <EyeSlashIcon size={24} />
+                        <PhEyeSlash width={24} height={24} />
                       ) : (
-                        <EyeIcon size={24} />
+                        <PhEye width={24} height={24} />
                       )}
                     </button>
                   }

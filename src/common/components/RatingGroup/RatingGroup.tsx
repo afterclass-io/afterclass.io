@@ -2,9 +2,10 @@
 
 import { type ComponentPropsWithoutRef, forwardRef, useState } from "react";
 import type { FieldValues, ControllerRenderProps } from "react-hook-form";
+import PhHeart from "~icons/ph/heart";
+import TwemojiBrownHeart from "~icons/twemoji/brown-heart";
 
 import { cn } from "@/common/functions";
-import { HeartIcon, HeartUnfilledIcon } from "@/common/components/CustomIcon";
 import { ratingGroupTheme } from "./RatingGroup.theme";
 
 const DEFAULT_MAX_RATING = 5;
@@ -54,10 +55,10 @@ export const RatingGroup = forwardRef<HTMLInputElement, RatingGroupProps>(
                 ref={ref}
                 {...props}
               />
-              <HeartUnfilledIcon
-                className={cn(icon(), active > i && "hidden")}
+              <PhHeart className={cn(icon(), active > i && "hidden")} />
+              <TwemojiBrownHeart
+                className={cn(icon(), active <= i && "hidden")}
               />
-              <HeartIcon className={cn(icon(), active <= i && "hidden")} />
             </label>
           );
         })}

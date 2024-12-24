@@ -1,9 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import PhLockSimple from "~icons/ph/lock-simple";
 
 import { Button } from "@/common/components/Button";
-import { LockIcon } from "@/common/components/CustomIcon/LockIcon";
 import {
   lockCtaOverlayTheme,
   type LockCtaOverlayVariants,
@@ -42,7 +42,7 @@ export const LockCtaOverlay = ({
         asChild
         data-test="lock-cta-overlay"
       >
-        <LockIcon className={icon()} />
+        <PhLockSimple className={icon()} />
         <div className={ctaTextContainer()}>
           <Button variant="link">Login</Button>
           <span>{ctaTextMap[ctaType]}</span>

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import TwemojiBlueBook from "~icons/twemoji/blue-book";
 
 import { Tooltip } from "./Tooltip";
-import { BooksColoredIcon } from "@/common/components/CustomIcon";
 import { Button } from "@/common/components/Button";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
@@ -48,7 +48,7 @@ export const IconAsTrigger: Story = {
     <Tooltip.Provider>
       <Tooltip defaultOpen={true}>
         <Tooltip.Trigger>
-          <BooksColoredIcon />
+          <TwemojiBlueBook />
         </Tooltip.Trigger>
         <Tooltip.Content>
           <div>Course</div>

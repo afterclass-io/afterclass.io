@@ -1,13 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
+import PhPencilFill from "~icons/ph/pencil-fill";
+import PhGraduationCapFill from "~icons/ph/graduation-cap-fill";
+import PhBookBookmarkFill from "~icons/ph/book-bookmark-fill";
+
 import { SearchResult } from "./SearchResult";
 import { type SearchCourseResult } from "@/modules/search/functions/searchCourse";
 import { type SearchProfResult } from "@/modules/search/functions/searchProf";
-import {
-  BooksIcon,
-  GraduationCapIcon,
-  PencilIcon,
-} from "@/common/components/CustomIcon";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -120,8 +119,8 @@ export const WithoutFilter: Story = {
                 title={c.courseName}
                 subtitle={c.courseCode}
                 filterStats={[
-                  { icon: <PencilIcon />, stat: 12 },
-                  { icon: <GraduationCapIcon />, stat: 32 },
+                  { icon: <PhPencilFill />, stat: 12 },
+                  { icon: <PhGraduationCapFill />, stat: 32 },
                 ]}
               />
             ))}
@@ -132,8 +131,8 @@ export const WithoutFilter: Story = {
                 href={`/professor/${p.profSlug}`}
                 title={p.profName}
                 filterStats={[
-                  { icon: <PencilIcon />, stat: 11 },
-                  { icon: <BooksIcon />, stat: 31 },
+                  { icon: <PhPencilFill />, stat: 11 },
+                  { icon: <PhBookBookmarkFill />, stat: 31 },
                 ]}
               />
             ))}
@@ -178,8 +177,8 @@ export const JustProfSearchResultItem: Story = {
         href={`/professor/${searchedProf[0]!.profSlug}`}
         title={searchedProf[0]!.profName}
         filterStats={[
-          { icon: <PencilIcon />, stat: 11 },
-          { icon: <BooksIcon />, stat: 31 },
+          { icon: <PhPencilFill />, stat: 11 },
+          { icon: <PhBookBookmarkFill />, stat: 31 },
         ]}
       />
     );
@@ -196,8 +195,8 @@ export const JustCourseSearchResultItem: Story = {
         title={searchedCourse[0]!.courseName}
         subtitle={searchedCourse[0]!.courseCode}
         filterStats={[
-          { icon: <PencilIcon />, stat: 12 },
-          { icon: <GraduationCapIcon />, stat: 32 },
+          { icon: <PhPencilFill />, stat: 12 },
+          { icon: <PhGraduationCapFill />, stat: 32 },
         ]}
       />
     );

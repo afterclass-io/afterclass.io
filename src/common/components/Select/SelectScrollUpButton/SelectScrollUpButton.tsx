@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
+import PhCaretUp from "~icons/ph/caret-up";
 
-import { ChevronUpIcon } from "@/common/components/CustomIcon";
 import { selectTheme } from "../Select.theme";
 
 export const SelectScrollUpButton = React.forwardRef<
@@ -15,7 +15,7 @@ export const SelectScrollUpButton = React.forwardRef<
       className={scrollButton({ className })}
       {...props}
     >
-      <ChevronUpIcon />
+      <PhCaretUp />
     </SelectPrimitive.ScrollUpButton>
   );
 });

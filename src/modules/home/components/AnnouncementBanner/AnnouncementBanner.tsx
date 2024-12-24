@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
+import PhX from "~icons/ph/x";
 
-import { XCloseIcon } from "@/common/components/CustomIcon";
 import { Button } from "@/common/components/Button";
 import { env } from "@/env";
 import { useEdgeConfigs } from "@/common/hooks";
@@ -51,7 +51,7 @@ export const AnnouncementBanner = () => {
           <Button
             variant="ghost"
             className="absolute right-0 inline font-bold text-text-on-primary hover:bg-transparent hover:after:bg-transparent"
-            iconLeft={<XCloseIcon className="h-4 w-4" />}
+            iconLeft={<PhX className="h-4 w-4" />}
             aria-label="close"
             onClick={handleClose}
             data-umami-event="announcement-banner-revert-old-ui-close"
