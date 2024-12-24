@@ -4,6 +4,7 @@ import "../src/common/styles/globals.scss";
 import { inter, poppins } from "../src/common/fonts";
 import AuthProvider from "../src/common/providers/AuthProvider";
 import TooltipProvider from "../src/common/providers/TooltipProvider";
+import ProgressProvider from "../src/common/providers/ProgressProvider";
 import { SessionContext } from "next-auth/react";
 import { mockAuthStates } from "./auth";
 
@@ -34,24 +35,26 @@ const preview: Preview = {
           {/* @ts-ignore */}
           <SessionContext.Provider value={mockSession}>
             <TooltipProvider>
-              {/* @ts-ignore */}
-              <style global jsx>{`
-                :root {
-                  --font-inter: ${inter.style.fontFamily};
-                  --font-poppins: ${poppins.style.fontFamily};
-                }
-              `}</style>
-              <div
-                style={{
-                  padding: "3rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                className={`bg-bg-base`}
-              >
-                <Story />
-              </div>
+              <ProgressProvider>
+                {/* @ts-ignore */}
+                <style global jsx>{`
+                  :root {
+                    --font-inter: ${inter.style.fontFamily};
+                    --font-poppins: ${poppins.style.fontFamily};
+                  }
+                `}</style>
+                <div
+                  style={{
+                    padding: "3rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  className={`bg-bg-base`}
+                >
+                  <Story />
+                </div>
+              </ProgressProvider>
             </TooltipProvider>
           </SessionContext.Provider>
         </AuthProvider>
