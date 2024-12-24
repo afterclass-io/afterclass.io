@@ -30,6 +30,7 @@ import Link from "next/link";
 import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
 import { usePathname } from "next/navigation";
 import { useIsMobile } from "@/common/hooks";
+import { ProgressLink } from "@/common/components/Progress";
 
 type SidebarItemType = {
   label: string;
@@ -153,8 +154,7 @@ export const AppSidebar = () => {
                         : pathname?.startsWith(item.href) // pathname is null in storybook context
                     }
                   >
-                    <Button
-                      as="a"
+                    <ProgressLink
                       variant="ghost"
                       href={item.href}
                       iconLeft={item.icon}
@@ -163,7 +163,7 @@ export const AppSidebar = () => {
                       data-test={`sidebar-${sidebarItemName(item.label)}`}
                     >
                       {item.label}
-                    </Button>
+                    </ProgressLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -189,8 +189,7 @@ export const AppSidebar = () => {
                               : pathname?.startsWith(item.href) // pathname is null in storybook context
                           }
                         >
-                          <Button
-                            as="a"
+                          <ProgressLink
                             variant="ghost"
                             href={item.href}
                             target={
@@ -206,7 +205,7 @@ export const AppSidebar = () => {
                             data-test={`sidebar-${sidebarItemName(item.label)}`}
                           >
                             {item.label}
-                          </Button>
+                          </ProgressLink>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     ),

@@ -1,10 +1,10 @@
 import { type Review } from "@/modules/reviews/types";
 import { profileTheme } from "@/common/components/Profile";
 import { SchoolIcon } from "@/common/components/CustomIcon";
+import { ProgressLink } from "@/common/components/Progress";
 
 import { RevieweeCourse } from "./RevieweeCourse";
 import { reviewItemTheme, type ReviewItemVariants } from "../ReviewItem.theme";
-import { Button } from "@/common/components/Button";
 
 export type RevieweeGroupProps = ReviewItemVariants & {
   review: Review;
@@ -26,9 +26,8 @@ export const RevieweeGroup = ({ review, variant }: RevieweeGroupProps) => {
     <div className={revieweeGroup()}>
       <SchoolIcon school={review.university} />
       {isShowProf ? (
-        <Button
+        <ProgressLink
           variant="link"
-          as="a"
           href={`/professor/${review.professorSlug}`}
           className={profileNameClass({
             class: "hover:text-primary-default hover:no-underline",
@@ -37,7 +36,7 @@ export const RevieweeGroup = ({ review, variant }: RevieweeGroupProps) => {
           data-test="review-professor-label"
         >
           {review.professorName}
-        </Button>
+        </ProgressLink>
       ) : (
         <RevieweeCourse
           courseCode={review.courseCode}

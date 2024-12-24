@@ -1,7 +1,7 @@
 "use client";
 import { Tooltip } from "@/common/components/Tooltip";
-import { Button } from "@/common/components/Button";
 import { profileTheme } from "@/common/components/Profile";
+import { ProgressLink } from "@/common/components/Progress";
 
 export const RevieweeCourse = ({
   courseCode,
@@ -14,9 +14,8 @@ export const RevieweeCourse = ({
   return (
     <Tooltip>
       <Tooltip.Trigger>
-        <Button
+        <ProgressLink
           variant="link"
-          as="a"
           href={`/course/${courseCode}`}
           className={profileNameClass({
             class: "hover:text-primary-default hover:no-underline",
@@ -25,7 +24,7 @@ export const RevieweeCourse = ({
           data-test="review-course-label"
         >
           {courseCode}
-        </Button>
+        </ProgressLink>
       </Tooltip.Trigger>
       <Tooltip.Content>
         <span>{courseName}</span>
