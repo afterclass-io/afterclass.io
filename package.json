@@ -67,6 +67,7 @@
   },
   "devDependencies": {
     "@iconify-icon/react": "2.1.0",
+    "@iconify-json/ph": "^1.2.2",
     "@next/eslint-plugin-next": "14.2.13",
     "@storybook/addon-actions": "8.3.4",
     "@storybook/addon-essentials": "8.3.4",
@@ -79,6 +80,8 @@
     "@storybook/preset-scss": "1.0.3",
     "@storybook/react": "8.3.4",
     "@storybook/test": "8.3.4",
+    "@svgr/core": "^8.1.0",
+    "@svgr/plugin-jsx": "^8.1.0",
     "@types/bcrypt": "5.0.2",
     "@types/eslint": "8.56.12",
     "@types/js-cookie": "3.0.6",
@@ -107,6 +110,7 @@
     "tailwindcss": "3.4.17",
     "tailwindcss-animate": "1.0.7",
     "typescript": "5.6.2",
+    "unplugin-icons": "^0.22.0",
     "webpack": "5.95.0"
   },
   "ct3aMetadata": {

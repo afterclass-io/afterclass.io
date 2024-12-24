@@ -10,10 +10,27 @@ jiti("./src/env");
 
 import { withSentryConfig } from "@sentry/nextjs";
 
+import unpluginIcons from "unplugin-icons/webpack";
+
 /** @type {import("next").NextConfig} */
 const config = withSentryConfig(
   {
     reactStrictMode: true,
+    webpack(config) {
+      /**
+       * configurations for unplugin-icons
+       *
+       * @see https://github.com/unplugin/unplugin-icons?tab=readme-ov-file#configuration
+       */
+      config.plugins.push(
+        unpluginIcons({
+          compiler: "jsx",
+          jsx: "react",
+          autoInstall: true,
+        }),
+      );
+      return config;
+    },
 
     /**
      * If you have `experimental: { appDir: true }` set, then you must comment the below `i18n` config

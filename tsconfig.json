@@ -23,6 +23,9 @@
     "plugins": [{ "name": "next" }],
     "incremental": true,
 
+    /* Type Checking */
+    "types": ["unplugin-icons/types/react"],
+
     /* Path Aliases */
     "baseUrl": ".",
     "paths": {
