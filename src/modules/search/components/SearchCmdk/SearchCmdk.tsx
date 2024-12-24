@@ -1,7 +1,6 @@
 "use client";
 
 import { type FormEvent, type ReactNode, useEffect, useState } from "react";
-import { Slot } from "@radix-ui/react-slot";
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { useRouter } from "next/navigation";

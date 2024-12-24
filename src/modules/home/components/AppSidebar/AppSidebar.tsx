@@ -24,7 +24,6 @@ import {
   TelegramIcon,
 } from "@/common/components/CustomIcon";
 import { env } from "@/env";
-import { Button } from "@/common/components/Button";
 import { toTitleCase } from "@/common/functions";
 import Link from "next/link";
 import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
