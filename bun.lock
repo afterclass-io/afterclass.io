@@ -51,6 +51,7 @@
       "devDependencies": {
         "@iconify-icon/react": "2.1.0",
         "@iconify-json/ph": "^1.2.2",
+        "@iconify-json/twemoji": "^1.2.2",
         "@next/eslint-plugin-next": "14.2.13",
         "@storybook/addon-actions": "8.3.4",
         "@storybook/addon-essentials": "8.3.4",
@@ -401,6 +402,8 @@
     "@iconify-icon/react": ["@iconify-icon/react@2.1.0", "", { "dependencies": { "iconify-icon": "^2.1.0" }, "peerDependencies": { "react": ">=16" } }, "sha512-OuEsW5Y474rg3WlseLFQ0uuJjnyk1DhLN1Ire5JGjF4sF8/rNxGJDLSItEogRcKuUbL+zzuoBsaTUVVInuixRA=="],
 
     "@iconify-json/ph": ["@iconify-json/ph@1.2.2", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-PgkEZNtqa8hBGjHXQa4pMwZa93hmfu8FUSjs/nv4oUU6yLsgv+gh9nu28Kqi8Fz9CCVu4hj1MZs9/60J57IzFw=="],
+
+    "@iconify-json/twemoji": ["@iconify-json/twemoji@1.2.2", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-ckWEY5KhIQgdFd9VGvfhecTtYUx3ihXycwlZcEws87LxuvIThMHNBCblrQQ5afhbGMfg21dF+z9F+ODMRDYHMg=="],
 
     "@iconify/types": ["@iconify/types@2.0.0", "", {}, "sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg=="],
 
