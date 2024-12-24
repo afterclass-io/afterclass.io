@@ -18,6 +18,9 @@ const preview: Preview = {
       },
     },
     layout: "fullscreen",
+    nextjs: {
+      appDirectory: true,
+    },
     options: {
       storySort: {
         method: "alphabetical",
