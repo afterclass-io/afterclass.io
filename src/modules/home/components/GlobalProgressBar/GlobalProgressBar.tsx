@@ -11,6 +11,7 @@ export const GlobalProgressBar = () => {
         progress.reset();
       }, 500);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progress.state]);
 
   if (progress.value === 0) return null;
