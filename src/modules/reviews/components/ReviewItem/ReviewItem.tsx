@@ -14,6 +14,7 @@ export type ReviewItemProps = ReviewItemVariants & {
   isLocked?: boolean;
   variant?: "home" | "professor" | "course";
   isMocked?: boolean; // for testing purposes only
+  seeMore?: boolean;
 };
 
 export const ReviewItem = ({
@@ -21,6 +22,7 @@ export const ReviewItem = ({
   isLocked,
   variant = "home",
   isMocked = false,
+  seeMore,
 }: ReviewItemProps) => {
   const { wrapper, headingContainer, body } = reviewItemTheme({
     size: { initial: "sm", md: "md" },
@@ -52,7 +54,7 @@ export const ReviewItem = ({
           </div>
         </div>
       ) : (
-        <ReviewModal review={review} variant={variant} seeMore>
+        <ReviewModal review={review} variant={variant} seeMore={seeMore}>
           <div className={wrapper()} data-test="review">
             <ReviewHeader />
             <ReviewBody review={review} />
