@@ -67,8 +67,9 @@ export const Default: Story = {
           <Button variant="primary">Modal (outside) Buttons</Button>
         </Modal.Trigger>
         <Modal.Content>
-          <Modal.Header description="Modal overflows outside">
-            All button variants
+          <Modal.Header>
+            <Modal.Title>All button variants</Modal.Title>
+            <Modal.Description>Modal overflows outside</Modal.Description>
           </Modal.Header>
           <Modal.Body>
             <div className="space-y-4">{longText}</div>
@@ -88,8 +89,9 @@ export const OverflowsInside: Story = {
           <Button variant="primary">Modal (inside) Headings</Button>
         </Modal.Trigger>
         <Modal.Content>
-          <Modal.Header description="Modal overflows inside">
-            Headers
+          <Modal.Header>
+            <Modal.Title>All button variants</Modal.Title>
+            <Modal.Description>Modal overflows inside</Modal.Description>
           </Modal.Header>
           <Modal.Body>
             <div className="space-y-4">{longText}</div>

@@ -24,7 +24,7 @@ export default async function CourseRating({
           rating: "-",
         }}
         ratingItems={validCourseReviewLabels.map((label) => ({
-          label: label.name.replaceAll("_", " ").toLowerCase(),
+          label: toTitleCase(label.name.replaceAll("_", " ")),
           rating: "-",
         }))}
       />

@@ -26,7 +26,7 @@ export default async function ProfessorRating({
           rating: "-",
         }}
         ratingItems={validProfessorReviewLabels.map((label) => ({
-          label: label.name.replaceAll("_", " ").toLowerCase(),
+          label: toTitleCase(label.name.replaceAll("_", " ")),
           rating: "-",
         }))}
         isLocked={!session}
