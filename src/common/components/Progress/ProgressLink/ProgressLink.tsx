@@ -23,11 +23,17 @@ export function ProgressLink({
       as="a"
       href={_href}
       onClick={(e) => {
+        if (rest.external && rest.target !== "_self") return;
+
         e.preventDefault();
         progress.start();
 
         startTransition(() => {
-          router.push(_href);
+          if (rest.external) {
+            window.location.assign(_href);
+          } else {
+            router.push(_href);
+          }
           progress.done();
         });
       }}
