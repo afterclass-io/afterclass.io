@@ -50,6 +50,7 @@ export function ProgressLink({ children, ...props }: ButtonLinkOrAnchorProps) {
           if (props.external) {
             window.location.assign(props.href);
           } else {
+            // see https://github.com/vercel/next.js/discussions/22025
             router.push(resolveHref(Router, props.href));
           }
           progress.done();
