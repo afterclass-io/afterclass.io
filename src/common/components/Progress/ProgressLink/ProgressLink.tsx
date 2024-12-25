@@ -1,5 +1,7 @@
-import { useRouter } from "next/navigation";
 import { startTransition } from "react";
+import { useRouter } from "next/navigation";
+import Router from "next/router";
+import { resolveHref } from "next/dist/client/resolve-href";
 
 import { useProgress } from "@/common/providers/ProgressProvider";
 import {
@@ -31,37 +33,30 @@ import {
  *   Go to Submission Page (hard navigation)
  * </ProgressLink>
  */
-export function ProgressLink({
-  href,
-  children,
-  ...rest
-}: ButtonLinkOrAnchorProps) {
+export function ProgressLink({ children, ...props }: ButtonLinkOrAnchorProps) {
   const progress = useProgress();
   const router = useRouter();
-
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string
-  const _href = typeof href === "string" ? href : href.toString();
 
   return (
     <Button
       as="a"
-      href={_href}
       onClick={(e) => {
-        if (rest.external && rest.target !== "_self") return;
+        if (props.external && props.target !== "_self") return;
 
         e.preventDefault();
         progress.start();
 
         startTransition(() => {
-          if (rest.external) {
-            window.location.assign(_href);
+          if (props.external) {
+            window.location.assign(props.href);
           } else {
-            router.push(_href);
+            // see https://github.com/vercel/next.js/discussions/22025
+            router.push(resolveHref(Router, props.href));
           }
           progress.done();
         });
       }}
-      {...rest}
+      {...props}
     >
       {children}
     </Button>

@@ -5,11 +5,11 @@ import { auth } from "@/server/auth";
 import { SidebarTrigger } from "@/common/components/Sidebar";
 import { Separator } from "@/common/components/Separator";
 import { Breadcrumb } from "@/modules/home/components/Breadcrumb";
-import { Button } from "@/common/components/Button";
 import { ThemeToggle } from "@/common/components/ThemeToggle";
 import { AfterclassIcon, SearchIcon } from "@/common/components/CustomIcon";
 import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
-import { ProgressLink } from "@/common/components/Progress";
+
+import { CoreLayoutLoginButton } from "../CoreLayoutLoginButton";
 
 export const CoreLayoutHeader = async () => {
   const session = await auth();
@@ -44,13 +44,7 @@ export const CoreLayoutHeader = async () => {
               </div>
             </>
           ) : (
-            <ProgressLink
-              variant="secondary"
-              href="/account/auth/login"
-              data-test="login"
-            >
-              Login
-            </ProgressLink>
+            <CoreLayoutLoginButton />
           )}
           <ThemeToggle />
         </div>
