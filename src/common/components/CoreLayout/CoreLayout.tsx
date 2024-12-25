@@ -2,7 +2,7 @@ import { type PropsWithChildren } from "react";
 import { AppSidebar } from "@/modules/home/components/AppSidebar";
 import { SidebarProvider, SidebarInset } from "@/common/components/Sidebar";
 import dynamic from "next/dynamic";
-import { CoreLayoutHeader } from "@/common/components/CoreLayout/CoreLayoutHeader";
+import { CoreLayoutHeader } from "./CoreLayoutHeader";
 
 const AnnouncementBanner = dynamic(
   () =>
