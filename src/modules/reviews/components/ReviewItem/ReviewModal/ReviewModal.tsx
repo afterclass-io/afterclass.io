@@ -9,6 +9,7 @@ import { reviewItemTheme } from "../ReviewItem.theme";
 import { RevieweeGroup } from "../RevieweeGroup";
 import { ReviewLikeButton } from "../ReviewLikeButton";
 import { ReviewCreatedAt } from "../ReviewCreatedAt";
+import { ProgressLink } from "@/common/components/Progress";
 
 export const ReviewModal = ({
   review,
@@ -79,15 +80,14 @@ export const ReviewModal = ({
           {seeMore && (
             <>
               <hr className={seeMoreDivider()} />
-              <Button
-                as="a"
-                variant="link"
+              <ProgressLink
                 href={reviewPath}
+                variant="link"
                 className={seeMoreLink()}
                 isResponsive
               >
                 See more reviews
-              </Button>
+              </ProgressLink>
             </>
           )}
         </Modal.Footer>

@@ -1,4 +1,5 @@
 "use client";
+import { startTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,6 +11,7 @@ import { Button } from "@/common/components/Button";
 import { Form } from "@/common/components/Form";
 import { env } from "@/env";
 import { EnvelopeIcon } from "@/common/components/CustomIcon";
+import { useProgress } from "@/common/providers/ProgressProvider";
 
 import { getUserPlatform } from "../functions";
 import {
@@ -17,9 +19,11 @@ import {
   type ForgotPwdFormInputs,
   forgotPwdFormInputsSchema,
 } from "../types";
+import { ProgressLink } from "@/common/components/Progress";
 
 export const ForgotPwdForm = () => {
   const router = useRouter();
+  const progress = useProgress();
 
   const form = useForm<ForgotPwdFormInputs>({
     resolver: zodResolver(forgotPwdFormInputsSchema),
@@ -41,7 +45,12 @@ export const ForgotPwdForm = () => {
     }
 
     if (result === ForgotPwdFormActionReturnType.USER_ON_V1) {
-      router.push(`/account/auth/signup?email=${email}`);
+      progress.start();
+
+      startTransition(() => {
+        router.push(`/account/auth/signup?email=${email}`);
+        progress.done();
+      });
       return;
     }
 
@@ -54,7 +63,12 @@ export const ForgotPwdForm = () => {
       return;
     }
 
-    router.push(`/account/auth/verify?email=${email}`);
+    progress.start();
+
+    startTransition(() => {
+      router.push(`/account/auth/verify?email=${email}`);
+      progress.done();
+    });
   };
 
   return (
@@ -100,17 +114,16 @@ export const ForgotPwdForm = () => {
             <span className="text-center font-semibold text-text-em-mid">
               {"Don't have an account?"}
             </span>
-            <Button
+            <ProgressLink
+              href="/account/auth/signup"
               type="button"
               variant="link"
-              as="a"
-              href="/account/auth/signup"
               isResponsive
               tabIndex={3}
               data-test="register"
             >
               Create an account
-            </Button>
+            </ProgressLink>
           </div>
         </div>
       </form>

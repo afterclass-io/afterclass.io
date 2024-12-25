@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -18,6 +18,8 @@ import {
 } from "@/common/components/CustomIcon";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import useUmami from "@/common/hooks/useUmami";
+import { useProgress } from "@/common/providers/ProgressProvider";
+import { ProgressLink } from "@/common/components/Progress";
 
 const loginFormInputsSchema = z.object({
   email: emailValidationSchema,
@@ -31,6 +33,7 @@ export const LoginForm = () => {
   const searchParams = useSearchParams();
   const [isPwdVisible, setIsPwdVisible] = useState(false);
   const router = useRouter();
+  const progress = useProgress();
   const umami = useUmami();
 
   const form = useForm<LoginFormInputs>({
@@ -91,8 +94,13 @@ export const LoginForm = () => {
     }
 
     umami.identify({ email });
-    router.push(signinResp.url ?? callbackUrl);
-    router.refresh();
+
+    progress.start();
+    startTransition(() => {
+      router.push(signinResp.url ?? callbackUrl);
+      router.refresh();
+      progress.done();
+    });
   };
 
   return (
@@ -129,17 +137,16 @@ export const LoginForm = () => {
             <Form.Item>
               <Form.Label className="flex items-center justify-between">
                 <span>Password</span>
-                <Button
-                  variant="link"
-                  as="a"
+                <ProgressLink
                   href="/account/auth/forgot"
+                  variant="link"
                   isResponsive
                   className="md:text-sm"
                   tabIndex={5}
                   data-test="forget"
                 >
                   Forgot password?
-                </Button>
+                </ProgressLink>
               </Form.Label>
               <Form.Control>
                 <Input
@@ -185,17 +192,16 @@ export const LoginForm = () => {
             <span className="text-center font-semibold text-text-em-mid">
               {"Don't have an account?"}
             </span>
-            <Button
+            <ProgressLink
+              href="/account/auth/signup"
               type="button"
               variant="link"
-              as="a"
-              href="/account/auth/signup"
               isResponsive
               tabIndex={6}
               data-test="register"
             >
               Create an account
-            </Button>
+            </ProgressLink>
           </div>
         </div>
       </form>

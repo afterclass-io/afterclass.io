@@ -1,8 +1,11 @@
+"use client";
 import * as React from "react";
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot";
 
 import { breadcrumbTheme } from "../Breadcrumb.theme";
+import { useProgress } from "@/common/providers/ProgressProvider";
+import { useRouter } from "next/navigation";
 
 export const BreadcrumbLink = React.forwardRef<
   HTMLAnchorElement,
@@ -11,8 +14,27 @@ export const BreadcrumbLink = React.forwardRef<
     asChild?: boolean;
   }
 >(({ asChild, className, ...props }, ref) => {
-  const Comp = asChild ? Slot : Link;
+  const progress = useProgress();
+  const router = useRouter();
   const { link } = breadcrumbTheme();
-  return <Comp ref={ref} className={link({ className })} {...props} />;
+  const Comp = asChild ? Slot : Link;
+  return (
+    <Comp
+      ref={ref}
+      className={link({ className })}
+      onClick={(e) => {
+        if (props.target === "_blank") return;
+
+        e.preventDefault();
+        progress.start();
+
+        React.startTransition(() => {
+          router.push(props.href);
+          progress.done();
+        });
+      }}
+      {...props}
+    />
+  );
 });
 BreadcrumbLink.displayName = "BreadcrumbLink";

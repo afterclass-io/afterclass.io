@@ -8,6 +8,7 @@ import {
   lockCtaOverlayTheme,
   type LockCtaOverlayVariants,
 } from "./LockCtaOverlay.theme";
+import { ProgressLink } from "@/common/components/Progress";
 
 const ctaTextMap = {
   rating: "to see rating",
@@ -31,13 +32,12 @@ export const LockCtaOverlay = ({
   return (
     <>
       <div className={overlay()}></div>
-      <Button
-        className={wrapper()}
-        as="a"
+      <ProgressLink
         href={{
           pathname: "/account/auth/login",
           query: { callbackUrl: pathname },
         }}
+        className={wrapper()}
         variant="ghost"
         asChild
         data-test="lock-cta-overlay"
@@ -47,7 +47,7 @@ export const LockCtaOverlay = ({
           <Button variant="link">Login</Button>
           <span>{ctaTextMap[ctaType]}</span>
         </div>
-      </Button>
+      </ProgressLink>
     </>
   );
 };

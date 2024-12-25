@@ -14,6 +14,8 @@ import { CSPostHogProvider } from "@/common/providers/analytics/providers";
 import { EdgeConfigProvider } from "@/common/providers/EdgeConfig";
 import { UmamiProvider } from "@/common/providers/Umami";
 import JotaiProvider from "@/common/providers/JotaiProvider";
+import ProgressProvider from "@/common/providers/ProgressProvider";
+import { GlobalProgressBar } from "@/modules/home/components/GlobalProgressBar";
 
 const PostHogPageView = dynamic(
   () => import("@/common/providers/analytics/PostHogPageView"),
@@ -77,13 +79,16 @@ export default function RootLayout({
           <AuthProvider>
             <TRPCReactProvider>
               <TooltipProvider>
-                <EdgeConfigProvider>
-                  <JotaiProvider>
-                    <ThemeProvider>
-                      <CoreLayout>{children}</CoreLayout>
-                    </ThemeProvider>
-                  </JotaiProvider>
-                </EdgeConfigProvider>
+                <ProgressProvider>
+                  <EdgeConfigProvider>
+                    <JotaiProvider>
+                      <ThemeProvider>
+                        <GlobalProgressBar />
+                        <CoreLayout>{children}</CoreLayout>
+                      </ThemeProvider>
+                    </JotaiProvider>
+                  </EdgeConfigProvider>
+                </ProgressProvider>
               </TooltipProvider>
             </TRPCReactProvider>
           </AuthProvider>

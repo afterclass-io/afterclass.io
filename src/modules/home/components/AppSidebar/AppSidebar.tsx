@@ -24,12 +24,12 @@ import {
   TelegramIcon,
 } from "@/common/components/CustomIcon";
 import { env } from "@/env";
-import { Button } from "@/common/components/Button";
 import { toTitleCase } from "@/common/functions";
 import Link from "next/link";
 import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
 import { usePathname } from "next/navigation";
 import { useIsMobile } from "@/common/hooks";
+import { ProgressLink } from "@/common/components/Progress";
 
 type SidebarItemType = {
   label: string;
@@ -77,6 +77,7 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       icon: <GithubIcon size={16} />,
       href: env.NEXT_PUBLIC_AC_GITHUB_LINK,
       showMobileOnly: true,
+      external: true,
     },
   ],
   telegram: [
@@ -84,11 +85,13 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       label: "Channel",
       icon: <TelegramIcon size={16} />,
       href: env.NEXT_PUBLIC_AC_CHANNEL_LINK,
+      external: true,
     },
     {
       label: "Helpdesk",
       icon: <HelpDeskIcon size={16} />,
       href: env.NEXT_PUBLIC_AC_HELPDESK_LINK,
+      external: true,
     },
   ],
   site: [
@@ -96,7 +99,6 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       label: "Statistics",
       icon: <StatisticsTableIcon size={16} />,
       href: "/statistics",
-      external: true,
     },
     {
       label: "Themes",
@@ -153,8 +155,7 @@ export const AppSidebar = () => {
                         : pathname?.startsWith(item.href) // pathname is null in storybook context
                     }
                   >
-                    <Button
-                      as="a"
+                    <ProgressLink
                       variant="ghost"
                       href={item.href}
                       iconLeft={item.icon}
@@ -163,7 +164,7 @@ export const AppSidebar = () => {
                       data-test={`sidebar-${sidebarItemName(item.label)}`}
                     >
                       {item.label}
-                    </Button>
+                    </ProgressLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -189,8 +190,7 @@ export const AppSidebar = () => {
                               : pathname?.startsWith(item.href) // pathname is null in storybook context
                           }
                         >
-                          <Button
-                            as="a"
+                          <ProgressLink
                             variant="ghost"
                             href={item.href}
                             target={
@@ -206,7 +206,7 @@ export const AppSidebar = () => {
                             data-test={`sidebar-${sidebarItemName(item.label)}`}
                           >
                             {item.label}
-                          </Button>
+                          </ProgressLink>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     ),

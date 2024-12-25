@@ -1,19 +1,25 @@
 "use client";
 
-import { type FormEvent, type ReactNode, useEffect, useState } from "react";
-import { Slot } from "@radix-ui/react-slot";
+import {
+  type FormEvent,
+  type ReactNode,
+  startTransition,
+  useEffect,
+  useState,
+} from "react";
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { useRouter } from "next/navigation";
 
 import { Modal } from "@/common/components/Modal";
-import { Button } from "@/common/components/Button";
 import { SearchIcon } from "@/common/components/CustomIcon";
 import { Input } from "@/common/components/Input";
 import { useEdgeConfigs } from "@/common/hooks";
 
 import { searchCmdkTheme } from "./SearchCmdk.theme";
 import { SearchCmdkModalTrigger } from "./SearchCmdkModalTrigger";
+import { useProgress } from "@/common/providers/ProgressProvider";
+import { ProgressLink } from "@/common/components/Progress";
 
 const hasShownCmdkTooltipAtom = atomWithStorage(
   "hasShownCmdkTooltip",
@@ -36,6 +42,7 @@ export const SearchCmdk = ({
     hasShownCmdkTooltipAtom,
   );
   const router = useRouter();
+  const progress = useProgress();
   const edgeConfig = useEdgeConfigs();
 
   useEffect(() => {
@@ -72,10 +79,15 @@ export const SearchCmdk = ({
 
   const onSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (searchTerm.length > 0) {
-      setOpen(false);
+    setOpen(false);
+
+    if (searchTerm.length === 0) return;
+
+    progress.start();
+    startTransition(() => {
       router.push(getSearchDestination());
-    }
+      progress.done();
+    });
   };
 
   const { modal, searchIcon, content, contentForm, contentInput, closeBtn } =
@@ -112,18 +124,17 @@ export const SearchCmdk = ({
           />
         </form>
         <Modal.Close asChild>
-          <Button
+          <ProgressLink
+            href={getSearchDestination()}
             variant="primary"
             aria-label="close"
             size="sm"
             className={closeBtn()}
-            as="a"
-            href={getSearchDestination()}
             data-test="search-cmdk-submit"
             type="button"
           >
             Search
-          </Button>
+          </ProgressLink>
         </Modal.Close>
       </Modal.Content>
     </Modal>

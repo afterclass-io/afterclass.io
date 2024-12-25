@@ -5,12 +5,10 @@ import {
   cloneElement,
 } from "react";
 
-import {
-  Button,
-  type ButtonLinkOrAnchorProps,
-} from "@/common/components/Button";
+import { type ButtonLinkOrAnchorProps } from "@/common/components/Button";
 
 import { type CtaCardVariants, ctaCardTheme } from "./CtaCard.theme";
+import { ProgressLink } from "@/common/components/Progress";
 
 export type CtaCardProps = CtaCardVariants &
   ButtonLinkOrAnchorProps & {
@@ -32,12 +30,12 @@ export const CtaCard = ({
   };
 
   return (
-    <Button as="a" className={button()} asChild {...props}>
+    <ProgressLink className={button()} asChild {...props}>
       <div className={ctaWrapper()}>
         {renderIcon(iconLeft)}
         <span className={cta()}>{ctaText}</span>
       </div>
       {renderIcon(iconRight)}
-    </Button>
+    </ProgressLink>
   );
 };

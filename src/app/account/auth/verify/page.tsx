@@ -97,7 +97,7 @@ export default function Verify({
           <b className="text-text-em-high">Reach out to us via Telegram </b>
           <Button
             as="a"
-            href="https://t.me/AfterClass"
+            href={env.NEXT_PUBLIC_AC_HELPDESK_LINK}
             variant="link"
             className="inline text-xs md:text-base"
             external
