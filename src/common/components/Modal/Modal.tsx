@@ -8,6 +8,8 @@ import { ModalBody } from "./ModalBody";
 import { ModalContent } from "./ModalContent";
 import { ModalFooter } from "./ModalFooter";
 import { ModalHeader } from "./ModalHeader";
+import { ModalTitle } from "./ModalTitle";
+import { ModalDescription } from "./ModalDescription";
 
 export interface ModalProps
   extends ComponentPropsWithoutRef<"div">,
@@ -41,6 +43,8 @@ export const Modal = ({
 Modal.Trigger = Trigger;
 Modal.Content = ModalContent;
 Modal.Header = ModalHeader;
+Modal.Title = ModalTitle;
+Modal.Description = ModalDescription;
 Modal.Footer = ModalFooter;
 Modal.Body = ModalBody;
 Modal.Close = Close;
