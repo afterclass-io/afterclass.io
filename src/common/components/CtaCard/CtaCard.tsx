@@ -30,7 +30,7 @@ export const CtaCard = ({
   };
 
   return (
-    <ProgressLink as="a" className={button()} asChild {...props}>
+    <ProgressLink className={button()} asChild {...props}>
       <div className={ctaWrapper()}>
         {renderIcon(iconLeft)}
         <span className={cta()}>{ctaText}</span>
