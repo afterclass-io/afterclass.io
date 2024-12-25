@@ -7,88 +7,98 @@ import {
   type BreadcrumbRootProps,
 } from "@/common/components/Breadcrumb";
 
-type BreadcrumbElement = {
+interface BreadcrumbElement {
   label: string;
   href?: string;
-};
+}
 
-const defaultBreadcrumbElement: BreadcrumbElement = {
+const HOME_BREADCRUMB: BreadcrumbElement = {
   label: "Home",
   href: "/",
 };
 
-export const Breadcrumb = (props: BreadcrumbRootProps) => {
-  const path = usePathname();
+const getBreadcrumbElements = (
+  pathSegments: string[],
+): { elements: BreadcrumbElement[]; isSuccess: boolean } => {
+  if (!pathSegments.length) {
+    return { elements: [HOME_BREADCRUMB], isSuccess: true };
+  }
 
-  const breadcrumbElements: BreadcrumbElement[] = [defaultBreadcrumbElement];
-
+  const elements = [HOME_BREADCRUMB];
   let isSuccess = false;
-  const pathArr = path.split("/").filter(Boolean);
 
-  switch (pathArr[0]) {
+  switch (pathSegments[0]) {
     case "professor": {
       const query = api.professors.getBySlug.useQuery({
-        slug: pathArr[1] ?? "",
+        slug: pathSegments[1] ?? "",
       });
-      isSuccess = query.isSuccess;
-      const prof = query.data;
 
-      breadcrumbElements.push({
-        label: `Prof. ${prof?.name}`,
-        href: `/professor/${prof?.slug}`,
-      });
+      if (query.isSuccess && query.data) {
+        elements.push({
+          label: `Prof. ${query.data.name}`,
+          href: `/professor/${query.data.slug}`,
+        });
+        isSuccess = true;
+      }
       break;
     }
 
     case "course": {
       const query = api.courses.getByCourseCode.useQuery({
-        code: pathArr[1] ?? "",
+        code: pathSegments[1] ?? "",
       });
-      isSuccess = query.isSuccess;
-      const course = query.data;
 
-      breadcrumbElements.push({
-        label: `${course?.code} ${course?.name}`,
-        href: `/course/${course?.code}`,
-      });
+      if (query.isSuccess && query.data) {
+        elements.push({
+          label: `${query.data.code} ${query.data.name}`,
+          href: `/course/${query.data.code}`,
+        });
+        isSuccess = true;
+      }
       break;
     }
 
     case "submit": {
+      elements.push({ label: "Write a Review" });
       isSuccess = true;
-      breadcrumbElements.push({
-        label: "Write a Review",
-      });
       break;
     }
 
     case "search": {
+      elements.push({ label: "Search" });
       isSuccess = true;
-      breadcrumbElements.push({
-        label: "Search",
-      });
       break;
     }
   }
+
+  return { elements, isSuccess };
+};
+
+const BreadcrumbItem: React.FC<{
+  element: BreadcrumbElement;
+  isLast: boolean;
+}> = ({ element, isLast }) => (
+  <BC.Item>
+    {element.href && !isLast ? (
+      <BC.Link href={element.href} className="max-w-80 truncate">
+        {element.label}
+      </BC.Link>
+    ) : (
+      <BC.Page className="max-w-80 truncate">{element.label}</BC.Page>
+    )}
+  </BC.Item>
+);
+
+export const Breadcrumb: React.FC<BreadcrumbRootProps> = (props) => {
+  const path = usePathname();
+  const pathSegments = path.split("/").filter(Boolean);
+  const { elements, isSuccess } = getBreadcrumbElements(pathSegments);
 
   if (!isSuccess) {
     return (
       <BC {...props}>
         <BC.List>
-          <BC.Item>
-            {defaultBreadcrumbElement.href ? (
-              <BC.Link
-                href={defaultBreadcrumbElement.href}
-                className="max-w-80 truncate"
-              >
-                {defaultBreadcrumbElement.label}
-              </BC.Link>
-            ) : (
-              <BC.Page className="max-w-80 truncate">
-                {defaultBreadcrumbElement.label}
-              </BC.Page>
-            )}
-          </BC.Item>
+          <BreadcrumbItem element={HOME_BREADCRUMB} isLast={true} />
         </BC.List>
       </BC>
     );
@@ -97,18 +107,13 @@ export const Breadcrumb = (props: BreadcrumbRootProps) => {
   return (
     <BC {...props}>
       <BC.List>
-        {breadcrumbElements.map((element, index) => (
-          <React.Fragment key={index}>
-            <BC.Item>
-              {element.href ? (
-                <BC.Link href={element.href} className="max-w-80 truncate">
-                  {element.label}
-                </BC.Link>
-              ) : (
-                <BC.Page className="max-w-80 truncate">{element.label}</BC.Page>
-              )}
-            </BC.Item>
-            {index < breadcrumbElements.length - 1 && <BC.Separator />}
+        {elements.map((element, index) => (
+          <React.Fragment key={element.label}>
+            <BreadcrumbItem
+              element={element}
+              isLast={index === elements.length - 1}
+            />
+            {index < elements.length - 1 && <BC.Separator />}
           </React.Fragment>
         ))}
       </BC.List>
