@@ -45,7 +45,6 @@ export const reviewItemTheme = tv(
       body: [
         "text-sm",
         "text-text-em-mid",
-        "line-clamp-3",
         /**
          * TODO: replace when tailwind fixes behavior
          * see: https://github.com/tailwindlabs/tailwindcss/discussions/12127
@@ -57,15 +56,19 @@ export const reviewItemTheme = tv(
         "text-sm",
         "text-text-on-secondary",
         "flex",
-        "gap-4",
         "items-start",
+        "content-start",
+        "gap-x-4",
+        "gap-y-1",
+        "flex-wrap",
+        "self-stretch",
         "capitalize",
       ],
       modalTrigger: [],
       modalContent: ["w-full"],
-      usernameAndTimestampWrapper: ["space-x-2", "pb-[18px]"],
+      usernameAndTimestampWrapper: ["space-x-2"],
       username: ["font-medium"],
-      modalBody: ["pb-[16px]", "whitespace-pre-wrap"],
+      modalBody: ["whitespace-pre-wrap"],
       likeAndShareWrapper: [
         "flex",
         "gap-x-3",
@@ -94,7 +97,7 @@ export const reviewItemTheme = tv(
         sm: {
           wrapper: ["gap-2"],
           timedelta: ["text-xs"],
-          body: ["text-xs"],
+          body: ["text-xs", "line-clamp-5"],
           labels: ["text-xs"],
           modalContent: ["text-xs"],
           seeMoreLink: ["h-fit"],
@@ -104,7 +107,7 @@ export const reviewItemTheme = tv(
           headingContainer: ["flex-row-reverse", "justify-between"],
           revieweeGroup: ["w-fit", "justify-normal"],
           timedelta: ["text-sm"],
-          body: ["text-sm"],
+          body: ["text-sm", "line-clamp-3"],
           labels: ["text-sm"],
           modalContent: ["mx-10", "my-auto", "h-auto", "text-sm"],
         },
