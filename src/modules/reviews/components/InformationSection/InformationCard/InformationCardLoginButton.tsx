@@ -1,13 +1,12 @@
 "use client";
 
-import { Button } from "@/common/components/Button";
 import { usePathname } from "next/navigation";
+import { ProgressLink } from "@/common/components/Progress";
 
 export const InformationCardLoginButton = () => {
   const pathname = usePathname();
   return (
-    <Button
-      as="a"
+    <ProgressLink
       variant="link"
       href={{
         pathname: "/account/auth/login",
@@ -15,6 +14,6 @@ export const InformationCardLoginButton = () => {
       }}
     >
       Login
-    </Button>
+    </ProgressLink>
   );
 };

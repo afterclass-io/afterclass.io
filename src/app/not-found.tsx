@@ -1,28 +1,27 @@
-import { Button } from "@/common/components/Button";
 import { NoticeCard } from "@/common/components/NoticeCard";
+import { ProgressLink } from "@/common/components/Progress";
+import { env } from "@/env";
 
 export default function NotFound() {
   return (
     <div className="flex justify-center p-6 md:h-full md:items-center md:p-12">
       <NoticeCard title="Not Found" isError>
-        <Button
-          as="a"
+        <ProgressLink
           href="/"
           variant="link"
           className="inline text-[length:inherit]"
         >
           Click here to return to Home.
-        </Button>
+        </ProgressLink>
         <span className="inline">Otherwise, you can get help from us</span>
-        <Button
-          as="a"
-          href="/"
+        <ProgressLink
+          href={env.NEXT_PUBLIC_AC_HELPDESK_LINK}
           variant="link"
           className="inline px-1 text-[length:inherit]"
           external
         >
           @afterclass
-        </Button>
+        </ProgressLink>
         <span className="inline">on Telegram.</span>
       </NoticeCard>
     </div>

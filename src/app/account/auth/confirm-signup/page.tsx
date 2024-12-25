@@ -1,4 +1,4 @@
-import { Button } from "@/common/components/Button";
+import { ProgressLink } from "@/common/components/Progress";
 import { AuthCard } from "@/modules/auth/components";
 import { notFound } from "next/navigation";
 
@@ -17,15 +17,14 @@ export default function ConfirmSignUp({
         <p>
           Please click on the button below to complete your sign up process.
         </p>
-        <Button
-          as="a"
+        <ProgressLink
           href={confirmationUrl}
           disabled={!confirmationUrl}
           external
           fullWidth
         >
           Confirm Sign Up
-        </Button>
+        </ProgressLink>
       </div>
     </AuthCard>
   );

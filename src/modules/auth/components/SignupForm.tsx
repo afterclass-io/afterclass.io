@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +17,8 @@ import {
 } from "@/common/components/CustomIcon";
 import { signUpWithEmail } from "@/server/supabase";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
+import { useProgress } from "@/common/providers/ProgressProvider";
+import { ProgressLink } from "@/common/components/Progress";
 
 const signupFormInputsSchema = z
   .object({
@@ -40,6 +42,7 @@ type SignupFormInputs = z.infer<typeof signupFormInputsSchema>;
 
 export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
   const router = useRouter();
+  const progress = useProgress();
   const [isPwdVisible, setIsPwdVisible] = useState(false);
   const [isCfmPwdVisible, setIsCfmPwdVisible] = useState(false);
 
@@ -58,7 +61,11 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
       const res = await signUpWithEmail(data.email, data.password);
       if (res.error) throw new Error(res.error.message);
       if (!res.data.user?.user_metadata?.email_verified) {
-        router.push(`/account/auth/verify?email=${res.data.user?.email}`);
+        progress.start();
+        startTransition(() => {
+          router.push(`/account/auth/verify?email=${res.data.user?.email}`);
+          progress.done();
+        });
       } else {
         throw new Error(
           "trying to create user that already has email verified",
@@ -182,16 +189,15 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
             <span className="text-center font-semibold text-text-em-mid">
               Already have an account?
             </span>
-            <Button
+            <ProgressLink
+              href="/account/auth/login"
               type="button"
               variant="link"
-              as="a"
-              href="/account/auth/login"
               isResponsive
               tabIndex={7}
             >
               Login
-            </Button>
+            </ProgressLink>
           </div>
         </div>
       </form>

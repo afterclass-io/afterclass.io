@@ -9,6 +9,7 @@ import { Button } from "@/common/components/Button";
 import { ThemeToggle } from "@/common/components/ThemeToggle";
 import { AfterclassIcon, SearchIcon } from "@/common/components/CustomIcon";
 import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
+import { ProgressLink } from "@/common/components/Progress";
 
 export const CoreLayoutHeader = async () => {
   const session = await auth();
@@ -43,14 +44,13 @@ export const CoreLayoutHeader = async () => {
               </div>
             </>
           ) : (
-            <Button
-              as="a"
+            <ProgressLink
               variant="secondary"
               href="/account/auth/login"
               data-test="login"
             >
               Login
-            </Button>
+            </ProgressLink>
           )}
           <ThemeToggle />
         </div>

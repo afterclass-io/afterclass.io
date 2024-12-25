@@ -8,7 +8,7 @@ import {
   ReviewItemSkeleton,
 } from "@/modules/reviews/components/ReviewItem";
 import { AfterclassIcon } from "@/common/components/CustomIcon";
-import { Button } from "@/common/components/Button";
+import { ProgressLink } from "@/common/components/Progress";
 
 export type ReviewItemLoaderHomeProps = {
   variant: "home";
@@ -108,16 +108,15 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
           <span>Oh no!</span> Looks like no one has reviewed yet.
           <br />
           Help us out by
-          <Button
-            as="a"
-            variant="link"
+          <ProgressLink
             href="/submit"
+            variant="link"
             className="mx-1 inline-flex h-fit pb-[1px] text-xs md:h-fit md:p-0 md:text-sm"
             isResponsive
             data-umami-event="no-review-cta"
           >
             writing one
-          </Button>
+          </ProgressLink>
           today ️🙈
         </div>
       )}

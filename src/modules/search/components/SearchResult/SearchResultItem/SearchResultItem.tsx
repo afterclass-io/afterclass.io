@@ -9,6 +9,7 @@ import Heading from "@/common/components/Heading";
 import { searchResultTheme } from "../SearchResult.theme";
 import { type UniversityAbbreviation } from "@prisma/client";
 import { useSession } from "next-auth/react";
+import { ProgressLink } from "@/common/components/Progress";
 
 export const SearchResultItem = ({
   href,
@@ -35,10 +36,9 @@ export const SearchResultItem = ({
   } = searchResultTheme({ size: { initial: "sm", md: "md" } });
   const { data: session } = useSession();
   return (
-    <Button
-      as="a"
-      className={item()}
+    <ProgressLink
       href={href}
+      className={item()}
       asChild
       data-test="search-result"
     >
@@ -62,6 +62,6 @@ export const SearchResultItem = ({
         </div>
       </div>
       <ChevronRightIcon size={24} className={itemArrow()} />
-    </Button>
+    </ProgressLink>
   );
 };

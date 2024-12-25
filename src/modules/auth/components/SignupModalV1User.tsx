@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/common/components/Button";
 import { Modal } from "@/common/components/Modal";
+import { ProgressLink } from "@/common/components/Progress";
 import { env } from "@/env";
 
 export const SignupModalV1User = () => (
@@ -16,16 +17,15 @@ export const SignupModalV1User = () => (
             <span className="mr-1">
               It looks like you are trying to reset your password for the
             </span>
-            <Button
-              as="a"
+            <ProgressLink
+              href={env.NEXT_PUBLIC_OLD_SITE_URL}
               variant="link"
               className="inline-flex h-fit p-0 pb-[1px] text-text-em-high underline hover:text-secondary-default md:h-fit md:p-0"
-              href={env.NEXT_PUBLIC_OLD_SITE_URL}
               external
               isResponsive
             >
               old AfterClass website.
-            </Button>
+            </ProgressLink>
           </div>
           <p>
             As we migrate to a new platform, users from the old AfterClass
@@ -50,9 +50,9 @@ export const SignupModalV1User = () => (
         <Modal.Close asChild>
           <Button fullWidth>Create a new account</Button>
         </Modal.Close>
-        <Button fullWidth as="a" variant="tertiary" href="/account/auth/login">
+        <ProgressLink href="/account/auth/login" variant="tertiary" fullWidth>
           Login with old AfterClass account
-        </Button>
+        </ProgressLink>
       </Modal.Footer>
     </Modal.Content>
   </Modal>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { startTransition, useEffect, useState, type ReactNode } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useSession } from "next-auth/react";
@@ -16,6 +16,7 @@ import { Form } from "@/common/components/Form";
 import { ReviewableEnum } from "@/modules/submit/types";
 import { reviewFormTheme } from "./ReviewForm.theme";
 import { SubmitButtonGroup } from "../SubmitButtonGroup";
+import { useProgress } from "@/common/providers/ProgressProvider";
 
 export const ReviewForm = ({ children }: { children: ReactNode }) => {
   const formMethods = useForm<ReviewFormInputsSchema>({
@@ -42,6 +43,7 @@ export const ReviewForm = ({ children }: { children: ReactNode }) => {
 
   const { data: session, status } = useSession();
   const router = useRouter();
+  const progress = useProgress();
   const [isLoading, setIsLoading] = useState(status === "loading");
 
   const reviewsMutation = api.reviews.create.useMutation();
@@ -53,7 +55,11 @@ export const ReviewForm = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (reviewsMutation.isSuccess) {
       // TODO: create and highlight reviews after navigating to the review page
-      router.push("/");
+      progress.start();
+      startTransition(() => {
+        router.push("/");
+        progress.done();
+      });
     }
     // router should not be a dependency here
     // https://stackoverflow.com/a/75008835
