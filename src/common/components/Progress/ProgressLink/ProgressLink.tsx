@@ -7,6 +7,30 @@ import {
   type ButtonLinkOrAnchorProps,
 } from "@/common/components/Button";
 
+/**
+ * A link component that shows a progress indicator during navigation.
+ * Wraps navigation actions with a progress bar to provide visual feedback during page transitions.
+ *
+ * @see https://buildui.com/posts/global-progress-in-nextjs#why-doesnt-nextjs-expose-router-events
+ *
+ * @example
+ * // Internal navigation with progress indicator
+ * <ProgressLink href="/dashboard">
+ *   Go to Dashboard
+ * </ProgressLink>
+ *
+ * @example
+ * // External link with custom target
+ * <ProgressLink href="https://example.com" external>
+ *   Visit External Site
+ * </ProgressLink>
+ *
+ * @example
+ * // hard navigation
+ * <ProgressLink href="/submit" external target="_self">
+ *   Go to Submission Page (hard navigation)
+ * </ProgressLink>
+ */
 export function ProgressLink({
   href,
   children,
