@@ -31,7 +31,7 @@ export const Tag = ({
 }: TagProps) => {
   const [isActive, setIsActive] = useState(active);
   const { tag, icon: iconTheme } = tagTheme({
-    active: isActive,
+    active: active || (clickable && isActive),
     clickable,
     size,
   });
