@@ -11,7 +11,7 @@ import {
  * A link component that shows a progress indicator during navigation.
  * Wraps navigation actions with a progress bar to provide visual feedback during page transitions.
  *
- * @see https://buildui.com/posts/global-progress-in-nextjs#why-doesnt-nextjs-expose-router-events
+ * @see https://buildui.com/posts/global-progress-in-nextjs
  *
  * @example
  * // Internal navigation with progress indicator
