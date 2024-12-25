@@ -9,6 +9,7 @@ import {
 } from "@/modules/reviews/components/ReviewItem";
 import { AfterclassIcon } from "@/common/components/CustomIcon";
 import { ProgressLink } from "@/common/components/Progress";
+import { usePathname } from "next/navigation";
 
 export type ReviewItemLoaderHomeProps = {
   variant: "home";
@@ -33,6 +34,7 @@ export type ReviewItemLoaderProps =
 
 export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
 
   let infiniteQuery;
   switch (props.variant) {
@@ -98,6 +100,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
             variant={props.variant}
             review={review}
             isLocked={!session}
+            seeMore={pathname === "/"}
           />
         ))
       ) : (
