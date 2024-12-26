@@ -43,6 +43,12 @@ const config = withSentryConfig(
           destination: "/",
           permanent: false,
         },
+        {
+          // redirect old afterclass professor pages to new ones
+          source: "/professor/smu-:path(.*)",
+          destination: "/professor/:path",
+          permanent: true,
+        },
       ];
     },
     // This is required to support PostHog trailing slash API requests
