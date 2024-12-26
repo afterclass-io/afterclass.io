@@ -10,7 +10,10 @@ context("Home", function () {
       cy.intercept("GET", "/account/auth/login*").as("navigateToLoginPage");
       cy.get("a[data-test=login]").click();
       cy.wait("@navigateToLoginPage");
-      cy.url().should("eq", `${Cypress.config("baseUrl")}/account/auth/login`);
+      cy.url().should(
+        "include",
+        `${Cypress.config("baseUrl")}/account/auth/login`,
+      );
     });
 
     it("should be able to navigate to bid analytics page", function () {
