@@ -5,6 +5,7 @@ import { inter, poppins } from "../src/common/fonts";
 import AuthProvider from "../src/common/providers/AuthProvider";
 import TooltipProvider from "../src/common/providers/TooltipProvider";
 import ProgressProvider from "../src/common/providers/ProgressProvider";
+import { Toaster } from "../src/common/components/Toast";
 import { SessionContext } from "next-auth/react";
 import { mockAuthStates } from "./auth";
 
@@ -56,6 +57,7 @@ const preview: Preview = {
                   className={`bg-bg-base`}
                 >
                   <Story />
+                  <Toaster />
                 </div>
               </ProgressProvider>
             </TooltipProvider>
