@@ -2,7 +2,7 @@ import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import {
   AuthCard,
   SignupForm,
-  SignupModalV1User,
+  ResetV1UserAlertDialog,
 } from "@/modules/auth/components";
 
 export default function SignUp({
@@ -15,7 +15,7 @@ export default function SignUp({
 
   return (
     <>
-      {isValidEmail && <SignupModalV1User />}
+      {isValidEmail && <ResetV1UserAlertDialog />}
       <AuthCard title="Create an account">
         <SignupForm defaultEmail={v1Email} />
       </AuthCard>
