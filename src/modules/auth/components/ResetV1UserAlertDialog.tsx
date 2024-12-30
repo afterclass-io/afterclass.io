@@ -21,7 +21,10 @@ export const ResetV1UserAlertDialog = () => (
     <AlertDialogTrigger asChild>
       <Button>Open</Button>
     </AlertDialogTrigger>
-    <AlertDialogContent data-test="v1-signup-alert-dialog">
+    <AlertDialogContent
+      data-test="v1-signup-alert-dialog"
+      onOpenAutoFocus={(event) => event.preventDefault()}
+    >
       <AlertDialogHeader>
         <AlertDialogTitle>
           <div>⚠️ Important Notice ⚠️</div>
@@ -29,11 +32,11 @@ export const ResetV1UserAlertDialog = () => (
         <AlertDialogDescription>
           <div className="space-y-2 text-xs md:space-y-4 md:text-base">
             <div>
-              It looks like you are trying to reset your password for the
+              It looks like you are trying to reset your password for the&nbsp;
               <ProgressLink
                 href={env.NEXT_PUBLIC_OLD_SITE_URL}
                 variant="link"
-                className="ml-1 inline-flex h-fit p-0 pb-[1px] text-[length:inherit] text-text-em-mid underline hover:text-secondary-default md:h-fit md:p-0"
+                className="inline-flex h-fit p-0 pb-[1px] text-[length:inherit] text-text-em-mid underline hover:text-secondary-default md:h-fit md:p-0"
                 external
               >
                 old AfterClass website.
