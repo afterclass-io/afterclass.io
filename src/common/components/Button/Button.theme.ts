@@ -108,7 +108,7 @@ export const buttonTheme = tv(
           "gap-1.5",
           "text-base",
           "rounded-xl",
-          "after:rounded-xl",
+          "after:rounded-lg",
         ],
         sm: [
           "h-8",
@@ -116,7 +116,7 @@ export const buttonTheme = tv(
           "gap-1.5",
           "text-xs",
           "rounded-lg",
-          "after:rounded-lg",
+          "after:rounded",
         ],
       },
       iconOnly: {
