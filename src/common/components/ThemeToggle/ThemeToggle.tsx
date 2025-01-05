@@ -8,24 +8,22 @@ import { MoonIcon, SunIcon } from "@/common/components/CustomIcon";
 
 export const ThemeToggle = () => {
   const [isMounted, setIsMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, systemTheme, setTheme } = useTheme();
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const handleToggleTheme = useCallback(() => {
-    if (theme === APP_THEMES.light) setTheme(APP_THEMES.dark);
-    if (theme === APP_THEMES.dark) setTheme(APP_THEMES.light);
-  }, [setTheme, theme]);
+  const currentTheme = theme === "system" ? systemTheme : theme;
+  const newTheme =
+    currentTheme === APP_THEMES.dark ? APP_THEMES.light : APP_THEMES.dark;
 
   return isMounted ? (
     <Button
-      onClick={handleToggleTheme}
+      onClick={() => setTheme(newTheme)}
       aria-label="theme-toggle"
       variant="tertiary"
-      iconLeft={theme === APP_THEMES.dark ? <SunIcon /> : <MoonIcon />}
-      disabled={!isMounted}
+      iconLeft={currentTheme === APP_THEMES.dark ? <SunIcon /> : <MoonIcon />}
     />
   ) : (
     <Button aria-label="theme-toggle" variant="tertiary" loading disabled />
