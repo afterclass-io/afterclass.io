@@ -1,9 +1,11 @@
 import { type Review } from "@/modules/reviews/types";
 import { Profile } from "@/common/components/Profile";
+import { Avatar, AvatarFallback } from "@/common/components/Avatar";
 
 import { MockedReviewLikeButton, ReviewLikeButton } from "../ReviewLikeButton";
 import { reviewItemTheme, type ReviewItemVariants } from "../ReviewItem.theme";
 import { ReviewCreatedAt } from "../ReviewCreatedAt";
+import { UserIcon } from "@/common/components/CustomIcon";
 
 export type ReviewerGroupProps = ReviewItemVariants & {
   review: Review;
@@ -22,7 +24,13 @@ export const ReviewerGroup = ({
     <div className={reviewerGroup()}>
       <Profile
         name={review.username}
-        icon={<div className="h-4 w-4 rounded-full bg-cyan-800" />}
+        icon={
+          <Avatar className="h-4 w-4">
+            <AvatarFallback>
+              <UserIcon className="translate-y-[2px]" />
+            </AvatarFallback>
+          </Avatar>
+        }
       />
       <div className={metadataContainer()}>
         {isMocked ? (
