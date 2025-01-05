@@ -50,7 +50,7 @@
     "jotai": "^2.10.3",
     "js-cookie": "^3.0.5",
     "nanoid": "5.0.9",
-    "next": "14.2.15",
+    "next": "14.2.21",
     "next-auth": "^5.0.0-beta.25",
     "next-themes": "0.3.0",
     "node-fetch": "^3.3.2",
