@@ -25,6 +25,7 @@ export const modalTheme = tv(
         "sm:top-[30px]",
         "text-text-placeholder",
         "z-[1]",
+        "hover:border-none",
       ],
       header: [
         "flex",

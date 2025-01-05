@@ -31,6 +31,7 @@ export * from "./Spinner";
 export * from "./StarLineAltIcon";
 export * from "./SunIcon";
 export * from "./ThumbUpFilledIcon";
+export * from "./UserIcon";
 export * from "./WarningCircleIcon";
 export * from "./XCloseIcon";
 export * from "./SchoolIcon";

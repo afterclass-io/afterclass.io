@@ -4,12 +4,16 @@ import { auth } from "@/server/auth";
 
 import { SidebarTrigger } from "@/common/components/Sidebar";
 import { Separator } from "@/common/components/Separator";
-import { Breadcrumb } from "@/modules/home/components/Breadcrumb";
 import { ThemeToggle } from "@/common/components/ThemeToggle";
 import { AfterclassIcon, SearchIcon } from "@/common/components/CustomIcon";
+import { Avatar, AvatarFallback } from "@/common/components/Avatar";
+
+import { Breadcrumb } from "@/modules/home/components/Breadcrumb";
 import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
 
 import { CoreLayoutLoginButton } from "../CoreLayoutLoginButton";
+import { Button } from "@/common/components/Button";
+import { ProgressLink } from "@/common/components/Progress";
 
 export const CoreLayoutHeader = async () => {
   const session = await auth();
@@ -22,24 +26,34 @@ export const CoreLayoutHeader = async () => {
       />
       <div className="flex w-full items-center justify-between">
         <Breadcrumb className="hidden md:block" />
-        <Link href="/" className="text-primary-default">
-          <AfterclassIcon
-            className="block text-primary-default md:hidden"
-            size={20}
-          />
-        </Link>
+        <ProgressLink
+          href="/"
+          variant="ghost"
+          aria-label="Home"
+          iconLeft={
+            <AfterclassIcon className="block text-primary-default md:hidden" />
+          }
+        />
         <div className="flex items-center gap-4">
           {session ? (
             <>
               <div className="hidden items-center gap-2 md:flex">
                 <div className="overflow-hidden text-ellipsis text-sm text-text-em-mid">
-                  <div className="h-4 w-4 rounded-full bg-cyan-800"></div>
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback className="text-center text-xs">
+                      {session.user.email[0]?.toUpperCase() ?? "U"}
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
                 <div>{session.user.email}</div>
               </div>
               <div className="block md:hidden">
                 <SearchCmdk asChild>
-                  <SearchIcon className="text-text-on-tertiary" size={20} />
+                  <Button
+                    variant="ghost"
+                    aria-label="Search"
+                    iconLeft={<SearchIcon className="text-text-on-tertiary" />}
+                  />
                 </SearchCmdk>
               </div>
             </>
