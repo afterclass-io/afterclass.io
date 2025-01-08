@@ -22,11 +22,11 @@ import {
 const chartConfig = {
   desktop: {
     label: "Desktop",
-    color: "hsl(var(--chart-1))",
+    color: "hsl(173 58% 39%)",
   },
   mobile: {
     label: "Mobile",
-    color: "hsl(var(--chart-2))",
+    color: "hsl(12 76% 61%)",
   },
 } satisfies ChartConfig;
 
@@ -77,13 +77,13 @@ export const Default: Story = {
               <Bar
                 dataKey="desktop"
                 stackId="a"
-                fill="var(--color-desktop)"
+                fill="hsl(173 58% 39%)"
                 radius={[0, 0, 4, 4]}
               />
               <Bar
                 dataKey="mobile"
                 stackId="a"
-                fill="var(--color-mobile)"
+                fill="hsl(12 76% 61%)"
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>
