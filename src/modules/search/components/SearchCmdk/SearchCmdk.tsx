@@ -101,7 +101,7 @@ export const SearchCmdk = ({
       className={modal()}
       hasCloseButton={false}
     >
-      <Modal.Trigger>
+      <Modal.Trigger asChild={asChild}>
         {asChild ? (
           children
         ) : (

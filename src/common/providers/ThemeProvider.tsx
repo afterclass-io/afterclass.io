@@ -13,7 +13,7 @@ export default function ThemeProvider({
   return (
     <NextThemeProvider
       attribute="class"
-      defaultTheme={APP_THEMES.dark}
+      defaultTheme="system"
       themes={NEXT_THEMES}
     >
       {children}

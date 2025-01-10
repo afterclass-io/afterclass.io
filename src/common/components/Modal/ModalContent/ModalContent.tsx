@@ -1,4 +1,3 @@
-import { Icon } from "@iconify-icon/react";
 import {
   Portal,
   Content,
@@ -8,6 +7,7 @@ import {
 } from "@radix-ui/react-dialog";
 import { type PropsWithChildren } from "react";
 import { Button } from "@/common/components/Button";
+import { XCloseIcon } from "@/common/components/CustomIcon";
 
 import { modalTheme } from "../Modal.theme";
 import { useModal } from "../ModalProvider";
@@ -53,15 +53,9 @@ export const ModalContent = ({
               <Button
                 className={close()}
                 variant="ghost"
-                iconLeft={
-                  <Icon
-                    icon="ph:x-bold"
-                    className="stroke-current"
-                    height="none"
-                  />
-                }
-                aria-label="close"
                 size="sm"
+                aria-label="close"
+                iconLeft={<XCloseIcon />}
               />
             </Close>
           )}
