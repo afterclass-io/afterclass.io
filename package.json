@@ -60,6 +60,7 @@
     "react-dom": "18.3.1",
     "react-hook-form": "7.53.0",
     "react-intersection-observer": "9.13.1",
+    "recharts": "^2.15.0",
     "sass": "1.79.3",
     "server-only": "0.0.1",
     "sharp": "0.33.5",
