@@ -59,10 +59,12 @@ export const ReviewItem = ({
       <div className={wrapper()} data-test="review">
         <ReviewHeader />
         <ReviewBody review={review} />
-        <ReviewItemViewEventTracker
-          reviewId={review.id}
-          triggeringUserId={session.data.user.id}
-        />
+        {!isMocked && (
+          <ReviewItemViewEventTracker
+            reviewId={review.id}
+            triggeringUserId={session.data.user.id}
+          />
+        )}
       </div>
     </ReviewModal>
   );
