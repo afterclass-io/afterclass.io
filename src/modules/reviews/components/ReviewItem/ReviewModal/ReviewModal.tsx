@@ -1,4 +1,8 @@
 "use client";
+import { useSession } from "next-auth/react";
+import { ReviewEventType } from "@prisma/client";
+
+import { api } from "@/common/tools/trpc/react";
 
 import { Modal } from "@/common/components/Modal";
 import { ShareIcon, ThumbUpFilledIcon } from "@/common/components/CustomIcon";
@@ -18,11 +22,13 @@ export const ReviewModal = ({
   variant,
   children,
   seeMore = false,
+  defaultOpen = false,
 }: {
   review: Review;
   variant: "home" | "professor" | "course";
-  children: React.ReactNode;
+  children?: React.ReactNode;
   seeMore?: boolean;
+  defaultOpen?: boolean;
 }) => {
   const {
     modalTrigger,
@@ -40,11 +46,27 @@ export const ReviewModal = ({
       ? `/professor/${review.professorSlug}`
       : `/course/${review.courseCode}`;
 
+  const { mutate } = api.reviewEvents.track.useMutation();
+  const { data: session } = useSession();
+
   return (
-    <Modal overflow="inside">
-      <Modal.Trigger asChild className={modalTrigger()}>
-        {children}
-      </Modal.Trigger>
+    <Modal
+      overflow="inside"
+      defaultOpen={defaultOpen}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) return;
+        mutate({
+          eventType: ReviewEventType.INTERACTION,
+          reviewId: review.id,
+          triggeringUserId: session?.user?.id,
+        });
+      }}
+    >
+      {children && (
+        <Modal.Trigger asChild className={modalTrigger()}>
+          {children}
+        </Modal.Trigger>
+      )}
       <Modal.Content
         className={modalContent()}
         onOpenAutoFocus={(e) => e.preventDefault()}
@@ -79,9 +101,11 @@ export const ReviewModal = ({
             <Button
               rounded
               variant="tertiary"
+              size="sm"
               iconLeft={<ShareIcon />}
               aria-label="Share"
-              size="sm"
+              data-umami-event="share-review"
+              onClick={() => void console.log("Share review")}
             >
               0
             </Button>
