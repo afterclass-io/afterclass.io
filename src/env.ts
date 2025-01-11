@@ -29,7 +29,11 @@ export const env = createEnv({
     // VERCEL_URL is automatically set by Vercel
     // as system environment variable. doesn't include `https`
     // https://vercel.com/docs/projects/environment-variables/system-environment-variables
-    NEXTAUTH_URL: siteUrlValidator(process.env.VERCEL_PROJECT_PRODUCTION_URL),
+    NEXTAUTH_URL: siteUrlValidator(
+      process.env.VERCEL_ENV === "production"
+        ? process.env.VERCEL_PROJECT_PRODUCTION_URL
+        : process.env.VERCEL_URL,
+    ),
   },
 
   /**
@@ -45,7 +49,9 @@ export const env = createEnv({
     // as system environment variable. doesn't include `https`
     // https://vercel.com/docs/projects/environment-variables/system-environment-variables
     NEXT_PUBLIC_SITE_URL: siteUrlValidator(
-      process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL,
+      process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
+        ? process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
+        : process.env.NEXT_PUBLIC_VERCEL_URL,
     ),
     NEXT_PUBLIC_OLD_SITE_URL: z
       .string()
