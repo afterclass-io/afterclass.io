@@ -1,6 +1,6 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { ReviewModal } from "../ReviewItem/ReviewModal";
 import { api } from "@/common/tools/trpc/react";
@@ -12,9 +12,14 @@ export const ReviewModalFocused = ({
   variant: "home" | "professor" | "course";
 }) => {
   const reviewId = useSearchParams().get("review_id");
+  const router = useRouter();
+  const session = useSession();
+  if (!reviewId) return null;
 
-  const session = useSession({ required: true });
-  if (!reviewId || session.status === "loading") return null;
+  if (session.status !== "authenticated") {
+    if (session.status === "loading") return null;
+    router.push("/account/auth/login?callbackUrl=" + window.location.href);
+  }
 
   const reviewQuery = api.reviews.getById.useQuery(reviewId);
   if (reviewQuery.status !== "success") {
