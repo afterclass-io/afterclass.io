@@ -30,4 +30,21 @@ export const reviewEventsRouter = createTRPCRouter({
         },
       });
     }),
+
+  countEvent: protectedProcedure
+    .input(
+      z.object({
+        reviewId: z.string(),
+        eventType: z.nativeEnum(ReviewEventType),
+      }),
+    )
+    .query(
+      async ({ ctx, input }) =>
+        await ctx.db.reviewEvents.count({
+          where: {
+            reviewId: input.reviewId,
+            eventType: input.eventType,
+          },
+        }),
+    ),
 });

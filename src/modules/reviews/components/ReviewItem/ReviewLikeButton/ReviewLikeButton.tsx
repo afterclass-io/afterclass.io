@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { ReviewEventType } from "@prisma/client";
 
 import { api } from "@/common/tools/trpc/react";
 import { Button } from "@/common/components/Button";
@@ -9,14 +11,18 @@ import type {
   ButtonVariants,
 } from "@/common/components/Button";
 import { ThumbUpFilledIcon } from "@/common/components/CustomIcon";
-import { useSession } from "next-auth/react";
 
 export type ReviewLikeButtonProps = ButtonProps &
   ButtonBaseProps &
-  Omit<ButtonVariants, "hasIcon" | "iconOnly">;
+  Omit<ButtonVariants, "hasIcon" | "iconOnly"> & {
+    reviewId: string;
+    triggeringUserId?: string;
+  };
 
 export const MockedReviewLikeButton = ({
   reviewLikeCount,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  triggeringUserId,
   ...props
 }: {
   reviewLikeCount: number;
@@ -34,8 +40,9 @@ export const MockedReviewLikeButton = ({
 
 export const ReviewLikeButton = ({
   reviewId,
+  triggeringUserId,
   ...props
-}: { reviewId: string } & ReviewLikeButtonProps) => {
+}: ReviewLikeButtonProps) => {
   const { data: session } = useSession();
   const [isLiked, setIsLiked] = useState(false);
 
@@ -58,11 +65,17 @@ export const ReviewLikeButton = ({
       },
     });
 
+  const { mutate: track } = api.reviewEvents.track.useMutation();
+
   const handleLike = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (!session) return;
     likeOrUnlike({ reviewId, userId: session.user.id });
+
+    if (isLiked) {
+      track({ reviewId, triggeringUserId, eventType: ReviewEventType.UPVOTE });
+    }
   };
   useEffect(() => {
     if (isSuccess) setIsLiked((prev) => !prev);

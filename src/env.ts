@@ -6,7 +6,7 @@ const siteUrlValidator = (vercelUrlEnv?: string) =>
   z
     .optional(z.string())
     .transform((str) => {
-      let url = str ?? vercelUrlEnv ?? "http://localhost:3000/";
+      let url = str ?? vercelUrlEnv ?? "http://localhost:3000";
       url = url.startsWith("http") ? url : `https://${url}`;
       return url;
     })

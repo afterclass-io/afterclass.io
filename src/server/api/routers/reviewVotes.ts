@@ -47,28 +47,6 @@ export const reviewVotesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const review = await ctx.db.reviews.findUnique({
-        where: {
-          id: input.reviewId,
-        },
-      });
-      if (!review) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Review not found",
-        });
-      }
-      const user = await ctx.db.users.findUnique({
-        where: {
-          id: input.userId,
-        },
-      });
-      if (!user) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User not found",
-        });
-      }
       const like = await ctx.db.reviewVotes.findFirst({
         where: {
           reviewId: input.reviewId,
