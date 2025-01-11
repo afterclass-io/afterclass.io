@@ -21,12 +21,10 @@ export type ReviewLikeButtonProps = ButtonProps &
 
 export const MockedReviewLikeButton = ({
   reviewLikeCount,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  triggeringUserId,
   ...props
 }: {
   reviewLikeCount: number;
-} & ReviewLikeButtonProps) => (
+} & Omit<ReviewLikeButtonProps, "reviewId" | "triggeringUserId">) => (
   <Button
     rounded
     variant="tertiary"
