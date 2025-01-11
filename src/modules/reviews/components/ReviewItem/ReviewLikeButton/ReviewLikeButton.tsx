@@ -70,13 +70,21 @@ export const ReviewLikeButton = ({
     e.stopPropagation();
     if (!session) return;
     likeOrUnlike({ reviewId, userId: session.user.id });
-
-    if (isLiked) {
-      track({ reviewId, triggeringUserId, eventType: ReviewEventType.UPVOTE });
-    }
   };
   useEffect(() => {
-    if (isSuccess) setIsLiked((prev) => !prev);
+    if (isSuccess) {
+      setIsLiked((prevIsLiked) => {
+        if (!prevIsLiked) {
+          // If we're changing from not liked to liked
+          track({
+            reviewId,
+            triggeringUserId: triggeringUserId ?? session?.user.id,
+            eventType: ReviewEventType.UPVOTE,
+          });
+        }
+        return !prevIsLiked;
+      });
+    }
   }, [isSuccess]);
 
   return (
