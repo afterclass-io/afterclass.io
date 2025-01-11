@@ -12,6 +12,7 @@ export const toastTheme = tv(
         "group-[.toaster]:text-text-em-high",
         "group-[.toaster]:border-border-default",
         "group-[.toaster]:shadow-lg",
+        "group-[.toaster]:gap-4",
       ],
       description: ["group-[.toast]:text-text-em-mid"],
       actionBtn: [

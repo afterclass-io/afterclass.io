@@ -1,4 +1,5 @@
 import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader";
+import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
 import { ReviewSection } from "@/modules/reviews/components/ReviewSection";
 
 export default function Professor({
@@ -18,12 +19,15 @@ export default function Professor({
   }
 
   return (
-    <ReviewSection>
-      <ReviewItemLoader
-        variant="professor"
-        slug={params.slug}
-        courseCodes={courseCodes.length > 0 ? courseCodes : undefined}
-      />
-    </ReviewSection>
+    <>
+      <ReviewSection>
+        <ReviewItemLoader
+          variant="professor"
+          slug={params.slug}
+          courseCodes={courseCodes.length > 0 ? courseCodes : undefined}
+        />
+      </ReviewSection>
+      <ReviewModalFocused variant="professor" />
+    </>
   );
 }

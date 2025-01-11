@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { ReviewEventType } from "@prisma/client";
 
 import { api } from "@/common/tools/trpc/react";
 import { Button } from "@/common/components/Button";
@@ -9,18 +11,20 @@ import type {
   ButtonVariants,
 } from "@/common/components/Button";
 import { ThumbUpFilledIcon } from "@/common/components/CustomIcon";
-import { useSession } from "next-auth/react";
 
 export type ReviewLikeButtonProps = ButtonProps &
   ButtonBaseProps &
-  Omit<ButtonVariants, "hasIcon" | "iconOnly">;
+  Omit<ButtonVariants, "hasIcon" | "iconOnly"> & {
+    reviewId: string;
+    triggeringUserId?: string;
+  };
 
 export const MockedReviewLikeButton = ({
   reviewLikeCount,
   ...props
 }: {
   reviewLikeCount: number;
-} & ReviewLikeButtonProps) => (
+} & Omit<ReviewLikeButtonProps, "reviewId" | "triggeringUserId">) => (
   <Button
     rounded
     variant="tertiary"
@@ -34,8 +38,9 @@ export const MockedReviewLikeButton = ({
 
 export const ReviewLikeButton = ({
   reviewId,
+  triggeringUserId,
   ...props
-}: { reviewId: string } & ReviewLikeButtonProps) => {
+}: ReviewLikeButtonProps) => {
   const { data: session } = useSession();
   const [isLiked, setIsLiked] = useState(false);
 
@@ -58,6 +63,8 @@ export const ReviewLikeButton = ({
       },
     });
 
+  const { mutate: track } = api.reviewEvents.track.useMutation();
+
   const handleLike = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -65,7 +72,19 @@ export const ReviewLikeButton = ({
     likeOrUnlike({ reviewId, userId: session.user.id });
   };
   useEffect(() => {
-    if (isSuccess) setIsLiked((prev) => !prev);
+    if (isSuccess) {
+      setIsLiked((prevIsLiked) => {
+        if (!prevIsLiked) {
+          // If we're changing from not liked to liked
+          track({
+            reviewId,
+            triggeringUserId: triggeringUserId ?? session?.user.id,
+            eventType: ReviewEventType.UPVOTE,
+          });
+        }
+        return !prevIsLiked;
+      });
+    }
   }, [isSuccess]);
 
   return (

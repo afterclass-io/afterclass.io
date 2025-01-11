@@ -3,6 +3,7 @@ import { withThemeByClassName } from "@storybook/addon-themes";
 import "../src/common/styles/globals.scss";
 import { inter, poppins } from "../src/common/fonts";
 import AuthProvider from "../src/common/providers/AuthProvider";
+import { TRPCReactProvider } from "../src/common/tools/trpc/react";
 import TooltipProvider from "../src/common/providers/TooltipProvider";
 import ProgressProvider from "../src/common/providers/ProgressProvider";
 import { Toaster } from "../src/common/components/Toast";
@@ -38,29 +39,31 @@ const preview: Preview = {
         <AuthProvider>
           {/* @ts-ignore */}
           <SessionContext.Provider value={mockSession}>
-            <TooltipProvider>
-              <ProgressProvider>
-                {/* @ts-ignore */}
-                <style global jsx>{`
-                  :root {
-                    --font-inter: ${inter.style.fontFamily};
-                    --font-poppins: ${poppins.style.fontFamily};
-                  }
-                `}</style>
-                <div
-                  style={{
-                    padding: "3rem",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  className={`bg-bg-base`}
-                >
-                  <Story />
-                  <Toaster />
-                </div>
-              </ProgressProvider>
-            </TooltipProvider>
+            <TRPCReactProvider>
+              <TooltipProvider>
+                <ProgressProvider>
+                  {/* @ts-ignore */}
+                  <style global jsx>{`
+                    :root {
+                      --font-inter: ${inter.style.fontFamily};
+                      --font-poppins: ${poppins.style.fontFamily};
+                    }
+                  `}</style>
+                  <div
+                    style={{
+                      padding: "3rem",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    className={`bg-bg-base`}
+                  >
+                    <Story />
+                    <Toaster />
+                  </div>
+                </ProgressProvider>
+              </TooltipProvider>
+            </TRPCReactProvider>
           </SessionContext.Provider>
         </AuthProvider>
       );
