@@ -3,7 +3,6 @@ import { Button } from "@/common/components/Button";
 
 import {
   AlertDialog,
-  AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -18,9 +17,6 @@ import { env } from "@/env";
 
 export const ResetV1UserAlertDialog = () => (
   <AlertDialog defaultOpen>
-    <AlertDialogTrigger asChild>
-      <Button>Open</Button>
-    </AlertDialogTrigger>
     <AlertDialogContent
       data-test="v1-signup-alert-dialog"
       onOpenAutoFocus={(event) => event.preventDefault()}
