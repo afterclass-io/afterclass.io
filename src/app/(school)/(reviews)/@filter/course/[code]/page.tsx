@@ -12,8 +12,11 @@ export default async function CourseFilter({
   if (!session) {
     return <FilterToggleSection filterType="professor" isLocked />;
   }
+
+  // assuming all course codes are uppercase
+  const courseCode = params.code.toUpperCase();
   const professorForThisCourse = await api.professors.getByCourseCode({
-    code: params.code,
+    code: courseCode,
   });
   return (
     <FilterToggleSection

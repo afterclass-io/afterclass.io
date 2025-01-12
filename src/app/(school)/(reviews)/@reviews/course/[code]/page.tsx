@@ -9,6 +9,8 @@ export default function Course({
   params: { code: string };
   searchParams?: { professor?: string | string[] };
 }) {
+  // assuming all course codes are uppercase
+  const courseCode = params.code.toUpperCase();
   const professorSlugs = searchParams?.professor
     ? Array.isArray(searchParams.professor)
       ? searchParams.professor
@@ -20,7 +22,7 @@ export default function Course({
       <ReviewSection>
         <ReviewItemLoader
           variant="course"
-          code={params.code}
+          code={courseCode}
           slugs={professorSlugs.length > 0 ? professorSlugs : undefined}
         />
       </ReviewSection>

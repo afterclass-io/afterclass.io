@@ -17,7 +17,7 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Image({ params }: { params: { code: string } }) {
-  const courseCode = params.code;
+  const courseCode = params.code.toUpperCase();
 
   const course = await api.courses.getByCourseCode({ code: courseCode });
   if (!course) return null;
@@ -32,7 +32,7 @@ export default async function Image({ params }: { params: { code: string } }) {
   return new ImageResponse(
     (
       <OgImage>
-        <OgImage.Header school="SMU" code={params.code} />
+        <OgImage.Header school="SMU" code={courseCode} />
         <OgImage.Title
           icon={
             <BooksIcon

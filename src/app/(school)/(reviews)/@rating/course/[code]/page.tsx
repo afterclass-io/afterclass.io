@@ -31,6 +31,8 @@ export default async function CourseRating({
     );
   }
 
+  // assuming all course codes are uppercase
+  const courseCode = params.code.toUpperCase();
   const professorSlugs = searchParams?.professor
     ? Array.isArray(searchParams.professor)
       ? searchParams.professor
@@ -39,7 +41,7 @@ export default async function CourseRating({
 
   const { averageRating, reviewCount, reviewLabels } =
     await api.reviews.getMetadataForCourse({
-      code: params.code,
+      code: courseCode,
       withProfSlugs: professorSlugs.length > 0 ? professorSlugs : undefined,
     });
 
