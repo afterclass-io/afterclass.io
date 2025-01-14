@@ -8,6 +8,7 @@ export * from "./CheckIcon";
 export * from "./ChevronDownIcon";
 export * from "./ChevronRightIcon";
 export * from "./ChevronUpIcon";
+export * from "./CircleIcon";
 export * from "./CustomIcon";
 export * from "./DealsIcon";
 export * from "./DotFilledIcon";
