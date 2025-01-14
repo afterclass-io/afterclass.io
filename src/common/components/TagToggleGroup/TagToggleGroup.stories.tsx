@@ -3,13 +3,13 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { TagGroup } from "./TagGroup";
+import { TagToggleGroup } from "./TagToggleGroup";
 import { Form } from "@/common/components/Form";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
-  title: "Common/TagGroup",
-  component: TagGroup,
+  title: "Common/TagToggleGroup",
+  component: TagToggleGroup,
   // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
   tags: ["autodocs"],
   args: {
@@ -37,7 +37,7 @@ const meta = {
     ],
   },
   // More on argTypes: https://storybook.js.org/docs/api/argtypes
-} satisfies Meta<typeof TagGroup>;
+} satisfies Meta<typeof TagToggleGroup>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -74,7 +74,7 @@ export const AsFormInput: Story = {
                 <Form.Item>
                   <Form.Label>Tags *</Form.Label>
                   <Form.Control>
-                    <TagGroup {...args} {...field} />
+                    <TagToggleGroup {...args} {...field} />
                   </Form.Control>
                 </Form.Item>
               )}
