@@ -134,8 +134,9 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
             : [{ label: "All", value: ReviewsFilterFor.ALL }]
         }
         value={filterFor}
-        onChange={(newValue) => {
+        onChange={async (newValue) => {
           setFilterFor(newValue as ReviewsFilterFor);
+          await reviewQuery.refetch();
         }}
       />
 
