@@ -10,6 +10,12 @@ import { type Review } from "@/modules/reviews/types";
 import { reviewFormSchema } from "@/common/tools/zod/schemas";
 import { ReviewableEnum } from "@/modules/submit/types";
 import { toTitleCase } from "@/common/functions";
+// import { ReviewsFilterFor } from "@/modules/reviews/components/ReviewItemLoader";
+
+enum ReviewsFilterFor {
+  ALL = "all",
+  UPVOTED = "upvoted",
+}
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -174,6 +180,7 @@ export const reviewsRouter = createTRPCRouter({
         courseId: z.string().optional(),
         profId: z.string().optional(),
         latest: z.boolean().optional().default(true),
+        filterFor: z.nativeEnum(ReviewsFilterFor),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -185,6 +192,11 @@ export const reviewsRouter = createTRPCRouter({
           reviewedUniversityId: input.universityId,
           reviewedCourseId: input.courseId,
           reviewedProfessorId: input.profId,
+          ...(input.filterFor === ReviewsFilterFor.UPVOTED
+            ? {
+                votes: { some: { voterId: ctx.session.user.id } },
+              }
+            : {}),
         },
         orderBy: input.latest ? { createdAt: "desc" } : undefined,
         select: PRIVATE_REVIEW_FIELDS,
@@ -230,6 +242,7 @@ export const reviewsRouter = createTRPCRouter({
         courseId: z.string().optional(),
         profId: z.string().optional(),
         latest: z.boolean().optional().default(true),
+        filterFor: z.nativeEnum(ReviewsFilterFor),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -288,6 +301,7 @@ export const reviewsRouter = createTRPCRouter({
         universityId: z.number().optional(),
         courseCodes: z.string().array().optional(),
         latest: z.boolean().optional().default(true),
+        filterFor: z.nativeEnum(ReviewsFilterFor),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -299,6 +313,11 @@ export const reviewsRouter = createTRPCRouter({
           reviewedUniversityId: input.universityId,
           reviewedCourse: { code: { in: input.courseCodes } },
           reviewedProfessor: { slug: input.slug },
+          ...(input.filterFor === ReviewsFilterFor.UPVOTED
+            ? {
+                votes: { some: { voterId: ctx.session.user.id } },
+              }
+            : {}),
         },
         orderBy: input.latest ? { createdAt: "desc" } : undefined,
         select: PRIVATE_REVIEW_FIELDS,
@@ -344,6 +363,7 @@ export const reviewsRouter = createTRPCRouter({
         universityId: z.number().optional(),
         courseCodes: z.string().array().optional(),
         latest: z.boolean().optional().default(true),
+        filterFor: z.nativeEnum(ReviewsFilterFor),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -402,6 +422,7 @@ export const reviewsRouter = createTRPCRouter({
         code: z.string(),
         slugs: z.string().array().optional(),
         latest: z.boolean().optional().default(true),
+        filterFor: z.nativeEnum(ReviewsFilterFor),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -412,6 +433,11 @@ export const reviewsRouter = createTRPCRouter({
         where: {
           reviewedCourse: { code: input.code },
           reviewedProfessor: input.slugs && { slug: { in: input.slugs } },
+          ...(input.filterFor === ReviewsFilterFor.UPVOTED
+            ? {
+                votes: { some: { voterId: ctx.session.user.id } },
+              }
+            : {}),
         },
         orderBy: input.latest ? { createdAt: "desc" } : undefined,
         select: PRIVATE_REVIEW_FIELDS,
@@ -457,6 +483,7 @@ export const reviewsRouter = createTRPCRouter({
         code: z.string(),
         slugs: z.string().array().optional(),
         latest: z.boolean().optional().default(true),
+        filterFor: z.nativeEnum(ReviewsFilterFor),
       }),
     )
     .query(async ({ ctx, input }) => {
