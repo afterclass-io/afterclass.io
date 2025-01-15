@@ -35,7 +35,8 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.js",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".eslintrc.cjs"
   ],
   "exclude": ["node_modules", "cypress/**/*.cy.js"]
 }
