@@ -6,7 +6,7 @@ import {
 } from "../types";
 
 export async function getUserPlatform({ email }: ForgotPwdFormInputs) {
-  const user = await db.users.findUnique({
+  const user = await db.user.findUnique({
     where: { email },
   });
 
