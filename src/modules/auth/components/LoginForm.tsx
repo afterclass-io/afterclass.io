@@ -20,6 +20,7 @@ import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import useUmami from "@/common/hooks/useUmami";
 import { useProgress } from "@/common/providers/ProgressProvider";
 import { ProgressLink } from "@/common/components/Progress";
+import { GoogleSignInButton } from "./GoogleSignInButton";
 
 const loginFormInputsSchema = z.object({
   email: emailValidationSchema,
@@ -188,6 +189,41 @@ export const LoginForm = () => {
           >
             {form.formState.isSubmitting ? "Signing in..." : "Login"}
           </Button>
+          <div className="mx-auto my-4 flex w-full items-center justify-evenly before:mr-4 before:block before:h-px before:flex-grow before:bg-border-default after:ml-4 after:block after:h-px after:flex-grow after:bg-border-default">
+            OR
+          </div>
+
+          <GoogleSignInButton
+            googleSignInOptions={{
+              callbackUrl: searchParams.get("callbackUrl") ?? "/",
+            }}
+            onResponse={(resp) => {
+              if (!resp) {
+                console.warn("Google sign in returned null");
+                return;
+              }
+
+              if (resp?.error) {
+                console.error("Google sign in error:", resp.error);
+                return;
+              }
+
+              console.log("Google sign in response:", resp);
+
+              //TODO: need to find a way to update here, from the resp, there seem to be no way to get the email
+              // umami.identify({ email: resp?.user?.email });
+
+              progress.start();
+              startTransition(() => {
+                router.push(resp?.url ?? "/");
+                router.refresh();
+                progress.done();
+              });
+            }}
+          >
+            Sign in with Google
+          </GoogleSignInButton>
+
           <div className="flex items-center gap-1 self-stretch text-xs md:text-base">
             <span className="text-center font-semibold text-text-em-mid">
               {"Don't have an account?"}
