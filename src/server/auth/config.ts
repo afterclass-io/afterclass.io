@@ -249,14 +249,7 @@ export const authConfig = {
     },
   },
   events: {
-    signIn({ user, account }) {
-      if (account?.provider === "google" && user.email) {
-        Sentry.getGlobalScope().setUser({
-          email: user.email,
-        });
-        return;
-      }
-
+    signIn({ user}) {
       // strip user object of unwanted sensitive fields before populating to Sentry
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { deprecatedPasswordDigest, ...unsensoredUser } = user as Users;
