@@ -191,11 +191,9 @@ export const authConfig = {
         // we should be expecting `SessionUser`, not `AdapterUser`
         session.user = token.user as SessionUser;
       }
-
       return session;
     },
-    async signIn({ user, account, profile }) {
-      console.log("User signed in:", user);
+    async signIn({ account, profile }) {
       if (account?.provider === "google") {
         console.log("Google Profile:");
         console.dir(profile, { depth: null });
@@ -204,10 +202,6 @@ export const authConfig = {
 
         if (!googleProfile.email_verified) {
           return false;
-        }
-
-        if (!googleProfile.email_verified) {
-          throw new Error("Email is not verified");
         }
 
         const user = await db.users.findUnique({
@@ -231,10 +225,10 @@ export const authConfig = {
               "\tPlease check the database for the domain and add it to the universities table if necessary",
             level: "error",
           });
-          throw new Error("Unexpected email domain");
+          return false;
         }
 
-        const newUser = await db.users.create({
+        await db.users.create({
           data: {
             email: googleProfile.email,
             username: `user_${randomId()}`,
@@ -243,11 +237,10 @@ export const authConfig = {
             photoUrl: googleProfile.picture,
           },
         });
-        console.log("New user created:", newUser);
-
         return true;
       }
 
+      // For all other providers, by default, return true to allow sign in
       return true;
     },
   },
