@@ -2,6 +2,7 @@ import { type NextAuthConfig } from "next-auth";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
 import * as Sentry from "@sentry/nextjs";
 import { type Users } from "@prisma/client";
 
@@ -58,6 +59,17 @@ export const authConfig = {
         const user = await db.users.findUnique({
           where: { email: c.data.email },
         });
+
+        if (user?.verificationType && user.verificationType !== "EMAIL") {
+          Sentry.addBreadcrumb({
+            category: "auth",
+            message:
+              `User ${user.id} is not using email verification. ` +
+              `User is using ${user.verificationType} verification.`,
+            level: "info",
+          });
+          return null;
+        }
 
         if (
           user?.deprecatedPasswordDigest &&
@@ -138,6 +150,69 @@ export const authConfig = {
      *
      * @see https://authjs.dev/getting-started/providers/github
      */
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      async profile(profile: GoogleProfile) {
+        console.log("Google Profile:");
+        console.dir(profile, { depth: null });
+        if (!profile.email_verified) {
+          throw new Error("Email is not verified");
+        }
+
+        const user = await db.users.findUnique({
+          where: { email: profile.email },
+        });
+
+        if (!user) {
+          const universities = await db.universities.findMany({
+            include: { domains: true },
+          });
+          const uniOfThisEmail = universities.find((u) =>
+            u.domains.some((d) => profile.email.endsWith(d.domain)),
+          );
+
+          if (!uniOfThisEmail) {
+            Sentry.addBreadcrumb({
+              type: "error",
+              category: "auth",
+              message:
+                `Unexpected email domain '${profile.email}'.\n` +
+                "\tUser has signed up with this email but the domain is not associated with any university. " +
+                "\tPlease check the database for the domain and add it to the universities table if necessary",
+              level: "error",
+            });
+            throw new Error("Unexpected email domain");
+          }
+
+          const newUser = await db.users.create({
+            data: {
+              email: profile.email,
+              username: `user_${randomId()}`,
+              isVerified: profile.email_verified,
+              universityId: uniOfThisEmail.id,
+              photoUrl: profile.picture,
+              verificationType: "GOOGLE",
+            },
+          });
+
+          return identifyUser(newUser);
+        } else {
+          if (user.verificationType !== "GOOGLE") {
+            Sentry.addBreadcrumb({
+              category: "auth",
+              message:
+                `User ${user.id} is not using Google verification. ` +
+                `User is using ${user.verificationType} verification.`,
+              level: "info",
+            });
+            throw new Error("User is not using Google verification");
+          }
+
+          return await identifyUser(user);
+        }
+      },
+    }),
   ],
   session: { strategy: "jwt" },
   pages: {
@@ -174,7 +249,14 @@ export const authConfig = {
     },
   },
   events: {
-    signIn({ user }) {
+    signIn({ user, account }) {
+      if (account?.provider === "google" && user.email) {
+        Sentry.getGlobalScope().setUser({
+          email: user.email,
+        });
+        return;
+      }
+
       // strip user object of unwanted sensitive fields before populating to Sentry
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { deprecatedPasswordDigest, ...unsensoredUser } = user as Users;
