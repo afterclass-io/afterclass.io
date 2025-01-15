@@ -26,7 +26,7 @@ model Reviews {
   reviewedFaculty    Faculties      @relation(fields: [reviewedFacultyId], references: [id])
   reviewedProfessor  Professors?    @relation(fields: [reviewedProfessorId], references: [id])
   reviewedUniversity Universities   @relation(fields: [reviewedUniversityId], references: [id])
-  reviewer           User           @relation(fields: [reviewerId], references: [id])
+  reviewer           Users           @relation(fields: [reviewerId], references: [id])
   reviewLabels       ReviewLabels[]
   votes              ReviewVotes[]
   reviewEvents       ReviewEvents[]
@@ -37,63 +37,20 @@ model Reviews {
   @@map("reviews")
 }
 
-model Account {
-  id                String  @id @default(cuid())
-  userId            String  @map("user_id")
-  type              String
-  provider          String
-  providerAccountId String  @map("provider_account_id")
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-  @@map("accounts")
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique @map("session_token")
-  userId       String   @map("user_id")
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("sessions")
-}
-
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime
-
-  @@unique([identifier, token])
-  @@map("verification_tokens")
-}
-
-model User {
-  id                       String    @id @default(uuid())
-  email                    String    @unique
-  username                 String?   @unique
-  isVerified               Boolean   @default(false) @map("is_verified")
-  emailVerified            DateTime? @map("email_verified")
-  universityId             Int       @default(1) @map("university_id")
-  deprecatedPasswordDigest String?   @map("deprecated_password_digest")
-  name                     String?   @map("name")
-  firstName                String?   @map("first_name")
-  lastName                 String?   @map("last_name")
-  telegramId               String?   @unique @map("telegram_id")
-  image                    String?   @map("photo_url")
-  facultyId                Int?      @map("faculty_id")
-  accounts                 Account[]
-  sessions                 Session[]
-  createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+model Users {
+  id                       String   @id @default(uuid())
+  email                    String   @unique
+  username                 String   @unique
+  isVerified               Boolean  @default(false) @map("is_verified")
+  universityId             Int      @map("university_id")
+  deprecatedPasswordDigest String?  @map("deprecated_password_digest")
+  firstName                String?  @map("first_name")
+  lastName                 String?  @map("last_name")
+  telegramId               String?  @unique @map("telegram_id")
+  photoUrl                 String?  @map("photo_url")
+  facultyId                Int?     @map("faculty_id")
+  createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   faculty      Faculties?     @relation(fields: [facultyId], references: [id])
   university   Universities   @relation(fields: [universityId], references: [id])
@@ -116,7 +73,7 @@ model Universities {
   professors Professors[]
   reviews    Reviews[]
   domains    UniversityDomains[]
-  users      User[]
+  users      Users[]
 
   @@map("universities")
 }
@@ -198,7 +155,7 @@ model Faculties {
   belongToFaculties ProfessorFaculties[]
   courses           Courses[]
   reviews           Reviews[]
-  users             User[]
+  users             Users[]
 
   @@unique([belongToUniversityId, acronym])
   @@map("faculties")
@@ -228,7 +185,7 @@ model ReviewVotes {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   review Reviews @relation(fields: [reviewId], references: [id])
-  voter  User    @relation(fields: [voterId], references: [id])
+  voter  Users    @relation(fields: [voterId], references: [id])
 
   @@index([reviewId], type: BTree)
   @@map("review_votes")
@@ -268,7 +225,7 @@ model ReviewEvents {
   createdAt        DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
 
   review         Reviews @relation(fields: [reviewId], references: [id])
-  triggeringUser User?   @relation(fields: [triggeringUserId], references: [id])
+  triggeringUser Users?   @relation(fields: [triggeringUserId], references: [id])
 
   @@map("review_events")
 }

@@ -18,7 +18,7 @@ async function main() {
   });
 
   const users = require("./data/4_users.json");
-  await prisma.user.createMany({
+  await prisma.users.createMany({
     data: users,
   });
 

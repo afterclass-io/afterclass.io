@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { z } from "zod";
 import CredentialsProvider from "next-auth/providers/credentials";
 import * as Sentry from "@sentry/nextjs";
-import { type User } from "@prisma/client";
+import { type Users } from "@prisma/client";
 
 import { env } from "@/env";
 import { signInWithEmail } from "../supabase";
@@ -12,7 +12,7 @@ import { identifyUser } from "@/server/posthog";
 import randomId from "@/common/functions/randomId";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 
-type SessionUser = Omit<User, "deprecatedPasswordDigest">;
+type SessionUser = Omit<Users, "deprecatedPasswordDigest">;
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -55,7 +55,7 @@ export const authConfig = {
         if (!c.success) return null;
 
         const emailDomain = c.data.email.split("@")[1];
-        const user = await db.user.findUnique({
+        const user = await db.users.findUnique({
           where: { email: c.data.email },
         });
 
@@ -107,7 +107,7 @@ export const authConfig = {
               return null;
             }
 
-            const newUser = await db.user.create({
+            const newUser = await db.users.create({
               data: {
                 id: data.user.id,
                 email: data.user.email ?? c.data.email,
@@ -157,7 +157,7 @@ export const authConfig = {
       if (token.sub && user) {
         // strip user object of unwanted sensitive fields before populating to token
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { deprecatedPasswordDigest, ...rest } = user as User;
+        const { deprecatedPasswordDigest, ...rest } = user as Users;
         // to expose user object in session
         token.user = rest;
       }
@@ -177,7 +177,7 @@ export const authConfig = {
     signIn({ user }) {
       // strip user object of unwanted sensitive fields before populating to Sentry
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { deprecatedPasswordDigest, ...unsensoredUser } = user as User;
+      const { deprecatedPasswordDigest, ...unsensoredUser } = user as Users;
       Sentry.getGlobalScope().setUser(unsensoredUser);
     },
     signOut() {

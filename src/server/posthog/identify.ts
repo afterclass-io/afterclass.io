@@ -1,5 +1,5 @@
 import { PostHogClient } from "./client";
-import { type User } from "@prisma/client";
+import { type Users } from "@prisma/client";
 
 /**
  * Linking events to specific users
@@ -7,7 +7,7 @@ import { type User } from "@prisma/client";
  * @param user user to be identified, should be returned on authentication
  * @returns same `user` object
  */
-export async function identifyUser(user: User) {
+export async function identifyUser(user: Users) {
   const posthog = PostHogClient();
 
   // ignoring unnecessary fields
