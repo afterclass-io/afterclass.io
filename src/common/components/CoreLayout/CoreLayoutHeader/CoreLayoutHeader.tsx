@@ -1,12 +1,14 @@
-import Link from "next/link";
-
 import { auth } from "@/server/auth";
 
 import { SidebarTrigger } from "@/common/components/Sidebar";
 import { Separator } from "@/common/components/Separator";
 import { ThemeToggle } from "@/common/components/ThemeToggle";
 import { AfterclassIcon, SearchIcon } from "@/common/components/CustomIcon";
-import { Avatar, AvatarFallback } from "@/common/components/Avatar";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/common/components/Avatar";
 
 import { Breadcrumb } from "@/modules/home/components/Breadcrumb";
 import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
@@ -40,6 +42,10 @@ export const CoreLayoutHeader = async () => {
               <div className="hidden items-center gap-2 md:flex">
                 <div className="overflow-hidden text-ellipsis text-sm text-text-em-mid">
                   <Avatar className="h-6 w-6">
+                    <AvatarImage
+                      src={session.user.photoUrl ?? undefined}
+                      alt={session.user.email}
+                    />
                     <AvatarFallback className="text-center text-xs">
                       {session.user.email[0]?.toUpperCase() ?? "U"}
                     </AvatarFallback>

@@ -2,6 +2,7 @@ import { type NextAuthConfig } from "next-auth";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
 import * as Sentry from "@sentry/nextjs";
 import { type Users } from "@prisma/client";
 
@@ -138,6 +139,57 @@ export const authConfig = {
      *
      * @see https://authjs.dev/getting-started/providers/github
      */
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      async profile(profile: GoogleProfile) {
+        console.log("Google Profile:");
+        console.dir(profile, { depth: null });
+        if (!profile.email_verified) {
+          throw new Error("Email is not verified");
+        }
+
+        const user = await db.users.findUnique({
+          where: { email: profile.email },
+        });
+
+        if (user) {
+          return await identifyUser(user);
+        }
+
+        const universities = await db.universities.findMany({
+          include: { domains: true },
+        });
+        const uniOfThisEmail = universities.find((u) =>
+          u.domains.some((d) => profile.email.endsWith(d.domain)),
+        );
+
+        if (!uniOfThisEmail) {
+          Sentry.addBreadcrumb({
+            type: "error",
+            category: "auth",
+            message:
+              `Unexpected email domain '${profile.email}'.\n` +
+              "\tUser has signed up with this email but the domain is not associated with any university. " +
+              "\tPlease check the database for the domain and add it to the universities table if necessary",
+            level: "error",
+          });
+          throw new Error("Unexpected email domain");
+        }
+
+        const newUser = await db.users.create({
+          data: {
+            email: profile.email,
+            username: `user_${randomId()}`,
+            isVerified: profile.email_verified,
+            universityId: uniOfThisEmail.id,
+            photoUrl: profile.picture,
+          },
+        });
+
+        return identifyUser(newUser);
+      },
+    }),
   ],
   session: { strategy: "jwt" },
   pages: {
