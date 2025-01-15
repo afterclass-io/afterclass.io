@@ -58,6 +58,7 @@ export const GoogleSignInButton = ({
       tabIndex={4}
       disabled={isLoading}
       loading={isLoading}
+      data-umami-event="signin-with-google"
     >
       {children}
     </Button>

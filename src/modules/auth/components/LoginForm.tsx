@@ -16,7 +16,7 @@ import {
   EnvelopeIcon,
 } from "@/common/components/CustomIcon";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
-import useUmami from "@/common/hooks/useUmami";
+
 import { useProgress } from "@/common/providers/ProgressProvider";
 import { ProgressLink } from "@/common/components/Progress";
 import { toast } from "@/common/components/Toast";
@@ -36,7 +36,6 @@ export const LoginForm = () => {
   const [isPwdVisible, setIsPwdVisible] = useState(false);
   const router = useRouter();
   const progress = useProgress();
-  const umami = useUmami();
 
   const form = useForm<LoginFormInputs>({
     resolver: zodResolver(loginFormInputsSchema),
@@ -120,8 +119,6 @@ export const LoginForm = () => {
       });
       return;
     }
-
-    umami.identify({ email });
 
     progress.start();
     startTransition(() => {
@@ -236,9 +233,6 @@ export const LoginForm = () => {
               }
 
               console.log("Google sign in response:", resp);
-
-              //TODO: need to find a way to update here, from the resp, there seem to be no way to get the email
-              // umami.identify({ email: resp?.user?.email });
 
               progress.start();
               startTransition(() => {
