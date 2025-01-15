@@ -143,54 +143,6 @@ export const authConfig = {
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
-
-      async profile(profile: GoogleProfile) {
-        console.log("Google Profile:");
-        console.dir(profile, { depth: null });
-        if (!profile.email_verified) {
-          throw new Error("Email is not verified");
-        }
-
-        const user = await db.users.findUnique({
-          where: { email: profile.email },
-        });
-
-        if (user) {
-          return user;
-        }
-
-        const universities = await db.universities.findMany({
-          include: { domains: true },
-        });
-        const uniOfThisEmail = universities.find((u) =>
-          u.domains.some((d) => profile.email.endsWith(d.domain)),
-        );
-
-        if (!uniOfThisEmail) {
-          Sentry.addBreadcrumb({
-            type: "error",
-            category: "auth",
-            message:
-              `Unexpected email domain '${profile.email}'.\n` +
-              "\tUser has signed up with this email but the domain is not associated with any university. " +
-              "\tPlease check the database for the domain and add it to the universities table if necessary",
-            level: "error",
-          });
-          throw new Error("Unexpected email domain");
-        }
-
-        const newUser = await db.users.create({
-          data: {
-            email: profile.email,
-            username: `user_${randomId()}`,
-            isVerified: profile.email_verified,
-            universityId: uniOfThisEmail.id,
-            photoUrl: profile.picture,
-          },
-        });
-
-        return newUser;
-      },
     }),
   ],
   session: { strategy: "jwt" },
@@ -207,7 +159,7 @@ export const authConfig = {
       else if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
-    jwt({ token, user }) {
+    async jwt({ token, user, account, profile }) {
       if (token.sub && user) {
         // strip user object of unwanted sensitive fields before populating to token
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -215,6 +167,21 @@ export const authConfig = {
         // to expose user object in session
         token.user = rest;
       }
+
+      if (account?.provider === "google") {
+        const emailToUse = user.email ?? profile?.email;
+        if (!emailToUse) throw new Error("Email not found in user or profile");
+
+        const dbUser = await db.users.findUnique({
+          where: { email: emailToUse },
+        });
+        if (!dbUser) throw new Error("Email not found in database");
+        // strip user object of unwanted sensitive fields before populating to token
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { deprecatedPasswordDigest, ...rest } = dbUser;
+        token.user = rest;
+      }
+
       return token;
     },
     session({ session, token }) {
@@ -224,7 +191,64 @@ export const authConfig = {
         // we should be expecting `SessionUser`, not `AdapterUser`
         session.user = token.user as SessionUser;
       }
+
       return session;
+    },
+    async signIn({ user, account, profile }) {
+      console.log("User signed in:", user);
+      if (account?.provider === "google") {
+        console.log("Google Profile:");
+        console.dir(profile, { depth: null });
+
+        const googleProfile = profile as GoogleProfile;
+
+        if (!googleProfile.email_verified) {
+          return false;
+        }
+
+        if (!googleProfile.email_verified) {
+          throw new Error("Email is not verified");
+        }
+
+        const user = await db.users.findUnique({
+          where: { email: googleProfile.email },
+        });
+        if (user) return true;
+
+        const universities = await db.universities.findMany({
+          include: { domains: true },
+        });
+        const uniOfThisEmail = universities.find((u) =>
+          u.domains.some((d) => googleProfile.email.endsWith(d.domain)),
+        );
+        if (!uniOfThisEmail) {
+          Sentry.addBreadcrumb({
+            type: "error",
+            category: "auth",
+            message:
+              `Unexpected email domain '${googleProfile.email}'.\n` +
+              "\tUser has signed up with this email but the domain is not associated with any university. " +
+              "\tPlease check the database for the domain and add it to the universities table if necessary",
+            level: "error",
+          });
+          throw new Error("Unexpected email domain");
+        }
+
+        const newUser = await db.users.create({
+          data: {
+            email: googleProfile.email,
+            username: `user_${randomId()}`,
+            isVerified: googleProfile.email_verified,
+            universityId: uniOfThisEmail.id,
+            photoUrl: googleProfile.picture,
+          },
+        });
+        console.log("New user created:", newUser);
+
+        return true;
+      }
+
+      return true;
     },
   },
   events: {
