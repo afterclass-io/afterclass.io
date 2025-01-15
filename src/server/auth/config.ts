@@ -60,17 +60,6 @@ export const authConfig = {
           where: { email: c.data.email },
         });
 
-        if (user?.verificationType && user.verificationType !== "EMAIL") {
-          Sentry.addBreadcrumb({
-            category: "auth",
-            message:
-              `User ${user.id} is not using email verification. ` +
-              `User is using ${user.verificationType} verification.`,
-            level: "info",
-          });
-          return null;
-        }
-
         if (
           user?.deprecatedPasswordDigest &&
           bcrypt.compareSync(c.data.password, user?.deprecatedPasswordDigest)
@@ -164,53 +153,41 @@ export const authConfig = {
           where: { email: profile.email },
         });
 
-        if (!user) {
-          const universities = await db.universities.findMany({
-            include: { domains: true },
-          });
-          const uniOfThisEmail = universities.find((u) =>
-            u.domains.some((d) => profile.email.endsWith(d.domain)),
-          );
-
-          if (!uniOfThisEmail) {
-            Sentry.addBreadcrumb({
-              type: "error",
-              category: "auth",
-              message:
-                `Unexpected email domain '${profile.email}'.\n` +
-                "\tUser has signed up with this email but the domain is not associated with any university. " +
-                "\tPlease check the database for the domain and add it to the universities table if necessary",
-              level: "error",
-            });
-            throw new Error("Unexpected email domain");
-          }
-
-          const newUser = await db.users.create({
-            data: {
-              email: profile.email,
-              username: `user_${randomId()}`,
-              isVerified: profile.email_verified,
-              universityId: uniOfThisEmail.id,
-              photoUrl: profile.picture,
-              verificationType: "GOOGLE",
-            },
-          });
-
-          return identifyUser(newUser);
-        } else {
-          if (user.verificationType !== "GOOGLE") {
-            Sentry.addBreadcrumb({
-              category: "auth",
-              message:
-                `User ${user.id} is not using Google verification. ` +
-                `User is using ${user.verificationType} verification.`,
-              level: "info",
-            });
-            throw new Error("User is not using Google verification");
-          }
-
+        if (user) {
           return await identifyUser(user);
         }
+
+        const universities = await db.universities.findMany({
+          include: { domains: true },
+        });
+        const uniOfThisEmail = universities.find((u) =>
+          u.domains.some((d) => profile.email.endsWith(d.domain)),
+        );
+
+        if (!uniOfThisEmail) {
+          Sentry.addBreadcrumb({
+            type: "error",
+            category: "auth",
+            message:
+              `Unexpected email domain '${profile.email}'.\n` +
+              "\tUser has signed up with this email but the domain is not associated with any university. " +
+              "\tPlease check the database for the domain and add it to the universities table if necessary",
+            level: "error",
+          });
+          throw new Error("Unexpected email domain");
+        }
+
+        const newUser = await db.users.create({
+          data: {
+            email: profile.email,
+            username: `user_${randomId()}`,
+            isVerified: profile.email_verified,
+            universityId: uniOfThisEmail.id,
+            photoUrl: profile.picture,
+          },
+        });
+
+        return identifyUser(newUser);
       },
     }),
   ],
@@ -249,7 +226,7 @@ export const authConfig = {
     },
   },
   events: {
-    signIn({ user}) {
+    signIn({ user }) {
       // strip user object of unwanted sensitive fields before populating to Sentry
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { deprecatedPasswordDigest, ...unsensoredUser } = user as Users;

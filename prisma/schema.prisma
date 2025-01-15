@@ -38,20 +38,19 @@ model Reviews {
 }
 
 model Users {
-  id                       String           @id @default(uuid())
-  email                    String           @unique
-  username                 String           @unique
-  isVerified               Boolean          @default(false) @map("is_verified")
-  verificationType         VerificationType @default(value: EMAIL) @map("verification_type")
-  universityId             Int              @map("university_id")
-  deprecatedPasswordDigest String?          @map("deprecated_password_digest")
-  firstName                String?          @map("first_name")
-  lastName                 String?          @map("last_name")
-  telegramId               String?          @unique @map("telegram_id")
-  photoUrl                 String?          @map("photo_url")
-  facultyId                Int?             @map("faculty_id")
-  createdAt                DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                       String   @id @default(uuid())
+  email                    String   @unique
+  username                 String   @unique
+  isVerified               Boolean  @default(false) @map("is_verified")
+  universityId             Int      @map("university_id")
+  deprecatedPasswordDigest String?  @map("deprecated_password_digest")
+  firstName                String?  @map("first_name")
+  lastName                 String?  @map("last_name")
+  telegramId               String?  @unique @map("telegram_id")
+  photoUrl                 String?  @map("photo_url")
+  facultyId                Int?     @map("faculty_id")
+  createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   faculty      Faculties?     @relation(fields: [facultyId], references: [id])
   university   Universities   @relation(fields: [universityId], references: [id])
@@ -229,11 +228,6 @@ model ReviewEvents {
   triggeringUser Users?  @relation(fields: [triggeringUserId], references: [id])
 
   @@map("review_events")
-}
-
-enum VerificationType {
-  EMAIL
-  GOOGLE
 }
 
 enum UniversityAbbreviation {
