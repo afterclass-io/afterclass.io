@@ -17,6 +17,7 @@ import JotaiProvider from "@/common/providers/JotaiProvider";
 import ProgressProvider from "@/common/providers/ProgressProvider";
 import { GlobalProgressBar } from "@/modules/home/components/GlobalProgressBar";
 import { Toaster } from "@/common/components/Toast";
+import { UmamiIdentityTracker } from "@/modules/home/components/UmamiIdentityTracker";
 
 const PostHogPageView = dynamic(
   () => import("@/common/providers/analytics/PostHogPageView"),
@@ -91,6 +92,7 @@ export default function RootLayout({
                         <GlobalProgressBar />
                         <CoreLayout>{children}</CoreLayout>
                         <Toaster />
+                        <UmamiIdentityTracker />
                       </ThemeProvider>
                     </JotaiProvider>
                   </EdgeConfigProvider>

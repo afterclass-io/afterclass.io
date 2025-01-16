@@ -1,6 +1,5 @@
 "use client";
-
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useEffect, useState, Fragment } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -17,9 +16,12 @@ import {
   EnvelopeIcon,
 } from "@/common/components/CustomIcon";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
-import useUmami from "@/common/hooks/useUmami";
+
 import { useProgress } from "@/common/providers/ProgressProvider";
 import { ProgressLink } from "@/common/components/Progress";
+import { toast } from "@/common/components/Toast";
+import { GoogleSignInButton } from "./GoogleSignInButton";
+import { env } from "@/env";
 
 const loginFormInputsSchema = z.object({
   email: emailValidationSchema,
@@ -34,7 +36,6 @@ export const LoginForm = () => {
   const [isPwdVisible, setIsPwdVisible] = useState(false);
   const router = useRouter();
   const progress = useProgress();
-  const umami = useUmami();
 
   const form = useForm<LoginFormInputs>({
     resolver: zodResolver(loginFormInputsSchema),
@@ -46,7 +47,33 @@ export const LoginForm = () => {
   });
 
   useEffect(() => {
-    console.log(window.location.hash);
+    const authJsError = searchParams.get("error");
+    if (authJsError) {
+      toast.warning("Invalid Credentials", {
+        id: authJsError,
+        description: (
+          <>
+            <span>
+              Please try again with an email from the supported domains:
+            </span>
+            <span className="mt-1 flex flex-wrap gap-1">
+              {env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.map((domain, i) => (
+                <Fragment key={i}>
+                  {i > 0 && <span className="mr-1">,</span>}
+                  <span className="relative inline-block before:absolute before:-inset-[2px] before:my-[5px] before:bg-border-primary/15">
+                    <pre className="inline text-text-on-secondary">
+                      {domain}
+                    </pre>
+                  </span>
+                </Fragment>
+              ))}
+            </span>
+          </>
+        ),
+      });
+      return;
+    }
+
     if (!window.location.hash.startsWith("#")) return;
 
     const params = new URLSearchParams(window.location.hash.substring(1));
@@ -92,8 +119,6 @@ export const LoginForm = () => {
       });
       return;
     }
-
-    umami.identify({ email });
 
     progress.start();
     startTransition(() => {
@@ -188,6 +213,38 @@ export const LoginForm = () => {
           >
             {form.formState.isSubmitting ? "Signing in..." : "Login"}
           </Button>
+          <div className="mx-auto my-4 flex w-full items-center justify-evenly before:mr-4 before:block before:h-px before:flex-grow before:bg-border-default after:ml-4 after:block after:h-px after:flex-grow after:bg-border-default">
+            OR
+          </div>
+
+          <GoogleSignInButton
+            googleSignInOptions={{
+              callbackUrl: searchParams.get("callbackUrl") ?? "/",
+            }}
+            onResponse={(resp) => {
+              if (!resp) {
+                console.warn("Google sign in returned null");
+                return;
+              }
+
+              if (resp?.error) {
+                console.error("Google sign in error:", resp.error);
+                return;
+              }
+
+              console.log("Google sign in response:", resp);
+
+              progress.start();
+              startTransition(() => {
+                router.push(resp?.url ?? "/");
+                router.refresh();
+                progress.done();
+              });
+            }}
+          >
+            Sign in with Google
+          </GoogleSignInButton>
+
           <div className="flex items-center gap-1 self-stretch text-xs md:text-base">
             <span className="text-center font-semibold text-text-em-mid">
               {"Don't have an account?"}
