@@ -55,7 +55,7 @@ export const ReviewSectionHeaderSortGroup = () => {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center">
       {/* Regular buttons */}
       {otherOptions.map((option) => (
         <Button
@@ -72,7 +72,9 @@ export const ReviewSectionHeaderSortGroup = () => {
       {/* Create a dropdown for each group */}
       {Object.entries(dropdownGroups).map(([prefix, options]) => (
         <Select
-          key={prefix}
+          // force re-render when value changes
+          // see https://github.com/radix-ui/primitives/issues/1569
+          key={prefix + value}
           value={options.includes(value) ? value : undefined}
           onValueChange={handleSortChange}
         >
