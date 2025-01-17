@@ -1,29 +1,10 @@
-import type { ReactNode, ComponentPropsWithoutRef } from "react";
-import { PenIcon } from "@/common/components/CustomIcon";
+import type { ComponentPropsWithoutRef } from "react";
 import { reviewSectionTheme } from "./ReviewSection.theme";
 
-export type ReviewSectionProps = ComponentPropsWithoutRef<"div"> & {
-  children: ReactNode;
-};
+export type ReviewSectionProps = ComponentPropsWithoutRef<"div">;
 
-export const ReviewSection = ({
-  className,
-  children,
-  ...props
-}: ReviewSectionProps) => {
-  const { wrapper, header, title, icon, reviews } = reviewSectionTheme({
-    size: { initial: "sm", md: "md" },
-  });
+export const ReviewSection = ({ className, ...props }: ReviewSectionProps) => {
+  const { wrapper } = reviewSectionTheme({ size: { initial: "sm", md: "md" } });
 
-  return (
-    <div className={wrapper({ className })} {...props}>
-      <div className={header()}>
-        <div className={title()}>
-          <PenIcon className={icon()} />
-          <p>Reviews</p>
-        </div>
-      </div>
-      <div className={reviews()}>{children}</div>
-    </div>
-  );
+  return <div className={wrapper({ className })} {...props} />;
 };

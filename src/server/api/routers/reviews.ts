@@ -10,12 +10,7 @@ import { type Review } from "@/modules/reviews/types";
 import { reviewFormSchema } from "@/common/tools/zod/schemas";
 import { ReviewableEnum } from "@/modules/submit/types";
 import { toTitleCase } from "@/common/functions";
-// import { ReviewsFilterFor } from "@/modules/reviews/components/ReviewItemLoader";
-
-enum ReviewsFilterFor {
-  ALL = "all",
-  UPVOTED = "upvoted",
-}
+import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -181,6 +176,7 @@ export const reviewsRouter = createTRPCRouter({
         profId: z.string().optional(),
         latest: z.boolean().optional().default(true),
         filterFor: z.nativeEnum(ReviewsFilterFor),
+        sortBy: z.nativeEnum(ReviewsSortBy),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -243,6 +239,7 @@ export const reviewsRouter = createTRPCRouter({
         profId: z.string().optional(),
         latest: z.boolean().optional().default(true),
         filterFor: z.nativeEnum(ReviewsFilterFor),
+        sortBy: z.nativeEnum(ReviewsSortBy),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -302,6 +299,7 @@ export const reviewsRouter = createTRPCRouter({
         courseCodes: z.string().array().optional(),
         latest: z.boolean().optional().default(true),
         filterFor: z.nativeEnum(ReviewsFilterFor),
+        sortBy: z.nativeEnum(ReviewsSortBy),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -364,6 +362,7 @@ export const reviewsRouter = createTRPCRouter({
         courseCodes: z.string().array().optional(),
         latest: z.boolean().optional().default(true),
         filterFor: z.nativeEnum(ReviewsFilterFor),
+        sortBy: z.nativeEnum(ReviewsSortBy),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -423,6 +422,7 @@ export const reviewsRouter = createTRPCRouter({
         slugs: z.string().array().optional(),
         latest: z.boolean().optional().default(true),
         filterFor: z.nativeEnum(ReviewsFilterFor),
+        sortBy: z.nativeEnum(ReviewsSortBy),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -484,6 +484,7 @@ export const reviewsRouter = createTRPCRouter({
         slugs: z.string().array().optional(),
         latest: z.boolean().optional().default(true),
         filterFor: z.nativeEnum(ReviewsFilterFor),
+        sortBy: z.nativeEnum(ReviewsSortBy),
       }),
     )
     .query(async ({ ctx, input }) => {

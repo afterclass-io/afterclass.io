@@ -1,20 +1,15 @@
 "use client";
-import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { InView } from "react-intersection-observer";
 
 import { api } from "@/common/tools/trpc/react";
 import { AfterclassIcon } from "@/common/components/CustomIcon";
 import { ProgressLink } from "@/common/components/Progress";
 
+import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
 import { ReviewItem, ReviewItemSkeleton } from "../ReviewItem";
-import { ReviewItemsFilter } from "../ReviewItemsFilter";
-
-export enum ReviewsFilterFor {
-  ALL = "all",
-  UPVOTED = "upvoted",
-}
+import { z } from "zod";
 
 type BaseReviewItemLoaderProps = {
   variant: "home" | "course" | "professor";
@@ -64,8 +59,20 @@ const EmptyReviewState = () => (
 
 export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
   const { data: session, status } = useSession();
-  const [filterFor, setFilterFor] = useState(ReviewsFilterFor.ALL);
+  const searchParams = useSearchParams();
   const pathname = usePathname();
+
+  // prettier-ignore
+  const filterFor = z.nativeEnum(ReviewsFilterFor)
+                    .safeParse(searchParams.get("filter"))
+                    ?.data 
+                  ?? ReviewsFilterFor.ALL;
+
+  // prettier-ignore
+  const sortBy = z.nativeEnum(ReviewsSortBy)
+                  .safeParse(searchParams.get("sort"))
+                    ?.data
+                ?? ReviewsSortBy.LATEST;
 
   const getInfiniteQuery = () => {
     switch (props.variant) {
@@ -75,7 +82,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
           ? api.reviews.getByCourseCodeProtected
           : api.reviews.getByCourseCode;
         return apiFn.useSuspenseInfiniteQuery(
-          { code, slugs, filterFor },
+          { code, slugs, filterFor, sortBy },
           {
             getNextPageParam: (lastPage) => lastPage.nextCursor,
           },
@@ -87,7 +94,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
           ? api.reviews.getByProfSlugProtected
           : api.reviews.getByProfSlug;
         return apiFn.useSuspenseInfiniteQuery(
-          { slug, courseCodes, filterFor },
+          { slug, courseCodes, filterFor, sortBy },
           {
             getNextPageParam: (lastPage) => lastPage.nextCursor,
           },
@@ -98,7 +105,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
           ? api.reviews.getAllProtected
           : api.reviews.getAll;
         return apiFn.useSuspenseInfiniteQuery(
-          { filterFor },
+          { filterFor, sortBy },
           {
             getNextPageParam: (lastPage) => lastPage.nextCursor,
           },
@@ -122,52 +129,32 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
     );
   }
 
-  return (
-    <div className="flex flex-col items-start gap-4 md:gap-6">
-      <ReviewItemsFilter
-        options={
-          session
-            ? [
-                { label: "All", value: ReviewsFilterFor.ALL },
-                { label: "Upvoted", value: ReviewsFilterFor.UPVOTED },
-              ]
-            : [{ label: "All", value: ReviewsFilterFor.ALL }]
-        }
-        value={filterFor}
-        onChange={async (newValue) => {
-          setFilterFor(newValue as ReviewsFilterFor);
-          await reviewQuery.refetch();
-        }}
-      />
+  return reviews.length === 0 ? (
+    <EmptyReviewState />
+  ) : (
+    <>
+      {reviews.map((review) => (
+        <ReviewItem
+          key={review.id}
+          variant={props.variant}
+          review={review}
+          isLocked={!session}
+          seeMore={pathname === "/"}
+        />
+      ))}
 
-      {reviews.length === 0 ? (
-        <EmptyReviewState />
-      ) : (
-        <>
-          {reviews.map((review) => (
-            <ReviewItem
-              key={review.id}
-              variant={props.variant}
-              review={review}
-              isLocked={!session}
-              seeMore={pathname === "/"}
-            />
-          ))}
-
-          {status === "authenticated" && hasNextPage && (
-            <InView
-              as="div"
-              className="flex w-full justify-center"
-              onChange={(inView) => inView && fetchNextPage()}
-            >
-              <AfterclassIcon
-                size={64}
-                className="animate-[pulse_3s_ease-in-out_infinite] text-primary-default/60"
-              />
-            </InView>
-          )}
-        </>
+      {status === "authenticated" && hasNextPage && (
+        <InView
+          as="div"
+          className="flex w-full justify-center"
+          onChange={(inView) => inView && fetchNextPage()}
+        >
+          <AfterclassIcon
+            size={64}
+            className="animate-[pulse_3s_ease-in-out_infinite] text-primary-default/60"
+          />
+        </InView>
       )}
-    </div>
+    </>
   );
 };
