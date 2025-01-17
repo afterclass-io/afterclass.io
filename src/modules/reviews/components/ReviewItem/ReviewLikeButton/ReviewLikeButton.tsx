@@ -69,7 +69,11 @@ export const ReviewLikeButton = ({
     e.preventDefault();
     e.stopPropagation();
     if (!session) return;
-    likeOrUnlike({ reviewId, userId: session.user.id });
+    likeOrUnlike({
+      reviewId,
+      userId: session.user.id,
+      weight: isLiked ? 0 : 1,
+    });
   };
   useEffect(() => {
     if (isSuccess) {
@@ -100,7 +104,7 @@ export const ReviewLikeButton = ({
       size="sm"
       {...props}
     >
-      {reviewVotesCountQuery.data}
+      {reviewVotesCountQuery.data?._sum.weight ?? 0}
     </Button>
   );
 };

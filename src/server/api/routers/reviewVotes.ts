@@ -4,7 +4,6 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { TRPCError } from "@trpc/server";
 
 export const reviewVotesRouter = createTRPCRouter({
   count: publicProcedure
@@ -15,7 +14,10 @@ export const reviewVotesRouter = createTRPCRouter({
     )
     .query(
       async ({ input, ctx }) =>
-        await ctx.db.reviewVotes.count({
+        await ctx.db.reviewVotes.aggregate({
+          _sum: {
+            weight: true,
+          },
           where: {
             reviewId: input.reviewId,
           },
@@ -35,6 +37,9 @@ export const reviewVotesRouter = createTRPCRouter({
           where: {
             voterId: input.userId,
             reviewId: input.reviewId,
+            weight: {
+              not: 0,
+            },
           },
         }),
     ),
@@ -44,28 +49,25 @@ export const reviewVotesRouter = createTRPCRouter({
       z.object({
         reviewId: z.string(),
         userId: z.string(),
+        weight: z.number().default(1),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
-      const like = await ctx.db.reviewVotes.findFirst({
-        where: {
-          reviewId: input.reviewId,
-          voterId: input.userId,
-        },
-      });
-      if (like) {
-        await ctx.db.reviewVotes.delete({
+    .mutation(
+      async ({ input, ctx }) =>
+        await ctx.db.reviewVotes.upsert({
           where: {
-            id: like.id,
+            reviewId_voterId: {
+              reviewId: input.reviewId,
+              voterId: input.userId,
+            },
           },
-        });
-      } else {
-        await ctx.db.reviewVotes.create({
-          data: {
+          create: {
             reviewId: input.reviewId,
             voterId: input.userId,
           },
-        });
-      }
-    }),
+          update: {
+            weight: input.weight,
+          },
+        }),
+    ),
 });
