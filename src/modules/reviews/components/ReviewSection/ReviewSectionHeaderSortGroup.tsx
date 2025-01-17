@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { z } from "zod";
 
 import { Button } from "@/common/components/Button";
 import { ChevronDownIcon } from "@/common/components/CustomIcon";
@@ -15,9 +16,16 @@ const formatSortByLabel = (sortBy: ReviewsSortBy) =>
     .join(" ");
 
 export const ReviewSectionHeaderSortGroup = () => {
-  const [value, setValue] = useState<ReviewsSortBy>(ReviewsSortBy.LATEST);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  // prettier-ignore
+  const defaultSortBy = z.nativeEnum(ReviewsSortBy)
+                          .safeParse(searchParams.get("sort"))
+                            ?.data
+                        ?? ReviewsSortBy.LATEST;
+
+  const [value, setValue] = useState<ReviewsSortBy>(defaultSortBy);
 
   const allSortOptions = Object.values(ReviewsSortBy);
 
@@ -26,7 +34,7 @@ export const ReviewSectionHeaderSortGroup = () => {
     .filter((option) => option.includes("_"))
     .reduce(
       (groups, option) => {
-        const prefix = option.split("_", 2)[0] as string;
+        const prefix = option.split("_", 2)[0]!;
         if (!groups[prefix]) {
           groups[prefix] = [];
         }
@@ -41,7 +49,7 @@ export const ReviewSectionHeaderSortGroup = () => {
   const handleSortChange = (newValue: ReviewsSortBy) => {
     setValue(newValue);
 
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(searchParams);
     params.set("sort", newValue);
     router.push(`${pathname}?${params.toString()}`);
   };
@@ -63,7 +71,11 @@ export const ReviewSectionHeaderSortGroup = () => {
 
       {/* Create a dropdown for each group */}
       {Object.entries(dropdownGroups).map(([prefix, options]) => (
-        <Select key={prefix} onValueChange={handleSortChange}>
+        <Select
+          key={prefix}
+          value={options.includes(value) ? value : undefined}
+          onValueChange={handleSortChange}
+        >
           <Select.Trigger className="rounded-full shadow-none" asChild>
             <Button
               variant="ghost"

@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { z } from "zod";
 
 import { Tag } from "@/common/components/Tag";
 import { RadioGroup, RadioGroupItem } from "@/common/components/RadioGroup";
@@ -9,12 +10,18 @@ import { Label } from "@/common/components/Label";
 import { ReviewsFilterFor } from "@/modules/reviews/types";
 
 export const ReviewSectionListFilter = () => {
-  const [filterFor, setFilterFor] = useState<ReviewsFilterFor>(
-    ReviewsFilterFor.ALL,
-  );
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  // prettier-ignore
+  const defaultFilterFor = z.nativeEnum(ReviewsFilterFor)
+                            .safeParse(searchParams.get("filter"))
+                            ?.data 
+                          ?? ReviewsFilterFor.ALL;
+
+  const [filterFor, setFilterFor] =
+    useState<ReviewsFilterFor>(defaultFilterFor);
 
   const options = session
     ? [
@@ -29,7 +36,7 @@ export const ReviewSectionListFilter = () => {
       onValueChange={(newValue) => {
         setFilterFor(newValue as ReviewsFilterFor);
 
-        const params = new URLSearchParams();
+        const params = new URLSearchParams(searchParams);
         params.set("filter", newValue);
         router.push(`${pathname}?${params.toString()}`);
       }}
