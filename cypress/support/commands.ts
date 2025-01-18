@@ -11,7 +11,7 @@
 //
 //
 
-const setSessionCookie = (cookie) => {
+const setSessionCookie = (cookies: string | string[] | undefined) => {
   if (!cookies) {
     throw new Error("No cookies found in the response");
   }
@@ -28,7 +28,7 @@ const setSessionCookie = (cookie) => {
 
   const sessionTokenValue = sessionCookie.split(";")[0]!.split("=")[1];
 
-  cy.setCookie("authjs.session-token", sessionTokenValue);
+  cy.setCookie("authjs.session-token", sessionTokenValue!);
 };
 
 // -- This is a parent command --
