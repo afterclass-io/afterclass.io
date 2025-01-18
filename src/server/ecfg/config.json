@@ -1,4 +1,7 @@
 {
   "enableAnnouncementBanner": true,
-  "enableCmdkTooltip": true
+  "enableCmdkTooltip": true,
+  "enableReviewEventsTracking": true,
+  "enableReviewSort": false,
+  "enableReviewFilter": false
 }

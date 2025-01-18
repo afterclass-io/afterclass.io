@@ -1,0 +1,26 @@
+name: CI Edge Config Validation
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches:
+      - "main"
+    paths:
+      - "src/server/ecfg/**"
+
+jobs:
+  validate-edge-config:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
+
+      - run: bun install
+
+      - name: Validate Edge Config
+        run: bun run ecfg:test

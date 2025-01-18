@@ -16,6 +16,7 @@ import { ReviewCreatedAt } from "../ReviewCreatedAt";
 import { ReviewRatingGroup } from "../ReviewRatingGroup";
 import { ReviewLabelGroup } from "../ReviewLabelGroup";
 import { ReviewShareButton } from "../ReviewShareButton";
+import { useEdgeConfigs } from "@/common/hooks";
 
 export const ReviewModal = ({
   review,
@@ -41,6 +42,8 @@ export const ReviewModal = ({
     seeMoreLink,
   } = reviewItemTheme({ size: { initial: "sm", md: "md" } });
 
+  const ecfg = useEdgeConfigs();
+
   const reviewPath =
     review.reviewFor === "professor"
       ? `/professor/${review.professorSlug}`
@@ -60,10 +63,12 @@ export const ReviewModal = ({
       defaultOpen={defaultOpen}
       onOpenChange={(isOpen) => {
         if (!isOpen) return;
-        mutate({
-          ...reviewEventParam,
-          eventType: ReviewEventType.INTERACTION,
-        });
+        if (ecfg.enableReviewEventsTracking) {
+          mutate({
+            ...reviewEventParam,
+            eventType: ReviewEventType.INTERACTION,
+          });
+        }
       }}
     >
       {children && (

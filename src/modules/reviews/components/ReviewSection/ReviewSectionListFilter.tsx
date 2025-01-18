@@ -8,6 +8,7 @@ import { Tag } from "@/common/components/Tag";
 import { RadioGroup, RadioGroupItem } from "@/common/components/RadioGroup";
 import { Label } from "@/common/components/Label";
 import { ReviewsFilterFor } from "@/modules/reviews/types";
+import { useEdgeConfigs } from "@/common/hooks";
 
 export const ReviewSectionListFilter = () => {
   const { data: session } = useSession();
@@ -22,6 +23,10 @@ export const ReviewSectionListFilter = () => {
 
   const [filterFor, setFilterFor] =
     useState<ReviewsFilterFor>(defaultFilterFor);
+  const ecfg = useEdgeConfigs();
+  if (!ecfg.enableReviewFilter) {
+    return null;
+  }
 
   const options = session
     ? [

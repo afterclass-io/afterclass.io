@@ -8,6 +8,7 @@ import { ChevronDownIcon } from "@/common/components/CustomIcon";
 import { Select } from "@/common/components/Select";
 import { cn, toTitleCase } from "@/common/functions";
 import { ReviewsSortBy } from "@/modules/reviews/types";
+import { useEdgeConfigs } from "@/common/hooks";
 
 const formatSortByLabel = (sortBy: ReviewsSortBy) =>
   sortBy
@@ -26,6 +27,11 @@ export const ReviewSectionHeaderSortGroup = () => {
                         ?? ReviewsSortBy.LATEST;
 
   const [value, setValue] = useState<ReviewsSortBy>(defaultSortBy);
+  const ecfg = useEdgeConfigs();
+
+  if (!ecfg.enableReviewSort) {
+    return null;
+  }
 
   const allSortOptions = Object.values(ReviewsSortBy);
 
