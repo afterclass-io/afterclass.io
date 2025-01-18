@@ -8,12 +8,14 @@ import { Tag } from "@/common/components/Tag";
 import { RadioGroup, RadioGroupItem } from "@/common/components/RadioGroup";
 import { Label } from "@/common/components/Label";
 import { ReviewsFilterFor } from "@/modules/reviews/types";
+import { useEdgeConfigs } from "@/common/hooks";
 
 export const ReviewSectionListFilter = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const ecfg = useEdgeConfigs();
   // prettier-ignore
   const defaultFilterFor = z.nativeEnum(ReviewsFilterFor)
                             .safeParse(searchParams.get("filter"))
@@ -31,30 +33,32 @@ export const ReviewSectionListFilter = () => {
     : [{ label: "All", value: ReviewsFilterFor.ALL }];
 
   return (
-    <RadioGroup
-      className="flex px-4"
-      onValueChange={(newValue) => {
-        setFilterFor(newValue as ReviewsFilterFor);
+    ecfg.enableReviewFilter && (
+      <RadioGroup
+        className="flex px-4"
+        onValueChange={(newValue) => {
+          setFilterFor(newValue as ReviewsFilterFor);
 
-        const params = new URLSearchParams(searchParams);
-        params.set("filter", newValue);
-        router.push(`${pathname}?${params.toString()}`);
-      }}
-    >
-      {options.map((option, index) => (
-        <div key={option.value}>
-          <RadioGroupItem
-            value={option.value}
-            id={`r${index + 1}`}
-            className="hidden"
-          />
-          <Label htmlFor={`r${index + 1}`}>
-            <Tag clickable active={filterFor === option.value}>
-              {option.label}
-            </Tag>
-          </Label>
-        </div>
-      ))}
-    </RadioGroup>
+          const params = new URLSearchParams(searchParams);
+          params.set("filter", newValue);
+          router.push(`${pathname}?${params.toString()}`);
+        }}
+      >
+        {options.map((option, index) => (
+          <div key={option.value}>
+            <RadioGroupItem
+              value={option.value}
+              id={`r${index + 1}`}
+              className="hidden"
+            />
+            <Label htmlFor={`r${index + 1}`}>
+              <Tag clickable active={filterFor === option.value}>
+                {option.label}
+              </Tag>
+            </Label>
+          </div>
+        ))}
+      </RadioGroup>
+    )
   );
 };

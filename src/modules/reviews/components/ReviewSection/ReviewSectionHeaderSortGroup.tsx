@@ -8,6 +8,7 @@ import { ChevronDownIcon } from "@/common/components/CustomIcon";
 import { Select } from "@/common/components/Select";
 import { cn, toTitleCase } from "@/common/functions";
 import { ReviewsSortBy } from "@/modules/reviews/types";
+import { useEdgeConfigs } from "@/common/hooks";
 
 const formatSortByLabel = (sortBy: ReviewsSortBy) =>
   sortBy
@@ -19,6 +20,7 @@ export const ReviewSectionHeaderSortGroup = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const ecfg = useEdgeConfigs();
   // prettier-ignore
   const defaultSortBy = z.nativeEnum(ReviewsSortBy)
                           .safeParse(searchParams.get("sort"))
@@ -55,51 +57,53 @@ export const ReviewSectionHeaderSortGroup = () => {
   };
 
   return (
-    <div className="flex items-center">
-      {/* Regular buttons */}
-      {otherOptions.map((option) => (
-        <Button
-          key={option}
-          variant="ghost"
-          className={option === value ? "text-primary-default" : ""}
-          rounded
-          onClick={() => handleSortChange(option)}
-        >
-          {formatSortByLabel(option)}
-        </Button>
-      ))}
+    ecfg.enableReviewFilter && (
+      <div className="flex items-center">
+        {/* Regular buttons */}
+        {otherOptions.map((option) => (
+          <Button
+            key={option}
+            variant="ghost"
+            className={option === value ? "text-primary-default" : ""}
+            rounded
+            onClick={() => handleSortChange(option)}
+          >
+            {formatSortByLabel(option)}
+          </Button>
+        ))}
 
-      {/* Create a dropdown for each group */}
-      {Object.entries(dropdownGroups).map(([prefix, options]) => (
-        <Select
-          // force re-render when value changes
-          // see https://github.com/radix-ui/primitives/issues/1569
-          key={prefix + value}
-          value={options.includes(value) ? value : undefined}
-          onValueChange={handleSortChange}
-        >
-          <Select.Trigger className="rounded-full shadow-none" asChild>
-            <Button
-              variant="ghost"
-              rounded
-              iconRight={<ChevronDownIcon />}
-              className={cn(
-                "text-base",
-                options.includes(value) && "text-primary-default",
-              )}
-            >
-              <Select.Value placeholder="Top" />
-            </Button>
-          </Select.Trigger>
-          <Select.Content>
-            {options.map((option) => (
-              <Select.Item key={option} value={option}>
-                {formatSortByLabel(option)}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select>
-      ))}
-    </div>
+        {/* Create a dropdown for each group */}
+        {Object.entries(dropdownGroups).map(([prefix, options]) => (
+          <Select
+            // force re-render when value changes
+            // see https://github.com/radix-ui/primitives/issues/1569
+            key={prefix + value}
+            value={options.includes(value) ? value : undefined}
+            onValueChange={handleSortChange}
+          >
+            <Select.Trigger className="rounded-full shadow-none" asChild>
+              <Button
+                variant="ghost"
+                rounded
+                iconRight={<ChevronDownIcon />}
+                className={cn(
+                  "text-base",
+                  options.includes(value) && "text-primary-default",
+                )}
+              >
+                <Select.Value placeholder="Top" />
+              </Button>
+            </Select.Trigger>
+            <Select.Content>
+              {options.map((option) => (
+                <Select.Item key={option} value={option}>
+                  {formatSortByLabel(option)}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select>
+        ))}
+      </div>
+    )
   );
 };

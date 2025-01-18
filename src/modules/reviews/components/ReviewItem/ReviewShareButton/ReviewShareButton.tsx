@@ -12,6 +12,7 @@ import {
   type ButtonProps,
 } from "@/common/components/Button";
 import { ShareIcon } from "@/common/components/CustomIcon";
+import { useEdgeConfigs } from "@/common/hooks";
 
 export type ReviewShareButtonProps = ButtonProps &
   ButtonBaseProps &
@@ -26,6 +27,7 @@ export const ReviewShareButton = ({
   ...props
 }: ReviewShareButtonProps) => {
   const pathname = usePathname();
+  const ecfg = useEdgeConfigs();
 
   const shareCountQuery = api.reviewEvents.countEvent.useQuery({
     reviewId,
@@ -49,11 +51,13 @@ export const ReviewShareButton = ({
         const shareUrl = `${env.NEXT_PUBLIC_SITE_URL}${pathname}?review_id=${reviewId}`;
         await navigator.clipboard.writeText(shareUrl);
         toast.success("Link copied to clipboard", { id: reviewId });
-        track({
-          reviewId,
-          triggeringUserId,
-          eventType: ReviewEventType.SHARE,
-        });
+        if (ecfg.enableReviewEventsTracking) {
+          track({
+            reviewId,
+            triggeringUserId,
+            eventType: ReviewEventType.SHARE,
+          });
+        }
       }}
       {...props}
     >

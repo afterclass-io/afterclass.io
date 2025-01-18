@@ -11,6 +11,7 @@ import type {
   ButtonVariants,
 } from "@/common/components/Button";
 import { ThumbUpFilledIcon } from "@/common/components/CustomIcon";
+import { useEdgeConfigs } from "@/common/hooks";
 
 export type ReviewLikeButtonProps = ButtonProps &
   ButtonBaseProps &
@@ -43,6 +44,7 @@ export const ReviewLikeButton = ({
 }: ReviewLikeButtonProps) => {
   const { data: session } = useSession();
   const [isLiked, setIsLiked] = useState(false);
+  const ecfg = useEdgeConfigs();
 
   const hasUserVotedQuery = api.reviewVotes.getUserVote.useQuery({
     reviewId,
@@ -80,11 +82,13 @@ export const ReviewLikeButton = ({
       setIsLiked((prevIsLiked) => {
         if (!prevIsLiked) {
           // If we're changing from not liked to liked
-          track({
-            reviewId,
-            triggeringUserId: triggeringUserId ?? session?.user.id,
-            eventType: ReviewEventType.UPVOTE,
-          });
+          if (ecfg.enableReviewEventsTracking) {
+            track({
+              reviewId,
+              triggeringUserId: triggeringUserId ?? session?.user.id,
+              eventType: ReviewEventType.UPVOTE,
+            });
+          }
         }
         return !prevIsLiked;
       });
