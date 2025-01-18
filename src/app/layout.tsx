@@ -10,7 +10,6 @@ import AuthProvider from "@/common/providers/AuthProvider";
 import TooltipProvider from "@/common/providers/TooltipProvider";
 import { inter, poppins } from "@/common/fonts";
 import { env } from "@/env";
-import { CSPostHogProvider } from "@/common/providers/analytics/providers";
 import { EdgeConfigProvider } from "@/common/providers/EdgeConfig";
 import { UmamiProvider } from "@/common/providers/Umami";
 import JotaiProvider from "@/common/providers/JotaiProvider";
@@ -18,13 +17,6 @@ import ProgressProvider from "@/common/providers/ProgressProvider";
 import { GlobalProgressBar } from "@/modules/home/components/GlobalProgressBar";
 import { Toaster } from "@/common/components/Toast";
 import { UmamiIdentityTracker } from "@/modules/home/components/UmamiIdentityTracker";
-
-const PostHogPageView = dynamic(
-  () => import("@/common/providers/analytics/PostHogPageView"),
-  {
-    ssr: false,
-  },
-);
 
 const appName = "AfterClass";
 const appDesc = [
@@ -80,27 +72,24 @@ export default function RootLayout({
         />
       </head>
       <body className="h-dvh overflow-hidden">
-        <CSPostHogProvider>
-          <PostHogPageView />
-          <AuthProvider>
-            <TRPCReactProvider>
-              <TooltipProvider>
-                <ProgressProvider>
-                  <EdgeConfigProvider>
-                    <JotaiProvider>
-                      <ThemeProvider>
-                        <GlobalProgressBar />
-                        <CoreLayout>{children}</CoreLayout>
-                        <Toaster />
-                        <UmamiIdentityTracker />
-                      </ThemeProvider>
-                    </JotaiProvider>
-                  </EdgeConfigProvider>
-                </ProgressProvider>
-              </TooltipProvider>
-            </TRPCReactProvider>
-          </AuthProvider>
-        </CSPostHogProvider>
+        <AuthProvider>
+          <TRPCReactProvider>
+            <TooltipProvider>
+              <ProgressProvider>
+                <EdgeConfigProvider>
+                  <JotaiProvider>
+                    <ThemeProvider>
+                      <GlobalProgressBar />
+                      <CoreLayout>{children}</CoreLayout>
+                      <Toaster />
+                      <UmamiIdentityTracker />
+                    </ThemeProvider>
+                  </JotaiProvider>
+                </EdgeConfigProvider>
+              </ProgressProvider>
+            </TooltipProvider>
+          </TRPCReactProvider>
+        </AuthProvider>
       </body>
     </html>
   );
