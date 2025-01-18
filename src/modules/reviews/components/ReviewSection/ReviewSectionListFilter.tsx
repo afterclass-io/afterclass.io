@@ -15,7 +15,6 @@ export const ReviewSectionListFilter = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const ecfg = useEdgeConfigs();
   // prettier-ignore
   const defaultFilterFor = z.nativeEnum(ReviewsFilterFor)
                             .safeParse(searchParams.get("filter"))
@@ -24,6 +23,10 @@ export const ReviewSectionListFilter = () => {
 
   const [filterFor, setFilterFor] =
     useState<ReviewsFilterFor>(defaultFilterFor);
+  const ecfg = useEdgeConfigs();
+  if (!ecfg.enableReviewFilter) {
+    return null;
+  }
 
   const options = session
     ? [
@@ -33,32 +36,30 @@ export const ReviewSectionListFilter = () => {
     : [{ label: "All", value: ReviewsFilterFor.ALL }];
 
   return (
-    ecfg.enableReviewFilter && (
-      <RadioGroup
-        className="flex px-4"
-        onValueChange={(newValue) => {
-          setFilterFor(newValue as ReviewsFilterFor);
+    <RadioGroup
+      className="flex px-4"
+      onValueChange={(newValue) => {
+        setFilterFor(newValue as ReviewsFilterFor);
 
-          const params = new URLSearchParams(searchParams);
-          params.set("filter", newValue);
-          router.push(`${pathname}?${params.toString()}`);
-        }}
-      >
-        {options.map((option, index) => (
-          <div key={option.value}>
-            <RadioGroupItem
-              value={option.value}
-              id={`r${index + 1}`}
-              className="hidden"
-            />
-            <Label htmlFor={`r${index + 1}`}>
-              <Tag clickable active={filterFor === option.value}>
-                {option.label}
-              </Tag>
-            </Label>
-          </div>
-        ))}
-      </RadioGroup>
-    )
+        const params = new URLSearchParams(searchParams);
+        params.set("filter", newValue);
+        router.push(`${pathname}?${params.toString()}`);
+      }}
+    >
+      {options.map((option, index) => (
+        <div key={option.value}>
+          <RadioGroupItem
+            value={option.value}
+            id={`r${index + 1}`}
+            className="hidden"
+          />
+          <Label htmlFor={`r${index + 1}`}>
+            <Tag clickable active={filterFor === option.value}>
+              {option.label}
+            </Tag>
+          </Label>
+        </div>
+      ))}
+    </RadioGroup>
   );
 };
