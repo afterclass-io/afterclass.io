@@ -1,9 +1,12 @@
-import { ReviewSection } from "@/modules/reviews/components/ReviewSection";
+import {
+  ReviewSection,
+  ReviewSectionHeader,
+  ReviewSectionList,
+  ReviewSectionListFilter,
+  ReviewSectionHeaderSortGroup,
+} from "@/modules/reviews/components/ReviewSection";
 import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader";
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
-import { ReviewSectionHeader } from "@/modules/reviews/components/ReviewSection/ReviewSectionHeader";
-import { ReviewSectionList } from "@/modules/reviews/components/ReviewSection/ReviewSectionList";
-import { ReviewSectionHeaderSortGroup } from "@/modules/reviews/components/ReviewSection/ReviewSectionHeaderSortGroup";
 
 export default function Professor({
   params,
@@ -27,6 +30,7 @@ export default function Professor({
         <ReviewSectionHeader>
           <ReviewSectionHeaderSortGroup />
         </ReviewSectionHeader>
+        <ReviewSectionListFilter />
         <ReviewSectionList>
           <ReviewItemLoader
             variant="professor"
