@@ -124,8 +124,6 @@ context("Home", function () {
   describe("Authenticated User", function () {
     beforeEach(function () {
       cy.login();
-      cy.visit(TEST_COURSE_PATH);
-      cy.wait(1_000);
     });
 
     it("should not be able to see login overlays", function () {
@@ -225,7 +223,6 @@ context("Home", function () {
     // anonymous function to avoid `this` binding issues
     beforeEach(function () {
       cy.login();
-      cy.wait(1_000);
       cy.fixture("prisma/3_courses.json").then((courses) => {
         this.courseJson = courses;
         this.course = courses.find((c) => c.code === TEST_COURSE_CODE);

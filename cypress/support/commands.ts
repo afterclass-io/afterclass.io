@@ -12,12 +12,17 @@
 //
 // -- This is a parent command --
 Cypress.Commands.add("loginWith", ({ email, password }) => {
-  cy.visit("/account/auth/login");
-  cy.get("input[data-test=email]").type(email);
-  cy.get("input[data-test=password]").type(password);
-  cy.get("button[data-test=submit]").click();
-  cy.intercept("GET", "/api/auth/session").as("authSession");
-  cy.wait("@authSession");
+  cy.url().then((url) => {
+    cy.visit("/account/auth/login");
+    cy.get("input[data-test=email]").type(email);
+    cy.get("input[data-test=password]").type(password);
+    cy.get("button[data-test=submit]").click();
+    cy.intercept("GET", "/api/auth/session").as("authSession");
+    cy.wait("@authSession");
+
+    cy.visit(url);
+    cy.wait(1000);
+  });
 });
 
 Cypress.Commands.add("login", () => {

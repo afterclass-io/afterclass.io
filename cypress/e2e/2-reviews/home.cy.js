@@ -91,7 +91,6 @@ context("Home", function () {
   describe("Authenticated User", function () {
     beforeEach(function () {
       cy.login();
-      cy.wait(1000);
     });
 
     it("should not be able to see login overlay on review item", function () {
