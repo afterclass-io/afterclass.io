@@ -20,8 +20,10 @@ Cypress.Commands.add("loginWith", ({ email, password }) => {
     cy.intercept("GET", "/api/auth/session").as("authSession");
     cy.wait("@authSession");
 
-    cy.visit(url);
-    cy.wait(1000);
+    if (url.startsWith("http")) {
+      cy.visit(url);
+      cy.wait(1000);
+    }
   });
 });
 

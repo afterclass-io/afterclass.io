@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-context("Home", function () {
+context("Reviews: Home", function () {
   beforeEach(function () {
     cy.visit("/");
   });

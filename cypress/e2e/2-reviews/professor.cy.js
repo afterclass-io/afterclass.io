@@ -3,7 +3,7 @@
 const TEST_PROF_SLUG = "ouh-eng-lieh";
 const TEST_PROF_PATH = `/professor/${TEST_PROF_SLUG}`;
 
-context("Home", function () {
+context("Reviews: Professor", function () {
   beforeEach(function () {
     cy.visit(TEST_PROF_PATH);
   });

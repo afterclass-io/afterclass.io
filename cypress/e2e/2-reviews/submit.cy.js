@@ -3,7 +3,7 @@
 const TEST_COURSE_CODE = "SE101";
 const TEST_PROF_SLUG = "swavek-wlodkowski";
 
-context("Home", function () {
+context("Reviews: Submit", function () {
   beforeEach(function () {
     cy.login();
     cy.visit("/submit");

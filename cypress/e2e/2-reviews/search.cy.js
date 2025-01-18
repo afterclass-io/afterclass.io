@@ -22,7 +22,7 @@ const PAGES_TO_TEST = [
   },
 ];
 
-context("Home", function () {
+context("Reviews: Search", function () {
   PAGES_TO_TEST.forEach(({ url, name, searchForCourse, searchForProf }) => {
     describe(`Search Functionality on ${name} Page`, function () {
       beforeEach(function () {

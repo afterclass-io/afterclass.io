@@ -3,7 +3,7 @@
 const TEST_COURSE_CODE = "COR-IS1702";
 const TEST_COURSE_PATH = `/course/${TEST_COURSE_CODE}`;
 
-context("Home", function () {
+context("Reviews: Course", function () {
   beforeEach(function () {
     cy.visit(TEST_COURSE_PATH);
   });
