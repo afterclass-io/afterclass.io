@@ -1,6 +1,7 @@
 "use client";
-import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { InView } from "react-intersection-observer";
 import { z } from "zod";
 
@@ -116,11 +117,19 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
   };
 
   const [{ pages }, reviewQuery] = getInfiniteQuery();
-  const { fetchNextPage, hasNextPage } = reviewQuery;
+  const { fetchNextPage, hasNextPage, isPending, isRefetching } = reviewQuery;
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    reviewQuery.refetch();
+  }, [searchParams]);
 
   const reviews = pages.flatMap((page) => page.items);
 
-  if (status === "loading") {
+  if (reviews.length === 0) {
+    return <NoReviewCtaNote />;
+  }
+
+  if (status === "loading" || isPending || isRefetching) {
     return (
       <>
         {reviews.map((_, index) => (
@@ -130,9 +139,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
     );
   }
 
-  return reviews.length === 0 ? (
-    <NoReviewCtaNote />
-  ) : (
+  return (
     <>
       {reviews.map((review) => (
         <ReviewItem
