@@ -14,6 +14,12 @@ model Reviews {
   body                 String
   tips                 String?
   rating               Int
+  // == START ==
+  // DO NOT update these fields manually
+  // The following fields are updated automatically by triggers
+  countEventViews      Int      @default(0) @map("count_event_views")
+  countVotes           Int      @default(0) @map("count_votes")
+  // === END ===
   reviewedProfessorId  String?  @map("reviewed_professor_id")
   reviewedCourseId     String   @map("reviewed_course_id")
   reviewedUniversityId Int      @map("reviewed_university_id")
@@ -178,16 +184,17 @@ model Classes {
 }
 
 model ReviewVotes {
-  id        Int      @id @default(autoincrement())
   reviewId  String   @map("review_id")
   voterId   String   @map("voter_id")
+  weight    Int      @default(1) @db.SmallInt // 1 for UPVOTE, -1 for DOWNVOTE
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   review Reviews @relation(fields: [reviewId], references: [id])
   voter  Users   @relation(fields: [voterId], references: [id])
 
-  @@index([reviewId], type: BTree)
+  @@id([reviewId, voterId])
+  @@index([reviewId, voterId], type: BTree)
   @@map("review_votes")
 }
 

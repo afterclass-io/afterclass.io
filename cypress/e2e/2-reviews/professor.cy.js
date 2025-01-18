@@ -3,7 +3,7 @@
 const TEST_PROF_SLUG = "ouh-eng-lieh";
 const TEST_PROF_PATH = `/professor/${TEST_PROF_SLUG}`;
 
-context("Home", function () {
+context("Reviews: Professor", function () {
   beforeEach(function () {
     cy.visit(TEST_PROF_PATH);
   });
@@ -51,6 +51,7 @@ context("Home", function () {
         "be.visible",
       );
 
+      cy.get("[data-test=scrollable]").scrollTo("bottom");
       cy.get("[data-test=review] a[data-test=lock-cta-overlay]").should(
         "be.visible",
       );
@@ -117,7 +118,6 @@ context("Home", function () {
   describe("Authenticated User", function () {
     beforeEach(function () {
       cy.login();
-      cy.wait(1_000);
     });
 
     it("should not be able to see login overlays", function () {
@@ -210,7 +210,6 @@ context("Home", function () {
     // anonymous function to avoid `this` binding issues
     beforeEach(function () {
       cy.login();
-      cy.wait(1_000);
       cy.fixture("prisma/5_professors.json").then((professors) => {
         this.professorsJson = professors;
         this.professor = professors.find((c) => c.slug === TEST_PROF_SLUG);

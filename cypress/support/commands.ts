@@ -12,49 +12,18 @@
 //
 // -- This is a parent command --
 Cypress.Commands.add("loginWith", ({ email, password }) => {
-  cy.clearAllCookies();
-  cy.clearAllLocalStorage();
-  cy.clearAllSessionStorage();
-  cy.request("/api/auth/csrf").then((response) => {
-    cy.log(`csrf response: ${JSON.stringify(response)}`);
-    const csrfToken = response.body.csrfToken;
-    cy.log(`csrfToken: ${csrfToken}`);
+  cy.url().then((url) => {
+    cy.visit("/account/auth/login");
+    cy.get("input[data-test=email]").type(email);
+    cy.get("input[data-test=password]").type(password);
+    cy.get("button[data-test=submit]").click();
+    cy.intercept("GET", "/api/auth/session").as("authSession");
+    cy.wait("@authSession");
 
-    // Perform login with credentials
-    cy.request({
-      method: "POST",
-      url: "/api/auth/callback/credentials",
-      form: true,
-      body: {
-        csrfToken,
-        email,
-        password,
-        json: true,
-      },
-      followRedirect: false,
-    }).then((res) => {
-      expect(res.status).to.eq(302);
-
-      const cookies = res.headers["set-cookie"];
-      if (!cookies) {
-        throw new Error("No cookies found in the response");
-      }
-      if (!Array.isArray(cookies)) {
-        throw new Error("Cookies must be an array");
-      }
-
-      const sessionCookie = cookies.find((cookie) =>
-        cookie.trim().startsWith("authjs.session-token="),
-      );
-      if (!sessionCookie) {
-        throw new Error("No session cookie found in the response");
-      }
-
-      const sessionTokenValue = sessionCookie.split(";")[0]!.split("=")[1];
-
-      cy.setCookie("authjs.session-token", sessionTokenValue!);
-      cy.reload();
-    });
+    if (url.startsWith("http")) {
+      cy.visit(url);
+      cy.wait(1000);
+    }
   });
 });
 

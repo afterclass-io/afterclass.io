@@ -1,15 +1,22 @@
+import {
+  ReviewSection,
+  ReviewSectionHeader,
+  ReviewSectionList,
+} from "@/modules/reviews/components/ReviewSection";
 import { ReviewItemSkeleton } from "@/modules/reviews/components/ReviewItem";
-import { ReviewSection } from "@/modules/reviews/components/ReviewSection";
 
 export default function Loading() {
   return (
     <ReviewSection>
-      <ReviewItemSkeleton />
-      <ReviewItemSkeleton />
-      <ReviewItemSkeleton />
-      <ReviewItemSkeleton />
-      <ReviewItemSkeleton />
-      <ReviewItemSkeleton />
+      <ReviewSectionHeader />
+      <ReviewSectionList>
+        <ReviewItemSkeleton />
+        <ReviewItemSkeleton />
+        <ReviewItemSkeleton />
+        <ReviewItemSkeleton />
+        <ReviewItemSkeleton />
+        <ReviewItemSkeleton />
+      </ReviewSectionList>
     </ReviewSection>
   );
 }

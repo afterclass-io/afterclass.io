@@ -1,6 +1,12 @@
+import {
+  ReviewSection,
+  ReviewSectionHeader,
+  ReviewSectionList,
+  ReviewSectionListFilter,
+  ReviewSectionHeaderSortGroup,
+} from "@/modules/reviews/components/ReviewSection";
 import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader";
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
-import { ReviewSection } from "@/modules/reviews/components/ReviewSection";
 
 export default function Professor({
   params,
@@ -21,11 +27,17 @@ export default function Professor({
   return (
     <>
       <ReviewSection>
-        <ReviewItemLoader
-          variant="professor"
-          slug={params.slug}
-          courseCodes={courseCodes.length > 0 ? courseCodes : undefined}
-        />
+        <ReviewSectionHeader>
+          <ReviewSectionHeaderSortGroup />
+        </ReviewSectionHeader>
+        <ReviewSectionListFilter />
+        <ReviewSectionList>
+          <ReviewItemLoader
+            variant="professor"
+            slug={params.slug}
+            courseCodes={courseCodes.length > 0 ? courseCodes : undefined}
+          />
+        </ReviewSectionList>
       </ReviewSection>
       <ReviewModalFocused variant="professor" />
     </>

@@ -3,7 +3,7 @@
 const TEST_COURSE_CODE = "COR-IS1702";
 const TEST_COURSE_PATH = `/course/${TEST_COURSE_CODE}`;
 
-context("Home", function () {
+context("Reviews: Course", function () {
   beforeEach(function () {
     cy.visit(TEST_COURSE_PATH);
   });
@@ -51,6 +51,7 @@ context("Home", function () {
         "be.visible",
       );
 
+      cy.get("[data-test=scrollable]").scrollTo("bottom");
       cy.get("[data-test=review] a[data-test=lock-cta-overlay]").should(
         "exist",
       );
@@ -123,7 +124,6 @@ context("Home", function () {
   describe("Authenticated User", function () {
     beforeEach(function () {
       cy.login();
-      cy.wait(1_000);
     });
 
     it("should not be able to see login overlays", function () {
@@ -223,7 +223,6 @@ context("Home", function () {
     // anonymous function to avoid `this` binding issues
     beforeEach(function () {
       cy.login();
-      cy.wait(1_000);
       cy.fixture("prisma/3_courses.json").then((courses) => {
         this.courseJson = courses;
         this.course = courses.find((c) => c.code === TEST_COURSE_CODE);

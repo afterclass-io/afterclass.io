@@ -6,7 +6,7 @@ import { useFormContext } from "react-hook-form";
 import { Combobox } from "@/modules/submit/components/Combobox";
 import { Button } from "@/common/components/Button";
 import { RatingGroup } from "@/common/components/RatingGroup";
-import { TagGroup } from "@/common/components/TagGroup";
+import { TagToggleGroup } from "@/common/components/TagToggleGroup";
 import { Textarea } from "@/common/components/Textarea";
 import { type ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
 import { ReviewableEnum, type ReviewableType } from "@/modules/submit/types";
@@ -119,7 +119,7 @@ export const ReviewFormSection = ({
                 <Form.Item>
                   <Form.Label>{texts.TAGS.FIELD_LABEL[type]}</Form.Label>
                   <Form.Control>
-                    <TagGroup
+                    <TagToggleGroup
                       items={reviewLabels}
                       {...field}
                       data-test={`review-form-${type}-label`}

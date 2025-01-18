@@ -1,8 +1,8 @@
 import { type VariantProps, tv } from "tailwind-variants";
 
-export type TagGroupVariants = VariantProps<typeof tagGroupTheme>;
+export type TagToggleGroupVariants = VariantProps<typeof tagToggleGroupTheme>;
 
-export const tagGroupTheme = tv(
+export const tagToggleGroupTheme = tv(
   {
     slots: {
       wrapper: [

@@ -10,6 +10,7 @@ import { type Review } from "@/modules/reviews/types";
 import { reviewFormSchema } from "@/common/tools/zod/schemas";
 import { ReviewableEnum } from "@/modules/submit/types";
 import { toTitleCase } from "@/common/functions";
+import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -40,11 +41,6 @@ const PUBLIC_REVIEW_FIELDS = {
       },
     },
   },
-  _count: {
-    select: {
-      votes: true,
-    },
-  },
   reviewedProfessor: {
     select: {
       name: true,
@@ -56,6 +52,7 @@ const PUBLIC_REVIEW_FIELDS = {
       abbrv: true,
     },
   },
+  countVotes: true,
 } satisfies Prisma.ReviewsSelect;
 
 const PRIVATE_REVIEW_FIELDS = {
@@ -64,6 +61,39 @@ const PRIVATE_REVIEW_FIELDS = {
   tips: true,
   rating: true,
 } satisfies Prisma.ReviewsSelect;
+
+const getOrderBy = (sortBy: ReviewsSortBy) => {
+  const DESC = "desc" as Prisma.SortOrder;
+
+  let orderBy:
+    | Prisma.ReviewsOrderByWithRelationInput
+    | Prisma.ReviewsOrderByWithRelationInput[];
+
+  switch (sortBy) {
+    case ReviewsSortBy.LATEST:
+      orderBy = { createdAt: DESC };
+      break;
+    case ReviewsSortBy.TRENDING:
+      orderBy = {
+        reviewEvents: {
+          _count: DESC,
+        },
+      };
+      break;
+    case ReviewsSortBy.TOP_VIEWS:
+      orderBy = { countEventViews: DESC };
+      break;
+    case ReviewsSortBy.TOP_VOTES:
+      orderBy = { countVotes: DESC };
+      break;
+    default:
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Invalid sort by value",
+      });
+  }
+  return orderBy;
+};
 
 export const reviewsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -154,7 +184,7 @@ export const reviewsRouter = createTRPCRouter({
         reviewLabels: review.reviewLabels.map((rl) => ({
           name: rl.label.name,
         })),
-        likeCount: review._count.votes,
+        likeCount: review.countVotes,
         reviewFor:
           review.reviewedCourseId && review.reviewedProfessorId
             ? ("professor" as "professor" | "course")
@@ -173,7 +203,8 @@ export const reviewsRouter = createTRPCRouter({
         universityId: z.number().optional(),
         courseId: z.string().optional(),
         profId: z.string().optional(),
-        latest: z.boolean().optional().default(true),
+        filterFor: z.nativeEnum(ReviewsFilterFor),
+        sortBy: z.nativeEnum(ReviewsSortBy),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -185,8 +216,13 @@ export const reviewsRouter = createTRPCRouter({
           reviewedUniversityId: input.universityId,
           reviewedCourseId: input.courseId,
           reviewedProfessorId: input.profId,
+          ...(input.filterFor === ReviewsFilterFor.UPVOTED
+            ? {
+                votes: { some: { voterId: ctx.session.user.id } },
+              }
+            : {}),
         },
-        orderBy: input.latest ? { createdAt: "desc" } : undefined,
+        orderBy: getOrderBy(input.sortBy),
         select: PRIVATE_REVIEW_FIELDS,
       });
       let nextCursor: typeof input.cursor | undefined = undefined;
@@ -207,7 +243,7 @@ export const reviewsRouter = createTRPCRouter({
               reviewLabels: review.reviewLabels.map((rl) => ({
                 name: rl.label.name,
               })),
-              likeCount: review._count.votes,
+              likeCount: review.countVotes,
               reviewFor:
                 review.reviewedCourseId && review.reviewedProfessorId
                   ? ("professor" as "professor" | "course")
@@ -229,7 +265,8 @@ export const reviewsRouter = createTRPCRouter({
         universityId: z.number().optional(),
         courseId: z.string().optional(),
         profId: z.string().optional(),
-        latest: z.boolean().optional().default(true),
+        filterFor: z.nativeEnum(ReviewsFilterFor),
+        sortBy: z.nativeEnum(ReviewsSortBy),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -242,7 +279,7 @@ export const reviewsRouter = createTRPCRouter({
           reviewedCourseId: input.courseId,
           reviewedProfessorId: input.profId,
         },
-        orderBy: input.latest ? { createdAt: "desc" } : undefined,
+        orderBy: getOrderBy(input.sortBy),
         select: PUBLIC_REVIEW_FIELDS,
       });
       let nextCursor: typeof input.cursor | undefined = undefined;
@@ -265,7 +302,7 @@ export const reviewsRouter = createTRPCRouter({
               reviewLabels: review.reviewLabels.map((rl) => ({
                 name: rl.label.name,
               })),
-              likeCount: review._count.votes,
+              likeCount: review.countVotes,
               reviewFor:
                 review.reviewedCourseId && review.reviewedProfessorId
                   ? ("professor" as "professor" | "course")
@@ -287,7 +324,8 @@ export const reviewsRouter = createTRPCRouter({
         slug: z.string(),
         universityId: z.number().optional(),
         courseCodes: z.string().array().optional(),
-        latest: z.boolean().optional().default(true),
+        filterFor: z.nativeEnum(ReviewsFilterFor),
+        sortBy: z.nativeEnum(ReviewsSortBy),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -299,8 +337,13 @@ export const reviewsRouter = createTRPCRouter({
           reviewedUniversityId: input.universityId,
           reviewedCourse: { code: { in: input.courseCodes } },
           reviewedProfessor: { slug: input.slug },
+          ...(input.filterFor === ReviewsFilterFor.UPVOTED
+            ? {
+                votes: { some: { voterId: ctx.session.user.id } },
+              }
+            : {}),
         },
-        orderBy: input.latest ? { createdAt: "desc" } : undefined,
+        orderBy: getOrderBy(input.sortBy),
         select: PRIVATE_REVIEW_FIELDS,
       });
       let nextCursor: typeof input.cursor | undefined = undefined;
@@ -321,7 +364,7 @@ export const reviewsRouter = createTRPCRouter({
               reviewLabels: review.reviewLabels.map((rl) => ({
                 name: rl.label.name,
               })),
-              likeCount: review._count.votes,
+              likeCount: review.countVotes,
               reviewFor:
                 review.reviewedCourseId && review.reviewedProfessorId
                   ? ("professor" as "professor" | "course")
@@ -343,7 +386,8 @@ export const reviewsRouter = createTRPCRouter({
         slug: z.string(),
         universityId: z.number().optional(),
         courseCodes: z.string().array().optional(),
-        latest: z.boolean().optional().default(true),
+        filterFor: z.nativeEnum(ReviewsFilterFor),
+        sortBy: z.nativeEnum(ReviewsSortBy),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -356,7 +400,7 @@ export const reviewsRouter = createTRPCRouter({
           reviewedCourse: { code: { in: input.courseCodes } },
           reviewedProfessor: { slug: input.slug },
         },
-        orderBy: input.latest ? { createdAt: "desc" } : undefined,
+        orderBy: getOrderBy(input.sortBy),
         select: PUBLIC_REVIEW_FIELDS,
       });
       let nextCursor: typeof input.cursor | undefined = undefined;
@@ -376,7 +420,7 @@ export const reviewsRouter = createTRPCRouter({
               courseCode: review.reviewedCourse.code,
               courseName: review.reviewedCourse.name,
               username: review.reviewer.username ?? "Anonymous",
-              likeCount: review._count.votes,
+              likeCount: review.countVotes,
               reviewLabels: review.reviewLabels.map((rl) => ({
                 name: rl.label.name,
               })),
@@ -401,7 +445,8 @@ export const reviewsRouter = createTRPCRouter({
         skip: z.number().default(0),
         code: z.string(),
         slugs: z.string().array().optional(),
-        latest: z.boolean().optional().default(true),
+        filterFor: z.nativeEnum(ReviewsFilterFor),
+        sortBy: z.nativeEnum(ReviewsSortBy),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -412,8 +457,13 @@ export const reviewsRouter = createTRPCRouter({
         where: {
           reviewedCourse: { code: input.code },
           reviewedProfessor: input.slugs && { slug: { in: input.slugs } },
+          ...(input.filterFor === ReviewsFilterFor.UPVOTED
+            ? {
+                votes: { some: { voterId: ctx.session.user.id } },
+              }
+            : {}),
         },
-        orderBy: input.latest ? { createdAt: "desc" } : undefined,
+        orderBy: getOrderBy(input.sortBy),
         select: PRIVATE_REVIEW_FIELDS,
       });
       let nextCursor: typeof input.cursor | undefined = undefined;
@@ -434,7 +484,7 @@ export const reviewsRouter = createTRPCRouter({
               reviewLabels: review.reviewLabels.map((rl) => ({
                 name: rl.label.name,
               })),
-              likeCount: review._count.votes,
+              likeCount: review.countVotes,
               reviewFor:
                 review.reviewedCourseId && review.reviewedProfessorId
                   ? ("professor" as "professor" | "course")
@@ -456,7 +506,8 @@ export const reviewsRouter = createTRPCRouter({
         skip: z.number().default(0),
         code: z.string(),
         slugs: z.string().array().optional(),
-        latest: z.boolean().optional().default(true),
+        filterFor: z.nativeEnum(ReviewsFilterFor),
+        sortBy: z.nativeEnum(ReviewsSortBy),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -468,7 +519,7 @@ export const reviewsRouter = createTRPCRouter({
           reviewedCourse: { code: input.code },
           reviewedProfessor: { slug: { in: input.slugs } },
         },
-        orderBy: input.latest ? { createdAt: "desc" } : undefined,
+        orderBy: getOrderBy(input.sortBy),
         select: PRIVATE_REVIEW_FIELDS,
       });
       let nextCursor: typeof input.cursor | undefined = undefined;
@@ -488,7 +539,7 @@ export const reviewsRouter = createTRPCRouter({
               courseCode: review.reviewedCourse.code,
               courseName: review.reviewedCourse.name,
               username: review.reviewer.username ?? "Anonymous",
-              likeCount: review._count.votes,
+              likeCount: review.countVotes,
               reviewLabels: review.reviewLabels.map((rl) => ({
                 name: rl.label.name,
               })),

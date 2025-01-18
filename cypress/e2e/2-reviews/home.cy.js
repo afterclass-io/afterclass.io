@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-context("Home", function () {
+context("Reviews: Home", function () {
   beforeEach(function () {
     cy.visit("/");
   });
@@ -40,6 +40,8 @@ context("Home", function () {
 
   describe("Unauthenticated User", function () {
     it("should be able to see login overlay on review item", function () {
+      cy.get("[data-test=scrollable]").scrollTo("bottom");
+
       cy.get("a[data-test=lock-cta-overlay]").should("be.visible");
     });
 
@@ -89,7 +91,6 @@ context("Home", function () {
   describe("Authenticated User", function () {
     beforeEach(function () {
       cy.login();
-      cy.wait(1000);
     });
 
     it("should not be able to see login overlay on review item", function () {

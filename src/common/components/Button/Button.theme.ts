@@ -133,17 +133,7 @@ export const buttonTheme = tv(
         ],
       },
       rounded: {
-        true: [
-          "inline-flex",
-          "min-w-14",
-          "py-[0.125rem]",
-          "px-3",
-          "gap-2",
-          "rounded-[6.1875rem]",
-          "after:rounded-[6.1875rem]",
-          "border-solid",
-          "border-border-default",
-        ],
+        true: ["rounded-full", "after:rounded-full"],
       },
     },
     compoundVariants: [
