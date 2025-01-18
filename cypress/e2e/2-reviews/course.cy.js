@@ -51,6 +51,7 @@ context("Home", function () {
         "be.visible",
       );
 
+      cy.get("[data-test=scrollable]").scrollTo("bottom");
       cy.get("[data-test=review] a[data-test=lock-cta-overlay]").should(
         "exist",
       );

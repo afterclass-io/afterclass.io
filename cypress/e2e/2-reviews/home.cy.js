@@ -40,6 +40,8 @@ context("Home", function () {
 
   describe("Unauthenticated User", function () {
     it("should be able to see login overlay on review item", function () {
+      cy.get("[data-test=scrollable]").scrollTo("bottom");
+
       cy.get("a[data-test=lock-cta-overlay]").should("be.visible");
     });
 
