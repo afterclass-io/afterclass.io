@@ -124,6 +124,7 @@ context("Home", function () {
   describe("Authenticated User", function () {
     beforeEach(function () {
       cy.login();
+      cy.visit(TEST_COURSE_PATH);
       cy.wait(1_000);
     });
 
