@@ -2,6 +2,7 @@
 import { useSession } from "next-auth/react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { InView } from "react-intersection-observer";
+import { z } from "zod";
 
 import { api } from "@/common/tools/trpc/react";
 import { AfterclassIcon } from "@/common/components/CustomIcon";
@@ -9,7 +10,6 @@ import { ProgressLink } from "@/common/components/Progress";
 
 import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
 import { ReviewItem, ReviewItemSkeleton } from "../ReviewItem";
-import { z } from "zod";
 
 type BaseReviewItemLoaderProps = {
   variant: "home" | "course" | "professor";
@@ -36,24 +36,25 @@ export type ReviewItemLoaderProps =
   | ReviewItemLoaderCourseProps
   | ReviewItemLoaderProfessorProps;
 
-const EmptyReviewState = () => (
+const NoReviewCtaNote = () => (
   <div
-    className="w-full px-3 py-6 text-center text-xs text-text-em-mid md:text-sm"
+    className="w-full space-x-1 px-3 py-6 text-center text-xs text-text-em-mid md:text-sm"
     data-variant="full-width"
   >
-    <span>Oh no!</span> Looks like no one has reviewed yet.
+    <span className="mr-1 text-text-em-high">Oh no!</span>
+    <span>Looks like no one has reviewed yet.</span>
     <br />
-    Help us out by
+    <span>Help us out by</span>
     <ProgressLink
       href="/submit"
       variant="link"
-      className="mx-1 inline-flex h-fit pb-[1px] text-xs md:h-fit md:p-0 md:text-sm"
+      className="inline-flex h-fit pb-[1px] text-xs md:h-fit md:p-0 md:text-sm"
       isResponsive
       data-umami-event="no-review-cta"
     >
       writing one
     </ProgressLink>
-    today 🙈
+    <span>today 🙈</span>
   </div>
 );
 
@@ -130,7 +131,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
   }
 
   return reviews.length === 0 ? (
-    <EmptyReviewState />
+    <NoReviewCtaNote />
   ) : (
     <>
       {reviews.map((review) => (
