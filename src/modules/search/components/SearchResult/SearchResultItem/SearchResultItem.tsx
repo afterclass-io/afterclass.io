@@ -1,5 +1,4 @@
 "use client";
-import { Button } from "@/common/components/Button";
 import { ChevronRightIcon, SchoolIcon } from "@/common/components/CustomIcon";
 import {
   type FilterStat,

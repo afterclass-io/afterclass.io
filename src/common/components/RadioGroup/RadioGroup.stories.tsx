@@ -19,8 +19,6 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
-
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 
 const formSchema = z.object({
@@ -38,7 +36,7 @@ export const AsFormInput: Story = {
       },
     },
   },
-  render: (args) => {
+  render: (_) => {
     const form = useForm<FormInputsSchema>({
       resolver: zodResolver(formSchema),
     });
