@@ -1,7 +1,6 @@
 import "@/common/styles/globals.scss";
 
 import type { Metadata, Viewport } from "next";
-import dynamic from "next/dynamic";
 
 import { TRPCReactProvider } from "@/common/tools/trpc/react";
 import { CoreLayout } from "@/common/components/CoreLayout";
