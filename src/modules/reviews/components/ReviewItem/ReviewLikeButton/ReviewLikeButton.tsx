@@ -46,10 +46,7 @@ export const ReviewLikeButton = ({
   const [isLiked, setIsLiked] = useState(false);
   const ecfg = useEdgeConfigs();
 
-  const hasUserVotedQuery = api.reviewVotes.getUserVote.useQuery({
-    reviewId,
-    userId: session?.user.id ?? "",
-  });
+  const hasUserVotedQuery = api.reviewVotes.getByUser.useQuery({ reviewId });
   useEffect(
     () => setIsLiked(!!hasUserVotedQuery.data),
     [hasUserVotedQuery.data],
