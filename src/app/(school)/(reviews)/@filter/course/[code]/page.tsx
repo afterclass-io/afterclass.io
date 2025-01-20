@@ -1,3 +1,5 @@
+import { ReviewLabelType } from "@prisma/client";
+
 import { auth } from "@/server/auth";
 import { FilterToggleSection } from "@/modules/reviews/components/FilterToggleSection";
 import { api } from "@/common/tools/trpc/server";
@@ -10,7 +12,9 @@ export default async function CourseFilter({
 }) {
   const session = await auth();
   if (!session) {
-    return <FilterToggleSection filterType="professor" isLocked />;
+    return (
+      <FilterToggleSection filterType={ReviewLabelType.PROFESSOR} isLocked />
+    );
   }
 
   // assuming all course codes are uppercase
@@ -20,7 +24,7 @@ export default async function CourseFilter({
   });
   return (
     <FilterToggleSection
-      filterType="professor"
+      filterType={ReviewLabelType.PROFESSOR}
       searchParamsName="professor"
       dataToFilter={professorForThisCourse.map((professor) => ({
         label: professor.name,

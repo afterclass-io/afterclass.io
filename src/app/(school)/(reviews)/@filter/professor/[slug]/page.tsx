@@ -1,7 +1,8 @@
-import { GraduationCapIcon, PencilIcon } from "@/common/components/CustomIcon";
-import { FilterToggleSection } from "@/modules/reviews/components/FilterToggleSection";
-import { api } from "@/common/tools/trpc/server";
+import { ReviewLabelType } from "@prisma/client";
 import { auth } from "@/server/auth";
+import { FilterToggleSection } from "@/modules/reviews/components/FilterToggleSection";
+import { GraduationCapIcon, PencilIcon } from "@/common/components/CustomIcon";
+import { api } from "@/common/tools/trpc/server";
 
 export default async function ProfessorFilter({
   params,
@@ -10,7 +11,7 @@ export default async function ProfessorFilter({
 }) {
   const session = await auth();
   if (!session) {
-    return <FilterToggleSection filterType="course" isLocked />;
+    return <FilterToggleSection filterType={ReviewLabelType.COURSE} isLocked />;
   }
 
   const coursesTaughtByThisProf = await api.courses.getByProfSlug({
@@ -19,7 +20,7 @@ export default async function ProfessorFilter({
 
   return (
     <FilterToggleSection
-      filterType="course"
+      filterType={ReviewLabelType.COURSE}
       searchParamsName="course"
       dataToFilter={coursesTaughtByThisProf.map((course) => ({
         label: course.name,
