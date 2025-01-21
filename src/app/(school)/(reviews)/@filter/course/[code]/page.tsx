@@ -1,4 +1,4 @@
-import { ReviewLabelType } from "@prisma/client";
+import { ReviewType } from "@prisma/client";
 
 import { auth } from "@/server/auth";
 import { FilterToggleSection } from "@/modules/reviews/components/FilterToggleSection";
@@ -12,9 +12,7 @@ export default async function CourseFilter({
 }) {
   const session = await auth();
   if (!session) {
-    return (
-      <FilterToggleSection filterType={ReviewLabelType.PROFESSOR} isLocked />
-    );
+    return <FilterToggleSection filterType={ReviewType.PROFESSOR} isLocked />;
   }
 
   // assuming all course codes are uppercase
@@ -24,7 +22,7 @@ export default async function CourseFilter({
   });
   return (
     <FilterToggleSection
-      filterType={ReviewLabelType.PROFESSOR}
+      filterType={ReviewType.PROFESSOR}
       searchParamsName="professor"
       dataToFilter={professorForThisCourse.map((professor) => ({
         label: professor.name,

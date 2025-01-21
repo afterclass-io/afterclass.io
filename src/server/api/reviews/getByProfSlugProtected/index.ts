@@ -1,4 +1,4 @@
-import { ReviewLabelType } from "@prisma/client";
+import { ReviewType } from "@prisma/client";
 import { z } from "zod";
 
 import { protectedProcedure } from "@/server/api/trpc";
@@ -63,8 +63,8 @@ export const getByProfSlugProtected = protectedProcedure
             likeCount: review.countVotes,
             reviewFor:
               review.reviewedCourseId && review.reviewedProfessorId
-                ? ReviewLabelType.PROFESSOR
-                : ReviewLabelType.COURSE,
+                ? ReviewType.PROFESSOR
+                : ReviewType.COURSE,
             professorName: review.reviewedProfessor?.name,
             professorSlug: review.reviewedProfessor?.slug,
             university: review.reviewedUniversity.abbrv,

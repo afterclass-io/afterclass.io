@@ -1,4 +1,4 @@
-import { ReviewLabelType } from "@prisma/client";
+import { ReviewType } from "@prisma/client";
 
 import { auth } from "@/server/auth";
 import { RatingSection } from "@/modules/reviews/components/RatingSection";
@@ -17,7 +17,7 @@ export default async function ProfessorRating({
   const session = await auth();
 
   const validProfessorReviewLabels = await api.labels.getAllByType({
-    typeOf: ReviewLabelType.PROFESSOR,
+    typeOf: ReviewType.PROFESSOR,
   });
 
   if (!session) {

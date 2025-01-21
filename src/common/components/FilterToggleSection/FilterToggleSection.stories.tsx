@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
-import { ReviewLabelType } from "@prisma/client";
+import { ReviewType } from "@prisma/client";
 
 import { FilterToggleSection } from "./FilterToggleSection";
 import { type FilterItem } from "./FilterToggleSectionItem";
@@ -31,7 +31,7 @@ export const Default: Story = {
     );
     return (
       <FilterToggleSection>
-        <FilterToggleSection.Header type={ReviewLabelType.PROFESSOR} />
+        <FilterToggleSection.Header type={ReviewType.PROFESSOR} />
         <FilterToggleSection.Items>
           {[
             {
@@ -87,7 +87,7 @@ export const WithSubHeader: Story = {
     );
     return (
       <FilterToggleSection>
-        <FilterToggleSection.Header type={ReviewLabelType.COURSE} />
+        <FilterToggleSection.Header type={ReviewType.COURSE} />
         <FilterToggleSection.Items>
           {[
             {

@@ -1,4 +1,4 @@
-import { ReviewLabelType } from "@prisma/client";
+import { ReviewType } from "@prisma/client";
 
 import Heading from "@/common/components/Heading";
 import {
@@ -7,17 +7,13 @@ import {
 } from "@/common/components/CustomIcon";
 import { filterToggleSectionTheme } from "../FilterToggleSection.theme";
 
-export const FilterToggleSectionHeader = ({
-  type,
-}: {
-  type: ReviewLabelType;
-}) => {
+export const FilterToggleSectionHeader = ({ type }: { type: ReviewType }) => {
   const { sectionHeader, headerIcon } = filterToggleSectionTheme({
     size: { initial: "sm", md: "md" },
   });
   return (
     <div className={sectionHeader()}>
-      {type === ReviewLabelType.COURSE ? (
+      {type === ReviewType.COURSE ? (
         <>
           <BooksColoredIcon className={headerIcon()} />
           <Heading as="h2">Courses</Heading>

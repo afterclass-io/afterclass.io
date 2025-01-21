@@ -1,4 +1,4 @@
-import { ReviewLabelType, type Prisma } from "@prisma/client";
+import { ReviewType, type Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import { publicProcedure } from "@/server/api/trpc";
@@ -56,7 +56,7 @@ export const getMetadataForCourse = publicProcedure
 
     const courseReviewLabels = await ctx.db.labels.findMany({
       where: {
-        typeOf: ReviewLabelType.COURSE,
+        typeOf: ReviewType.COURSE,
       },
     });
 

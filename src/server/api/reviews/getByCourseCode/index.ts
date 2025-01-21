@@ -1,4 +1,4 @@
-import { ReviewLabelType } from "@prisma/client";
+import { ReviewType } from "@prisma/client";
 import { z } from "zod";
 
 import { publicProcedure } from "@/server/api/trpc";
@@ -58,8 +58,8 @@ export const getByCourseCode = publicProcedure
             })),
             reviewFor:
               review.reviewedCourseId && review.reviewedProfessorId
-                ? ReviewLabelType.PROFESSOR
-                : ReviewLabelType.COURSE,
+                ? ReviewType.PROFESSOR
+                : ReviewType.COURSE,
             professorName: review.reviewedProfessor?.name,
             professorSlug: review.reviewedProfessor?.slug,
             university: review.reviewedUniversity.abbrv,

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { type ReviewLabelType } from "@prisma/client";
+import { type ReviewType } from "@prisma/client";
 
 import { FilterToggleSection as Filter } from "@/common/components/FilterToggleSection";
 import { type FilterItem } from "@/common/components/FilterToggleSection/FilterToggleSectionItem";
@@ -11,14 +11,14 @@ import { cn } from "@/common/functions";
 export type FilterToggleSectionProps =
   | {
       dataToFilter: FilterItem[];
-      filterType: ReviewLabelType;
+      filterType: ReviewType;
       searchParamsName: string;
       onSelectChange?: (selectedValue: string) => void;
       isLocked?: false;
     }
   | {
       isLocked: true;
-      filterType: ReviewLabelType;
+      filterType: ReviewType;
       searchParamsName?: string;
     };
 

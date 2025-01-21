@@ -1,4 +1,4 @@
-import { ReviewLabelType, type UniversityAbbreviation } from "@prisma/client";
+import { ReviewType, type UniversityAbbreviation } from "@prisma/client";
 
 import { SchoolTag } from "@/common/components/SchoolTag";
 import { PageTitle } from "@/common/components/PageTitle";
@@ -37,7 +37,7 @@ export default async function SubmitReviewPage() {
             label: `${course.code} ${course.name}`,
           }))}
           reviewLabels={labels
-            .filter((label) => label.typeOf === ReviewLabelType.COURSE)
+            .filter((label) => label.typeOf === ReviewType.COURSE)
             .map((label) => ({
               value: label.id.toString(),
               label: toTitleCase(label.name.replaceAll("_", " ")),
@@ -51,7 +51,7 @@ export default async function SubmitReviewPage() {
             label: prof.name,
           }))}
           reviewLabels={labels
-            .filter((label) => label.typeOf === ReviewLabelType.PROFESSOR)
+            .filter((label) => label.typeOf === ReviewType.PROFESSOR)
             .map((label) => ({
               value: label.id.toString(),
               label: toTitleCase(label.name.replaceAll("_", " ")),
