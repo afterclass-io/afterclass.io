@@ -201,7 +201,7 @@ model ReviewVotes {
 model Labels {
   id        Int             @id @default(autoincrement())
   name      ReviewLabelName
-  typeOf    ReviewLabelType @map("type_of")
+  typeOf    ReviewType      @map("type_of")
   createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
 
@@ -252,7 +252,7 @@ enum ReviewLabelName {
   EFFECTIVE_TEACHING @map("effective teaching")
 }
 
-enum ReviewLabelType {
+enum ReviewType {
   COURSE
   PROFESSOR
 }

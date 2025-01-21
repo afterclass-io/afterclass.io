@@ -1,6 +1,6 @@
 import { api } from "@/common/tools/trpc/server";
 import { RatingSection } from "@/modules/reviews/components/RatingSection";
-import { ReviewLabelType } from "@prisma/client";
+import { ReviewType } from "@prisma/client";
 import { auth } from "@/server/auth";
 import { toTitleCase, formatPercentage } from "@/common/functions";
 
@@ -13,7 +13,7 @@ export default async function CourseRating({
 }) {
   const session = await auth();
   const validCourseReviewLabels = await api.labels.getAllByType({
-    typeOf: ReviewLabelType.COURSE,
+    typeOf: ReviewType.COURSE,
   });
   if (!session) {
     return (

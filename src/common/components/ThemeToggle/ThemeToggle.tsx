@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 
 import { APP_THEMES } from "@/common/tools/tailwind/themes/appTheme";

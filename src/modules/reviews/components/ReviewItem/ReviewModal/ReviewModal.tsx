@@ -1,6 +1,6 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { ReviewEventType } from "@prisma/client";
+import { ReviewEventType, ReviewType } from "@prisma/client";
 
 import { api } from "@/common/tools/trpc/react";
 
@@ -45,7 +45,7 @@ export const ReviewModal = ({
   const ecfg = useEdgeConfigs();
 
   const reviewPath =
-    review.reviewFor === "professor"
+    review.reviewFor === ReviewType.PROFESSOR
       ? `/professor/${review.professorSlug}`
       : `/course/${review.courseCode}`;
 
