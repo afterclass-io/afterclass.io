@@ -69,7 +69,7 @@ export const reviewItemTheme = tv(
       username: ["font-medium"],
       modalBody: ["whitespace-pre-wrap"],
       seeMoreDivider: ["w-full", "border-t", "border-border-default"],
-      seeMoreLink: ["flex", "h-10", "items-center", "text-primary-default"],
+      seeMoreLink: ["text-sm"],
     },
     variants: {
       isLocked: {

@@ -107,7 +107,6 @@ export const ReviewModal = ({
                 href={reviewPath}
                 variant="link"
                 className={seeMoreLink()}
-                isResponsive
               >
                 See more reviews
               </ProgressLink>
