@@ -1,6 +1,7 @@
 export * from "@/common/components/Logo";
 export * from "./AfterclassIcon";
 export * from "./AfterclassText";
+export * from "./ArrowUpIcon";
 export * from "./BookLineIcon";
 export * from "./BooksIcon";
 export * from "./BooksColoredIcon";
@@ -9,6 +10,7 @@ export * from "./ChevronDownIcon";
 export * from "./ChevronRightIcon";
 export * from "./ChevronUpIcon";
 export * from "./CircleIcon";
+export * from "./CursorClickIcon";
 export * from "./CustomIcon";
 export * from "./DealsIcon";
 export * from "./DotFilledIcon";
