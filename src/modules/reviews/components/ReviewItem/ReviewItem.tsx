@@ -8,6 +8,7 @@ import { reviewItemTheme, type ReviewItemVariants } from "./ReviewItem.theme";
 import { ReviewerGroup } from "./ReviewerGroup";
 import { RevieweeGroup } from "./RevieweeGroup";
 import { ReviewBody } from "./ReviewBody";
+import { ReviewFooter } from "./ReviewFooter";
 import { ReviewModal } from "./ReviewModal";
 import { ReviewItemViewEventTracker } from "../ReviewItemViewEventTracker";
 
@@ -59,6 +60,7 @@ export const ReviewItem = ({
       <div className={wrapper()} data-test="review">
         <ReviewHeader />
         <ReviewBody review={review} />
+        <ReviewFooter review={review} />
         {!isMocked && (
           <ReviewItemViewEventTracker
             reviewId={review.id}
