@@ -35,11 +35,11 @@ export const ReviewItem = ({
   const ReviewHeader = useCallback(
     () => (
       <div className={headingContainer()}>
-        <ReviewerGroup review={review} isMocked={isMocked} />
+        <ReviewerGroup review={review} />
         <RevieweeGroup review={review} variant={variant} />
       </div>
     ),
-    [review, isMocked, variant],
+    [review, variant],
   );
 
   return !(session.status === "authenticated") || isLocked ? (

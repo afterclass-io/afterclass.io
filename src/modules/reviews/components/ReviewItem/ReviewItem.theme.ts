@@ -25,7 +25,6 @@ export const reviewItemTheme = tv(
         "gap-3",
         "self-stretch",
       ],
-      metadataContainer: ["flex", "gap-4", "items-center"],
       revieweeGroup: [
         "flex",
         "w-full",
@@ -37,14 +36,14 @@ export const reviewItemTheme = tv(
         "flex",
         "items-center",
         "justify-between",
-        "gap-4",
+        "gap-2",
         "self-stretch",
         "text-text-em-low",
       ],
       timedelta: ["overflow-hidden", "text-sm", "text-ellipsis"],
       body: [
         "text-sm",
-        "text-text-em-mid",
+        "text-text-em-high",
         /**
          * TODO: replace when tailwind fixes behavior
          * see: https://github.com/tailwindlabs/tailwindcss/discussions/12127

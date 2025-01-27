@@ -2,21 +2,16 @@ import { type Review } from "@/modules/reviews/types";
 import { Profile } from "@/common/components/Profile";
 import { Avatar, AvatarFallback } from "@/common/components/Avatar";
 
-import { MockedReviewLikeButton, ReviewLikeButton } from "../ReviewLikeButton";
 import { reviewItemTheme, type ReviewItemVariants } from "../ReviewItem.theme";
 import { ReviewCreatedAt } from "../ReviewCreatedAt";
 import { UserIcon } from "@/common/components/CustomIcon";
 
 export type ReviewerGroupProps = ReviewItemVariants & {
   review: Review;
-  isMocked?: boolean;
 };
 
-export const ReviewerGroup = ({
-  review,
-  isMocked = false,
-}: ReviewerGroupProps) => {
-  const { reviewerGroup, metadataContainer } = reviewItemTheme({
+export const ReviewerGroup = ({ review }: ReviewerGroupProps) => {
+  const { reviewerGroup } = reviewItemTheme({
     size: { initial: "sm", md: "md" },
   });
 
@@ -32,17 +27,8 @@ export const ReviewerGroup = ({
           </Avatar>
         }
       />
-      <div className={metadataContainer()}>
-        {isMocked ? (
-          <MockedReviewLikeButton
-            reviewLikeCount={review.likeCount}
-            size="sm"
-          />
-        ) : (
-          <ReviewLikeButton reviewId={review.id} size="sm" />
-        )}
-        <ReviewCreatedAt createdAt={review.createdAt} />
-      </div>
+      <span>•</span>
+      <ReviewCreatedAt createdAt={review.createdAt} />
     </div>
   );
 };
