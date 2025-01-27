@@ -5,18 +5,16 @@ import { ReviewEventType, ReviewType } from "@prisma/client";
 import { api } from "@/common/tools/trpc/react";
 
 import { Modal } from "@/common/components/Modal";
-import { ThumbUpFilledIcon } from "@/common/components/CustomIcon";
 import { type Review } from "@/modules/reviews/types";
 import { ProgressLink } from "@/common/components/Progress";
 
 import { reviewItemTheme } from "../ReviewItem.theme";
 import { RevieweeGroup } from "../RevieweeGroup";
-import { ReviewLikeButton } from "../ReviewLikeButton";
 import { ReviewCreatedAt } from "../ReviewCreatedAt";
 import { ReviewRatingGroup } from "../ReviewRatingGroup";
 import { ReviewLabelGroup } from "../ReviewLabelGroup";
-import { ReviewShareButton } from "../ReviewShareButton";
 import { useEdgeConfigs } from "@/common/hooks";
+import { ReviewFooter } from "../ReviewFooter";
 
 export const ReviewModal = ({
   review,
@@ -37,7 +35,6 @@ export const ReviewModal = ({
     usernameAndTimestampWrapper,
     username,
     modalBody,
-    likeAndShareWrapper,
     seeMoreDivider,
     seeMoreLink,
   } = reviewItemTheme({ size: { initial: "sm", md: "md" } });
@@ -101,14 +98,7 @@ export const ReviewModal = ({
           <div className={modalBody()}>{review.body}</div>
         </Modal.Body>
         <Modal.Footer>
-          <div className={likeAndShareWrapper()}>
-            <ReviewLikeButton
-              {...reviewEventParam}
-              iconLeft={<ThumbUpFilledIcon />}
-              iconRight={undefined}
-            />
-            <ReviewShareButton {...reviewEventParam} />
-          </div>
+          <ReviewFooter review={review} />
           {/* seeMore link only shown when user is from default reviews page, hidden when in professor/course pages */}
           {seeMore && (
             <>

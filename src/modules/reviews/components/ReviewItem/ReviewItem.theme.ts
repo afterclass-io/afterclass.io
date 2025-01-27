@@ -68,13 +68,6 @@ export const reviewItemTheme = tv(
       usernameAndTimestampWrapper: ["space-x-2"],
       username: ["font-medium"],
       modalBody: ["whitespace-pre-wrap"],
-      likeAndShareWrapper: [
-        "flex",
-        "gap-x-3",
-        "items-center",
-        "w-fit",
-        "justify-between",
-      ],
       seeMoreDivider: ["w-full", "border-t", "border-border-default"],
       seeMoreLink: ["flex", "h-10", "items-center", "text-primary-default"],
     },
