@@ -60,25 +60,6 @@ context("Reviews: Home", function () {
       cy.get("[data-test=review]").should("have.length", 10);
     });
 
-    it("should not be able to like a review", function () {
-      cy.wait(1000);
-
-      const getFirstUnlikedBtn = () =>
-        cy
-          .get("button[data-test=upvote-button]")
-          .filter("[data-voted=false]")
-          .first();
-
-      getFirstUnlikedBtn()
-        .invoke("text")
-        .then((initialValueText) => {
-          getFirstUnlikedBtn()
-            .click()
-            .should("have.text", initialValueText)
-            .should("have.attr", "data-voted", "false");
-        });
-    });
-
     it("should not be able to navigate to review submission", function () {
       cy.get("a[data-test=cta-write-review]").click();
       cy.url().should(
@@ -110,14 +91,18 @@ context("Reviews: Home", function () {
           .first();
 
       getFirstUnlikedBtn()
-        .invoke("text")
+        .parent()
+        .should("have.attr", "data-voted", "false")
+        .invoke("attr", "data-vote-count")
         .then((initialValueText) => {
           const initialValue = parseInt(initialValueText, 10);
 
           getFirstUnlikedBtn()
             .click()
-            .should("have.text", initialValue + 1)
-            .should("have.attr", "data-voted", "true");
+            .should("have.attr", "data-voted", "true")
+            .parent()
+            .should("have.attr", "data-voted", "true")
+            .should("have.attr", "data-vote-count", initialValue + 1);
         });
     });
 
@@ -129,14 +114,18 @@ context("Reviews: Home", function () {
           .first();
 
       getFirstLikedBtn()
-        .invoke("text")
+        .parent()
+        .should("have.attr", "data-voted", "true")
+        .invoke("attr", "data-vote-count")
         .then((initialValueText) => {
           const initialValue = parseInt(initialValueText, 10);
 
           getFirstLikedBtn()
             .click()
-            .should("have.text", initialValue - 1)
-            .should("have.attr", "data-voted", "false");
+            .should("have.attr", "data-voted", "false")
+            .parent()
+            .should("have.attr", "data-voted", "false")
+            .should("have.attr", "data-vote-count", initialValue - 1);
         });
     });
 

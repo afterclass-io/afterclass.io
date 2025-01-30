@@ -124,6 +124,8 @@ export const ReviewVoteGroup = ({
             : "bg-element-secondary text-text-on-secondary"
           : "",
       )}
+      data-voted={getUserVoteWeight() !== 0}
+      data-vote-count={reviewVotesCountQuery.data ?? 0}
     >
       <Button
         variant="tertiary"
