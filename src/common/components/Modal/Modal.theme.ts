@@ -8,7 +8,7 @@ export const modalTheme = tv(
         "fixed",
         "inset-0",
         "bg-bg-base/90",
-        "backdrop-blur-sm",
+        "backdrop-blur-xs",
         "overflow-y-auto",
         "p-4",
         "sm:p-10",

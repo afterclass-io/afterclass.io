@@ -40,7 +40,7 @@ export const checkboxTheme = tv(
         sm: {
           checkboxIndicatorIcon: ["h-3", "w-3"],
           label: ["text-xs"],
-          checkboxRoot: ["h-4", "w-4", "rounded-sm"],
+          checkboxRoot: ["h-4", "w-4", "rounded-xs"],
         },
       },
       disabled: {

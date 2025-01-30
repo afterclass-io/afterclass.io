@@ -57,7 +57,7 @@ export const sidebarTheme = tv({
       "flex-col",
       "group-data-[variant=floating]:rounded-lg",
       "group-data-[variant=floating]:border",
-      "group-data-[variant=floating]:shadow",
+      "group-data-[variant=floating]:shadow-sm",
     ],
     content: [
       "flex",
@@ -139,7 +139,7 @@ export const sidebarTheme = tv({
       "md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2",
       "md:peer-data-[variant=inset]:ml-0",
       "md:peer-data-[variant=inset]:rounded-xl",
-      "md:peer-data-[variant=inset]:shadow",
+      "md:peer-data-[variant=inset]:shadow-sm",
     ],
     menu: ["flex", "w-full", "min-w-0", "flex-col", "gap-1"],
     menuAction: [

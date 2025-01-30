@@ -24,7 +24,7 @@ export const sheetTheme = tv({
       "absolute",
       "right-4",
       "top-4",
-      "rounded-sm",
+      "rounded-xs",
       "opacity-70",
       "transition-opacity",
       "hover:opacity-100",

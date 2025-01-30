@@ -116,7 +116,7 @@ export const buttonTheme = tv(
           "gap-1.5",
           "text-xs",
           "rounded-lg",
-          "after:rounded",
+          "after:rounded-sm",
         ],
       },
       iconOnly: {

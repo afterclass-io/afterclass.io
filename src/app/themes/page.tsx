@@ -39,12 +39,12 @@ export default function ThemesPage() {
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             {colors.map(([colorName, colorValue]) => (
               <div
-                className="flex items-center gap-3 rounded-lg border border-border-default p-3"
+                className="border-border-default flex items-center gap-3 rounded-lg border p-3"
                 key={colorName}
               >
                 <div
                   style={{ backgroundColor: colorValue }}
-                  className="h-12 w-12 flex-shrink-0 rounded shadow-sm"
+                  className="h-12 w-12 flex-shrink-0 rounded-sm shadow-xs"
                 />
                 <div className="min-w-0">
                   <div className="truncate font-medium">{colorName}</div>

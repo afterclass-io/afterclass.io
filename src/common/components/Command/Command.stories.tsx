@@ -86,7 +86,7 @@ export const CommandDialog: Story = {
       <>
         <div className="flex gap-2 text-sm">
           <span>Press</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-base font-medium opacity-100">
+          <kbd className="pointer-events-none inline-flex h-5 items-center gap-1 rounded-sm border px-1.5 font-mono text-base font-medium opacity-100 select-none">
             <span>⌘</span>J
           </kbd>
         </div>

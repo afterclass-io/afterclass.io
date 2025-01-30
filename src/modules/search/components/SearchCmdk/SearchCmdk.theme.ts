@@ -12,7 +12,7 @@ export const searchCmdkTheme = tv(
         "inline-flex",
         "items-center",
         "gap-1",
-        "rounded",
+        "rounded-sm",
         "border",
         "border-border-default",
         "bg-surface-elevated",

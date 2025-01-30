@@ -11,7 +11,7 @@ export const cardTheme = tv(
         "rounded-xl",
         "border",
         "border-border-default",
-        "shadow",
+        "shadow-sm",
       ],
       cardHeader: ["flex", "flex-col", "space-y-1.5", "p-6"],
       cardTitle: ["font-semibold", "leading-none", "tracking-tight"],
