@@ -8,7 +8,7 @@ export const tooltipTheme = tv({
     "border-border-default",
     "text-text-em-high",
     "shadow-md",
-    "outline-none",
+    "outline-hidden",
     "z-50",
     "overflow-hidden",
     "rounded-md",

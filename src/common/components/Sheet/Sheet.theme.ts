@@ -28,7 +28,7 @@ export const sheetTheme = tv({
       "opacity-70",
       "transition-opacity",
       "hover:opacity-100",
-      "focus:outline-none",
+      "focus:outline-hidden",
       "focus:ring-2",
       "focus:ring-offset-2",
       "disabled:pointer-events-none",

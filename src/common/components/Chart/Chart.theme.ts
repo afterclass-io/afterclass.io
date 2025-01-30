@@ -18,10 +18,10 @@ export const chartTheme = tv(
         "justify-center",
         "text-xs",
         "[&_.recharts-dot[stroke='#fff']]:stroke-transparent",
-        "[&_.recharts-layer]:outline-none",
+        "[&_.recharts-layer]:outline-hidden",
         "[&_.recharts-sector[stroke='#fff']]:stroke-transparent",
-        "[&_.recharts-sector]:outline-none",
-        "[&_.recharts-surface]:outline-none",
+        "[&_.recharts-sector]:outline-hidden",
+        "[&_.recharts-surface]:outline-hidden",
       ],
       tooltipLabel: ["font-medium"],
       tooltipContent: [

@@ -15,7 +15,7 @@ export const tagRadioGroupTheme = tv(
         "w-4",
         "rounded-full",
         "border",
-        "focus:outline-none",
+        "focus:outline-hidden",
         "focus-visible:ring-2",
         "focus-visible:ring-offset-2",
         "disabled:cursor-not-allowed",

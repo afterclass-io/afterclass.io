@@ -6,7 +6,7 @@ export const labelTheme = tv(
   {
     base: [
       "bg-transparent",
-      "outline-none",
+      "outline-hidden",
       "placeholder:text-text-em-low",
       "flex-1",
       "text-sm",

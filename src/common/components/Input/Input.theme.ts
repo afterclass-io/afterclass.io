@@ -16,7 +16,7 @@ export const inputTheme = tv(
       ],
       input: [
         "bg-transparent",
-        "outline-none",
+        "outline-hidden",
         "placeholder:text-text-em-low",
         "flex-1",
         "disabled:cursor-not-allowed",

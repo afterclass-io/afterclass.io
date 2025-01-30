@@ -69,7 +69,7 @@ export const selectTheme = tv(
         "pl-2",
         "pr-8",
         "text-sm",
-        "outline-none",
+        "outline-hidden",
         "focus:bg-bg-alt",
         "focus:text-text-on-secondary",
         "data-[disabled]:pointer-events-none",

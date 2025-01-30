@@ -49,7 +49,7 @@ export const searchCmdkTheme = tv(
         "gap-2",
         "bg-transparent",
         "p-2",
-        "focus:outline-none",
+        "focus:outline-hidden",
       ],
       searchIcon: ["ml-1", "mr-2", "text-text-em-low"],
       closeBtn: ["z-1", "mr-5"],
