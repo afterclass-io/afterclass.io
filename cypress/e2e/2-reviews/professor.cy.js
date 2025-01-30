@@ -93,7 +93,7 @@ context("Reviews: Professor", function () {
       const getFirstUnlikedBtn = () =>
         cy
           .get("button[data-test=upvote-button]")
-          .filter("[data-liked=false]")
+          .filter("[data-voted=false]")
           .first();
 
       getFirstUnlikedBtn()
@@ -102,7 +102,7 @@ context("Reviews: Professor", function () {
           getFirstUnlikedBtn()
             .click()
             .should("have.text", initialValueText)
-            .should("have.attr", "data-liked", "false");
+            .should("have.attr", "data-voted", "false");
         });
     });
 
@@ -157,7 +157,7 @@ context("Reviews: Professor", function () {
       const getFirstUnlikedBtn = () =>
         cy
           .get("button[data-test=upvote-button]")
-          .filter("[data-liked=false]")
+          .filter("[data-voted=false]")
           .first();
 
       getFirstUnlikedBtn()
@@ -168,7 +168,7 @@ context("Reviews: Professor", function () {
           getFirstUnlikedBtn()
             .click()
             .should("have.text", initialValue + 1)
-            .should("have.attr", "data-liked", "true");
+            .should("have.attr", "data-voted", "true");
         });
     });
 
@@ -176,7 +176,7 @@ context("Reviews: Professor", function () {
       const getFirstLikedBtn = () =>
         cy
           .get("button[data-test=upvote-button]")
-          .filter("[data-liked=true]")
+          .filter("[data-voted=true]")
           .first();
 
       getFirstLikedBtn()
@@ -187,7 +187,7 @@ context("Reviews: Professor", function () {
           getFirstLikedBtn()
             .click()
             .should("have.text", initialValue - 1)
-            .should("have.attr", "data-liked", "false");
+            .should("have.attr", "data-voted", "false");
         });
     });
 

@@ -27,7 +27,7 @@ export const ReviewerGroup = ({ review }: ReviewerGroupProps) => {
           </Avatar>
         }
       />
-      <span>•</span>
+      <span className="hidden md:block">•</span>
       <ReviewCreatedAt createdAt={review.createdAt} />
     </div>
   );

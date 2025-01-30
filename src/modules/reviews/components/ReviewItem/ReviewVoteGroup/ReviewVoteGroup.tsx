@@ -143,6 +143,7 @@ export const ReviewVoteGroup = ({
         }}
         rounded
         data-test="upvote-button"
+        data-voted={getUserVoteWeight() > 0}
       />
       <span className="text-xs">
         {formatNumberShortScale(reviewVotesCountQuery.data ?? 0)}
@@ -165,6 +166,7 @@ export const ReviewVoteGroup = ({
         }}
         rounded
         data-test="downvote-button"
+        data-voted={getUserVoteWeight() < 0}
       />
     </div>
   );
