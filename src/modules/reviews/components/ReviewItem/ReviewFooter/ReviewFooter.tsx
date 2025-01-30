@@ -13,7 +13,7 @@ export type ReviewFooterProps = {
 export const ReviewFooter = ({ review }: ReviewFooterProps) => {
   return (
     <div className="flex gap-4">
-      <ReviewVoteGroup likeCount={review.likeCount} />
+      <ReviewVoteGroup reviewId={review.id} />
 
       <ReviewShareButton reviewId={review.id} variant="tertiary" size="sm" />
 

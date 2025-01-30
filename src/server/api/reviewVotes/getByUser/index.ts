@@ -15,9 +15,6 @@ export const getByUser = protectedProcedure
         where: {
           voterId: input.userId ?? ctx.session.user.id,
           reviewId: input.reviewId,
-          weight: {
-            not: 0,
-          },
         },
       }),
   );

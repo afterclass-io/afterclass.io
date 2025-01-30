@@ -7,7 +7,7 @@ export const voteOrUnvote = protectedProcedure
     z.object({
       reviewId: z.string(),
       userId: z.string(),
-      weight: z.number().default(1),
+      weight: z.number(),
     }),
   )
   .mutation(
@@ -22,6 +22,7 @@ export const voteOrUnvote = protectedProcedure
         create: {
           reviewId: input.reviewId,
           voterId: input.userId,
+          weight: input.weight,
         },
         update: {
           weight: input.weight,
