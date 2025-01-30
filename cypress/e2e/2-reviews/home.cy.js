@@ -65,7 +65,7 @@ context("Reviews: Home", function () {
 
       const getFirstUnlikedBtn = () =>
         cy
-          .get("button[data-test=like-button]")
+          .get("button[data-test=upvote-button]")
           .filter("[data-liked=false]")
           .first();
 
@@ -105,7 +105,7 @@ context("Reviews: Home", function () {
     it("should be able to like a review", function () {
       const getFirstUnlikedBtn = () =>
         cy
-          .get("button[data-test=like-button]")
+          .get("button[data-test=upvote-button]")
           .filter("[data-liked=false]")
           .first();
 
@@ -124,7 +124,7 @@ context("Reviews: Home", function () {
     it("should be able to unlike a review", function () {
       const getFirstLikedBtn = () =>
         cy
-          .get("button[data-test=like-button]")
+          .get("button[data-test=upvote-button]")
           .filter("[data-liked=true]")
           .first();
 
