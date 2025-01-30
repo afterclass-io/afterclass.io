@@ -8,7 +8,10 @@ import { api } from "@/common/tools/trpc/react";
 import { useEdgeConfigs } from "@/common/hooks";
 import { cn, formatNumberShortScale } from "@/common/functions";
 import { Button } from "@/common/components/Button";
-import { ArrowUpIcon } from "@/common/components/CustomIcon";
+import {
+  ArrowFatLineUpIcon,
+  ArrowFatLineUpFillIcon,
+} from "@/common/components/CustomIcon";
 
 export const ReviewVoteGroup = ({
   reviewId,
@@ -25,20 +28,36 @@ export const ReviewVoteGroup = ({
   const reviewVotesCountQuery = api.reviewVotes.count.useQuery({ reviewId });
   const getUserVoteQuery = api.reviewVotes.getByUser.useQuery({ reviewId });
   const { mutate: likeOrUnlike } = api.reviewVotes.voteOrUnvote.useMutation({
-    onMutate: async ({ weight }) => {
+    onMutate: async ({ reviewId, weight }) => {
       // Cancel any outgoing refetches
       // (so they don't overwrite our optimistic update)
       await utils.reviewVotes.count.cancel();
       await utils.reviewVotes.getByUser.cancel();
 
       // Snapshot the previous value
-      const previousCount = utils.reviewVotes.count.getData();
-      const previousUserVote = utils.reviewVotes.getByUser.getData();
+      const previousCount = utils.reviewVotes.count.getData({ reviewId });
+      const previousUserVote = utils.reviewVotes.getByUser.getData({
+        reviewId,
+      });
 
       // Optimistically update to the new value
       utils.reviewVotes.count.setData(
         { reviewId },
-        (oldQueryData: number | undefined) => oldQueryData ?? 0,
+        (oldQueryData: number | undefined) => {
+          const prevVoteCount = oldQueryData ?? 0;
+
+          if (previousUserVote?.weight) {
+            if (weight === 0) {
+              // user undid their vote
+              return prevVoteCount - previousUserVote.weight;
+            }
+            // user changed their vote
+            return prevVoteCount + weight * 2;
+          }
+
+          // user voted for the first time
+          return prevVoteCount + weight;
+        },
       );
       utils.reviewVotes.getByUser.setData({ reviewId }, (oldQueryData) => {
         if (!oldQueryData) return null;
@@ -69,8 +88,8 @@ export const ReviewVoteGroup = ({
       }
     },
     onSettled: () => {
-      void utils.reviewVotes.count.invalidate();
-      void utils.reviewVotes.getByUser.invalidate();
+      void utils.reviewVotes.count.invalidate({ reviewId });
+      void utils.reviewVotes.getByUser.invalidate({ reviewId });
     },
   });
 
@@ -98,41 +117,47 @@ export const ReviewVoteGroup = ({
   return (
     <div
       className={cn(
-        "flex h-8 items-center gap-1 rounded-full border border-border-default bg-element-tertiary",
+        "flex h-8 items-center gap-1 rounded-full border border-border-default bg-element-tertiary text-text-em-mid",
         getUserVoteWeight() !== 0
           ? getUserVoteWeight() > 0
-            ? "border-primary-default"
-            : "border-secondary-default"
+            ? "bg-primary-default text-text-on-primary"
+            : "bg-element-secondary text-text-on-secondary"
           : "",
       )}
     >
       <Button
         variant="tertiary"
         size="sm"
-        className={cn(
-          "h-full border-none",
-          getUserVoteWeight() > 0 ? "text-primary-default" : "",
-        )}
+        className="h-full border-none bg-inherit text-inherit"
         aria-label="upvote"
-        iconLeft={<ArrowUpIcon className="h-4 w-4" />}
+        iconLeft={
+          getUserVoteWeight() > 0 ? (
+            <ArrowFatLineUpFillIcon className="h-4 w-4" />
+          ) : (
+            <ArrowFatLineUpIcon className="h-4 w-4" />
+          )
+        }
         onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
           handleClick(e);
           handleVote(getUserVoteWeight() > 0 ? 0 : 1);
         }}
         rounded
       />
-      <span className="text-xs text-text-em-mid">
+      <span className="text-xs">
         {formatNumberShortScale(reviewVotesCountQuery.data ?? 0)}
       </span>
       <Button
         variant="tertiary"
         size="sm"
-        className={cn(
-          "h-full border-none",
-          getUserVoteWeight() < 0 ? "text-secondary-default" : "",
-        )}
+        className="h-full border-none bg-inherit text-inherit"
         aria-label="downvote"
-        iconLeft={<ArrowUpIcon className="h-4 w-4 rotate-180" />}
+        iconLeft={
+          getUserVoteWeight() < 0 ? (
+            <ArrowFatLineUpFillIcon className="h-4 w-4 rotate-180" />
+          ) : (
+            <ArrowFatLineUpIcon className="h-4 w-4 rotate-180" />
+          )
+        }
         onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
           handleClick(e);
           handleVote(getUserVoteWeight() < 0 ? 0 : -1);
