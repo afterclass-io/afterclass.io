@@ -1,6 +1,8 @@
+import { ReviewType } from "@prisma/client";
+
+import { auth } from "@/server/auth";
 import { RatingSection } from "@/modules/reviews/components/RatingSection";
 import { api } from "@/common/tools/trpc/server";
-import { auth } from "@/server/auth";
 import { toTitleCase, formatPercentage } from "@/common/functions";
 
 export default async function ProfessorRating({
@@ -15,7 +17,7 @@ export default async function ProfessorRating({
   const session = await auth();
 
   const validProfessorReviewLabels = await api.labels.getAllByType({
-    typeOf: "PROFESSOR",
+    typeOf: ReviewType.PROFESSOR,
   });
 
   if (!session) {

@@ -1,13 +1,10 @@
-import {
-  coursesRouter,
-  labelsRouter,
-  professorsRouter,
-  reviewsRouter,
-  reviewEventsRouter,
-  reviewLabelsRouter,
-  reviewVotesRouter,
-  universityRouter,
-} from "@/server/api/routers";
+import { coursesRouter } from "@/server/api/courses/router";
+import { labelsRouter } from "@/server/api/labels/router";
+import { professorsRouter } from "@/server/api/professors/router";
+import { reviewsRouter } from "@/server/api/reviews/router";
+import { reviewEventsRouter } from "@/server/api/reviewEvents/router";
+import { reviewVotesRouter } from "@/server/api/reviewVotes/router";
+
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 
 /**
@@ -21,9 +18,7 @@ export const appRouter = createTRPCRouter({
   professors: professorsRouter,
   reviews: reviewsRouter,
   reviewEvents: reviewEventsRouter,
-  reviewLabels: reviewLabelsRouter,
   reviewVotes: reviewVotesRouter,
-  university: universityRouter,
 });
 
 // export type definition of API

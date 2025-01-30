@@ -1,4 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { useState } from "react";
+import { ReviewType } from "@prisma/client";
+
 import { FilterToggleSection } from "./FilterToggleSection";
 import { type FilterItem } from "./FilterToggleSectionItem";
 import {
@@ -6,7 +9,6 @@ import {
   GraduationCapIcon,
   PencilIcon,
 } from "@/common/components/CustomIcon";
-import { useState } from "react";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -29,7 +31,7 @@ export const Default: Story = {
     );
     return (
       <FilterToggleSection>
-        <FilterToggleSection.Header type="professor" />
+        <FilterToggleSection.Header type={ReviewType.PROFESSOR} />
         <FilterToggleSection.Items>
           {[
             {
@@ -85,7 +87,7 @@ export const WithSubHeader: Story = {
     );
     return (
       <FilterToggleSection>
-        <FilterToggleSection.Header type="course" />
+        <FilterToggleSection.Header type={ReviewType.COURSE} />
         <FilterToggleSection.Items>
           {[
             {
