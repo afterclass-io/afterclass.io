@@ -17,7 +17,7 @@ export const track = protectedProcedure
     const eventId = uuid(
       input.reviewId,
       input.eventType,
-      input.triggeringUserId ?? "",
+      input.triggeringUserId ?? ctx.session.user.id,
       rotatingSaltStartOfHour(),
     );
     return await ctx.db.reviewEvents.upsert({

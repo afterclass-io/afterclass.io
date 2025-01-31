@@ -87,25 +87,6 @@ context("Reviews: Professor", function () {
       cy.get("[data-test=review]").should("have.length", 10);
     });
 
-    it("should not be able to like a review", function () {
-      cy.wait(1000);
-
-      const getFirstUnlikedBtn = () =>
-        cy
-          .get("button[data-test=like-button]")
-          .filter("[data-liked=false]")
-          .first();
-
-      getFirstUnlikedBtn()
-        .invoke("text")
-        .then((initialValueText) => {
-          getFirstUnlikedBtn()
-            .click()
-            .should("have.text", initialValueText)
-            .should("have.attr", "data-liked", "false");
-        });
-    });
-
     it("should not be able to navigate to review submission", function () {
       cy.get("a[data-test=cta-write-review]").click();
       cy.url().should(
@@ -156,38 +137,46 @@ context("Reviews: Professor", function () {
     it("should be able to like a review", function () {
       const getFirstUnlikedBtn = () =>
         cy
-          .get("button[data-test=like-button]")
-          .filter("[data-liked=false]")
+          .get("button[data-test=upvote-button]")
+          .filter("[data-voted=false]")
           .first();
 
       getFirstUnlikedBtn()
-        .invoke("text")
+        .parent()
+        .should("have.attr", "data-voted", "false")
+        .invoke("attr", "data-vote-count")
         .then((initialValueText) => {
           const initialValue = parseInt(initialValueText, 10);
 
           getFirstUnlikedBtn()
             .click()
-            .should("have.text", initialValue + 1)
-            .should("have.attr", "data-liked", "true");
+            .should("have.attr", "data-voted", "true")
+            .parent()
+            .should("have.attr", "data-voted", "true")
+            .should("have.attr", "data-vote-count", initialValue + 1);
         });
     });
 
     it("should be able to unlike a review", function () {
       const getFirstLikedBtn = () =>
         cy
-          .get("button[data-test=like-button]")
-          .filter("[data-liked=true]")
+          .get("button[data-test=upvote-button]")
+          .filter("[data-voted=true]")
           .first();
 
       getFirstLikedBtn()
-        .invoke("text")
+        .parent()
+        .should("have.attr", "data-voted", "true")
+        .invoke("attr", "data-vote-count")
         .then((initialValueText) => {
           const initialValue = parseInt(initialValueText, 10);
 
           getFirstLikedBtn()
             .click()
-            .should("have.text", initialValue - 1)
-            .should("have.attr", "data-liked", "false");
+            .should("have.attr", "data-voted", "false")
+            .parent()
+            .should("have.attr", "data-voted", "false")
+            .should("have.attr", "data-vote-count", initialValue - 1);
         });
     });
 

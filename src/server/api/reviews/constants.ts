@@ -5,6 +5,7 @@ export const DEFAULT_PAGE_SIZE = 10;
 export const PUBLIC_REVIEW_FIELDS = {
   id: true,
   rating: true,
+  countEventViews: true,
   createdAt: true,
   reviewedUniversityId: true,
   reviewedProfessorId: true,

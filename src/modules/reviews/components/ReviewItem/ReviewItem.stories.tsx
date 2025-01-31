@@ -13,6 +13,7 @@ const review = {
   courseName: "Some Course Name",
   username: "Anonymous",
   likeCount: 10,
+  countEventViews: 1234,
   createdAt: 1705745162,
   university: UniversityAbbreviation.SMU,
   reviewFor: ReviewType.PROFESSOR,

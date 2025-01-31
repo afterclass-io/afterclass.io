@@ -13,6 +13,7 @@ export type Review = {
   courseName: string;
   username: string;
   likeCount: number;
+  countEventViews: number;
   createdAt: number;
   reviewLabels: Pick<Labels, "name">[];
   university: UniversityAbbreviation;

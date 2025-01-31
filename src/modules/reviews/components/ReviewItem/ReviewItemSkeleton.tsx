@@ -2,10 +2,9 @@ import { reviewItemTheme } from "./ReviewItem.theme";
 import { Skeleton } from "@/common/components/Skeleton";
 
 export const ReviewItemSkeleton = () => {
-  const { wrapper, body, headingContainer, metadataContainer } =
-    reviewItemTheme({
-      size: { initial: "sm", md: "md" },
-    });
+  const { wrapper, body, headingContainer } = reviewItemTheme({
+    size: { initial: "sm", md: "md" },
+  });
   return (
     <div
       className={wrapper({
@@ -14,9 +13,7 @@ export const ReviewItemSkeleton = () => {
     >
       <div className={headingContainer()}>
         <Skeleton className="h-[24px] w-[100px]" />
-        <div className={metadataContainer()}>
-          <Skeleton className="h-[24px] w-[200px]" />
-        </div>
+        <Skeleton className="h-[24px] w-[200px]" />
       </div>
 
       <div className="flex flex-col gap-1">

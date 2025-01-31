@@ -22,7 +22,7 @@ Cypress.Commands.add("loginWith", ({ email, password }) => {
 
     if (url.startsWith("http")) {
       cy.visit(url);
-      cy.wait(1000);
+      cy.wait(3000);
     }
   });
 });

@@ -7,14 +7,14 @@ export const count = publicProcedure
       reviewId: z.string(),
     }),
   )
-  .query(
-    async ({ input, ctx }) =>
-      await ctx.db.reviewVotes.aggregate({
-        _sum: {
-          weight: true,
-        },
-        where: {
-          reviewId: input.reviewId,
-        },
-      }),
-  );
+  .query(async ({ input, ctx }) => {
+    const count = await ctx.db.reviewVotes.aggregate({
+      _sum: {
+        weight: true,
+      },
+      where: {
+        reviewId: input.reviewId,
+      },
+    });
+    return count._sum.weight ?? 0;
+  });
