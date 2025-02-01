@@ -17,12 +17,11 @@ Cypress.Commands.add("loginWith", ({ email, password }) => {
     cy.get("input[data-test=email]").type(email);
     cy.get("input[data-test=password]").type(password);
     cy.get("button[data-test=submit]").click();
-    cy.intercept("GET", "/api/auth/session").as("authSession");
-    cy.wait("@authSession");
+    cy.url().should((url) => expect(url.endsWith("/")).to.be.true);
 
     if (url.startsWith("http")) {
       cy.visit(url);
-      cy.wait(3000);
+      cy.wait(1000);
     }
   });
 });
