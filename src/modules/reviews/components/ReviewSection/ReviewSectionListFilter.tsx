@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { z } from "zod";
@@ -23,6 +23,13 @@ export const ReviewSectionListFilter = () => {
 
   const [filterFor, setFilterFor] =
     useState<ReviewsFilterFor>(defaultFilterFor);
+
+  useEffect(() => {
+    if (filterFor !== defaultFilterFor) {
+      setFilterFor(defaultFilterFor);
+    }
+  }, [defaultFilterFor]);
+
   const ecfg = useEdgeConfigs();
   if (!ecfg.enableReviewFilter) {
     return null;
