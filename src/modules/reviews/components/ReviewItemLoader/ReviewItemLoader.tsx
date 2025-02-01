@@ -51,7 +51,7 @@ const NoReviewCtaNote = () => (
       variant="link"
       className="inline-flex h-fit pb-[1px] text-xs md:h-fit md:p-0 md:text-sm"
       isResponsive
-      data-umami-event="no-review-cta"
+      data-umami-event="review-empty-cta"
     >
       writing one
     </ProgressLink>

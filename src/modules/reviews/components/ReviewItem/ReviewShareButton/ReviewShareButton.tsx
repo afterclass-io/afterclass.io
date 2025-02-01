@@ -43,10 +43,10 @@ export const ReviewShareButton = ({
       rounded
       variant="tertiary"
       size="sm"
-      iconLeft={<ShareIcon />}
+      iconLeft={<ShareIcon className="h-4 w-4" />}
       loading={shareCountQuery.isLoading}
       aria-label="Share"
-      data-umami-event="share-review"
+      data-umami-event="review-share"
       onClick={async () => {
         const shareUrl = `${env.NEXT_PUBLIC_SITE_URL}${pathname}?review_id=${reviewId}`;
         await navigator.clipboard.writeText(shareUrl);

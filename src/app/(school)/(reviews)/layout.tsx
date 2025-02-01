@@ -35,7 +35,7 @@ export default function ReviewLayout({
             iconLeft={<PlusIcon />}
             iconRight={<EditIcon opacity={0.1} />}
             data-test="cta-write-review"
-            data-umami-event="write-review-cta-btn"
+            data-umami-event="cta-btn-write-review"
           />
           <CtaCard
             variant="tertiary"
@@ -44,7 +44,7 @@ export default function ReviewLayout({
             external
             iconLeft={<GithubIcon />}
             data-test="cta-contribute-oss"
-            data-umami-event="contribute-oss-cta-btn"
+            data-umami-event="cta-btn-contribute-oss"
           />
         </div>
       </div>
