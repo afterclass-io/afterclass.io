@@ -32,7 +32,7 @@ export const CoreLayoutHeader = async () => {
           href="/"
           variant="ghost"
           aria-label="Home"
-          className="block md:hidden"
+          className="flex md:hidden"
           iconLeft={<AfterclassIcon className="text-primary-default" />}
         />
         <div className="flex items-center gap-4">
