@@ -1,12 +1,12 @@
 import { type Review } from "@/modules/reviews/types";
 
+import { formatNumberShortScale } from "@/common/functions";
 import { buttonTheme } from "@/common/components/Button";
 import { EyeIcon } from "@/common/components/CustomIcon";
 import { ReviewShareButton } from "../ReviewShareButton";
 import { ReviewVoteGroup } from "../ReviewVoteGroup";
-import { formatNumberShortScale } from "@/common/functions";
-import { ReviewReactionsGroup } from "@/modules/reviews/components/ReviewItem/ReviewReactionsGroup";
-import { ReviewReactionPopover } from "@/modules/reviews/components/ReviewItem/ReviewReactionPopover";
+import { ReviewReactionsGroup } from "../ReviewReactionsGroup";
+import { ReviewReactionButton } from "../ReviewReactionButton";
 
 export type ReviewFooterProps = {
   review: Review;
@@ -19,7 +19,7 @@ export const ReviewFooter = ({ review }: ReviewFooterProps) => {
       <div className="flex gap-4">
         <ReviewVoteGroup reviewId={review.id} />
 
-        <ReviewReactionPopover />
+        <ReviewReactionButton />
 
         <ReviewShareButton reviewId={review.id} variant="tertiary" size="sm" />
 
