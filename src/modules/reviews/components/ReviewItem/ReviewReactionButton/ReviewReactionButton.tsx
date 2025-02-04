@@ -1,13 +1,6 @@
 import { Button } from "@/common/components/Button";
 import { Tooltip } from "@/common/components/Tooltip";
-import {
-  FoldedHandsEmoji,
-  LoudlyCryingFaceEmoji,
-  PurpleHeartEmoji,
-  RoflEmoji,
-  SmileyIcon,
-  SparklesEmoji,
-} from "@/common/components/CustomIcon";
+import { SmileyIcon } from "@/common/components/CustomIcon";
 import {
   HoverCard,
   HoverCardContent,
@@ -16,24 +9,28 @@ import {
 
 const REACTIONS = [
   {
-    tooltip: "Purple Heart Reaction",
-    icon: PurpleHeartEmoji,
+    tooltip: "Like",
+    emoji: "💜",
   },
   {
-    tooltip: "Sparkles Reaction",
-    icon: SparklesEmoji,
+    tooltip: "Thankful",
+    emoji: "🙏",
   },
   {
-    tooltip: "Folded Hands Reaction",
-    icon: FoldedHandsEmoji,
+    tooltip: "Slay",
+    emoji: "💅",
   },
   {
-    tooltip: "ROFL Reaction",
-    icon: RoflEmoji,
+    tooltip: "Funny",
+    emoji: "🤣",
   },
   {
-    tooltip: "Crying Face Reaction",
-    icon: LoudlyCryingFaceEmoji,
+    tooltip: "Crying",
+    emoji: "😭",
+  },
+  {
+    tooltip: "Shocked",
+    emoji: "😦",
   },
 ];
 
@@ -64,14 +61,16 @@ export const ReviewReactionButton = () => {
         className="flex h-10 w-fit items-end p-2"
         onClick={handleClick}
       >
-        {REACTIONS.map(({ icon: EmojiIcon, tooltip }) => (
+        {REACTIONS.map(({ emoji, tooltip }) => (
           <Tooltip>
             <Tooltip.Trigger className="h-fit w-fit">
-              <EmojiIcon
+              <span
                 key={tooltip}
-                className="h-6 w-6 px-1 hover:h-12 hover:w-12"
+                className="px-1 text-sm hover:text-3xl"
                 onClick={() => handleEmojiClick(tooltip)}
-              />
+              >
+                {emoji}
+              </span>
             </Tooltip.Trigger>
             <Tooltip.Content side="bottom">{tooltip}</Tooltip.Content>
           </Tooltip>
