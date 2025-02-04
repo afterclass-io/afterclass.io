@@ -70,7 +70,7 @@ export const ReviewVoteGroup = ({
       // Return a context object with the snapshotted value
       return { previousCount, previousUserVote };
     },
-    onError: (_, _newTodo, context) => {
+    onError: (_err, _variables, context) => {
       // Rollback to the previous value if mutation fails
       utils.reviewVotes.count.setData({ reviewId }, context?.previousCount);
       utils.reviewVotes.getByUser.setData(
@@ -78,13 +78,14 @@ export const ReviewVoteGroup = ({
         context?.previousUserVote,
       );
     },
-    onSuccess: () => {
+    onSuccess: (_, { weight, userId }) => {
       if (ecfg.enableReviewEventsTracking) {
-        track({
-          reviewId,
-          triggeringUserId: triggeringUserId ?? session?.user.id,
-          eventType: ReviewEventType.UPVOTE,
-        });
+        const eventType =
+          weight > 0 ? ReviewEventType.UPVOTE : ReviewEventType.DOWNVOTE;
+
+        const triggeringUserId = userId ?? session?.user.id;
+
+        track({ reviewId, triggeringUserId, eventType });
       }
     },
     onSettled: () => {
@@ -102,7 +103,7 @@ export const ReviewVoteGroup = ({
     if (!session) return;
     likeOrUnlike({
       reviewId,
-      userId: session.user.id,
+      userId: triggeringUserId ?? session.user.id,
       weight,
     });
   };
