@@ -1,3 +1,6 @@
+"use client";
+import { api } from "@/common/tools/trpc/react";
+import { toTitleCase } from "@/common/functions";
 import { Button } from "@/common/components/Button";
 import { Tooltip } from "@/common/components/Tooltip";
 import { SmileyIcon } from "@/common/components/CustomIcon";
@@ -6,42 +9,29 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/common/components/HoverCard";
+import { ReviewReactionType } from "@/modules/reviews/types";
+import { ReviewReactionType as DbReviewReactionType } from "@prisma/client";
 
-const REACTIONS = [
-  {
-    tooltip: "Like",
-    emoji: "💜",
-  },
-  {
-    tooltip: "Thankful",
-    emoji: "🙏",
-  },
-  {
-    tooltip: "Slay",
-    emoji: "💅",
-  },
-  {
-    tooltip: "Funny",
-    emoji: "🤣",
-  },
-  {
-    tooltip: "Crying",
-    emoji: "😭",
-  },
-  {
-    tooltip: "Shocked",
-    emoji: "😦",
-  },
-];
-
-export const ReviewReactionButton = () => {
+export const ReviewReactionButton = ({ reviewId }: { reviewId: string }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
   };
 
-  const handleEmojiClick = (t: string) => {
-    console.log("clicked!", t);
+  const utils = api.useUtils();
+
+  const { mutate: upsertReaction } = api.reviewReactions.upsert.useMutation({
+    onSuccess: () => {
+      utils.reviewReactions.getByReviewId.refetch({ reviewId });
+    },
+  });
+
+  const handleEmojiClick = (emoji: DbReviewReactionType) => {
+    console.log("clicked!", emoji);
+    upsertReaction({
+      reviewId,
+      reaction: emoji,
+    });
   };
 
   return (
@@ -61,18 +51,20 @@ export const ReviewReactionButton = () => {
         className="flex h-10 w-fit items-end p-2"
         onClick={handleClick}
       >
-        {REACTIONS.map(({ emoji, tooltip }) => (
+        {Object.entries(ReviewReactionType).map(([label, emoji]) => (
           <Tooltip>
             <Tooltip.Trigger className="h-fit w-fit">
               <span
-                key={tooltip}
+                key={label}
                 className="px-1 text-sm hover:text-3xl"
-                onClick={() => handleEmojiClick(tooltip)}
+                onClick={() => handleEmojiClick(label as DbReviewReactionType)}
               >
                 {emoji}
               </span>
             </Tooltip.Trigger>
-            <Tooltip.Content side="bottom">{tooltip}</Tooltip.Content>
+            <Tooltip.Content side="bottom">
+              {toTitleCase(label)}
+            </Tooltip.Content>
           </Tooltip>
         ))}
       </HoverCardContent>

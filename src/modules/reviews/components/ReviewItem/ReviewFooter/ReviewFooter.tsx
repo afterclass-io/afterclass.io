@@ -15,11 +15,11 @@ export type ReviewFooterProps = {
 export const ReviewFooter = ({ review }: ReviewFooterProps) => {
   return (
     <div className="space-y-2">
-      <ReviewReactionsGroup />
+      <ReviewReactionsGroup reviewId={review.id} />
       <div className="flex gap-4">
         <ReviewVoteGroup reviewId={review.id} />
 
-        <ReviewReactionButton />
+        <ReviewReactionButton reviewId={review.id} />
 
         <ReviewShareButton reviewId={review.id} variant="tertiary" size="sm" />
 
