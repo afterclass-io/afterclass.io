@@ -46,7 +46,7 @@ export const ReviewModal = ({
       ? `/professor/${review.professorSlug}`
       : `/course/${review.courseCode}`;
 
-  const { mutate } = api.reviewEvents.track.useMutation();
+  const { mutate: track } = api.reviewEvents.track.useMutation();
   const { data: session } = useSession();
 
   const reviewEventParam = {
@@ -61,7 +61,7 @@ export const ReviewModal = ({
       onOpenChange={(isOpen) => {
         if (!isOpen) return;
         if (ecfg.enableReviewEventsTracking) {
-          mutate({
+          track({
             ...reviewEventParam,
             eventType: ReviewEventType.INTERACTION,
           });
