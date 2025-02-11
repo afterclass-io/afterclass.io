@@ -239,15 +239,17 @@ model ReviewEvents {
 }
 
 model ReviewReactions {
-  id               String         @id() @db.Uuid
-  reviewId         String         @map("review_id")
-  reaction         ReviewReaction
-  triggeringUserId String?        @map("triggering_user_id")
-  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  reviewId       String             @map("review_id")
+  reactingUserId String             @map("reacting_user_id")
+  reaction       ReviewReactionType
+  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  review         Reviews @relation(fields: [reviewId], references: [id])
-  triggeringUser Users?  @relation(fields: [triggeringUserId], references: [id])
+  review       Reviews @relation(fields: [reviewId], references: [id])
+  reactingUser Users   @relation(fields: [reactingUserId], references: [id])
 
+  @@id([reviewId, reactingUserId])
+  @@index([reviewId, reactingUserId], type: BTree)
   @@map("review_reactions")
 }
 
@@ -280,7 +282,7 @@ enum ReviewEventType {
   INTERACTION // interactive clicks, such as opening a review item modal
 }
 
-enum ReviewReaction {
+enum ReviewReactionType {
   LIKE     @map("💜")
   THANKFUL @map("🙏")
   SLAY     @map("💅")
