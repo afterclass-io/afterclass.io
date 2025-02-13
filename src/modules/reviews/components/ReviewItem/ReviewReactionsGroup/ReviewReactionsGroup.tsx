@@ -14,8 +14,8 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
   });
   const utils = api.useUtils();
   const { mutate: upsertReaction } = api.reviewReactions.upsert.useMutation({
-    onSuccess: () => {
-      utils.reviewReactions.getByReviewId.refetch({ reviewId });
+    onSuccess: async () => {
+      await utils.reviewReactions.getByReviewId.refetch({ reviewId });
     },
   });
 

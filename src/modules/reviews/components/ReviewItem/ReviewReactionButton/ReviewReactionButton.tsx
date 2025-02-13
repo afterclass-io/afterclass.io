@@ -10,7 +10,7 @@ import {
   HoverCardTrigger,
 } from "@/common/components/HoverCard";
 import { ReviewReactionType } from "@/modules/reviews/types";
-import { ReviewReactionType as DbReviewReactionType } from "@prisma/client";
+import { type ReviewReactionType as DbReviewReactionType } from "@prisma/client";
 
 export const ReviewReactionButton = ({ reviewId }: { reviewId: string }) => {
   const handleClick = (e: React.MouseEvent) => {
@@ -21,8 +21,8 @@ export const ReviewReactionButton = ({ reviewId }: { reviewId: string }) => {
   const utils = api.useUtils();
 
   const { mutate: upsertReaction } = api.reviewReactions.upsert.useMutation({
-    onSuccess: () => {
-      utils.reviewReactions.getByReviewId.refetch({ reviewId });
+    onSuccess: async () => {
+      await utils.reviewReactions.getByReviewId.refetch({ reviewId });
     },
   });
 
@@ -52,10 +52,9 @@ export const ReviewReactionButton = ({ reviewId }: { reviewId: string }) => {
         onClick={handleClick}
       >
         {Object.entries(ReviewReactionType).map(([label, emoji]) => (
-          <Tooltip>
+          <Tooltip key={label}>
             <Tooltip.Trigger className="h-fit w-fit">
               <span
-                key={label}
                 className="px-1 text-sm hover:text-3xl"
                 onClick={() => handleEmojiClick(label as DbReviewReactionType)}
               >
