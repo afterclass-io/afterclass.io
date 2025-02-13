@@ -78,9 +78,7 @@ export const Tag = ({
       onClick={clickable ? () => setIsActive((prev) => !prev) : undefined}
       {...props}
     >
-      <StyledIcon icon={contentLeft} />
       <Child />
-      <StyledIcon icon={contentRight} />
     </div>
   );
 };
