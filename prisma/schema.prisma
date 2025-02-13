@@ -96,15 +96,17 @@ model UniversityDomains {
 }
 
 model Courses {
-  id                   String   @id @default(uuid())
-  code                 String   @unique
-  name                 String
-  description          String
-  creditUnits          Float    @map("credit_units")
-  belongToUniversityId Int      @map("belong_to_university")
-  belongToFacultyId    Int      @map("belong_to_faculty")
-  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                      String   @id @default(uuid())
+  code                    String   @unique
+  name                    String
+  description             String
+  creditUnits             Float    @map("credit_units")
+  belongToUniversityId    Int      @map("belong_to_university")
+  belongToFacultyId       Int      @map("belong_to_faculty")
+  createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt               DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  courseArea              String   @map("course_area")
+  enrolmentRequirements   String   @map("enrolment_requirements")
 
   belongToFaculty    Faculties    @relation(fields: [belongToFacultyId], references: [id])
   belongToUniversity Universities @relation(fields: [belongToUniversityId], references: [id])

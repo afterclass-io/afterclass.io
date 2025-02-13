@@ -8,7 +8,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 4,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea": "Advanced Business Technology Major, IT Solution Development Electives, Business Options, Digital Business Core, Econ Major Rel/Econ Options, Business-Oriented Electives, Information Systems Core (Intake 2019 to 2023), Social Sciences/PLE Major-related, Grad Req - Dig Tech/Data Ana (Intake 2024 onwards)",
+    "enrolmentRequirements": "Pre-Requisite: EITHER Introduction to Programming OR Programming Fundamentals I OR Computational Thinking and Programming"
   },
   {
     "id": "77526d76-f88c-4e82-91d7-822a2c658ea8",
@@ -19,7 +21,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 1,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea": "General Educatn (Not Appl for Intake 2015 onwards), Strategic Management Electives, Business Options, Econ Major Rel/Econ Options, Business-Oriented Electives, Social Sciences/PLE Major-related",
+    "enrolmentRequirements":"Mutually Exclusive: EITHER The Power and Practice of Leadership OR Management and Leadership: A Seminar with CEOs OR Leadership Seminar with CEOs"
   },
   {
     "id": "be218806-51fa-49aa-bd78-8367bd976e81",
@@ -30,7 +34,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 6,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea":"Accounting Core (Intake 2018 and earlier), Business Core (Intake 2019 onwards), Business Core (Intake 2018 and earlier), Accounting Core (Intake 2019 onwards), Econ Major Rel/Econ Options, Business-Oriented Electives, Social Sciences/PLE Major-related",
+    "enrolmentRequirements":"Mutually Exclusive: EITHER ACCT102 Management Accounting OR ACCT104/112 Management Accounting; Course is not applicable for current BAcc students"
   },
   {
     "id": "7769415c-d9f3-44c1-8ead-b54d937e8978",
@@ -41,7 +47,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 1,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea":"University Core, Capabilities - Managing",
+    "enrolmentRequirements":"Mutually Exclusive: EITHER Communication Skills OR Management Communication OR Organisational Communication"
   },
   {
     "id": "c229563a-4361-4b4a-8c89-346d0c6c6553",
@@ -52,7 +60,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 4,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea":"Technology Studies Cluster, General Education, Analytics Major, Information Systems Core (Intake 2018 and earlier), Smart-City Mgmt &Tech Core (Intake 2018 & earlier), Tech for Business Core (Intake 2018 and earlier), Technology & Entrepreneurship, Business Options, Finance Major: Finance Analytics Track, Marketing Major: Marketing Analytics Track, Ops Mgmt Major: Operations Analytics Track, Data Science and Analytics Core, Econ Major Rel/Econ Options, Social Sciences/PLE Major-related, Capabilities - Modes of Thinking",
+    "enrolmentRequirements":"Mutually Exclusive: EITHER Computational Thinking and Programming OR Computational Thinking OR Algorithms & Programming"
   },
   {
     "id": "add72ffa-9d36-42e4-8c49-b74b007c0841",
@@ -63,7 +73,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 4,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea":"Information Systems Electives, Technology & Entrepreneurship, Business Options, Econ Major Rel/Econ Options, IS/T4BS: Digitalisation & Cloud Solutions, IT Solution Management Core, IS Major: Product Development Track, IS Major: Software Development Track, Social Sciences/PLE Major-related, Computing Studies Core, IT Solution Development Core",
+    "enrolmentRequirements":"Co-Requisite: EITHER Enterprise Solution Development OR Enterprise Integration OR Computational Social Sci OR Interconnection of CPS; Mutually Exclusive: EITHER Architectural Analysis OR Cloud Mgmt & Engineering OR IT Solution Architecture"
   },
   {
     "id": "48573ec4-8371-44b9-9294-621c39627372",
@@ -74,7 +86,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 2,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea":"Law Electives, Legal Studies Electives, Business Options, Econ Major Rel/Econ Options, Business-Oriented Electives, Social Sciences/PLE Major-related, Law: Corporate Transaction Track",
+    "enrolmentRequirements":"Pre-Requisite: EITHER LAW 205 OR LAW201_621 Corporate Law OR Company Law with min Grade 'A'; Mutually Exclusive: EITHER Insolv and Restru OR Corp Insolv Law. Course applicable to SMU UGRD and stud enrolled in equivalent SMU LLB prog in another uni."
   },
   {
     "id": "029b2258-ee2c-415d-a29d-be84babe1896",
@@ -85,7 +99,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 1,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea":"University Core, Business Core-Biz in Context(Intake 2019 onwards), Capabilities - Managing",
+    "enrolmentRequirements":"Mutually Exclusive: EITHER Government, Technology and Organisation OR Business, Government and Society"
   },
   {
     "id": "7687fd3b-cc0d-4cba-911f-efde99e864d2",
@@ -96,7 +112,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 1,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea":"Analytics Major, Org Behaviour & HR Electives, Business Options, Econ Major Rel/Econ Options, Business-Oriented Electives, Social Sciences/PLE Major-related, Grad Req - Dig Tech/Data Ana (Intake 2024 onwards)",
+    "enrolmentRequirements":"Pre-Requisite: Management of People at Work AND (EITHER Introductory Statistics OR Introductory Statistics B OR Introduction to Statistical Theory) AND (1 CU from OBHR200, OBHR300 or COR-OBHR Series)"
   },
   {
     "id": "fd81b8b9-c7eb-4978-900a-eaba16398dde",
@@ -107,7 +125,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 5,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea":"Actuarial Science Electives, Applied Statistics Major, Information Systems Core (Intake 2018 and earlier), Smart-City Mgmt &Tech Core (Intake 2018 & earlier), Business Core (Intake 2018 and earlier), Accounting Core (Intake 2019 onwards), Business Subjects, Actuarial Science Major: Actuarial Analyst Track, Econ Major Rel/Econ Options, Actuarial Science Major: Risk Analyst Track, Business-Oriented Electives, Information Systems Core (Intake 2019 to 2023), Smart-City Mgmt & Tech Core (Intake 2019 to 2021), Political Science Core (Intake 2019 onwards), Psychology Core (Intake 2019 onwards), Sociology Core (Intake 2019 onwards), SOSC Core (Intake 2018 and earlier), Law Related Electives, Capabilities",
+    "enrolmentRequirements":"Mutually Exclusive: EITHER Introductory Statistics OR Introduction to Statistical Theory"
   },
   {
     "id": "55d4ee64-4e82-4963-97b3-38edfdb161e6",
@@ -118,7 +138,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 1,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea":"Business Options, Quantitative Finance Core, Econ Major Rel/Econ Options, Business-Oriented Electives, Social Sciences/PLE Major-related",
+    "enrolmentRequirements":"Pre-Requisite: EITHER Calculus OR Introductory Statistics OR Introduction to Statistical Theory"
   },
   {
     "id": "e37b1881-dcc9-4c81-a82a-cdca512cfb6f",
@@ -129,7 +151,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 4,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea":"Business Options, Econ Major Rel/Econ Options, Business-Oriented Electives, IS Depth Electives, Social Sciences/PLE Major-related, Software Engineering Core (Intake 2022 to 2023)",
+    "enrolmentRequirements":"Co-requisite: EITHER Intro to Programming OR Prog for Smart City Solutions OR Programming Fundamentals I; Mutually Exclusive: EITHER Operating Syst & Networking OR Computing Fundamentals; Not Applicable for BSc (CS)"
   },
   {
     "id": "53a486bb-c4e6-4795-a359-febfce39586d",
@@ -140,7 +164,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 3,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea":"Economics Electives, Finance Electives, Business Options, Actuarial Science Major: Actuarial Analyst Track, Actuarial Science Core, Econ Major Rel/Econ Options, Actuarial Science Major: Risk Analyst Track, Business-Oriented Electives, Social Sciences/PLE Major-related",
+    "enrolmentRequirements":"Pre-Requisite: Calculus"
   },
   {
     "id": "5c3443df-9038-4706-a727-eae9bdb77642",
@@ -151,7 +177,9 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 5,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea":"Politics, Law & Economics Electives, Political Science Electives, Public Pol and Public Mgmt Electives, Sustainable Societies Electives, Sustainability Management Electives, Business Options, Econ Major Rel/Econ Options, Business-Oriented Electives, PLE: Distribution and Justice Track, PLE: Public Policy and Governance Track, Social Sciences/PLE Major-related, PLE: Sustainable Futures Track, Grad Req - Sustainability (Intake 2024 onwards)",
+    "enrolmentRequirements":"Information is not available."
   },
   {
     "id": "441e3d23-2257-4295-b145-b66b792af7bc",
@@ -162,6 +190,8 @@
     "belongToUniversityId": 1,
     "belongToFacultyId": 5,
     "createdAt": "2024-03-14T04:03:32.443Z",
-    "updatedAt": "2024-03-14T04:03:32.443Z"
+    "updatedAt": "2024-03-14T04:03:32.443Z",
+    "courseArea":"Asian Studies (Intake 2018 and earlier), Global Asia Electives, Intl & Asian Studies Major, Political Science Electives, Business Options, Econ Major Rel/Econ Options, Business-Oriented Electives, PLE Core (Intake 2019 onwards), Social Sciences/PLE Major-related, Grad Req - SG & Asia Studies (Intake 2024 onwards), Asia Studies (Intake 2019 to 2023), Communities - Cultures of the Modern World",
+    "enrolmentRequirements":"Mutually Exclusive: EITHER POSC302 Government and Politics of South East Asia OR POSC213 Politics of South East Asia"
   }
 ]
