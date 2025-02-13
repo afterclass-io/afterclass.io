@@ -5,11 +5,7 @@ import { Button } from "@/common/components/Button";
 import { api } from "@/common/tools/trpc/react";
 import { ReviewReactionType } from "@/modules/reviews/types";
 
-export const ReviewReactionsGroup = async ({
-  reviewId,
-}: {
-  reviewId: string;
-}) => {
+export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
