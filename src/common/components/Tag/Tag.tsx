@@ -15,6 +15,7 @@ import {
 
 export type TagProps = ComponentPropsWithoutRef<"div"> &
   TagVariants & {
+    asChild?: boolean;
     defaultActive?: boolean;
     contentLeft?: React.ReactNode;
     contentRight?: React.ReactNode;
@@ -29,6 +30,7 @@ export const Tag = ({
   clickable = false,
   size = "md",
   className,
+  asChild = false,
   ...props
 }: TagProps) => {
   const [isActive, setIsActive] = useState(defaultActive);
@@ -57,6 +59,19 @@ export const Tag = ({
     [size, iconTheme],
   );
 
+  const Child = useCallback(() => {
+    if (asChild) {
+      return children;
+    }
+    return (
+      <>
+        <StyledIcon icon={contentLeft} />
+        {children && <span>{children}</span>}
+        <StyledIcon icon={contentRight} />
+      </>
+    );
+  }, [StyledIcon, contentLeft, contentRight, children, asChild]);
+
   return (
     <div
       className={tag({ className })}
@@ -64,7 +79,7 @@ export const Tag = ({
       {...props}
     >
       <StyledIcon icon={contentLeft} />
-      {children && <span>{children}</span>}
+      <Child />
       <StyledIcon icon={contentRight} />
     </div>
   );
