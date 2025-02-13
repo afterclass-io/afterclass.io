@@ -1,0 +1,149 @@
+[
+  {
+    "reviewId": "68b0150c-212f-4af5-a7ca-e71fef3a2cc1",
+    "reactingUserId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "reaction": "LIKE",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "68b0150c-212f-4af5-a7ca-e71fef3a2cc1",
+    "reactingUserId": "11894f96-aa54-4632-bf33-8c46999aab1b",
+    "reaction": "THANKFUL",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "68b0150c-212f-4af5-a7ca-e71fef3a2cc1",
+    "reactingUserId": "c94f0f68-0baa-456e-99c9-205a1932a9d4",
+    "reaction": "SLAY",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "68b0150c-212f-4af5-a7ca-e71fef3a2cc1",
+    "reactingUserId": "4e0948dc-8a00-475e-9d6f-c092cafd0b5f",
+    "reaction": "FUNNY",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "68b0150c-212f-4af5-a7ca-e71fef3a2cc1",
+    "reactingUserId": "c9c43a50-bdea-4dfd-9d43-6810b3354849",
+    "reaction": "CRYING",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "68b0150c-212f-4af5-a7ca-e71fef3a2cc1",
+    "reactingUserId": "f052ace5-661d-462f-aa51-220a746fe16e",
+    "reaction": "SHOCKED",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "68b0150c-212f-4af5-a7ca-e71fef3a2cc1",
+    "reactingUserId": "68a37e21-8209-44eb-ac22-79a123c81296",
+    "reaction": "CRYING",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "f0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "reaction": "LIKE",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "f0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "11894f96-aa54-4632-bf33-8c46999aab1b",
+    "reaction": "THANKFUL",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "f0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "c94f0f68-0baa-456e-99c9-205a1932a9d4",
+    "reaction": "SLAY",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "f0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "4e0948dc-8a00-475e-9d6f-c092cafd0b5f",
+    "reaction": "FUNNY",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "f0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "c9c43a50-bdea-4dfd-9d43-6810b3354849",
+    "reaction": "CRYING",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "f0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "f052ace5-661d-462f-aa51-220a746fe16e",
+    "reaction": "SHOCKED",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "f0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "68a37e21-8209-44eb-ac22-79a123c81296",
+    "reaction": "THANKFUL",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "s0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "reaction": "LIKE",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "s0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "11894f96-aa54-4632-bf33-8c46999aab1b",
+    "reaction": "THANKFUL",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "s0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "c94f0f68-0baa-456e-99c9-205a1932a9d4",
+    "reaction": "SLAY",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "s0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "4e0948dc-8a00-475e-9d6f-c092cafd0b5f",
+    "reaction": "FUNNY",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "s0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "c9c43a50-bdea-4dfd-9d43-6810b3354849",
+    "reaction": "CRYING",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "s0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "f052ace5-661d-462f-aa51-220a746fe16e",
+    "reaction": "SHOCKED",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "s0b1ee9e-6164-4565-890d-45d844593e63",
+    "reactingUserId": "68a37e21-8209-44eb-ac22-79a123c81296",
+    "reaction": "SLAY",
+    "createdAt": "2023-11-07T06:22:33.222Z",
+    "updatedAt": "2023-11-07T06:22:33.222Z"
+  }
+]
