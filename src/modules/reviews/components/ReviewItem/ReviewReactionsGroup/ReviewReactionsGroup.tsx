@@ -1,7 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
 import {
-  ReviewReactionType as DbReviewReactionType,
+  type ReviewReactionType as DbReviewReactionType,
   ReviewEventType,
 } from "@prisma/client";
 
@@ -34,21 +34,30 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
       utils.reviewReactions.getByReviewId.setData(
         { reviewId },
         (oldQueryData) => {
+          const reactingUserId = userId ?? session?.user.id ?? "";
+
+          // when user undo their reaction
+          if (!reaction) {
+            return oldQueryData?.filter(
+              (reaction) => reaction.reactingUserId !== reactingUserId,
+            );
+          }
+
           const now = new Date();
           const newReaction = {
-            reaction: reaction as DbReviewReactionType,
-            reactingUserId: userId ?? session?.user.id ?? "",
+            reaction: reaction,
+            reactingUserId,
             reviewId,
             createdAt: now,
             updatedAt: now,
           };
 
+          // when there are no other reactions on this review
           if (!oldQueryData) return [newReaction];
 
-          // Remove the previous reaction if it exists
+          // remove the other reaction by the same user if it exists
           const updatedReactions = oldQueryData.filter(
-            (reaction) =>
-              reaction.reactingUserId !== newReaction.reactingUserId,
+            (reaction) => reaction.reactingUserId !== reactingUserId,
           );
 
           return [...updatedReactions, newReaction];
