@@ -140,7 +140,7 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
             key={reaction}
             clickable
             active={hasThisUserReacted}
-            className="flex min-w-fit gap-1 px-2 py-0"
+            className="flex min-w-fit select-none gap-1 px-2 py-0"
             asChild
           >
             <span className="text-lg">
