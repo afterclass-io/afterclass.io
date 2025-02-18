@@ -4,5 +4,5 @@
   "enableReviewEventsTracking": true,
   "enableReviewSort": true,
   "enableReviewFilter": true,
-  "enableReviewReactions": false
+  "enableReviewReactions": true
 }
