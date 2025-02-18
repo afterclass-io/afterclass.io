@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 
@@ -26,7 +26,14 @@ export const ReviewSectionHeaderSortGroup = () => {
                             ?.data
                         ?? ReviewsSortBy.LATEST;
 
-  const [value, setValue] = useState<ReviewsSortBy>(defaultSortBy);
+  const [sortBy, setSortBy] = useState<ReviewsSortBy>(defaultSortBy);
+
+  useEffect(() => {
+    if (sortBy !== defaultSortBy) {
+      setSortBy(defaultSortBy);
+    }
+  }, [defaultSortBy]);
+
   const ecfg = useEdgeConfigs();
 
   if (!ecfg.enableReviewSort) {
@@ -52,11 +59,11 @@ export const ReviewSectionHeaderSortGroup = () => {
 
   const otherOptions = allSortOptions.filter((option) => !option.includes("_"));
 
-  const handleSortChange = (newValue: ReviewsSortBy) => {
-    setValue(newValue);
+  const handleSortChange = (newSortBy: ReviewsSortBy) => {
+    setSortBy(newSortBy);
 
     const params = new URLSearchParams(searchParams);
-    params.set("sort", newValue);
+    params.set("sort", newSortBy);
     router.push(`${pathname}?${params.toString()}`);
   };
 
@@ -67,7 +74,7 @@ export const ReviewSectionHeaderSortGroup = () => {
         <Button
           key={option}
           variant="ghost"
-          className={option === value ? "text-primary-default" : ""}
+          className={option === sortBy ? "text-primary-default" : ""}
           rounded
           onClick={() => handleSortChange(option)}
         >
@@ -80,8 +87,8 @@ export const ReviewSectionHeaderSortGroup = () => {
         <Select
           // force re-render when value changes
           // see https://github.com/radix-ui/primitives/issues/1569
-          key={prefix + value}
-          value={options.includes(value) ? value : undefined}
+          key={prefix + sortBy}
+          value={options.includes(sortBy) ? sortBy : undefined}
           onValueChange={handleSortChange}
         >
           <Select.Trigger className="rounded-full shadow-none" asChild>
@@ -91,7 +98,7 @@ export const ReviewSectionHeaderSortGroup = () => {
               iconRight={<ChevronDownIcon />}
               className={cn(
                 "text-base",
-                options.includes(value) && "text-primary-default",
+                options.includes(sortBy) && "text-primary-default",
               )}
             >
               <Select.Value placeholder="Top" />

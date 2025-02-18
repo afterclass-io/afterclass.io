@@ -27,14 +27,15 @@ model Reviews {
   createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  reviewedCourse     Courses        @relation(fields: [reviewedCourseId], references: [id])
-  reviewedFaculty    Faculties      @relation(fields: [reviewedFacultyId], references: [id])
-  reviewedProfessor  Professors?    @relation(fields: [reviewedProfessorId], references: [id])
-  reviewedUniversity Universities   @relation(fields: [reviewedUniversityId], references: [id])
-  reviewer           Users          @relation(fields: [reviewerId], references: [id])
+  reviewedCourse     Courses           @relation(fields: [reviewedCourseId], references: [id])
+  reviewedFaculty    Faculties         @relation(fields: [reviewedFacultyId], references: [id])
+  reviewedProfessor  Professors?       @relation(fields: [reviewedProfessorId], references: [id])
+  reviewedUniversity Universities      @relation(fields: [reviewedUniversityId], references: [id])
+  reviewer           Users             @relation(fields: [reviewerId], references: [id])
   reviewLabels       ReviewLabels[]
   votes              ReviewVotes[]
   reviewEvents       ReviewEvents[]
+  reviewReactions    ReviewReactions[]
 
   @@index([createdAt], type: BTree)
   @@index([reviewedCourseId], type: BTree)
@@ -57,11 +58,12 @@ model Users {
   createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  faculty      Faculties?     @relation(fields: [facultyId], references: [id])
-  university   Universities   @relation(fields: [universityId], references: [id])
-  votes        ReviewVotes[]
-  reviews      Reviews[]
-  reviewEvents ReviewEvents[]
+  faculty         Faculties?        @relation(fields: [facultyId], references: [id])
+  university      Universities      @relation(fields: [universityId], references: [id])
+  votes           ReviewVotes[]
+  reviews         Reviews[]
+  reviewEvents    ReviewEvents[]
+  ReviewReactions ReviewReactions[]
 
   @@map("users")
 }
@@ -238,6 +240,21 @@ model ReviewEvents {
   @@map("review_events")
 }
 
+model ReviewReactions {
+  reviewId       String             @map("review_id")
+  reactingUserId String             @map("reacting_user_id")
+  reaction       ReviewReactionType
+  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  review       Reviews @relation(fields: [reviewId], references: [id])
+  reactingUser Users   @relation(fields: [reactingUserId], references: [id])
+
+  @@id([reviewId, reactingUserId])
+  @@index([reviewId, reactingUserId], type: BTree)
+  @@map("review_reactions")
+}
+
 enum UniversityAbbreviation {
   SMU
   NUS
@@ -265,4 +282,13 @@ enum ReviewEventType {
   UPVOTE
   DOWNVOTE
   INTERACTION // interactive clicks, such as opening a review item modal
+}
+
+enum ReviewReactionType {
+  LIKE     @map("💜")
+  THANKFUL @map("🙏")
+  SLAY     @map("💅")
+  FUNNY    @map("🤣")
+  CRYING   @map("😭")
+  SHOCKED  @map("😦")
 }

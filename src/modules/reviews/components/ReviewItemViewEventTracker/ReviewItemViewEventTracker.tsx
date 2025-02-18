@@ -11,14 +11,14 @@ export const ReviewItemViewEventTracker = (props: {
   eventType?: ReviewEventType;
 }) => {
   const ecfg = useEdgeConfigs();
-  const { mutate } = api.reviewEvents.track.useMutation();
+  const { mutate: track } = api.reviewEvents.track.useMutation();
 
   return (
     ecfg.enableReviewEventsTracking && (
       <ViewEventTracker
         onChange={(inView, _) =>
           inView &&
-          mutate({
+          track({
             eventType: ReviewEventType.VIEW,
             ...props,
           })
