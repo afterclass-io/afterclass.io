@@ -3,5 +3,6 @@
   "enableCmdkTooltip": true,
   "enableReviewEventsTracking": true,
   "enableReviewSort": true,
-  "enableReviewFilter": true
+  "enableReviewFilter": true,
+  "enableReviewReactions": false
 }

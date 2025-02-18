@@ -7,22 +7,28 @@ import { ReviewShareButton } from "../ReviewShareButton";
 import { ReviewVoteGroup } from "../ReviewVoteGroup";
 import { ReviewReactionsGroup } from "../ReviewReactionsGroup";
 import { ReviewReactionButton } from "../ReviewReactionButton";
+import { useEdgeConfigs } from "@/common/hooks";
 
 export type ReviewFooterProps = {
   review: Review;
 };
 
 export const ReviewFooter = ({ review }: ReviewFooterProps) => {
+  const ecfg = useEdgeConfigs();
+  const shouldShowReviewReactions = ecfg.enableReviewReactions;
+
   return (
     <div className="space-y-2">
-      <ReviewReactionsGroup reviewId={review.id} />
+      {shouldShowReviewReactions && (
+        <ReviewReactionsGroup reviewId={review.id} />
+      )}
+
       <div className="flex gap-4">
         <ReviewVoteGroup reviewId={review.id} />
-
-        <ReviewReactionButton reviewId={review.id} />
-
+        {shouldShowReviewReactions && (
+          <ReviewReactionButton reviewId={review.id} />
+        )}
         <ReviewShareButton reviewId={review.id} variant="tertiary" size="sm" />
-
         <div
           className={buttonTheme({
             size: "sm",

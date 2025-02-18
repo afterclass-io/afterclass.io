@@ -6,6 +6,7 @@ export const edgeConfigSchema = z.object({
   enableReviewEventsTracking: z.boolean(),
   enableReviewSort: z.boolean(),
   enableReviewFilter: z.boolean(),
+  enableReviewReactions: z.boolean(),
 });
 
 export type EdgeConfig = z.infer<typeof edgeConfigSchema>;
