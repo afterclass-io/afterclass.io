@@ -61,12 +61,7 @@ export const ReviewItem = ({
         <ReviewHeader />
         <ReviewBody review={review} />
         <ReviewFooter review={review} />
-        {!isMocked && (
-          <ReviewItemViewEventTracker
-            reviewId={review.id}
-            triggeringUserId={session.data.user.id}
-          />
-        )}
+        {!isMocked && <ReviewItemViewEventTracker reviewId={review.id} />}
       </div>
     </ReviewModal>
   );

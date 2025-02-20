@@ -6,7 +6,6 @@ export const voteOrUnvote = protectedProcedure
   .input(
     z.object({
       reviewId: z.string(),
-      userId: z.string(),
       weight: z.number(),
     }),
   )
@@ -16,12 +15,12 @@ export const voteOrUnvote = protectedProcedure
         where: {
           reviewId_voterId: {
             reviewId: input.reviewId,
-            voterId: input.userId,
+            voterId: ctx.session.user.id,
           },
         },
         create: {
           reviewId: input.reviewId,
-          voterId: input.userId,
+          voterId: ctx.session.user.id,
           weight: input.weight,
         },
         update: {

@@ -74,13 +74,10 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
         context?.previousReactions,
       );
     },
-    onSuccess: (_, { userId }) => {
+    onSuccess: () => {
       if (ecfg.enableReviewEventsTracking) {
-        const triggeringUserId = userId ?? session?.user.id;
-
         track({
           reviewId,
-          triggeringUserId,
           eventType: ReviewEventType.REACTION,
         });
       }
