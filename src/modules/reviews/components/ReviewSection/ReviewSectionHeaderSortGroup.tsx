@@ -74,8 +74,12 @@ export const ReviewSectionHeaderSortGroup = () => {
         <Button
           key={option}
           variant="ghost"
-          className={option === sortBy ? "text-primary-default" : ""}
           rounded
+          className={cn(
+            "text-base md:text-lg",
+            "px-2 md:px-4",
+            option === sortBy ? "text-primary-default" : "",
+          )}
           onClick={() => handleSortChange(option)}
         >
           {formatSortByLabel(option)}
@@ -97,7 +101,8 @@ export const ReviewSectionHeaderSortGroup = () => {
               rounded
               iconRight={<ChevronDownIcon />}
               className={cn(
-                "text-base",
+                "text-base md:text-lg",
+                "px-2 md:px-4",
                 options.includes(sortBy) && "text-primary-default",
               )}
             >
