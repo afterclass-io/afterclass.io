@@ -7,7 +7,6 @@ import { ViewEventTracker } from "@/modules/tracker/components/ViewEventTracker"
 
 export const ReviewItemViewEventTracker = (props: {
   reviewId: string;
-  triggeringUserId: string;
   eventType?: ReviewEventType;
 }) => {
   const ecfg = useEdgeConfigs();

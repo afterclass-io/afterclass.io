@@ -10,14 +10,13 @@ export const track = protectedProcedure
     z.object({
       reviewId: z.string(),
       eventType: z.nativeEnum(ReviewEventType),
-      triggeringUserId: z.string().optional(),
     }),
   )
   .mutation(async ({ input, ctx }) => {
     const eventId = uuid(
       input.reviewId,
       input.eventType,
-      input.triggeringUserId ?? ctx.session.user.id,
+      ctx.session.user.id,
       rotatingSaltStartOfHour(),
     );
     return await ctx.db.reviewEvents.upsert({
@@ -27,7 +26,7 @@ export const track = protectedProcedure
         id: eventId,
         eventType: input.eventType,
         reviewId: input.reviewId,
-        triggeringUserId: input.triggeringUserId,
+        triggeringUserId: ctx.session.user.id,
       },
     });
   });

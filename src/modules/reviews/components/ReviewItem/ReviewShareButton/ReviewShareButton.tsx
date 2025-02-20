@@ -18,12 +18,10 @@ export type ReviewShareButtonProps = ButtonProps &
   ButtonBaseProps &
   Omit<ButtonVariants, "hasIcon" | "iconOnly"> & {
     reviewId: string;
-    triggeringUserId?: string;
   };
 
 export const ReviewShareButton = ({
   reviewId,
-  triggeringUserId,
   ...props
 }: ReviewShareButtonProps) => {
   const pathname = usePathname();
@@ -54,7 +52,6 @@ export const ReviewShareButton = ({
         if (ecfg.enableReviewEventsTracking) {
           track({
             reviewId,
-            triggeringUserId,
             eventType: ReviewEventType.SHARE,
           });
         }

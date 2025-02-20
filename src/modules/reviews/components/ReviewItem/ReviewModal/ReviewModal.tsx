@@ -47,12 +47,6 @@ export const ReviewModal = ({
       : `/course/${review.courseCode}`;
 
   const { mutate: track } = api.reviewEvents.track.useMutation();
-  const { data: session } = useSession();
-
-  const reviewEventParam = {
-    reviewId: review.id,
-    triggeringUserId: session?.user?.id,
-  };
 
   return (
     <Modal
@@ -62,7 +56,7 @@ export const ReviewModal = ({
         if (!isOpen) return;
         if (ecfg.enableReviewEventsTracking) {
           track({
-            ...reviewEventParam,
+            reviewId: review.id,
             eventType: ReviewEventType.INTERACTION,
           });
         }

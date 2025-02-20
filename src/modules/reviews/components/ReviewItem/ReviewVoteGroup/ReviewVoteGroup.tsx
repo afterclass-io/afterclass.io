@@ -13,13 +13,7 @@ import {
   ArrowFatLineUpFillIcon,
 } from "@/common/components/CustomIcon";
 
-export const ReviewVoteGroup = ({
-  reviewId,
-  triggeringUserId,
-}: {
-  reviewId: string;
-  triggeringUserId?: string;
-}) => {
+export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
   const { data: session } = useSession();
   const ecfg = useEdgeConfigs();
 
@@ -78,14 +72,12 @@ export const ReviewVoteGroup = ({
         context?.previousUserVote,
       );
     },
-    onSuccess: (_, { weight, userId }) => {
+    onSuccess: (_, { weight }) => {
       if (ecfg.enableReviewEventsTracking) {
         const eventType =
           weight > 0 ? ReviewEventType.UPVOTE : ReviewEventType.DOWNVOTE;
 
-        const triggeringUserId = userId ?? session?.user.id;
-
-        track({ reviewId, triggeringUserId, eventType });
+        track({ reviewId, eventType });
       }
     },
     onSettled: () => {
@@ -103,7 +95,6 @@ export const ReviewVoteGroup = ({
     if (!session) return;
     likeOrUnlike({
       reviewId,
-      userId: triggeringUserId ?? session.user.id,
       weight,
     });
   };
