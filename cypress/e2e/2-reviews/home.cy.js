@@ -40,7 +40,7 @@ context("Reviews: Home", function () {
 
   describe("Unauthenticated User", function () {
     it("should be able to see login overlay on review item", function () {
-      cy.get("[data-test=scrollable]").scrollTo("bottom");
+      cy.scrollTo("bottom");
 
       cy.get("a[data-test=lock-cta-overlay]").should("be.visible");
     });
@@ -54,7 +54,7 @@ context("Reviews: Home", function () {
       cy.intercept("GET", "/api/trpc/reviews.getAll*").as("getReviews");
       cy.wait("@getReviews");
 
-      cy.get("[data-test=scrollable]").scrollTo("bottom");
+      cy.scrollTo("bottom");
       cy.wait(2000);
 
       cy.get("[data-test=review]").should("have.length", 10);
@@ -130,7 +130,7 @@ context("Reviews: Home", function () {
     });
 
     it("should be able to load more reviews", function () {
-      cy.get("[data-test=scrollable]").scrollTo("bottom");
+      cy.scrollTo("bottom");
       cy.wait(1000);
 
       cy.get("[data-test=review]").should("have.length", 20);

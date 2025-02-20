@@ -24,9 +24,7 @@ export async function CoreLayout({ children }: CoreLayoutProps) {
       <SidebarInset>
         <CoreLayoutHeader />
         <AnnouncementBanner />
-        <div className="flex flex-1 flex-col" data-test="scrollable">
-          {children}
-        </div>
+        <div className="flex flex-1 flex-col">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
