@@ -68,16 +68,15 @@ export const ReviewSectionHeaderSortGroup = () => {
   };
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-2">
       {/* Regular buttons */}
       {otherOptions.map((option) => (
         <Button
           key={option}
           variant="ghost"
-          rounded
           className={cn(
             "text-base md:text-lg",
-            "px-2 md:px-4",
+            "px-0 py-0 md:px-2",
             option === sortBy ? "text-primary-default" : "",
           )}
           onClick={() => handleSortChange(option)}
@@ -95,14 +94,13 @@ export const ReviewSectionHeaderSortGroup = () => {
           value={options.includes(sortBy) ? sortBy : undefined}
           onValueChange={handleSortChange}
         >
-          <Select.Trigger className="rounded-full shadow-none" asChild>
+          <Select.Trigger asChild>
             <Button
               variant="ghost"
-              rounded
               iconRight={<ChevronDownIcon />}
               className={cn(
                 "text-base md:text-lg",
-                "px-2 md:px-4",
+                "px-0 py-0 md:px-2",
                 options.includes(sortBy) && "text-primary-default",
               )}
             >
