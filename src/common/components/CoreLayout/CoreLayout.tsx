@@ -19,14 +19,14 @@ type CoreLayoutProps = PropsWithChildren;
 
 export async function CoreLayout({ children }: CoreLayoutProps) {
   return (
-    <SidebarProvider className="h-dvh">
+    <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
         <CoreLayoutHeader />
         <AnnouncementBanner />
-        <section className="h-full overflow-y-scroll" data-test="scrollable">
+        <div className="flex flex-1 flex-col" data-test="scrollable">
           {children}
-        </section>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );
