@@ -26,7 +26,7 @@ export default async function SubmitReviewPage() {
   ]);
 
   return (
-    <section className="flex flex-1 flex-col space-y-5 md:space-y-8">
+    <div className="flex flex-col space-y-5 md:space-y-8">
       <PageTitle contentRight={<SchoolTag school={school} />}>
         Write a Review
       </PageTitle>
@@ -61,6 +61,6 @@ export default async function SubmitReviewPage() {
           isOptional
         />
       </ReviewForm>
-    </section>
+    </div>
   );
 }
