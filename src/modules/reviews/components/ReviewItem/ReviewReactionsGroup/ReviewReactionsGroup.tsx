@@ -1,91 +1,20 @@
 "use client";
 import { useSession } from "next-auth/react";
-import {
-  type ReviewReactionType as DbReviewReactionType,
-  ReviewEventType,
-} from "@prisma/client";
+import { type ReviewReactionType as DbReviewReactionType } from "@prisma/client";
 
 import { api } from "@/common/tools/trpc/react";
 import { Tag } from "@/common/components/Tag";
-import { useEdgeConfigs } from "@/common/hooks";
 import { ReviewReactionType } from "@/modules/reviews/types";
+import { useOptimisticReaction } from "@/modules/reviews/hooks";
 
 export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
   const { data: session } = useSession();
-  const ecfg = useEdgeConfigs();
 
   const reviewReactionsQuery = api.reviewReactions.getByReviewId.useQuery({
     reviewId,
   });
-  const utils = api.useUtils();
-  const { mutate: track } = api.reviewEvents.track.useMutation();
-  const { mutate: upsertReaction } = api.reviewReactions.upsert.useMutation({
-    onMutate: async ({ reviewId, reaction, userId }) => {
-      // Cancel any outgoing refetches
-      // (so they don't overwrite our optimistic update)
-      await utils.reviewReactions.getByReviewId.cancel();
 
-      // Snapshot the previous value
-      const previousReactions = utils.reviewReactions.getByReviewId.getData({
-        reviewId,
-      });
-
-      // Optimistically update to the new value
-      utils.reviewReactions.getByReviewId.setData(
-        { reviewId },
-        (oldQueryData) => {
-          const reactingUserId = userId ?? session?.user.id ?? "";
-
-          // when user undo their reaction
-          if (!reaction) {
-            return oldQueryData?.filter(
-              (reaction) => reaction.reactingUserId !== reactingUserId,
-            );
-          }
-
-          const now = new Date();
-          const newReaction = {
-            reaction: reaction,
-            reactingUserId,
-            reviewId,
-            createdAt: now,
-            updatedAt: now,
-          };
-
-          // when there are no other reactions on this review
-          if (!oldQueryData) return [newReaction];
-
-          // remove the other reaction by the same user if it exists
-          const updatedReactions = oldQueryData.filter(
-            (reaction) => reaction.reactingUserId !== reactingUserId,
-          );
-
-          return [...updatedReactions, newReaction];
-        },
-      );
-
-      // Return a context object with the snapshotted value
-      return { previousReactions };
-    },
-    onError: (_err, _variables, context) => {
-      // Rollback to the previous value if mutation fails
-      utils.reviewReactions.getByReviewId.setData(
-        { reviewId },
-        context?.previousReactions,
-      );
-    },
-    onSuccess: () => {
-      if (ecfg.enableReviewEventsTracking) {
-        track({
-          reviewId,
-          eventType: ReviewEventType.REACTION,
-        });
-      }
-    },
-    onSettled: () => {
-      void utils.reviewReactions.getByReviewId.invalidate({ reviewId });
-    },
-  });
+  const { mutate: upsertReaction } = useOptimisticReaction();
 
   if (!reviewReactionsQuery.data || !session) {
     return;
