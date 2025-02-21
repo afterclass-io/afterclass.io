@@ -30,7 +30,7 @@ export default function ThemesPage() {
   );
 
   return (
-    <section className="flex flex-col gap-12 p-12">
+    <div className="flex flex-col gap-12 p-12">
       {Object.entries(themes).map(([themeName, colors]) => (
         <div key={themeName} className="space-y-6">
           <h2 className="text-xl font-semibold capitalize">
@@ -57,6 +57,6 @@ export default function ThemesPage() {
           </div>
         </div>
       ))}
-    </section>
+    </div>
   );
 }
