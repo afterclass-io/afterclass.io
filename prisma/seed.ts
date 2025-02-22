@@ -32,6 +32,12 @@ async function main() {
     data: professorFaculties,
   });
 
+  // Ordered before classes as classes refers to acadTermId.
+  const acadTerms = require("./data/14_acad_terms.json");
+  await prisma.acadTerm.createMany({
+    data: acadTerms,
+  });
+
   const classes = require("./data/7_classes.json");
   await prisma.classes.createMany({
     data: classes,

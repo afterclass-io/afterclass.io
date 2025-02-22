@@ -3,256 +3,416 @@
     "id": 17,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "610da81e-1f9b-4775-b25a-69a67d6e8588",
-    "label": "G1",
+    "section": "G1",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 18,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "610da81e-1f9b-4775-b25a-69a67d6e8588",
-    "label": "G2",
+    "section": "G2",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 19,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "610da81e-1f9b-4775-b25a-69a67d6e8588",
-    "label": "G3",
+    "section": "G3",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 20,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "610da81e-1f9b-4775-b25a-69a67d6e8588",
-    "label": "G4",
+    "section": "G4",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 21,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "610da81e-1f9b-4775-b25a-69a67d6e8588",
-    "label": "G5",
+    "section": "G5",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 22,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "b5a4de1f-e829-4fb1-8d6a-7b2566358d89",
-    "label": "G6",
+    "section": "G6",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 23,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "b5a4de1f-e829-4fb1-8d6a-7b2566358d89",
-    "label": "G7",
+    "section": "G7",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 24,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "73fb24bb-7e88-4108-864c-0a1fdc072007",
-    "label": "G8",
+    "section": "G8",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 25,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "73fb24bb-7e88-4108-864c-0a1fdc072007",
-    "label": "G9",
+    "section": "G9",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 26,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "9f252cfa-5df6-4d26-80fc-04673012ee90",
-    "label": "G10",
+    "section": "G10",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 27,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "9f252cfa-5df6-4d26-80fc-04673012ee90",
-    "label": "G11",
+    "section": "G11",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 28,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "16e726fe-d2f0-4e04-ad34-3bbb01654b15",
-    "label": "G12",
+    "section": "G12",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 29,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "b5a4de1f-e829-4fb1-8d6a-7b2566358d89",
-    "label": "SG81",
+    "section": "SG81",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 30,
     "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
     "professorId": "610da81e-1f9b-4775-b25a-69a67d6e8588",
-    "label": "SG82",
+    "section": "SG82",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 151,
     "courseId": "c229563a-4361-4b4a-8c89-346d0c6c6553",
     "professorId": "40c00ac1-fcee-4b0d-81bf-affdde78812b",
-    "label": "G1",
+    "section": "G1",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 152,
     "courseId": "c229563a-4361-4b4a-8c89-346d0c6c6553",
     "professorId": "d4afdbed-c1d0-4c9e-9a44-bc0968cc000f",
-    "label": "G2",
+    "section": "G2",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 153,
     "courseId": "c229563a-4361-4b4a-8c89-346d0c6c6553",
     "professorId": "e81c4059-0b05-4885-9bda-2233be00b9dc",
-    "label": "G4",
+    "section": "G4",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 154,
     "courseId": "c229563a-4361-4b4a-8c89-346d0c6c6553",
     "professorId": "199d793f-e4f4-4464-92c6-e3debbbe8b55",
-    "label": "G5",
+    "section": "G5",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 155,
     "courseId": "c229563a-4361-4b4a-8c89-346d0c6c6553",
     "professorId": "d4afdbed-c1d0-4c9e-9a44-bc0968cc000f",
-    "label": "G6",
+    "section": "G6",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 156,
     "courseId": "c229563a-4361-4b4a-8c89-346d0c6c6553",
     "professorId": "d8ac733b-6990-4f0f-af55-1a658a0b9546",
-    "label": "G7",
+    "section": "G7",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 157,
     "courseId": "c229563a-4361-4b4a-8c89-346d0c6c6553",
     "professorId": "d8ac733b-6990-4f0f-af55-1a658a0b9546",
-    "label": "G21",
+    "section": "G21",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 158,
     "courseId": "c229563a-4361-4b4a-8c89-346d0c6c6553",
     "professorId": "e81c4059-0b05-4885-9bda-2233be00b9dc",
-    "label": "G22",
+    "section": "G22",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 159,
     "courseId": "c229563a-4361-4b4a-8c89-346d0c6c6553",
     "professorId": "d8ac733b-6990-4f0f-af55-1a658a0b9546",
-    "label": "SG81",
+    "section": "SG81",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 395,
     "courseId": "add72ffa-9d36-42e4-8c49-b74b007c0841",
     "professorId": "d896251f-7f32-49e6-b623-d1cd1887fed1",
-    "label": "G1",
+    "section": "G1",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 396,
     "courseId": "add72ffa-9d36-42e4-8c49-b74b007c0841",
     "professorId": "e0d1c563-93d3-48aa-a096-f7ac93b9d57b",
-    "label": "G2",
+    "section": "G2",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 584,
     "courseId": "2a45bab1-5ec4-4d2e-b245-27a142a78890",
     "professorId": "fe439f51-db1d-4441-8be0-a951b2a12d53",
-    "label": "G1",
+    "section": "G1",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 585,
     "courseId": "2a45bab1-5ec4-4d2e-b245-27a142a78890",
     "professorId": "fe439f51-db1d-4441-8be0-a951b2a12d53",
-    "label": "SG81",
+    "section": "SG81",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 981,
     "courseId": "e37b1881-dcc9-4c81-a82a-cdca512cfb6f",
     "professorId": "f9270868-9b1c-4f11-be59-9787e7336da9",
-    "label": "G1",
+    "section": "G1",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 982,
     "courseId": "e37b1881-dcc9-4c81-a82a-cdca512cfb6f",
     "professorId": "f9270868-9b1c-4f11-be59-9787e7336da9",
-    "label": "SG81",
+    "section": "SG81",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 996,
     "courseId": "53a486bb-c4e6-4795-a359-febfce39586d",
     "professorId": "84886341-2253-4dd7-bc56-da858e5601a2",
-    "label": "G1",
+    "section": "G1",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 997,
     "courseId": "53a486bb-c4e6-4795-a359-febfce39586d",
     "professorId": "84886341-2253-4dd7-bc56-da858e5601a2",
-    "label": "SG81",
+    "section": "SG81",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   },
   {
     "id": 1001,
     "courseId": "c229563a-4361-4b4a-8c89-346d0c6c6553",
     "professorId": "e0d1c563-93d3-48aa-a096-f7ac93b9d57b",
-    "label": "G1",
+    "section": "G1",
     "createdAt": "2024-03-15T03:47:00.634Z",
-    "updatedAt": "2024-03-15T03:47:00.634Z"
+    "updatedAt": "2024-03-15T03:47:00.634Z",
+    "acadTermId": "AY202425T2",
+    "gradingBasis": "GRADED",
+    "classTime": "12:00",
+    "courseOutlineUrl": "https://boss.intranet.smu.edu.sg/ClassDetails.aspx?SelectedAcadTerm=2420&SelectedClassNumber=1002",
+    "bossId": 1002
   }
 ]

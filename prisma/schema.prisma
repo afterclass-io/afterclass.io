@@ -98,17 +98,17 @@ model UniversityDomains {
 }
 
 model Courses {
-  id                      String   @id @default(uuid())
-  code                    String   @unique
-  name                    String
-  description             String
-  creditUnits             Float    @map("credit_units")
-  belongToUniversityId    Int      @map("belong_to_university")
-  belongToFacultyId       Int      @map("belong_to_faculty")
-  createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt               DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  courseArea              String?  @map("course_area")
-  enrolmentRequirements   String?  @map("enrolment_requirements")
+  id                    String   @id @default(uuid())
+  code                  String   @unique
+  name                  String
+  description           String
+  creditUnits           Float    @map("credit_units")
+  belongToUniversityId  Int      @map("belong_to_university")
+  belongToFacultyId     Int      @map("belong_to_faculty")
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  courseArea            String?  @map("course_area")
+  enrolmentRequirements String?  @map("enrolment_requirements")
 
   belongToFaculty    Faculties    @relation(fields: [belongToFacultyId], references: [id])
   belongToUniversity Universities @relation(fields: [belongToUniversityId], references: [id])
@@ -171,15 +171,21 @@ model Faculties {
 }
 
 model Classes {
-  id          Int      @id @default(autoincrement())
-  label       String?
-  courseId    String   @map("course_id")
-  professorId String   @map("professor_id")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id               Int          @id @default(autoincrement())
+  section          String?
+  courseId         String         @map("course_id")
+  professorId      String         @map("professor_id")
+  acadTermId       String?        @map("acad_term_id")
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  gradingBasis     GradingBasis?  @map("grading_basis")
+  classTime        String?        @map("class_time")
+  courseOutlineUrl String?        @map("course_outline_url")
+  bossId           Int?           @map("boss_id")
 
   course    Courses    @relation(fields: [courseId], references: [id])
   professor Professors @relation(fields: [professorId], references: [id])
+  acadTerm  AcadTerm?  @relation(fields: [acadTermId], references: [id])
 
   @@index([courseId], type: BTree)
   @@index([professorId], type: BTree)
@@ -291,4 +297,24 @@ enum ReviewReactionType {
   FUNNY    @map("🤣")
   CRYING   @map("😭")
   SHOCKED  @map("😦")
+}
+
+model AcadTerm {
+  id            String    @id
+  acadYearStart Int?      @map("acad_year_start")
+  acadYearEnd   Int?      @map("acad_year_end")
+  term          String?   @map("term") @db.VarChar(2)
+  bossId        Int?      @map("boss_id")
+  startDt       DateTime? @map("start_dt") @db.Timestamptz(3)
+  endDt         DateTime? @map("end_dt") @db.Timestamptz(3)
+
+  classes Classes[]
+
+  @@map("acad_term")
+}
+
+enum GradingBasis {
+  PASS_FAIL @map("Pass/Fail")
+  GRADED    @map("Graded")
+  NA        @map("NA")
 }
