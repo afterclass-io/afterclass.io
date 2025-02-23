@@ -82,6 +82,17 @@ async function main() {
   await prisma.classExamTiming.createMany({
     data: classExamTimings,
   });
+
+  // Changed order to load in bidWindow first before classAvailability
+  const bidWindow = require("./data/18_bid_window.json");
+  await prisma.bidWindow.createMany({
+    data: bidWindow,
+  });
+
+  const classAvailability = require("./data/17_class_availability.json");
+  await prisma.classAvailability.createMany({
+    data: classAvailability,
+  });
 }
 
 main()

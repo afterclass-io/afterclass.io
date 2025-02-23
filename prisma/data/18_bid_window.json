@@ -1,0 +1,122 @@
+[
+    {
+        "id": 1,
+        "acadTermId": "AY202425T3B",
+        "round": "1B",
+        "window": 3
+    },
+    {
+        "id": 2,
+        "acadTermId": "AY202425T1",
+        "round": "1C",
+        "window": 3
+    },
+    {
+        "id": 3,
+        "acadTermId": "AY202425T1",
+        "round": "2",
+        "window": 2
+    },
+    {
+        "id": 4,
+        "acadTermId": "AY202425T3B",
+        "round": "1A",
+        "window": 1
+    },
+    {
+        "id": 5,
+        "acadTermId": "AY202425T3B",
+        "round": "2A",
+        "window": 3
+    },
+    {
+        "id": 6,
+        "acadTermId": "AY202425T1",
+        "round": "1A",
+        "window": 3
+    },
+    {
+        "id": 7,
+        "acadTermId": "AY202425T2",
+        "round": "2A",
+        "window": 4
+    },
+    {
+        "id": 8,
+        "acadTermId": "AY202425T2",
+        "round": "1A",
+        "window": 1
+    },
+    {
+        "id": 9,
+        "acadTermId": "AY202425T3B",
+        "round": "1",
+        "window": 4
+    },
+    {
+        "id": 10,
+        "acadTermId": "AY202425T3A",
+        "round": "1A",
+        "window": 6
+    },
+    {
+        "id": 11,
+        "acadTermId": "AY202425T1",
+        "round": "1C",
+        "window": 3
+    },
+    {
+        "id": 12,
+        "acadTermId": "AY202425T3A",
+        "round": "2A",
+        "window": 6
+    },
+    {
+        "id": 13,
+        "acadTermId": "AY202425T1",
+        "round": "1C",
+        "window": 4
+    },
+    {
+        "id": 14,
+        "acadTermId": "AY202425T1",
+        "round": "1",
+        "window": 4
+    },
+    {
+        "id": 15,
+        "acadTermId": "AY202425T3B",
+        "round": "1B",
+        "window": 1
+    },
+    {
+        "id": 16,
+        "acadTermId": "AY202425T2",
+        "round": "1B",
+        "window": 1
+    },
+    {
+        "id": 17,
+        "acadTermId": "AY202425T2",
+        "round": "1B",
+        "window": 3
+    },
+    {
+        "id": 18,
+        "acadTermId": "AY202425T2",
+        "round": "2",
+        "window": 5
+    },
+    {
+        "id": 19,
+        "acadTermId": "AY202425T2",
+        "round": "2A",
+        "window": 4
+    },
+    {
+        "id": 20,
+        "acadTermId": "AY202425T3B",
+        "round": "2",
+        "window": 6
+    }
+]

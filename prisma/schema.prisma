@@ -183,8 +183,9 @@ model Classes {
   courseOutlineUrl String?       @map("course_outline_url")
   bossId           Int?          @map("boss_id")
 
-  classTimings     ClassTiming[]
-  classExamTimings ClassExamTiming[]
+  classTimings      ClassTiming[]
+  classExamTimings  ClassExamTiming[]
+  ClassAvailability ClassAvailability[]
 
   course    Courses    @relation(fields: [courseId], references: [id])
   professor Professors @relation(fields: [professorId], references: [id])
@@ -273,7 +274,8 @@ model AcadTerm {
   startDt       DateTime? @map("start_dt") @db.Timestamptz(3)
   endDt         DateTime? @map("end_dt") @db.Timestamptz(3)
 
-  classes Classes[]
+  classes   Classes[]
+  BidWindow BidWindow[]
 
   @@map("acad_term")
 }
@@ -307,6 +309,37 @@ model ClassExamTiming {
 
   @@index([classId])
   @@map("class_exam_timing")
+}
+
+model ClassAvailability {
+  // One class will have only one class availability per bid window
+  classId         Int  @map("class_id")
+  bidWindowId     Int  @map("bid_window_id")
+  total           Int? @map("total")
+  currentEnrolled Int? @map("current_enrolled")
+  reserved        Int? @map("reserved")
+  available       Int? @map("available")
+
+  class     Classes   @relation(fields: [classId], references: [id])
+  bidWindow BidWindow @relation(fields: [bidWindowId], references: [id])
+
+  // Composite key from `classes` and `BidWindow`
+  @@id([classId, bidWindowId])
+  @@map("class_availability")
+}
+
+model BidWindow {
+  // Each unique bid window is determined by acadTerm, round, and window
+  id         Int     @id @default(autoincrement())
+  acadTermId String? @map("acad_term_id")
+  round      String? @map("round") @db.VarChar(2)
+  window     Int?    @map("window")
+
+  classAvailability ClassAvailability[]
+
+  acadTerm AcadTerm? @relation(fields: [acadTermId], references: [id])
+
+  @@map("bid_window")
 }
 
 enum UniversityAbbreviation {
