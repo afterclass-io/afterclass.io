@@ -20,7 +20,7 @@ import { ProgressLink } from "@/common/components/Progress";
 export const CoreLayoutHeader = async () => {
   const session = await auth();
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border-default px-4">
+    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b border-border-default bg-bg-base px-4">
       <SidebarTrigger className="-ml-1" />
       <Separator
         orientation="vertical"
@@ -35,7 +35,7 @@ export const CoreLayoutHeader = async () => {
           className="flex md:hidden"
           iconLeft={<AfterclassIcon className="text-primary-default" />}
         />
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 md:mr-4">
           {session ? (
             <>
               <div className="hidden items-center gap-2 md:flex">

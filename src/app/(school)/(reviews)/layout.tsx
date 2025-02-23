@@ -18,14 +18,14 @@ export default function ReviewLayout({
   information: ReactNode;
 }) {
   return (
-    <section className="flex flex-col items-center space-y-4 md:space-y-6">
+    <div className="flex flex-col items-center space-y-4 md:space-y-6">
       {header}
       {rating}
       {information}
       {filter}
       <div className="relative flex w-full justify-center gap-6">
         {reviews}
-        <div className="sticky top-8 hidden h-fit max-w-min flex-col items-start gap-6 text-nowrap lg:flex">
+        <div className="sticky top-24 hidden h-fit max-w-min flex-col items-start gap-6 text-nowrap lg:flex">
           <CtaCard
             variant="secondary"
             ctaText="Write a review"
@@ -48,6 +48,6 @@ export default function ReviewLayout({
           />
         </div>
       </div>
-    </section>
+    </div>
   );
 }

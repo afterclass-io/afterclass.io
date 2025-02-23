@@ -1,5 +1,6 @@
 "use client";
-import { api } from "@/common/tools/trpc/react";
+import { type ReviewReactionType as DbReviewReactionType } from "@prisma/client";
+
 import { toTitleCase } from "@/common/functions";
 import { Button } from "@/common/components/Button";
 import { Tooltip } from "@/common/components/Tooltip";
@@ -10,7 +11,7 @@ import {
   HoverCardTrigger,
 } from "@/common/components/HoverCard";
 import { ReviewReactionType } from "@/modules/reviews/types";
-import { type ReviewReactionType as DbReviewReactionType } from "@prisma/client";
+import { useOptimisticReaction } from "@/modules/reviews/hooks";
 
 export const ReviewReactionButton = ({ reviewId }: { reviewId: string }) => {
   const handleClick = (e: React.MouseEvent) => {
@@ -18,16 +19,9 @@ export const ReviewReactionButton = ({ reviewId }: { reviewId: string }) => {
     e.stopPropagation();
   };
 
-  const utils = api.useUtils();
-
-  const { mutate: upsertReaction } = api.reviewReactions.upsert.useMutation({
-    onSuccess: async () => {
-      await utils.reviewReactions.getByReviewId.refetch({ reviewId });
-    },
-  });
+  const { mutate: upsertReaction } = useOptimisticReaction();
 
   const handleEmojiClick = (emoji: DbReviewReactionType) => {
-    console.log("clicked!", emoji);
     upsertReaction({
       reviewId,
       reaction: emoji,
