@@ -77,6 +77,11 @@ async function main() {
   await prisma.classTiming.createMany({
     data: classTimings,
   });
+
+  const classExamTimings = require("./data/16_class_exam_timings.json");
+  await prisma.classExamTiming.createMany({
+    data: classExamTimings,
+  });
 }
 
 main()

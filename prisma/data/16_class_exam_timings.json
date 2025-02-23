@@ -1,0 +1,82 @@
+[
+    {
+      "classId": 17,
+      "date": "2025-01-13T00:00:00.000Z",
+      "dayOfWeek": "Mon",
+      "startTime": "09:00",
+      "endTime": "12:00",
+      "venue": "SOE Lecture Theatre 3"
+    },
+    {
+      "classId": 18,
+      "date": "2025-01-15T00:00:00.000Z",
+      "dayOfWeek": "Wed",
+      "startTime": "14:00",
+      "endTime": "17:00",
+      "venue": "SCIS2 Seminar Room 2-10"
+    },
+    {
+      "classId": 19,
+      "date": "2025-04-10T00:00:00.000Z",
+      "dayOfWeek": "Fri",
+      "startTime": "08:15",
+      "endTime": "11:30",
+      "venue": null
+    },
+    {
+      "classId": 20,
+      "date": "2025-04-15T00:00:00.000Z",
+      "dayOfWeek": "Tue",
+      "startTime": "12:00",
+      "endTime": "15:15",
+      "venue": "SCIS1 Seminar Room 1-5"
+    },
+    {
+      "classId": 21,
+      "date": "2025-06-22T00:00:00.000Z",
+      "dayOfWeek": "Thu",
+      "startTime": "15:30",
+      "endTime": "18:45",
+      "venue": "SOE Lecture Theatre 1"
+    },
+    {
+      "classId": 22,
+      "date": "2025-08-10T00:00:00.000Z",
+      "dayOfWeek": "Sun",
+      "startTime": "19:00",
+      "endTime": "22:15",
+      "venue": null
+    },
+    {
+      "classId": 23,
+      "date": "2025-07-05T00:00:00.000Z",
+      "dayOfWeek": "Sat",
+      "startTime": "10:00",
+      "endTime": "13:00",
+      "venue": "SCIS2 Seminar Room 3-8"
+    },
+    {
+      "classId": 24,
+      "date": "2025-09-18T00:00:00.000Z",
+      "dayOfWeek": "Thu",
+      "startTime": "14:00",
+      "endTime": "17:00",
+      "venue": "SOE Lecture Theatre 2"
+    },
+    {
+      "classId": 25,
+      "date": "2025-10-25T00:00:00.000Z",
+      "dayOfWeek": "Tue",
+      "startTime": "08:15",
+      "endTime": "11:30",
+      "venue": "SCIS1 Seminar Room 2-14"
+    },
+    {
+      "classId": 26,
+      "date": "2025-11-11T00:00:00.000Z",
+      "dayOfWeek": "Fri",
+      "startTime": "12:00",
+      "endTime": "15:15",
+      "venue": null
+    }
+  ]  
