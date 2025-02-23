@@ -3,7 +3,9 @@ CREATE TYPE "GradingBasis" AS ENUM ('Pass/Fail', 'Graded', 'NA');
 
 -- AlterTable
 -- Ensured to rename column from label to section.
-ALTER TABLE "classes" RENAME COLUMN "label" TO "section",
+-- ALTER TABLE "classes" RENAME COLUMN "label" TO "section";
+
+ALTER TABLE "classes"
 ADD COLUMN     "acad_term_id" TEXT,
 ADD COLUMN     "boss_id" INTEGER,
 ADD COLUMN     "class_time" TEXT,

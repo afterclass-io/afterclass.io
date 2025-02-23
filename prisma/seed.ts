@@ -72,6 +72,11 @@ async function main() {
   await prisma.reviewReactions.createMany({
     data: reviewReactions,
   });
+
+  const classTimings = require("./data/15_class_timings.json");
+  await prisma.classTiming.createMany({
+    data: classTimings,
+  });
 }
 
 main()

@@ -183,6 +183,8 @@ model Classes {
   courseOutlineUrl String?        @map("course_outline_url")
   bossId           Int?           @map("boss_id")
 
+  classTimings ClassTiming[]
+  
   course    Courses    @relation(fields: [courseId], references: [id])
   professor Professors @relation(fields: [professorId], references: [id])
   acadTerm  AcadTerm?  @relation(fields: [acadTermId], references: [id])
@@ -261,6 +263,38 @@ model ReviewReactions {
   @@map("review_reactions")
 }
 
+model AcadTerm {
+  id            String    @id
+  acadYearStart Int?      @map("acad_year_start")
+  acadYearEnd   Int?      @map("acad_year_end")
+  term          String?   @map("term") @db.VarChar(2)
+  bossId        Int?      @map("boss_id")
+  startDt       DateTime? @map("start_dt") @db.Timestamptz(3)
+  endDt         DateTime? @map("end_dt") @db.Timestamptz(3)
+
+  classes Classes[]
+
+  @@map("acad_term")
+}
+
+model ClassTiming {
+  id        Int       @id @default(autoincrement())
+  classId   Int?      @map("class_id")
+  startDate DateTime? @map("start_date") @db.Timestamptz(3)
+  endDate   DateTime? @map("end_date") @db.Timestamptz(3)
+  dayOfWeek String?   @map("day_of_week") @db.VarChar(3)
+  startTime String?   @map("start_time")
+  endTime   String?   @map("end_time")
+  venue     String?   @map("venue") @db.VarChar(255)
+
+  class     Classes?  @relation(fields: [classId], references: [id])
+
+  @@index([classId], type: BTree)
+  @@map("class_timing")
+}
+
+
+
 enum UniversityAbbreviation {
   SMU
   NUS
@@ -297,20 +331,6 @@ enum ReviewReactionType {
   FUNNY    @map("🤣")
   CRYING   @map("😭")
   SHOCKED  @map("😦")
-}
-
-model AcadTerm {
-  id            String    @id
-  acadYearStart Int?      @map("acad_year_start")
-  acadYearEnd   Int?      @map("acad_year_end")
-  term          String?   @map("term") @db.VarChar(2)
-  bossId        Int?      @map("boss_id")
-  startDt       DateTime? @map("start_dt") @db.Timestamptz(3)
-  endDt         DateTime? @map("end_dt") @db.Timestamptz(3)
-
-  classes Classes[]
-
-  @@map("acad_term")
 }
 
 enum GradingBasis {
