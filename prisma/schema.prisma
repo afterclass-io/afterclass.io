@@ -179,13 +179,13 @@ model Classes {
   createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
   gradingBasis     GradingBasis? @map("grading_basis")
-  classTime        String?       @map("class_time")
   courseOutlineUrl String?       @map("course_outline_url")
   bossId           Int?          @map("boss_id")
 
   classTimings      ClassTiming[]
   classExamTimings  ClassExamTiming[]
   ClassAvailability ClassAvailability[]
+  bidResult         BidResult[]
 
   course    Courses    @relation(fields: [courseId], references: [id])
   professor Professors @relation(fields: [professorId], references: [id])
@@ -266,13 +266,13 @@ model ReviewReactions {
 }
 
 model AcadTerm {
-  id            String    @id
-  acadYearStart Int?      @map("acad_year_start")
-  acadYearEnd   Int?      @map("acad_year_end")
-  term          String?   @map("term") @db.VarChar(2)
-  bossId        Int?      @map("boss_id")
-  startDt       DateTime? @map("start_dt") @db.Timestamptz(3)
-  endDt         DateTime? @map("end_dt") @db.Timestamptz(3)
+  id            String   @id
+  acadYearStart Int      @map("acad_year_start")
+  acadYearEnd   Int      @map("acad_year_end")
+  term          String   @map("term") @db.VarChar(2)
+  bossId        Int      @map("boss_id")
+  startDt       DateTime @map("start_dt") @db.Timestamptz(3)
+  endDt         DateTime @map("end_dt") @db.Timestamptz(3)
 
   classes   Classes[]
   BidWindow BidWindow[]
@@ -281,31 +281,31 @@ model AcadTerm {
 }
 
 model ClassTiming {
-  id        Int       @id @default(autoincrement())
-  classId   Int?      @map("class_id")
-  startDate DateTime? @map("start_date") @db.Timestamptz(3)
-  endDate   DateTime? @map("end_date") @db.Timestamptz(3)
-  dayOfWeek String?   @map("day_of_week") @db.VarChar(3)
-  startTime String?   @map("start_time")
-  endTime   String?   @map("end_time")
-  venue     String?   @map("venue") @db.VarChar(255)
+  id        Int      @id @default(autoincrement())
+  classId   Int      @map("class_id")
+  startDate DateTime @map("start_date") @db.Timestamptz(3)
+  endDate   DateTime @map("end_date") @db.Timestamptz(3)
+  dayOfWeek String   @map("day_of_week") @db.VarChar(3)
+  startTime String   @map("start_time")
+  endTime   String   @map("end_time")
+  venue     String   @map("venue") @db.VarChar(255)
 
-  class Classes? @relation(fields: [classId], references: [id])
+  class Classes @relation(fields: [classId], references: [id])
 
   @@index([classId], type: BTree)
   @@map("class_timing")
 }
 
 model ClassExamTiming {
-  id        Int       @id @default(autoincrement())
-  classId   Int?      @map("class_id")
-  date      DateTime? @map("date") @db.Timestamptz(3)
-  dayOfWeek String?   @map("day_of_week") @db.VarChar(3)
-  startTime String?   @map("start_time")
-  endTime   String?   @map("end_time")
+  id        Int      @id @default(autoincrement())
+  classId   Int      @map("class_id")
+  date      DateTime @map("date") @db.Timestamptz(3)
+  dayOfWeek String   @map("day_of_week") @db.VarChar(3)
+  startTime String   @map("start_time")
+  endTime   String   @map("end_time")
   venue     String?   @map("venue") @db.VarChar(255)
 
-  class Classes? @relation(fields: [classId], references: [id])
+  class Classes @relation(fields: [classId], references: [id])
 
   @@index([classId])
   @@map("class_exam_timing")
@@ -313,12 +313,12 @@ model ClassExamTiming {
 
 model ClassAvailability {
   // One class will have only one class availability per bid window
-  classId         Int  @map("class_id")
-  bidWindowId     Int  @map("bid_window_id")
-  total           Int? @map("total")
-  currentEnrolled Int? @map("current_enrolled")
-  reserved        Int? @map("reserved")
-  available       Int? @map("available")
+  classId         Int @map("class_id")
+  bidWindowId     Int @map("bid_window_id")
+  total           Int @map("total")
+  currentEnrolled Int @map("current_enrolled")
+  reserved        Int @map("reserved")
+  available       Int @map("available")
 
   class     Classes   @relation(fields: [classId], references: [id])
   bidWindow BidWindow @relation(fields: [bidWindowId], references: [id])
@@ -330,16 +330,38 @@ model ClassAvailability {
 
 model BidWindow {
   // Each unique bid window is determined by acadTerm, round, and window
-  id         Int     @id @default(autoincrement())
-  acadTermId String? @map("acad_term_id")
-  round      String? @map("round") @db.VarChar(2)
-  window     Int?    @map("window")
+  id         Int    @id @default(autoincrement())
+  acadTermId String @map("acad_term_id")
+  round      String @map("round") @db.VarChar(2)
+  window     Int    @map("window")
 
   classAvailability ClassAvailability[]
+  bidResult         BidResult[]
 
-  acadTerm AcadTerm? @relation(fields: [acadTermId], references: [id])
+  acadTerm AcadTerm @relation(fields: [acadTermId], references: [id])
 
   @@map("bid_window")
+}
+
+model BidResult {
+  bidWindowId          Int   @map("bid_window_id")
+  classId              Int   @map("class_id")
+  vacancy              Int   @map("vacancy")
+  openingVacancy       Int   @map("opening_vacancy")
+  beforeProcessVacancy Int   @map("before_process_vacancy")
+  dice                 Int   @map("d_i_c_e")
+  afterProcessVacancy  Int   @map("after_process_vacancy")
+  enrolledStudents     Int   @map("enrolled_students")
+  bidActualMedian      Float @map("bid_actual_median")
+  bidActualMin         Float @map("bid_actual_min")
+  bidPredictedMedian   Float @map("bid_predicted_median")
+  bidPredictedMin      Float @map("bid_predicted_min")
+
+  bidWindow BidWindow @relation(fields: [bidWindowId], references: [id])
+  class     Classes   @relation(fields: [classId], references: [id])
+
+  @@id([bidWindowId, classId])
+  @@map("bid_result")
 }
 
 enum UniversityAbbreviation {

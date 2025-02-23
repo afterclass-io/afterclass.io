@@ -93,6 +93,11 @@ async function main() {
   await prisma.classAvailability.createMany({
     data: classAvailability,
   });
+  
+  const bidResult = require("./data/19_bid_result.json");
+  await prisma.bidResult.createMany({
+    data: bidResult,
+  });
 }
 
 main()

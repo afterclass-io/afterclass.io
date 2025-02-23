@@ -1,12 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `label` on the `classes` table. All the data in the column will be lost.
-
-*/
--- AlterTable
--- ALTER TABLE "classes" DROP COLUMN "label";
-
 -- CreateTable
 CREATE TABLE "class_timing" (
     "id" SERIAL NOT NULL,
