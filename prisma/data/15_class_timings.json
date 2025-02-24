@@ -1,0 +1,143 @@
+[
+    {
+      "id": 1,
+      "classId": 17,
+      "startDate": "2024-08-19T00:00:00.000Z",
+      "endDate": "2024-12-01T23:59:59.999Z",
+      "dayOfWeek": "Mon",
+      "startTime": "08:15",
+      "endTime": "11:30",
+      "venue": "SOE/SCIS2 Seminar Room 2-5"
+    },
+    {
+      "id": 2,
+      "classId": 18,
+      "startDate": "2024-08-19T00:00:00.000Z",
+      "endDate": "2024-12-01T23:59:59.999Z",
+      "dayOfWeek": "Wed",
+      "startTime": "12:00",
+      "endTime": "15:15",
+      "venue": "SCIS1 Seminar Room 3-10"
+    },
+    {
+      "id": 3,
+      "classId": 19,
+      "startDate": "2025-01-13T00:00:00.000Z",
+      "endDate": "2025-04-27T23:59:59.999Z",
+      "dayOfWeek": "Tue",
+      "startTime": "15:30",
+      "endTime": "18:45",
+      "venue": "SOE/SCIS2 Seminar Room 1-8"
+    },
+    {
+      "id": 4,
+      "classId": 20,
+      "startDate": "2025-01-13T00:00:00.000Z",
+      "endDate": "2025-04-27T23:59:59.999Z",
+      "dayOfWeek": "Thu",
+      "startTime": "19:00",
+      "endTime": "22:15",
+      "venue": "SCIS1 Seminar Room 2-12"
+    },
+    {
+      "id": 5,
+      "classId": 21,
+      "startDate": "2025-05-05T00:00:00.000Z",
+      "endDate": "2025-06-22T23:59:59.999Z",
+      "dayOfWeek": "Fri",
+      "startTime": "08:15",
+      "endTime": "11:30",
+      "venue": "SOE/SCIS2 Seminar Room 3-3"
+    },
+    {
+      "id": 6,
+      "classId": 22,
+      "startDate": "2025-05-05T00:00:00.000Z",
+      "endDate": "2025-06-22T23:59:59.999Z",
+      "dayOfWeek": "Mon",
+      "startTime": "12:00",
+      "endTime": "15:15",
+      "venue": "SCIS1 Seminar Room 1-6"
+    },
+    {
+      "id": 7,
+      "classId": 23,
+      "startDate": "2025-06-30T00:00:00.000Z",
+      "endDate": "2025-08-17T23:59:59.999Z",
+      "dayOfWeek": "Tue",
+      "startTime": "15:30",
+      "endTime": "18:45",
+      "venue": "SOE/SCIS2 Seminar Room 2-14"
+    },
+    {
+      "id": 8,
+      "classId": 24,
+      "startDate": "2025-06-30T00:00:00.000Z",
+      "endDate": "2025-08-17T23:59:59.999Z",
+      "dayOfWeek": "Wed",
+      "startTime": "19:00",
+      "endTime": "22:15",
+      "venue": "SCIS1 Seminar Room 3-4"
+    },
+    {
+      "id": 9,
+      "classId": 25,
+      "startDate": "2024-08-19T00:00:00.000Z",
+      "endDate": "2024-12-01T23:59:59.999Z",
+      "dayOfWeek": "Thu",
+      "startTime": "08:15",
+      "endTime": "11:30",
+      "venue": "SOE/SCIS2 Seminar Room 1-11"
+    },
+    {
+      "id": 10,
+      "classId": 26,
+      "startDate": "2024-08-19T00:00:00.000Z",
+      "endDate": "2024-12-01T23:59:59.999Z",
+      "dayOfWeek": "Fri",
+      "startTime": "12:00",
+      "endTime": "15:15",
+      "venue": "SCIS1 Seminar Room 2-2"
+    },
+    {
+      "id": 11,
+      "classId": 27,
+      "startDate": "2025-01-13T00:00:00.000Z",
+      "endDate": "2025-04-27T23:59:59.999Z",
+      "dayOfWeek": "Mon",
+      "startTime": "15:30",
+      "endTime": "18:45",
+      "venue": "SOE/SCIS2 Seminar Room 3-9"
+    },
+    {
+      "id": 12,
+      "classId": 28,
+      "startDate": "2025-01-13T00:00:00.000Z",
+      "endDate": "2025-04-27T23:59:59.999Z",
+      "dayOfWeek": "Tue",
+      "startTime": "19:00",
+      "endTime": "22:15",
+      "venue": "SCIS1 Seminar Room 1-13"
+    },
+    {
+      "id": 13,
+      "classId": 29,
+      "startDate": "2025-05-05T00:00:00.000Z",
+      "endDate": "2025-06-22T23:59:59.999Z",
+      "dayOfWeek": "Wed",
+      "startTime": "08:15",
+      "endTime": "11:30",
+      "venue": "SOE/SCIS2 Seminar Room 2-17"
+    },
+    {
+      "id": 14,
+      "classId": 30,
+      "startDate": "2025-05-05T00:00:00.000Z",
+      "endDate": "2025-06-22T23:59:59.999Z",
+      "dayOfWeek": "Thu",
+      "startTime": "12:00",
+      "endTime": "15:15",
+      "venue": "SCIS1 Seminar Room 3-19"
+    }
+  ]
+  

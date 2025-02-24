@@ -32,6 +32,12 @@ async function main() {
     data: professorFaculties,
   });
 
+  // Ordered before classes as classes refers to acadTermId.
+  const acadTerms = require("./data/14_acad_terms.json");
+  await prisma.acadTerm.createMany({
+    data: acadTerms,
+  });
+
   const classes = require("./data/7_classes.json");
   await prisma.classes.createMany({
     data: classes,
@@ -65,6 +71,32 @@ async function main() {
   const reviewReactions = require("./data/13_review_reactions.json");
   await prisma.reviewReactions.createMany({
     data: reviewReactions,
+  });
+
+  const classTimings = require("./data/15_class_timings.json");
+  await prisma.classTiming.createMany({
+    data: classTimings,
+  });
+
+  const classExamTimings = require("./data/16_class_exam_timings.json");
+  await prisma.classExamTiming.createMany({
+    data: classExamTimings,
+  });
+
+  // Changed order to load in bidWindow first before classAvailability
+  const bidWindow = require("./data/18_bid_window.json");
+  await prisma.bidWindow.createMany({
+    data: bidWindow,
+  });
+
+  const classAvailability = require("./data/17_class_availability.json");
+  await prisma.classAvailability.createMany({
+    data: classAvailability,
+  });
+  
+  const bidResult = require("./data/19_bid_result.json");
+  await prisma.bidResult.createMany({
+    data: bidResult,
   });
 }
 
