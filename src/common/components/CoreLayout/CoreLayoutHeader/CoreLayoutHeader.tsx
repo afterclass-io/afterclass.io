@@ -16,6 +16,7 @@ import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
 import { CoreLayoutLoginButton } from "../CoreLayoutLoginButton";
 import { Button } from "@/common/components/Button";
 import { ProgressLink } from "@/common/components/Progress";
+import { UserProfile } from "@/common/components/UserProfile/UserProfile";
 
 export const CoreLayoutHeader = async () => {
   const session = await auth();
@@ -38,7 +39,8 @@ export const CoreLayoutHeader = async () => {
         <div className="flex items-center gap-4 md:mr-4">
           {session ? (
             <>
-              <div className="hidden items-center gap-2 md:flex">
+              <UserProfile user={session.user} />
+              {/* <div className="hidden items-center gap-2 md:flex">
                 <div className="overflow-hidden text-ellipsis text-sm text-text-em-mid">
                   <Avatar className="h-6 w-6">
                     <AvatarImage
@@ -51,7 +53,7 @@ export const CoreLayoutHeader = async () => {
                   </Avatar>
                 </div>
                 <div>{session.user.email}</div>
-              </div>
+              </div> */}
               <div className="block md:hidden">
                 <SearchCmdk asChild>
                   <Button
