@@ -27,7 +27,7 @@ export const FilterToggleSection = (props: FilterToggleSectionProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const params = new URLSearchParams(searchParams!);
+  const params = new URLSearchParams(searchParams ?? undefined);
   const selected = params.getAll(props.searchParamsName ?? "");
   const [selectedItems, setSelectedItems] =
     useState<FilterItem["value"][]>(selected);

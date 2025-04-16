@@ -91,7 +91,7 @@ const BreadcrumbItem: React.FC<{
 
 export const Breadcrumb: React.FC<BreadcrumbRootProps> = (props) => {
   const path = usePathname();
-  const pathSegments = path!.split("/").filter(Boolean);
+  const pathSegments = (path ?? "").split("/").filter(Boolean);
   const { elements, isSuccess } = getBreadcrumbElements(pathSegments);
 
   if (!isSuccess) {

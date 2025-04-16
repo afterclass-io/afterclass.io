@@ -48,7 +48,7 @@ export const ReviewSectionListFilter = () => {
       onValueChange={(newValue) => {
         setFilterFor(newValue as ReviewsFilterFor);
 
-        const params = new URLSearchParams(searchParams!);
+        const params = new URLSearchParams(searchParams ?? undefined);
         params.set("filter", newValue);
         router.push(`${pathname}?${params.toString()}`);
       }}

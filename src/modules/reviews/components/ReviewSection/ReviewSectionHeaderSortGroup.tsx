@@ -60,7 +60,7 @@ export const ReviewSectionHeaderSortGroup = () => {
   const handleSortChange = (newSortBy: ReviewsSortBy) => {
     setSortBy(newSortBy);
 
-    const params = new URLSearchParams(searchParams!);
+    const params = new URLSearchParams(searchParams ?? undefined);
     params.set("sort", newSortBy);
     router.push(`${pathname}?${params.toString()}`);
   };
