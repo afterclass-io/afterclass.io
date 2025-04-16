@@ -8,7 +8,7 @@ import {
 import { useState } from "react";
 import { ExitIcon } from "@radix-ui/react-icons";
 import { signOut } from "next-auth/react";
-import { SessionUser } from "@/server/auth/config";
+import type { SessionUser } from "@/server/auth/config";
 
 interface Props {
   user: SessionUser;
@@ -21,8 +21,8 @@ export const UserProfile = ({ user }: Props) => {
     setIsModalOpen(!isModalOpen);
   };
 
-  const handleLogout = () => {
-    signOut();
+  const handleLogout = async () => {
+    await signOut();
   };
 
   return (
