@@ -37,9 +37,9 @@ export default async function ProfessorRating({
   }
 
   const courseCodes = searchParams?.course
-    ? Array.isArray(searchParams.course)
-      ? searchParams.course
-      : [searchParams.course]
+    ? Array.isArray(searchParams?.course)
+      ? searchParams?.course
+      : [searchParams?.course]
     : [];
 
   const { averageRating, reviewCount, reviewLabels } =

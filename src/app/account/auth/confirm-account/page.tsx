@@ -31,20 +31,20 @@ export default function ConfirmSignUp({
     .refine((url) => {
       try {
         const urlObject = new URL(url);
-        return urlObject.searchParams.has("type");
+        return urlObject.searchParams?.has("type");
       } catch {
         return false;
       }
     });
 
-  const confirmationUrl = searchParams.confirmation_url;
+  const confirmationUrl = searchParams?.confirmation_url;
   const parseResult = confirmationUrlSchema.safeParse(confirmationUrl);
   if (!parseResult.success) {
     notFound();
   }
 
   const validatedUrl = parseResult.data;
-  const type = new URL(validatedUrl).searchParams.get(
+  const type = new URL(validatedUrl).searchParams?.get(
     "type",
   ) as ConfirmationType;
 

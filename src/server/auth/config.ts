@@ -12,7 +12,7 @@ import { db } from "@/server/db";
 import randomId from "@/common/functions/randomId";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 
-type SessionUser = Omit<Users, "deprecatedPasswordDigest">;
+export type SessionUser = Omit<Users, "deprecatedPasswordDigest">;
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`

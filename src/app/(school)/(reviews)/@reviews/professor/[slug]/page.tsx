@@ -19,9 +19,9 @@ export default function Professor({
 }) {
   let courseCodes: string[] = [];
   if (searchParams?.course) {
-    courseCodes = Array.isArray(searchParams.course)
-      ? searchParams.course
-      : [searchParams.course];
+    courseCodes = Array.isArray(searchParams?.course)
+      ? searchParams?.course
+      : [searchParams?.course];
   }
 
   return (

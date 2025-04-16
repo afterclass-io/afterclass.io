@@ -66,13 +66,13 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
 
   // prettier-ignore
   const filterFor = z.nativeEnum(ReviewsFilterFor)
-                    .safeParse(searchParams.get("filter"))
+                    .safeParse(searchParams?.get("filter"))
                     ?.data 
                   ?? ReviewsFilterFor.ALL;
 
   // prettier-ignore
   const sortBy = z.nativeEnum(ReviewsSortBy)
-                  .safeParse(searchParams.get("sort"))
+                  .safeParse(searchParams?.get("sort"))
                     ?.data
                 ?? ReviewsSortBy.LATEST;
 

@@ -11,7 +11,8 @@ export const ReviewModalFocused = ({
 }: {
   variant: "home" | "professor" | "course";
 }) => {
-  const reviewId = useSearchParams().get("review_id");
+  const searchParams = useSearchParams();
+  const reviewId = searchParams?.get("review_id");
   const router = useRouter();
   const session = useSession();
   if (!reviewId) return null;

@@ -13,7 +13,7 @@ export default async function Search({
 }: {
   searchParams: { q: string };
 }) {
-  const query = searchParams.q;
+  const query = searchParams?.q;
 
   let searchedCourse: SearchCourseResult[] = [];
   let searchedProf: SearchProfResult[] = [];

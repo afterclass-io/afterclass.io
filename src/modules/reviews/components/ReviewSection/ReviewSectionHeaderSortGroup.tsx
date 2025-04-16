@@ -22,7 +22,7 @@ export const ReviewSectionHeaderSortGroup = () => {
   const searchParams = useSearchParams();
   // prettier-ignore
   const defaultSortBy = z.nativeEnum(ReviewsSortBy)
-                          .safeParse(searchParams.get("sort"))
+                          .safeParse(searchParams?.get("sort"))
                             ?.data
                         ?? ReviewsSortBy.LATEST;
 
@@ -48,9 +48,7 @@ export const ReviewSectionHeaderSortGroup = () => {
     .reduce(
       (groups, option) => {
         const prefix = option.split("_", 2)[0]!;
-        if (!groups[prefix]) {
-          groups[prefix] = [];
-        }
+        groups[prefix] ??= [];
         groups[prefix].push(option);
         return groups;
       },
@@ -62,7 +60,7 @@ export const ReviewSectionHeaderSortGroup = () => {
   const handleSortChange = (newSortBy: ReviewsSortBy) => {
     setSortBy(newSortBy);
 
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams ?? undefined);
     params.set("sort", newSortBy);
     router.push(`${pathname}?${params.toString()}`);
   };

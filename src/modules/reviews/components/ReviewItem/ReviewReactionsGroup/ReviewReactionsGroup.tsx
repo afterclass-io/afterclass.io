@@ -24,12 +24,10 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
     (acc, reviewReaction) => {
       const reaction = reviewReaction.reaction;
 
-      if (!acc[reaction]) {
-        acc[reaction] = {
-          count: 0,
-          hasThisUserReacted: false,
-        };
-      }
+      acc[reaction] ??= {
+        count: 0,
+        hasThisUserReacted: false,
+      };
 
       acc[reaction].count += 1;
       acc[reaction].hasThisUserReacted =
