@@ -34,9 +34,9 @@ export default async function CourseRating({
   // assuming all course codes are uppercase
   const courseCode = params.code.toUpperCase();
   const professorSlugs = searchParams?.professor
-    ? Array.isArray(searchParams.professor)
-      ? searchParams.professor
-      : [searchParams.professor]
+    ? Array.isArray(searchParams?.professor)
+      ? searchParams?.professor
+      : [searchParams?.professor]
     : [];
 
   const { averageRating, reviewCount, reviewLabels } =

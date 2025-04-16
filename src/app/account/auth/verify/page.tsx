@@ -25,7 +25,7 @@ export default function Verify({
             as="h2"
             className="mt-1 text-base font-semibold tracking-wide md:text-xl"
           >
-            {searchParams.email}
+            {searchParams?.email}
           </Heading>
         </div>
         <p>

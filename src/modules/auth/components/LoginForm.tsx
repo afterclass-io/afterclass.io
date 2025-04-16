@@ -47,7 +47,7 @@ export const LoginForm = () => {
   });
 
   useEffect(() => {
-    const authJsError = searchParams.get("error");
+    const authJsError = searchParams?.get("error");
     if (authJsError) {
       toast.warning("Invalid Credentials", {
         id: authJsError,
@@ -99,7 +99,7 @@ export const LoginForm = () => {
     email,
     password,
   }) => {
-    const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+    const callbackUrl = searchParams?.get("callbackUrl") ?? "/";
     const signinResp = await signIn("credentials", {
       email,
       password,
@@ -219,7 +219,7 @@ export const LoginForm = () => {
 
           <GoogleSignInButton
             googleSignInOptions={{
-              callbackUrl: searchParams.get("callbackUrl") ?? "/",
+              callbackUrl: searchParams?.get("callbackUrl") ?? "/",
             }}
             onResponse={(resp) => {
               if (!resp) {

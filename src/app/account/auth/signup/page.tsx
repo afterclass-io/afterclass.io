@@ -11,7 +11,7 @@ export default function SignUp({
   searchParams: { email: string | string[] | undefined };
 }) {
   const { success: isValidEmail, data: v1Email } =
-    emailValidationSchema.safeParse(searchParams.email);
+    emailValidationSchema.safeParse(searchParams?.email);
 
   return (
     <>
