@@ -1,5 +1,4 @@
 "use client";
-import { useSession } from "next-auth/react";
 import { ReviewEventType, ReviewType } from "@prisma/client";
 
 import { api } from "@/common/tools/trpc/react";

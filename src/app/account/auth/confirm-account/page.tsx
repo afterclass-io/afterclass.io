@@ -20,11 +20,12 @@ const CONFIRMATION_TEXTS = {
 
 type ConfirmationType = keyof typeof CONFIRMATION_TEXTS;
 
-export default function ConfirmSignUp({
-  searchParams,
-}: {
-  searchParams: { confirmation_url: string | string[] | undefined };
-}) {
+export default async function ConfirmSignUp(
+  props: {
+    searchParams: Promise<{ confirmation_url: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const confirmationUrlSchema = z
     .string()
     .url()

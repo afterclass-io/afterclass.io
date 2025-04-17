@@ -4,11 +4,12 @@ import { PageTitle } from "@/common/components/PageTitle";
 import { BooksIcon } from "@/common/components/CustomIcon";
 import { SchoolTag } from "@/common/components/SchoolTag";
 
-export default async function CourseHeader({
-  params,
-}: {
-  params: { code: string };
-}) {
+export default async function CourseHeader(
+  props: {
+    params: Promise<{ code: string }>;
+  }
+) {
+  const params = await props.params;
   const course = await api.courses.getByCourseCode({
     code: params.code.toUpperCase(),
   });

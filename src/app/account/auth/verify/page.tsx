@@ -5,13 +5,14 @@ import { notFound } from "next/navigation";
 import { env } from "@/env";
 import { Fragment } from "react";
 
-export default function Verify({
-  searchParams,
-}: {
-  searchParams?: {
-    email?: string;
-  };
-}) {
+export default async function Verify(
+  props: {
+    searchParams?: Promise<{
+      email?: string;
+    }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   if (!searchParams?.email) {
     return notFound();
   }

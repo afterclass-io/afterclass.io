@@ -46,7 +46,8 @@ export const Tag = ({
         return Children.map(icon, (child) => {
           const originalClassName = (child.props as HTMLProps<HTMLOrSVGElement>)
             ?.className;
-          return cloneElement(child as ReactElement, {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return cloneElement(child as ReactElement<any>, {
             className: iconTheme({
               size,
               className: originalClassName, // overriding icon classNames

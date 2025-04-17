@@ -8,11 +8,12 @@ import {
   searchProf,
 } from "@/modules/search/functions/searchProf";
 
-export default async function Search({
-  searchParams,
-}: {
-  searchParams: { q: string };
-}) {
+export default async function Search(
+  props: {
+    searchParams: Promise<{ q: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const query = searchParams?.q;
 
   let searchedCourse: SearchCourseResult[] = [];

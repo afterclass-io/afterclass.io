@@ -1,4 +1,4 @@
-import { createContext, useContext, type PropsWithChildren } from "react";
+import { createContext, useContext, type PropsWithChildren, type JSX } from "react";
 
 import { type ModalVariants } from "./Modal.theme";
 

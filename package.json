@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start",
@@ -55,12 +55,12 @@
     "jotai": "^2.12.3",
     "js-cookie": "^3.0.5",
     "nanoid": "5.0.9",
-    "next": "14.2.26",
+    "next": "15.3.1",
     "next-auth": "^5.0.0-beta.25",
     "next-themes": "0.3.0",
     "node-fetch": "^3.3.2",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
     "react-hook-form": "7.53.0",
     "react-intersection-observer": "9.13.1",
     "recharts": "^2.15.2",
@@ -75,7 +75,7 @@
   },
   "devDependencies": {
     "@iconify-icon/react": "2.1.0",
-    "@next/eslint-plugin-next": "14.2.13",
+    "@next/eslint-plugin-next": "15.3.1",
     "@storybook/addon-actions": "8.3.4",
     "@storybook/addon-essentials": "8.3.4",
     "@storybook/addon-interactions": "8.3.4",
@@ -92,8 +92,8 @@
     "@types/js-cookie": "3.0.6",
     "@types/node": "20.16.10",
     "@types/prettier": "3.0.0",
-    "@types/react": "18.3.10",
-    "@types/react-dom": "18.3.0",
+    "@types/react": "19.1.2",
+    "@types/react-dom": "19.1.2",
     "@types/validator": "13.12.2",
     "@typescript-eslint/eslint-plugin": "^8.30.1",
     "@typescript-eslint/parser": "^8.30.1",
@@ -102,7 +102,7 @@
     "css-loader": "7.1.2",
     "cypress": "^13.17.0",
     "eslint": "8.57.1",
-    "eslint-config-next": "14.2.13",
+    "eslint-config-next": "15.3.1",
     "eslint-plugin-storybook": "0.9.0",
     "postcss": "8.4.47",
     "prettier": "3.3.3",
@@ -120,6 +120,8 @@
     "initVersion": "7.15.0"
   },
   "resolutions": {
-    "jackspeak": "4.0.1"
+    "jackspeak": "4.0.1",
+    "@types/react": "19.1.2",
+    "@types/react-dom": "19.1.2"
   }
 }

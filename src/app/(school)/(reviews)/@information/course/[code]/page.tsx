@@ -4,11 +4,12 @@ import { InformationCard } from "@/modules/reviews/components/InformationSection
 import { DetailCard } from "@/modules/reviews/components/InformationSection/DetailCard";
 import { auth } from "@/server/auth";
 
-export default async function CourseInfo({
-  params,
-}: {
-  params: { code: string };
-}) {
+export default async function CourseInfo(
+  props: {
+    params: Promise<{ code: string }>;
+  }
+) {
+  const params = await props.params;
   const session = await auth();
   const course = await api.courses.getByCourseCode({
     code: params.code.toUpperCase(),

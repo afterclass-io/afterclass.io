@@ -5,11 +5,12 @@ import {
   ResetV1UserAlertDialog,
 } from "@/modules/auth/components";
 
-export default function SignUp({
-  searchParams,
-}: {
-  searchParams: { email: string | string[] | undefined };
-}) {
+export default async function SignUp(
+  props: {
+    searchParams: Promise<{ email: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const { success: isValidEmail, data: v1Email } =
     emailValidationSchema.safeParse(searchParams?.email);
 
