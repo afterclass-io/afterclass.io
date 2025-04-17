@@ -3,6 +3,7 @@ import { AppSidebar } from "@/modules/home/components/AppSidebar";
 import { SidebarProvider, SidebarInset } from "@/common/components/Sidebar";
 import dynamic from "next/dynamic";
 import { CoreLayoutHeader } from "./CoreLayoutHeader";
+import { ScrollToTopButton } from "@/common/components/ScrollToTopButton/ScrollToTopButton";
 
 const AnnouncementBanner = dynamic(
   () =>
@@ -24,7 +25,9 @@ export async function CoreLayout({ children }: CoreLayoutProps) {
       <SidebarInset>
         <CoreLayoutHeader />
         <AnnouncementBanner />
+        <div id="scroll-to-top"></div>
         <div className="flex flex-1 flex-col">{children}</div>
+        <ScrollToTopButton />
       </SidebarInset>
     </SidebarProvider>
   );
