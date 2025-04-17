@@ -99,6 +99,7 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       label: "Statistics",
       icon: <StatisticsTableIcon size={16} />,
       href: "/statistics",
+      external: true,
     },
     {
       label: "Themes",
