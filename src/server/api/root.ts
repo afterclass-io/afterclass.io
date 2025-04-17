@@ -7,6 +7,7 @@ import { reviewReactionsRouter } from "@/server/api/reviewReactions/router";
 import { reviewVotesRouter } from "@/server/api/reviewVotes/router";
 
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
+import { classesRouter } from "@/server/api/classes/router";
 
 /**
  * This is the primary router for your server.
@@ -14,6 +15,7 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
+  classes: classesRouter,
   courses: coursesRouter,
   labels: labelsRouter,
   professors: professorsRouter,

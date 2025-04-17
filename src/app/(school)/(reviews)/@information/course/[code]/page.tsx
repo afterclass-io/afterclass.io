@@ -13,9 +13,11 @@ export default async function CourseInfo({
   const course = await api.courses.getByCourseCode({
     code: params.code.toUpperCase(),
   });
+
   if (!course) {
     return notFound();
   }
+
   return (
     <div className="flex w-full flex-wrap gap-4 md:flex-nowrap md:gap-6">
       <div className="w-full md:w-2/3">
@@ -31,7 +33,7 @@ export default async function CourseInfo({
         </InformationCard>
       </div>
       <div className="w-full md:w-1/3">
-        <DetailCard courseCode={course.code} courseCU={course.creditUnits} />
+        <DetailCard course={course} />
       </div>
     </div>
   );
