@@ -15,12 +15,28 @@ const createContext = async (req: NextRequest) => {
   });
 };
 
+const TTL_SECONDS = 60;
+
 const handler = (req: NextRequest) =>
   fetchRequestHandler({
     endpoint: "/api/trpc",
     req,
     router: appRouter,
     createContext: () => createContext(req),
+    responseMeta(opts) {
+      const { errors, type } = opts;
+      const allOk = errors.length === 0;
+      const isQuery = type === "query";
+
+      if (allOk && isQuery) {
+        return {
+          headers: new Headers([
+            ["Cache-Control", `private, max-age=${TTL_SECONDS}`],
+          ]),
+        };
+      }
+      return {};
+    },
     onError:
       env.NODE_ENV === "development"
         ? ({ path, error }) => {
