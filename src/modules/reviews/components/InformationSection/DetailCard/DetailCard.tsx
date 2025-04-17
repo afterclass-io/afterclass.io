@@ -1,13 +1,17 @@
 import { detailCardTheme } from "./DetailCard.theme";
 import { DetailCardSkeleton } from "./DetailCardSkeleton";
 
+interface Props {
+  courseCode: string;
+  courseCU: number;
+  courseDescriptionDocumentLink?: string;
+}
+
 export const DetailCard = ({
   courseCode,
   courseCU,
-}: {
-  courseCode: string;
-  courseCU: number;
-}) => {
+  courseDescriptionDocumentLink,
+}: Props) => {
   const { wrapper, header, body, content, field, value } = detailCardTheme({
     size: { initial: "sm", md: "md" },
   });
@@ -25,6 +29,12 @@ export const DetailCard = ({
         </div>
         <div className={content()}>
           <p className={field()}>Credit unit:</p>
+          <p className={value()} data-test="course-credit">
+            {courseCU}
+          </p>
+        </div>
+        <div className={content()}>
+          <p className={field()}>Course Description Document:</p>
           <p className={value()} data-test="course-credit">
             {courseCU}
           </p>
