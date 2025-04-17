@@ -41,8 +41,12 @@ export const DetailCard = async ({ course }: Props) => {
         </div>
         {latestClass?.courseOutlineUrl && (
           <div className={content()}>
-            <a className={field()} href={latestClass.courseOutlineUrl}>
-              Course Description Document
+            <a
+              className="font-medium text-text-em-mid underline"
+              href={latestClass.courseOutlineUrl}
+              target="_blank"
+            >
+              Course Description
             </a>
           </div>
         )}
