@@ -31,7 +31,10 @@ const handler = (req: NextRequest) =>
       if (allOk && isQuery) {
         return {
           headers: new Headers([
-            ["Cache-Control", `private, max-age=${TTL_SECONDS}`],
+            [
+              "Cache-Control",
+              `private, max-age=${TTL_SECONDS}, must-revalidate`,
+            ],
           ]),
         };
       }
