@@ -14,3 +14,7 @@ export const getByCourseCode = publicProcedure
         },
       }),
   );
+
+export type getByCourseCodeResolved = Awaited<
+  ReturnType<typeof getByCourseCode>
+>;

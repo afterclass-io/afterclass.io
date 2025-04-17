@@ -1,20 +1,26 @@
+import { api } from "@/common/tools/trpc/server";
 import { detailCardTheme } from "./DetailCard.theme";
 import { DetailCardSkeleton } from "./DetailCardSkeleton";
+import type { getByCourseCodeResolved } from "@/server/api/courses/getByCourseCode";
 
 interface Props {
-  courseCode: string;
-  courseCU: number;
-  courseDescriptionDocumentLink?: string;
+  course: NonNullable<getByCourseCodeResolved>;
 }
 
-export const DetailCard = ({
-  courseCode,
-  courseCU,
-  courseDescriptionDocumentLink,
-}: Props) => {
+export const DetailCard = async ({ course }: Props) => {
   const { wrapper, header, body, content, field, value } = detailCardTheme({
     size: { initial: "sm", md: "md" },
   });
+
+  const classes = await api.classes.getAllByCourseId({
+    courseId: course.id,
+  });
+
+  let latestClass;
+  if (classes.length > 0) {
+    latestClass = classes[0];
+  }
+
   return (
     <div className={wrapper()}>
       <div className={header()}>
@@ -24,21 +30,22 @@ export const DetailCard = ({
         <div className={content()}>
           <p className={field()}>Course code:</p>
           <p className={value()} data-test="course-code">
-            {courseCode}
+            {course.code}
           </p>
         </div>
         <div className={content()}>
           <p className={field()}>Credit unit:</p>
           <p className={value()} data-test="course-credit">
-            {courseCU}
+            {course.creditUnits}
           </p>
         </div>
-        <div className={content()}>
-          <p className={field()}>Course Description Document:</p>
-          <p className={value()} data-test="course-credit">
-            {courseCU}
-          </p>
-        </div>
+        {latestClass?.courseOutlineUrl && (
+          <div className={content()}>
+            <a className={field()} href={latestClass.courseOutlineUrl}>
+              Course Description Document
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

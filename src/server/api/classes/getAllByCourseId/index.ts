@@ -11,6 +11,9 @@ export const getAllByCourseId = publicProcedure
       where: {
         courseId: input.courseId,
       },
+      orderBy: {
+        acadTermId: "desc",
+      },
     });
     return classes;
   });
