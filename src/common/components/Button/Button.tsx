@@ -146,7 +146,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonOrLinkProps>(
             const originalClassName = (
               child.props as HTMLProps<HTMLOrSVGElement>
             )?.className;
-            return cloneElement(child as ReactElement, {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return cloneElement(child as ReactElement<any>, {
               className: buttonIconTheme({
                 size: styleProps?.size,
                 iconOnly: typeof children === "undefined",

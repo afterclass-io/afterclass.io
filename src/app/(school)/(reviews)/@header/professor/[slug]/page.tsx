@@ -4,11 +4,12 @@ import { PageTitle } from "@/common/components/PageTitle";
 import { notFound } from "next/navigation";
 import { SchoolTag } from "@/common/components/SchoolTag";
 
-export default async function ProfessorHeader({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function ProfessorHeader(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   const professor = await api.professors.getBySlug({ slug: params.slug });
   if (!professor) {
     return notFound();

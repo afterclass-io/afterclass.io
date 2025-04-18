@@ -61,7 +61,7 @@ interface TransitionMountReturn {
 export function useTransitionMount(): TransitionMountReturn {
   const [state, setState] = useState<TransitionState>("initial");
   const [value, setValue] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout>(undefined);
 
   useEffect(() => {
     if (state === "initial") {

@@ -8,15 +8,16 @@ import {
 import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader";
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
 
-export default function Professor({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams?: {
-    course?: string | string[];
-  };
-}) {
+export default async function Professor(
+  props: {
+    params: Promise<{ slug: string }>;
+    searchParams?: Promise<{
+      course?: string | string[];
+    }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   let courseCodes: string[] = [];
   if (searchParams?.course) {
     courseCodes = Array.isArray(searchParams?.course)

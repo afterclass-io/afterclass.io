@@ -1,19 +1,9 @@
 import { type PropsWithChildren } from "react";
 import { AppSidebar } from "@/modules/home/components/AppSidebar";
+import { AnnouncementBanner } from "@/modules/home/components/AnnouncementBanner";
 import { SidebarProvider, SidebarInset } from "@/common/components/Sidebar";
-import dynamic from "next/dynamic";
 import { CoreLayoutHeader } from "./CoreLayoutHeader";
-import { ScrollToTopButton } from "@/common/components/ScrollToTopButton/ScrollToTopButton";
-
-const AnnouncementBanner = dynamic(
-  () =>
-    import("@/modules/home/components/AnnouncementBanner").then(
-      (mod) => mod.AnnouncementBanner,
-    ),
-  {
-    ssr: false,
-  },
-);
+import { ScrollToTopButton } from "@/common/components/ScrollToTopButton";
 
 // interface CoreLayoutProps extends PropsWithChildren {}
 type CoreLayoutProps = PropsWithChildren;

@@ -1,8 +1,4 @@
-import {
-  type ElementType,
-  type ComponentPropsWithoutRef,
-  forwardRef,
-} from "react";
+import { type ElementType, type ComponentPropsWithoutRef, forwardRef, type JSX } from "react";
 
 export type PolymorphicProps<Element extends ElementType, Props> = Props &
   Omit<ComponentPropsWithoutRef<Element>, "as"> & {

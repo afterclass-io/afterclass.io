@@ -26,7 +26,10 @@ export const CtaCard = ({
     if (!isValidElement(iconElement)) {
       return null;
     }
-    return cloneElement(iconElement as ReactElement, { className: icon() });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return cloneElement(iconElement as ReactElement<any>, {
+      className: icon(),
+    });
   };
 
   return (

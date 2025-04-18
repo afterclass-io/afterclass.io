@@ -4,11 +4,12 @@ import { FilterToggleSection } from "@/modules/reviews/components/FilterToggleSe
 import { GraduationCapIcon, PencilIcon } from "@/common/components/CustomIcon";
 import { api } from "@/common/tools/trpc/server";
 
-export default async function ProfessorFilter({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function ProfessorFilter(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   const session = await auth();
   if (!session) {
     return <FilterToggleSection filterType={ReviewType.COURSE} isLocked />;
