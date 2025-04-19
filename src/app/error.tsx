@@ -1,7 +1,7 @@
 "use client"; // Error boundaries must be Client Components
 import { useEffect } from "react";
 
-import { Button } from "@/common/components/Button";
+import { Button } from "@/common/components/button";
 import { NoticeCard } from "@/common/components/NoticeCard";
 import { env } from "@/env";
 

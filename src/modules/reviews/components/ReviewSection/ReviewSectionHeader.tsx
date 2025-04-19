@@ -1,4 +1,4 @@
-import { PenIcon } from "@/common/components/CustomIcon";
+import { PenIcon } from "@/common/components/icons";
 import { reviewSectionTheme } from "./ReviewSection.theme";
 
 export type ReviewSectionHeaderProps = {

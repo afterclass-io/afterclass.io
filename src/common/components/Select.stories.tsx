@@ -3,9 +3,23 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Form } from "@/common/components/Form";
-import { Select } from "./Select";
-import { ChevronDownIcon } from "@/common/components/CustomIcon";
+import {
+  Form,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormField,
+} from "@/common/components/Form";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "./Select";
+import { ChevronDownIcon } from "@/common/components/icons";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -23,22 +37,19 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <Select>
-      <Select.Trigger className="w-[180px]">
-        <Select.Value placeholder="Select a fruit" />
-        <Select.Icon asChild>
-          <ChevronDownIcon className="h-4 w-4 opacity-50" />
-        </Select.Icon>
-      </Select.Trigger>
-      <Select.Content>
-        <Select.Group>
-          <Select.Label>Fruits</Select.Label>
-          <Select.Item value="apple">Apple</Select.Item>
-          <Select.Item value="banana">Banana</Select.Item>
-          <Select.Item value="blueberry">Blueberry</Select.Item>
-          <Select.Item value="grapes">Grapes</Select.Item>
-          <Select.Item value="pineapple">Pineapple</Select.Item>
-        </Select.Group>
-      </Select.Content>
+      <SelectTrigger className="w-[180px]">
+        <SelectValue placeholder="Select a fruit" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>Fruits</SelectLabel>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+          <SelectItem value="blueberry">Blueberry</SelectItem>
+          <SelectItem value="grapes">Grapes</SelectItem>
+          <SelectItem value="pineapple">Pineapple</SelectItem>
+        </SelectGroup>
+      </SelectContent>
     </Select>
   ),
 };
@@ -58,33 +69,30 @@ export const AsFormInput: Story = {
       <div>
         <Form {...form}>
           <form>
-            <Form.Field
+            <FormField
               control={form.control}
               name="fruit"
               render={({ field }) => (
-                <Form.Item>
-                  <Form.Label>Fruit</Form.Label>
-                  <Form.Control>
+                <FormItem>
+                  <FormLabel>Fruit</FormLabel>
+                  <FormControl>
                     <Select onValueChange={field.onChange}>
-                      <Select.Trigger className="w-[180px]">
-                        <Select.Value placeholder="Select a fruit" />
-                        <Select.Icon asChild>
-                          <ChevronDownIcon className="h-4 w-4 opacity-50" />
-                        </Select.Icon>
-                      </Select.Trigger>
-                      <Select.Content>
-                        <Select.Group>
-                          <Select.Label>Fruits</Select.Label>
-                          <Select.Item value="apple">Apple</Select.Item>
-                          <Select.Item value="banana">Banana</Select.Item>
-                          <Select.Item value="blueberry">Blueberry</Select.Item>
-                          <Select.Item value="grapes">Grapes</Select.Item>
-                          <Select.Item value="pineapple">Pineapple</Select.Item>
-                        </Select.Group>
-                      </Select.Content>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select a fruit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Fruits</SelectLabel>
+                          <SelectItem value="apple">Apple</SelectItem>
+                          <SelectItem value="banana">Banana</SelectItem>
+                          <SelectItem value="blueberry">Blueberry</SelectItem>
+                          <SelectItem value="grapes">Grapes</SelectItem>
+                          <SelectItem value="pineapple">Pineapple</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
                     </Select>
-                  </Form.Control>
-                </Form.Item>
+                  </FormControl>
+                </FormItem>
               )}
             />
           </form>

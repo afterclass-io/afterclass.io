@@ -8,7 +8,7 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from "./Chart";
+} from "./chart";
 
 import {
   Card,
@@ -17,7 +17,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/common/components/Card";
+} from "@/common/components/card";
 
 const chartConfig = {
   desktop: {
@@ -90,7 +90,7 @@ export const Default: Story = {
           </ChartContainer>
         </CardContent>
         <CardFooter className="flex-col items-start gap-2 text-sm">
-          <div className="flex gap-2 font-medium leading-none">
+          <div className="flex gap-2 leading-none font-medium">
             Trending up by 5.2% this month
           </div>
           <div className="text-muted-foreground leading-none">

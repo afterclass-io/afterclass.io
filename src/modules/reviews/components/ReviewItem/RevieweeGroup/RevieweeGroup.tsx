@@ -1,6 +1,6 @@
 import { type Review } from "@/modules/reviews/types";
 import { profileTheme } from "@/common/components/Profile";
-import { SchoolIcon } from "@/common/components/CustomIcon";
+import { SchoolIcon } from "@/common/components/icons";
 import { ProgressLink } from "@/common/components/Progress";
 
 import { RevieweeCourse } from "./RevieweeCourse";

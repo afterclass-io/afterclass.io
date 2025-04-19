@@ -1,17 +1,15 @@
 import { AuthCard } from "@/modules/auth/components";
-import { Button } from "@/common/components/Button";
+import { Button } from "@/common/components/button";
 import Heading from "@/common/components/Heading";
 import { notFound } from "next/navigation";
 import { env } from "@/env";
 import { Fragment } from "react";
 
-export default async function Verify(
-  props: {
-    searchParams?: Promise<{
-      email?: string;
-    }>;
-  }
-) {
+export default async function Verify(props: {
+  searchParams?: Promise<{
+    email?: string;
+  }>;
+}) {
   const searchParams = await props.searchParams;
   if (!searchParams?.email) {
     return notFound();
@@ -19,7 +17,7 @@ export default async function Verify(
 
   return (
     <AuthCard title="You’re almost there!">
-      <div className="flex flex-col gap-6 pb-3 text-xs leading-relaxed text-text-em-mid md:text-base">
+      <div className="text-text-em-mid flex flex-col gap-6 pb-3 text-xs leading-relaxed md:text-base">
         <div>
           <p>We’ve sent a verification email to:</p>
           <Heading
@@ -34,7 +32,7 @@ export default async function Verify(
           <br className="hidden md:block" />
           20 minutes.
         </p>
-        <hr className="my-1 border-border-default md:my-3" />
+        <hr className="border-border-default my-1 md:my-3" />
         <p>
           If you are not receiving AfterClass emails, try these troubleshooting
           steps:
@@ -50,8 +48,8 @@ export default async function Verify(
               {env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.map((domain, i) => (
                 <Fragment key={i}>
                   {i > 0 && <span className="mr-1">,</span>}
-                  <span className="relative inline-block before:absolute before:-inset-[2px] before:my-[5px] before:bg-border-primary/15">
-                    <pre className="inline text-text-on-secondary">
+                  <span className="before:bg-border-primary/15 relative inline-block before:absolute before:-inset-[2px] before:my-[5px]">
+                    <pre className="text-text-on-secondary inline">
                       {domain}
                     </pre>
                   </span>

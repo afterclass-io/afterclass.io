@@ -7,7 +7,7 @@ import {
   type SignInOptions,
 } from "next-auth/react";
 
-import { Button } from "@/common/components/Button";
+import { Button } from "@/common/components/button";
 
 export interface GoogleSignInButtonProps {
   googleSignInOptions?: SignInOptions;

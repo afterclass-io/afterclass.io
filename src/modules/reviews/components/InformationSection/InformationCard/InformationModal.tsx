@@ -2,7 +2,7 @@
 
 import { Modal } from "@/common/components/Modal";
 import { informationCardTheme } from "./InformationCard.theme";
-import { Button } from "@/common/components/Button";
+import { Button } from "@/common/components/button";
 
 export const InformationModal = ({
   courseName,

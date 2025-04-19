@@ -1,7 +1,7 @@
 "use client";
 import { type ReactNode, createContext, useContext } from "react";
 
-import { useTransitionMount } from "@/common/hooks/useTransitionMount";
+import { useTransitionMount } from "@/common/hooks/use-transition-mount";
 
 const ProgressBarContext = createContext<ReturnType<
   typeof useTransitionMount

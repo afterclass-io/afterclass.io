@@ -6,11 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { supabase } from "@/server/supabase";
 
-import { Input } from "@/common/components/Input";
-import { Button } from "@/common/components/Button";
+import { Input } from "@/common/components/i-nput";
+import { Button } from "@/common/components/button";
 import { Form } from "@/common/components/Form";
 import { env } from "@/env";
-import { EnvelopeIcon } from "@/common/components/CustomIcon";
+import { EnvelopeIcon } from "@/common/components/icons";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
 import { getUserPlatform } from "../functions";
@@ -111,7 +111,7 @@ export const ForgotPwdForm = () => {
               : "Reset my password"}
           </Button>
           <div className="flex items-center gap-1 self-stretch text-xs md:text-base">
-            <span className="text-center font-semibold text-text-em-mid">
+            <span className="text-text-em-mid text-center font-semibold">
               {"Don't have an account?"}
             </span>
             <ProgressLink

@@ -12,8 +12,8 @@ import { atomWithStorage } from "jotai/utils";
 import { useRouter } from "next/navigation";
 
 import { Modal } from "@/common/components/Modal";
-import { SearchIcon } from "@/common/components/CustomIcon";
-import { Input } from "@/common/components/Input";
+import { SearchIcon } from "@/common/components/icons";
+import { Input } from "@/common/components/i-nput";
 import { useEdgeConfigs } from "@/common/hooks";
 
 import { searchCmdkTheme } from "./SearchCmdk.theme";

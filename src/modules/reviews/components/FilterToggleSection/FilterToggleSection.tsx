@@ -5,7 +5,7 @@ import { type ReviewType } from "@prisma/client";
 
 import { FilterToggleSection as Filter } from "@/common/components/FilterToggleSection";
 import { type FilterItem } from "@/common/components/FilterToggleSection/FilterToggleSectionItem";
-import { Button } from "@/common/components/Button";
+import { Button } from "@/common/components/button";
 import { cn } from "@/common/functions";
 
 export type FilterToggleSectionProps =

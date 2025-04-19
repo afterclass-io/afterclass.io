@@ -6,7 +6,7 @@ import { InView } from "react-intersection-observer";
 import { z } from "zod";
 
 import { api } from "@/common/tools/trpc/react";
-import { AfterclassIcon } from "@/common/components/CustomIcon";
+import { AfterclassIcon } from "@/common/components/icons";
 import { ProgressLink } from "@/common/components/Progress";
 
 import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
@@ -39,10 +39,10 @@ export type ReviewItemLoaderProps =
 
 const NoReviewCtaNote = () => (
   <div
-    className="w-full space-x-1 px-3 py-6 text-center text-xs text-text-em-mid md:text-sm"
+    className="text-text-em-mid w-full space-x-1 px-3 py-6 text-center text-xs md:text-sm"
     data-variant="full-width"
   >
-    <span className="mr-1 text-text-em-high">Oh no!</span>
+    <span className="text-text-em-high mr-1">Oh no!</span>
     <span>Looks like no one has reviewed yet.</span>
     <br />
     <span>Help us out by</span>
@@ -159,7 +159,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
         >
           <AfterclassIcon
             size={64}
-            className="animate-[pulse_3s_ease-in-out_infinite] text-primary-default/60"
+            className="text-primary-default/60 animate-[pulse_3s_ease-in-out_infinite]"
           />
         </InView>
       )}

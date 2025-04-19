@@ -1,8 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { Tooltip } from "./Tooltip";
-import { BooksColoredIcon } from "@/common/components/CustomIcon";
-import { Button } from "@/common/components/Button";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "./tooltip";
+import { BooksColoredIcon } from "@/common/components/icons";
+import { Button } from "@/common/components/button";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -19,56 +24,56 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => (
-    <Tooltip.Provider>
+    <TooltipProvider>
       <Tooltip>
-        <Tooltip.Trigger>Hover me</Tooltip.Trigger>
-        <Tooltip.Content>
+        <TooltipTrigger>Hover me</TooltipTrigger>
+        <TooltipContent>
           <div>Hidden Tooltip Content</div>
-        </Tooltip.Content>
+        </TooltipContent>
       </Tooltip>
-    </Tooltip.Provider>
+    </TooltipProvider>
   ),
 };
 
 export const OpenByDefault: Story = {
   render: () => (
-    <Tooltip.Provider>
+    <TooltipProvider>
       <Tooltip defaultOpen={true}>
-        <Tooltip.Trigger>Hover me</Tooltip.Trigger>
-        <Tooltip.Content>
+        <TooltipTrigger>Hover me</TooltipTrigger>
+        <TooltipContent>
           <div>Hidden Tooltip Content</div>
-        </Tooltip.Content>
+        </TooltipContent>
       </Tooltip>
-    </Tooltip.Provider>
+    </TooltipProvider>
   ),
 };
 
 export const IconAsTrigger: Story = {
   render: () => (
-    <Tooltip.Provider>
+    <TooltipProvider>
       <Tooltip defaultOpen={true}>
-        <Tooltip.Trigger>
+        <TooltipTrigger>
           <BooksColoredIcon />
-        </Tooltip.Trigger>
-        <Tooltip.Content>
+        </TooltipTrigger>
+        <TooltipContent>
           <div>Course</div>
-        </Tooltip.Content>
+        </TooltipContent>
       </Tooltip>
-    </Tooltip.Provider>
+    </TooltipProvider>
   ),
 };
 
 export const ButtonAsTrigger: Story = {
   render: () => (
-    <Tooltip.Provider>
+    <TooltipProvider>
       <Tooltip defaultOpen={true}>
-        <Tooltip.Trigger>
+        <TooltipTrigger>
           <Button size="sm">weird button</Button>
-        </Tooltip.Trigger>
-        <Tooltip.Content>
+        </TooltipTrigger>
+        <TooltipContent>
           <div>This button does nothing</div>
-        </Tooltip.Content>
+        </TooltipContent>
       </Tooltip>
-    </Tooltip.Provider>
+    </TooltipProvider>
   ),
 };

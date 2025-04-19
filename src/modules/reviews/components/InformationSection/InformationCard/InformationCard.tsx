@@ -1,6 +1,6 @@
 import { informationCardTheme } from "./InformationCard.theme";
 import type { ReactNode } from "react";
-import { ClipboardIcon } from "@/common/components/CustomIcon";
+import { ClipboardIcon } from "@/common/components/icons";
 import { InformationCardSkeleton } from "./InformationCardSkeleton";
 import { InformationCardLoginButton } from "./InformationCardLoginButton";
 import { InformationModal } from "./InformationModal";

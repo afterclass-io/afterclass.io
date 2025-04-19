@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { Button } from "@/common/components/Button";
-import { Input } from "@/common/components/Input";
-import { Popover } from "./Popover";
+import { Button } from "@/common/components/button";
+import { Input } from "@/common/components/input";
+import { Popover, PopoverTrigger, PopoverContent } from "./popover";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -14,7 +14,7 @@ const meta = {
     children: (
       <div className="grid gap-4">
         <div className="space-y-2">
-          <h4 className="font-medium leading-none">Dimensions</h4>
+          <h4 className="leading-none font-medium">Dimensions</h4>
           <p className="text-muted-foreground text-sm">
             Set the dimensions for the layer.
           </p>
@@ -57,12 +57,10 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: (args) => (
     <Popover>
-      <Popover.Trigger asChild>
-        <Button variant="primary" as="button" size="sm">
-          Popover
-        </Button>
-      </Popover.Trigger>
-      <Popover.Content>{args.children}</Popover.Content>
+      <PopoverTrigger asChild>
+        <Button>Popover</Button>
+      </PopoverTrigger>
+      <PopoverContent>{args.children}</PopoverContent>
     </Popover>
   ),
 };

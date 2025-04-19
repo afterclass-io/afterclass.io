@@ -1,5 +1,5 @@
 "use client";
-import { ChevronRightIcon, SchoolIcon } from "@/common/components/CustomIcon";
+import { ChevronRightIcon, SchoolIcon } from "@/common/components/icons";
 import {
   type FilterStat,
   FilterItemStats,

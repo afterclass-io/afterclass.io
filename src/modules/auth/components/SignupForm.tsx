@@ -6,15 +6,15 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { Button } from "@/common/components/Button";
-import { Input } from "@/common/components/Input";
+import { Button } from "@/common/components/button";
+import { Input } from "@/common/components/i-nput";
 import { Form } from "@/common/components/Form";
 import {
   LockIcon,
   EyeIcon,
   EyeSlashIcon,
   EnvelopeIcon,
-} from "@/common/components/CustomIcon";
+} from "@/common/components/icons";
 import { signUpWithEmail } from "@/server/supabase";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import { useProgress } from "@/common/providers/ProgressProvider";
@@ -186,7 +186,7 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
             {form.formState.isSubmitting ? "Creating an account..." : "Sign up"}
           </Button>
           <div className="flex items-center gap-1 self-stretch text-xs md:text-base">
-            <span className="text-center font-semibold text-text-em-mid">
+            <span className="text-text-em-mid text-center font-semibold">
               Already have an account?
             </span>
             <ProgressLink

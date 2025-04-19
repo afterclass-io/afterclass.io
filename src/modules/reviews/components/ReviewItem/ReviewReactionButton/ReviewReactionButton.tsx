@@ -2,9 +2,9 @@
 import { type ReviewReactionType as DbReviewReactionType } from "@prisma/client";
 
 import { toTitleCase } from "@/common/functions";
-import { Button } from "@/common/components/Button";
+import { Button } from "@/common/components/button";
 import { Tooltip } from "@/common/components/Tooltip";
-import { SmileyIcon } from "@/common/components/CustomIcon";
+import { SmileyIcon } from "@/common/components/icons";
 import {
   HoverCard,
   HoverCardContent,

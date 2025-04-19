@@ -8,14 +8,10 @@ import { z } from "zod";
 
 import { supabase } from "@/server/supabase";
 
-import { Input } from "@/common/components/Input";
-import { Button } from "@/common/components/Button";
+import { Input } from "@/common/components/i-nput";
+import { Button } from "@/common/components/button";
 import { Form } from "@/common/components/Form";
-import {
-  LockIcon,
-  EyeIcon,
-  EyeSlashIcon,
-} from "@/common/components/CustomIcon";
+import { LockIcon, EyeIcon, EyeSlashIcon } from "@/common/components/icons";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
 const resetPwdFormInputsSchema = z.object({

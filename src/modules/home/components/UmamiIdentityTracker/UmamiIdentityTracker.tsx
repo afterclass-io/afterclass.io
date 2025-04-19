@@ -1,5 +1,5 @@
 "use client";
-import useUmami from "@/common/hooks/useUmami";
+import useUmami from "@/common/hooks/use-umami";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 

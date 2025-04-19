@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { toast } from "./Toast";
-import { Button } from "@/common/components/Button";
+import { toast } from "sonner";
+import { Button } from "@/common/components/button";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {

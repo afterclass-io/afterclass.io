@@ -22,7 +22,7 @@ import {
   StarLineAltIcon,
   StatisticsTableIcon,
   TelegramIcon,
-} from "@/common/components/CustomIcon";
+} from "@/common/components/icons";
 import { env } from "@/env";
 import { toTitleCase } from "@/common/functions";
 import Link from "next/link";
@@ -127,7 +127,7 @@ export const AppSidebar = () => {
             <SidebarMenuButton size="lg" asChild>
               <Link
                 href="/"
-                className="flex items-center px-3 text-primary-default"
+                className="text-primary-default flex items-center px-3"
               >
                 <Logo />
               </Link>
@@ -161,7 +161,7 @@ export const AppSidebar = () => {
                       href={item.href}
                       iconLeft={item.icon}
                       fullWidth
-                      className="flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold text-text-em-mid after:!content-none hover:bg-border-elevated hover:text-text-em-high"
+                      className="text-text-em-mid hover:bg-border-elevated hover:text-text-em-high flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
                       data-test={`sidebar-${sidebarItemName(item.label)}`}
                     >
                       {item.label}
@@ -202,7 +202,7 @@ export const AppSidebar = () => {
                             external={item.external}
                             iconLeft={item.icon}
                             fullWidth
-                            className="flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold text-text-em-mid after:!content-none hover:bg-border-elevated hover:text-text-em-high"
+                            className="text-text-em-mid hover:bg-border-elevated hover:text-text-em-high flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
                             data-umami-event={`sidebar-${sidebarItemName(item.label)}`}
                             data-test={`sidebar-${sidebarItemName(item.label)}`}
                           >

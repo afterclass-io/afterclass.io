@@ -1,8 +1,8 @@
 import { type Review } from "@/modules/reviews/types";
 
 import { formatNumberShortScale } from "@/common/functions";
-import { buttonTheme } from "@/common/components/Button";
-import { EyeIcon } from "@/common/components/CustomIcon";
+import { buttonTheme } from "@/common/components/button";
+import { EyeIcon } from "@/common/components/icons";
 import { ReviewShareButton } from "../ReviewShareButton";
 import { ReviewVoteGroup } from "../ReviewVoteGroup";
 import { ReviewReactionsGroup } from "../ReviewReactionsGroup";

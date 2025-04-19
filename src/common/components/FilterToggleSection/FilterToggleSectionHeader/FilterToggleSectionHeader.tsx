@@ -4,7 +4,7 @@ import Heading from "@/common/components/Heading";
 import {
   GraduationCapColoredIcon,
   BooksColoredIcon,
-} from "@/common/components/CustomIcon";
+} from "@/common/components/icons";
 import { filterToggleSectionTheme } from "../FilterToggleSection.theme";
 
 export const FilterToggleSectionHeader = ({ type }: { type: ReviewType }) => {

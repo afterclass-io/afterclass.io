@@ -1,6 +1,6 @@
 "use client";
-import { SearchIcon } from "@/common/components/CustomIcon";
-import { Input } from "@/common/components/Input";
+import { SearchIcon } from "@/common/components/icons";
+import { Input } from "@/common/components/i-nput";
 
 import { searchCmdkTheme } from "../SearchCmdk.theme";
 import { SearchCmdkOnboardingTooltip } from "../SearchCmdkOnboardingTooltip";

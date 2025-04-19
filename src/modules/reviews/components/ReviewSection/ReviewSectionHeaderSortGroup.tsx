@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 
-import { Button } from "@/common/components/Button";
-import { ChevronDownIcon } from "@/common/components/CustomIcon";
+import { Button } from "@/common/components/button";
+import { ChevronDownIcon } from "@/common/components/icons";
 import { Select } from "@/common/components/Select";
 import { cn, toTitleCase } from "@/common/functions";
 import { ReviewsSortBy } from "@/modules/reviews/types";

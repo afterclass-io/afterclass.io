@@ -1,8 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { Breadcrumb } from "./Breadcrumb";
-import { DropdownMenu } from "../DropdownMenu";
-import { ChevronDownIcon } from "../CustomIcon";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+} from "./breadcrumb";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/common/components/dropdown-menu";
+import { ChevronDownIcon } from "@/common/components/icons";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -20,15 +31,15 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <Breadcrumb>
-      <Breadcrumb.List>
-        <Breadcrumb.Item>
-          <Breadcrumb.Link href="/">Home</Breadcrumb.Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Separator />
-        <Breadcrumb.Item>
-          <Breadcrumb.Link href="/components">Components</Breadcrumb.Link>
-        </Breadcrumb.Item>
-      </Breadcrumb.List>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/">Home</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/components">Components</BreadcrumbLink>
+        </BreadcrumbItem>
+      </BreadcrumbList>
     </Breadcrumb>
   ),
 };
@@ -37,25 +48,25 @@ export const Default: Story = {
 export const WithDropdown: Story = {
   render: () => (
     <Breadcrumb>
-      <Breadcrumb.List>
-        <Breadcrumb.Item>
+      <BreadcrumbList>
+        <BreadcrumbItem>
           <DropdownMenu>
-            <DropdownMenu.Trigger className="flex items-center gap-1">
+            <DropdownMenuTrigger className="flex items-center gap-1">
               All Schools
               <ChevronDownIcon />
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content align="start">
-              <DropdownMenu.Item>SMU</DropdownMenu.Item>
-              <DropdownMenu.Item>NUS</DropdownMenu.Item>
-              <DropdownMenu.Item>NTU</DropdownMenu.Item>
-            </DropdownMenu.Content>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem>SMU</DropdownMenuItem>
+              <DropdownMenuItem>NUS</DropdownMenuItem>
+              <DropdownMenuItem>NTU</DropdownMenuItem>
+            </DropdownMenuContent>
           </DropdownMenu>
-        </Breadcrumb.Item>
-        <Breadcrumb.Separator />
-        <Breadcrumb.Item>
-          <Breadcrumb.Link href="/components">Components</Breadcrumb.Link>
-        </Breadcrumb.Item>
-      </Breadcrumb.List>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/components">Components</BreadcrumbLink>
+        </BreadcrumbItem>
+      </BreadcrumbList>
     </Breadcrumb>
   ),
 };

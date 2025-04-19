@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useFormContext } from "react-hook-form";
 
-import { Button } from "@/common/components/Button";
+import { Button } from "@/common/components/button";
 import { Select } from "@/common/components/Select";
-import { ChevronDownIcon } from "@/common/components/CustomIcon";
+import { ChevronDownIcon } from "@/common/components/icons";
 import { type ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
 
 import { ReviewerEnum } from "@/modules/submit/types";

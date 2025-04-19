@@ -1,4 +1,4 @@
-import { SearchIcon } from "@/common/components/CustomIcon";
+import { SearchIcon } from "@/common/components/icons";
 import { PageTitle } from "@/common/components/PageTitle";
 import { searchResultTheme } from "../SearchResult.theme";
 

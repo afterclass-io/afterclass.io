@@ -1,4 +1,4 @@
-import { GraduationCapIcon } from "@/common/components/CustomIcon";
+import { GraduationCapIcon } from "@/common/components/icons";
 import { PageTitle } from "@/common/components/PageTitle";
 import { Skeleton } from "@/common/components/Skeleton";
 import { Tag } from "@/common/components/Tag";

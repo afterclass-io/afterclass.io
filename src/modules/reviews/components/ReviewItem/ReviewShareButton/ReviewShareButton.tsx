@@ -10,8 +10,8 @@ import {
   type ButtonVariants,
   type ButtonBaseProps,
   type ButtonProps,
-} from "@/common/components/Button";
-import { ShareIcon } from "@/common/components/CustomIcon";
+} from "@/common/components/button";
+import { ShareIcon } from "@/common/components/icons";
 import { useEdgeConfigs } from "@/common/hooks";
 
 export type ReviewShareButtonProps = ButtonProps &

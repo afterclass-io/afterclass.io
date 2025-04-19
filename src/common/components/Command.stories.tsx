@@ -7,8 +7,17 @@ import {
   EnvelopeIcon,
   LockIcon,
   StarLineAltIcon,
-} from "@/common/components/CustomIcon";
-import { Command } from "./Command";
+} from "@/common/components/icons";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+  CommandSeparator,
+} from "./command";
 import { useEffect, useState } from "react";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
@@ -27,47 +36,47 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <Command>
-      <Command.Input placeholder="Type a command or search..." />
-      <Command.List>
-        <Command.Empty>No results found.</Command.Empty>
-        <Command.Group heading="Suggestions">
-          <Command.Item>
+      <CommandInput placeholder="Type a command or search..." />
+      <CommandList>
+        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandGroup heading="Suggestions">
+          <CommandItem>
             <BookLineIcon className="mr-2 h-4 w-4" />
             <span>Calendar</span>
-          </Command.Item>
-          <Command.Item>
+          </CommandItem>
+          <CommandItem>
             <CheckIcon className="mr-2 h-4 w-4" />
             <span>Search Emoji</span>
-          </Command.Item>
-          <Command.Item>
+          </CommandItem>
+          <CommandItem>
             <DealsIcon className="mr-2 h-4 w-4" />
             <span>Calculator</span>
-          </Command.Item>
-        </Command.Group>
-        <Command.Separator />
-        <Command.Group heading="Settings">
-          <Command.Item>
+          </CommandItem>
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup heading="Settings">
+          <CommandItem>
             <EnvelopeIcon className="mr-2 h-4 w-4" />
             <span>Profile</span>
-            <Command.Shortcut>⌘P</Command.Shortcut>
-          </Command.Item>
-          <Command.Item>
+            <CommandShortcut>⌘P</CommandShortcut>
+          </CommandItem>
+          <CommandItem>
             <LockIcon className="mr-2 h-4 w-4" />
             <span>Billing</span>
-            <Command.Shortcut>⌘B</Command.Shortcut>
-          </Command.Item>
-          <Command.Item>
+            <CommandShortcut>⌘B</CommandShortcut>
+          </CommandItem>
+          <CommandItem>
             <StarLineAltIcon className="mr-2 h-4 w-4" />
             <span>Settings</span>
-            <Command.Shortcut>⌘S</Command.Shortcut>
-          </Command.Item>
-        </Command.Group>
-      </Command.List>
+            <CommandShortcut>⌘S</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+      </CommandList>
     </Command>
   ),
 };
 
-export const CommandDialog: Story = {
+export const AsCommandDialog: Story = {
   render: () => {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const [open, setOpen] = useState(false);
@@ -86,47 +95,47 @@ export const CommandDialog: Story = {
       <>
         <div className="flex gap-2 text-sm">
           <span>Press</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-base font-medium opacity-100">
+          <kbd className="pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-base font-medium opacity-100 select-none">
             <span>⌘</span>J
           </kbd>
         </div>
         <Command as="dialog" open={open} onOpenChange={setOpen}>
-          <Command.Input placeholder="Type a command or search..." autoFocus />
-          <Command.List>
-            <Command.Empty>No results found.</Command.Empty>
-            <Command.Group heading="Suggestions">
-              <Command.Item>
+          <CommandInput placeholder="Type a command or search..." autoFocus />
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup heading="Suggestions">
+              <CommandItem>
                 <BookLineIcon className="mr-2 h-4 w-4" />
                 <span>Calendar</span>
-              </Command.Item>
-              <Command.Item>
+              </CommandItem>
+              <CommandItem>
                 <CheckIcon className="mr-2 h-4 w-4" />
                 <span>Search Emoji</span>
-              </Command.Item>
-              <Command.Item>
+              </CommandItem>
+              <CommandItem>
                 <DealsIcon className="mr-2 h-4 w-4" />
                 <span>Calculator</span>
-              </Command.Item>
-            </Command.Group>
-            <Command.Separator />
-            <Command.Group heading="Settings">
-              <Command.Item>
+              </CommandItem>
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup heading="Settings">
+              <CommandItem>
                 <EnvelopeIcon className="mr-2 h-4 w-4" />
                 <span>Profile</span>
-                <Command.Shortcut>⌘P</Command.Shortcut>
-              </Command.Item>
-              <Command.Item>
+                <CommandShortcut>⌘P</CommandShortcut>
+              </CommandItem>
+              <CommandItem>
                 <LockIcon className="mr-2 h-4 w-4" />
                 <span>Billing</span>
-                <Command.Shortcut>⌘B</Command.Shortcut>
-              </Command.Item>
-              <Command.Item>
+                <CommandShortcut>⌘B</CommandShortcut>
+              </CommandItem>
+              <CommandItem>
                 <StarLineAltIcon className="mr-2 h-4 w-4" />
                 <span>Settings</span>
-                <Command.Shortcut>⌘S</Command.Shortcut>
-              </Command.Item>
-            </Command.Group>
-          </Command.List>
+                <CommandShortcut>⌘S</CommandShortcut>
+              </CommandItem>
+            </CommandGroup>
+          </CommandList>
         </Command>
       </>
     );

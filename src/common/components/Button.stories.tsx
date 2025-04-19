@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { Button } from "./Button";
-import { StarLineAltIcon } from "@/common/components/CustomIcon";
+import { Button } from "./button";
+import { StarLineAltIcon } from "@/common/components/icons";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -10,34 +10,9 @@ const meta = {
   // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
   tags: ["autodocs"],
   // More on argTypes: https://storybook.js.org/docs/api/argtypes
-  argTypes: {
-    fullWidth: {
-      control: {
-        type: "boolean",
-      },
-    },
-    loading: {
-      control: {
-        type: "boolean",
-      },
-    },
-    rounded: {
-      control: {
-        type: "boolean",
-      },
-    },
-  },
+  argTypes: {},
   args: {
-    variant: "primary",
-    size: "md",
     children: "primary",
-    as: "a",
-    href: "https://example.com",
-    external: true,
-    loading: false,
-    isResponsive: false,
-    fullWidth: false,
-    rounded: false,
   },
 } satisfies Meta<typeof Button>;
 
@@ -51,77 +26,20 @@ const VariantsOfButtonTemplate: Story = {
   render: ({ variant }) => (
     <div className="flex max-w-[320px] flex-wrap gap-3">
       <Button variant={variant}>{variant as string}</Button>
-      <Button variant={variant} size="sm" iconLeft={<StarLineAltIcon />}>
-        Small
+      <Button variant={variant} aria-label="star">
+        <StarLineAltIcon />
+        {variant as string} with icon
       </Button>
-      <Button
-        variant={variant}
-        aria-label="star"
-        iconLeft={<StarLineAltIcon />}
-      />
-      <Button
-        variant={variant}
-        size="sm"
-        aria-label="star"
-        iconLeft={<StarLineAltIcon />}
-      />
-      <Button variant={variant} loading>
-        {variant as string}
+      <Button variant={variant} size="icon">
+        <StarLineAltIcon />
       </Button>
-      <Button
-        variant={variant}
-        size="sm"
-        iconLeft={<StarLineAltIcon />}
-        loading
-      >
-        Small
-      </Button>
-      <Button
-        variant={variant}
-        aria-label="star"
-        iconLeft={<StarLineAltIcon />}
-        loading
-      />
-      <Button
-        variant={variant}
-        size="sm"
-        aria-label="star"
-        iconLeft={<StarLineAltIcon />}
-        loading
-      />
-      <Button variant={variant} disabled>
-        {variant as string}
-      </Button>
-      <Button
-        variant={variant}
-        size="sm"
-        iconLeft={<StarLineAltIcon />}
-        disabled
-      >
-        Small
-      </Button>
-      <Button
-        variant={variant}
-        aria-label="star"
-        iconLeft={<StarLineAltIcon />}
-        disabled
-      />
-      <Button
-        variant={variant}
-        size="sm"
-        aria-label="star"
-        iconLeft={<StarLineAltIcon />}
-        disabled
-      />
     </div>
   ),
 };
 
 export const VariantsOfPrimary: Story = {
   ...VariantsOfButtonTemplate,
-  args: {
-    variant: "primary",
-  },
+  args: {},
 };
 
 export const VariantsOfSecondary: Story = {
@@ -131,24 +49,17 @@ export const VariantsOfSecondary: Story = {
   },
 };
 
-export const VariantsOfTertiary: Story = {
+export const VariantsOfOutline: Story = {
   ...VariantsOfButtonTemplate,
   args: {
-    variant: "tertiary",
+    variant: "outline",
   },
 };
 
-export const VariantsOfSuccess: Story = {
+export const VariantsOfDestructive: Story = {
   ...VariantsOfButtonTemplate,
   args: {
-    variant: "success",
-  },
-};
-
-export const VariantsOfDanger: Story = {
-  ...VariantsOfButtonTemplate,
-  args: {
-    variant: "danger",
+    variant: "destructive",
   },
 };
 

@@ -1,5 +1,5 @@
 import { informationCardTheme } from "./InformationCard.theme";
-import { ClipboardIcon } from "@/common/components/CustomIcon";
+import { ClipboardIcon } from "@/common/components/icons";
 import { Skeleton } from "@/common/components/Skeleton";
 
 export const InformationCardSkeleton = () => {

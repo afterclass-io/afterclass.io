@@ -6,15 +6,15 @@ import { signIn } from "next-auth/react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Button } from "@/common/components/Button";
-import { Input } from "@/common/components/Input";
+import { Button } from "@/common/components/button";
+import { Input } from "@/common/components/i-nput";
 import { Form } from "@/common/components/Form";
 import {
   LockIcon,
   EyeIcon,
   EyeSlashIcon,
   EnvelopeIcon,
-} from "@/common/components/CustomIcon";
+} from "@/common/components/icons";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 
 import { useProgress } from "@/common/providers/ProgressProvider";
@@ -60,8 +60,8 @@ export const LoginForm = () => {
               {env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.map((domain, i) => (
                 <Fragment key={i}>
                   {i > 0 && <span className="mr-1">,</span>}
-                  <span className="relative inline-block before:absolute before:-inset-[2px] before:my-[5px] before:bg-border-primary/15">
-                    <pre className="inline text-text-on-secondary">
+                  <span className="before:bg-border-primary/15 relative inline-block before:absolute before:-inset-[2px] before:my-[5px]">
+                    <pre className="text-text-on-secondary inline">
                       {domain}
                     </pre>
                   </span>
@@ -213,7 +213,7 @@ export const LoginForm = () => {
           >
             {form.formState.isSubmitting ? "Signing in..." : "Login"}
           </Button>
-          <div className="mx-auto my-4 flex w-full items-center justify-evenly before:mr-4 before:block before:h-px before:flex-grow before:bg-border-default after:ml-4 after:block after:h-px after:flex-grow after:bg-border-default">
+          <div className="before:bg-border-default after:bg-border-default mx-auto my-4 flex w-full items-center justify-evenly before:mr-4 before:block before:h-px before:flex-grow after:ml-4 after:block after:h-px after:flex-grow">
             OR
           </div>
 
@@ -246,7 +246,7 @@ export const LoginForm = () => {
           </GoogleSignInButton>
 
           <div className="flex items-center gap-1 self-stretch text-xs md:text-base">
-            <span className="text-center font-semibold text-text-em-mid">
+            <span className="text-text-em-mid text-center font-semibold">
               {"Don't have an account?"}
             </span>
             <ProgressLink

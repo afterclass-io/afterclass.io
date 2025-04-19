@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-import { XCloseIcon } from "@/common/components/CustomIcon";
-import { Button } from "@/common/components/Button";
+import { XCloseIcon } from "@/common/components/icons";
+import { Button } from "@/common/components/button";
 import { env } from "@/env";
 import { useEdgeConfigs } from "@/common/hooks";
 
@@ -32,15 +32,15 @@ export const AnnouncementBanner = () => {
   return (
     isShown && (
       <div className="sticky top-0">
-        <div className="relative flex w-full items-center justify-center gap-6 bg-primary-dark p-2 text-xs md:gap-2 md:p-1 md:text-sm">
-          <span className="flex flex-col gap-1 text-text-on-primary md:flex-row">
+        <div className="bg-primary-dark relative flex w-full items-center justify-center gap-6 p-2 text-xs md:gap-2 md:p-1 md:text-sm">
+          <span className="text-text-on-primary flex flex-col gap-1 md:flex-row">
             <span>We have a new look!</span>
             <span>Missed the old AfterClass?</span>
           </span>
           <Button
             as="a"
             variant="link"
-            className="inline-flex h-fit p-0 pb-[1px] font-bold text-text-on-primary underline hover:text-secondary-default md:h-fit md:p-0 md:text-sm"
+            className="text-text-on-primary hover:text-secondary-default inline-flex h-fit p-0 pb-[1px] font-bold underline md:h-fit md:p-0 md:text-sm"
             href={env.NEXT_PUBLIC_OLD_SITE_URL}
             external
             isResponsive
@@ -50,7 +50,7 @@ export const AnnouncementBanner = () => {
           </Button>
           <Button
             variant="ghost"
-            className="absolute right-0 inline font-bold text-text-on-primary hover:bg-transparent hover:after:bg-transparent"
+            className="text-text-on-primary absolute right-0 inline font-bold hover:bg-transparent hover:after:bg-transparent"
             iconLeft={<XCloseIcon className="h-4 w-4" />}
             aria-label="close"
             onClick={handleClose}

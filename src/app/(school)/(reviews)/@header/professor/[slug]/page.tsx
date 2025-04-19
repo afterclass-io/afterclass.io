@@ -1,14 +1,12 @@
 import { api } from "@/common/tools/trpc/server";
-import { GraduationCapIcon } from "@/common/components/CustomIcon";
+import { GraduationCapIcon } from "@/common/components/icons";
 import { PageTitle } from "@/common/components/PageTitle";
 import { notFound } from "next/navigation";
 import { SchoolTag } from "@/common/components/SchoolTag";
 
-export default async function ProfessorHeader(
-  props: {
-    params: Promise<{ slug: string }>;
-  }
-) {
+export default async function ProfessorHeader(props: {
+  params: Promise<{ slug: string }>;
+}) {
   const params = await props.params;
   const professor = await api.professors.getBySlug({ slug: params.slug });
   if (!professor) {

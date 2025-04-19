@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback } from "@/common/components/Avatar";
 
 import { reviewItemTheme, type ReviewItemVariants } from "../ReviewItem.theme";
 import { ReviewCreatedAt } from "../ReviewCreatedAt";
-import { UserIcon } from "@/common/components/CustomIcon";
+import { UserIcon } from "@/common/components/icons";
 
 export type ReviewerGroupProps = ReviewItemVariants & {
   review: Review;

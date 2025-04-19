@@ -7,7 +7,7 @@ import {
   BooksIcon,
   GraduationCapIcon,
   PencilIcon,
-} from "@/common/components/CustomIcon";
+} from "@/common/components/icons";
 import { SearchResultList } from "../SearchResultList";
 import { SearchResultItem } from "../SearchResultItem";
 import { SearchResultDivider } from "../SearchResultDivider";

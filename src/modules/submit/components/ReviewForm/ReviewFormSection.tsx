@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 import { Combobox } from "@/modules/submit/components/Combobox";
-import { Button } from "@/common/components/Button";
+import { Button } from "@/common/components/button";
 import { RatingGroup } from "@/common/components/RatingGroup";
 import { TagToggleGroup } from "@/common/components/TagToggleGroup";
 import { Textarea } from "@/common/components/Textarea";

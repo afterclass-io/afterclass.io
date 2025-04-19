@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { StarLineAltIcon } from "@/common/components/CustomIcon";
+import { StarLineAltIcon } from "@/common/components/icons";
 
-import { Tag } from "./Tag";
+import { Tag } from "./tag";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {

@@ -7,11 +7,11 @@ import { api } from "@/common/tools/trpc/react";
 
 import { useEdgeConfigs } from "@/common/hooks";
 import { cn, formatNumberShortScale } from "@/common/functions";
-import { Button } from "@/common/components/Button";
+import { Button } from "@/common/components/button";
 import {
   ArrowFatLineUpIcon,
   ArrowFatLineUpFillIcon,
-} from "@/common/components/CustomIcon";
+} from "@/common/components/icons";
 
 export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
   const { data: session } = useSession();
@@ -109,7 +109,7 @@ export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
   return (
     <div
       className={cn(
-        "flex h-8 items-center gap-1 rounded-full border border-border-default bg-element-tertiary text-text-em-mid",
+        "border-border-default bg-element-tertiary text-text-em-mid flex h-8 items-center gap-1 rounded-full border",
         getUserVoteWeight() !== 0
           ? getUserVoteWeight() > 0
             ? "bg-primary-default text-text-on-primary"

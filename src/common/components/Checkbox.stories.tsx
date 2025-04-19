@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
-import { Checkbox, type CheckedState } from "./Checkbox";
+import { Checkbox, type CheckedState } from "./checkbox";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -29,7 +29,6 @@ const meta = {
     },
   },
   args: {
-    label: "default",
     asChild: false,
     disabled: false,
   },
@@ -48,13 +47,43 @@ export const VariantsOfDefaultCheckbox: Story = {
       useState<CheckedState>("indeterminate");
     return (
       <div className="flex flex-col gap-3">
-        <Checkbox label="default unchecked" />
-        <Checkbox label="default checked" defaultChecked />
-        <Checkbox
-          label="default indeterminate"
-          checked={checkedDisabled}
-          onCheckedChange={setCheckedDisabled}
-        />
+        <div className="items-top flex space-x-2">
+          <Checkbox id="terms1" />
+          <div className="grid gap-1.5 leading-none">
+            <label
+              htmlFor="terms1"
+              className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              default unchecked
+            </label>
+          </div>
+        </div>
+        <div className="items-top flex space-x-2">
+          <Checkbox id="terms1" defaultChecked />
+          <div className="grid gap-1.5 leading-none">
+            <label
+              htmlFor="terms1"
+              className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              default checked
+            </label>
+          </div>
+        </div>
+        <div className="items-top flex space-x-2">
+          <Checkbox
+            id="terms1"
+            checked={checkedDisabled}
+            onCheckedChange={setCheckedDisabled}
+          />
+          <div className="grid gap-1.5 leading-none">
+            <label
+              htmlFor="terms1"
+              className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              default indeterminate
+            </label>
+          </div>
+        </div>
       </div>
     );
   },
@@ -67,14 +96,44 @@ export const VariantsOfDisabledCheckbox: Story = {
       useState<CheckedState>("indeterminate");
     return (
       <div className="flex flex-col gap-3">
-        <Checkbox label="disabled unchecked" disabled={true} />
-        <Checkbox label="disabled checked" defaultChecked disabled={true} />
-        <Checkbox
-          label="disabled indeterminate"
-          checked={checkedDisabled}
-          onCheckedChange={setCheckedDisabled}
-          disabled={true}
-        />
+        <div className="items-top flex space-x-2">
+          <Checkbox id="terms1" disabled />
+          <div className="grid gap-1.5 leading-none">
+            <label
+              htmlFor="terms1"
+              className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              disabled unchecked
+            </label>
+          </div>
+        </div>
+        <div className="items-top flex space-x-2">
+          <Checkbox id="terms1" disabled defaultChecked />
+          <div className="grid gap-1.5 leading-none">
+            <label
+              htmlFor="terms1"
+              className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              disabled checked
+            </label>
+          </div>
+        </div>
+        <div className="items-top flex space-x-2">
+          <Checkbox
+            id="terms1"
+            checked={checkedDisabled}
+            onCheckedChange={setCheckedDisabled}
+            disabled
+          />
+          <div className="grid gap-1.5 leading-none">
+            <label
+              htmlFor="terms1"
+              className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              disabled indeterminate
+            </label>
+          </div>
+        </div>
       </div>
     );
   },
