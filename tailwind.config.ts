@@ -1,7 +1,7 @@
 // Note: cannot use alias like "@/" here
-import { themingSystemPlugin } from "./src/common/tools/tailwind/plugins/themingSystemPlugin";
+
 import tailwindCssAnimatePlugin from "tailwindcss-animate";
-import { fontFamily } from "tailwindcss/defaultTheme";
+import defaultTheme from "tailwindcss/defaultTheme";
 
 import { type Config } from "tailwindcss";
 import { withTV } from "tailwind-variants/transformer";
@@ -35,8 +35,12 @@ export default withTV({
         lg: "0px 8px 16px 0px rgba(0,0,0,0.08), 0px 0px 4px 0px rgba(0,0,0,0.04)",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "Inter", ...fontFamily.sans],
-        display: ["var(--font-poppins)", "Poppins", ...fontFamily.sans],
+        sans: ["var(--font-inter)", "Inter", ...defaultTheme.fontFamily.sans],
+        display: [
+          "var(--font-poppins)",
+          "Poppins",
+          ...defaultTheme.fontFamily.sans,
+        ],
       },
       // Exported from Figma
       borderRadius: {
@@ -68,5 +72,5 @@ export default withTV({
       },
     },
   },
-  plugins: [themingSystemPlugin, tailwindCssAnimatePlugin],
+  plugins: [tailwindCssAnimatePlugin],
 }) satisfies Config;
