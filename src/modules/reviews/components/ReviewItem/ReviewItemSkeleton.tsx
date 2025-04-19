@@ -1,5 +1,5 @@
 import { reviewItemTheme } from "./ReviewItem.theme";
-import { Skeleton } from "@/common/components/Skeleton";
+import { Skeleton } from "@/common/components/skeleton";
 
 export const ReviewItemSkeleton = () => {
   const { wrapper, body, headingContainer } = reviewItemTheme({

@@ -1,6 +1,6 @@
 import { informationCardTheme } from "./InformationCard.theme";
 import { ClipboardIcon } from "@/common/components/icons";
-import { Skeleton } from "@/common/components/Skeleton";
+import { Skeleton } from "@/common/components/skeleton";
 
 export const InformationCardSkeleton = () => {
   const { wrapper, header, icon, content, description } = informationCardTheme({

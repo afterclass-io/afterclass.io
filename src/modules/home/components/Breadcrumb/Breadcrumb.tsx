@@ -5,7 +5,7 @@ import { api } from "@/common/tools/trpc/react";
 import {
   Breadcrumb as BC,
   type BreadcrumbRootProps,
-} from "@/common/components/Breadcrumb";
+} from "@/common/components/breadcrumbs";
 
 interface BreadcrumbElement {
   label: string;

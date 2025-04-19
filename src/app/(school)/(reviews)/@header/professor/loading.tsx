@@ -1,7 +1,7 @@
 import { GraduationCapIcon } from "@/common/components/icons";
 import { PageTitle } from "@/common/components/PageTitle";
-import { Skeleton } from "@/common/components/Skeleton";
-import { Tag } from "@/common/components/Tag";
+import { Skeleton } from "@/common/components/skeleton";
+import { Tag } from "@/common/components/tag";
 
 export default function Loading() {
   return (

@@ -9,7 +9,7 @@ import {
   FormLabel,
   FormControl,
   FormField,
-} from "@/common/components/Form";
+} from "@/common/components/form";
 import {
   Select,
   SelectContent,

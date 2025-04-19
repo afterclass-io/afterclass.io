@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarGroupLabel,
   SidebarFooter,
-} from "@/common/components/Sidebar";
+} from "@/common/components/sidebars";
 import { Logo } from "@/common/components/Logo";
 import {
   ChartLineIcon,

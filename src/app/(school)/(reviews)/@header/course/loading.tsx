@@ -1,7 +1,7 @@
 import { BooksIcon } from "@/common/components/icons";
 import { PageTitle } from "@/common/components/PageTitle";
-import { Tag } from "@/common/components/Tag";
-import { Skeleton } from "@/common/components/Skeleton";
+import { Tag } from "@/common/components/tag";
+import { Skeleton } from "@/common/components/skeleton";
 
 export default function Loading() {
   return (

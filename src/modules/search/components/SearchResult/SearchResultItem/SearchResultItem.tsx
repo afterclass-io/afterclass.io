@@ -4,7 +4,7 @@ import {
   type FilterStat,
   FilterItemStats,
 } from "@/common/components/FilterToggleSection/FilterToggleSectionItem";
-import Heading from "@/common/components/Heading";
+import Heading from "@/common/components/heading";
 import { searchResultTheme } from "../SearchResult.theme";
 import { type UniversityAbbreviation } from "@prisma/client";
 import { useSession } from "next-auth/react";

@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/common/components/button";
 import { Input } from "@/common/components/i-nput";
-import { Form } from "@/common/components/Form";
+import { Form } from "@/common/components/form";
 import {
   LockIcon,
   EyeIcon,

@@ -1,5 +1,5 @@
 import { detailCardTheme } from "./DetailCard.theme";
-import { Skeleton } from "@/common/components/Skeleton";
+import { Skeleton } from "@/common/components/skeleton";
 
 export const DetailCardSkeleton = () => {
   const { wrapper, header, body } = detailCardTheme({

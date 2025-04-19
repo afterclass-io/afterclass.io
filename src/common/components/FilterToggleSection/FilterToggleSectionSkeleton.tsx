@@ -1,4 +1,4 @@
-import { Skeleton } from "@/common/components/Skeleton";
+import { Skeleton } from "@/common/components/skeleton";
 import { filterToggleSectionTheme } from "./FilterToggleSection.theme";
 
 export const FilterToggleSectionItemSkeleton = () => {

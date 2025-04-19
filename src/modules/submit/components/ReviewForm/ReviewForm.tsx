@@ -12,7 +12,7 @@ import {
   reviewFormSchema,
 } from "@/common/tools/zod/schemas";
 import { api } from "@/common/tools/trpc/react";
-import { Form } from "@/common/components/Form";
+import { Form } from "@/common/components/form";
 import { ReviewableEnum } from "@/modules/submit/types";
 import { reviewFormTheme } from "./ReviewForm.theme";
 import { SubmitButtonGroup } from "../SubmitButtonGroup";

@@ -3,7 +3,7 @@ import {
   type FilterToggleSectionVariants,
   filterToggleSectionTheme,
 } from "../FilterToggleSection.theme";
-import { Checkbox, type CheckedState } from "@/common/components/Checkbox";
+import { Checkbox, type CheckedState } from "@/common/components/checkbox";
 
 export type FilterStat = {
   icon: ReactNode;

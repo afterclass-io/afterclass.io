@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { BooksIcon, SchoolIcon } from "@/common/components/icons";
 
 import { PageTitle } from "./page-title";
-import { Tag } from "@/common/components/Tag";
+import { Tag } from "@/common/components/tag";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {

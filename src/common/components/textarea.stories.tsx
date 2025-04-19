@@ -26,6 +26,5 @@ export const DefaultSmall: Story = {
   ...Default,
   args: {
     ...Default.args,
-    size: "sm",
   },
 };

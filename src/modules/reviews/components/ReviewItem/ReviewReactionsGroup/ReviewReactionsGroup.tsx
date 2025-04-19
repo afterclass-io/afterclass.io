@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import { type ReviewReactionType as DbReviewReactionType } from "@prisma/client";
 
 import { api } from "@/common/tools/trpc/react";
-import { Tag } from "@/common/components/Tag";
+import { Tag } from "@/common/components/tag";
 import { ReviewReactionType } from "@/modules/reviews/types";
 import { useOptimisticReaction } from "@/modules/reviews/hooks";
 
@@ -64,7 +64,7 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
             key={reaction}
             clickable
             active={hasThisUserReacted}
-            className="flex min-w-fit select-none gap-1 px-2 py-0"
+            className="flex min-w-fit gap-1 px-2 py-0 select-none"
             asChild
           >
             <span className="text-lg">

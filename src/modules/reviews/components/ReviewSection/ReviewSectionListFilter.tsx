@@ -4,9 +4,9 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { z } from "zod";
 
-import { Tag } from "@/common/components/Tag";
+import { Tag } from "@/common/components/tag";
 import { RadioGroup, RadioGroupItem } from "@/common/components/RadioGroup";
-import { Label } from "@/common/components/Label";
+import { Label } from "@/common/components/label";
 import { ReviewsFilterFor } from "@/modules/reviews/types";
 import { useEdgeConfigs } from "@/common/hooks";
 

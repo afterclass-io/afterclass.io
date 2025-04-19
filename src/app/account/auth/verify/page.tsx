@@ -1,6 +1,6 @@
 import { AuthCard } from "@/modules/auth/components";
 import { Button } from "@/common/components/button";
-import Heading from "@/common/components/Heading";
+import Heading from "@/common/components/heading";
 import { notFound } from "next/navigation";
 import { env } from "@/env";
 import { Fragment } from "react";

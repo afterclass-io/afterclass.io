@@ -8,7 +8,7 @@ import { supabase } from "@/server/supabase";
 
 import { Input } from "@/common/components/i-nput";
 import { Button } from "@/common/components/button";
-import { Form } from "@/common/components/Form";
+import { Form } from "@/common/components/form";
 import { env } from "@/env";
 import { EnvelopeIcon } from "@/common/components/icons";
 import { useProgress } from "@/common/providers/ProgressProvider";

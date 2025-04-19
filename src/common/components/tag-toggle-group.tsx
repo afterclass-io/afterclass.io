@@ -2,7 +2,7 @@ import { forwardRef, type ComponentPropsWithoutRef } from "react";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import type { FieldValues, ControllerRenderProps } from "react-hook-form";
 
-import { Tag } from "@/common/components/Tag";
+import { Tag } from "@/common/components/tag";
 
 type OptionalControllerProps = {
   [K in keyof ControllerRenderProps<

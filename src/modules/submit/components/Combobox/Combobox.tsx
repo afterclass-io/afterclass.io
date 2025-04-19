@@ -3,8 +3,8 @@ import { type ElementRef, forwardRef, useState } from "react";
 
 import { CheckIcon, ChevronDownIcon } from "@/common/components/icons";
 import { Button } from "@/common/components/button";
-import { Command } from "@/common/components/Command";
-import { Popover } from "@/common/components/Popover";
+import { Command } from "@/common/components/command";
+import { Popover } from "@/common/components/popover";
 import { cn } from "@/common/functions/cn";
 import { comboboxTheme } from "./Combobox.theme";
 

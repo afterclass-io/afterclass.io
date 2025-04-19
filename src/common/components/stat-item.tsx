@@ -1,5 +1,5 @@
 import { LockIcon } from "@/common/components/icons";
-import { Skeleton } from "@/common/components/Skeleton";
+import { Skeleton } from "@/common/components/skeleton";
 
 export type StatItemProps = {
   label: string;

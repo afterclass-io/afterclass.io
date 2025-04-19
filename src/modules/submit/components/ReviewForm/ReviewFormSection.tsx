@@ -7,13 +7,13 @@ import { Combobox } from "@/modules/submit/components/Combobox";
 import { Button } from "@/common/components/button";
 import { RatingGroup } from "@/common/components/RatingGroup";
 import { TagToggleGroup } from "@/common/components/TagToggleGroup";
-import { Textarea } from "@/common/components/Textarea";
+import { Textarea } from "@/common/components/textarea";
 import { type ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
 import { ReviewableEnum, type ReviewableType } from "@/modules/submit/types";
 import { texts } from "@/modules/submit/constants";
 
 import { reviewFormTheme } from "./ReviewForm.theme";
-import { Form } from "@/common/components/Form";
+import { Form } from "@/common/components/form";
 
 export type ReviewFormSectionProps = {
   type: ReviewableType;

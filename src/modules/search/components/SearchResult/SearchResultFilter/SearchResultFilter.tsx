@@ -3,7 +3,7 @@
 import { ToggleGroup } from "@/common/components/ToggleGroup";
 import { toTitleCase } from "@/common/functions/toTitleCase";
 import { searchResultTheme } from "../SearchResult.theme";
-import { Label } from "@/common/components/Label";
+import { Label } from "@/common/components/label";
 
 export type FilterOption = {
   label: string;
