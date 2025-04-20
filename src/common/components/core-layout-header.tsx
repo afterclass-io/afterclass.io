@@ -5,7 +5,7 @@ import { Separator } from "@/common/components/separator";
 import { ThemeToggle } from "@/common/components/theme-toggle";
 import { AfterclassIcon, SearchIcon } from "@/common/components/icons";
 
-import { Breadcrumb } from "@/modules/home/components/Breadcrumb";
+import { HomeBreadcrumb } from "@/modules/home/components/Breadcrumb";
 import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
 
 import { CoreLayoutLoginButton } from "./core-layout-login-button";
@@ -16,14 +16,14 @@ import { UserProfile } from "@/common/components/user-profile";
 export const CoreLayoutHeader = async () => {
   const session = await auth();
   return (
-    <header className="border-border-default bg-bg-base sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b px-4">
+    <header className="border-border-default bg-background sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b px-4">
       <SidebarTrigger className="-ml-1" />
       <Separator
         orientation="vertical"
         className="bg-border-elevated mr-2 hidden h-4 md:block"
       />
       <div className="flex w-full items-center justify-between">
-        <Breadcrumb className="hidden md:block" />
+        <HomeBreadcrumb className="hidden md:block" />
         <ProgressLink
           href="/"
           variant="ghost"

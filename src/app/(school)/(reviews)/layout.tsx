@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 
-import { CtaCard } from "@/common/components/CtaCard";
+import { CtaButton } from "@/common/components/cta-button";
 import { EditIcon, GithubIcon, PlusIcon } from "@/common/components/icons";
 import { env } from "@/env";
 
@@ -26,22 +26,21 @@ export default function ReviewLayout({
       <div className="relative flex w-full justify-center gap-6">
         {reviews}
         <div className="sticky top-24 hidden h-fit max-w-min flex-col items-start gap-6 text-nowrap lg:flex">
-          <CtaCard
+          <CtaButton
             variant="secondary"
             ctaText="Write a review"
             href="/submit"
-            external
-            target="_self"
             iconLeft={<PlusIcon />}
             iconRight={<EditIcon opacity={0.1} />}
             data-test="cta-write-review"
             data-umami-event="cta-btn-write-review"
           />
-          <CtaCard
-            variant="tertiary"
+          <CtaButton
+            variant="outline"
             ctaText="Contribute to AfterClass OSS"
+            className="text-muted-foreground"
             href={env.NEXT_PUBLIC_AC_GITHUB_LINK}
-            external
+            target="_blank"
             iconLeft={<GithubIcon />}
             data-test="cta-contribute-oss"
             data-umami-event="cta-btn-contribute-oss"

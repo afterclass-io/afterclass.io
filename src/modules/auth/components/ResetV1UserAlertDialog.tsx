@@ -10,9 +10,9 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "@/common/components/AlertDialog";
+} from "@/common/components/alert-dialog";
 
-import { ProgressLink } from "@/common/components/Progress";
+import { ProgressLink } from "@/common/components/progress-link";
 import { env } from "@/env";
 
 export const ResetV1UserAlertDialog = () => (
@@ -31,9 +31,9 @@ export const ResetV1UserAlertDialog = () => (
               It looks like you are trying to reset your password for the&nbsp;
               <ProgressLink
                 href={env.NEXT_PUBLIC_OLD_SITE_URL}
+                target="_blank"
                 variant="link"
-                className="text-text-em-mid hover:text-secondary-default inline-flex h-fit p-0 pb-[1px] text-[length:inherit] underline md:h-fit md:p-0"
-                external
+                className="text-muted-foreground hover:text-secondary-default inline-flex h-fit p-0 pb-[1px] text-[length:inherit] underline md:h-fit md:p-0"
               >
                 old AfterClass website.
               </ProgressLink>
@@ -41,29 +41,31 @@ export const ResetV1UserAlertDialog = () => (
             <p>
               As we migrate to a new platform, users from the old AfterClass
               website can still
-              <b className="text-text-em-mid ml-1">
+              <b className="text-muted-foreground ml-1">
                 access the new AfterClass platform using the same email and
                 password.
               </b>
             </p>
             <p>
-              <b className="text-text-em-mid mr-1">NOTE:</b>
+              <b className="text-muted-foreground mr-1">NOTE:</b>
               Password resets will not work for accounts created on the old
               AfterClass website on the new AfterClass platform.
             </p>
             <p>
-              <b className="ml-r text-text-em-mid">Forgot your password?</b> No
-              worries! Just create a new account using the same email.
+              <b className="ml-r text-muted-foreground">
+                Forgot your password?
+              </b>{" "}
+              No worries! Just create a new account using the same email.
             </p>
           </div>
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter className="gap-2 sm:flex-col-reverse sm:space-x-0">
         <AlertDialogCancel asChild className="w-full">
-          <Button fullWidth>Create a new account</Button>
+          <Button>Create a new account</Button>
         </AlertDialogCancel>
         <AlertDialogAction asChild className="w-full">
-          <ProgressLink href="/account/auth/login" variant="tertiary" fullWidth>
+          <ProgressLink href="/account/auth/login" variant="outline">
             Login with old AfterClass account
           </ProgressLink>
         </AlertDialogAction>

@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { z } from "zod";
 
 import { Tag } from "@/common/components/tag";
-import { RadioGroup, RadioGroupItem } from "@/common/components/RadioGroup";
+import { RadioGroup, RadioGroupItem } from "@/common/components/radio-group";
 import { Label } from "@/common/components/label";
 import { ReviewsFilterFor } from "@/modules/reviews/types";
 import { useEdgeConfigs } from "@/common/hooks";

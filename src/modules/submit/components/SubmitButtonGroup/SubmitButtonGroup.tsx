@@ -5,13 +5,20 @@ import { useSession } from "next-auth/react";
 import { useFormContext } from "react-hook-form";
 
 import { Button } from "@/common/components/button";
-import { Select } from "@/common/components/Select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+} from "@/common/components/select";
 import { ChevronDownIcon } from "@/common/components/icons";
 import { type ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
 
 import { ReviewerEnum } from "@/modules/submit/types";
 
 import { submitButtonGroupTheme } from "./SubmitButtonGroup.theme";
+import { Loader2 } from "lucide-react";
 
 export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
   const [submitAs, setSubmitAs] = useState<ReviewerEnum>(ReviewerEnum.USER);
@@ -33,13 +40,16 @@ export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
   return (
     <div className={wrapper()}>
       <Button
-        variant="primary"
         type="submit"
         className={submitButton()}
-        loading={isLoading}
+        disabled={isLoading}
         data-test="review-submit-button"
       >
-        Submit {session && submitAsBtnText}
+        {isLoading ? (
+          <Loader2 className="animate-spin" />
+        ) : (
+          <>Submit {session && submitAsBtnText}</>
+        )}
       </Button>
       <Select
         onValueChange={(v) => {
@@ -49,31 +59,31 @@ export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
         }}
         defaultValue={submitAs}
       >
-        <Select.Trigger asChild className={selectTrigger()}>
-          <Button variant="primary" data-test="review-submit-select-trigger">
+        <SelectTrigger asChild className={selectTrigger()}>
+          <Button data-test="review-submit-select-trigger">
             <ChevronDownIcon className={selectIcon()} />
           </Button>
-        </Select.Trigger>
-        <Select.Content align="end" sideOffset={8}>
-          <Select.Group>
+        </SelectTrigger>
+        <SelectContent align="end" sideOffset={8}>
+          <SelectGroup>
             {session && (
-              <Select.Item
+              <SelectItem
                 className={selectItem()}
                 value={ReviewerEnum.USER}
                 data-test="review-submit-select-user"
               >
                 Submit as {session.user.email}
-              </Select.Item>
+              </SelectItem>
             )}
-            <Select.Item
+            <SelectItem
               className={selectItem()}
               value={ReviewerEnum.ANONYMOUS}
               data-test="review-submit-select-anon"
             >
               Submit Anonymously
-            </Select.Item>
-          </Select.Group>
-        </Select.Content>
+            </SelectItem>
+          </SelectGroup>
+        </SelectContent>
       </Select>
     </div>
   );

@@ -9,7 +9,7 @@ export const announcementsCarouselTheme = tv({
       "gap-6",
       "self-stretch overflow-x-auto",
     ],
-    heading: ["text-sm", "font-semibold", "text-text-em-high"],
+    heading: ["text-sm", "font-semibold", "text-accent-foreground"],
     divider: ["my-4"],
     card: [
       "relative",
@@ -36,7 +36,7 @@ export const announcementsCarouselTheme = tv({
       "left-6",
       "text-lg",
       "font-semibold",
-      "text-text-em-high",
+      "text-accent-foreground",
     ],
   },
 });

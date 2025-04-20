@@ -50,7 +50,7 @@ export const FilterToggleSectionItem = ({
         <div className={contentSubheaderWrapper()}>
           {sublabel && (
             <p
-              className={itemHeader({ class: "text-text-em-mid" })}
+              className={itemHeader({ class: "text-muted-foreground" })}
               data-test="filter-item-label"
             >
               {sublabel}

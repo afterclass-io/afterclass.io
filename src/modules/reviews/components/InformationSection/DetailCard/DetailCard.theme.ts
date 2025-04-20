@@ -10,15 +10,15 @@ export const detailCardTheme = tv(
         "h-full",
         "flex",
         "flex-col",
-        "bg-surface-base",
+        "bg-card",
         "rounded-2xl",
         "text-base",
       ],
-      header: ["font-semibold", "text-text-em-high"],
+      header: ["font-semibold", "text-accent-foreground"],
       body: ["flex", "flex-col"],
       content: ["flex", "font-medium"],
       field: ["text-text-em-low"],
-      value: ["text-text-em-mid"],
+      value: ["text-muted-foreground"],
     },
     variants: {
       size: {

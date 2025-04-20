@@ -7,7 +7,7 @@ export const reviewSectionTheme = tv(
       wrapper: [
         "flex",
         "flex-col",
-        "bg-surface-base",
+        "bg-card",
         "rounded-3xl",
         "w-fit",
         "flex-initial",

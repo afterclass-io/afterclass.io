@@ -1,4 +1,4 @@
-import Heading from "@/common/components/heading";
+import { Heading } from "@/common/components/heading";
 import { AnnouncementCard } from "./AnnouncementCard";
 import { announcementsCarouselTheme } from "./AnnouncementCarousel.theme";
 

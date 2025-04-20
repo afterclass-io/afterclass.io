@@ -1,5 +1,5 @@
 import { GraduationCapIcon } from "@/common/components/icons";
-import { PageTitle } from "@/common/components/PageTitle";
+import { PageTitle } from "@/common/components/page-title";
 import { Skeleton } from "@/common/components/skeleton";
 import { Tag } from "@/common/components/tag";
 

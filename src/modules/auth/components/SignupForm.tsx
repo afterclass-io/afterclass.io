@@ -7,8 +7,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { Button } from "@/common/components/button";
-import { Input } from "@/common/components/i-nput";
-import { Form } from "@/common/components/form";
+import { Input, InputIcon, InputRoot } from "@/common/components/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/common/components/form";
 import {
   LockIcon,
   EyeIcon,
@@ -18,7 +25,7 @@ import {
 import { signUpWithEmail } from "@/server/supabase";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import { useProgress } from "@/common/providers/ProgressProvider";
-import { ProgressLink } from "@/common/components/Progress";
+import { ProgressLink } from "@/common/components/progress-link";
 
 const signupFormInputsSchema = z
   .object({
@@ -83,43 +90,56 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
         className="flex w-full flex-col gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <Form.Field
+        <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label>School Email Address</Form.Label>
-              <Form.Control>
-                <Input
-                  {...field}
-                  disabled={form.formState.isSubmitting}
-                  contentLeft={<EnvelopeIcon size={24} />}
-                  placeholder="john.doe.2023@smu.edu.sg"
-                  autoComplete="on"
-                  tabIndex={1}
-                  data-test="email"
-                />
-              </Form.Control>
-              <Form.Message data-test="email-helper-text" />
-            </Form.Item>
+            <FormItem>
+              <FormLabel>School Email Address</FormLabel>
+              <FormControl>
+                <InputRoot>
+                  <InputIcon>
+                    <EnvelopeIcon />
+                  </InputIcon>
+                  <Input
+                    {...field}
+                    disabled={form.formState.isSubmitting}
+                    placeholder="john.doe.2023@smu.edu.sg"
+                    autoComplete="on"
+                    tabIndex={1}
+                    data-test="email"
+                  />
+                </InputRoot>
+              </FormControl>
+              <FormMessage data-test="email-helper-text" />
+            </FormItem>
           )}
         />
-        <Form.Field
+        <FormField
           control={form.control}
           name="password"
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label>New Password</Form.Label>
-              <Form.Control>
-                <Input
-                  {...field}
-                  disabled={form.formState.isSubmitting}
-                  contentLeft={<LockIcon size={24} />}
-                  contentRight={
+            <FormItem>
+              <FormLabel>New Password</FormLabel>
+              <FormControl>
+                <InputRoot>
+                  <InputIcon>
+                    <LockIcon />
+                  </InputIcon>
+                  <Input
+                    {...field}
+                    disabled={form.formState.isSubmitting}
+                    placeholder="Enter password"
+                    type={isPwdVisible ? "text" : "password"}
+                    autoComplete="on"
+                    tabIndex={2}
+                    data-test="password"
+                  />
+                  <InputIcon>
                     <button
                       type="button"
                       onClick={() => setIsPwdVisible(!isPwdVisible)}
-                      tabIndex={5}
+                      tabIndex={4}
                     >
                       {isPwdVisible ? (
                         <EyeSlashIcon size={24} />
@@ -127,30 +147,34 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
                         <EyeIcon size={24} />
                       )}
                     </button>
-                  }
-                  placeholder="Enter password"
-                  type={isPwdVisible ? "text" : "password"}
-                  autoComplete="on"
-                  tabIndex={2}
-                  data-test="password"
-                />
-              </Form.Control>
-              <Form.Message data-test="password-helper-text" />
-            </Form.Item>
+                  </InputIcon>
+                </InputRoot>
+              </FormControl>
+              <FormMessage data-test="password-helper-text" />
+            </FormItem>
           )}
         />
-        <Form.Field
+        <FormField
           control={form.control}
           name="confirmPassword"
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label>Confirm Password</Form.Label>
-              <Form.Control>
-                <Input
-                  {...field}
-                  disabled={form.formState.isSubmitting}
-                  contentLeft={<LockIcon size={24} />}
-                  contentRight={
+            <FormItem>
+              <FormLabel>Confirm Password</FormLabel>
+              <FormControl>
+                <InputRoot>
+                  <InputIcon>
+                    <LockIcon />
+                  </InputIcon>
+                  <Input
+                    {...field}
+                    disabled={form.formState.isSubmitting}
+                    placeholder="Confirm password"
+                    type={isCfmPwdVisible ? "text" : "password"}
+                    autoComplete="on"
+                    tabIndex={3}
+                    data-test="confirm-password"
+                  />
+                  <InputIcon>
                     <button
                       type="button"
                       onClick={() => setIsCfmPwdVisible(!isCfmPwdVisible)}
@@ -162,38 +186,30 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
                         <EyeIcon size={24} />
                       )}
                     </button>
-                  }
-                  placeholder="Confirm password"
-                  type={isCfmPwdVisible ? "text" : "password"}
-                  autoComplete="on"
-                  tabIndex={3}
-                  data-test="confirm-password"
-                />
-              </Form.Control>
-              <Form.Message data-test="confirm-password-helper-text" />
-            </Form.Item>
+                  </InputIcon>
+                </InputRoot>
+              </FormControl>
+              <FormMessage data-test="confirm-password-helper-text" />
+            </FormItem>
           )}
         />
         <div className="flex w-full flex-col items-start gap-2 self-stretch pt-3">
           <Button
-            fullWidth
             type="submit"
             disabled={form.formState.isSubmitting}
-            isResponsive
             tabIndex={4}
             data-test="submit"
           >
             {form.formState.isSubmitting ? "Creating an account..." : "Sign up"}
           </Button>
           <div className="flex items-center gap-1 self-stretch text-xs md:text-base">
-            <span className="text-text-em-mid text-center font-semibold">
+            <span className="text-muted-foreground text-center font-semibold">
               Already have an account?
             </span>
             <ProgressLink
               href="/account/auth/login"
               type="button"
               variant="link"
-              isResponsive
               tabIndex={7}
             >
               Login

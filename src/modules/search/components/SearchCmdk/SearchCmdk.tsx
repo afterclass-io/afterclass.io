@@ -10,16 +10,22 @@ import {
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { useRouter } from "next/navigation";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
-import { Modal } from "@/common/components/Modal";
+import {
+  Modal,
+  ModalClose,
+  ModalContent,
+  ModalTitle,
+  ModalTrigger,
+} from "@/common/components/modal";
 import { SearchIcon } from "@/common/components/icons";
-import { Input } from "@/common/components/i-nput";
+import { Input, InputIcon, InputRoot } from "@/common/components/input";
 import { useEdgeConfigs } from "@/common/hooks";
 
-import { searchCmdkTheme } from "./SearchCmdk.theme";
 import { SearchCmdkModalTrigger } from "./SearchCmdkModalTrigger";
 import { useProgress } from "@/common/providers/ProgressProvider";
-import { ProgressLink } from "@/common/components/Progress";
+import { ProgressLink } from "@/common/components/progress-link";
 
 const hasShownCmdkTooltipAtom = atomWithStorage(
   "hasShownCmdkTooltip",
@@ -90,18 +96,14 @@ export const SearchCmdk = ({
     });
   };
 
-  const { modal, searchIcon, content, contentForm, contentInput, closeBtn } =
-    searchCmdkTheme();
-
   return (
     <Modal
-      variant="command"
       open={open}
       onOpenChange={setOpen}
-      className={modal()}
       hasCloseButton={false}
+      className="w-[45rem]"
     >
-      <Modal.Trigger asChild={asChild}>
+      <ModalTrigger asChild>
         {asChild ? (
           children
         ) : (
@@ -110,33 +112,39 @@ export const SearchCmdk = ({
             onOpenChange={() => setIsTooltipOpen((prev) => !prev)}
           />
         )}
-      </Modal.Trigger>
-      <Modal.Content className={content()} data-test="search-cmdk-modal">
-        <form onSubmit={onSearchSubmit} className={contentForm()}>
+      </ModalTrigger>
+      <ModalContent
+        data-test="search-cmdk-modal"
+        className="mt-[10%] flex-row items-center gap-2 overflow-hidden border-none px-4 py-0 sm:py-0"
+      >
+        <VisuallyHidden asChild>
+          <ModalTitle>Search for Professors or Courses</ModalTitle>
+        </VisuallyHidden>
+        <form
+          onSubmit={onSearchSubmit}
+          className="flex h-full w-full items-center justify-between gap-4 p-2 pr-5"
+        >
+          <SearchIcon />
           <Input
+            className="flex h-11 w-full shrink items-center gap-2 border-none bg-transparent p-2 focus:outline-none focus-visible:ring-0"
             placeholder="Search for Professors or Courses..."
-            className={contentInput()}
             type="text"
-            contentLeft={<SearchIcon className={searchIcon()} />}
-            wrapperProps={{ className: "border-0 h-full w-full" }}
             onChange={(e) => setSearchTerm(e.target.value)}
             data-test="search-cmdk-input"
           />
         </form>
-        <Modal.Close asChild>
+        <ModalClose asChild>
           <ProgressLink
             href={getSearchDestination()}
-            variant="primary"
+            className="bg-primary hover:bg-primary/80 flex h-full items-center justify-center font-semibold transition-colors duration-200"
             aria-label="close"
-            size="sm"
-            className={closeBtn()}
             data-test="search-cmdk-submit"
             type="button"
           >
             Search
           </ProgressLink>
-        </Modal.Close>
-      </Modal.Content>
+        </ModalClose>
+      </ModalContent>
     </Modal>
   );
 };

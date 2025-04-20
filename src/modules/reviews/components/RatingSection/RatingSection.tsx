@@ -3,8 +3,8 @@ import {
   type RatingSectionVariants,
 } from "./RatingSection.theme";
 import { HeartIcon } from "@/common/components/icons";
-import { LockCtaOverlay } from "@/common/components/LockCtaOverlay";
-import { StatItem, type StatItemProps } from "@/common/components/StatItem";
+import { LockedOverlay } from "@/common/components/locked-overlay";
+import { StatItem, type StatItemProps } from "@/common/components/stat-item";
 
 export type RatingSectionProps = RatingSectionVariants & {
   headingRatingItem: StatItemProps;
@@ -23,7 +23,7 @@ export const RatingSection = ({
     });
   return (
     <div className={wrapper()} data-test="rating-section">
-      {isLocked && <LockCtaOverlay />}
+      {isLocked && <LockedOverlay />}
       <div className={headingContainer()}>
         <div className={headingRating()}>
           <HeartIcon className={icon()} />

@@ -1,5 +1,5 @@
 import { SearchIcon } from "@/common/components/icons";
-import { PageTitle } from "@/common/components/PageTitle";
+import { PageTitle } from "@/common/components/page-title";
 import { searchResultTheme } from "../SearchResult.theme";
 
 export const SearchResultTitle = ({

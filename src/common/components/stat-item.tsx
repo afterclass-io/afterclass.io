@@ -26,7 +26,7 @@ export const StatItem = ({
         <LockIcon className="h-7 w-7" />
       ) : (
         <div
-          className="text-text-em-high text-center text-xl font-semibold"
+          className="text-accent-foreground text-center text-xl font-semibold"
           data-test="stats-value"
         >
           {rating}
@@ -36,13 +36,19 @@ export const StatItem = ({
   );
 };
 
-const StatItemSkeleton = ({ layout = "horizontal", label }: StatItemProps) => {
+const StatItemSkeleton = ({
+  layout = "horizontal",
+  label,
+}: {
+  layout?: "horizontal" | "vertical";
+  label?: string;
+}) => {
   return (
     <div className="inline-flex flex-col items-start gap-2 rounded-none">
       <div className="text-text-em-low text-start text-sm font-medium">
         <span>{label ?? <Skeleton className="h-[20px] w-[130px]" />}</span>
       </div>
-      <div className="text-text-em-high text-center text-xl font-semibold">
+      <div className="text-accent-foreground text-center text-xl font-semibold">
         {layout === "horizontal" ? (
           <Skeleton className="h-[32px] w-[54.4px]" />
         ) : (

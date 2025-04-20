@@ -14,7 +14,7 @@ export const comboboxTheme = tv(
       "rounded-lg",
       "after:rounded-lg",
       "border-border-elevated",
-      "bg-surface-base",
+      "bg-card",
       "p-2",
       "flex-1",
       "text-left",

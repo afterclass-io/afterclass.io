@@ -13,7 +13,7 @@ export const filterToggleSectionTheme = tv(
         "flex-col",
         "items-start",
         "rounded-2xl",
-        "bg-surface-base",
+        "bg-card",
         "relative",
         "select-none",
       ],
@@ -28,7 +28,7 @@ export const filterToggleSectionTheme = tv(
         "cursor-pointer",
         "hover:bg-surface-elevated",
       ],
-      itemHeader: ["text-text-em-high"],
+      itemHeader: ["text-accent-foreground"],
       content: ["flex", "gap-2"],
       statWrapper: ["flex", "items-center"],
       contentSubheaderWrapper: [

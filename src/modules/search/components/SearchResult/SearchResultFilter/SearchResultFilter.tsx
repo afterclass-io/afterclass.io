@@ -1,6 +1,6 @@
 "use client";
 
-import { ToggleGroup } from "@/common/components/ToggleGroup";
+import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
 import { toTitleCase } from "@/common/functions/toTitleCase";
 import { searchResultTheme } from "../SearchResult.theme";
 import { Label } from "@/common/components/label";
@@ -41,13 +41,13 @@ export const SearchResultFilter = ({
             onValueChange={(v) => onValueChange(filterFor, v)}
           >
             {filterOptions.map((item, j) => (
-              <ToggleGroup.Item
+              <ToggleGroupItem
                 key={j}
                 value={item.value}
                 aria-label={`Toggle ${item.label}`}
               >
                 {item.label}
-              </ToggleGroup.Item>
+              </ToggleGroupItem>
             ))}
           </ToggleGroup>
         </div>

@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { ReviewModal } from "../ReviewItem/ReviewModal";
 import { api } from "@/common/tools/trpc/react";
-import { toast } from "@/common/components/Toast";
+import { toast } from "sonner";
 
 export const ReviewModalFocused = ({
   variant,

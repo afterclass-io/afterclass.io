@@ -6,7 +6,7 @@ export const searchResultTheme = tv(
     slots: {
       root: ["flex", "h-full", "flex-col", "gap-10"],
       title: ["truncate", "text-left"],
-      titleIcon: ["text-text-em-mid", "flex-none"],
+      titleIcon: ["text-muted-foreground", "flex-none"],
       content: ["flex", "h-full", "gap-12"],
       list: ["flex", "w-full", "flex-col", "items-start", "gap-4"],
       empty: [
@@ -16,7 +16,7 @@ export const searchResultTheme = tv(
         "flex",
         "flex-col",
         "rounded-lg",
-        "bg-surface-base",
+        "bg-card",
       ],
       item: [
         "flex",
@@ -27,7 +27,7 @@ export const searchResultTheme = tv(
         "rounded-lg",
         "border",
         "border-border-default",
-        "bg-surface-base",
+        "bg-card",
       ],
       itemHeadWrapper: ["flex", "items-center", "gap-4", "self-stretch"],
       itemContent: [
@@ -38,8 +38,8 @@ export const searchResultTheme = tv(
         "justify-center",
       ],
       itemSchoolIcon: ["mt-[2px]", "flex-none", "text-primary-default"],
-      itemArrow: ["flex-none", "text-text-em-mid"],
-      itemTitle: ["text-left", "tracking-tight", "text-text-em-mid"],
+      itemArrow: ["flex-none", "text-muted-foreground"],
+      itemTitle: ["text-left", "tracking-tight", "text-muted-foreground"],
       itemSubtitle: ["tracking-tight", "text-text-em-low", "font-normal"],
       itemStatsWrapper: ["flex", "items-center", "text-text-em-low"],
       divider: ["mx-4", "border-l-2", "border-border-default"],

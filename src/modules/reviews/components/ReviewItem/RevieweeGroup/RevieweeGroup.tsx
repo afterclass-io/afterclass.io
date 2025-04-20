@@ -1,7 +1,6 @@
 import { type Review } from "@/modules/reviews/types";
-import { profileTheme } from "@/common/components/Profile";
 import { SchoolIcon } from "@/common/components/icons";
-import { ProgressLink } from "@/common/components/Progress";
+import { ProgressLink } from "@/common/components/progress-link";
 
 import { RevieweeCourse } from "./RevieweeCourse";
 import { reviewItemTheme, type ReviewItemVariants } from "../ReviewItem.theme";
@@ -15,7 +14,6 @@ export const RevieweeGroup = ({ review, variant }: RevieweeGroupProps) => {
   const { revieweeGroup } = reviewItemTheme({
     size: { initial: "sm", md: "md" },
   });
-  const { name: profileNameClass } = profileTheme();
 
   const isShowProf =
     review.professorName && (variant === "home" || variant === "course");
@@ -29,9 +27,7 @@ export const RevieweeGroup = ({ review, variant }: RevieweeGroupProps) => {
         <ProgressLink
           variant="link"
           href={`/professor/${review.professorSlug}`}
-          className={profileNameClass({
-            class: "hover:text-primary-default hover:no-underline",
-          })}
+          className="hover:text-primary-default hover:no-underline"
           aria-label="professor"
           data-test="review-professor-label"
         >

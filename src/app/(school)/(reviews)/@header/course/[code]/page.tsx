@@ -1,8 +1,8 @@
 import { api } from "@/common/tools/trpc/server";
 import { notFound } from "next/navigation";
-import { PageTitle } from "@/common/components/PageTitle";
+import { PageTitle } from "@/common/components/page-title";
 import { BooksIcon } from "@/common/components/icons";
-import { SchoolTag } from "@/common/components/SchoolTag";
+import { SchoolTag } from "@/common/components/tag-school";
 
 export default async function CourseHeader(props: {
   params: Promise<{ code: string }>;

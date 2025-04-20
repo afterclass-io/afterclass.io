@@ -4,11 +4,11 @@ import {
   type FilterStat,
   FilterItemStats,
 } from "@/common/components/FilterToggleSection/FilterToggleSectionItem";
-import Heading from "@/common/components/heading";
+import { Heading } from "@/common/components/heading";
 import { searchResultTheme } from "../SearchResult.theme";
 import { type UniversityAbbreviation } from "@prisma/client";
 import { useSession } from "next-auth/react";
-import { ProgressLink } from "@/common/components/Progress";
+import { ProgressLink } from "@/common/components/progress-link";
 
 export const SearchResultItem = ({
   href,
@@ -35,12 +35,7 @@ export const SearchResultItem = ({
   } = searchResultTheme({ size: { initial: "sm", md: "md" } });
   const { data: session } = useSession();
   return (
-    <ProgressLink
-      href={href}
-      className={item()}
-      asChild
-      data-test="search-result"
-    >
+    <ProgressLink href={href} className={item()} data-test="search-result">
       <div className={itemContent()}>
         <div className={itemHeadWrapper()}>
           <SchoolIcon size={24} className={itemSchoolIcon()} school={school} />

@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useSession } from "next-auth/react";
 
-import { LockCtaOverlay } from "@/common/components/LockCtaOverlay";
+import { LockedOverlay } from "@/common/components/locked-overlay";
 import { type Review } from "@/modules/reviews/types";
 
 import { reviewItemTheme, type ReviewItemVariants } from "./ReviewItem.theme";
@@ -52,7 +52,7 @@ export const ReviewItem = ({
     >
       <ReviewHeader />
       <div className={body({ isLocked })}>
-        <LockCtaOverlay size="sm" ctaType="review" variant="border" />
+        <LockedOverlay ctaType="review" />
       </div>
     </div>
   ) : (

@@ -10,7 +10,7 @@ const meta = {
   tags: ["autodocs"],
   args: {},
   render: (args) => (
-    <div className="text-text-em-high relative flex h-16 w-full self-stretch overflow-hidden text-sm text-ellipsis">
+    <div className="text-accent-foreground relative flex h-16 w-full self-stretch overflow-hidden text-sm text-ellipsis">
       <LockedOverlay {...args} />
     </div>
   ),

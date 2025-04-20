@@ -101,7 +101,6 @@ export const FilterToggleSection = (props: FilterToggleSectionProps) => {
           variant="link"
           className="px-1 md:hidden"
           onClick={() => setIsFilterItemsExpanded(!isFilterItemsExpanded)}
-          isResponsive
         >
           {isFilterItemsExpanded ? "Show less" : "Show more"}
         </Button>

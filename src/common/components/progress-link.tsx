@@ -1,3 +1,4 @@
+"use client";
 import { type ComponentProps, startTransition } from "react";
 import Link from "next/link";
 import Router from "next/router";

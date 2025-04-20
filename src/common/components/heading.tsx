@@ -23,7 +23,7 @@ export const Heading = ({
       {...props}
       className={cn(
         className,
-        "text-text-em-high font-sans font-semibold tracking-tighter",
+        "text-accent-foreground font-sans font-semibold tracking-tighter",
       )}
     >
       {children}

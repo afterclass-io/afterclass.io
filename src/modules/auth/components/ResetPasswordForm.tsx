@@ -8,9 +8,16 @@ import { z } from "zod";
 
 import { supabase } from "@/server/supabase";
 
-import { Input } from "@/common/components/i-nput";
 import { Button } from "@/common/components/button";
-import { Form } from "@/common/components/form";
+import { Input, InputIcon, InputRoot } from "@/common/components/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/common/components/form";
 import { LockIcon, EyeIcon, EyeSlashIcon } from "@/common/components/icons";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
@@ -55,22 +62,30 @@ export const ResetPasswordForm = () => {
         className="flex w-full flex-col gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <Form.Field
+        <FormField
           control={form.control}
           name="password"
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label>New Password</Form.Label>
-              <Form.Control>
-                <Input
-                  {...field}
-                  disabled={form.formState.isSubmitting}
-                  contentLeft={<LockIcon size={24} />}
-                  contentRight={
+            <FormItem>
+              <FormLabel>New Password</FormLabel>
+              <FormControl>
+                <InputRoot>
+                  <InputIcon>
+                    <LockIcon />
+                  </InputIcon>
+                  <Input
+                    {...field}
+                    disabled={form.formState.isSubmitting}
+                    placeholder="Enter password"
+                    type={isPwdVisible ? "text" : "password"}
+                    autoComplete="on"
+                    tabIndex={1}
+                  />
+                  <InputIcon>
                     <button
                       type="button"
                       onClick={() => setIsPwdVisible(!isPwdVisible)}
-                      tabIndex={3}
+                      tabIndex={4}
                     >
                       {isPwdVisible ? (
                         <EyeSlashIcon size={24} />
@@ -78,20 +93,15 @@ export const ResetPasswordForm = () => {
                         <EyeIcon size={24} />
                       )}
                     </button>
-                  }
-                  placeholder="Enter password"
-                  type={isPwdVisible ? "text" : "password"}
-                  autoComplete="on"
-                  tabIndex={1}
-                />
-              </Form.Control>
-              <Form.Message />
-            </Form.Item>
+                  </InputIcon>
+                </InputRoot>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
         />
         <div className="flex w-full flex-col items-start gap-2 self-stretch pt-3">
           <Button
-            fullWidth
             type="submit"
             disabled={form.formState.isSubmitting}
             tabIndex={2}

@@ -1,7 +1,7 @@
 import { ReviewType, type UniversityAbbreviation } from "@prisma/client";
 
-import { SchoolTag } from "@/common/components/SchoolTag";
-import { PageTitle } from "@/common/components/PageTitle";
+import { SchoolTag } from "@/common/components/tag-school";
+import { PageTitle } from "@/common/components/page-title";
 import { api } from "@/common/tools/trpc/server";
 import { toTitleCase } from "@/common/functions/toTitleCase";
 import {

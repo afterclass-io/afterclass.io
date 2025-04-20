@@ -12,7 +12,7 @@ export const reviewFormTheme = tv(
         "items-start",
         "gap-6",
         "rounded-2xl",
-        "bg-surface-base",
+        "bg-card",
       ],
       header: ["flex", "justify-between", "self-stretch"],
       button: ["text-sm", "min-w-fit"],

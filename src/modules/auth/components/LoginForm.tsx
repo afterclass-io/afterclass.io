@@ -7,8 +7,15 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/common/components/button";
-import { Input } from "@/common/components/i-nput";
-import { Form } from "@/common/components/form";
+import { Input, InputIcon, InputRoot } from "@/common/components/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/common/components/form";
 import {
   LockIcon,
   EyeIcon,
@@ -18,8 +25,8 @@ import {
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 
 import { useProgress } from "@/common/providers/ProgressProvider";
-import { ProgressLink } from "@/common/components/Progress";
-import { toast } from "@/common/components/Toast";
+import { ProgressLink } from "@/common/components/progress-link";
+import { toast } from "sonner";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 import { env } from "@/env";
 
@@ -134,86 +141,92 @@ export const LoginForm = () => {
         className="flex w-full flex-col gap-4 md:gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <Form.Field
+        <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label>School Email Address</Form.Label>
-              <Form.Control>
-                <Input
-                  {...field}
-                  disabled={form.formState.isSubmitting}
-                  contentLeft={<EnvelopeIcon size={24} />}
-                  placeholder="john.doe.2023@smu.edu.sg"
-                  autoComplete="on"
-                  tabIndex={1}
-                  data-test="email"
-                />
-              </Form.Control>
-              <Form.Message data-test="email-helper-text" />
-            </Form.Item>
+            <FormItem>
+              <FormLabel>School Email Address</FormLabel>
+              <FormControl>
+                <InputRoot>
+                  <InputIcon>
+                    <EnvelopeIcon />
+                  </InputIcon>
+                  <Input
+                    {...field}
+                    disabled={form.formState.isSubmitting}
+                    placeholder="john.doe.2023@smu.edu.sg"
+                    autoComplete="on"
+                    tabIndex={1}
+                    data-test="email"
+                  />
+                </InputRoot>
+              </FormControl>
+              <FormMessage data-test="email-helper-text" />
+            </FormItem>
           )}
         />
-        <Form.Field
+        <FormField
           control={form.control}
           name="password"
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label className="flex items-center justify-between">
+            <FormItem>
+              <FormLabel className="flex items-center justify-between">
                 <span>Password</span>
                 <ProgressLink
                   href="/account/auth/forgot"
                   variant="link"
-                  isResponsive
                   className="md:text-sm"
                   tabIndex={5}
                   data-test="forget"
                 >
                   Forgot password?
                 </ProgressLink>
-              </Form.Label>
-              <Form.Control>
-                <Input
-                  {...field}
-                  disabled={form.formState.isSubmitting}
-                  contentLeft={<LockIcon size={24} />}
-                  contentRight={
-                    <button
-                      type="button"
-                      onClick={() => setIsPwdVisible(!isPwdVisible)}
-                      tabIndex={4}
-                    >
-                      {isPwdVisible ? (
-                        <EyeSlashIcon size={24} />
-                      ) : (
-                        <EyeIcon size={24} />
-                      )}
-                    </button>
-                  }
-                  placeholder="Enter password"
-                  type={isPwdVisible ? "text" : "password"}
-                  autoComplete="on"
-                  tabIndex={2}
-                  data-test="password"
-                />
-              </Form.Control>
-              <Form.Message data-test="password-helper-text" />
-            </Form.Item>
+              </FormLabel>
+              <FormControl>
+                <InputRoot>
+                  <InputIcon>
+                    <LockIcon />
+                  </InputIcon>
+                  <Input
+                    {...field}
+                    disabled={form.formState.isSubmitting}
+                    placeholder="Enter password"
+                    type={isPwdVisible ? "text" : "password"}
+                    autoComplete="on"
+                    tabIndex={2}
+                    data-test="password"
+                  />
+
+                  <button
+                    type="button"
+                    className="text-muted-foreground focus-visible:ring-ring absolute top-1/2 right-3 -translate-y-1/2 rounded-md p-1 transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                    onClick={() => setIsPwdVisible(!isPwdVisible)}
+                    tabIndex={4}
+                  >
+                    {isPwdVisible ? (
+                      <EyeSlashIcon size={24} />
+                    ) : (
+                      <EyeIcon size={24} />
+                    )}
+                  </button>
+                </InputRoot>
+              </FormControl>
+              <FormMessage data-test="password-helper-text" />
+            </FormItem>
           )}
         />
-        <div className="flex w-full flex-col items-start gap-2 self-stretch pt-3">
+        <div className="flex w-full flex-col items-start gap-4 self-stretch pt-3">
           <Button
-            fullWidth
             type="submit"
+            className="w-full"
             disabled={form.formState.isSubmitting}
-            isResponsive
             tabIndex={3}
             data-test="submit"
           >
             {form.formState.isSubmitting ? "Signing in..." : "Login"}
           </Button>
-          <div className="before:bg-border-default after:bg-border-default mx-auto my-4 flex w-full items-center justify-evenly before:mr-4 before:block before:h-px before:flex-grow after:ml-4 after:block after:h-px after:flex-grow">
+          <div className="before:bg-border after:bg-border mx-auto my-2 flex w-full items-center justify-evenly before:mr-4 before:block before:h-px before:flex-grow after:ml-4 after:block after:h-px after:flex-grow">
             OR
           </div>
 
@@ -246,14 +259,13 @@ export const LoginForm = () => {
           </GoogleSignInButton>
 
           <div className="flex items-center gap-1 self-stretch text-xs md:text-base">
-            <span className="text-text-em-mid text-center font-semibold">
+            <span className="text-muted-foreground text-center">
               {"Don't have an account?"}
             </span>
             <ProgressLink
               href="/account/auth/signup"
               type="button"
               variant="link"
-              isResponsive
               tabIndex={6}
               data-test="register"
             >

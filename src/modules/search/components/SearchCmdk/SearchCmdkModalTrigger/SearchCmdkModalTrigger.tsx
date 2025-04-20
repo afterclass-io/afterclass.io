@@ -1,8 +1,7 @@
 "use client";
 import { SearchIcon } from "@/common/components/icons";
-import { Input } from "@/common/components/i-nput";
+import { Input, InputIcon, InputRoot } from "@/common/components/input";
 
-import { searchCmdkTheme } from "../SearchCmdk.theme";
 import { SearchCmdkOnboardingTooltip } from "../SearchCmdkOnboardingTooltip";
 
 export const SearchCmdkModalTrigger = ({
@@ -12,20 +11,22 @@ export const SearchCmdkModalTrigger = ({
   open: boolean;
   onOpenChange: () => void;
 }) => {
-  const { triggerInput, kbd: kbdStyle, searchIcon } = searchCmdkTheme();
   return (
-    <Input
-      className={triggerInput()}
-      contentLeft={<SearchIcon size={16} className={searchIcon()} />}
-      contentRight={
-        <SearchCmdkOnboardingTooltip open={open} onOpenChange={onOpenChange}>
-          <kbd className={kbdStyle()}>/</kbd>
-        </SearchCmdkOnboardingTooltip>
-      }
-      value="Search"
-      size="sm"
-      readOnly
-      data-test="search-cmdk-trigger"
-    />
+    <InputRoot>
+      <InputIcon>
+        <SearchIcon />
+      </InputIcon>
+      <Input
+        value="Search"
+        readOnly
+        className="w-full text-left"
+        data-test="search-cmdk-trigger"
+      />
+      <SearchCmdkOnboardingTooltip open={open} onOpenChange={onOpenChange}>
+        <kbd className="border-border-default bg-surface-elevated text-text-em-low pointer-events-none absolute top-2 right-3 inline-flex h-5 items-center gap-1 rounded border px-1.5 text-xs font-medium opacity-100 select-none">
+          /
+        </kbd>
+      </SearchCmdkOnboardingTooltip>
+    </InputRoot>
   );
 };

@@ -1,8 +1,9 @@
 "use client"; // Error boundaries must be Client Components
 import { useEffect } from "react";
+import Link from "next/link";
 
-import { Button } from "@/common/components/button";
-import { NoticeCard } from "@/common/components/NoticeCard";
+import { Button, buttonVariants } from "@/common/components/button";
+
 import { env } from "@/env";
 
 export default function RootError({
@@ -18,26 +19,23 @@ export default function RootError({
   }, [error]);
   return (
     <div className="flex justify-center p-6 md:h-full md:items-center md:p-12">
-      <NoticeCard title="Something went wrong!" isError>
-        <Button
-          variant="link"
-          className="inline text-[length:inherit]"
-          onClick={() => reset()}
-        >
-          Click here to try again.
-        </Button>
-        <span className="inline">Otherwise, you can get help from us</span>
-        <Button
-          as="a"
-          href={env.NEXT_PUBLIC_AC_HELPDESK_LINK}
-          variant="link"
-          className="inline px-1 text-[length:inherit]"
-          external
-        >
-          @afterclass
-        </Button>
-        <span className="inline">on Telegram.</span>
-      </NoticeCard>
+      <Button
+        variant="link"
+        className="inline text-[length:inherit]"
+        onClick={() => reset()}
+      >
+        Click here to try again.
+      </Button>
+      <span className="inline">Otherwise, you can get help from us</span>
+      <Link
+        href={env.NEXT_PUBLIC_AC_HELPDESK_LINK}
+        className={buttonVariants({
+          className: "inline px-1 text-[length:inherit]",
+        })}
+      >
+        @afterclass
+      </Link>
+      <span className="inline">on Telegram.</span>
     </div>
   );
 }

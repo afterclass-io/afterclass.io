@@ -1,9 +1,10 @@
 import { AuthCard } from "@/modules/auth/components";
-import { Button } from "@/common/components/button";
-import Heading from "@/common/components/heading";
+import { buttonVariants } from "@/common/components/button";
+import { Heading } from "@/common/components/heading";
 import { notFound } from "next/navigation";
 import { env } from "@/env";
 import { Fragment } from "react";
+import Link from "next/link";
 
 export default async function Verify(props: {
   searchParams?: Promise<{
@@ -17,7 +18,7 @@ export default async function Verify(props: {
 
   return (
     <AuthCard title="You’re almost there!">
-      <div className="text-text-em-mid flex flex-col gap-6 pb-3 text-xs leading-relaxed md:text-base">
+      <div className="text-muted-foreground flex flex-col gap-6 pb-3 text-xs leading-relaxed md:text-base">
         <div>
           <p>We’ve sent a verification email to:</p>
           <Heading
@@ -39,7 +40,7 @@ export default async function Verify(props: {
         </p>
         <ol className="flex list-decimal flex-col gap-3 pl-5 md:pl-10">
           <li className="">
-            <b className="text-text-em-high">
+            <b className="text-accent-foreground">
               Ensure the correct email address was used to register with
               AfterClass.{" "}
             </b>
@@ -58,7 +59,7 @@ export default async function Verify(props: {
             </span>
           </li>
           <li>
-            <b className="text-text-em-high">
+            <b className="text-accent-foreground">
               Check the spam or junk folder in your email inbox.{" "}
             </b>
             Occasionally, your mail service provider might incorrectly flag the
@@ -66,25 +67,25 @@ export default async function Verify(props: {
             inbox.
           </li>
           <li>
-            <b className="text-text-em-high">
+            <b className="text-accent-foreground">
               <span>Add the </span>
-              <Button
-                as="a"
+              <a
                 href="mailto:noreply@afterclass.io"
-                variant="link"
-                className="inline text-xs md:text-base"
+                className={buttonVariants({
+                  className: "inline text-xs md:text-base",
+                })}
               >
                 noreply@afterclass.io
-              </Button>
+              </a>
               <span> email and the </span>
-              <Button
-                as="a"
+              <Link
                 href="https://afterclass.io"
-                variant="link"
-                className="inline text-xs md:text-base"
+                className={buttonVariants({
+                  className: "inline text-xs md:text-base",
+                })}
               >
                 afterclass.io
-              </Button>
+              </Link>
               <span> domain to your email service’s safe senders list. </span>
             </b>
             As an additional measure, adding AfterClass’s email and domain will
@@ -93,16 +94,17 @@ export default async function Verify(props: {
         </ol>
         <p>
           <span>Still having trouble? </span>
-          <b className="text-text-em-high">Reach out to us via Telegram </b>
-          <Button
-            as="a"
+          <b className="text-accent-foreground">
+            Reach out to us via Telegram{" "}
+          </b>
+          <Link
             href={env.NEXT_PUBLIC_AC_HELPDESK_LINK}
-            variant="link"
-            className="inline text-xs md:text-base"
-            external
+            className={buttonVariants({
+              className: "inline text-xs md:text-base",
+            })}
           >
             @afterclass
-          </Button>
+          </Link>
         </p>
       </div>
     </AuthCard>

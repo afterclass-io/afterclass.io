@@ -1,6 +1,6 @@
 import { type Review } from "@/modules/reviews/types";
-import { Profile } from "@/common/components/Profile";
-import { Avatar, AvatarFallback } from "@/common/components/Avatar";
+import { Profile } from "@/common/components/profile";
+import { Avatar, AvatarFallback } from "@/common/components/avatar";
 
 import { reviewItemTheme, type ReviewItemVariants } from "../ReviewItem.theme";
 import { ReviewCreatedAt } from "../ReviewCreatedAt";

@@ -19,7 +19,7 @@ export const LockedOverlay = ({ ctaType = "rating" }: LockedOverlayProps) => {
 
   return (
     <>
-      <div className="bg-surface-base absolute top-0 left-0 h-full w-full shrink-0 rounded-[inherit] opacity-95 backdrop-blur-[100px]"></div>
+      <div className="bg-card absolute top-0 left-0 h-full w-full shrink-0 rounded-[inherit] opacity-95 backdrop-blur-[100px]"></div>
       <ProgressLink
         href={{
           pathname: "/account/auth/login",

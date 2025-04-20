@@ -1,6 +1,6 @@
 import { ReviewType } from "@prisma/client";
 
-import Heading from "@/common/components/heading";
+import { Heading } from "@/common/components/heading";
 import {
   GraduationCapColoredIcon,
   BooksColoredIcon,

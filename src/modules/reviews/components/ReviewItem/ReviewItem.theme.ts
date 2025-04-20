@@ -43,7 +43,7 @@ export const reviewItemTheme = tv(
       timedelta: ["overflow-hidden", "text-sm", "text-ellipsis"],
       body: [
         "text-sm",
-        "text-text-em-high",
+        "text-accent-foreground",
         /**
          * TODO: replace when tailwind fixes behavior
          * see: https://github.com/tailwindlabs/tailwindcss/discussions/12127

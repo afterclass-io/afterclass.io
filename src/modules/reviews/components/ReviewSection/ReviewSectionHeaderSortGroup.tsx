@@ -5,7 +5,13 @@ import { z } from "zod";
 
 import { Button } from "@/common/components/button";
 import { ChevronDownIcon } from "@/common/components/icons";
-import { Select } from "@/common/components/Select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/common/components/select";
 import { cn, toTitleCase } from "@/common/functions";
 import { ReviewsSortBy } from "@/modules/reviews/types";
 import { useEdgeConfigs } from "@/common/hooks";
@@ -92,26 +98,25 @@ export const ReviewSectionHeaderSortGroup = () => {
           value={options.includes(sortBy) ? sortBy : undefined}
           onValueChange={handleSortChange}
         >
-          <Select.Trigger asChild>
+          <SelectTrigger asChild>
             <Button
               variant="ghost"
-              iconRight={<ChevronDownIcon />}
               className={cn(
-                "text-base md:text-lg",
-                "px-0 py-0 md:px-2",
+                "border-none bg-transparent px-0 py-0 text-base shadow-none md:px-2 md:text-lg dark:bg-transparent",
                 options.includes(sortBy) && "text-primary-default",
               )}
             >
-              <Select.Value placeholder="Top" />
+              <SelectValue placeholder="Top" />
+              <ChevronDownIcon />
             </Button>
-          </Select.Trigger>
-          <Select.Content>
+          </SelectTrigger>
+          <SelectContent>
             {options.map((option) => (
-              <Select.Item key={option} value={option}>
+              <SelectItem key={option} value={option}>
                 {formatSortByLabel(option)}
-              </Select.Item>
+              </SelectItem>
             ))}
-          </Select.Content>
+          </SelectContent>
         </Select>
       ))}
     </div>

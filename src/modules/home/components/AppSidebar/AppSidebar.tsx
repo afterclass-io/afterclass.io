@@ -11,8 +11,8 @@ import {
   SidebarMenuButton,
   SidebarGroupLabel,
   SidebarFooter,
-} from "@/common/components/sidebars";
-import { Logo } from "@/common/components/Logo";
+} from "@/common/components/sidebar";
+import { Logo } from "@/common/components/logo";
 import {
   ChartLineIcon,
   DealsIcon,
@@ -29,7 +29,7 @@ import Link from "next/link";
 import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
 import { usePathname } from "next/navigation";
 import { useIsMobile } from "@/common/hooks";
-import { ProgressLink } from "@/common/components/Progress";
+import { ProgressLink } from "@/common/components/progress-link";
 
 type SidebarItemType = {
   label: string;
@@ -124,11 +124,8 @@ export const AppSidebar = () => {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link
-                href="/"
-                className="text-primary-default flex items-center px-3"
-              >
+            <SidebarMenuButton size="lg" className="pt-2" asChild>
+              <Link href="/" className="text-primary flex items-center px-3">
                 <Logo />
               </Link>
             </SidebarMenuButton>
@@ -159,11 +156,10 @@ export const AppSidebar = () => {
                     <ProgressLink
                       variant="ghost"
                       href={item.href}
-                      iconLeft={item.icon}
-                      fullWidth
-                      className="text-text-em-mid hover:bg-border-elevated hover:text-text-em-high flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
+                      className="text-muted-foreground hover:bg-border-elevated hover:text-accent-foreground flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
                       data-test={`sidebar-${sidebarItemName(item.label)}`}
                     >
+                      {item.icon}
                       {item.label}
                     </ProgressLink>
                   </SidebarMenuButton>
@@ -199,13 +195,11 @@ export const AppSidebar = () => {
                                 ? (item.target ?? "_blank")
                                 : undefined
                             }
-                            external={item.external}
-                            iconLeft={item.icon}
-                            fullWidth
-                            className="text-text-em-mid hover:bg-border-elevated hover:text-text-em-high flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
+                            className="text-muted-foreground hover:bg-border-elevated hover:text-accent-foreground flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
                             data-umami-event={`sidebar-${sidebarItemName(item.label)}`}
                             data-test={`sidebar-${sidebarItemName(item.label)}`}
                           >
+                            {item.icon}
                             {item.label}
                           </ProgressLink>
                         </SidebarMenuButton>

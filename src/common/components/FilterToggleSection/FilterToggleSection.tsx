@@ -3,7 +3,7 @@ import {
   type FilterToggleSectionVariants,
   filterToggleSectionTheme,
 } from "./FilterToggleSection.theme";
-import { LockCtaOverlay } from "@/common/components/LockCtaOverlay";
+import { LockedOverlay } from "@/common/components/locked-overlay";
 import { FilterToggleSectionHeader } from "./FilterToggleSectionHeader";
 import { FilterToggleSectionItems } from "./FilterToggleSectionItems";
 import { FilterToggleSectionItem } from "./FilterToggleSectionItem";
@@ -23,7 +23,7 @@ export const FilterToggleSection = ({
   if (isLocked) {
     return (
       <div className={section()} {...props} data-test="filter-toggle-section">
-        <LockCtaOverlay />
+        <LockedOverlay />
         <div className="h-[150px] w-full"></div>
       </div>
     );

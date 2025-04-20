@@ -4,7 +4,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/common/components/Avatar";
+} from "@/common/components/avatar";
 import { useState } from "react";
 import { ExitIcon } from "@radix-ui/react-icons";
 import { signOut } from "next-auth/react";
@@ -31,7 +31,7 @@ export const UserProfile = ({ user }: Props) => {
         onClick={() => toggleModal()}
         className="hidden items-center gap-2 md:flex"
       >
-        <div className="overflow-hidden text-ellipsis text-sm text-text-em-mid">
+        <div className="text-muted-foreground overflow-hidden text-sm text-ellipsis">
           <Avatar className="h-6 w-6">
             <AvatarImage src={user.photoUrl ?? undefined} alt={user.email} />
             <AvatarFallback className="text-center text-xs">
@@ -43,7 +43,7 @@ export const UserProfile = ({ user }: Props) => {
       </button>
 
       {isModalOpen && (
-        <div className="absolute top-16 w-[200px] rounded-lg border border-border-elevated bg-bg-base p-4">
+        <div className="border-border-elevated bg-bg-base absolute top-16 w-[200px] rounded-lg border p-4">
           <button
             className="flex w-full flex-row items-center justify-between"
             onClick={() => handleLogout()}

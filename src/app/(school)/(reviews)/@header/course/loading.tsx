@@ -1,5 +1,5 @@
 import { BooksIcon } from "@/common/components/icons";
-import { PageTitle } from "@/common/components/PageTitle";
+import { PageTitle } from "@/common/components/page-title";
 import { Tag } from "@/common/components/tag";
 import { Skeleton } from "@/common/components/skeleton";
 

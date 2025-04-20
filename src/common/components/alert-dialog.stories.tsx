@@ -73,7 +73,7 @@ export const ResetV1UserAlertDialog: Story = {
                 <ProgressLink
                   href={env.NEXT_PUBLIC_OLD_SITE_URL}
                   target="_blank"
-                  className="text-text-em-mid hover:text-secondary-default inline-flex h-fit p-0 pb-[1px] text-[length:inherit] underline md:h-fit md:p-0"
+                  className="text-muted-foreground hover:text-secondary-default inline-flex h-fit p-0 pb-[1px] text-[length:inherit] underline md:h-fit md:p-0"
                 >
                   old AfterClass website.
                 </ProgressLink>
@@ -81,18 +81,20 @@ export const ResetV1UserAlertDialog: Story = {
               <p>
                 As we migrate to a new platform, users from the old AfterClass
                 website can still
-                <b className="text-text-em-mid ml-1">
+                <b className="text-muted-foreground ml-1">
                   access the new AfterClass platform using the same email and
                   password.
                 </b>
               </p>
               <p>
-                <b className="text-text-em-mid mr-1">NOTE:</b>
+                <b className="text-muted-foreground mr-1">NOTE:</b>
                 Password resets will not work for accounts created on the old
                 AfterClass website on the new AfterClass platform.
               </p>
               <p>
-                <b className="ml-r text-text-em-mid">Forgot your password?</b>{" "}
+                <b className="ml-r text-muted-foreground">
+                  Forgot your password?
+                </b>{" "}
                 No worries! Just create a new account using the same email.
               </p>
             </div>

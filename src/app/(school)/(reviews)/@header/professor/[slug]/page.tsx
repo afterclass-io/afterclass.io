@@ -1,8 +1,8 @@
 import { api } from "@/common/tools/trpc/server";
 import { GraduationCapIcon } from "@/common/components/icons";
-import { PageTitle } from "@/common/components/PageTitle";
+import { PageTitle } from "@/common/components/page-title";
 import { notFound } from "next/navigation";
-import { SchoolTag } from "@/common/components/SchoolTag";
+import { SchoolTag } from "@/common/components/tag-school";
 
 export default async function ProfessorHeader(props: {
   params: Promise<{ slug: string }>;

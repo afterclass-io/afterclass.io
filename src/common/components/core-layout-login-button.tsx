@@ -11,7 +11,6 @@ export const CoreLayoutLoginButton = () => {
         pathname: "/account/auth/login",
         query: { callbackUrl: pathname },
       }}
-      variant="secondary"
       data-test="login"
     >
       Login

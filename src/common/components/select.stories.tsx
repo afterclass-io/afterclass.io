@@ -18,8 +18,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "./Select";
-import { ChevronDownIcon } from "@/common/components/icons";
+} from "./select";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {

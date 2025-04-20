@@ -11,7 +11,7 @@ export const ratingSectionTheme = tv(
         "relative",
         "items-start",
         "rounded-2xl",
-        "bg-surface-base",
+        "bg-card",
         "w-full",
         "p-6",
         "gap-5",

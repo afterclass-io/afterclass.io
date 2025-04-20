@@ -3,9 +3,17 @@ import { ReviewEventType, ReviewType } from "@prisma/client";
 
 import { api } from "@/common/tools/trpc/react";
 
-import { Modal } from "@/common/components/Modal";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/common/components/dialog";
 import { type Review } from "@/modules/reviews/types";
-import { ProgressLink } from "@/common/components/Progress";
+import { ProgressLink } from "@/common/components/progress-link";
 
 import { reviewItemTheme } from "../ReviewItem.theme";
 import { RevieweeGroup } from "../RevieweeGroup";
@@ -48,8 +56,7 @@ export const ReviewModal = ({
   const { mutate: track } = api.reviewEvents.track.useMutation();
 
   return (
-    <Modal
-      overflow="inside"
+    <Dialog
       defaultOpen={defaultOpen}
       onOpenChange={(isOpen) => {
         if (!isOpen) return;
@@ -62,20 +69,20 @@ export const ReviewModal = ({
       }}
     >
       {children && (
-        <Modal.Trigger asChild className={modalTrigger()}>
+        <DialogTrigger asChild className={modalTrigger()}>
           {children}
-        </Modal.Trigger>
+        </DialogTrigger>
       )}
-      <Modal.Content
+      <DialogContent
         className={modalContent()}
         onOpenAutoFocus={(e) => e.preventDefault()}
         data-test="review-modal"
       >
-        <Modal.Header>
-          <Modal.Title>
+        <DialogHeader>
+          <DialogTitle>
             <RevieweeGroup review={review} variant={variant} />
-          </Modal.Title>
-          <Modal.Description asChild>
+          </DialogTitle>
+          <DialogDescription asChild>
             <div className="space-y-4">
               <div className={usernameAndTimestampWrapper()}>
                 <span className={username()}>{review.username}</span>
@@ -85,12 +92,10 @@ export const ReviewModal = ({
               <ReviewRatingGroup rating={review.rating} />
               <ReviewLabelGroup reviewLabels={review.reviewLabels} />
             </div>
-          </Modal.Description>
-        </Modal.Header>
-        <Modal.Body>
-          <div className={modalBody()}>{review.body}</div>
-        </Modal.Body>
-        <Modal.Footer>
+          </DialogDescription>
+        </DialogHeader>
+        <div className={modalBody()}>{review.body}</div>
+        <DialogFooter>
           <ReviewFooter review={review} />
           {/* seeMore link only shown when user is from default reviews page, hidden when in professor/course pages */}
           {seeMore && (
@@ -105,8 +110,8 @@ export const ReviewModal = ({
               </ProgressLink>
             </>
           )}
-        </Modal.Footer>
-      </Modal.Content>
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };

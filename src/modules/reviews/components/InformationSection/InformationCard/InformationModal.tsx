@@ -1,6 +1,11 @@
 "use client";
 
-import { Modal } from "@/common/components/Modal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTrigger,
+} from "@/common/components/dialog";
 import { informationCardTheme } from "./InformationCard.theme";
 import { Button } from "@/common/components/button";
 
@@ -15,29 +20,25 @@ export const InformationModal = ({
     size: { initial: "sm", md: "md" },
   });
   return (
-    <Modal overflow="inside">
-      <Modal.Trigger asChild>
+    <Dialog>
+      <DialogTrigger asChild>
         <Button
           variant="link"
-          isResponsive
           className="md:px-0"
           data-test="course-information-modal-trigger"
         >
           See more
         </Button>
-      </Modal.Trigger>
-      <Modal.Content
+      </DialogTrigger>
+      <DialogContent
         className="max-w-prose"
         data-test="course-information-modal"
       >
-        <Modal.Header className={modalHeader()}>{courseName}</Modal.Header>
-        <Modal.Body
-          className={modalBody()}
-          data-test="course-information-modal-body"
-        >
+        <DialogHeader className={modalHeader()}>{courseName}</DialogHeader>
+        <div className={modalBody()} data-test="course-information-modal-body">
           {courseDesc}
-        </Modal.Body>
-      </Modal.Content>
-    </Modal>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

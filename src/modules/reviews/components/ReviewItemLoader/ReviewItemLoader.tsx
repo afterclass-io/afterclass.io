@@ -7,7 +7,7 @@ import { z } from "zod";
 
 import { api } from "@/common/tools/trpc/react";
 import { AfterclassIcon } from "@/common/components/icons";
-import { ProgressLink } from "@/common/components/Progress";
+import { ProgressLink } from "@/common/components/progress-link";
 
 import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
 import { ReviewItem, ReviewItemSkeleton } from "../ReviewItem";
@@ -39,10 +39,10 @@ export type ReviewItemLoaderProps =
 
 const NoReviewCtaNote = () => (
   <div
-    className="text-text-em-mid w-full space-x-1 px-3 py-6 text-center text-xs md:text-sm"
+    className="text-muted-foreground w-full space-x-1 px-3 py-6 text-center text-xs md:text-sm"
     data-variant="full-width"
   >
-    <span className="text-text-em-high mr-1">Oh no!</span>
+    <span className="text-accent-foreground mr-1">Oh no!</span>
     <span>Looks like no one has reviewed yet.</span>
     <br />
     <span>Help us out by</span>
@@ -50,7 +50,6 @@ const NoReviewCtaNote = () => (
       href="/submit"
       variant="link"
       className="inline-flex h-fit pb-[1px] text-xs md:h-fit md:p-0 md:text-sm"
-      isResponsive
       data-umami-event="review-empty-cta"
     >
       writing one
