@@ -101,12 +101,6 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       href: "/statistics",
       external: true,
     },
-    {
-      label: "Themes",
-      icon: <DealsIcon size={16} />,
-      href: "/themes",
-      devOnly: true,
-    },
   ],
 };
 
