@@ -8,7 +8,13 @@ export const SchoolTag = ({
   school: SchoolIconProps["school"];
 }) => {
   return (
-    <Tag contentLeft={<SchoolIcon school={school} />} className="py-1">
+    <Tag
+      avatar={<SchoolIcon school={school} />}
+      className="border-default rounded-full"
+      label={school}
+      deletable={false}
+      variant="outline"
+    >
       <Heading as="h5">{school}</Heading>
     </Tag>
   );

@@ -11,9 +11,10 @@ const meta = {
   // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
   tags: ["autodocs"],
   args: {
-    contentLeft: <StarLineAltIcon />,
-    contentRight: <StarLineAltIcon />,
+    label: "Default",
     children: "Default",
+    variant: "soft",
+    color: "default",
   },
   // More on argTypes: https://storybook.js.org/docs/api/argtypes
 } satisfies Meta<typeof Tag>;
@@ -27,7 +28,9 @@ export const Active: Story = {
   ...Default,
   args: {
     ...Default.args,
-    active: true,
+    onClick: () => {
+      console.log("Clicked");
+    },
   },
 };
 
@@ -35,6 +38,50 @@ export const Clickable: Story = {
   ...Default,
   args: {
     ...Default.args,
-    clickable: true,
+    label: "Clickable",
+    children: "Clickable",
+    onClick: () => {
+      console.log("Clicked");
+    },
+  },
+};
+
+export const NoDelete: Story = {
+  ...Default,
+  args: {
+    ...Default.args,
+    label: "No Delete",
+    children: "No Delete",
+    deletable: false,
+  },
+};
+
+export const WithIcon: Story = {
+  ...Default,
+  args: {
+    ...Default.args,
+    label: "With Icon",
+    children: "With Icon",
+    avatar: <StarLineAltIcon size={16} />,
+  },
+};
+
+export const CustomDeleteIcon: Story = {
+  ...Default,
+  args: {
+    ...Default.args,
+    label: "Custom Delete Icon",
+    children: "Custom Delete Icon",
+    deleteIcon: <StarLineAltIcon size={16} />,
+  },
+};
+
+export const Rounded: Story = {
+  ...Default,
+  args: {
+    ...Default.args,
+    label: "Custom Size",
+    children: "Custom Size",
+    className: "rounded-full",
   },
 };
