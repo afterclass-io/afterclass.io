@@ -37,7 +37,13 @@ export const filterToggleSectionTheme = tv(
         "justify-between",
         "self-stretch",
       ],
-      stat: ["flex", "items-center", "gap-1", "text-sm", "text-text-em-low"],
+      stat: [
+        "flex",
+        "items-center",
+        "gap-1",
+        "text-sm",
+        "text-muted-foreground",
+      ],
     },
     variants: {
       selected: {
@@ -69,7 +75,7 @@ export const filterToggleSectionTheme = tv(
           content: ["items-center", "justify-between", "flex-[1_0_0]"],
           headerIcon: ["w-4", "h-4"],
           itemHeader: [
-            "text-xs",
+            "",
             "line-clamp-1",
             "text-ellipsis",
             "font-medium",
