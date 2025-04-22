@@ -9,7 +9,12 @@ import { z } from "zod";
 import { supabase } from "@/server/supabase";
 
 import { Button } from "@/common/components/button";
-import { Input, InputIcon, InputRoot } from "@/common/components/input";
+import {
+  PasswordInputRoot,
+  PasswordInputAdornment,
+  PasswordInputAdornmentToggle,
+  PasswordInput,
+} from "@/common/components/input-password";
 import {
   Form,
   FormControl,
@@ -18,7 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/common/components/form";
-import { LockIcon, EyeIcon, EyeSlashIcon } from "@/common/components/icons";
+import { LockIcon } from "@/common/components/icons";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
 const resetPwdFormInputsSchema = z.object({
@@ -31,7 +36,6 @@ type ResetPwdFormInputs = z.infer<typeof resetPwdFormInputsSchema>;
 export const ResetPasswordForm = () => {
   const router = useRouter();
   const progress = useProgress();
-  const [isPwdVisible, setIsPwdVisible] = useState(false);
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState(false);
   const form = useForm<ResetPwdFormInputs>({
     resolver: zodResolver(resetPwdFormInputsSchema),
@@ -69,32 +73,19 @@ export const ResetPasswordForm = () => {
             <FormItem>
               <FormLabel>New Password</FormLabel>
               <FormControl>
-                <InputRoot>
-                  <InputIcon>
+                <PasswordInputRoot>
+                  <PasswordInputAdornment>
                     <LockIcon />
-                  </InputIcon>
-                  <Input
+                  </PasswordInputAdornment>
+                  <PasswordInput
                     {...field}
                     disabled={form.formState.isSubmitting}
                     placeholder="Enter password"
-                    type={isPwdVisible ? "text" : "password"}
                     autoComplete="on"
                     tabIndex={1}
                   />
-                  <InputIcon>
-                    <button
-                      type="button"
-                      onClick={() => setIsPwdVisible(!isPwdVisible)}
-                      tabIndex={4}
-                    >
-                      {isPwdVisible ? (
-                        <EyeSlashIcon size={24} />
-                      ) : (
-                        <EyeIcon size={24} />
-                      )}
-                    </button>
-                  </InputIcon>
-                </InputRoot>
+                  <PasswordInputAdornmentToggle />
+                </PasswordInputRoot>
               </FormControl>
               <FormMessage />
             </FormItem>

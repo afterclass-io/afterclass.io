@@ -1,8 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Input, InputIcon, InputRoot } from "./input";
+import {
+  InputRoot,
+  InputAdornment,
+  InputControl,
+  Input,
+  InputAdornmentButton,
+} from "@/common/components/input";
 import { StarLineAltIcon } from "@/common/components/icons";
 import { Label } from "@/common/components/label";
-import { Button } from "@/common/components/button";
+import { Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/common/components/tooltip";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -43,8 +54,26 @@ export const WithLabel: Story = {
 export const WithButton: Story = {
   render: () => (
     <div className="flex w-full max-w-sm items-center space-x-2">
-      <Input type="email" placeholder="Email" />
-      <Button type="submit">Subscribe</Button>
+      <InputRoot>
+        <InputAdornment>
+          <StarLineAltIcon />
+        </InputAdornment>
+        <InputControl>
+          <Input type="email" placeholder="Email" />
+        </InputControl>
+        <Tooltip>
+          <InputAdornment>
+            <InputAdornmentButton asChild>
+              <TooltipTrigger>
+                <Info />
+              </TooltipTrigger>
+            </InputAdornmentButton>
+          </InputAdornment>
+          <TooltipContent>
+            <p>Email must be unique.</p>
+          </TooltipContent>
+        </Tooltip>
+      </InputRoot>
     </div>
   ),
 };
@@ -53,10 +82,12 @@ export const WithIcon: Story = {
   render: () => (
     <div className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-white">
       <InputRoot>
-        <InputIcon>
+        <InputAdornment>
           <StarLineAltIcon />
-        </InputIcon>
-        <Input />
+        </InputAdornment>
+        <InputControl>
+          <Input type="email" placeholder="Email" />
+        </InputControl>
       </InputRoot>
     </div>
   ),
@@ -65,8 +96,14 @@ export const WithIcon: Story = {
 export const File: Story = {
   render: () => (
     <div className="grid w-full max-w-sm items-center gap-1.5">
-      <Label htmlFor="picture">Picture</Label>
-      <Input id="picture" type="file" />
+      <InputRoot>
+        <InputAdornment>
+          <StarLineAltIcon />
+        </InputAdornment>
+        <InputControl>
+          <Input type="email" />
+        </InputControl>
+      </InputRoot>
     </div>
   ),
 };

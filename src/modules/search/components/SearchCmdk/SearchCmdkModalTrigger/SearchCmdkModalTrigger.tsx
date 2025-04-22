@@ -1,8 +1,9 @@
 "use client";
 import { SearchIcon } from "@/common/components/icons";
-import { Input, InputIcon, InputRoot } from "@/common/components/input";
 
 import { SearchCmdkOnboardingTooltip } from "../SearchCmdkOnboardingTooltip";
+import { Input, InputRoot, InputAdornment } from "@/common/components/input";
+import { Kbd } from "@/common/components/kbd";
 
 export const SearchCmdkModalTrigger = ({
   open,
@@ -13,20 +14,20 @@ export const SearchCmdkModalTrigger = ({
 }) => {
   return (
     <InputRoot>
-      <InputIcon>
+      <InputAdornment>
         <SearchIcon />
-      </InputIcon>
+      </InputAdornment>
       <Input
         value="Search"
         readOnly
         className="w-full text-left"
         data-test="search-cmdk-trigger"
       />
-      <SearchCmdkOnboardingTooltip open={open} onOpenChange={onOpenChange}>
-        <kbd className="border-border-default bg-surface-elevated text-text-em-low pointer-events-none absolute top-2 right-3 inline-flex h-5 items-center gap-1 rounded border px-1.5 text-xs font-medium opacity-100 select-none">
-          /
-        </kbd>
-      </SearchCmdkOnboardingTooltip>
+      <InputAdornment>
+        <SearchCmdkOnboardingTooltip open={open} onOpenChange={onOpenChange}>
+          <Kbd variant="outline">/</Kbd>
+        </SearchCmdkOnboardingTooltip>
+      </InputAdornment>
     </InputRoot>
   );
 };

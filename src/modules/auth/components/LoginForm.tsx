@@ -1,5 +1,5 @@
 "use client";
-import { startTransition, useEffect, useState, Fragment } from "react";
+import { startTransition, useEffect, Fragment } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -7,7 +7,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/common/components/button";
-import { Input, InputIcon, InputRoot } from "@/common/components/input";
 import {
   Form,
   FormControl,
@@ -16,14 +15,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/common/components/form";
+import { LockIcon, EnvelopeIcon } from "@/common/components/icons";
 import {
-  LockIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  EnvelopeIcon,
-} from "@/common/components/icons";
+  PasswordInputRoot,
+  PasswordInputAdornment,
+  PasswordInputAdornmentToggle,
+  PasswordInput,
+} from "@/common/components/input-password";
+import {
+  InputRoot,
+  InputAdornment,
+  InputControl,
+  Input,
+} from "@/common/components/input";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
-
 import { useProgress } from "@/common/providers/ProgressProvider";
 import { ProgressLink } from "@/common/components/progress-link";
 import { toast } from "sonner";
@@ -40,7 +45,6 @@ type LoginFormInputs = z.infer<typeof loginFormInputsSchema>;
 
 export const LoginForm = () => {
   const searchParams = useSearchParams();
-  const [isPwdVisible, setIsPwdVisible] = useState(false);
   const router = useRouter();
   const progress = useProgress();
 
@@ -149,17 +153,19 @@ export const LoginForm = () => {
               <FormLabel>School Email Address</FormLabel>
               <FormControl>
                 <InputRoot>
-                  <InputIcon>
+                  <InputAdornment>
                     <EnvelopeIcon />
-                  </InputIcon>
-                  <Input
-                    {...field}
-                    disabled={form.formState.isSubmitting}
-                    placeholder="john.doe.2023@smu.edu.sg"
-                    autoComplete="on"
-                    tabIndex={1}
-                    data-test="email"
-                  />
+                  </InputAdornment>
+                  <InputControl>
+                    <Input
+                      {...field}
+                      disabled={form.formState.isSubmitting}
+                      placeholder="john.doe.2023@smu.edu.sg"
+                      autoComplete="on"
+                      tabIndex={1}
+                      data-test="email"
+                    />
+                  </InputControl>
                 </InputRoot>
               </FormControl>
               <FormMessage data-test="email-helper-text" />
@@ -184,33 +190,20 @@ export const LoginForm = () => {
                 </ProgressLink>
               </FormLabel>
               <FormControl>
-                <InputRoot>
-                  <InputIcon>
+                <PasswordInputRoot>
+                  <PasswordInputAdornment>
                     <LockIcon />
-                  </InputIcon>
-                  <Input
+                  </PasswordInputAdornment>
+                  <PasswordInput
                     {...field}
                     disabled={form.formState.isSubmitting}
                     placeholder="Enter password"
-                    type={isPwdVisible ? "text" : "password"}
                     autoComplete="on"
                     tabIndex={2}
                     data-test="password"
                   />
-
-                  <button
-                    type="button"
-                    className="text-muted-foreground focus-visible:ring-ring absolute top-1/2 right-3 -translate-y-1/2 rounded-md p-1 transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
-                    onClick={() => setIsPwdVisible(!isPwdVisible)}
-                    tabIndex={4}
-                  >
-                    {isPwdVisible ? (
-                      <EyeSlashIcon size={24} />
-                    ) : (
-                      <EyeIcon size={24} />
-                    )}
-                  </button>
-                </InputRoot>
+                  <PasswordInputAdornmentToggle />
+                </PasswordInputRoot>
               </FormControl>
               <FormMessage data-test="password-helper-text" />
             </FormItem>

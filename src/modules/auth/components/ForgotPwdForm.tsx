@@ -6,7 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { supabase } from "@/server/supabase";
 
-import { Input, InputIcon, InputRoot } from "@/common/components/input";
+import {
+  InputRoot,
+  InputAdornment,
+  InputControl,
+  Input,
+} from "@/common/components/input";
 import { Button } from "@/common/components/button";
 import {
   Form,
@@ -92,17 +97,19 @@ export const ForgotPwdForm = () => {
               <FormLabel>School Email Address</FormLabel>
               <FormControl>
                 <InputRoot>
-                  <InputIcon>
+                  <InputAdornment>
                     <EnvelopeIcon />
-                  </InputIcon>
-                  <Input
-                    {...field}
-                    disabled={form.formState.isSubmitting}
-                    placeholder="john.doe.2023@smu.edu.sg"
-                    autoComplete="on"
-                    tabIndex={1}
-                    data-test="email"
-                  />
+                  </InputAdornment>
+                  <InputControl>
+                    <Input
+                      {...field}
+                      disabled={form.formState.isSubmitting}
+                      placeholder="john.doe.2023@smu.edu.sg"
+                      autoComplete="on"
+                      tabIndex={1}
+                      data-test="email"
+                    />
+                  </InputControl>
                 </InputRoot>
               </FormControl>
               <FormMessage data-test="email-helper-text" />

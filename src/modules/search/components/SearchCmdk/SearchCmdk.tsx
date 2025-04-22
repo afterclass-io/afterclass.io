@@ -20,12 +20,17 @@ import {
   ModalTrigger,
 } from "@/common/components/modal";
 import { SearchIcon } from "@/common/components/icons";
-import { Input, InputIcon, InputRoot } from "@/common/components/input";
 import { useEdgeConfigs } from "@/common/hooks";
-
 import { SearchCmdkModalTrigger } from "./SearchCmdkModalTrigger";
 import { useProgress } from "@/common/providers/ProgressProvider";
 import { ProgressLink } from "@/common/components/progress-link";
+import {
+  Input,
+  InputAdornment,
+  InputAdornmentButton,
+  InputControl,
+  InputRoot,
+} from "@/common/components/input";
 
 const hasShownCmdkTooltipAtom = atomWithStorage(
   "hasShownCmdkTooltip",
@@ -120,30 +125,33 @@ export const SearchCmdk = ({
         <VisuallyHidden asChild>
           <ModalTitle>Search for Professors or Courses</ModalTitle>
         </VisuallyHidden>
-        <form
-          onSubmit={onSearchSubmit}
-          className="flex h-full w-full items-center justify-between gap-4 p-2 pr-5"
-        >
-          <SearchIcon />
-          <Input
-            className="flex h-11 w-full shrink items-center gap-2 border-none bg-transparent p-2 focus:outline-none focus-visible:ring-0"
-            placeholder="Search for Professors or Courses..."
-            type="text"
-            onChange={(e) => setSearchTerm(e.target.value)}
-            data-test="search-cmdk-input"
-          />
+        <form onSubmit={onSearchSubmit} className="h-full w-full">
+          <InputRoot className="h-16 w-full items-center gap-4 border-none bg-transparent shadow-none focus-within:ring-0">
+            <InputAdornment className="[&_svg]:size-5">
+              <SearchIcon />
+            </InputAdornment>
+            <InputControl>
+              <Input
+                placeholder="Search for Professors or Courses..."
+                type="text"
+                onChange={(e) => setSearchTerm(e.target.value)}
+                data-test="search-cmdk-input"
+              />
+            </InputControl>
+            <InputAdornmentButton variant="default" asChild>
+              <ModalClose asChild>
+                <ProgressLink
+                  href={getSearchDestination()}
+                  className="flex size-fit items-center justify-center font-semibold"
+                  aria-label="close"
+                  data-test="search-cmdk-submit"
+                >
+                  Search
+                </ProgressLink>
+              </ModalClose>
+            </InputAdornmentButton>
+          </InputRoot>
         </form>
-        <ModalClose asChild>
-          <ProgressLink
-            href={getSearchDestination()}
-            className="bg-primary hover:bg-primary/80 flex h-full items-center justify-center font-semibold transition-colors duration-200"
-            aria-label="close"
-            data-test="search-cmdk-submit"
-            type="button"
-          >
-            Search
-          </ProgressLink>
-        </ModalClose>
       </ModalContent>
     </Modal>
   );

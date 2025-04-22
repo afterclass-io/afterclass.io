@@ -1,13 +1,24 @@
 "use client";
 
-import { startTransition, useState } from "react";
+import { startTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { Button } from "@/common/components/button";
-import { Input, InputIcon, InputRoot } from "@/common/components/input";
+import {
+  PasswordInputRoot,
+  PasswordInputAdornment,
+  PasswordInputAdornmentToggle,
+  PasswordInput,
+} from "@/common/components/input-password";
+import {
+  InputRoot,
+  InputAdornment,
+  InputControl,
+  Input,
+} from "@/common/components/input";
 import {
   Form,
   FormControl,
@@ -16,12 +27,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/common/components/form";
-import {
-  LockIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  EnvelopeIcon,
-} from "@/common/components/icons";
+import { LockIcon, EnvelopeIcon } from "@/common/components/icons";
 import { signUpWithEmail } from "@/server/supabase";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import { useProgress } from "@/common/providers/ProgressProvider";
@@ -50,8 +56,6 @@ type SignupFormInputs = z.infer<typeof signupFormInputsSchema>;
 export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
   const router = useRouter();
   const progress = useProgress();
-  const [isPwdVisible, setIsPwdVisible] = useState(false);
-  const [isCfmPwdVisible, setIsCfmPwdVisible] = useState(false);
 
   const form = useForm<SignupFormInputs>({
     resolver: zodResolver(signupFormInputsSchema),
@@ -98,17 +102,19 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
               <FormLabel>School Email Address</FormLabel>
               <FormControl>
                 <InputRoot>
-                  <InputIcon>
+                  <InputAdornment>
                     <EnvelopeIcon />
-                  </InputIcon>
-                  <Input
-                    {...field}
-                    disabled={form.formState.isSubmitting}
-                    placeholder="john.doe.2023@smu.edu.sg"
-                    autoComplete="on"
-                    tabIndex={1}
-                    data-test="email"
-                  />
+                  </InputAdornment>
+                  <InputControl>
+                    <Input
+                      {...field}
+                      disabled={form.formState.isSubmitting}
+                      placeholder="john.doe.2023@smu.edu.sg"
+                      autoComplete="on"
+                      tabIndex={1}
+                      data-test="email"
+                    />
+                  </InputControl>
                 </InputRoot>
               </FormControl>
               <FormMessage data-test="email-helper-text" />
@@ -122,33 +128,20 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
             <FormItem>
               <FormLabel>New Password</FormLabel>
               <FormControl>
-                <InputRoot>
-                  <InputIcon>
+                <PasswordInputRoot>
+                  <PasswordInputAdornment>
                     <LockIcon />
-                  </InputIcon>
-                  <Input
+                  </PasswordInputAdornment>
+                  <PasswordInput
                     {...field}
                     disabled={form.formState.isSubmitting}
                     placeholder="Enter password"
-                    type={isPwdVisible ? "text" : "password"}
                     autoComplete="on"
                     tabIndex={2}
                     data-test="password"
                   />
-                  <InputIcon>
-                    <button
-                      type="button"
-                      onClick={() => setIsPwdVisible(!isPwdVisible)}
-                      tabIndex={4}
-                    >
-                      {isPwdVisible ? (
-                        <EyeSlashIcon size={24} />
-                      ) : (
-                        <EyeIcon size={24} />
-                      )}
-                    </button>
-                  </InputIcon>
-                </InputRoot>
+                  <PasswordInputAdornmentToggle />
+                </PasswordInputRoot>
               </FormControl>
               <FormMessage data-test="password-helper-text" />
             </FormItem>
@@ -161,33 +154,20 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
             <FormItem>
               <FormLabel>Confirm Password</FormLabel>
               <FormControl>
-                <InputRoot>
-                  <InputIcon>
+                <PasswordInputRoot>
+                  <PasswordInputAdornment>
                     <LockIcon />
-                  </InputIcon>
-                  <Input
+                  </PasswordInputAdornment>
+                  <PasswordInput
                     {...field}
                     disabled={form.formState.isSubmitting}
                     placeholder="Confirm password"
-                    type={isCfmPwdVisible ? "text" : "password"}
                     autoComplete="on"
                     tabIndex={3}
                     data-test="confirm-password"
                   />
-                  <InputIcon>
-                    <button
-                      type="button"
-                      onClick={() => setIsCfmPwdVisible(!isCfmPwdVisible)}
-                      tabIndex={6}
-                    >
-                      {isCfmPwdVisible ? (
-                        <EyeSlashIcon size={24} />
-                      ) : (
-                        <EyeIcon size={24} />
-                      )}
-                    </button>
-                  </InputIcon>
-                </InputRoot>
+                  <PasswordInputAdornmentToggle />
+                </PasswordInputRoot>
               </FormControl>
               <FormMessage data-test="confirm-password-helper-text" />
             </FormItem>
