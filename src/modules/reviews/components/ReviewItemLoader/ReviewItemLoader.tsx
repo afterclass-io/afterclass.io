@@ -38,24 +38,41 @@ export type ReviewItemLoaderProps =
   | ReviewItemLoaderProfessorProps;
 
 const NoReviewCtaNote = () => (
-  <div
-    className="text-muted-foreground w-full space-x-1 px-3 py-6 text-center md:text-sm"
-    data-variant="full-width"
-  >
-    <span className="text-accent-foreground mr-1">Oh no!</span>
-    <span>Looks like no one has reviewed yet.</span>
-    <br />
-    <span>Help us out by</span>
-    <ProgressLink
-      href="/submit"
-      variant="link"
-      className="inline-flex h-fit pb-[1px] md:h-fit md:p-0 md:text-sm"
-      data-umami-event="review-empty-cta"
-    >
-      writing one
-    </ProgressLink>
-    <span>today 🙈</span>
-  </div>
+  <>
+    {/* weird hack to make sure the review section width is consistent */}
+    <div aria-hidden className="h-0 max-w-prose text-transparent select-none">
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+
+    <div className="text-muted-foreground w-full space-x-1 px-3 py-10 text-center md:py-12 md:text-sm">
+      <span className="text-accent-foreground mr-1">Oh no!</span>
+      <span>Looks like no one has reviewed yet.</span>
+      <br />
+      <span>Help us out by</span>
+      <ProgressLink
+        href="/submit"
+        variant="link"
+        className="inline-flex h-fit pb-[1px] md:h-fit md:p-0 md:text-sm"
+        data-umami-event="review-empty-cta"
+      >
+        writing one
+      </ProgressLink>
+      <span>today 🙈</span>
+    </div>
+  </>
 );
 
 export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
