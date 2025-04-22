@@ -10,6 +10,7 @@ import { ReviewBody } from "./ReviewBody";
 import { ReviewFooter } from "./ReviewFooter";
 import { ReviewModal } from "./ReviewModal";
 import { ReviewItemViewEventTracker } from "../ReviewItemViewEventTracker";
+import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
 
 export type ReviewItemProps = {
   review: Review;
@@ -46,15 +47,7 @@ export const ReviewItem = ({
       <ReviewHeader />
       <div className="text-muted-foreground relative line-clamp-5 flex h-16 w-full self-stretch overflow-hidden rounded-sm border wrap-anywhere md:line-clamp-3 md:text-sm">
         <LockedOverlay ctaType="review" />
-        <span aria-hidden className="text-transparent select-none">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat. Duis aute irure dolor in
-          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-          culpa qui officia deserunt mollit anim id est laborum
-        </span>
+        <FullWidthEnforcer />
       </div>
     </div>
   ) : (
