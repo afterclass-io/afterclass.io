@@ -7,7 +7,7 @@ export const Profile = ({ icon, name }: ProfileProps) => {
   return (
     <div className="flex items-center gap-2 text-center">
       {icon}
-      <div className="text-text-em-low overflow-hidden text-sm text-ellipsis">
+      <div className="text-muted-foreground overflow-hidden text-sm text-ellipsis">
         {name}
       </div>
     </div>

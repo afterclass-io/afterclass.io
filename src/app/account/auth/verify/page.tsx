@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { env } from "@/env";
 import { Fragment } from "react";
 import Link from "next/link";
+import { cn } from "@/common/functions";
 
 export default async function Verify(props: {
   searchParams?: Promise<{
@@ -18,7 +19,7 @@ export default async function Verify(props: {
 
   return (
     <AuthCard title="You’re almost there!">
-      <div className="text-muted-foreground flex flex-col gap-6 pb-3 text-xs leading-relaxed md:text-base">
+      <div className="text-muted-foreground flex flex-col gap-6 pb-3 leading-relaxed md:text-base">
         <div>
           <p>We’ve sent a verification email to:</p>
           <Heading
@@ -50,7 +51,7 @@ export default async function Verify(props: {
                 <Fragment key={i}>
                   {i > 0 && <span className="mr-1">,</span>}
                   <span className="before:bg-border-primary/15 relative inline-block before:absolute before:-inset-[2px] before:my-[5px]">
-                    <pre className="text-text-on-secondary inline">
+                    <pre className="text-secondary-foreground inline">
                       {domain}
                     </pre>
                   </span>
@@ -71,18 +72,22 @@ export default async function Verify(props: {
               <span>Add the </span>
               <a
                 href="mailto:noreply@afterclass.io"
-                className={buttonVariants({
-                  className: "inline text-xs md:text-base",
-                })}
+                className={cn(
+                  buttonVariants({
+                    className: "inline md:text-base",
+                  }),
+                )}
               >
                 noreply@afterclass.io
               </a>
               <span> email and the </span>
               <Link
                 href="https://afterclass.io"
-                className={buttonVariants({
-                  className: "inline text-xs md:text-base",
-                })}
+                className={cn(
+                  buttonVariants({
+                    className: "inline md:text-base",
+                  }),
+                )}
               >
                 afterclass.io
               </Link>
@@ -99,9 +104,11 @@ export default async function Verify(props: {
           </b>
           <Link
             href={env.NEXT_PUBLIC_AC_HELPDESK_LINK}
-            className={buttonVariants({
-              className: "inline text-xs md:text-base",
-            })}
+            className={cn(
+              buttonVariants({
+                className: "inline md:text-base",
+              }),
+            )}
           >
             @afterclass
           </Link>

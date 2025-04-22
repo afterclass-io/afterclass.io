@@ -17,7 +17,7 @@ export default async function CourseHeader(props: {
   return (
     <div className="w-full">
       <PageTitle
-        contentLeft={<BooksIcon className="text-text-em-low h-9 w-9" />}
+        contentLeft={<BooksIcon className="text-muted-foreground h-9 w-9" />}
         contentRight={<SchoolTag school={course.belongToUniversity.abbrv} />}
       >
         {course.name}

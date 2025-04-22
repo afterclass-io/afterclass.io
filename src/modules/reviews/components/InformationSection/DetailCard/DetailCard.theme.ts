@@ -17,7 +17,7 @@ export const detailCardTheme = tv(
       header: ["font-semibold", "text-accent-foreground"],
       body: ["flex", "flex-col"],
       content: ["flex", "font-medium"],
-      field: ["text-text-em-low"],
+      field: ["text-muted-foreground"],
       value: ["text-muted-foreground"],
     },
     variants: {

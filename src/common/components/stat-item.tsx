@@ -19,7 +19,7 @@ export const StatItem = ({
       className="inline-flex flex-col items-start gap-2 rounded-none"
       data-test={`rating-${label.replace(/\s/g, "-").toLowerCase()}`}
     >
-      <div className="text-text-em-low text-start text-sm font-medium">
+      <div className="text-muted-foreground text-start text-sm font-medium">
         <span>{label}</span>
       </div>
       {isLocked ? (
@@ -45,7 +45,7 @@ const StatItemSkeleton = ({
 }) => {
   return (
     <div className="inline-flex flex-col items-start gap-2 rounded-none">
-      <div className="text-text-em-low text-start text-sm font-medium">
+      <div className="text-muted-foreground text-start text-sm font-medium">
         <span>{label ?? <Skeleton className="h-[20px] w-[130px]" />}</span>
       </div>
       <div className="text-accent-foreground text-center text-xl font-semibold">

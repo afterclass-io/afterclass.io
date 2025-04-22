@@ -98,10 +98,10 @@ const ModalContent = ({
 
   return (
     <Portal>
-      <Overlay className="bg-background/80 fixed inset-0 z-50 flex justify-center overflow-y-auto p-4 backdrop-blur-sm data-[state=closed]:animate-[dialog-overlay-hide_200ms] data-[state=open]:animate-[dialog-overlay-show_200ms] sm:p-10">
+      <Overlay className="bg-background/60 fixed inset-0 z-50 flex justify-center overflow-y-auto p-4 backdrop-blur-sm data-[state=closed]:animate-[dialog-overlay-hide_200ms] data-[state=open]:animate-[dialog-overlay-show_200ms] sm:p-10">
         <Content
           className={cn(
-            "border-border-default bg-card text-muted-foreground relative m-auto flex h-fit w-full max-w-[720px] flex-col overflow-hidden rounded-[20px] border py-5 shadow-lg sm:py-8",
+            "border-border-default bg-accent text-muted-foreground relative m-auto flex h-fit w-full max-w-[720px] flex-col overflow-hidden rounded-[20px] border py-5 shadow-lg sm:py-8",
             className,
           )}
           {...preventClickOutsideToCloseProps}

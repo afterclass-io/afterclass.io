@@ -5,7 +5,7 @@ export const searchCmdkTheme = tv(
   {
     slots: {
       modal: ["w-[45rem]"],
-      triggerInput: ["w-full", "text-left", "text-text-em-low"],
+      triggerInput: ["w-full", "text-left", "text-muted-foreground"],
       kbd: [],
       content: [
         "mt-[10%]",
@@ -35,7 +35,7 @@ export const searchCmdkTheme = tv(
         "p-2",
         "focus:outline-none",
       ],
-      searchIcon: ["ml-1", "mr-2", "text-text-em-low"],
+      searchIcon: ["ml-1", "mr-2", "text-muted-foreground"],
       closeBtn: ["z-1", "mr-5"],
     },
   },

@@ -72,7 +72,7 @@ export const LoginForm = () => {
                 <Fragment key={i}>
                   {i > 0 && <span className="mr-1">,</span>}
                   <span className="before:bg-border-primary/15 relative inline-block before:absolute before:-inset-[2px] before:my-[5px]">
-                    <pre className="text-text-on-secondary inline">
+                    <pre className="text-secondary-foreground inline">
                       {domain}
                     </pre>
                   </span>
@@ -251,7 +251,7 @@ export const LoginForm = () => {
             Sign in with Google
           </GoogleSignInButton>
 
-          <div className="flex items-center gap-1 self-stretch text-xs md:text-base">
+          <div className="flex items-center gap-1 self-stretch md:text-base">
             <span className="text-muted-foreground text-center">
               {"Don't have an account?"}
             </span>

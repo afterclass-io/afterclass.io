@@ -34,7 +34,7 @@ export const UserProfile = ({ user }: Props) => {
         <div className="text-muted-foreground overflow-hidden text-sm text-ellipsis">
           <Avatar className="h-6 w-6">
             <AvatarImage src={user.photoUrl ?? undefined} alt={user.email} />
-            <AvatarFallback className="text-center text-xs">
+            <AvatarFallback className="text-center">
               {user.email[0]?.toUpperCase() ?? "U"}
             </AvatarFallback>
           </Avatar>

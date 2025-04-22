@@ -127,7 +127,7 @@ export const ForgotPwdForm = () => {
               ? "Confirming your email..."
               : "Reset my password"}
           </Button>
-          <div className="flex items-center gap-1 self-stretch text-xs md:text-base">
+          <div className="flex items-center gap-1 self-stretch md:text-base">
             <span className="text-muted-foreground text-center font-semibold">
               {"Don't have an account?"}
             </span>

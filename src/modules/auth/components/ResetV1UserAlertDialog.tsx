@@ -26,7 +26,7 @@ export const ResetV1UserAlertDialog = () => (
           <div>⚠️ Important Notice ⚠️</div>
         </AlertDialogTitle>
         <AlertDialogDescription>
-          <div className="space-y-2 text-xs md:space-y-4 md:text-base">
+          <div className="space-y-2 md:space-y-4 md:text-base">
             <div>
               It looks like you are trying to reset your password for the&nbsp;
               <ProgressLink

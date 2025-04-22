@@ -182,7 +182,7 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
           >
             {form.formState.isSubmitting ? "Creating an account..." : "Sign up"}
           </Button>
-          <div className="flex items-center gap-1 self-stretch text-xs md:text-base">
+          <div className="flex items-center gap-1 self-stretch md:text-base">
             <span className="text-muted-foreground text-center font-semibold">
               Already have an account?
             </span>

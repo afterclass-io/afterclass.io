@@ -40,8 +40,8 @@ export const searchResultTheme = tv(
       itemSchoolIcon: ["mt-[2px]", "flex-none", "text-primary-default"],
       itemArrow: ["flex-none", "text-muted-foreground"],
       itemTitle: ["text-left", "tracking-tight", "text-muted-foreground"],
-      itemSubtitle: ["tracking-tight", "text-text-em-low", "font-normal"],
-      itemStatsWrapper: ["flex", "items-center", "text-text-em-low"],
+      itemSubtitle: ["tracking-tight", "text-muted-foreground", "font-normal"],
+      itemStatsWrapper: ["flex", "items-center", "text-muted-foreground"],
       divider: ["mx-4", "border-l-2", "border-border-default"],
       filter: [
         "sticky",

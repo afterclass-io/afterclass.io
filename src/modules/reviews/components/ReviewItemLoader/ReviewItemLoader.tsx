@@ -39,7 +39,7 @@ export type ReviewItemLoaderProps =
 
 const NoReviewCtaNote = () => (
   <div
-    className="text-muted-foreground w-full space-x-1 px-3 py-6 text-center text-xs md:text-sm"
+    className="text-muted-foreground w-full space-x-1 px-3 py-6 text-center md:text-sm"
     data-variant="full-width"
   >
     <span className="text-accent-foreground mr-1">Oh no!</span>
@@ -49,7 +49,7 @@ const NoReviewCtaNote = () => (
     <ProgressLink
       href="/submit"
       variant="link"
-      className="inline-flex h-fit pb-[1px] text-xs md:h-fit md:p-0 md:text-sm"
+      className="inline-flex h-fit pb-[1px] md:h-fit md:p-0 md:text-sm"
       data-umami-event="review-empty-cta"
     >
       writing one
