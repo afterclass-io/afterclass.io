@@ -4,11 +4,12 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { z } from "zod";
 
-import { Tag } from "@/common/components/tag";
 import { RadioGroup, RadioGroupItem } from "@/common/components/radio-group";
 import { Label } from "@/common/components/label";
 import { ReviewsFilterFor } from "@/modules/reviews/types";
 import { useEdgeConfigs } from "@/common/hooks";
+import { Button, buttonVariants } from "@/common/components/button";
+import { cn } from "@/common/functions";
 
 export const ReviewSectionListFilter = () => {
   const { data: session } = useSession();
@@ -60,10 +61,16 @@ export const ReviewSectionListFilter = () => {
             id={`r${index + 1}`}
             className="hidden"
           />
-          <Label htmlFor={`r${index + 1}`}>
-            <Tag clickable active={filterFor === option.value}>
-              {option.label}
-            </Tag>
+          <Label
+            htmlFor={`r${index + 1}`}
+            className={cn(
+              buttonVariants({
+                variant: filterFor === option.value ? "default" : "outline",
+              }),
+              "rounded-full border",
+            )}
+          >
+            {option.label}
           </Label>
         </div>
       ))}

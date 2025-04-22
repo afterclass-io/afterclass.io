@@ -8,14 +8,12 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/common/components/tooltip";
-import { reviewItemTheme } from "../ReviewItem.theme";
 
 export const ReviewCreatedAt = ({ createdAt }: { createdAt: number }) => {
-  const { timedelta } = reviewItemTheme({ size: { initial: "sm", md: "md" } });
   return (
     <Tooltip>
       <TooltipTrigger>
-        <span className={timedelta()}>
+        <span className="overflow-hidden text-ellipsis md:text-sm">
           {getHumanReadableTimestampDelta(createdAt / 1000)}
         </span>
       </TooltipTrigger>

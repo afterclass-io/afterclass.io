@@ -8,7 +8,7 @@ export const ReviewRatingGroup = ({ rating }: { rating: number }) => {
       {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
       {[...Array(5)].map((_, index) => {
         const Comp = index < fullHearts ? HeartIcon : HeartUnfilledIcon;
-        return <Comp key={index} className="text-text-em-low h-4 w-4" />;
+        return <Comp key={index} className="text-muted-foreground h-4 w-4" />;
       })}
       <span className="sr-only">{rating} rating</span>
     </span>

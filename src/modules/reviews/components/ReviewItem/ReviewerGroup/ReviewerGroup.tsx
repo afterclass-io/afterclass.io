@@ -2,21 +2,16 @@ import { type Review } from "@/modules/reviews/types";
 import { Profile } from "@/common/components/profile";
 import { Avatar, AvatarFallback } from "@/common/components/avatar";
 
-import { reviewItemTheme, type ReviewItemVariants } from "../ReviewItem.theme";
 import { ReviewCreatedAt } from "../ReviewCreatedAt";
 import { UserIcon } from "@/common/components/icons";
 
-export type ReviewerGroupProps = ReviewItemVariants & {
+export type ReviewerGroupProps = {
   review: Review;
 };
 
 export const ReviewerGroup = ({ review }: ReviewerGroupProps) => {
-  const { reviewerGroup } = reviewItemTheme({
-    size: { initial: "sm", md: "md" },
-  });
-
   return (
-    <div className={reviewerGroup()}>
+    <div className="text-muted-foreground flex items-center justify-between gap-2 self-stretch">
       <Profile
         name={review.username}
         icon={

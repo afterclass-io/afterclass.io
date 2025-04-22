@@ -15,7 +15,6 @@ import {
 import { type Review } from "@/modules/reviews/types";
 import { ProgressLink } from "@/common/components/progress-link";
 
-import { reviewItemTheme } from "../ReviewItem.theme";
 import { RevieweeGroup } from "../RevieweeGroup";
 import { ReviewCreatedAt } from "../ReviewCreatedAt";
 import { ReviewRatingGroup } from "../ReviewRatingGroup";
@@ -36,16 +35,6 @@ export const ReviewModal = ({
   seeMore?: boolean;
   defaultOpen?: boolean;
 }) => {
-  const {
-    modalTrigger,
-    modalContent,
-    usernameAndTimestampWrapper,
-    username,
-    modalBody,
-    seeMoreDivider,
-    seeMoreLink,
-  } = reviewItemTheme({ size: { initial: "sm", md: "md" } });
-
   const ecfg = useEdgeConfigs();
 
   const reviewPath =
@@ -68,13 +57,9 @@ export const ReviewModal = ({
         }
       }}
     >
-      {children && (
-        <DialogTrigger asChild className={modalTrigger()}>
-          {children}
-        </DialogTrigger>
-      )}
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent
-        className={modalContent()}
+        className="w-full md:mx-10 md:my-auto md:h-auto"
         onOpenAutoFocus={(e) => e.preventDefault()}
         data-test="review-modal"
       >
@@ -84,8 +69,8 @@ export const ReviewModal = ({
           </DialogTitle>
           <DialogDescription asChild>
             <div className="space-y-4">
-              <div className={usernameAndTimestampWrapper()}>
-                <span className={username()}>{review.username}</span>
+              <div className="space-x-2">
+                <span className="font-medium">{review.username}</span>
                 <span>•</span>
                 <ReviewCreatedAt createdAt={review.createdAt} />
               </div>
@@ -94,18 +79,14 @@ export const ReviewModal = ({
             </div>
           </DialogDescription>
         </DialogHeader>
-        <div className={modalBody()}>{review.body}</div>
+        <div className="whitespace-pre-wrap">{review.body}</div>
         <DialogFooter>
           <ReviewFooter review={review} />
           {/* seeMore link only shown when user is from default reviews page, hidden when in professor/course pages */}
           {seeMore && (
             <>
-              <hr className={seeMoreDivider()} />
-              <ProgressLink
-                href={reviewPath}
-                variant="link"
-                className={seeMoreLink()}
-              >
+              <hr className="w-full border" />
+              <ProgressLink href={reviewPath} variant="link">
                 See more reviews
               </ProgressLink>
             </>

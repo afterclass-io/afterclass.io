@@ -113,7 +113,7 @@ export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
         getUserVoteWeight() !== 0
           ? getUserVoteWeight() > 0
             ? "bg-primary-default text-text-on-primary"
-            : "bg-element-secondary text-text-on-secondary"
+            : "bg-element-secondary text-secondary-foreground"
           : "",
       )}
       data-voted={getUserVoteWeight() !== 0}
@@ -137,7 +137,7 @@ export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
           <ArrowFatLineUpIcon className="h-4 w-4" />
         )}
       </Button>
-      <span className="text-xs">
+      <span className="">
         {formatNumberShortScale(reviewVotesCountQuery.data ?? 0)}
       </span>
       <Button

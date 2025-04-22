@@ -1,6 +1,6 @@
 import { type Review } from "@/modules/reviews/types";
 
-import { formatNumberShortScale } from "@/common/functions";
+import { cn, formatNumberShortScale } from "@/common/functions";
 import { buttonVariants } from "@/common/components/button";
 import { EyeIcon } from "@/common/components/icons";
 import { ReviewShareButton } from "../ReviewShareButton";
@@ -29,7 +29,7 @@ export const ReviewFooter = ({ review }: ReviewFooterProps) => {
           <ReviewReactionButton reviewId={review.id} />
         )}
         <ReviewShareButton reviewId={review.id} />
-        <div className={buttonVariants({ variant: "ghost" })}>
+        <div className={cn(buttonVariants({ variant: "ghost" }))}>
           <EyeIcon className="h-4 w-4" />
           <span>{formatNumberShortScale(review.countEventViews)}</span>
         </div>

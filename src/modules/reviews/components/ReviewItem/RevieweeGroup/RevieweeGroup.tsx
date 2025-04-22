@@ -3,31 +3,26 @@ import { SchoolIcon } from "@/common/components/icons";
 import { ProgressLink } from "@/common/components/progress-link";
 
 import { RevieweeCourse } from "./RevieweeCourse";
-import { reviewItemTheme, type ReviewItemVariants } from "../ReviewItem.theme";
 
-export type RevieweeGroupProps = ReviewItemVariants & {
+export type RevieweeGroupProps = {
   review: Review;
   variant: "home" | "professor" | "course";
 };
 
 export const RevieweeGroup = ({ review, variant }: RevieweeGroupProps) => {
-  const { revieweeGroup } = reviewItemTheme({
-    size: { initial: "sm", md: "md" },
-  });
-
   const isShowProf =
     review.professorName && (variant === "home" || variant === "course");
 
   const isShowCourse = variant === "home" && isShowProf;
 
   return (
-    <div className={revieweeGroup()}>
+    <div className="flex w-full items-center justify-between gap-3 md:w-fit md:justify-normal">
       <SchoolIcon school={review.university} />
       {isShowProf ? (
         <ProgressLink
           variant="link"
           href={`/professor/${review.professorSlug}`}
-          className="hover:text-primary-default hover:no-underline"
+          className="hover:text-primary text-muted-foreground hover:no-underline"
           aria-label="professor"
           data-test="review-professor-label"
         >

@@ -20,7 +20,7 @@ export const RevieweeCourse = ({
         <ProgressLink
           variant="link"
           href={`/course/${courseCode}`}
-          className="hover:text-primary-default hover:no-underline"
+          className="hover:text-primary text-muted-foreground hover:no-underline"
           aria-label="course"
           data-test="review-course-label"
         >

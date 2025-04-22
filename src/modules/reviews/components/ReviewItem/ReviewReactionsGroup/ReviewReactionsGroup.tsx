@@ -3,9 +3,9 @@ import { useSession } from "next-auth/react";
 import { type ReviewReactionType as DbReviewReactionType } from "@prisma/client";
 
 import { api } from "@/common/tools/trpc/react";
-import { Tag } from "@/common/components/tag";
 import { ReviewReactionType } from "@/modules/reviews/types";
 import { useOptimisticReaction } from "@/modules/reviews/hooks";
+import { Button } from "@/common/components/button";
 
 export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
   const { data: session } = useSession();
@@ -56,22 +56,20 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
     <div className="flex gap-2">
       {Object.entries(reactionsMetadataMap).map(
         ([reaction, { count, hasThisUserReacted }]) => (
-          <Tag
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               handleReactionChange(reaction as DbReviewReactionType);
             }}
             key={reaction}
-            clickable
-            active={hasThisUserReacted}
-            className="flex min-w-fit gap-1 px-2 py-0 select-none"
-            asChild
+            variant={hasThisUserReacted ? "default" : "outline"}
+            className="flex min-w-fit gap-1 rounded-full px-2 py-0 select-none"
           >
             <span className="text-lg">
               {ReviewReactionType[reaction as keyof typeof ReviewReactionType]}
             </span>
             <span>{count}</span>
-          </Tag>
+          </Button>
         ),
       )}
     </div>
