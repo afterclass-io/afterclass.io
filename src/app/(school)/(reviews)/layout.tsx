@@ -38,7 +38,7 @@ export default function ReviewLayout({
           <CtaButton
             variant="outline"
             ctaText="Contribute to AfterClass OSS"
-            className="text-muted-foreground"
+            className="text-muted-foreground bg-card/80 hover:text-accent-foreground/80"
             href={env.NEXT_PUBLIC_AC_GITHUB_LINK}
             target="_blank"
             iconLeft={<GithubIcon />}
