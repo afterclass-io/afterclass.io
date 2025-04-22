@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { BooksIcon, SchoolIcon } from "@/common/components/icons";
+import { BooksIcon } from "@/common/components/icons";
 
 import { PageTitle } from "./page-title";
-import { Tag } from "@/common/components/tag";
+import { SchoolTag } from "@/common/components/tag-school";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -13,11 +13,7 @@ const meta = {
   tags: ["autodocs"],
   args: {
     contentLeft: <BooksIcon className="h-6 w-6" />,
-    contentRight: (
-      <Tag contentLeft={<SchoolIcon school="SMU" className="h-6 w-6" />}>
-        SMU
-      </Tag>
-    ),
+    contentRight: <SchoolTag school="SMU" />,
     children: "Business, Government and Society",
   },
   // More on argTypes: https://storybook.js.org/docs/api/argtypes
