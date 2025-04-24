@@ -19,6 +19,7 @@ const meta = {
   // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
   tags: ["autodocs"],
   args: {
+    value: 0,
     maxRating: 5,
   },
   // More on argTypes: https://storybook.js.org/docs/api/argtypes
