@@ -11,7 +11,6 @@ export const SchoolTag = ({
     <Tag
       avatar={<SchoolIcon school={school} />}
       className="border-default rounded-full"
-      label={school}
       deletable={false}
       variant="outline"
     >

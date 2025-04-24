@@ -39,7 +39,15 @@ export const TagToggleGroup = forwardRef<
             {...props}
             ref={ref}
           />
-          <Tag clickable className="select-none">
+          <Tag
+            className="font-normal select-none"
+            deletable={false}
+            variant={fieldValue.includes(value) ? "outline" : "soft"}
+            color="primary"
+            onClick={() => {
+              // intentionally do nothing
+            }}
+          >
             {label}
           </Tag>
         </label>

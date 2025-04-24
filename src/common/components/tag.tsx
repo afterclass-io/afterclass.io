@@ -203,14 +203,13 @@ export interface TagProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "color">,
     VariantProps<typeof tagVariants> {
   size?: "sm" | "md";
-  label: string;
   deletable?: boolean;
   avatar?: React.JSX.Element;
   deleteIcon?: React.JSX.Element;
 }
 
 function Tag({
-  label,
+  children,
   variant = "filled",
   size = "md",
   color = "default",
@@ -227,7 +226,7 @@ function Tag({
       onClick={onClick}
     >
       {!!avatar && <div className="start-icon">{avatar}</div>}
-      <p className="label">{label}</p>
+      <p className="label">{children}</p>
       {!!deletable && (
         <div
           className={cn(deletableVariants({ variant, color }), "deletable")}

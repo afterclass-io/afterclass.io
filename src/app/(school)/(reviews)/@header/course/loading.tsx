@@ -9,7 +9,7 @@ export default function Loading() {
       <PageTitle
         contentLeft={<BooksIcon className="text-muted-foreground h-9 w-9" />}
         contentRight={
-          <Tag label="loading" avatar={<Skeleton className="h-6 w-6" />}>
+          <Tag avatar={<Skeleton className="h-6 w-6" />}>
             <Skeleton className="h-[23.98px] w-[36.31px]" />
           </Tag>
         }
