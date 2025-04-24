@@ -4,14 +4,8 @@ import { useSession } from "next-auth/react";
 import { ReviewEventType } from "@prisma/client";
 
 import { api } from "@/common/tools/trpc/react";
-
 import { useEdgeConfigs } from "@/common/hooks";
-import { cn, formatNumberShortScale } from "@/common/functions";
-import { Button } from "@/common/components/button";
-import {
-  ArrowFatLineUpIcon,
-  ArrowFatLineUpFillIcon,
-} from "@/common/components/icons";
+import { VoteGroup } from "@/common/components/vote-group";
 
 export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
   const { data: session } = useSession();
@@ -86,11 +80,6 @@ export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
     },
   });
 
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
   const handleVote = (weight: number) => {
     if (!session) return;
     likeOrUnlike({
@@ -107,57 +96,14 @@ export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
   }, [getUserVoteQuery.data]);
 
   return (
-    <div
-      className={cn(
-        "border-border-default bg-element-tertiary text-muted-foreground flex h-8 items-center gap-1 rounded-full border",
-        getUserVoteWeight() !== 0
-          ? getUserVoteWeight() > 0
-            ? "bg-primary-default text-text-on-primary"
-            : "bg-element-secondary text-secondary-foreground"
-          : "",
-      )}
-      data-voted={getUserVoteWeight() !== 0}
-      data-vote-count={reviewVotesCountQuery.data ?? 0}
-    >
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-full border-none bg-inherit text-inherit"
-        aria-label="upvote"
-        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-          handleClick(e);
-          handleVote(getUserVoteWeight() > 0 ? 0 : 1);
-        }}
-        data-test="upvote-button"
-        data-voted={getUserVoteWeight() > 0}
-      >
-        {getUserVoteWeight() > 0 ? (
-          <ArrowFatLineUpFillIcon className="h-4 w-4" />
-        ) : (
-          <ArrowFatLineUpIcon className="h-4 w-4" />
-        )}
-      </Button>
-      <span className="">
-        {formatNumberShortScale(reviewVotesCountQuery.data ?? 0)}
-      </span>
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-full border-none bg-inherit text-inherit"
-        aria-label="downvote"
-        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-          handleClick(e);
-          handleVote(getUserVoteWeight() < 0 ? 0 : -1);
-        }}
-        data-test="downvote-button"
-        data-voted={getUserVoteWeight() < 0}
-      >
-        {getUserVoteWeight() < 0 ? (
-          <ArrowFatLineUpFillIcon className="h-4 w-4 rotate-180" />
-        ) : (
-          <ArrowFatLineUpIcon className="h-4 w-4 rotate-180" />
-        )}
-      </Button>
-    </div>
+    <VoteGroup
+      upvotes={reviewVotesCountQuery.data ?? 0}
+      downvotes={0}
+      upvoted={getUserVoteWeight() > 0}
+      downvoted={getUserVoteWeight() < 0}
+      onVoteChange={({ upvoted, downvoted }) => {
+        handleVote(upvoted ? 1 : downvoted ? -1 : 0);
+      }}
+    />
   );
 };
