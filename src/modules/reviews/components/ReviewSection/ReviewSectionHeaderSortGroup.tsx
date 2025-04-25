@@ -15,7 +15,6 @@ import {
 import { cn, toTitleCase } from "@/common/functions";
 import { ReviewsSortBy } from "@/modules/reviews/types";
 import { useEdgeConfigs } from "@/common/hooks";
-import { Tag } from "@/common/components/tag";
 
 const formatSortByLabel = (sortBy: ReviewsSortBy) =>
   sortBy
