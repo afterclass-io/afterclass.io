@@ -15,6 +15,7 @@ import {
 import { cn, toTitleCase } from "@/common/functions";
 import { ReviewsSortBy } from "@/modules/reviews/types";
 import { useEdgeConfigs } from "@/common/hooks";
+import { Tag } from "@/common/components/tag";
 
 const formatSortByLabel = (sortBy: ReviewsSortBy) =>
   sortBy
@@ -79,9 +80,8 @@ export const ReviewSectionHeaderSortGroup = () => {
           key={option}
           variant="ghost"
           className={cn(
-            "text-base md:text-lg",
             "px-0 py-0 md:px-2",
-            option === sortBy ? "text-primary-default" : "",
+            option === sortBy ? "text-primary" : "text-muted-foreground",
           )}
           onClick={() => handleSortChange(option)}
         >
@@ -98,12 +98,12 @@ export const ReviewSectionHeaderSortGroup = () => {
           value={options.includes(sortBy) ? sortBy : undefined}
           onValueChange={handleSortChange}
         >
-          <SelectTrigger asChild>
+          <SelectTrigger asChild className="">
             <Button
               variant="ghost"
               className={cn(
-                "border-none bg-transparent px-0 py-0 text-base shadow-none md:px-2 md:text-lg dark:bg-transparent",
-                options.includes(sortBy) && "text-primary-default",
+                "border-none px-0 py-0 md:px-2 dark:bg-transparent",
+                options.includes(sortBy) && "text-primary",
               )}
             >
               <SelectValue placeholder="Top" />
