@@ -12,7 +12,7 @@ export const ReviewSection = ({ className, ...props }: ReviewSectionProps) => {
   return (
     <div
       className={cn(
-        "bg-card grid gap-4 rounded-3xl py-6 md:gap-9 md:px-6 md:py-16",
+        "bg-card grid gap-4 rounded-3xl pt-6 md:gap-9 md:p-6 md:pt-16",
         className,
       )}
       {...props}

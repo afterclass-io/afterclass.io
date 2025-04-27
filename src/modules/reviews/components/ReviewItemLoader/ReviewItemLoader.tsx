@@ -163,12 +163,12 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
       {status === "authenticated" && hasNextPage && (
         <InView
           as="div"
-          className="flex w-full justify-center"
+          className="flex w-full justify-center p-4"
           onChange={(inView) => inView && fetchNextPage()}
         >
           <AfterclassIcon
             size={64}
-            className="text-primary/60 animate-[pulse_3s_ease-in-out_infinite]"
+            className="text-primary/80 animate-pulse transition-colors duration-1500"
           />
         </InView>
       )}
