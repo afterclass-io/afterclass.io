@@ -40,9 +40,10 @@ export const ReviewReactionButton = ({ reviewId }: { reviewId: string }) => {
           size="icon"
           aria-label="React"
           data-umami-event="review-react"
+          className="size-8 rounded-full"
           onClick={handleClick}
         >
-          <SmileyIcon className="h-4 w-4" />
+          <SmileyIcon />
         </Button>
       </HoverCardTrigger>
       <HoverCardContent

@@ -1,7 +1,6 @@
 import { type Review } from "@/modules/reviews/types";
 
-import { cn, formatNumberShortScale } from "@/common/functions";
-import { buttonVariants } from "@/common/components/button";
+import { formatNumberShortScale } from "@/common/functions";
 import { EyeIcon } from "@/common/components/icons";
 import { ReviewShareButton } from "../ReviewShareButton";
 import { ReviewVoteGroup } from "../ReviewVoteGroup";
@@ -25,13 +24,18 @@ export const ReviewFooter = ({ review }: ReviewFooterProps) => {
 
       <div className="flex gap-4">
         <ReviewVoteGroup reviewId={review.id} />
+
         {shouldShowReviewReactions && (
           <ReviewReactionButton reviewId={review.id} />
         )}
+
         <ReviewShareButton reviewId={review.id} />
-        <div className={cn(buttonVariants({ variant: "ghost" }))}>
-          <EyeIcon className="h-4 w-4" />
-          <span>{formatNumberShortScale(review.countEventViews)}</span>
+
+        <div className="flex items-center gap-1.5 px-2">
+          <EyeIcon className="size-4" />
+          <span className="font-mono">
+            {formatNumberShortScale(review.countEventViews)}
+          </span>
         </div>
       </div>
     </div>

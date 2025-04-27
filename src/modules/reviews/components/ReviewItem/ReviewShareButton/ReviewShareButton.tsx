@@ -37,6 +37,7 @@ export const ReviewShareButton = ({
       aria-label="Share"
       data-umami-event="review-share"
       disabled={shareCountQuery.isLoading}
+      className="h-8 rounded-full"
       onClick={async () => {
         const shareUrl = `${env.NEXT_PUBLIC_SITE_URL}${pathname}?review_id=${reviewId}`;
         await navigator.clipboard.writeText(shareUrl);
@@ -54,8 +55,8 @@ export const ReviewShareButton = ({
         <Loader2 className="animate-spin" />
       ) : (
         <>
-          <ShareIcon className="h-4 w-4" />
-          {shareCountQuery.data}
+          <ShareIcon />
+          <span className="font-mono">{shareCountQuery.data}</span>
         </>
       )}
     </Button>

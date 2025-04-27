@@ -63,12 +63,12 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
             }}
             key={reaction}
             variant={hasThisUserReacted ? "default" : "outline"}
-            className="flex min-w-fit gap-1 rounded-full px-2 py-0 select-none"
+            className="flex min-w-fit gap-1 rounded-full border px-2 py-0 select-none"
           >
             <span className="text-lg">
               {ReviewReactionType[reaction as keyof typeof ReviewReactionType]}
             </span>
-            <span>{count}</span>
+            <span className="font-mono">{count}</span>
           </Button>
         ),
       )}
