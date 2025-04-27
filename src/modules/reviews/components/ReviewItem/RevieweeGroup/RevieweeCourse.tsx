@@ -16,7 +16,7 @@ export const RevieweeCourse = ({
 }) => {
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger asChild>
         <ProgressLink
           variant="link"
           href={`/course/${courseCode}`}
