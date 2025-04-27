@@ -7,9 +7,9 @@ export const FilterToggleSectionItemSkeleton = () => {
   return (
     <div className={item({ class: "hover:bg-inherit" })}>
       <div className={content()}>
-        <p className={itemHeader()}>
+        <div className={itemHeader()}>
           <Skeleton className="h-[24px] w-[229px]" />
-        </p>
+        </div>
         <div className={contentSubheaderWrapper()}>
           <Skeleton className="h-6 w-12" />
           <div className={statWrapper()}>
