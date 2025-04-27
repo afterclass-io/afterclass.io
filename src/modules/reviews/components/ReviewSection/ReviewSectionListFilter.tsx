@@ -45,7 +45,7 @@ export const ReviewSectionListFilter = () => {
 
   return (
     <RadioGroup
-      className="flex"
+      className="flex px-4"
       onValueChange={(newValue) => {
         setFilterFor(newValue as ReviewsFilterFor);
 

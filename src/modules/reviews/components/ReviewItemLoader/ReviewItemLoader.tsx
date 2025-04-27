@@ -12,6 +12,7 @@ import { ProgressLink } from "@/common/components/progress-link";
 import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
 import { ReviewItem, ReviewItemSkeleton } from "../ReviewItem";
 import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
+import { Separator } from "@/common/components/separator";
 
 type BaseReviewItemLoaderProps = {
   variant: "home" | "course" | "professor";
@@ -132,24 +133,32 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
   if (status === "loading" || isPending || isRefetching) {
     return (
       <>
-        {reviews.map((_, index) => (
-          <ReviewItemSkeleton key={index} />
-        ))}
+        <Separator />
+
+        {reviews
+          .flatMap((_, index) => [
+            <ReviewItemSkeleton key={index} />,
+            <Separator key={`hr-${index}`} />,
+          ])
+          .slice(0, -1)}
       </>
     );
   }
 
   return (
     <>
-      {reviews.map((review) => (
+      <Separator />
+
+      {reviews.flatMap((review) => [
         <ReviewItem
           key={review.id}
           variant={props.variant}
           review={review}
           isLocked={!session}
           seeMore={pathname === "/"}
-        />
-      ))}
+        />,
+        <Separator key={`hr-${review.id}`} />,
+      ])}
 
       {status === "authenticated" && hasNextPage && (
         <InView
@@ -159,7 +168,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
         >
           <AfterclassIcon
             size={64}
-            className="text-primary-default/60 animate-[pulse_3s_ease-in-out_infinite]"
+            className="text-primary/60 animate-[pulse_3s_ease-in-out_infinite]"
           />
         </InView>
       )}

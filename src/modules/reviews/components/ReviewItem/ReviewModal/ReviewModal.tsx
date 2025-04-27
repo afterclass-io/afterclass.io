@@ -21,6 +21,7 @@ import { ReviewRatingGroup } from "../ReviewRatingGroup";
 import { ReviewLabelGroup } from "../ReviewLabelGroup";
 import { useEdgeConfigs } from "@/common/hooks";
 import { ReviewFooter } from "../ReviewFooter";
+import { Separator } from "@/common/components/separator";
 
 export const ReviewModal = ({
   review,
@@ -85,7 +86,7 @@ export const ReviewModal = ({
           {/* seeMore link only shown when user is from default reviews page, hidden when in professor/course pages */}
           {seeMore && (
             <>
-              <hr className="w-full border" />
+              <Separator />
               <ProgressLink href={reviewPath} variant="link">
                 See more reviews
               </ProgressLink>
