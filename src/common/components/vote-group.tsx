@@ -5,8 +5,10 @@ import { cn } from "@/common/functions";
 import { ArrowFatLineUpIcon } from "@/common/components/icons";
 import { Button } from "@/common/components/button";
 
-const UPVOTE_CLASSNAME = "bg-primary text-primary-foreground";
-const DOWNVOTE_CLASSNAME = "bg-secondary text-secondary-foreground";
+const UPVOTE_CLASSNAME =
+  "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground ";
+const DOWNVOTE_CLASSNAME =
+  "bg-secondary text-secondary-foreground dark:bg-secondary dark:text-secondary-foreground";
 
 interface UpvoteRatingAnimatedProps {
   upvotes: number;
@@ -83,7 +85,8 @@ export const VoteGroup = ({
       data-voted={upvoted || downvoted}
       data-vote-count={totalVotes}
       className={cn(
-        "bg-muted text-muted-foreground flex h-8 w-fit flex-row items-center gap-0 rounded-full border",
+        "bg-background dark:bg-input/30 dark:border-input",
+        "flex h-8 w-fit flex-row items-center gap-0 rounded-full border shadow-xs",
         upvoted && UPVOTE_CLASSNAME,
         downvoted && DOWNVOTE_CLASSNAME,
       )}
