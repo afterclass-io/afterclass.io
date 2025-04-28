@@ -30,7 +30,7 @@ export const CoreLayoutHeader = async () => {
           aria-label="Home"
           className="flex md:hidden"
         >
-          <AfterclassIcon className="text-primary-default" />
+          <AfterclassIcon className="text-primary" />
         </ProgressLink>
         <div className="flex items-center gap-4 md:mr-4">
           {session ? (

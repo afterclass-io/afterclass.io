@@ -26,7 +26,7 @@ export const filterToggleSectionTheme = tv(
         "items-center",
         "rounded-lg",
         "cursor-pointer",
-        "hover:bg-surface-elevated",
+        "hover:bg-accent",
       ],
       itemHeader: ["text-accent-foreground"],
       content: ["flex", "gap-2"],
@@ -48,7 +48,7 @@ export const filterToggleSectionTheme = tv(
     variants: {
       selected: {
         true: {
-          item: ["bg-surface-elevated"],
+          item: ["bg-accent"],
         },
       },
       size: {

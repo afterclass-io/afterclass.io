@@ -37,7 +37,7 @@ export const searchResultTheme = tv(
         "items-start",
         "justify-center",
       ],
-      itemSchoolIcon: ["mt-[2px]", "flex-none", "text-primary-default"],
+      itemSchoolIcon: ["mt-[2px]", "flex-none", "text-primary"],
       itemArrow: ["flex-none", "text-muted-foreground"],
       itemTitle: ["text-left", "tracking-tight", "text-muted-foreground"],
       itemSubtitle: ["tracking-tight", "text-muted-foreground", "font-normal"],

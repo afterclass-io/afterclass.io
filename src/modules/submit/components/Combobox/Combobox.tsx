@@ -85,7 +85,7 @@ export const Combobox = forwardRef<
                 >
                   <CheckIcon
                     className={cn(
-                      "text-primary-default",
+                      "text-primary",
                       isMatched(el.value) ? "visible" : "invisible",
                     )}
                   />

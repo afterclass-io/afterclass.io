@@ -15,7 +15,7 @@ export const submitButtonGroupTheme = tv(
         "justify-center",
         "rounded-3xl",
         "border-border-primary",
-        "bg-primary-default",
+        "bg-primary",
       ],
       submitButton: [
         "flex",

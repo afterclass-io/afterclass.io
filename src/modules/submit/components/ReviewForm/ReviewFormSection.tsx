@@ -20,6 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/common/components/form";
+import { Separator } from "@/common/components/separator";
 
 export type ReviewFormSectionProps = {
   type: ReviewableType;
@@ -98,7 +99,7 @@ export const ReviewFormSection = ({
       </div>
       {!isSkipped && (
         <>
-          <hr className={divider()} />
+          <Separator />
           <div className={lower()}>
             <FormField
               control={control}

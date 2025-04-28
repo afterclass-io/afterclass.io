@@ -1,3 +1,4 @@
+import { Separator } from "@/common/components/separator";
 import { searchResultTheme } from "../SearchResult.theme";
 
 export const SearchResultEmpty = ({ show = false }: { show: boolean }) => {
@@ -8,7 +9,7 @@ export const SearchResultEmpty = ({ show = false }: { show: boolean }) => {
   return (
     <div className={empty()} data-test="search-empty">
       <div className="text-xl">No results found.</div>
-      <hr />
+      <Separator />
       <div className="text-muted-foreground w-full">
         <strong className="text-muted-foreground">💡 Tip!</strong> You can
         search for a course’s name, course code, or professor’s name.

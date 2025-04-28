@@ -23,7 +23,7 @@ export const informationCardTheme = tv(
       content: ["flex", "flex-col", "gap-2"],
       description: ["text-muted-foreground"],
       modalHeader: [],
-      modalBody: ["whitespace-pre-wrap"],
+      modalBody: ["wrap-anywhere whitespace-pre-wrap"],
     },
     variants: {
       size: {

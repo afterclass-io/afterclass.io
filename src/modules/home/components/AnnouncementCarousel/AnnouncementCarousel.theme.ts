@@ -24,10 +24,10 @@ export const announcementsCarouselTheme = tv({
       "before:z-10",
       "before:opacity-80",
       "before:bg-gradient-to-t",
-      "before:from-primary-default",
+      "before:from-primary",
       "before:from-20%",
       "before:to-60%",
-      "before:to-primary-default/20",
+      "before:to-primary/20",
     ],
     text: [
       "z-20",
