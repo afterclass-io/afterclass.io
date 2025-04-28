@@ -2,7 +2,7 @@ import { Skeleton } from "@/common/components/skeleton";
 
 export const ReviewItemSkeleton = () => {
   return (
-    <div className="focus-ring hover:bg-accent flex h-fit max-w-prose cursor-pointer flex-col items-start gap-2 rounded-md p-4 text-left md:gap-4">
+    <div className="focus-ring flex h-fit max-w-prose flex-col items-start gap-2 rounded-md p-4 text-left md:gap-4">
       <div className="flex content-center justify-between gap-3 self-stretch md:flex-row-reverse">
         <Skeleton className="h-[24px] w-[100px]" />
         <Skeleton className="h-[24px] w-[200px]" />

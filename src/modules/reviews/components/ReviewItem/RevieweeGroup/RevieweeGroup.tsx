@@ -16,8 +16,8 @@ export const RevieweeGroup = ({ review, variant }: RevieweeGroupProps) => {
   const isShowCourse = variant === "home" && isShowProf;
 
   return (
-    <div className="flex w-full items-center justify-between gap-3 md:w-fit md:justify-normal">
-      <SchoolIcon school={review.university} />
+    <div className="flex w-full items-center md:w-fit">
+      <SchoolIcon school={review.university} className="mr-2" />
       {isShowProf ? (
         <ProgressLink
           variant="link"

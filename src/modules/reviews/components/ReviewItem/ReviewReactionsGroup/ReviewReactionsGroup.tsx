@@ -53,7 +53,7 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
   };
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 overflow-auto">
       {Object.entries(reactionsMetadataMap).map(
         ([reaction, { count, hasThisUserReacted }]) => (
           <Button

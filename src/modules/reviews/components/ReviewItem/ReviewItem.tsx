@@ -41,7 +41,7 @@ export const ReviewItem = ({
 
   return !(session.status === "authenticated") || isLocked ? (
     <div
-      className="focus-ring flex h-fit max-w-prose cursor-pointer flex-col items-start gap-2 rounded-md text-left md:gap-4"
+      className="focus-ring flex h-fit max-w-prose cursor-pointer flex-col items-start gap-2 rounded-md p-4 text-left md:gap-4"
       data-test="review"
     >
       <ReviewHeader />

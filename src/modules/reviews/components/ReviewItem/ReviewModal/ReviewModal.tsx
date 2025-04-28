@@ -5,6 +5,7 @@ import { api } from "@/common/tools/trpc/react";
 
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -22,6 +23,7 @@ import { ReviewLabelGroup } from "../ReviewLabelGroup";
 import { useEdgeConfigs } from "@/common/hooks";
 import { ReviewFooter } from "../ReviewFooter";
 import { Separator } from "@/common/components/separator";
+import { ScrollArea } from "@/common/components/scroll-area";
 
 export const ReviewModal = ({
   review,
@@ -60,11 +62,11 @@ export const ReviewModal = ({
     >
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent
-        className="w-full md:mx-10 md:my-auto md:h-auto"
+        className="gap-4 md:mx-10 md:my-auto md:h-auto"
         onOpenAutoFocus={(e) => e.preventDefault()}
         data-test="review-modal"
       >
-        <DialogHeader>
+        <DialogHeader className="text-left">
           <DialogTitle>
             <RevieweeGroup review={review} variant={variant} />
           </DialogTitle>
@@ -80,14 +82,20 @@ export const ReviewModal = ({
             </div>
           </DialogDescription>
         </DialogHeader>
-        <div className="whitespace-pre-wrap">{review.body}</div>
-        <DialogFooter>
+        <DialogBody className="wrap-anywhere whitespace-pre-wrap">
+          {review.body}
+        </DialogBody>
+        <DialogFooter className="flex-col sm:flex-col">
           <ReviewFooter review={review} />
           {/* seeMore link only shown when user is from default reviews page, hidden when in professor/course pages */}
           {seeMore && (
             <>
-              <Separator />
-              <ProgressLink href={reviewPath} variant="link">
+              <Separator className="mt-4 mb-2" />
+              <ProgressLink
+                href={reviewPath}
+                variant="link"
+                className="flex h-fit p-0 md:h-9 md:p-2"
+              >
                 See more reviews
               </ProgressLink>
             </>

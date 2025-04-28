@@ -79,7 +79,7 @@ export const ReviewSectionHeaderSortGroup = () => {
           key={option}
           variant="ghost"
           className={cn(
-            "px-0 py-0 md:px-2",
+            "p-0 px-2",
             option === sortBy ? "text-primary" : "text-muted-foreground",
           )}
           onClick={() => handleSortChange(option)}
@@ -97,11 +97,11 @@ export const ReviewSectionHeaderSortGroup = () => {
           value={options.includes(sortBy) ? sortBy : undefined}
           onValueChange={handleSortChange}
         >
-          <SelectTrigger asChild className="">
+          <SelectTrigger asChild className="has-[>svg]:px-2">
             <Button
               variant="ghost"
               className={cn(
-                "border-none px-0 py-0 md:px-2 dark:bg-transparent",
+                "border-none p-0 px-2 dark:bg-transparent",
                 options.includes(sortBy) && "text-primary",
               )}
             >

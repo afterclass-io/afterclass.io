@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/common/components/radio-group";
 import { Label } from "@/common/components/label";
 import { ReviewsFilterFor } from "@/modules/reviews/types";
 import { useEdgeConfigs } from "@/common/hooks";
-import { Button, buttonVariants } from "@/common/components/button";
+import { buttonVariants } from "@/common/components/button";
 import { cn } from "@/common/functions";
 
 export const ReviewSectionListFilter = () => {
