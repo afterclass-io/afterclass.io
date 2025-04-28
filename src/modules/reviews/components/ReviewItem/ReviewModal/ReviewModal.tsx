@@ -23,7 +23,6 @@ import { ReviewLabelGroup } from "../ReviewLabelGroup";
 import { useEdgeConfigs } from "@/common/hooks";
 import { ReviewFooter } from "../ReviewFooter";
 import { Separator } from "@/common/components/separator";
-import { ScrollArea } from "@/common/components/scroll-area";
 
 export const ReviewModal = ({
   review,
