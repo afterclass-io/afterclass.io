@@ -25,27 +25,29 @@ export default function GlobalError({
     <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
       <body>
         <ThemeProvider>
-          <div className="flex justify-center p-6 md:h-full md:items-center md:p-12">
-            <Button
-              variant="link"
-              className="inline text-[length:inherit]"
-              onClick={() => reset()}
-            >
-              Click here to try again.
-            </Button>
-            <span className="inline">Otherwise, you can get help from us</span>
-            <Link
-              href={env.NEXT_PUBLIC_AC_HELPDESK_LINK}
-              className={cn(
-                buttonVariants({
-                  className: "inline px-1 text-[length:inherit]",
-                }),
-              )}
-            >
-              @afterclass
-            </Link>
-            <span className="inline">on Telegram.</span>
-          </div>
+          <main className="grid min-h-full place-items-center px-6 py-24 sm:py-32 lg:px-8">
+            <div className="text-center">
+              <p className="text-primary text-base font-semibold">500</p>
+              <h1 className="text-accent-foreground mt-4 text-5xl font-semibold tracking-tight text-balance sm:text-7xl">
+                Opps!
+              </h1>
+              <p className="mt-6 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8">
+                Sorry, an unexpected error has occurred.
+              </p>
+              <div className="mt-10 flex items-center justify-center gap-x-6">
+                <Button onClick={() => reset()}>Try again</Button>
+
+                <Link
+                  href={env.NEXT_PUBLIC_AC_HELPDESK_LINK}
+                  className={cn(
+                    buttonVariants({ variant: "link", class: "px-1 py-0" }),
+                  )}
+                >
+                  Telegram us @afterclass
+                </Link>
+              </div>
+            </div>
+          </main>
         </ThemeProvider>
       </body>
     </html>
