@@ -13,7 +13,7 @@ export const SearchCmdkModalTrigger = ({
   onOpenChange: () => void;
 }) => {
   return (
-    <InputRoot>
+    <InputRoot className="cursor-pointer">
       <InputAdornment>
         <SearchIcon />
       </InputAdornment>
@@ -21,6 +21,7 @@ export const SearchCmdkModalTrigger = ({
         value="Search"
         readOnly
         className="w-full text-left"
+        disabled
         data-test="search-cmdk-trigger"
       />
       <InputAdornment>

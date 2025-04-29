@@ -20,7 +20,7 @@ export const SearchResultFilter = ({
   onValueChange: (key: string, value: FilterOption["value"]) => void;
 }) => {
   return (
-    <div className="sticky top-12 hidden size-fit flex-col items-start gap-8 lg:flex">
+    <div className="sticky top-24 hidden size-fit flex-col items-start gap-8 lg:flex">
       {Object.entries(filters).map(([filterFor, filterOptions], i) => (
         <div key={i} className="flex flex-col gap-4">
           <Label key={i} className="w-fit">
