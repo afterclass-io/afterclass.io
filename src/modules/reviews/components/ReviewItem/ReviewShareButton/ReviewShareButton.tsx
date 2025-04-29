@@ -37,8 +37,10 @@ export const ReviewShareButton = ({
       aria-label="Share"
       data-umami-event="review-share"
       disabled={shareCountQuery.isLoading}
-      className="h-8 rounded-full"
-      onClick={async () => {
+      className="h-8 cursor-pointer rounded-full"
+      onClick={async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
         const shareUrl = `${env.NEXT_PUBLIC_SITE_URL}${pathname}?review_id=${reviewId}`;
         await navigator.clipboard.writeText(shareUrl);
         toast.success("Link copied to clipboard", { id: reviewId });

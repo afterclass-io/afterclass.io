@@ -2,11 +2,12 @@
 
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from "@/common/components/dialog";
-import { informationCardTheme } from "./InformationCard.theme";
 import { Button } from "@/common/components/button";
 
 export const InformationModal = ({
@@ -16,9 +17,6 @@ export const InformationModal = ({
   courseName: string;
   courseDesc: string;
 }) => {
-  const { modalHeader, modalBody } = informationCardTheme({
-    size: { initial: "sm", md: "md" },
-  });
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -34,10 +32,15 @@ export const InformationModal = ({
         className="max-w-prose"
         data-test="course-information-modal"
       >
-        <DialogHeader className={modalHeader()}>{courseName}</DialogHeader>
-        <div className={modalBody()} data-test="course-information-modal-body">
+        <DialogHeader>
+          <DialogTitle>{courseName}</DialogTitle>
+        </DialogHeader>
+        <DialogBody
+          className="text-muted-foreground wrap-anywhere whitespace-pre-wrap"
+          data-test="course-information-modal-body"
+        >
           {courseDesc}
-        </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

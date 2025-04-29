@@ -58,6 +58,7 @@ function DialogContent({
           data-slot="dialog-content"
           className={cn(
             "bg-card text-card-foreground relative m-auto flex max-h-full w-full max-w-prose flex-col overflow-hidden rounded-lg border p-6 py-5 shadow-lg sm:py-8",
+            "gap-4 md:mx-10 md:my-auto md:h-auto",
             className,
           )}
           {...props}

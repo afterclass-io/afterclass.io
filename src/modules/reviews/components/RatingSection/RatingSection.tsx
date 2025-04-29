@@ -17,16 +17,15 @@ export const RatingSection = ({
   ratingItems,
   isLocked,
 }: RatingSectionProps) => {
-  const { wrapper, headingContainer, headingRating, statItemWrapper, icon } =
-    ratingSectionTheme({
-      size: { initial: "sm", md: "md" },
-    });
   return (
-    <div className={wrapper()} data-test="rating-section">
+    <div
+      className="bg-card relative flex w-full flex-col items-start gap-5 rounded-2xl p-6"
+      data-test="rating-section"
+    >
       {isLocked && <LockedOverlay />}
-      <div className={headingContainer()}>
-        <div className={headingRating()}>
-          <HeartIcon className={icon()} />
+      <div className="flex w-full items-center gap-10 rounded-none">
+        <div className="flex items-center gap-3 rounded-none">
+          <HeartIcon className="size-6" />
           <StatItem
             {...headingRatingItem}
             layout="horizontal"
@@ -34,7 +33,7 @@ export const RatingSection = ({
           />
         </div>
       </div>
-      <div className={statItemWrapper()}>
+      <div className="flex w-full flex-wrap items-start justify-between gap-5 rounded-none px-1 py-0 capitalize md:justify-start md:gap-14">
         {ratingItems.length > 0 ? (
           ratingItems.map((item, i) => (
             <StatItem {...item} key={i} isLocked={isLocked} />
@@ -48,19 +47,15 @@ export const RatingSection = ({
 };
 
 const RatingSectionSkeleton = () => {
-  const { wrapper, headingContainer, headingRating, statItemWrapper, icon } =
-    ratingSectionTheme({
-      size: { initial: "sm", md: "md" },
-    });
   return (
-    <div className={wrapper()}>
-      <div className={headingContainer()}>
-        <div className={headingRating()}>
-          <HeartIcon className={icon()} />
+    <div className="bg-card relative flex w-full flex-col items-start gap-5 rounded-2xl p-6">
+      <div className="flex w-full items-center gap-10 rounded-none">
+        <div className="flex items-center gap-3 rounded-none">
+          <HeartIcon className="size-6" />
           <StatItem.Skeleton layout="horizontal" label="Average Rating" />
         </div>
       </div>
-      <div className={statItemWrapper()}>
+      <div className="flex w-full flex-wrap items-start justify-between gap-5 rounded-none px-1 py-0 capitalize md:justify-start md:gap-14">
         <StatItem.Skeleton />
         <StatItem.Skeleton />
         <StatItem.Skeleton />

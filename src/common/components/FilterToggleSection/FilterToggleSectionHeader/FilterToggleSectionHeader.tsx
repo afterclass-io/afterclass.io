@@ -5,22 +5,18 @@ import {
   GraduationCapColoredIcon,
   BooksColoredIcon,
 } from "@/common/components/icons";
-import { filterToggleSectionTheme } from "../FilterToggleSection.theme";
 
 export const FilterToggleSectionHeader = ({ type }: { type: ReviewType }) => {
-  const { sectionHeader, headerIcon } = filterToggleSectionTheme({
-    size: { initial: "sm", md: "md" },
-  });
   return (
-    <div className={sectionHeader()}>
+    <div className="flex items-center gap-2 pl-1 text-lg md:gap-4 md:pl-0 md:text-2xl">
       {type === ReviewType.COURSE ? (
         <>
-          <BooksColoredIcon className={headerIcon()} />
+          <BooksColoredIcon className="size-4 md:size-6" />
           <Heading as="h2">Courses</Heading>
         </>
       ) : (
         <>
-          <GraduationCapColoredIcon className={headerIcon()} />
+          <GraduationCapColoredIcon className="size-4 md:size-6" />
           <Heading as="h2">Professors</Heading>
         </>
       )}

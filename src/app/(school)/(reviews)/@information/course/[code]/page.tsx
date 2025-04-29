@@ -4,11 +4,9 @@ import { InformationCard } from "@/modules/reviews/components/InformationSection
 import { DetailCard } from "@/modules/reviews/components/InformationSection/DetailCard";
 import { auth } from "@/server/auth";
 
-export default async function CourseInfo(
-  props: {
-    params: Promise<{ code: string }>;
-  }
-) {
+export default async function CourseInfo(props: {
+  params: Promise<{ code: string }>;
+}) {
   const params = await props.params;
   const session = await auth();
   const course = await api.courses.getByCourseCode({
@@ -20,8 +18,8 @@ export default async function CourseInfo(
   }
 
   return (
-    <div className="flex w-full flex-wrap gap-4 md:flex-nowrap md:gap-6">
-      <div className="w-full md:w-2/3">
+    <div className="grid w-full grid-cols-25 gap-4 md:gap-6">
+      <div className="col-span-25 md:col-span-16">
         <InformationCard courseDesc={course.description}>
           {!session ? (
             <InformationCard.LoginButton />
@@ -33,7 +31,7 @@ export default async function CourseInfo(
           )}
         </InformationCard>
       </div>
-      <div className="w-full md:w-1/3">
+      <div className="col-span-25 md:col-span-9">
         <DetailCard course={course} />
       </div>
     </div>

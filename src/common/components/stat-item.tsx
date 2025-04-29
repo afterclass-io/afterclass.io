@@ -1,5 +1,6 @@
 import { LockIcon } from "@/common/components/icons";
 import { Skeleton } from "@/common/components/skeleton";
+import { cn } from "@/common/functions";
 
 export type StatItemProps = {
   label: string;
@@ -12,21 +13,32 @@ export const StatItem = ({
   label,
   rating,
   isLocked,
-  layout = "horizontal",
+  layout = "vertical",
 }: StatItemProps) => {
   return (
     <div
-      className="inline-flex flex-col items-start gap-2 rounded-none"
+      className={cn(
+        "inline-flex flex-col items-start gap-2 rounded-none",
+        layout === "horizontal" && "flex-row-reverse items-center gap-3",
+      )}
       data-test={`rating-${label.replace(/\s/g, "-").toLowerCase()}`}
     >
-      <div className="text-muted-foreground text-start text-sm font-medium">
+      <div
+        className={cn(
+          "text-muted-foreground text-start font-medium",
+          layout === "horizontal" && "text-base",
+        )}
+      >
         <span>{label}</span>
       </div>
       {isLocked ? (
         <LockIcon className="h-7 w-7" />
       ) : (
         <div
-          className="text-accent-foreground text-center text-xl font-semibold"
+          className={cn(
+            "text-accent-foreground text-center font-semibold",
+            layout === "horizontal" ? "text-3xl" : "text-2xl",
+          )}
           data-test="stats-value"
         >
           {rating}
@@ -37,18 +49,33 @@ export const StatItem = ({
 };
 
 const StatItemSkeleton = ({
-  layout = "horizontal",
+  layout = "vertical",
   label,
 }: {
   layout?: "horizontal" | "vertical";
   label?: string;
 }) => {
   return (
-    <div className="inline-flex flex-col items-start gap-2 rounded-none">
-      <div className="text-muted-foreground text-start text-sm font-medium">
+    <div
+      className={cn(
+        "inline-flex flex-col items-start gap-2 rounded-none",
+        layout === "horizontal" && "flex-row-reverse items-center gap-3",
+      )}
+    >
+      <div
+        className={cn(
+          "text-muted-foreground text-start font-medium",
+          layout === "horizontal" && "text-base",
+        )}
+      >
         <span>{label ?? <Skeleton className="h-[20px] w-[130px]" />}</span>
       </div>
-      <div className="text-accent-foreground text-center text-xl font-semibold">
+      <div
+        className={cn(
+          "text-accent-foreground text-center font-semibold",
+          layout === "horizontal" ? "text-3xl" : "text-xl",
+        )}
+      >
         {layout === "horizontal" ? (
           <Skeleton className="h-[32px] w-[54.4px]" />
         ) : (

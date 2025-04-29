@@ -6,23 +6,25 @@ import { env } from "@/env";
 
 export default function ReviewLayout({
   header,
-  filter,
   rating,
+  filter,
   information,
   reviews,
 }: {
-  reviews: ReactNode;
   header: ReactNode;
-  filter: ReactNode;
   rating: ReactNode;
+  filter: ReactNode;
   information: ReactNode;
+  reviews: ReactNode;
 }) {
+  console.log(header);
+  console.log(information);
   return (
     <div className="flex flex-col items-center space-y-4 md:space-y-6">
       {header}
       {rating}
-      {information}
       {filter}
+      {information}
       <div className="relative flex w-full justify-center gap-6">
         {reviews}
         <div className="sticky top-24 hidden h-fit max-w-min flex-col items-start gap-6 text-nowrap lg:flex">

@@ -1,19 +1,23 @@
 import type { ReactNode, ComponentPropsWithoutRef } from "react";
 import { FilterToggleSectionItemsSkeleton } from "../FilterToggleSectionSkeleton";
-import { filterToggleSectionTheme } from "../FilterToggleSection.theme";
+import { cn } from "@/common/functions";
 
 export const FilterToggleSectionItems = ({
   children,
+  className,
   ...props
 }: ComponentPropsWithoutRef<"div"> & {
   children: ReactNode;
 }) => {
-  const { className, ...rest } = props;
-  const { container } = filterToggleSectionTheme({
-    size: { initial: "sm", md: "md" },
-  });
   return (
-    <div className={container({ className })} {...rest}>
+    <div
+      data-slot="filter-toggle-section-items"
+      className={cn(
+        "flex flex-col items-start gap-0 self-stretch md:flex-row md:flex-wrap md:content-start md:gap-4",
+        className,
+      )}
+      {...props}
+    >
       {children}
     </div>
   );

@@ -61,7 +61,6 @@ export const ReviewModal = ({
     >
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent
-        className="gap-4 md:mx-10 md:my-auto md:h-auto"
         onOpenAutoFocus={(e) => e.preventDefault()}
         data-test="review-modal"
       >

@@ -1,17 +1,15 @@
+import Link from "next/link";
 import { api } from "@/common/tools/trpc/server";
-import { detailCardTheme } from "./DetailCard.theme";
-import { DetailCardSkeleton } from "./DetailCardSkeleton";
 import type { getByCourseCodeResolved } from "@/server/api/courses/getByCourseCode";
+import { Button } from "@/common/components/button";
+import { Heading } from "@/common/components/heading";
+import { DetailCardSkeleton } from "./DetailCardSkeleton";
 
 interface Props {
   course: NonNullable<getByCourseCodeResolved>;
 }
 
 export const DetailCard = async ({ course }: Props) => {
-  const { wrapper, header, body, content, field, value } = detailCardTheme({
-    size: { initial: "sm", md: "md" },
-  });
-
   const classes = await api.classes.getAllByCourseId({
     courseId: course.id,
   });
@@ -22,32 +20,30 @@ export const DetailCard = async ({ course }: Props) => {
   }
 
   return (
-    <div className={wrapper()}>
-      <div className={header()}>
-        <p>Details</p>
-      </div>
-      <div className={body()}>
-        <div className={content()}>
-          <p className={field()}>Course code:</p>
-          <p className={value()} data-test="course-code">
+    <div className="bg-card flex h-full w-full flex-col gap-3 rounded-2xl p-4 text-base md:gap-5 md:p-6">
+      <Heading as="h2" className="text-lg md:text-2xl">
+        Details
+      </Heading>
+      <div className="flex flex-col gap-1 md:gap-3">
+        <div className="flex gap-2 font-medium md:gap-3 md:text-lg">
+          <p className="text-muted-foreground">Course code:</p>
+          <p className="text-card-foreground" data-test="course-code">
             {course.code}
           </p>
         </div>
-        <div className={content()}>
-          <p className={field()}>Credit unit:</p>
-          <p className={value()} data-test="course-credit">
+        <div className="flex gap-2 font-medium md:gap-3 md:text-lg">
+          <p className="text-muted-foreground">Credit unit:</p>
+          <p className="text-card-foreground" data-test="course-credit">
             {course.creditUnits}
           </p>
         </div>
         {latestClass?.courseOutlineUrl && (
-          <div className={content()}>
-            <a
-              className="text-muted-foreground font-medium underline"
-              href={latestClass.courseOutlineUrl}
-              target="_blank"
-            >
-              Course Description
-            </a>
+          <div className="flex gap-2 font-medium md:gap-3 md:text-lg">
+            <Button asChild variant="link" className="size-fit p-0">
+              <Link href={latestClass.courseOutlineUrl} target="_blank">
+                Course Description
+              </Link>
+            </Button>
           </div>
         )}
       </div>
