@@ -17,8 +17,6 @@ export default function ReviewLayout({
   information: ReactNode;
   reviews: ReactNode;
 }) {
-  console.log(header);
-  console.log(information);
   return (
     <div className="flex flex-col items-center space-y-4 md:space-y-6">
       {header}

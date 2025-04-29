@@ -26,9 +26,10 @@ export const CoreLayoutHeader = async () => {
         <HomeBreadcrumb className="hidden md:block" />
         <ProgressLink
           href="/"
-          variant="ghost"
-          aria-label="Home"
           className="flex md:hidden"
+          aria-label="Home"
+          variant="ghost"
+          size="icon"
         >
           <AfterclassIcon className="text-primary" />
         </ProgressLink>

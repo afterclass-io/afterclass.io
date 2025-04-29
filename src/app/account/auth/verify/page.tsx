@@ -19,7 +19,7 @@ export default async function Verify(props: {
 
   return (
     <AuthCard title="You’re almost there!">
-      <div className="text-muted-foreground flex flex-col gap-6 pb-3 leading-relaxed md:text-base">
+      <div className="text-muted-foreground flex flex-col gap-6 leading-relaxed md:text-base">
         <div>
           <p>We’ve sent a verification email to:</p>
           <Heading
@@ -39,12 +39,12 @@ export default async function Verify(props: {
           If you are not receiving AfterClass emails, try these troubleshooting
           steps:
         </p>
-        <ol className="flex list-decimal flex-col gap-3 pl-5 md:pl-10">
-          <li className="">
-            <b className="text-accent-foreground">
+        <ol className="flex list-decimal flex-col gap-3 pl-5 md:pl-8">
+          <li className="pl-2">
+            <span className="text-accent-foreground">
               Ensure the correct email address was used to register with
               AfterClass.{" "}
-            </b>
+            </span>
             <span>We currently only support emails from these domains: </span>
             <span className="flex gap-1">
               {env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.map((domain, i) => (
@@ -59,22 +59,23 @@ export default async function Verify(props: {
               ))}
             </span>
           </li>
-          <li>
-            <b className="text-accent-foreground">
+          <li className="pl-2">
+            <span className="text-accent-foreground">
               Check the spam or junk folder in your email inbox.{" "}
-            </b>
+            </span>
             Occasionally, your mail service provider might incorrectly flag the
             login links as spam. If so, mark the email as not spam in your
             inbox.
           </li>
-          <li>
-            <b className="text-accent-foreground">
+          <li className="pl-2">
+            <span className="text-accent-foreground">
               <span>Add the </span>
               <a
                 href="mailto:noreply@afterclass.io"
                 className={cn(
                   buttonVariants({
-                    className: "inline md:text-base",
+                    variant: "link",
+                    className: "inline p-0 md:text-base",
                   }),
                 )}
               >
@@ -85,34 +86,19 @@ export default async function Verify(props: {
                 href="https://afterclass.io"
                 className={cn(
                   buttonVariants({
-                    className: "inline md:text-base",
+                    variant: "link",
+                    className: "inline p-0 md:text-base",
                   }),
                 )}
               >
                 afterclass.io
               </Link>
               <span> domain to your email service’s safe senders list. </span>
-            </b>
+            </span>
             As an additional measure, adding AfterClass’s email and domain will
             further help reduce the likelihood of emails being flagged as spam.
           </li>
         </ol>
-        <p>
-          <span>Still having trouble? </span>
-          <b className="text-accent-foreground">
-            Reach out to us via Telegram{" "}
-          </b>
-          <Link
-            href={env.NEXT_PUBLIC_AC_HELPDESK_LINK}
-            className={cn(
-              buttonVariants({
-                className: "inline md:text-base",
-              }),
-            )}
-          >
-            @afterclass
-          </Link>
-        </p>
       </div>
     </AuthCard>
   );

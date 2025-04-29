@@ -59,9 +59,11 @@ export default async function ConfirmSignUp(props: {
       <div className="text-accent-foreground flex w-full flex-col gap-6 pb-3">
         <p>{description}</p>
         {!validatedUrl ? (
-          <ProgressLink href={validatedUrl}>{button}</ProgressLink>
-        ) : (
           <Button disabled>{button}</Button>
+        ) : (
+          <ProgressLink href={validatedUrl} target="_blank">
+            {button}
+          </ProgressLink>
         )}
       </div>
     </AuthCard>

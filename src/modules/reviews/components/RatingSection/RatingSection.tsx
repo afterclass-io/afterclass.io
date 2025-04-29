@@ -1,12 +1,8 @@
-import {
-  ratingSectionTheme,
-  type RatingSectionVariants,
-} from "./RatingSection.theme";
 import { HeartIcon } from "@/common/components/icons";
 import { LockedOverlay } from "@/common/components/locked-overlay";
 import { StatItem, type StatItemProps } from "@/common/components/stat-item";
 
-export type RatingSectionProps = RatingSectionVariants & {
+export type RatingSectionProps = {
   headingRatingItem: StatItemProps;
   ratingItems: StatItemProps[];
   isLocked?: boolean;

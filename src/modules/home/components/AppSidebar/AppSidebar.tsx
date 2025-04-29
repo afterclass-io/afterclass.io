@@ -15,7 +15,6 @@ import {
 import { Logo } from "@/common/components/logo";
 import {
   ChartLineIcon,
-  DealsIcon,
   GithubIcon,
   HelpDeskIcon,
   PlusIcon,

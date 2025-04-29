@@ -91,15 +91,13 @@ export const ResetPasswordForm = () => {
             </FormItem>
           )}
         />
-        <div className="flex w-full flex-col items-start gap-2 self-stretch pt-3">
-          <Button
-            type="submit"
-            disabled={form.formState.isSubmitting}
-            tabIndex={2}
-          >
-            {form.formState.isSubmitting ? "Signing in..." : "Reset Password"}
-          </Button>
-        </div>
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          tabIndex={2}
+        >
+          {form.formState.isSubmitting ? "Signing in..." : "Reset Password"}
+        </Button>
         {isSubmitSuccessful && (
           <div className="text-green-500">
             Your password has been updated successfully.

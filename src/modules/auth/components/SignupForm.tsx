@@ -173,28 +173,26 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
             </FormItem>
           )}
         />
-        <div className="flex w-full flex-col items-start gap-2 self-stretch pt-3">
-          <Button
-            type="submit"
-            disabled={form.formState.isSubmitting}
-            tabIndex={4}
-            data-test="submit"
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          tabIndex={4}
+          data-test="submit"
+        >
+          {form.formState.isSubmitting ? "Creating an account..." : "Sign up"}
+        </Button>
+        <div className="flex items-center gap-1 self-stretch md:text-base">
+          <span className="text-muted-foreground text-center font-semibold">
+            Already have an account?
+          </span>
+          <ProgressLink
+            href="/account/auth/login"
+            type="button"
+            variant="link"
+            tabIndex={7}
           >
-            {form.formState.isSubmitting ? "Creating an account..." : "Sign up"}
-          </Button>
-          <div className="flex items-center gap-1 self-stretch md:text-base">
-            <span className="text-muted-foreground text-center font-semibold">
-              Already have an account?
-            </span>
-            <ProgressLink
-              href="/account/auth/login"
-              type="button"
-              variant="link"
-              tabIndex={7}
-            >
-              Login
-            </ProgressLink>
-          </div>
+            Login
+          </ProgressLink>
         </div>
       </form>
     </Form>

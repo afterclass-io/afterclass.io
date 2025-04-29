@@ -116,31 +116,29 @@ export const ForgotPwdForm = () => {
             </FormItem>
           )}
         />
-        <div className="flex w-full flex-col items-start gap-2 self-stretch pt-3">
-          <Button
-            type="submit"
-            disabled={form.formState.isSubmitting}
-            tabIndex={2}
-            data-test="submit"
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          tabIndex={2}
+          data-test="submit"
+        >
+          {form.formState.isSubmitting
+            ? "Confirming your email..."
+            : "Reset my password"}
+        </Button>
+        <div className="flex items-center gap-1 self-stretch md:text-base">
+          <span className="text-muted-foreground text-center font-semibold">
+            {"Don't have an account?"}
+          </span>
+          <ProgressLink
+            href="/account/auth/signup"
+            type="button"
+            variant="link"
+            tabIndex={3}
+            data-test="register"
           >
-            {form.formState.isSubmitting
-              ? "Confirming your email..."
-              : "Reset my password"}
-          </Button>
-          <div className="flex items-center gap-1 self-stretch md:text-base">
-            <span className="text-muted-foreground text-center font-semibold">
-              {"Don't have an account?"}
-            </span>
-            <ProgressLink
-              href="/account/auth/signup"
-              type="button"
-              variant="link"
-              tabIndex={3}
-              data-test="register"
-            >
-              Create an account
-            </ProgressLink>
-          </div>
+            Create an account
+          </ProgressLink>
         </div>
       </form>
     </Form>

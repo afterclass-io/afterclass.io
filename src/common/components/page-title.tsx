@@ -1,5 +1,6 @@
 import { type ComponentPropsWithoutRef } from "react";
 import { Heading } from "@/common/components/heading";
+import { cn } from "@/common/functions";
 
 export type PageTitleProps = ComponentPropsWithoutRef<"div"> & {
   children: React.ReactNode;
@@ -23,7 +24,7 @@ export const PageTitle = ({
     >
       {contentLeft}
       <Heading
-        className="text-center text-lg md:text-3xl"
+        className={cn("text-center text-lg md:text-3xl", className)}
         as="h1"
         {...props}
         data-test="page-title"

@@ -1,17 +1,21 @@
-import { type ComponentProps, type ElementType, type ReactNode } from "react";
+import Link from "next/link";
 
-type AuthCardProps<T extends ElementType = ElementType> = {
+import { buttonVariants } from "@/common/components/button";
+import { cn } from "@/common/functions";
+import { env } from "@/env";
+
+type AuthCardProps<T extends React.ElementType = React.ElementType> = {
   as?: T;
   title?: string;
-  children?: ReactNode;
+  children?: React.ReactNode;
 };
 
 const defaultElement = "h1";
 
-type TitleProps<T extends ElementType> = AuthCardProps<T> &
-  Omit<ComponentProps<T>, keyof AuthCardProps<T>>;
+type TitleProps<T extends React.ElementType> = AuthCardProps<T> &
+  Omit<React.ComponentProps<T>, keyof AuthCardProps<T>>;
 
-export const AuthCard = <T extends ElementType = typeof defaultElement>({
+export const AuthCard = <T extends React.ElementType = typeof defaultElement>({
   children,
   title,
   as,
@@ -27,6 +31,23 @@ export const AuthCard = <T extends ElementType = typeof defaultElement>({
         {title}
       </Title>
       {children}
+      <div className="text-muted-foreground">
+        <span>Having trouble?</span>
+        <Link
+          href={env.NEXT_PUBLIC_AC_HELPDESK_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            buttonVariants({
+              variant: "link",
+              className: "text-muted-foreground font-normal",
+            }),
+          )}
+        >
+          <span>Contact us on Telegram</span>
+          <span className="text-primary">@afterclass</span>
+        </Link>
+      </div>
     </div>
   );
 };

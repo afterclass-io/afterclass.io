@@ -94,7 +94,7 @@ export const VoteGroup = ({
       <Button
         variant="ghost"
         onClick={handleUpvote}
-        className="aspect-square size-fit h-full cursor-pointer rounded-full p-1 transition-colors duration-200 hover:scale-110"
+        className="aspect-square size-fit h-full rounded-full p-1 transition-colors duration-200 hover:scale-110"
         size="icon"
         aria-label="upvote"
         data-test="upvote-button"
@@ -119,7 +119,7 @@ export const VoteGroup = ({
       <Button
         variant="ghost"
         onClick={handleDownvote}
-        className="aspect-square size-fit h-full cursor-pointer rounded-full p-1 transition-colors duration-200 hover:scale-110"
+        className="aspect-square size-fit h-full rounded-full p-1 transition-colors duration-200 hover:scale-110"
         size="icon"
         aria-label="downvote"
         data-test="downvote-button"
