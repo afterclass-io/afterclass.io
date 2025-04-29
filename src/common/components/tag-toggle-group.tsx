@@ -20,7 +20,7 @@ export const TagToggleGroup = forwardRef<
   HTMLButtonElement,
   TagToggleGroupProps
 >(({ items, value: propValue, ...props }, ref) => {
-  const fieldValue = propValue as string[];
+  const fieldValue = propValue as string[] | undefined;
   return (
     <div className="flex flex-wrap content-start items-start gap-3 self-stretch text-sm">
       {items.map(({ label, value }, i) => (
@@ -31,9 +31,9 @@ export const TagToggleGroup = forwardRef<
             checked={fieldValue?.includes(value)}
             onCheckedChange={(checked) => {
               if (checked) {
-                props.onChange?.([...fieldValue, value]);
+                props.onChange?.(fieldValue ? [...fieldValue, value] : [value]);
               } else {
-                props.onChange?.(fieldValue.filter((v) => v !== value));
+                props.onChange?.(fieldValue?.filter((v) => v !== value));
               }
             }}
             {...props}
@@ -42,7 +42,7 @@ export const TagToggleGroup = forwardRef<
           <Tag
             className="font-normal select-none"
             deletable={false}
-            variant={fieldValue.includes(value) ? "outline" : "soft"}
+            variant={fieldValue?.includes(value) ? "outline" : "soft"}
             color="primary"
             onClick={() => {
               // intentionally do nothing
