@@ -31,7 +31,7 @@ export const CoreLayoutHeader = async () => {
           variant="ghost"
           size="icon"
         >
-          <AfterclassIcon className="text-primary" />
+          <AfterclassIcon className="text-primary size-6" />
         </ProgressLink>
         <div className="flex items-center gap-4 md:mr-4">
           {session ? (

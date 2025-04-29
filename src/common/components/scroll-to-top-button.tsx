@@ -27,13 +27,13 @@ export function ScrollToTopButton() {
 
   return (
     <Button
-      className="fixed right-4 bottom-4"
+      className="dark:bg-card fixed right-4 bottom-4 size-10"
       aria-label="scroll-top-button"
       variant="outline"
       size="icon"
       onClick={() => handleScrollToTop()}
     >
-      <ChevronUpIcon />
+      <ChevronUpIcon className="size-6" />
     </Button>
   );
 }
