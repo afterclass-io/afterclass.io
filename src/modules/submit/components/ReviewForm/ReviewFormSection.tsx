@@ -12,7 +12,6 @@ import { type ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
 import { ReviewableEnum, type ReviewableType } from "@/modules/submit/types";
 import { texts } from "@/modules/submit/constants";
 
-import { reviewFormTheme } from "./ReviewForm.theme";
 import {
   FormControl,
   FormField,
@@ -38,16 +37,14 @@ export const ReviewFormSection = ({
   isOptional = false,
 }: ReviewFormSectionProps) => {
   const { control, setValue } = useFormContext<ReviewFormInputsSchema>();
-  const { wrapper, header, button, divider, lower, textarea } = reviewFormTheme(
-    {
-      size: { initial: "sm", md: "md" },
-    },
-  );
   const [isSkipped, setIsSkipped] = useState(false);
 
   return (
-    <div className={wrapper()} data-test={`review-form-${type}-section`}>
-      <div className={header()}>
+    <div
+      className="bg-card flex w-full flex-col items-start gap-6 rounded-2xl px-4 py-6 sm:px-6 sm:py-8 md:w-160"
+      data-test={`review-form-${type}-section`}
+    >
+      <div className="flex flex-col items-start justify-between gap-6 self-stretch sm:flex-row">
         <FormField
           control={control}
           name={`${type}.value`}
@@ -71,7 +68,7 @@ export const ReviewFormSection = ({
             <Button
               variant="secondary"
               type="button"
-              className={button()}
+              className="min-w-fit text-sm"
               onClick={() => {
                 setIsSkipped(false);
                 setValue("type", ReviewableEnum.PROFESSOR);
@@ -83,9 +80,9 @@ export const ReviewFormSection = ({
             </Button>
           ) : (
             <Button
-              variant="outline"
+              variant="destructive"
               type="button"
-              className={button()}
+              className="min-w-fit text-sm"
               onClick={() => {
                 setIsSkipped(true);
                 setValue("type", ReviewableEnum.COURSE);
@@ -100,7 +97,7 @@ export const ReviewFormSection = ({
       {!isSkipped && (
         <>
           <Separator />
-          <div className={lower()}>
+          <div className="flex flex-col items-start gap-8 self-stretch">
             <FormField
               control={control}
               name={`${type}.rating`}
@@ -145,7 +142,7 @@ export const ReviewFormSection = ({
                   <FormLabel>{texts.BODY.FIELD_LABEL[type]}</FormLabel>
                   <FormControl>
                     <Textarea
-                      className={textarea()}
+                      className="w-full"
                       placeholder={texts.BODY.PLACEHOLDER[type]}
                       {...field}
                       data-test={`review-form-${type}-body`}
@@ -164,7 +161,7 @@ export const ReviewFormSection = ({
                   <FormLabel>{texts.TIPS.FIELD_LABEL[type]}</FormLabel>
                   <FormControl>
                     <Textarea
-                      className={textarea()}
+                      className="w-full"
                       placeholder={texts.TIPS.PLACEHOLDER[type]}
                       {...field}
                       data-test={`review-form-${type}-tips`}

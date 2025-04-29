@@ -1,19 +1,12 @@
 import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 
 import { reviewFormSchema } from "@/common/tools/zod/schemas";
 import { protectedProcedure } from "@/server/api/trpc";
 import { ReviewableEnum } from "@/modules/submit/types";
 
 export const create = protectedProcedure
-  .input(
-    reviewFormSchema.and(
-      z.object({
-        user: z.object({ id: z.string() }),
-      }),
-    ),
-  )
+  .input(reviewFormSchema)
   .mutation(async ({ input, ctx }) => {
     const course = await ctx.db.courses.findFirst({
       where: {
@@ -26,7 +19,7 @@ export const create = protectedProcedure
         message: "Course not found",
       });
     }
-    const { type, user, professor: profReview, course: courseReview } = input;
+    const { type, professor: profReview, course: courseReview } = input;
     const reviewsToCreate = [courseReview];
     if (type === ReviewableEnum.PROFESSOR) {
       reviewsToCreate.push(profReview);
@@ -43,7 +36,7 @@ export const create = protectedProcedure
             reviewedProfessorId:
               r.value === profReview?.value ? r.value : undefined,
             reviewedUniversityId: course.belongToUniversityId,
-            reviewerId: user.id,
+            reviewerId: ctx.session.user.id,
           },
         });
         if (r.labels) {

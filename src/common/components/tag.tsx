@@ -226,7 +226,7 @@ function Tag({
       onClick={onClick}
     >
       {!!avatar && <div className="start-icon">{avatar}</div>}
-      <p className="label">{children}</p>
+      <div className="label">{children}</div>
       {!!deletable && (
         <div
           className={cn(deletableVariants({ variant, color }), "deletable")}

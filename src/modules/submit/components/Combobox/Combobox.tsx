@@ -18,7 +18,6 @@ import {
   PopoverTrigger,
 } from "@/common/components/popover";
 import { cn } from "@/common/functions/cn";
-import { comboboxTheme } from "./Combobox.theme";
 
 export type ComboboxProps = {
   items: { label: string; value: string }[];
@@ -43,11 +42,11 @@ export const Combobox = forwardRef<
         <Button
           variant="outline"
           aria-expanded={open}
-          className={comboboxTheme()}
+          className="bg-card min-h-12 w-full max-w-72 flex-1 items-center justify-between self-stretch rounded-lg p-2 text-left"
           data-test="combobox-trigger"
         >
-          <ChevronDownIcon />
           {value ? items.find((el) => el.value === value)?.label : triggerLabel}
+          <ChevronDownIcon />
         </Button>
       </PopoverTrigger>
       <PopoverContent>
