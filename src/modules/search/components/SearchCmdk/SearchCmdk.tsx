@@ -134,6 +134,7 @@ export const SearchCmdk = ({
               <Input
                 placeholder="Search for Professors or Courses..."
                 type="text"
+                className="text-accent-foreground"
                 onChange={(e) => setSearchTerm(e.target.value)}
                 data-test="search-cmdk-input"
               />

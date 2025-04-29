@@ -1,19 +1,17 @@
 import { SearchIcon } from "@/common/components/icons";
 import { PageTitle } from "@/common/components/page-title";
-import { searchResultTheme } from "../SearchResult.theme";
 
 export const SearchResultTitle = ({
   searchTerm = "...",
 }: {
   searchTerm?: string;
 }) => {
-  const { title, titleIcon } = searchResultTheme({
-    size: { initial: "sm", md: "md" },
-  });
   return (
     <PageTitle
-      className={title()}
-      contentLeft={<SearchIcon size={36} className={titleIcon()} />}
+      className="truncate text-left"
+      contentLeft={
+        <SearchIcon className="text-muted-foreground size-8 flex-none" />
+      }
     >
       Search results for “{searchTerm}”
     </PageTitle>

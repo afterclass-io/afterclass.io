@@ -22,8 +22,8 @@ export const Heading = ({
     <Component
       {...props}
       className={cn(
-        className,
         "text-accent-foreground font-sans font-semibold tracking-tighter",
+        className,
       )}
     >
       {children}

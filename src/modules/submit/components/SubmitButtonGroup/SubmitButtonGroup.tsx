@@ -16,8 +16,6 @@ import { ChevronDownIcon } from "@/common/components/icons";
 import { type ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
 
 import { ReviewerEnum } from "@/modules/submit/types";
-
-import { submitButtonGroupTheme } from "./SubmitButtonGroup.theme";
 import { Loader2 } from "lucide-react";
 
 export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
@@ -34,14 +32,11 @@ export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
       ? "Anonymously"
       : `as ${session?.user.email}`;
 
-  const { wrapper, submitButton, selectTrigger, selectIcon, selectItem } =
-    submitButtonGroupTheme();
-
   return (
-    <div className={wrapper()}>
+    <div className="borde border-primary/80 bg-primary inline-flex h-10 shrink-0 items-center justify-center rounded-3xl">
       <Button
         type="submit"
-        className={submitButton()}
+        className="borde border-primary/80 flex content-center items-center gap-2 self-stretch rounded-none rounded-l-3xl pr-3 pl-4"
         disabled={isLoading}
         data-test="review-submit-button"
       >
@@ -59,16 +54,19 @@ export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
         }}
         defaultValue={submitAs}
       >
-        <SelectTrigger asChild className={selectTrigger()}>
+        <SelectTrigger
+          asChild
+          className="borde border-primary/80 flex h-full w-auto content-center items-center gap-4 self-stretch rounded-none rounded-r-3xl py-3"
+        >
           <Button data-test="review-submit-select-trigger">
-            <ChevronDownIcon className={selectIcon()} />
+            <ChevronDownIcon className="size-5" />
           </Button>
         </SelectTrigger>
         <SelectContent align="end" sideOffset={8}>
           <SelectGroup>
             {session && (
               <SelectItem
-                className={selectItem()}
+                className="h-10 gap-2 self-stretch py-4 text-sm font-medium"
                 value={ReviewerEnum.USER}
                 data-test="review-submit-select-user"
               >
@@ -76,7 +74,7 @@ export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
               </SelectItem>
             )}
             <SelectItem
-              className={selectItem()}
+              className="h-10 gap-2 self-stretch py-4 text-sm font-medium"
               value={ReviewerEnum.ANONYMOUS}
               data-test="review-submit-select-anon"
             >
