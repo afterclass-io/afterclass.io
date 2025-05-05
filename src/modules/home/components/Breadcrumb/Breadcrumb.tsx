@@ -21,12 +21,11 @@ const HOME_BREADCRUMB: BreadcrumbElement = {
   href: "/",
 };
 
-const getBreadcrumbElements = (
-  pathSegments: string[],
-): { elements: BreadcrumbElement[]; isSuccess: boolean } => {
-  if (!pathSegments.length) {
-    return { elements: [HOME_BREADCRUMB], isSuccess: true };
-  }
+export const HomeBreadcrumb = (
+  props: React.ComponentProps<typeof Breadcrumb>,
+) => {
+  const path = usePathname();
+  const pathSegments = (path ?? "").split("/").filter(Boolean);
 
   const elements = [HOME_BREADCRUMB];
   let isSuccess = false;
@@ -74,16 +73,6 @@ const getBreadcrumbElements = (
       break;
     }
   }
-
-  return { elements, isSuccess };
-};
-
-export const HomeBreadcrumb = (
-  props: React.ComponentProps<typeof Breadcrumb>,
-) => {
-  const path = usePathname();
-  const pathSegments = (path ?? "").split("/").filter(Boolean);
-  const { elements, isSuccess } = getBreadcrumbElements(pathSegments);
 
   if (!isSuccess) {
     return (
