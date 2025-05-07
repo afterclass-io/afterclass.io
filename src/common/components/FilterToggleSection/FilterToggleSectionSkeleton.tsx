@@ -11,7 +11,6 @@ export const FilterToggleSectionItemSkeleton = () => {
           <Skeleton className="h-6 w-12" />
           <div className="text-accent-foreground line-clamp-1 flex-[1_0_0] leading-4 font-medium text-ellipsis md:line-clamp-none md:flex-auto md:text-sm md:font-semibold">
             <Skeleton className="h-6 w-12" />
-            <Skeleton className="h-6 w-12" />
           </div>
         </div>
       </div>
