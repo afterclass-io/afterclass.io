@@ -149,28 +149,33 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
     <>
       <Separator />
 
-      {reviews.flatMap((review) => [
-        <ReviewItem
-          key={review.id}
-          variant={props.variant}
-          review={review}
-          isLocked={!session}
-          seeMore={pathname === "/"}
-        />,
-        <Separator key={`hr-${review.id}`} />,
-      ])}
+      {reviews
+        .flatMap((review) => [
+          <ReviewItem
+            key={review.id}
+            variant={props.variant}
+            review={review}
+            isLocked={!session}
+            seeMore={pathname === "/"}
+          />,
+          <Separator key={`hr-${review.id}`} />,
+        ])
+        .slice(0, -1)}
 
       {status === "authenticated" && hasNextPage && (
-        <InView
-          as="div"
-          className="flex w-full justify-center p-4"
-          onChange={(inView) => inView && fetchNextPage()}
-        >
-          <AfterclassIcon
-            size={64}
-            className="text-primary/80 animate-pulse transition-colors duration-1500"
-          />
-        </InView>
+        <>
+          <Separator />
+          <InView
+            as="div"
+            className="flex w-full justify-center p-4"
+            onChange={(inView) => inView && fetchNextPage()}
+          >
+            <AfterclassIcon
+              size={64}
+              className="text-primary/80 animate-pulse transition-colors duration-1500"
+            />
+          </InView>
+        </>
       )}
     </>
   );
