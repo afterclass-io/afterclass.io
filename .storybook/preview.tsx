@@ -1,4 +1,4 @@
-import type { Preview, StoryFn } from "@storybook/react";
+import type { Preview } from "@storybook/react";
 import { withThemeByClassName } from "@storybook/addon-themes";
 import "../src/common/styles/globals.scss";
 import { inter, poppins } from "../src/common/fonts";
@@ -6,7 +6,7 @@ import AuthProvider from "../src/common/providers/AuthProvider";
 import { TRPCReactProvider } from "../src/common/tools/trpc/react";
 import TooltipProvider from "../src/common/providers/TooltipProvider";
 import ProgressProvider from "../src/common/providers/ProgressProvider";
-import { Toaster } from "../src/common/components/Toast";
+import { Toaster } from "../src/common/components/sonner";
 import { SessionContext } from "next-auth/react";
 import { mockAuthStates } from "./auth";
 
@@ -30,11 +30,12 @@ const preview: Preview = {
     },
   },
   decorators: [
-    (Story: StoryFn, { parameters }) => {
+    (Story, { parameters }) => {
       let mockSession = mockAuthStates.user.session;
       if (parameters?.mockSession) {
         mockSession = parameters.mockSession;
       }
+
       return (
         <AuthProvider>
           {/* @ts-ignore */}

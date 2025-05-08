@@ -3,7 +3,7 @@ import "@/common/styles/globals.scss";
 import type { Metadata, Viewport } from "next";
 
 import { TRPCReactProvider } from "@/common/tools/trpc/react";
-import { CoreLayout } from "@/common/components/CoreLayout";
+import { CoreLayout } from "@/common/components/core-layout";
 import ThemeProvider from "@/common/providers/ThemeProvider";
 import AuthProvider from "@/common/providers/AuthProvider";
 import TooltipProvider from "@/common/providers/TooltipProvider";
@@ -14,7 +14,7 @@ import { UmamiProvider } from "@/common/providers/Umami";
 import JotaiProvider from "@/common/providers/JotaiProvider";
 import ProgressProvider from "@/common/providers/ProgressProvider";
 import { GlobalProgressBar } from "@/modules/home/components/GlobalProgressBar";
-import { Toaster } from "@/common/components/Toast";
+import { Toaster } from "@/common/components/sonner";
 import { UmamiIdentityTracker } from "@/modules/home/components/UmamiIdentityTracker";
 
 const appName = "AfterClass";

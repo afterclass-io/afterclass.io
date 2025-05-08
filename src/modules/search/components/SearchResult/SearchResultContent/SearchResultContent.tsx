@@ -7,14 +7,13 @@ import {
   BooksIcon,
   GraduationCapIcon,
   PencilIcon,
-} from "@/common/components/CustomIcon";
+} from "@/common/components/icons";
 import { SearchResultList } from "../SearchResultList";
 import { SearchResultItem } from "../SearchResultItem";
-import { SearchResultDivider } from "../SearchResultDivider";
 import { SearchResultFilter } from "../SearchResultFilter";
 import { SearchResultEmpty } from "../SearchResultEmpty";
-import { searchResultTheme } from "../SearchResult.theme";
 import { type UniversityAbbreviation } from "@prisma/client";
+import { Separator } from "@/common/components/separator";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const filterOptions = z.object({
@@ -30,7 +29,6 @@ export const SearchResultContent = ({
   searchedCourse: SearchCourseResult[];
   searchedProf: SearchProfResult[];
 }) => {
-  const { content } = searchResultTheme({ size: { initial: "sm", md: "md" } });
   const [filter, setFilter] = useState<FilterOptions>({
     school: "all",
     type: "all",
@@ -64,7 +62,7 @@ export const SearchResultContent = ({
   );
 
   return (
-    <div className={content()}>
+    <div className="flex h-full gap-12">
       <SearchResultList>
         <SearchResultEmpty show={isEmpty()} />
         {(filter.type === "all" || filter.type === "course") &&
@@ -95,7 +93,7 @@ export const SearchResultContent = ({
             />
           ))}
       </SearchResultList>
-      <SearchResultDivider />
+      <Separator orientation="vertical" className="hidden lg:block" />
       <SearchResultFilter
         onValueChange={(key, value) => {
           setFilter((prev) => ({ ...prev, [key]: value }));

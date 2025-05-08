@@ -1,35 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @import "./components.scss";
 @import "./radix-dialog.scss";
-
-@layer base {
-  html {
-    font-size: 16px;
-    -ms-text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%;
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  *,
-  *:before,
-  *:after {
-    box-sizing: border-box;
-    overscroll-behavior: none;
-  }
-
-  html,
-  body,
-  #__next {
-    height: calc(
-      100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)
-    );
-    height: calc(
-      100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom)
-    );
-    @apply bg-bg-base text-text-em-high;
-  }
-}
+@import "./shadcn.scss";

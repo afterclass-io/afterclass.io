@@ -75,10 +75,7 @@ context("Reviews: Professor", function () {
     });
 
     it("should not be able to load more reviews", function () {
-      cy.intercept(
-        "GET",
-        "/api/trpc/professors.getBySlug,reviews.getByProfSlug*",
-      ).as("getReviews");
+      cy.intercept("GET", "/api/trpc/reviews.getByProfSlug*").as("getReviews");
       cy.wait("@getReviews");
 
       cy.scrollTo("bottom");

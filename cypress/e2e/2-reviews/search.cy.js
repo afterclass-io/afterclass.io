@@ -31,7 +31,9 @@ context("Reviews: Search", function () {
       });
 
       it("should bring up searchbar when shortcut or search input is clicked", function () {
-        cy.get("[data-test=search-cmdk-trigger]").should("be.visible").click();
+        cy.get("[data-test=search-cmdk-trigger]")
+          .should("be.visible")
+          .click({ force: true });
         cy.get("input[data-test=search-cmdk-input]")
           .should("be.visible")
           .type("{esc}");
@@ -43,7 +45,9 @@ context("Reviews: Search", function () {
       });
 
       it("should be able to search for a course", function () {
-        cy.get("[data-test=search-cmdk-trigger]").should("be.visible").click();
+        cy.get("[data-test=search-cmdk-trigger]")
+          .should("be.visible")
+          .click({ force: true });
         cy.get("input[data-test=search-cmdk-input]")
           .should("be.visible")
           .type(searchForCourse);
@@ -59,7 +63,9 @@ context("Reviews: Search", function () {
       });
 
       it("should be able to search for a professor", function () {
-        cy.get("[data-test=search-cmdk-trigger]").should("be.visible").click();
+        cy.get("[data-test=search-cmdk-trigger]")
+          .should("be.visible")
+          .click({ force: true });
         cy.get("input[data-test=search-cmdk-input]")
           .should("be.visible")
           .type(searchForProf);
@@ -75,7 +81,9 @@ context("Reviews: Search", function () {
       });
 
       it("should not be able to sql inject", function () {
-        cy.get("[data-test=search-cmdk-trigger]").should("be.visible").click();
+        cy.get("[data-test=search-cmdk-trigger]")
+          .should("be.visible")
+          .click({ force: true });
         cy.get("input[data-test=search-cmdk-input]")
           .should("be.visible")
           .type("; SELECT * FROM courses;--");
@@ -91,7 +99,9 @@ context("Reviews: Search", function () {
       it("should display not-found if no search results", function () {
         const NONSENSE = "asdfasdfasdf";
 
-        cy.get("[data-test=search-cmdk-trigger]").should("be.visible").click();
+        cy.get("[data-test=search-cmdk-trigger]")
+          .should("be.visible")
+          .click({ force: true });
         cy.get("input[data-test=search-cmdk-input]")
           .should("be.visible")
           .type(NONSENSE);

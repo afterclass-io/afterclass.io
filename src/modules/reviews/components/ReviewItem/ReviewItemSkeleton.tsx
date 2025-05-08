@@ -1,23 +1,15 @@
-import { reviewItemTheme } from "./ReviewItem.theme";
-import { Skeleton } from "@/common/components/Skeleton";
+import { Skeleton } from "@/common/components/skeleton";
 
 export const ReviewItemSkeleton = () => {
-  const { wrapper, body, headingContainer } = reviewItemTheme({
-    size: { initial: "sm", md: "md" },
-  });
   return (
-    <div
-      className={wrapper({
-        className: "cursor-default items-stretch hover:bg-inherit",
-      })}
-    >
-      <div className={headingContainer()}>
+    <div className="focus-ring flex h-fit max-w-prose flex-col items-start gap-2 rounded-md p-4 text-left md:gap-4">
+      <div className="flex content-center justify-between gap-3 self-stretch md:flex-row-reverse">
         <Skeleton className="h-[24px] w-[100px]" />
         <Skeleton className="h-[24px] w-[200px]" />
       </div>
 
       <div className="flex flex-col gap-1">
-        <div className={body()}>
+        <div className="text-accent-foreground line-clamp-5 wrap-anywhere md:line-clamp-3 md:text-sm">
           <Skeleton aria-hidden tabIndex={-1}>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim

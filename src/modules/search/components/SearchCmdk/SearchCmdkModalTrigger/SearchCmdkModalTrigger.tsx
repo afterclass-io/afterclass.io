@@ -1,9 +1,9 @@
 "use client";
-import { SearchIcon } from "@/common/components/CustomIcon";
-import { Input } from "@/common/components/Input";
+import { SearchIcon } from "@/common/components/icons";
 
-import { searchCmdkTheme } from "../SearchCmdk.theme";
 import { SearchCmdkOnboardingTooltip } from "../SearchCmdkOnboardingTooltip";
+import { Input, InputRoot, InputAdornment } from "@/common/components/input";
+import { Kbd } from "@/common/components/kbd";
 
 export const SearchCmdkModalTrigger = ({
   open,
@@ -12,20 +12,23 @@ export const SearchCmdkModalTrigger = ({
   open: boolean;
   onOpenChange: () => void;
 }) => {
-  const { triggerInput, kbd: kbdStyle, searchIcon } = searchCmdkTheme();
   return (
-    <Input
-      className={triggerInput()}
-      contentLeft={<SearchIcon size={16} className={searchIcon()} />}
-      contentRight={
+    <InputRoot className="cursor-pointer">
+      <InputAdornment>
+        <SearchIcon />
+      </InputAdornment>
+      <Input
+        value="Search"
+        readOnly
+        className="w-full text-left"
+        disabled
+        data-test="search-cmdk-trigger"
+      />
+      <InputAdornment>
         <SearchCmdkOnboardingTooltip open={open} onOpenChange={onOpenChange}>
-          <kbd className={kbdStyle()}>/</kbd>
+          <Kbd variant="outline">/</Kbd>
         </SearchCmdkOnboardingTooltip>
-      }
-      value="Search"
-      size="sm"
-      readOnly
-      data-test="search-cmdk-trigger"
-    />
+      </InputAdornment>
+    </InputRoot>
   );
 };

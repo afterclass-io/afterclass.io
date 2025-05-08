@@ -1,7 +1,7 @@
-import { GraduationCapIcon } from "@/common/components/CustomIcon";
-import { PageTitle } from "@/common/components/PageTitle";
-import { Skeleton } from "@/common/components/Skeleton";
-import { Tag } from "@/common/components/Tag";
+import { GraduationCapIcon } from "@/common/components/icons";
+import { PageTitle } from "@/common/components/page-title";
+import { Skeleton } from "@/common/components/skeleton";
+import { Tag } from "@/common/components/tag";
 
 export default function Loading() {
   return (
@@ -9,7 +9,12 @@ export default function Loading() {
       <PageTitle
         contentLeft={<GraduationCapIcon className="h-9 w-9" />}
         contentRight={
-          <Tag contentLeft={<Skeleton className="h-6 w-6" />}>
+          <Tag
+            className="border-default rounded-full"
+            deletable={false}
+            variant="outline"
+            avatar={<Skeleton className="h-6 w-6" />}
+          >
             <Skeleton className="h-[23.98px] w-[36.31px]" />
           </Tag>
         }

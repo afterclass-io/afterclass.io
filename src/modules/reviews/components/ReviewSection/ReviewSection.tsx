@@ -1,17 +1,23 @@
 import type { ComponentPropsWithoutRef } from "react";
-import { reviewSectionTheme } from "./ReviewSection.theme";
 
 import { ReviewSectionHeader } from "./ReviewSectionHeader";
 import { ReviewSectionHeaderSortGroup } from "./ReviewSectionHeaderSortGroup";
 import { ReviewSectionList } from "./ReviewSectionList";
 import { ReviewSectionListFilter } from "./ReviewSectionListFilter";
+import { cn } from "@/common/functions";
 
 export type ReviewSectionProps = ComponentPropsWithoutRef<"div">;
 
 export const ReviewSection = ({ className, ...props }: ReviewSectionProps) => {
-  const { wrapper } = reviewSectionTheme({ size: { initial: "sm", md: "md" } });
-
-  return <div className={wrapper({ className })} {...props} />;
+  return (
+    <div
+      className={cn(
+        "bg-card grid gap-4 rounded-3xl pt-6 md:gap-9 md:p-6 md:pt-12",
+        className,
+      )}
+      {...props}
+    />
+  );
 };
 
 export {

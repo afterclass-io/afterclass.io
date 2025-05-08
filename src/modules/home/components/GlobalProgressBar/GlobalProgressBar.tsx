@@ -1,5 +1,5 @@
 "use client";
-import { Progress } from "@/common/components/Progress";
+import { Progress } from "@/common/components/progress";
 import { useProgress } from "@/common/providers/ProgressProvider";
 import { useEffect } from "react";
 

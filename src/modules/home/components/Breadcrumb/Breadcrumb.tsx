@@ -3,9 +3,13 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 import { api } from "@/common/tools/trpc/react";
 import {
-  Breadcrumb as BC,
-  type BreadcrumbRootProps,
-} from "@/common/components/Breadcrumb";
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/common/components/breadcrumb";
 
 interface BreadcrumbElement {
   label: string;
@@ -17,12 +21,11 @@ const HOME_BREADCRUMB: BreadcrumbElement = {
   href: "/",
 };
 
-const getBreadcrumbElements = (
-  pathSegments: string[],
-): { elements: BreadcrumbElement[]; isSuccess: boolean } => {
-  if (!pathSegments.length) {
-    return { elements: [HOME_BREADCRUMB], isSuccess: true };
-  }
+export const HomeBreadcrumb = (
+  props: React.ComponentProps<typeof Breadcrumb>,
+) => {
+  const path = usePathname();
+  const pathSegments = (path ?? "").split("/").filter(Boolean);
 
   const elements = [HOME_BREADCRUMB];
   let isSuccess = false;
@@ -71,52 +74,43 @@ const getBreadcrumbElements = (
     }
   }
 
-  return { elements, isSuccess };
-};
-
-const BreadcrumbItem: React.FC<{
-  element: BreadcrumbElement;
-  isLast: boolean;
-}> = ({ element, isLast }) => (
-  <BC.Item>
-    {element.href && !isLast ? (
-      <BC.Link href={element.href} className="max-w-80 truncate">
-        {element.label}
-      </BC.Link>
-    ) : (
-      <BC.Page className="max-w-80 truncate">{element.label}</BC.Page>
-    )}
-  </BC.Item>
-);
-
-export const Breadcrumb: React.FC<BreadcrumbRootProps> = (props) => {
-  const path = usePathname();
-  const pathSegments = (path ?? "").split("/").filter(Boolean);
-  const { elements, isSuccess } = getBreadcrumbElements(pathSegments);
-
   if (!isSuccess) {
     return (
-      <BC {...props}>
-        <BC.List>
-          <BreadcrumbItem element={HOME_BREADCRUMB} isLast={true} />
-        </BC.List>
-      </BC>
+      <Breadcrumb {...props}>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbPage className="max-w-80 truncate">
+              {HOME_BREADCRUMB.label}
+            </BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
     );
   }
 
   return (
-    <BC {...props}>
-      <BC.List>
+    <Breadcrumb {...props}>
+      <BreadcrumbList>
         {elements.map((element, index) => (
           <React.Fragment key={element.label}>
-            <BreadcrumbItem
-              element={element}
-              isLast={index === elements.length - 1}
-            />
-            {index < elements.length - 1 && <BC.Separator />}
+            <BreadcrumbItem>
+              {element.href && index < elements.length - 1 ? (
+                <BreadcrumbLink
+                  href={element.href}
+                  className="max-w-80 truncate"
+                >
+                  {element.label}
+                </BreadcrumbLink>
+              ) : (
+                <BreadcrumbPage className="max-w-80 truncate">
+                  {element.label}
+                </BreadcrumbPage>
+              )}
+            </BreadcrumbItem>
+            {index < elements.length - 1 && <BreadcrumbSeparator />}
           </React.Fragment>
         ))}
-      </BC.List>
-    </BC>
+      </BreadcrumbList>
+    </Breadcrumb>
   );
 };

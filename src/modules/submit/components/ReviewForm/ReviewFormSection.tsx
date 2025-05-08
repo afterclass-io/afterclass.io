@@ -4,16 +4,22 @@ import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 import { Combobox } from "@/modules/submit/components/Combobox";
-import { Button } from "@/common/components/Button";
-import { RatingGroup } from "@/common/components/RatingGroup";
-import { TagToggleGroup } from "@/common/components/TagToggleGroup";
-import { Textarea } from "@/common/components/Textarea";
+import { Button } from "@/common/components/button";
+import { RatingGroup } from "@/common/components/rating-group";
+import { TagToggleGroup } from "@/common/components/tag-toggle-group";
+import { Textarea } from "@/common/components/textarea";
 import { type ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
 import { ReviewableEnum, type ReviewableType } from "@/modules/submit/types";
 import { texts } from "@/modules/submit/constants";
 
-import { reviewFormTheme } from "./ReviewForm.theme";
-import { Form } from "@/common/components/Form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/common/components/form";
+import { Separator } from "@/common/components/separator";
 
 export type ReviewFormSectionProps = {
   type: ReviewableType;
@@ -31,32 +37,30 @@ export const ReviewFormSection = ({
   isOptional = false,
 }: ReviewFormSectionProps) => {
   const { control, setValue } = useFormContext<ReviewFormInputsSchema>();
-  const { wrapper, header, button, divider, lower, textarea } = reviewFormTheme(
-    {
-      size: { initial: "sm", md: "md" },
-    },
-  );
   const [isSkipped, setIsSkipped] = useState(false);
 
   return (
-    <div className={wrapper()} data-test={`review-form-${type}-section`}>
-      <div className={header()}>
-        <Form.Field
+    <div
+      className="bg-card flex w-full flex-col items-start gap-6 rounded-2xl px-4 py-6 sm:px-6 sm:py-8 md:w-160"
+      data-test={`review-form-${type}-section`}
+    >
+      <div className="flex flex-col items-start justify-between gap-6 self-stretch sm:flex-row">
+        <FormField
           control={control}
           name={`${type}.value`}
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label>{texts.COMBOBOX.FIELD_LABEL[type]}</Form.Label>
-              <Form.Control>
+            <FormItem>
+              <FormLabel>{texts.COMBOBOX.FIELD_LABEL[type]}</FormLabel>
+              <FormControl>
                 <Combobox
                   items={comboboxItems}
                   placeholder={texts.COMBOBOX.PLACEHOLDER[type]}
                   triggerLabel={texts.COMBOBOX.TRIGGER_LABEL[type]}
                   onSelectChange={field.onChange}
                 />
-              </Form.Control>
-              <Form.Message />
-            </Form.Item>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
         />
         {isOptional &&
@@ -64,7 +68,7 @@ export const ReviewFormSection = ({
             <Button
               variant="secondary"
               type="button"
-              className={button()}
+              className="min-w-fit text-sm"
               onClick={() => {
                 setIsSkipped(false);
                 setValue("type", ReviewableEnum.PROFESSOR);
@@ -76,9 +80,9 @@ export const ReviewFormSection = ({
             </Button>
           ) : (
             <Button
-              variant="tertiary"
+              variant="destructive"
               type="button"
-              className={button()}
+              className="min-w-fit text-sm"
               onClick={() => {
                 setIsSkipped(true);
                 setValue("type", ReviewableEnum.COURSE);
@@ -92,79 +96,79 @@ export const ReviewFormSection = ({
       </div>
       {!isSkipped && (
         <>
-          <hr className={divider()} />
-          <div className={lower()}>
-            <Form.Field
+          <Separator />
+          <div className="flex flex-col items-start gap-8 self-stretch">
+            <FormField
               control={control}
               name={`${type}.rating`}
               render={({ field }) => (
-                <Form.Item>
-                  <Form.Label>{texts.RATING.FIELD_LABEL[type]}</Form.Label>
-                  <Form.Control>
+                <FormItem>
+                  <FormLabel>{texts.RATING.FIELD_LABEL[type]}</FormLabel>
+                  <FormControl>
                     <RatingGroup
                       maxRating={maxRating}
                       {...field}
                       data-test={`review-form-${type}-rating`}
                     />
-                  </Form.Control>
-                  <Form.Message />
-                </Form.Item>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
             />
 
-            <Form.Field
+            <FormField
               control={control}
               name={`${type}.labels`}
               render={({ field }) => (
-                <Form.Item>
-                  <Form.Label>{texts.TAGS.FIELD_LABEL[type]}</Form.Label>
-                  <Form.Control>
+                <FormItem>
+                  <FormLabel>{texts.TAGS.FIELD_LABEL[type]}</FormLabel>
+                  <FormControl>
                     <TagToggleGroup
                       items={reviewLabels}
                       {...field}
                       data-test={`review-form-${type}-label`}
                     />
-                  </Form.Control>
-                  <Form.Message />
-                </Form.Item>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
             />
 
-            <Form.Field
+            <FormField
               control={control}
               name={`${type}.body`}
               render={({ field }) => (
-                <Form.Item>
-                  <Form.Label>{texts.BODY.FIELD_LABEL[type]}</Form.Label>
-                  <Form.Control>
+                <FormItem>
+                  <FormLabel>{texts.BODY.FIELD_LABEL[type]}</FormLabel>
+                  <FormControl>
                     <Textarea
-                      className={textarea()}
+                      className="w-full"
                       placeholder={texts.BODY.PLACEHOLDER[type]}
                       {...field}
                       data-test={`review-form-${type}-body`}
                     />
-                  </Form.Control>
-                  <Form.Message />
-                </Form.Item>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
             />
 
-            <Form.Field
+            <FormField
               control={control}
               name={`${type}.tips`}
               render={({ field }) => (
-                <Form.Item>
-                  <Form.Label>{texts.TIPS.FIELD_LABEL[type]}</Form.Label>
-                  <Form.Control>
+                <FormItem>
+                  <FormLabel>{texts.TIPS.FIELD_LABEL[type]}</FormLabel>
+                  <FormControl>
                     <Textarea
-                      className={textarea()}
+                      className="w-full"
                       placeholder={texts.TIPS.PLACEHOLDER[type]}
                       {...field}
                       data-test={`review-form-${type}-tips`}
                     />
-                  </Form.Control>
-                  <Form.Message />
-                </Form.Item>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
             />
           </div>

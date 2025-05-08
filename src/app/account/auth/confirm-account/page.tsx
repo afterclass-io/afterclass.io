@@ -1,4 +1,5 @@
-import { ProgressLink } from "@/common/components/Progress";
+import { Button } from "@/common/components/button";
+import { ProgressLink } from "@/common/components/progress-link";
 import { AuthCard } from "@/modules/auth/components";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -20,11 +21,9 @@ const CONFIRMATION_TEXTS = {
 
 type ConfirmationType = keyof typeof CONFIRMATION_TEXTS;
 
-export default async function ConfirmSignUp(
-  props: {
-    searchParams: Promise<{ confirmation_url: string | string[] | undefined }>;
-  }
-) {
+export default async function ConfirmSignUp(props: {
+  searchParams: Promise<{ confirmation_url: string | string[] | undefined }>;
+}) {
   const searchParams = await props.searchParams;
   const confirmationUrlSchema = z
     .string()
@@ -57,16 +56,15 @@ export default async function ConfirmSignUp(
 
   return (
     <AuthCard title={title}>
-      <div className="flex w-full flex-col gap-6 pb-3 text-text-em-high">
+      <div className="text-accent-foreground flex w-full flex-col gap-6 pb-3">
         <p>{description}</p>
-        <ProgressLink
-          href={validatedUrl}
-          disabled={!validatedUrl}
-          external
-          fullWidth
-        >
-          {button}
-        </ProgressLink>
+        {!validatedUrl ? (
+          <Button disabled>{button}</Button>
+        ) : (
+          <ProgressLink href={validatedUrl} target="_blank">
+            {button}
+          </ProgressLink>
+        )}
       </div>
     </AuthCard>
   );

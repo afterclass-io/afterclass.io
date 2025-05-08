@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import React from "react";
 
-import { BooksIcon } from "@/common/components/CustomIcon";
+import { BooksIcon } from "@/common/components/icons";
 import { OgImage } from "@/modules/opengraph/components/OgImage";
 import { api } from "@/common/tools/trpc/server";
 import { toTitleCase, formatPercentage } from "@/common/functions";

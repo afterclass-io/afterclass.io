@@ -81,10 +81,9 @@ context("Reviews: Course", function () {
     });
 
     it("should not be able to load more reviews", function () {
-      cy.intercept(
-        "GET",
-        "/api/trpc/courses.getByCourseCode,reviews.getByCourseCode*",
-      ).as("getReviews");
+      cy.intercept("GET", "/api/trpc/reviews.getByCourseCode*").as(
+        "getReviews",
+      );
       cy.wait("@getReviews");
 
       cy.scrollTo("bottom");
@@ -194,8 +193,13 @@ context("Reviews: Course", function () {
     });
 
     it("should be able to load more reviews", function () {
+      cy.intercept("GET", "/api/trpc/reviews.getByCourseCode*").as(
+        "getReviews",
+      );
+      cy.wait("@getReviews");
+
       cy.scrollTo("bottom");
-      cy.wait(1000);
+      cy.wait(2000);
 
       cy.get("[data-test=review]").should("have.length", 20);
     });

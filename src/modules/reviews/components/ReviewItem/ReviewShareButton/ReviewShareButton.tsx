@@ -4,21 +4,15 @@ import { ReviewEventType } from "@prisma/client";
 
 import { env } from "@/env";
 import { api } from "@/common/tools/trpc/react";
-import { toast } from "@/common/components/Toast";
-import {
-  Button,
-  type ButtonVariants,
-  type ButtonBaseProps,
-  type ButtonProps,
-} from "@/common/components/Button";
-import { ShareIcon } from "@/common/components/CustomIcon";
+import { toast } from "sonner";
+import { Button } from "@/common/components/button";
+import { ShareIcon } from "@/common/components/icons";
 import { useEdgeConfigs } from "@/common/hooks";
+import { Loader2 } from "lucide-react";
 
-export type ReviewShareButtonProps = ButtonProps &
-  ButtonBaseProps &
-  Omit<ButtonVariants, "hasIcon" | "iconOnly"> & {
-    reviewId: string;
-  };
+export type ReviewShareButtonProps = {
+  reviewId: string;
+};
 
 export const ReviewShareButton = ({
   reviewId,
@@ -38,14 +32,15 @@ export const ReviewShareButton = ({
   });
   return (
     <Button
-      rounded
-      variant="tertiary"
+      variant="outline"
       size="sm"
-      iconLeft={<ShareIcon className="h-4 w-4" />}
-      loading={shareCountQuery.isLoading}
       aria-label="Share"
       data-umami-event="review-share"
-      onClick={async () => {
+      disabled={shareCountQuery.isLoading}
+      className="h-8 rounded-full"
+      onClick={async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
         const shareUrl = `${env.NEXT_PUBLIC_SITE_URL}${pathname}?review_id=${reviewId}`;
         await navigator.clipboard.writeText(shareUrl);
         toast.success("Link copied to clipboard", { id: reviewId });
@@ -58,7 +53,14 @@ export const ReviewShareButton = ({
       }}
       {...props}
     >
-      {shareCountQuery.data}
+      {shareCountQuery.isLoading ? (
+        <Loader2 className="animate-spin" />
+      ) : (
+        <>
+          <ShareIcon />
+          <span className="font-mono">{shareCountQuery.data}</span>
+        </>
+      )}
     </Button>
   );
 };

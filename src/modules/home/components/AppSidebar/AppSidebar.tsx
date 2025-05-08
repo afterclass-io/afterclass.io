@@ -11,25 +11,24 @@ import {
   SidebarMenuButton,
   SidebarGroupLabel,
   SidebarFooter,
-} from "@/common/components/Sidebar";
-import { Logo } from "@/common/components/Logo";
+} from "@/common/components/sidebar";
+import { Logo } from "@/common/components/logo";
 import {
   ChartLineIcon,
-  DealsIcon,
   GithubIcon,
   HelpDeskIcon,
   PlusIcon,
   StarLineAltIcon,
   StatisticsTableIcon,
   TelegramIcon,
-} from "@/common/components/CustomIcon";
+} from "@/common/components/icons";
 import { env } from "@/env";
 import { toTitleCase } from "@/common/functions";
 import Link from "next/link";
 import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
 import { usePathname } from "next/navigation";
 import { useIsMobile } from "@/common/hooks";
-import { ProgressLink } from "@/common/components/Progress";
+import { ProgressLink } from "@/common/components/progress-link";
 
 type SidebarItemType = {
   label: string;
@@ -101,12 +100,6 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       href: "/statistics",
       external: true,
     },
-    {
-      label: "Themes",
-      icon: <DealsIcon size={16} />,
-      href: "/themes",
-      devOnly: true,
-    },
   ],
 };
 
@@ -124,11 +117,8 @@ export const AppSidebar = () => {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link
-                href="/"
-                className="flex items-center px-3 text-primary-default"
-              >
+            <SidebarMenuButton size="lg" className="pt-2" asChild>
+              <Link href="/" className="text-primary flex items-center px-3">
                 <Logo />
               </Link>
             </SidebarMenuButton>
@@ -159,11 +149,10 @@ export const AppSidebar = () => {
                     <ProgressLink
                       variant="ghost"
                       href={item.href}
-                      iconLeft={item.icon}
-                      fullWidth
-                      className="flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold text-text-em-mid after:!content-none hover:bg-border-elevated hover:text-text-em-high"
+                      className="text-muted-foreground hover:bg-border-elevated hover:text-accent-foreground flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
                       data-test={`sidebar-${sidebarItemName(item.label)}`}
                     >
+                      {item.icon}
                       {item.label}
                     </ProgressLink>
                   </SidebarMenuButton>
@@ -199,13 +188,11 @@ export const AppSidebar = () => {
                                 ? (item.target ?? "_blank")
                                 : undefined
                             }
-                            external={item.external}
-                            iconLeft={item.icon}
-                            fullWidth
-                            className="flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold text-text-em-mid after:!content-none hover:bg-border-elevated hover:text-text-em-high"
+                            className="text-muted-foreground hover:bg-border-elevated hover:text-accent-foreground flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
                             data-umami-event={`sidebar-${sidebarItemName(item.label)}`}
                             data-test={`sidebar-${sidebarItemName(item.label)}`}
                           >
+                            {item.icon}
                             {item.label}
                           </ProgressLink>
                         </SidebarMenuButton>

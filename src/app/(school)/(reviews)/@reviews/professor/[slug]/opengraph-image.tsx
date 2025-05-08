@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import React from "react";
 
-import { GraduationCapIcon } from "@/common/components/CustomIcon";
+import { GraduationCapIcon } from "@/common/components/icons";
 import { api } from "@/common/tools/trpc/server";
 import { OgImage } from "@/modules/opengraph/components/OgImage";
 import { toTitleCase, formatPercentage } from "@/common/functions";

@@ -8,14 +8,22 @@ import { z } from "zod";
 
 import { supabase } from "@/server/supabase";
 
-import { Input } from "@/common/components/Input";
-import { Button } from "@/common/components/Button";
-import { Form } from "@/common/components/Form";
+import { Button } from "@/common/components/button";
 import {
-  LockIcon,
-  EyeIcon,
-  EyeSlashIcon,
-} from "@/common/components/CustomIcon";
+  PasswordInputRoot,
+  PasswordInputAdornment,
+  PasswordInputAdornmentToggle,
+  PasswordInput,
+} from "@/common/components/input-password";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/common/components/form";
+import { LockIcon } from "@/common/components/icons";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
 const resetPwdFormInputsSchema = z.object({
@@ -28,7 +36,6 @@ type ResetPwdFormInputs = z.infer<typeof resetPwdFormInputsSchema>;
 export const ResetPasswordForm = () => {
   const router = useRouter();
   const progress = useProgress();
-  const [isPwdVisible, setIsPwdVisible] = useState(false);
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState(false);
   const form = useForm<ResetPwdFormInputs>({
     resolver: zodResolver(resetPwdFormInputsSchema),
@@ -59,50 +66,38 @@ export const ResetPasswordForm = () => {
         className="flex w-full flex-col gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <Form.Field
+        <FormField
           control={form.control}
           name="password"
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label>New Password</Form.Label>
-              <Form.Control>
-                <Input
-                  {...field}
-                  disabled={form.formState.isSubmitting}
-                  contentLeft={<LockIcon size={24} />}
-                  contentRight={
-                    <button
-                      type="button"
-                      onClick={() => setIsPwdVisible(!isPwdVisible)}
-                      tabIndex={3}
-                    >
-                      {isPwdVisible ? (
-                        <EyeSlashIcon size={24} />
-                      ) : (
-                        <EyeIcon size={24} />
-                      )}
-                    </button>
-                  }
-                  placeholder="Enter password"
-                  type={isPwdVisible ? "text" : "password"}
-                  autoComplete="on"
-                  tabIndex={1}
-                />
-              </Form.Control>
-              <Form.Message />
-            </Form.Item>
+            <FormItem>
+              <FormLabel>New Password</FormLabel>
+              <FormControl>
+                <PasswordInputRoot>
+                  <PasswordInputAdornment>
+                    <LockIcon />
+                  </PasswordInputAdornment>
+                  <PasswordInput
+                    {...field}
+                    disabled={form.formState.isSubmitting}
+                    placeholder="Enter password"
+                    autoComplete="on"
+                    tabIndex={1}
+                  />
+                  <PasswordInputAdornmentToggle />
+                </PasswordInputRoot>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
         />
-        <div className="flex w-full flex-col items-start gap-2 self-stretch pt-3">
-          <Button
-            fullWidth
-            type="submit"
-            disabled={form.formState.isSubmitting}
-            tabIndex={2}
-          >
-            {form.formState.isSubmitting ? "Signing in..." : "Reset Password"}
-          </Button>
-        </div>
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          tabIndex={2}
+        >
+          {form.formState.isSubmitting ? "Signing in..." : "Reset Password"}
+        </Button>
         {isSubmitSuccessful && (
           <div className="text-green-500">
             Your password has been updated successfully.

@@ -1,10 +1,10 @@
 "use client";
-import { Tooltip } from "@/common/components/Tooltip";
+import { TooltipProvider as TooltipProviderPrimitive } from "@/common/components/tooltip";
 
 export default function TooltipProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <Tooltip.Provider>{children}</Tooltip.Provider>;
+  return <TooltipProviderPrimitive>{children}</TooltipProviderPrimitive>;
 }

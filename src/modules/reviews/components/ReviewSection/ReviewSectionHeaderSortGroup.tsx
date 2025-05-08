@@ -3,9 +3,15 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 
-import { Button } from "@/common/components/Button";
-import { ChevronDownIcon } from "@/common/components/CustomIcon";
-import { Select } from "@/common/components/Select";
+import { Button } from "@/common/components/button";
+import { ChevronDownIcon } from "@/common/components/icons";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/common/components/select";
 import { cn, toTitleCase } from "@/common/functions";
 import { ReviewsSortBy } from "@/modules/reviews/types";
 import { useEdgeConfigs } from "@/common/hooks";
@@ -73,9 +79,8 @@ export const ReviewSectionHeaderSortGroup = () => {
           key={option}
           variant="ghost"
           className={cn(
-            "text-base md:text-lg",
-            "px-0 py-0 md:px-2",
-            option === sortBy ? "text-primary-default" : "",
+            "p-0 px-2",
+            option === sortBy ? "text-primary" : "text-muted-foreground",
           )}
           onClick={() => handleSortChange(option)}
         >
@@ -92,26 +97,25 @@ export const ReviewSectionHeaderSortGroup = () => {
           value={options.includes(sortBy) ? sortBy : undefined}
           onValueChange={handleSortChange}
         >
-          <Select.Trigger asChild>
+          <SelectTrigger asChild className="has-[>svg]:px-2">
             <Button
               variant="ghost"
-              iconRight={<ChevronDownIcon />}
               className={cn(
-                "text-base md:text-lg",
-                "px-0 py-0 md:px-2",
-                options.includes(sortBy) && "text-primary-default",
+                "border-none p-0 px-2 dark:bg-transparent",
+                options.includes(sortBy) && "text-primary",
               )}
             >
-              <Select.Value placeholder="Top" />
+              <SelectValue placeholder="Top" />
+              <ChevronDownIcon />
             </Button>
-          </Select.Trigger>
-          <Select.Content>
+          </SelectTrigger>
+          <SelectContent>
             {options.map((option) => (
-              <Select.Item key={option} value={option}>
+              <SelectItem key={option} value={option}>
                 {formatSortByLabel(option)}
-              </Select.Item>
+              </SelectItem>
             ))}
-          </Select.Content>
+          </SelectContent>
         </Select>
       ))}
     </div>

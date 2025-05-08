@@ -1,9 +1,5 @@
 "use client";
-
 import { ThemeProvider as NextThemeProvider } from "next-themes";
-import { APP_THEMES } from "@/common/tools/tailwind/themes/appTheme";
-
-const NEXT_THEMES = Object.keys(APP_THEMES).map((key) => key);
 
 export default function ThemeProvider({
   children,
@@ -14,7 +10,8 @@ export default function ThemeProvider({
     <NextThemeProvider
       attribute="class"
       defaultTheme="system"
-      themes={NEXT_THEMES}
+      themes={["light", "dark"]}
+      disableTransitionOnChange
     >
       {children}
     </NextThemeProvider>

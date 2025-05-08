@@ -9,7 +9,7 @@ export const announcementsCarouselTheme = tv({
       "gap-6",
       "self-stretch overflow-x-auto",
     ],
-    heading: ["text-sm", "font-semibold", "text-text-em-high"],
+    heading: ["text-sm", "font-semibold", "text-accent-foreground"],
     divider: ["my-4"],
     card: [
       "relative",
@@ -24,10 +24,10 @@ export const announcementsCarouselTheme = tv({
       "before:z-10",
       "before:opacity-80",
       "before:bg-gradient-to-t",
-      "before:from-primary-default",
+      "before:from-primary",
       "before:from-20%",
       "before:to-60%",
-      "before:to-primary-default/20",
+      "before:to-primary/20",
     ],
     text: [
       "z-20",
@@ -36,7 +36,7 @@ export const announcementsCarouselTheme = tv({
       "left-6",
       "text-lg",
       "font-semibold",
-      "text-text-em-high",
+      "text-accent-foreground",
     ],
   },
 });

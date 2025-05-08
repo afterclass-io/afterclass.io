@@ -1,12 +1,23 @@
 "use client";
-import { type ElementRef, forwardRef, useState } from "react";
+import { type ComponentRef, forwardRef, useState } from "react";
 
-import { CheckIcon, ChevronDownIcon } from "@/common/components/CustomIcon";
-import { Button } from "@/common/components/Button";
-import { Command } from "@/common/components/Command";
-import { Popover } from "@/common/components/Popover";
+import { CheckIcon, ChevronDownIcon } from "@/common/components/icons";
+import { Button } from "@/common/components/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/common/components/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/common/components/popover";
 import { cn } from "@/common/functions/cn";
-import { comboboxTheme } from "./Combobox.theme";
 
 export type ComboboxProps = {
   items: { label: string; value: string }[];
@@ -17,7 +28,7 @@ export type ComboboxProps = {
 
 // TODO: find a better way for searching
 export const Combobox = forwardRef<
-  ElementRef<typeof Command.Item>,
+  ComponentRef<typeof CommandItem>,
   ComboboxProps
 >(({ items, placeholder, triggerLabel, onSelectChange }, ref) => {
   const [value, setValue] = useState("");
@@ -27,21 +38,19 @@ export const Combobox = forwardRef<
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <Popover.Trigger asChild>
+      <PopoverTrigger asChild>
         <Button
-          variant="tertiary"
-          as="button"
+          variant="outline"
           aria-expanded={open}
-          iconRight={<ChevronDownIcon />}
-          className={comboboxTheme()}
+          className="bg-card min-h-12 w-full max-w-72 flex-1 items-center justify-between self-stretch rounded-lg p-2 text-left"
           data-test="combobox-trigger"
         >
           {value ? items.find((el) => el.value === value)?.label : triggerLabel}
+          <ChevronDownIcon />
         </Button>
-      </Popover.Trigger>
-      <Popover.Content variant="combobox">
+      </PopoverTrigger>
+      <PopoverContent>
         <Command
-          variant="combobox"
           value={value}
           filter={(_, search, keywords) => {
             if (
@@ -52,13 +61,13 @@ export const Combobox = forwardRef<
             return 0;
           }}
         >
-          <Command.Input placeholder={placeholder} data-test="combobox-input" />
-          <Command.Separator />
-          <Command.Empty>Nothing found.</Command.Empty>
-          <Command.List>
-            <Command.Group>
+          <CommandInput placeholder={placeholder} data-test="combobox-input" />
+          <CommandSeparator />
+          <CommandEmpty>Nothing found.</CommandEmpty>
+          <CommandList>
+            <CommandGroup>
               {items.map((el) => (
-                <Command.Item
+                <CommandItem
                   id={el.value}
                   key={el.value}
                   value={el.value}
@@ -75,17 +84,17 @@ export const Combobox = forwardRef<
                 >
                   <CheckIcon
                     className={cn(
-                      "text-primary-default",
+                      "text-primary",
                       isMatched(el.value) ? "visible" : "invisible",
                     )}
                   />
                   {el.label}
-                </Command.Item>
+                </CommandItem>
               ))}
-            </Command.Group>
-          </Command.List>
+            </CommandGroup>
+          </CommandList>
         </Command>
-      </Popover.Content>
+      </PopoverContent>
     </Popover>
   );
 });

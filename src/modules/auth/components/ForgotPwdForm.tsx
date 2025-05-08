@@ -6,11 +6,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { supabase } from "@/server/supabase";
 
-import { Input } from "@/common/components/Input";
-import { Button } from "@/common/components/Button";
-import { Form } from "@/common/components/Form";
+import {
+  InputRoot,
+  InputAdornment,
+  InputControl,
+  Input,
+} from "@/common/components/input";
+import { Button } from "@/common/components/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/common/components/form";
 import { env } from "@/env";
-import { EnvelopeIcon } from "@/common/components/CustomIcon";
+import { EnvelopeIcon } from "@/common/components/icons";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
 import { getUserPlatform } from "../functions";
@@ -19,7 +31,7 @@ import {
   type ForgotPwdFormInputs,
   forgotPwdFormInputsSchema,
 } from "../types";
-import { ProgressLink } from "@/common/components/Progress";
+import { ProgressLink } from "@/common/components/progress-link";
 
 export const ForgotPwdForm = () => {
   const router = useRouter();
@@ -77,54 +89,56 @@ export const ForgotPwdForm = () => {
         className="flex w-full flex-col gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <Form.Field
+        <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label>School Email Address</Form.Label>
-              <Form.Control>
-                <Input
-                  {...field}
-                  disabled={form.formState.isSubmitting}
-                  contentLeft={<EnvelopeIcon size={24} />}
-                  placeholder="john.doe.2023@smu.edu.sg"
-                  autoComplete="on"
-                  tabIndex={1}
-                  data-test="email"
-                />
-              </Form.Control>
-              <Form.Message data-test="email-helper-text" />
-            </Form.Item>
+            <FormItem>
+              <FormLabel>School Email Address</FormLabel>
+              <FormControl>
+                <InputRoot>
+                  <InputAdornment>
+                    <EnvelopeIcon />
+                  </InputAdornment>
+                  <InputControl>
+                    <Input
+                      {...field}
+                      disabled={form.formState.isSubmitting}
+                      placeholder="john.doe.2023@smu.edu.sg"
+                      autoComplete="on"
+                      tabIndex={1}
+                      data-test="email"
+                    />
+                  </InputControl>
+                </InputRoot>
+              </FormControl>
+              <FormMessage data-test="email-helper-text" />
+            </FormItem>
           )}
         />
-        <div className="flex w-full flex-col items-start gap-2 self-stretch pt-3">
-          <Button
-            fullWidth
-            type="submit"
-            disabled={form.formState.isSubmitting}
-            tabIndex={2}
-            data-test="submit"
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          tabIndex={2}
+          data-test="submit"
+        >
+          {form.formState.isSubmitting
+            ? "Confirming your email..."
+            : "Reset my password"}
+        </Button>
+        <div className="flex items-center gap-1 self-stretch md:text-base">
+          <span className="text-muted-foreground text-center font-semibold">
+            {"Don't have an account?"}
+          </span>
+          <ProgressLink
+            href="/account/auth/signup"
+            type="button"
+            variant="link"
+            tabIndex={3}
+            data-test="register"
           >
-            {form.formState.isSubmitting
-              ? "Confirming your email..."
-              : "Reset my password"}
-          </Button>
-          <div className="flex items-center gap-1 self-stretch text-xs md:text-base">
-            <span className="text-center font-semibold text-text-em-mid">
-              {"Don't have an account?"}
-            </span>
-            <ProgressLink
-              href="/account/auth/signup"
-              type="button"
-              variant="link"
-              isResponsive
-              tabIndex={3}
-              data-test="register"
-            >
-              Create an account
-            </ProgressLink>
-          </div>
+            Create an account
+          </ProgressLink>
         </div>
       </form>
     </Form>

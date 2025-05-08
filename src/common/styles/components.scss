@@ -1,6 +1,6 @@
 @layer components {
   .focus-ring {
-    @apply focus-visible:border-primary-default focus-visible:ring-2 focus-visible:ring-primary-default/20;
+    @apply focus-visible:border-primary focus-visible:ring-primary/20 focus-visible:ring-2;
   }
   .break-anywhere {
     /*

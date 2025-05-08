@@ -3,13 +3,11 @@ import { ReviewType } from "@prisma/client";
 import { auth } from "@/server/auth";
 import { FilterToggleSection } from "@/modules/reviews/components/FilterToggleSection";
 import { api } from "@/common/tools/trpc/server";
-import { BooksIcon, PencilIcon } from "@/common/components/CustomIcon";
+import { BooksIcon, PencilIcon } from "@/common/components/icons";
 
-export default async function CourseFilter(
-  props: {
-    params: Promise<{ code: string }>;
-  }
-) {
+export default async function CourseFilter(props: {
+  params: Promise<{ code: string }>;
+}) {
   const params = await props.params;
   const session = await auth();
   if (!session) {

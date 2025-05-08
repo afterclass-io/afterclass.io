@@ -1,24 +1,37 @@
 "use client";
 
-import { startTransition, useState } from "react";
+import { startTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { Button } from "@/common/components/Button";
-import { Input } from "@/common/components/Input";
-import { Form } from "@/common/components/Form";
+import { Button } from "@/common/components/button";
 import {
-  LockIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  EnvelopeIcon,
-} from "@/common/components/CustomIcon";
+  PasswordInputRoot,
+  PasswordInputAdornment,
+  PasswordInputAdornmentToggle,
+  PasswordInput,
+} from "@/common/components/input-password";
+import {
+  InputRoot,
+  InputAdornment,
+  InputControl,
+  Input,
+} from "@/common/components/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/common/components/form";
+import { LockIcon, EnvelopeIcon } from "@/common/components/icons";
 import { signUpWithEmail } from "@/server/supabase";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import { useProgress } from "@/common/providers/ProgressProvider";
-import { ProgressLink } from "@/common/components/Progress";
+import { ProgressLink } from "@/common/components/progress-link";
 
 const signupFormInputsSchema = z
   .object({
@@ -43,8 +56,6 @@ type SignupFormInputs = z.infer<typeof signupFormInputsSchema>;
 export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
   const router = useRouter();
   const progress = useProgress();
-  const [isPwdVisible, setIsPwdVisible] = useState(false);
-  const [isCfmPwdVisible, setIsCfmPwdVisible] = useState(false);
 
   const form = useForm<SignupFormInputs>({
     resolver: zodResolver(signupFormInputsSchema),
@@ -83,122 +94,105 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
         className="flex w-full flex-col gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <Form.Field
+        <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label>School Email Address</Form.Label>
-              <Form.Control>
-                <Input
-                  {...field}
-                  disabled={form.formState.isSubmitting}
-                  contentLeft={<EnvelopeIcon size={24} />}
-                  placeholder="john.doe.2023@smu.edu.sg"
-                  autoComplete="on"
-                  tabIndex={1}
-                  data-test="email"
-                />
-              </Form.Control>
-              <Form.Message data-test="email-helper-text" />
-            </Form.Item>
+            <FormItem>
+              <FormLabel>School Email Address</FormLabel>
+              <FormControl>
+                <InputRoot>
+                  <InputAdornment>
+                    <EnvelopeIcon />
+                  </InputAdornment>
+                  <InputControl>
+                    <Input
+                      {...field}
+                      disabled={form.formState.isSubmitting}
+                      placeholder="john.doe.2023@smu.edu.sg"
+                      autoComplete="on"
+                      tabIndex={1}
+                      data-test="email"
+                    />
+                  </InputControl>
+                </InputRoot>
+              </FormControl>
+              <FormMessage data-test="email-helper-text" />
+            </FormItem>
           )}
         />
-        <Form.Field
+        <FormField
           control={form.control}
           name="password"
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label>New Password</Form.Label>
-              <Form.Control>
-                <Input
-                  {...field}
-                  disabled={form.formState.isSubmitting}
-                  contentLeft={<LockIcon size={24} />}
-                  contentRight={
-                    <button
-                      type="button"
-                      onClick={() => setIsPwdVisible(!isPwdVisible)}
-                      tabIndex={5}
-                    >
-                      {isPwdVisible ? (
-                        <EyeSlashIcon size={24} />
-                      ) : (
-                        <EyeIcon size={24} />
-                      )}
-                    </button>
-                  }
-                  placeholder="Enter password"
-                  type={isPwdVisible ? "text" : "password"}
-                  autoComplete="on"
-                  tabIndex={2}
-                  data-test="password"
-                />
-              </Form.Control>
-              <Form.Message data-test="password-helper-text" />
-            </Form.Item>
+            <FormItem>
+              <FormLabel>New Password</FormLabel>
+              <FormControl>
+                <PasswordInputRoot>
+                  <PasswordInputAdornment>
+                    <LockIcon />
+                  </PasswordInputAdornment>
+                  <PasswordInput
+                    {...field}
+                    disabled={form.formState.isSubmitting}
+                    placeholder="Enter password"
+                    autoComplete="on"
+                    tabIndex={2}
+                    data-test="password"
+                  />
+                  <PasswordInputAdornmentToggle />
+                </PasswordInputRoot>
+              </FormControl>
+              <FormMessage data-test="password-helper-text" />
+            </FormItem>
           )}
         />
-        <Form.Field
+        <FormField
           control={form.control}
           name="confirmPassword"
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label>Confirm Password</Form.Label>
-              <Form.Control>
-                <Input
-                  {...field}
-                  disabled={form.formState.isSubmitting}
-                  contentLeft={<LockIcon size={24} />}
-                  contentRight={
-                    <button
-                      type="button"
-                      onClick={() => setIsCfmPwdVisible(!isCfmPwdVisible)}
-                      tabIndex={6}
-                    >
-                      {isCfmPwdVisible ? (
-                        <EyeSlashIcon size={24} />
-                      ) : (
-                        <EyeIcon size={24} />
-                      )}
-                    </button>
-                  }
-                  placeholder="Confirm password"
-                  type={isCfmPwdVisible ? "text" : "password"}
-                  autoComplete="on"
-                  tabIndex={3}
-                  data-test="confirm-password"
-                />
-              </Form.Control>
-              <Form.Message data-test="confirm-password-helper-text" />
-            </Form.Item>
+            <FormItem>
+              <FormLabel>Confirm Password</FormLabel>
+              <FormControl>
+                <PasswordInputRoot>
+                  <PasswordInputAdornment>
+                    <LockIcon />
+                  </PasswordInputAdornment>
+                  <PasswordInput
+                    {...field}
+                    disabled={form.formState.isSubmitting}
+                    placeholder="Confirm password"
+                    autoComplete="on"
+                    tabIndex={3}
+                    data-test="confirm-password"
+                  />
+                  <PasswordInputAdornmentToggle />
+                </PasswordInputRoot>
+              </FormControl>
+              <FormMessage data-test="confirm-password-helper-text" />
+            </FormItem>
           )}
         />
-        <div className="flex w-full flex-col items-start gap-2 self-stretch pt-3">
-          <Button
-            fullWidth
-            type="submit"
-            disabled={form.formState.isSubmitting}
-            isResponsive
-            tabIndex={4}
-            data-test="submit"
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          tabIndex={4}
+          data-test="submit"
+        >
+          {form.formState.isSubmitting ? "Creating an account..." : "Sign up"}
+        </Button>
+        <div className="flex items-center gap-1 self-stretch md:text-base">
+          <span className="text-muted-foreground text-center font-semibold">
+            Already have an account?
+          </span>
+          <ProgressLink
+            href="/account/auth/login"
+            type="button"
+            variant="link"
+            tabIndex={7}
           >
-            {form.formState.isSubmitting ? "Creating an account..." : "Sign up"}
-          </Button>
-          <div className="flex items-center gap-1 self-stretch text-xs md:text-base">
-            <span className="text-center font-semibold text-text-em-mid">
-              Already have an account?
-            </span>
-            <ProgressLink
-              href="/account/auth/login"
-              type="button"
-              variant="link"
-              isResponsive
-              tabIndex={7}
-            >
-              Login
-            </ProgressLink>
-          </div>
+            Login
+          </ProgressLink>
         </div>
       </form>
     </Form>

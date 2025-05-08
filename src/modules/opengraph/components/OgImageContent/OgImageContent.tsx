@@ -3,7 +3,7 @@ import {
   GraduationCapIcon,
   HeartIcon,
   PencilIcon,
-} from "@/common/components/CustomIcon";
+} from "@/common/components/icons";
 
 const StatItemHorizontal = ({
   label,

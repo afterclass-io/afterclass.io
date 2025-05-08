@@ -1,5 +1,9 @@
 "use client";
-import { Tooltip } from "@/common/components/Tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/common/components/tooltip";
 
 export const SearchCmdkOnboardingTooltip = ({
   open,
@@ -12,8 +16,8 @@ export const SearchCmdkOnboardingTooltip = ({
 }) => {
   return (
     <Tooltip open={open} onOpenChange={onOpenChange}>
-      <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
-      <Tooltip.Content side="right" sideOffset={36}>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent side="right" sideOffset={36}>
         <div className="p-1 px-5 text-sm">
           <div className="text-secondary-default">
             Looking for a
@@ -26,7 +30,7 @@ export const SearchCmdkOnboardingTooltip = ({
             clicking here to search
           </div>
         </div>
-      </Tooltip.Content>
+      </TooltipContent>
     </Tooltip>
   );
 };

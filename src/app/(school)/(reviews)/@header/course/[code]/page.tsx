@@ -1,14 +1,12 @@
 import { api } from "@/common/tools/trpc/server";
 import { notFound } from "next/navigation";
-import { PageTitle } from "@/common/components/PageTitle";
-import { BooksIcon } from "@/common/components/CustomIcon";
-import { SchoolTag } from "@/common/components/SchoolTag";
+import { PageTitle } from "@/common/components/page-title";
+import { BooksIcon } from "@/common/components/icons";
+import { SchoolTag } from "@/common/components/tag-school";
 
-export default async function CourseHeader(
-  props: {
-    params: Promise<{ code: string }>;
-  }
-) {
+export default async function CourseHeader(props: {
+  params: Promise<{ code: string }>;
+}) {
   const params = await props.params;
   const course = await api.courses.getByCourseCode({
     code: params.code.toUpperCase(),
@@ -19,7 +17,7 @@ export default async function CourseHeader(
   return (
     <div className="w-full">
       <PageTitle
-        contentLeft={<BooksIcon className="h-9 w-9 text-text-em-low" />}
+        contentLeft={<BooksIcon className="text-muted-foreground h-9 w-9" />}
         contentRight={<SchoolTag school={course.belongToUniversity.abbrv} />}
       >
         {course.name}

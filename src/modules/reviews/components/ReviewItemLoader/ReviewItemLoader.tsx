@@ -6,11 +6,13 @@ import { InView } from "react-intersection-observer";
 import { z } from "zod";
 
 import { api } from "@/common/tools/trpc/react";
-import { AfterclassIcon } from "@/common/components/CustomIcon";
-import { ProgressLink } from "@/common/components/Progress";
+import { AfterclassIcon } from "@/common/components/icons";
+import { ProgressLink } from "@/common/components/progress-link";
 
 import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
 import { ReviewItem, ReviewItemSkeleton } from "../ReviewItem";
+import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
+import { Separator } from "@/common/components/separator";
 
 type BaseReviewItemLoaderProps = {
   variant: "home" | "course" | "professor";
@@ -38,25 +40,24 @@ export type ReviewItemLoaderProps =
   | ReviewItemLoaderProfessorProps;
 
 const NoReviewCtaNote = () => (
-  <div
-    className="w-full space-x-1 px-3 py-6 text-center text-xs text-text-em-mid md:text-sm"
-    data-variant="full-width"
-  >
-    <span className="mr-1 text-text-em-high">Oh no!</span>
-    <span>Looks like no one has reviewed yet.</span>
-    <br />
-    <span>Help us out by</span>
-    <ProgressLink
-      href="/submit"
-      variant="link"
-      className="inline-flex h-fit pb-[1px] text-xs md:h-fit md:p-0 md:text-sm"
-      isResponsive
-      data-umami-event="review-empty-cta"
-    >
-      writing one
-    </ProgressLink>
-    <span>today 🙈</span>
-  </div>
+  <>
+    <FullWidthEnforcer />
+    <div className="text-muted-foreground w-full space-x-1 px-3 py-10 text-center md:py-12 md:text-sm">
+      <span className="text-accent-foreground mr-1">Oh no!</span>
+      <span>Looks like no one has reviewed yet.</span>
+      <br />
+      <span>Help us out by</span>
+      <ProgressLink
+        href="/submit"
+        variant="link"
+        className="inline-flex h-fit pb-[1px] md:h-fit md:p-0 md:text-sm"
+        data-umami-event="review-empty-cta"
+      >
+        writing one
+      </ProgressLink>
+      <span>today 🙈</span>
+    </div>
+  </>
 );
 
 export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
@@ -132,36 +133,49 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
   if (status === "loading" || isPending || isRefetching) {
     return (
       <>
-        {reviews.map((_, index) => (
-          <ReviewItemSkeleton key={index} />
-        ))}
+        <Separator />
+
+        {reviews
+          .flatMap((_, index) => [
+            <ReviewItemSkeleton key={index} />,
+            <Separator key={`hr-${index}`} />,
+          ])
+          .slice(0, -1)}
       </>
     );
   }
 
   return (
     <>
-      {reviews.map((review) => (
-        <ReviewItem
-          key={review.id}
-          variant={props.variant}
-          review={review}
-          isLocked={!session}
-          seeMore={pathname === "/"}
-        />
-      ))}
+      <Separator />
+
+      {reviews
+        .flatMap((review) => [
+          <ReviewItem
+            key={review.id}
+            variant={props.variant}
+            review={review}
+            isLocked={!session}
+            seeMore={pathname === "/"}
+          />,
+          <Separator key={`hr-${review.id}`} />,
+        ])
+        .slice(0, -1)}
 
       {status === "authenticated" && hasNextPage && (
-        <InView
-          as="div"
-          className="flex w-full justify-center"
-          onChange={(inView) => inView && fetchNextPage()}
-        >
-          <AfterclassIcon
-            size={64}
-            className="animate-[pulse_3s_ease-in-out_infinite] text-primary-default/60"
-          />
-        </InView>
+        <>
+          <Separator />
+          <InView
+            as="div"
+            className="flex w-full justify-center p-4"
+            onChange={(inView) => inView && fetchNextPage()}
+          >
+            <AfterclassIcon
+              size={64}
+              className="text-primary/80 animate-pulse transition-colors duration-1500"
+            />
+          </InView>
+        </>
       )}
     </>
   );

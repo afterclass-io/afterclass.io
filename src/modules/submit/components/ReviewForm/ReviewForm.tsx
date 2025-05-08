@@ -12,9 +12,8 @@ import {
   reviewFormSchema,
 } from "@/common/tools/zod/schemas";
 import { api } from "@/common/tools/trpc/react";
-import { Form } from "@/common/components/Form";
+import { Form } from "@/common/components/form";
 import { ReviewableEnum } from "@/modules/submit/types";
-import { reviewFormTheme } from "./ReviewForm.theme";
 import { SubmitButtonGroup } from "../SubmitButtonGroup";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
@@ -84,23 +83,15 @@ export const ReviewForm = ({ children }: { children: ReactNode }) => {
       level: "info",
     });
 
-    // TODO: populate user values from supabase when user is authenticated
-    const userId = session?.user?.id ?? "85498973-b416-45d4-a3d1-fe8d7d2d5821";
-
     reviewsMutation.mutate({
       ...data,
-      user: { id: userId },
     });
   };
-
-  const { form: formTheme } = reviewFormTheme({
-    size: { initial: "sm", md: "md" },
-  });
 
   return (
     <Form {...formMethods}>
       <form
-        className={formTheme()}
+        className="flex flex-col items-start gap-5 md:gap-14"
         onSubmit={formMethods.handleSubmit(onSubmit)}
       >
         {children}

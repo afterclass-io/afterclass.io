@@ -3,17 +3,26 @@ import { ReviewEventType, ReviewType } from "@prisma/client";
 
 import { api } from "@/common/tools/trpc/react";
 
-import { Modal } from "@/common/components/Modal";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/common/components/dialog";
 import { type Review } from "@/modules/reviews/types";
-import { ProgressLink } from "@/common/components/Progress";
+import { ProgressLink } from "@/common/components/progress-link";
 
-import { reviewItemTheme } from "../ReviewItem.theme";
 import { RevieweeGroup } from "../RevieweeGroup";
 import { ReviewCreatedAt } from "../ReviewCreatedAt";
 import { ReviewRatingGroup } from "../ReviewRatingGroup";
 import { ReviewLabelGroup } from "../ReviewLabelGroup";
 import { useEdgeConfigs } from "@/common/hooks";
 import { ReviewFooter } from "../ReviewFooter";
+import { Separator } from "@/common/components/separator";
 
 export const ReviewModal = ({
   review,
@@ -28,16 +37,6 @@ export const ReviewModal = ({
   seeMore?: boolean;
   defaultOpen?: boolean;
 }) => {
-  const {
-    modalTrigger,
-    modalContent,
-    usernameAndTimestampWrapper,
-    username,
-    modalBody,
-    seeMoreDivider,
-    seeMoreLink,
-  } = reviewItemTheme({ size: { initial: "sm", md: "md" } });
-
   const ecfg = useEdgeConfigs();
 
   const reviewPath =
@@ -48,8 +47,7 @@ export const ReviewModal = ({
   const { mutate: track } = api.reviewEvents.track.useMutation();
 
   return (
-    <Modal
-      overflow="inside"
+    <Dialog
       defaultOpen={defaultOpen}
       onOpenChange={(isOpen) => {
         if (!isOpen) return;
@@ -61,52 +59,47 @@ export const ReviewModal = ({
         }
       }}
     >
-      {children && (
-        <Modal.Trigger asChild className={modalTrigger()}>
-          {children}
-        </Modal.Trigger>
-      )}
-      <Modal.Content
-        className={modalContent()}
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
+      <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
         data-test="review-modal"
       >
-        <Modal.Header>
-          <Modal.Title>
+        <DialogHeader className="text-left">
+          <DialogTitle>
             <RevieweeGroup review={review} variant={variant} />
-          </Modal.Title>
-          <Modal.Description asChild>
+          </DialogTitle>
+          <DialogDescription asChild>
             <div className="space-y-4">
-              <div className={usernameAndTimestampWrapper()}>
-                <span className={username()}>{review.username}</span>
+              <div className="space-x-2">
+                <span className="font-medium">{review.username}</span>
                 <span>•</span>
                 <ReviewCreatedAt createdAt={review.createdAt} />
               </div>
               <ReviewRatingGroup rating={review.rating} />
               <ReviewLabelGroup reviewLabels={review.reviewLabels} />
             </div>
-          </Modal.Description>
-        </Modal.Header>
-        <Modal.Body>
-          <div className={modalBody()}>{review.body}</div>
-        </Modal.Body>
-        <Modal.Footer>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogBody className="wrap-anywhere whitespace-pre-wrap">
+          {review.body}
+        </DialogBody>
+        <DialogFooter className="flex-col sm:flex-col">
           <ReviewFooter review={review} />
           {/* seeMore link only shown when user is from default reviews page, hidden when in professor/course pages */}
           {seeMore && (
             <>
-              <hr className={seeMoreDivider()} />
+              <Separator className="mt-4 mb-2" />
               <ProgressLink
                 href={reviewPath}
                 variant="link"
-                className={seeMoreLink()}
+                className="flex h-fit p-0 md:h-9 md:p-2"
               >
                 See more reviews
               </ProgressLink>
             </>
           )}
-        </Modal.Footer>
-      </Modal.Content>
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };

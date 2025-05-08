@@ -3,21 +3,23 @@ import {
   getHumanReadableTimestampDelta,
   getHumanReadableTimestampString,
 } from "@/common/functions";
-import { Tooltip } from "@/common/components/Tooltip";
-import { reviewItemTheme } from "../ReviewItem.theme";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/common/components/tooltip";
 
 export const ReviewCreatedAt = ({ createdAt }: { createdAt: number }) => {
-  const { timedelta } = reviewItemTheme({ size: { initial: "sm", md: "md" } });
   return (
     <Tooltip>
-      <Tooltip.Trigger>
-        <span className={timedelta()}>
+      <TooltipTrigger>
+        <span className="overflow-hidden text-ellipsis md:text-sm">
           {getHumanReadableTimestampDelta(createdAt / 1000)}
         </span>
-      </Tooltip.Trigger>
-      <Tooltip.Content>
+      </TooltipTrigger>
+      <TooltipContent>
         <span>{getHumanReadableTimestampString(createdAt)}</span>
-      </Tooltip.Content>
+      </TooltipContent>
     </Tooltip>
   );
 };

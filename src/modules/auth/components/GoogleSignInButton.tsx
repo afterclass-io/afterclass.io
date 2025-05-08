@@ -7,7 +7,8 @@ import {
   type SignInOptions,
 } from "next-auth/react";
 
-import { Button } from "@/common/components/Button";
+import { Button } from "@/common/components/button";
+import { Loader2 } from "lucide-react";
 
 export interface GoogleSignInButtonProps {
   googleSignInOptions?: SignInOptions;
@@ -32,7 +33,10 @@ export const GoogleSignInButton = ({
       if (onLoading) {
         onLoading(true);
       }
-      const signinResp = await signIn("google", googleSignInOptions);
+      const signinResp = (await signIn(
+        "google",
+        googleSignInOptions,
+      )) as unknown as SignInResponse;
 
       if (onResponse) {
         onResponse(signinResp);
@@ -51,15 +55,14 @@ export const GoogleSignInButton = ({
 
   return (
     <Button
-      fullWidth
       type="button"
-      isResponsive
+      className="w-full"
       onClick={handleGoogleSignIn}
       tabIndex={4}
       disabled={isLoading}
-      loading={isLoading}
       data-umami-event="signin-with-google"
     >
+      {isLoading && <Loader2 className="animate-spin" />}
       {children}
     </Button>
   );

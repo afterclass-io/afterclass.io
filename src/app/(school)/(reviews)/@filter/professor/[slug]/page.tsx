@@ -1,14 +1,12 @@
 import { ReviewType } from "@prisma/client";
 import { auth } from "@/server/auth";
 import { FilterToggleSection } from "@/modules/reviews/components/FilterToggleSection";
-import { GraduationCapIcon, PencilIcon } from "@/common/components/CustomIcon";
+import { GraduationCapIcon, PencilIcon } from "@/common/components/icons";
 import { api } from "@/common/tools/trpc/server";
 
-export default async function ProfessorFilter(
-  props: {
-    params: Promise<{ slug: string }>;
-  }
-) {
+export default async function ProfessorFilter(props: {
+  params: Promise<{ slug: string }>;
+}) {
   const params = await props.params;
   const session = await auth();
   if (!session) {

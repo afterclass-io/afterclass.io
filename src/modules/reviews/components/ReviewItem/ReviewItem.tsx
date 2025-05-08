@@ -1,18 +1,18 @@
 import { useCallback } from "react";
 import { useSession } from "next-auth/react";
 
-import { LockCtaOverlay } from "@/common/components/LockCtaOverlay";
+import { LockedOverlay } from "@/common/components/locked-overlay";
 import { type Review } from "@/modules/reviews/types";
 
-import { reviewItemTheme, type ReviewItemVariants } from "./ReviewItem.theme";
 import { ReviewerGroup } from "./ReviewerGroup";
 import { RevieweeGroup } from "./RevieweeGroup";
 import { ReviewBody } from "./ReviewBody";
 import { ReviewFooter } from "./ReviewFooter";
 import { ReviewModal } from "./ReviewModal";
 import { ReviewItemViewEventTracker } from "../ReviewItemViewEventTracker";
+import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
 
-export type ReviewItemProps = ReviewItemVariants & {
+export type ReviewItemProps = {
   review: Review;
   isLocked?: boolean;
   variant?: "home" | "professor" | "course";
@@ -28,13 +28,10 @@ export const ReviewItem = ({
   seeMore,
 }: ReviewItemProps) => {
   const session = useSession();
-  const { wrapper, headingContainer, body } = reviewItemTheme({
-    size: { initial: "sm", md: "md" },
-  });
 
   const ReviewHeader = useCallback(
     () => (
-      <div className={headingContainer()}>
+      <div className="flex flex-col content-center gap-3 self-stretch md:flex-row-reverse md:justify-between">
         <ReviewerGroup review={review} />
         <RevieweeGroup review={review} variant={variant} />
       </div>
@@ -44,20 +41,21 @@ export const ReviewItem = ({
 
   return !(session.status === "authenticated") || isLocked ? (
     <div
-      className={wrapper({
-        className: "w-full max-w-full hover:bg-inherit lg:max-w-prose",
-      })}
-      data-variant="full-width"
+      className="focus-ring flex h-fit max-w-prose cursor-pointer flex-col items-start gap-2 rounded-md p-4 text-left md:gap-4"
       data-test="review"
     >
       <ReviewHeader />
-      <div className={body({ isLocked })}>
-        <LockCtaOverlay size="sm" ctaType="review" variant="border" />
+      <div className="text-muted-foreground relative line-clamp-5 flex h-16 w-full self-stretch overflow-hidden rounded-sm border wrap-anywhere md:line-clamp-3 md:text-sm">
+        <LockedOverlay ctaType="review" />
+        <FullWidthEnforcer />
       </div>
     </div>
   ) : (
     <ReviewModal review={review} variant={variant} seeMore={seeMore}>
-      <div className={wrapper()} data-test="review">
+      <div
+        className="focus-ring hover:bg-accent flex h-fit max-w-prose cursor-pointer flex-col items-start gap-2 rounded-md p-4 text-left md:gap-4"
+        data-test="review"
+      >
         <ReviewHeader />
         <ReviewBody review={review} />
         <ReviewFooter review={review} />

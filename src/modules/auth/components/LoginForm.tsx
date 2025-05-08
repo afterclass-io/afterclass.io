@@ -1,25 +1,37 @@
 "use client";
-import { startTransition, useEffect, useState, Fragment } from "react";
+import { startTransition, useEffect, Fragment } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Button } from "@/common/components/Button";
-import { Input } from "@/common/components/Input";
-import { Form } from "@/common/components/Form";
+import { Button } from "@/common/components/button";
 import {
-  LockIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  EnvelopeIcon,
-} from "@/common/components/CustomIcon";
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/common/components/form";
+import { LockIcon, EnvelopeIcon } from "@/common/components/icons";
+import {
+  PasswordInputRoot,
+  PasswordInputAdornment,
+  PasswordInputAdornmentToggle,
+  PasswordInput,
+} from "@/common/components/input-password";
+import {
+  InputRoot,
+  InputAdornment,
+  InputControl,
+  Input,
+} from "@/common/components/input";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
-
 import { useProgress } from "@/common/providers/ProgressProvider";
-import { ProgressLink } from "@/common/components/Progress";
-import { toast } from "@/common/components/Toast";
+import { ProgressLink } from "@/common/components/progress-link";
+import { toast } from "sonner";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 import { env } from "@/env";
 
@@ -33,7 +45,6 @@ type LoginFormInputs = z.infer<typeof loginFormInputsSchema>;
 
 export const LoginForm = () => {
   const searchParams = useSearchParams();
-  const [isPwdVisible, setIsPwdVisible] = useState(false);
   const router = useRouter();
   const progress = useProgress();
 
@@ -60,8 +71,8 @@ export const LoginForm = () => {
               {env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.map((domain, i) => (
                 <Fragment key={i}>
                   {i > 0 && <span className="mr-1">,</span>}
-                  <span className="relative inline-block before:absolute before:-inset-[2px] before:my-[5px] before:bg-border-primary/15">
-                    <pre className="inline text-text-on-secondary">
+                  <span className="before:bg-border-primary/15 relative inline-block before:absolute before:-inset-[2px] before:my-[5px]">
+                    <pre className="text-secondary-foreground inline">
                       {domain}
                     </pre>
                   </span>
@@ -134,86 +145,81 @@ export const LoginForm = () => {
         className="flex w-full flex-col gap-4 md:gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <Form.Field
+        <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label>School Email Address</Form.Label>
-              <Form.Control>
-                <Input
-                  {...field}
-                  disabled={form.formState.isSubmitting}
-                  contentLeft={<EnvelopeIcon size={24} />}
-                  placeholder="john.doe.2023@smu.edu.sg"
-                  autoComplete="on"
-                  tabIndex={1}
-                  data-test="email"
-                />
-              </Form.Control>
-              <Form.Message data-test="email-helper-text" />
-            </Form.Item>
+            <FormItem>
+              <FormLabel>School Email Address</FormLabel>
+              <FormControl>
+                <InputRoot>
+                  <InputAdornment>
+                    <EnvelopeIcon />
+                  </InputAdornment>
+                  <InputControl>
+                    <Input
+                      {...field}
+                      disabled={form.formState.isSubmitting}
+                      placeholder="john.doe.2023@smu.edu.sg"
+                      autoComplete="on"
+                      tabIndex={1}
+                      data-test="email"
+                    />
+                  </InputControl>
+                </InputRoot>
+              </FormControl>
+              <FormMessage data-test="email-helper-text" />
+            </FormItem>
           )}
         />
-        <Form.Field
+        <FormField
           control={form.control}
           name="password"
           render={({ field }) => (
-            <Form.Item>
-              <Form.Label className="flex items-center justify-between">
+            <FormItem>
+              <FormLabel className="flex items-center justify-between">
                 <span>Password</span>
                 <ProgressLink
                   href="/account/auth/forgot"
                   variant="link"
-                  isResponsive
                   className="md:text-sm"
                   tabIndex={5}
                   data-test="forget"
                 >
                   Forgot password?
                 </ProgressLink>
-              </Form.Label>
-              <Form.Control>
-                <Input
-                  {...field}
-                  disabled={form.formState.isSubmitting}
-                  contentLeft={<LockIcon size={24} />}
-                  contentRight={
-                    <button
-                      type="button"
-                      onClick={() => setIsPwdVisible(!isPwdVisible)}
-                      tabIndex={4}
-                    >
-                      {isPwdVisible ? (
-                        <EyeSlashIcon size={24} />
-                      ) : (
-                        <EyeIcon size={24} />
-                      )}
-                    </button>
-                  }
-                  placeholder="Enter password"
-                  type={isPwdVisible ? "text" : "password"}
-                  autoComplete="on"
-                  tabIndex={2}
-                  data-test="password"
-                />
-              </Form.Control>
-              <Form.Message data-test="password-helper-text" />
-            </Form.Item>
+              </FormLabel>
+              <FormControl>
+                <PasswordInputRoot>
+                  <PasswordInputAdornment>
+                    <LockIcon />
+                  </PasswordInputAdornment>
+                  <PasswordInput
+                    {...field}
+                    disabled={form.formState.isSubmitting}
+                    placeholder="Enter password"
+                    autoComplete="on"
+                    tabIndex={2}
+                    data-test="password"
+                  />
+                  <PasswordInputAdornmentToggle />
+                </PasswordInputRoot>
+              </FormControl>
+              <FormMessage data-test="password-helper-text" />
+            </FormItem>
           )}
         />
-        <div className="flex w-full flex-col items-start gap-2 self-stretch pt-3">
+        <div className="flex w-full flex-col items-start gap-4 self-stretch pt-3">
           <Button
-            fullWidth
             type="submit"
+            className="w-full"
             disabled={form.formState.isSubmitting}
-            isResponsive
             tabIndex={3}
             data-test="submit"
           >
             {form.formState.isSubmitting ? "Signing in..." : "Login"}
           </Button>
-          <div className="mx-auto my-4 flex w-full items-center justify-evenly before:mr-4 before:block before:h-px before:flex-grow before:bg-border-default after:ml-4 after:block after:h-px after:flex-grow after:bg-border-default">
+          <div className="before:bg-border after:bg-border mx-auto my-2 flex w-full items-center justify-evenly before:mr-4 before:block before:h-px before:flex-grow after:ml-4 after:block after:h-px after:flex-grow">
             OR
           </div>
 
@@ -245,15 +251,14 @@ export const LoginForm = () => {
             Sign in with Google
           </GoogleSignInButton>
 
-          <div className="flex items-center gap-1 self-stretch text-xs md:text-base">
-            <span className="text-center font-semibold text-text-em-mid">
+          <div className="flex items-center gap-1 self-stretch md:text-base">
+            <span className="text-muted-foreground text-center">
               {"Don't have an account?"}
             </span>
             <ProgressLink
               href="/account/auth/signup"
               type="button"
               variant="link"
-              isResponsive
               tabIndex={6}
               data-test="register"
             >
