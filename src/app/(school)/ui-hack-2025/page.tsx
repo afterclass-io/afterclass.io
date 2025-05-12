@@ -21,6 +21,7 @@ import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
 import { cn } from "@/common/functions";
 import { format } from "date-fns";
 import { Heading } from "@/common/components/heading";
+import { connection } from "next/server";
 
 const TIMELINE_ITEMS = [
   {
@@ -88,11 +89,10 @@ const TIMELINE_ITEMS = [
   },
 ];
 
-export const TimelineWithIcon = () => {
+const TimelineWithIcon = ({ now }: { now: Date }) => {
   return (
     <Timeline>
       {TIMELINE_ITEMS.map((item, index) => {
-        const now = new Date();
         const isPast = item.date < now;
 
         return (
@@ -118,7 +118,9 @@ export const TimelineWithIcon = () => {
   );
 };
 
-export default function Page() {
+export default async function Page() {
+  await connection();
+  const now = new Date();
   return (
     <div className="space-y-4">
       <Heading
@@ -131,7 +133,7 @@ export default function Page() {
       <Heading as="h2" className="text-xl font-bold tracking-tight">
         Timeline
       </Heading>
-      <TimelineWithIcon />
+      <TimelineWithIcon now={now} />
 
       <Heading as="h2" className="text-xl font-bold tracking-tight">
         Submissions
