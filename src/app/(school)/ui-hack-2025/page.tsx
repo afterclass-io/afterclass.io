@@ -19,11 +19,13 @@ import {
   TimelineSeparator,
   TimelineTitle,
 } from "@/common/components/timeline";
-import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
 import { cn } from "@/common/functions";
 import { Heading } from "@/common/components/heading";
 import { api } from "@/common/tools/trpc/server";
-import { Submission } from "@/app/(school)/ui-hack-2025/_components/submission";
+import { Submission } from "./_components/submission";
+import { getEdgeConfig } from "@/common/providers/EdgeConfig";
+import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
+import { auth } from "@/server/auth";
 
 const TIMELINE_ITEMS = [
   {
@@ -122,6 +124,13 @@ const TimelineWithIcon = ({ now }: { now: Date }) => {
 
 export default async function Page() {
   const submissions = await api.hackSubmission.getAll();
+  const ecfg = await getEdgeConfig();
+  const session = await auth();
+  const isAllowedToView =
+    ecfg.viewHackSubmission.enabled ||
+    (session &&
+      ecfg.viewHackSubmission.allowedUsers.includes(session.user.email));
+
   await connection();
   const now = new Date();
   return (
@@ -138,12 +147,15 @@ export default async function Page() {
       <TimelineWithIcon now={now} />
 
       <Heading as="h2" className="text-xl font-bold tracking-tight">
-        Submissions
+        Phase 1 Submissions
       </Heading>
-      {submissions.length === 0 ? (
-        <p className="text-muted-foreground">
-          No submissions yet. Check back later!
-        </p>
+      {!isAllowedToView || submissions.length === 0 ? (
+        <>
+          <FullWidthEnforcer />
+          <p className="text-muted-foreground">
+            No submissions yet. Check back later!
+          </p>
+        </>
       ) : (
         <div className="grid grid-cols-1 gap-x-2 gap-y-8 md:grid-cols-2">
           {submissions.map((submission, index) => (
