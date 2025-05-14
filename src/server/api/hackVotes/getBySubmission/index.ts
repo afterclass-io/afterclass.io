@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-import { protectedProcedure } from "@/server/api/trpc";
+import { publicProcedure } from "@/server/api/trpc";
 
-export const getBySubmission = protectedProcedure
+export const getBySubmission = publicProcedure
   .input(
     z.object({
       hackSubmissionId: z.string().optional(),
