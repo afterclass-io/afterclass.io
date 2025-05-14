@@ -9,6 +9,7 @@ import { SlideEmbed } from "./slide-embed";
 import { VoteButton } from "./vote-button";
 import { api } from "@/common/tools/trpc/react";
 import { useSession } from "next-auth/react";
+import { Separator } from "@/common/components/separator";
 
 export const Submission = ({
   id,
@@ -103,20 +104,39 @@ export const Submission = ({
   );
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-2">
       <SlideEmbed src={slideEmbedUrl} />
       <Heading as="h3">{teamName}</Heading>
-      <Link
-        href={submissionUrl}
-        className={cn(
-          buttonVariants({
-            variant: "link",
-            className: "inline h-fit p-0 md:text-base",
-          }),
-        )}
-      >
-        Submission folder
-      </Link>
+      <div className="flex items-center gap-3">
+        <a
+          href={submissionUrl}
+          className={cn(
+            buttonVariants({
+              variant: "link",
+              className: "inline h-fit p-0 md:text-base",
+            }),
+          )}
+          target="_blank"
+        >
+          Figma Link
+        </a>
+        <Separator
+          orientation="vertical"
+          className="bg-muted-foreground data-[orientation=vertical]:h-2/3"
+        />
+        <a
+          href={slideEmbedUrl}
+          className={cn(
+            buttonVariants({
+              variant: "link",
+              className: "inline h-fit p-0 md:text-base",
+            }),
+          )}
+          target="_blank"
+        >
+          Slides Link
+        </a>
+      </div>
       <VoteButton
         voted={userVote}
         totalVotes={totalVotes ?? 0}

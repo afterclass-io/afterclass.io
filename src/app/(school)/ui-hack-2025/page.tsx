@@ -93,7 +93,7 @@ const TIMELINE_ITEMS = [
 
 const TimelineWithIcon = ({ now }: { now: Date }) => {
   return (
-    <Timeline>
+    <Timeline className="px-6">
       {TIMELINE_ITEMS.map((item, index) => {
         const isPast = item.date < now;
 
@@ -125,14 +125,13 @@ export default async function Page() {
   await connection();
   const now = new Date();
   return (
-    <div className="space-y-4">
+    <div className="w-full flex-1 space-y-4">
       <Heading
         as="h1"
         className="text-center text-3xl font-bold tracking-tight"
       >
         AfterClass UI Hack 2025
       </Heading>
-      <FullWidthEnforcer />
       <Heading as="h2" className="text-xl font-bold tracking-tight">
         Timeline
       </Heading>
