@@ -29,6 +29,7 @@ import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
 import { usePathname } from "next/navigation";
 import { useIsMobile } from "@/common/hooks";
 import { ProgressLink } from "@/common/components/progress-link";
+import { Code } from "lucide-react";
 
 type SidebarItemType = {
   label: string;
@@ -99,6 +100,11 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       icon: <StatisticsTableIcon size={16} />,
       href: "/statistics",
       external: true,
+    },
+    {
+      label: "UI Hack 2025",
+      icon: <Code size={16} />,
+      href: "/ui-hack-2025",
     },
   ],
 };

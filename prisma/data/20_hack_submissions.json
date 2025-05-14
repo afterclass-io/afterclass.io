@@ -1,0 +1,98 @@
+[
+  {
+    "id": "c276d7a9-a9d9-4e43-b280-35f0bd3e97a3",
+    "teamName": "Team Alpha",
+    "slideEmbedUrl": "https://www.canva.com/design/DAGmHrxoJM8/bD643u_C3gkPGZgfyDqeBg/view?embed",
+    "submissionUrl": "https://example.com",
+    "createdAt": "2019-06-30T10:23:54.000Z",
+    "updatedAt": "2020-10-10T20:21:27.000Z"
+  },
+  {
+    "id": "c276d7a9-a9d9-4e43-b280-35f0bd3e97a2",
+    "teamName": "Team Bravo",
+    "slideEmbedUrl": "https://www.canva.com/design/DAGmHrxoJM8/bD643u_C3gkPGZgfyDqeBg/view?embed",
+    "submissionUrl": "https://example.com",
+    "createdAt": "2019-06-30T10:23:54.000Z",
+    "updatedAt": "2020-10-10T20:21:27.000Z"
+  },
+  {
+    "id": "c276d7a9-a9d9-4e43-b280-35f0bd3e97a1",
+    "teamName": "Team Charlie",
+    "slideEmbedUrl": "https://www.canva.com/design/DAGmHrxoJM8/bD643u_C3gkPGZgfyDqeBg/view?embed",
+    "submissionUrl": "https://example.com",
+    "createdAt": "2019-06-30T10:23:54.000Z",
+    "updatedAt": "2020-10-10T20:21:27.000Z"
+  },
+  {
+    "id": "1276d7a9-a9d9-4e43-b280-35f0bd3e97a3",
+    "teamName": "Team Delta",
+    "slideEmbedUrl": "https://www.canva.com/design/DAGmHrxoJM8/bD643u_C3gkPGZgfyDqeBg/view?embed",
+    "submissionUrl": "https://example.com",
+    "createdAt": "2019-06-30T10:23:54.000Z",
+    "updatedAt": "2020-10-10T20:21:27.000Z"
+  },
+  {
+    "id": "2276d7a9-a9d9-4e43-b280-35f0bd3e97a2",
+    "teamName": "Team Echo",
+    "slideEmbedUrl": "https://www.canva.com/design/DAGmHrxoJM8/bD643u_C3gkPGZgfyDqeBg/view?embed",
+    "submissionUrl": "https://example.com",
+    "createdAt": "2019-06-30T10:23:54.000Z",
+    "updatedAt": "2020-10-10T20:21:27.000Z"
+  },
+  {
+    "id": "3276d7a9-a9d9-4e43-b280-35f0bd3e97a1",
+    "teamName": "Team Foxtrot",
+    "slideEmbedUrl": "https://www.canva.com/design/DAGmHrxoJM8/bD643u_C3gkPGZgfyDqeBg/view?embed",
+    "submissionUrl": "https://example.com",
+    "createdAt": "2019-06-30T10:23:54.000Z",
+    "updatedAt": "2020-10-10T20:21:27.000Z"
+  },
+  {
+    "id": "c276d7a9-a9d9-4e43-a280-35f0bd3e97a3",
+    "teamName": "Team Golf",
+    "slideEmbedUrl": "https://www.canva.com/design/DAGmHrxoJM8/bD643u_C3gkPGZgfyDqeBg/view?embed",
+    "submissionUrl": "https://example.com",
+    "createdAt": "2019-06-30T10:23:54.000Z",
+    "updatedAt": "2020-10-10T20:21:27.000Z"
+  },
+  {
+    "id": "c276d7a9-a9d9-4e43-c280-35f0bd3e97a2",
+    "teamName": "Team Hotel",
+    "slideEmbedUrl": "https://www.canva.com/design/DAGmHrxoJM8/bD643u_C3gkPGZgfyDqeBg/view?embed",
+    "submissionUrl": "https://example.com",
+    "createdAt": "2019-06-30T10:23:54.000Z",
+    "updatedAt": "2020-10-10T20:21:27.000Z"
+  },
+  {
+    "id": "c276d7a9-a9d9-4e43-d280-35f0bd3e97a1",
+    "teamName": "Team India",
+    "slideEmbedUrl": "https://www.canva.com/design/DAGmHrxoJM8/bD643u_C3gkPGZgfyDqeBg/view?embed",
+    "submissionUrl": "https://example.com",
+    "createdAt": "2019-06-30T10:23:54.000Z",
+    "updatedAt": "2020-10-10T20:21:27.000Z"
+  },
+  {
+    "id": "1276d7a9-a9d9-4e43-e280-35f0bd3e97a3",
+    "teamName": "Team Julliet",
+    "slideEmbedUrl": "https://www.canva.com/design/DAGmHrxoJM8/bD643u_C3gkPGZgfyDqeBg/view?embed",
+    "submissionUrl": "https://example.com",
+    "createdAt": "2019-06-30T10:23:54.000Z",
+    "updatedAt": "2020-10-10T20:21:27.000Z"
+  },
+  {
+    "id": "2276d7a9-a9d9-4e43-f280-35f0bd3e97a2",
+    "teamName": "Team Kilo",
+    "slideEmbedUrl": "https://www.canva.com/design/DAGmHrxoJM8/bD643u_C3gkPGZgfyDqeBg/view?embed",
+    "submissionUrl": "https://example.com",
+    "createdAt": "2019-06-30T10:23:54.000Z",
+    "updatedAt": "2020-10-10T20:21:27.000Z"
+  },
+  {
+    "id": "3276d7a9-a9d9-4e43-b180-35f0bd3e97a1",
+    "teamName": "Team London",
+    "slideEmbedUrl": "https://www.canva.com/design/DAGmHrxoJM8/bD643u_C3gkPGZgfyDqeBg/view?embed",
+    "submissionUrl": "https://example.com",
+    "createdAt": "2019-06-30T10:23:54.000Z",
+    "updatedAt": "2020-10-10T20:21:27.000Z"
+  }
+]
