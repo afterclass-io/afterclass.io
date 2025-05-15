@@ -1,4 +1,7 @@
 import { coursesRouter } from "@/server/api/courses/router";
+import { classesRouter } from "@/server/api/classes/router";
+import { hackVotesRouter } from "@/server/api/hackVotes/router";
+import { hackSubmissionRouter } from "@/server/api/hackSubmission/router";
 import { labelsRouter } from "@/server/api/labels/router";
 import { professorsRouter } from "@/server/api/professors/router";
 import { reviewsRouter } from "@/server/api/reviews/router";
@@ -7,7 +10,6 @@ import { reviewReactionsRouter } from "@/server/api/reviewReactions/router";
 import { reviewVotesRouter } from "@/server/api/reviewVotes/router";
 
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
-import { classesRouter } from "@/server/api/classes/router";
 
 /**
  * This is the primary router for your server.
@@ -17,6 +19,8 @@ import { classesRouter } from "@/server/api/classes/router";
 export const appRouter = createTRPCRouter({
   classes: classesRouter,
   courses: coursesRouter,
+  hackSubmission: hackSubmissionRouter,
+  hackVotes: hackVotesRouter,
   labels: labelsRouter,
   professors: professorsRouter,
   reviews: reviewsRouter,

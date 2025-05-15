@@ -58,12 +58,13 @@ model Users {
   createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  faculty         Faculties?        @relation(fields: [facultyId], references: [id])
-  university      Universities      @relation(fields: [universityId], references: [id])
-  votes           ReviewVotes[]
-  reviews         Reviews[]
-  reviewEvents    ReviewEvents[]
-  ReviewReactions ReviewReactions[]
+  faculty            Faculties?           @relation(fields: [facultyId], references: [id])
+  university         Universities         @relation(fields: [universityId], references: [id])
+  votes              ReviewVotes[]
+  reviews            Reviews[]
+  reviewEvents       ReviewEvents[]
+  ReviewReactions    ReviewReactions[]
+  HackSubmissionVote HackSubmissionVote[]
 
   @@map("users")
 }
@@ -303,7 +304,7 @@ model ClassExamTiming {
   dayOfWeek String   @map("day_of_week") @db.VarChar(3)
   startTime String   @map("start_time")
   endTime   String   @map("end_time")
-  venue     String?   @map("venue") @db.VarChar(255)
+  venue     String?  @map("venue") @db.VarChar(255)
 
   class Classes @relation(fields: [classId], references: [id])
 
@@ -362,6 +363,32 @@ model BidResult {
 
   @@id([bidWindowId, classId])
   @@map("bid_result")
+}
+
+model HackSubmission {
+  id                 String               @id @default(uuid())
+  teamName           String               @map("team_name")
+  submissionUrl      String               @map("submission_url")
+  slideEmbedUrl      String               @map("slide_embed_url")
+  createdAt          DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  HackSubmissionVote HackSubmissionVote[]
+
+  @@map("hack_submission")
+}
+
+model HackSubmissionVote {
+  hackSubmissionId String   @map("hack_submission_id")
+  voterId          String   @map("voter_id")
+  weight           Int      @default(1) @db.SmallInt // 1 for UPVOTE, -1 for DOWNVOTE
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  hackSubmission HackSubmission @relation(fields: [hackSubmissionId], references: [id])
+  voter          Users          @relation(fields: [voterId], references: [id])
+
+  @@id([hackSubmissionId, voterId])
+  @@map("hack_submission_vote")
 }
 
 enum UniversityAbbreviation {

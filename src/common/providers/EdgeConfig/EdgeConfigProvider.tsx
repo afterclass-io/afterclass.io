@@ -34,13 +34,16 @@ async function getFallbackConfig() {
   return (await import("@/server/ecfg/config.json")).default;
 }
 
+export async function getEdgeConfig() {
+  return (await fetchAndValidateEdgeConfig()) ?? (await getFallbackConfig());
+}
+
 export async function EdgeConfigProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const edgeConfig =
-    (await fetchAndValidateEdgeConfig()) ?? (await getFallbackConfig());
+  const edgeConfig = await getEdgeConfig();
 
   return (
     <EdgeConfigContextProvider edgeConfig={edgeConfig}>

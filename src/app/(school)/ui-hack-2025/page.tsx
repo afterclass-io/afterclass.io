@@ -6,6 +6,8 @@ import {
   ClipboardPenLine,
   Vote,
 } from "lucide-react";
+import { format } from "date-fns";
+import { connection } from "next/server";
 
 import {
   Timeline,
@@ -17,11 +19,13 @@ import {
   TimelineSeparator,
   TimelineTitle,
 } from "@/common/components/timeline";
-import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
 import { cn } from "@/common/functions";
-import { format } from "date-fns";
 import { Heading } from "@/common/components/heading";
-import { connection } from "next/server";
+import { api } from "@/common/tools/trpc/server";
+import { Submission } from "./_components/submission";
+import { getEdgeConfig } from "@/common/providers/EdgeConfig";
+import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
+import { auth } from "@/server/auth";
 
 const TIMELINE_ITEMS = [
   {
@@ -91,7 +95,7 @@ const TIMELINE_ITEMS = [
 
 const TimelineWithIcon = ({ now }: { now: Date }) => {
   return (
-    <Timeline>
+    <Timeline className="px-6">
       {TIMELINE_ITEMS.map((item, index) => {
         const isPast = item.date < now;
 
@@ -119,28 +123,46 @@ const TimelineWithIcon = ({ now }: { now: Date }) => {
 };
 
 export default async function Page() {
+  const submissions = await api.hackSubmission.getAll();
+  const ecfg = await getEdgeConfig();
+  const session = await auth();
+  const isAllowedToView =
+    ecfg.viewHackSubmission.enabled ||
+    (session &&
+      ecfg.viewHackSubmission.allowedUsers.includes(session.user.email));
+
   await connection();
   const now = new Date();
   return (
-    <div className="space-y-4">
+    <div className="w-full flex-1 space-y-4">
       <Heading
         as="h1"
         className="text-center text-3xl font-bold tracking-tight"
       >
         AfterClass UI Hack 2025
       </Heading>
-      <FullWidthEnforcer />
       <Heading as="h2" className="text-xl font-bold tracking-tight">
         Timeline
       </Heading>
       <TimelineWithIcon now={now} />
 
       <Heading as="h2" className="text-xl font-bold tracking-tight">
-        Submissions
+        Phase 1 Submissions
       </Heading>
-      <p className="text-muted-foreground">
-        No submissions yet. Check back later!
-      </p>
+      {!isAllowedToView || submissions.length === 0 ? (
+        <>
+          <FullWidthEnforcer />
+          <p className="text-muted-foreground">
+            No submissions yet. Check back later!
+          </p>
+        </>
+      ) : (
+        <div className="grid grid-cols-1 gap-x-2 gap-y-8 md:grid-cols-2">
+          {submissions.map((submission, index) => (
+            <Submission key={index} {...submission} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
