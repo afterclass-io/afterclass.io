@@ -10,7 +10,7 @@ export const voteOrUnvote = protectedProcedure
   .input(
     z.object({
       hackSubmissionId: z.string(),
-      weight: z.number(),
+      weight: z.union([z.literal(0), z.literal(1)]),
     }),
   )
   .mutation(async ({ input, ctx }) => {
