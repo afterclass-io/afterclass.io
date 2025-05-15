@@ -6,7 +6,7 @@ export const voteOrUnvote = protectedProcedure
   .input(
     z.object({
       reviewId: z.string(),
-      weight: z.number(),
+      weight: z.union([z.literal(-1), z.literal(0), z.literal(1)]),
     }),
   )
   .mutation(

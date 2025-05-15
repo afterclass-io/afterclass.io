@@ -80,14 +80,6 @@ export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
     },
   });
 
-  const handleVote = (weight: number) => {
-    if (!session) return;
-    likeOrUnlike({
-      reviewId,
-      weight,
-    });
-  };
-
   const getUserVoteWeight = useCallback(() => {
     if (getUserVoteQuery.data) {
       return getUserVoteQuery.data.weight;
@@ -102,7 +94,11 @@ export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
       upvoted={getUserVoteWeight() > 0}
       downvoted={getUserVoteWeight() < 0}
       onVoteChange={({ upvoted, downvoted }) => {
-        handleVote(upvoted ? 1 : downvoted ? -1 : 0);
+        if (!session) return;
+        likeOrUnlike({
+          reviewId,
+          weight: upvoted ? 1 : downvoted ? -1 : 0,
+        });
       }}
     />
   );
