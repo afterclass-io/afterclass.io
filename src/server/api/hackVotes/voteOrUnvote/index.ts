@@ -2,10 +2,6 @@ import { z } from "zod";
 
 import { protectedProcedure } from "@/server/api/trpc";
 
-function clamp(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, value));
-}
-
 export const voteOrUnvote = protectedProcedure
   .input(
     z.object({
@@ -14,7 +10,6 @@ export const voteOrUnvote = protectedProcedure
     }),
   )
   .mutation(async ({ input, ctx }) => {
-    input.weight = clamp(input.weight, 0, 1);
     await ctx.db.hackSubmissionVote.upsert({
       where: {
         hackSubmissionId_voterId: {
