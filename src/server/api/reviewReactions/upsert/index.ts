@@ -14,13 +14,12 @@ export const upsert = protectedProcedure
   .mutation(async ({ input, ctx }) => {
     const reactingUserId = input.userId ?? ctx.session.user.id;
 
+    // workaround for deleteIfExists // https://github.com/prisma/prisma/issues/9460
     if (!input.reaction) {
-      return await ctx.db.reviewReactions.delete({
+      return await ctx.db.reviewReactions.deleteMany({
         where: {
-          reviewId_reactingUserId: {
-            reactingUserId,
-            reviewId: input.reviewId,
-          },
+          reactingUserId,
+          reviewId: input.reviewId,
         },
       });
     }
