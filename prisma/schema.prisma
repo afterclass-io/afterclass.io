@@ -172,16 +172,16 @@ model Faculties {
 }
 
 model Classes {
-  id               Int           @id @default(autoincrement())
-  section          String?
+  id               String        @id @default(uuid())
+  section          String
   courseId         String        @map("course_id")
   professorId      String        @map("professor_id")
-  acadTermId       String?       @map("acad_term_id")
+  acadTermId       String        @map("acad_term_id")
   createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
   gradingBasis     GradingBasis? @map("grading_basis")
   courseOutlineUrl String?       @map("course_outline_url")
-  bossId           Int?          @map("boss_id")
+  bossId           Int           @map("boss_id")
 
   classTimings      ClassTiming[]
   classExamTimings  ClassExamTiming[]
@@ -190,8 +190,10 @@ model Classes {
 
   course    Courses    @relation(fields: [courseId], references: [id])
   professor Professors @relation(fields: [professorId], references: [id])
-  acadTerm  AcadTerm?  @relation(fields: [acadTermId], references: [id])
+  acadTerm  AcadTerm   @relation(fields: [acadTermId], references: [id])
 
+  @@unique([bossId, acadTermId])
+  @@unique([courseId, section, acadTermId])
   @@index([courseId], type: BTree)
   @@index([professorId], type: BTree)
   @@map("classes")
@@ -283,7 +285,7 @@ model AcadTerm {
 
 model ClassTiming {
   id        Int      @id @default(autoincrement())
-  classId   Int      @map("class_id")
+  classId   String   @map("class_id")
   startDate DateTime @map("start_date") @db.Timestamptz(3)
   endDate   DateTime @map("end_date") @db.Timestamptz(3)
   dayOfWeek String   @map("day_of_week") @db.VarChar(3)
@@ -299,7 +301,7 @@ model ClassTiming {
 
 model ClassExamTiming {
   id        Int      @id @default(autoincrement())
-  classId   Int      @map("class_id")
+  classId   String   @map("class_id")
   date      DateTime @map("date") @db.Timestamptz(3)
   dayOfWeek String   @map("day_of_week") @db.VarChar(3)
   startTime String   @map("start_time")
@@ -314,12 +316,12 @@ model ClassExamTiming {
 
 model ClassAvailability {
   // One class will have only one class availability per bid window
-  classId         Int @map("class_id")
-  bidWindowId     Int @map("bid_window_id")
-  total           Int @map("total")
-  currentEnrolled Int @map("current_enrolled")
-  reserved        Int @map("reserved")
-  available       Int @map("available")
+  classId         String @map("class_id")
+  bidWindowId     Int    @map("bid_window_id")
+  total           Int    @map("total")
+  currentEnrolled Int    @map("current_enrolled")
+  reserved        Int    @map("reserved")
+  available       Int    @map("available")
 
   class     Classes   @relation(fields: [classId], references: [id])
   bidWindow BidWindow @relation(fields: [bidWindowId], references: [id])
@@ -345,18 +347,18 @@ model BidWindow {
 }
 
 model BidResult {
-  bidWindowId          Int   @map("bid_window_id")
-  classId              Int   @map("class_id")
-  vacancy              Int   @map("vacancy")
-  openingVacancy       Int   @map("opening_vacancy")
-  beforeProcessVacancy Int   @map("before_process_vacancy")
-  dice                 Int   @map("d_i_c_e")
-  afterProcessVacancy  Int   @map("after_process_vacancy")
-  enrolledStudents     Int   @map("enrolled_students")
-  bidActualMedian      Float @map("bid_actual_median")
-  bidActualMin         Float @map("bid_actual_min")
-  bidPredictedMedian   Float @map("bid_predicted_median")
-  bidPredictedMin      Float @map("bid_predicted_min")
+  bidWindowId          Int    @map("bid_window_id")
+  classId              String @map("class_id")
+  vacancy              Int    @map("vacancy")
+  openingVacancy       Int    @map("opening_vacancy")
+  beforeProcessVacancy Int    @map("before_process_vacancy")
+  dice                 Int    @map("d_i_c_e")
+  afterProcessVacancy  Int    @map("after_process_vacancy")
+  enrolledStudents     Int    @map("enrolled_students")
+  bidActualMedian      Float  @map("bid_actual_median")
+  bidActualMin         Float  @map("bid_actual_min")
+  bidPredictedMedian   Float  @map("bid_predicted_median")
+  bidPredictedMin      Float  @map("bid_predicted_min")
 
   bidWindow BidWindow @relation(fields: [bidWindowId], references: [id])
   class     Classes   @relation(fields: [classId], references: [id])
