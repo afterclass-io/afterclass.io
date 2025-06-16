@@ -111,6 +111,7 @@ export const VoteGroup = ({
             notation: "compact",
             compactDisplay: "short",
           }}
+          trend={0}
           value={totalVotes}
           className="font-mono text-sm"
         />
