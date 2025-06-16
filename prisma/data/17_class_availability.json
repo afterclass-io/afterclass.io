@@ -1,162 +1,162 @@
 [
-    {
-        "classId": 25,
-        "bidWindowId": 1,
-        "total": 85,
-        "currentEnrolled": 0,
-        "reserved": 81,
-        "available": 4
-    },
-    {
-        "classId": 17,
-        "bidWindowId": 2,
-        "total": 82,
-        "currentEnrolled": 0,
-        "reserved": 79,
-        "available": 3
-    },
-    {
-        "classId": 20,
-        "bidWindowId": 3,
-        "total": 41,
-        "currentEnrolled": 6,
-        "reserved": 26,
-        "available": 9
-    },
-    {
-        "classId": 20,
-        "bidWindowId": 4,
-        "total": 44,
-        "currentEnrolled": 0,
-        "reserved": 37,
-        "available": 7
-    },
-    {
-        "classId": 26,
-        "bidWindowId": 5,
-        "total": 55,
-        "currentEnrolled": 25,
-        "reserved": 4,
-        "available": 26
-    },
-    {
-        "classId": 25,
-        "bidWindowId": 6,
-        "total": 89,
-        "currentEnrolled": 0,
-        "reserved": 84,
-        "available": 5
-    },
-    {
-        "classId": 24,
-        "bidWindowId": 7,
-        "total": 51,
-        "currentEnrolled": 7,
-        "reserved": 43,
-        "available": 1
-    },
-    {
-        "classId": 30,
-        "bidWindowId": 8,
-        "total": 70,
-        "currentEnrolled": 0,
-        "reserved": 60,
-        "available": 10
-    },
-    {
-        "classId": 23,
-        "bidWindowId": 9,
-        "total": 73,
-        "currentEnrolled": 0,
-        "reserved": 63,
-        "available": 10
-    },
-    {
-        "classId": 19,
-        "bidWindowId": 10,
-        "total": 97,
-        "currentEnrolled": 0,
-        "reserved": 95,
-        "available": 2
-    },
-    {
-        "classId": 30,
-        "bidWindowId": 11,
-        "total": 34,
-        "currentEnrolled": 0,
-        "reserved": 28,
-        "available": 6
-    },
-    {
-        "classId": 23,
-        "bidWindowId": 12,
-        "total": 97,
-        "currentEnrolled": 34,
-        "reserved": 25,
-        "available": 38
-    },
-    {
-        "classId": 27,
-        "bidWindowId": 13,
-        "total": 63,
-        "currentEnrolled": 0,
-        "reserved": 54,
-        "available": 9
-    },
-    {
-        "classId": 26,
-        "bidWindowId": 14,
-        "total": 37,
-        "currentEnrolled": 0,
-        "reserved": 29,
-        "available": 8
-    },
-    {
-        "classId": 23,
-        "bidWindowId": 15,
-        "total": 83,
-        "currentEnrolled": 0,
-        "reserved": 79,
-        "available": 4
-    },
-    {
-        "classId": 26,
-        "bidWindowId": 16,
-        "total": 55,
-        "currentEnrolled": 0,
-        "reserved": 54,
-        "available": 1
-    },
-    {
-        "classId": 27,
-        "bidWindowId": 17,
-        "total": 94,
-        "currentEnrolled": 0,
-        "reserved": 84,
-        "available": 10
-    },
-    {
-        "classId": 24,
-        "bidWindowId": 18,
-        "total": 33,
-        "currentEnrolled": 9,
-        "reserved": 10,
-        "available": 14
-    },
-    {
-        "classId": 29,
-        "bidWindowId": 19,
-        "total": 40,
-        "currentEnrolled": 17,
-        "reserved": 13,
-        "available": 10
-    },
-    {
-        "classId": 24,
-        "bidWindowId": 20,
-        "total": 63,
-        "currentEnrolled": 16,
-        "reserved": 7,
-        "available": 40
-    }
+  {
+    "classId": "068440df-7e9a-71ec-bbc6-1246091e7064",
+    "bidWindowId": 1,
+    "total": 85,
+    "currentEnrolled": 0,
+    "reserved": 81,
+    "available": 4
+  },
+  {
+    "classId": "068440df-7e9a-72fc-9fb6-305d722e11e1",
+    "bidWindowId": 2,
+    "total": 82,
+    "currentEnrolled": 0,
+    "reserved": 79,
+    "available": 3
+  },
+  {
+    "classId": "068440df-7e9a-73cc-897b-b8789c3081c5",
+    "bidWindowId": 3,
+    "total": 41,
+    "currentEnrolled": 6,
+    "reserved": 26,
+    "available": 9
+  },
+  {
+    "classId": "068440df-7e9a-7482-816f-7c18eb4084f2",
+    "bidWindowId": 4,
+    "total": 44,
+    "currentEnrolled": 0,
+    "reserved": 37,
+    "available": 7
+  },
+  {
+    "classId": "068440df-7e9a-753d-a130-939684568133",
+    "bidWindowId": 5,
+    "total": 55,
+    "currentEnrolled": 25,
+    "reserved": 4,
+    "available": 26
+  },
+  {
+    "classId": "068440df-7e9a-75ec-b583-f0b37de62cd6",
+    "bidWindowId": 6,
+    "total": 89,
+    "currentEnrolled": 0,
+    "reserved": 84,
+    "available": 5
+  },
+  {
+    "classId": "068440df-7e9a-7697-b12a-4581e35e742d",
+    "bidWindowId": 7,
+    "total": 51,
+    "currentEnrolled": 7,
+    "reserved": 43,
+    "available": 1
+  },
+  {
+    "classId": "068440df-7e9a-7740-ab7e-21712dd7e6a5",
+    "bidWindowId": 8,
+    "total": 70,
+    "currentEnrolled": 0,
+    "reserved": 60,
+    "available": 10
+  },
+  {
+    "classId": "068440df-7e9a-77e9-af48-aad047fba40e",
+    "bidWindowId": 9,
+    "total": 73,
+    "currentEnrolled": 0,
+    "reserved": 63,
+    "available": 10
+  },
+  {
+    "classId": "068440df-7e9a-7892-9f58-c4d50b198dfa",
+    "bidWindowId": 10,
+    "total": 97,
+    "currentEnrolled": 0,
+    "reserved": 95,
+    "available": 2
+  },
+  {
+    "classId": "068440df-7e9a-793f-b156-d8f69660c7cf",
+    "bidWindowId": 11,
+    "total": 34,
+    "currentEnrolled": 0,
+    "reserved": 28,
+    "available": 6
+  },
+  {
+    "classId": "068440df-7e9a-79f3-8942-0765175d0947",
+    "bidWindowId": 12,
+    "total": 97,
+    "currentEnrolled": 34,
+    "reserved": 25,
+    "available": 38
+  },
+  {
+    "classId": "068440df-7e9a-7a9f-950b-c1e82f09f676",
+    "bidWindowId": 13,
+    "total": 63,
+    "currentEnrolled": 0,
+    "reserved": 54,
+    "available": 9
+  },
+  {
+    "classId": "068440df-7e9a-7b49-8bb2-c05fd17cb8ff",
+    "bidWindowId": 14,
+    "total": 37,
+    "currentEnrolled": 0,
+    "reserved": 29,
+    "available": 8
+  },
+  {
+    "classId": "068440df-7e9a-7bf4-91ba-bf21b2d93ae3",
+    "bidWindowId": 15,
+    "total": 83,
+    "currentEnrolled": 0,
+    "reserved": 79,
+    "available": 4
+  },
+  {
+    "classId": "068440df-7e9a-7c9d-81e1-c7a10b1f2e3a",
+    "bidWindowId": 16,
+    "total": 55,
+    "currentEnrolled": 0,
+    "reserved": 54,
+    "available": 1
+  },
+  {
+    "classId": "068440df-7e9a-7d45-9d4a-ce6bf45109f2",
+    "bidWindowId": 17,
+    "total": 94,
+    "currentEnrolled": 0,
+    "reserved": 84,
+    "available": 10
+  },
+  {
+    "classId": "068440df-7e9a-7dee-97de-39e31484b188",
+    "bidWindowId": 18,
+    "total": 33,
+    "currentEnrolled": 9,
+    "reserved": 10,
+    "available": 14
+  },
+  {
+    "classId": "068440df-7e9a-7ea4-85e0-c04ad1ae5e2a",
+    "bidWindowId": 19,
+    "total": 40,
+    "currentEnrolled": 17,
+    "reserved": 13,
+    "available": 10
+  },
+  {
+    "classId": "068440df-7e9a-7f4e-ad92-5748c8218288",
+    "bidWindowId": 20,
+    "total": 63,
+    "currentEnrolled": 16,
+    "reserved": 7,
+    "available": 40
+  }
 ]
