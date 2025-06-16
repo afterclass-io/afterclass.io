@@ -289,10 +289,10 @@ model ClassTiming {
   classId   String   @map("class_id")
   startDate DateTime @map("start_date") @db.Timestamptz(3)
   endDate   DateTime @map("end_date") @db.Timestamptz(3)
-  dayOfWeek String   @map("day_of_week") @db.VarChar(3)
+  dayOfWeek String?  @map("day_of_week")
   startTime String   @map("start_time")
   endTime   String   @map("end_time")
-  venue     String   @map("venue") @db.VarChar(255)
+  venue     String   @map("venue")
 
   class Classes @relation(fields: [classId], references: [id])
 
@@ -304,10 +304,10 @@ model ClassExamTiming {
   id        Int      @id @default(autoincrement())
   classId   String   @map("class_id")
   date      DateTime @map("date") @db.Timestamptz(3)
-  dayOfWeek String   @map("day_of_week") @db.VarChar(3)
+  dayOfWeek String?  @map("day_of_week")
   startTime String   @map("start_time")
   endTime   String   @map("end_time")
-  venue     String?  @map("venue") @db.VarChar(255)
+  venue     String?  @map("venue")
 
   class Classes @relation(fields: [classId], references: [id])
 
