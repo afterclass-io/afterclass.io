@@ -183,6 +183,7 @@ model Classes {
   gradingBasis     GradingBasis? @map("grading_basis")
   courseOutlineUrl String?       @map("course_outline_url")
   bossId           Int           @map("boss_id")
+  warnInaccuracy   Boolean       @default(false) @map("warn_inaccuracy")
 
   classTimings      ClassTiming[]
   classExamTimings  ClassExamTiming[]
