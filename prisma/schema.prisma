@@ -194,8 +194,8 @@ model Classes {
   professor Professors @relation(fields: [professorId], references: [id])
   acadTerm  AcadTerm   @relation(fields: [acadTermId], references: [id])
 
-  @@unique([bossId, acadTermId])
-  @@unique([courseId, section, acadTermId])
+  @@unique([bossId, acadTermId, professorId])
+  @@unique([courseId, section, acadTermId, professorId])
   @@index([courseId], type: BTree)
   @@index([professorId], type: BTree)
   @@map("classes")
