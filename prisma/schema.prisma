@@ -122,7 +122,7 @@ model Courses {
 model Professors {
   id                   String   @id @default(uuid())
   name                 String
-  bossName             String?  @map("boss_name")
+  bossAliases          String[] @default([]) @map("boss_aliases")
   email                String
   slug                 String   @unique
   photoUrl             String   @map("photo_url")
