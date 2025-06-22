@@ -176,7 +176,7 @@ model Classes {
   id               String        @id @default(uuid())
   section          String
   courseId         String        @map("course_id")
-  professorId      String        @map("professor_id")
+  professorId      String?       @map("professor_id")
   acadTermId       String        @map("acad_term_id")
   createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -190,9 +190,9 @@ model Classes {
   ClassAvailability ClassAvailability[]
   bidResult         BidResult[]
 
-  course    Courses    @relation(fields: [courseId], references: [id])
-  professor Professors @relation(fields: [professorId], references: [id])
-  acadTerm  AcadTerm   @relation(fields: [acadTermId], references: [id])
+  course    Courses     @relation(fields: [courseId], references: [id])
+  professor Professors? @relation(fields: [professorId], references: [id])
+  acadTerm  AcadTerm    @relation(fields: [acadTermId], references: [id])
 
   @@unique([bossId, acadTermId, professorId])
   @@unique([courseId, section, acadTermId, professorId])
