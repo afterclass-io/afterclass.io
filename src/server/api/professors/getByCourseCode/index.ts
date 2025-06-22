@@ -35,11 +35,7 @@ export const getByCourseCode = publicProcedure
         },
         classes: {
           select: {
-            course: {
-              select: {
-                id: true, // Get course ID to count distinct courses later
-              },
-            },
+            courseId: true, // Get course ID to count distinct courses later
           },
         },
       },
@@ -55,7 +51,7 @@ export const getByCourseCode = publicProcedure
     });
     const coursesWithDistinctProfessorCount = professors.map((professor) => {
       const uniqueCourses = new Set(
-        professor.classes.map((cls) => cls.course.id),
+        professor.classes.map((cls) => cls.courseId),
       );
       professor._count.classes = uniqueCourses.size;
       return professor;
