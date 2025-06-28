@@ -406,11 +406,9 @@ model BidPrediction {
   modelVersion String @map("model_version")
 
   // Classification Results
-  clfPredicted       Boolean @map("clf_predicted")
-  clfProbNoBid       Float   @map("clf_prob_no_bid")
-  clfProbBid         Float   @map("clf_prob_bid")
-  clfConfidenceScore Float   @map("clf_confidence_score")
-  clfConfidenceLevel String  @map("clf_confidence_level")
+  clfHasBidsProbability Float  @map("clf_has_bids_prob")
+  clfConfidenceScore    Float  @map("clf_confidence_score")
+  clfConfidenceLevel    String @map("clf_confidence_level")
 
   // Median/Min Regression Results
   medianPredicted   Float @map("median_predicted")
@@ -423,8 +421,7 @@ model BidPrediction {
   minUpper95ci   Float @map("min_upper_95ci")
   minUncertainty Float @map("min_uncertainty")
 
-  recommendations Json
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   userBid UserBid[]
 
