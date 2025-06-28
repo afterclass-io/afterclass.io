@@ -189,6 +189,7 @@ model Classes {
   classExamTimings  ClassExamTiming[]
   ClassAvailability ClassAvailability[]
   bidResult         BidResult[]
+  PredictionResult  PredictionResult[]
 
   course    Courses     @relation(fields: [courseId], references: [id])
   professor Professors? @relation(fields: [professorId], references: [id])
@@ -279,8 +280,9 @@ model AcadTerm {
   startDt       DateTime @map("start_dt") @db.Timestamptz(3)
   endDt         DateTime @map("end_dt") @db.Timestamptz(3)
 
-  classes   Classes[]
-  BidWindow BidWindow[]
+  classes           Classes[]
+  BidWindow         BidWindow[]
+  SafetyFactorTable SafetyFactorTable[]
 
   @@map("acad_term")
 }
@@ -342,6 +344,7 @@ model BidWindow {
 
   classAvailability ClassAvailability[]
   bidResult         BidResult[]
+  PredictionResult  PredictionResult[]
 
   acadTerm AcadTerm @relation(fields: [acadTermId], references: [id])
 
@@ -393,6 +396,57 @@ model HackSubmissionVote {
 
   @@id([hackSubmissionId, voterId])
   @@map("hack_submission_vote")
+}
+
+model PredictionResult {
+  classId      String @map("class_id")
+  bidWindowId  Int    @map("bid_window_id")
+  modelVersion String @map("model_version")
+
+  // Classification Results
+  clfPredicted       Boolean @map("clf_predicted")
+  clfProbNoBid       Float   @map("clf_prob_no_bid")
+  clfProbBid         Float   @map("clf_prob_bid")
+  clfConfidenceScore Float   @map("clf_confidence_score")
+  clfConfidenceLevel String  @map("clf_confidence_level")
+
+  // Median/Min Regression Results
+  medianPredicted   Float @map("median_predicted")
+  medianLower95ci   Float @map("median_lower_95ci")
+  medianUpper95ci   Float @map("median_upper_95ci")
+  medianUncertainty Float @map("median_uncertainty")
+
+  minPredicted   Float @map("min_predicted")
+  minLower95ci   Float @map("min_lower_95ci")
+  minUpper95ci   Float @map("min_upper_95ci")
+  minUncertainty Float @map("min_uncertainty")
+
+  recommendations Json
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  class     Classes   @relation(fields: [classId], references: [id])
+  bidWindow BidWindow @relation(fields: [bidWindowId], references: [id])
+
+  @@id([classId, bidWindowId])
+  @@index([modelVersion])
+  @@map("prediction_result")
+}
+
+model SafetyFactorTable {
+  acadTermId          String   @map("acad_term_id")
+  predictionType      String   @map("prediction_type") // "median" or "min"
+  safetyFactor        Float    @map("safety_factor")
+  tpr                 Float // True Positive Rate
+  meanLoss            Float    @map("mean_loss")
+  underPredictionRate Float?   @map("under_prediction_rate")
+  mae                 Float // Mean Absolute Error
+  mse                 Float // Mean Squared Error
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  acadTerm AcadTerm @relation(fields: [acadTermId], references: [id])
+
+  @@id([acadTermId, predictionType, safetyFactor])
+  @@map("safety_factor_table")
 }
 
 enum UniversityAbbreviation {
