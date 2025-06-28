@@ -8,10 +8,8 @@
     "dice": 1,
     "afterProcessVacancy": 5,
     "enrolledStudents": 83,
-    "bidActualMedian": 20.77,
-    "bidActualMin": 14.89,
-    "bidPredictedMedian": 4.32,
-    "bidPredictedMin": 1.17
+    "median": 20.77,
+    "min": 14.89
   },
   {
     "bidWindowId": 16,
@@ -22,10 +20,8 @@
     "dice": 5,
     "afterProcessVacancy": 2,
     "enrolledStudents": 31,
-    "bidActualMedian": 5.23,
-    "bidActualMin": 3.23,
-    "bidPredictedMedian": 18.35,
-    "bidPredictedMin": 4.21
+    "median": 5.23,
+    "min": 3.23
   },
   {
     "bidWindowId": 3,
@@ -36,10 +32,8 @@
     "dice": 0,
     "afterProcessVacancy": 0,
     "enrolledStudents": 95,
-    "bidActualMedian": 3.5,
-    "bidActualMin": 3.3,
-    "bidPredictedMedian": 42.3,
-    "bidPredictedMin": 2.81
+    "median": 3.5,
+    "min": 3.3
   },
   {
     "bidWindowId": 5,
@@ -50,10 +44,8 @@
     "dice": 4,
     "afterProcessVacancy": 14,
     "enrolledStudents": 25,
-    "bidActualMedian": 22.27,
-    "bidActualMin": 13.61,
-    "bidPredictedMedian": 13.47,
-    "bidPredictedMin": 6.66
+    "median": 22.27,
+    "min": 13.61
   },
   {
     "bidWindowId": 10,
@@ -64,10 +56,8 @@
     "dice": 5,
     "afterProcessVacancy": 5,
     "enrolledStudents": 96,
-    "bidActualMedian": 3.69,
-    "bidActualMin": 2.74,
-    "bidPredictedMedian": 39.42,
-    "bidPredictedMin": 5.61
+    "median": 3.69,
+    "min": 2.74
   },
   {
     "bidWindowId": 7,
@@ -78,10 +68,8 @@
     "dice": 3,
     "afterProcessVacancy": 19,
     "enrolledStudents": 96,
-    "bidActualMedian": 38.49,
-    "bidActualMin": 33.98,
-    "bidPredictedMedian": 34.32,
-    "bidPredictedMin": 20.15
+    "median": 38.49,
+    "min": 33.98
   },
   {
     "bidWindowId": 17,
@@ -92,10 +80,8 @@
     "dice": 1,
     "afterProcessVacancy": 0,
     "enrolledStudents": 97,
-    "bidActualMedian": 12.41,
-    "bidActualMin": 9.98,
-    "bidPredictedMedian": 19.28,
-    "bidPredictedMin": 9.83
+    "median": 12.41,
+    "min": 9.98
   },
   {
     "bidWindowId": 19,
@@ -106,10 +92,8 @@
     "dice": 7,
     "afterProcessVacancy": 1,
     "enrolledStudents": 52,
-    "bidActualMedian": 23.04,
-    "bidActualMin": 8.86,
-    "bidPredictedMedian": 9.2,
-    "bidPredictedMin": 1.76
+    "median": 23.04,
+    "min": 8.86
   },
   {
     "bidWindowId": 5,
@@ -120,10 +104,8 @@
     "dice": 10,
     "afterProcessVacancy": 1,
     "enrolledStudents": 72,
-    "bidActualMedian": 7.31,
-    "bidActualMin": 1.99,
-    "bidPredictedMedian": 27.83,
-    "bidPredictedMin": 24.11
+    "median": 7.31,
+    "min": 1.99
   },
   {
     "bidWindowId": 7,
@@ -134,10 +116,8 @@
     "dice": 10,
     "afterProcessVacancy": 29,
     "enrolledStudents": 23,
-    "bidActualMedian": 13.21,
-    "bidActualMin": 3.12,
-    "bidPredictedMedian": 38.58,
-    "bidPredictedMin": 8.95
+    "median": 13.21,
+    "min": 3.12
   },
   {
     "bidWindowId": 16,
@@ -148,10 +128,8 @@
     "dice": 2,
     "afterProcessVacancy": 6,
     "enrolledStudents": 88,
-    "bidActualMedian": 16.9,
-    "bidActualMin": 4.16,
-    "bidPredictedMedian": 24.18,
-    "bidPredictedMin": 21.64
+    "median": 16.9,
+    "min": 4.16
   },
   {
     "bidWindowId": 12,
@@ -162,10 +140,8 @@
     "dice": 1,
     "afterProcessVacancy": 28,
     "enrolledStudents": 85,
-    "bidActualMedian": 28.88,
-    "bidActualMin": 26.81,
-    "bidPredictedMedian": 24.35,
-    "bidPredictedMin": 7.41
+    "median": 28.88,
+    "min": 26.81
   },
   {
     "bidWindowId": 2,
@@ -176,10 +152,8 @@
     "dice": 1,
     "afterProcessVacancy": 41,
     "enrolledStudents": 48,
-    "bidActualMedian": 47.98,
-    "bidActualMin": 6.5,
-    "bidPredictedMedian": 1.52,
-    "bidPredictedMin": 1.36
+    "median": 47.98,
+    "min": 6.5
   },
   {
     "bidWindowId": 19,
@@ -190,10 +164,8 @@
     "dice": 4,
     "afterProcessVacancy": 28,
     "enrolledStudents": 63,
-    "bidActualMedian": 21.0,
-    "bidActualMin": 18.75,
-    "bidPredictedMedian": 49.73,
-    "bidPredictedMin": 8.67
+    "median": 21.0,
+    "min": 18.75
   },
   {
     "bidWindowId": 3,
@@ -204,10 +176,8 @@
     "dice": 10,
     "afterProcessVacancy": 0,
     "enrolledStudents": 44,
-    "bidActualMedian": 39.07,
-    "bidActualMin": 17.39,
-    "bidPredictedMedian": 23.79,
-    "bidPredictedMin": 15.35
+    "median": 39.07,
+    "min": 17.39
   },
   {
     "bidWindowId": 18,
@@ -218,10 +188,8 @@
     "dice": 0,
     "afterProcessVacancy": 0,
     "enrolledStudents": 5,
-    "bidActualMedian": 35.06,
-    "bidActualMin": 24.94,
-    "bidPredictedMedian": 7.22,
-    "bidPredictedMin": 6.57
+    "median": 35.06,
+    "min": 24.94
   },
   {
     "bidWindowId": 19,
@@ -232,10 +200,8 @@
     "dice": 6,
     "afterProcessVacancy": 28,
     "enrolledStudents": 68,
-    "bidActualMedian": 46.26,
-    "bidActualMin": 18.72,
-    "bidPredictedMedian": 30.63,
-    "bidPredictedMin": 30.46
+    "median": 46.26,
+    "min": 18.72
   },
   {
     "bidWindowId": 5,
@@ -246,10 +212,8 @@
     "dice": 9,
     "afterProcessVacancy": 12,
     "enrolledStudents": 83,
-    "bidActualMedian": 20.28,
-    "bidActualMin": 5.07,
-    "bidPredictedMedian": 37.35,
-    "bidPredictedMin": 28.67
+    "median": 20.28,
+    "min": 5.07
   },
   {
     "bidWindowId": 1,
@@ -260,10 +224,8 @@
     "dice": 0,
     "afterProcessVacancy": 10,
     "enrolledStudents": 73,
-    "bidActualMedian": 39.28,
-    "bidActualMin": 17.7,
-    "bidPredictedMedian": 27.43,
-    "bidPredictedMin": 2.0
+    "median": 39.28,
+    "min": 17.7
   },
   {
     "bidWindowId": 20,
@@ -274,10 +236,8 @@
     "dice": 4,
     "afterProcessVacancy": 10,
     "enrolledStudents": 28,
-    "bidActualMedian": 6.55,
-    "bidActualMin": 5.61,
-    "bidPredictedMedian": 40.93,
-    "bidPredictedMin": 26.03
+    "median": 6.55,
+    "min": 5.61
   },
   {
     "bidWindowId": 4,
@@ -288,10 +248,8 @@
     "dice": 7,
     "afterProcessVacancy": 16,
     "enrolledStudents": 64,
-    "bidActualMedian": 20.84,
-    "bidActualMin": 10.12,
-    "bidPredictedMedian": 21.63,
-    "bidPredictedMin": 15.7
+    "median": 20.84,
+    "min": 10.12
   },
   {
     "bidWindowId": 4,
@@ -302,10 +260,8 @@
     "dice": 4,
     "afterProcessVacancy": 6,
     "enrolledStudents": 9,
-    "bidActualMedian": 28.08,
-    "bidActualMin": 15.7,
-    "bidPredictedMedian": 11.4,
-    "bidPredictedMin": 3.26
+    "median": 28.08,
+    "min": 15.7
   },
   {
     "bidWindowId": 20,
@@ -316,10 +272,8 @@
     "dice": 4,
     "afterProcessVacancy": 1,
     "enrolledStudents": 54,
-    "bidActualMedian": 6.82,
-    "bidActualMin": 1.44,
-    "bidPredictedMedian": 13.61,
-    "bidPredictedMin": 4.47
+    "median": 6.82,
+    "min": 1.44
   },
   {
     "bidWindowId": 11,
@@ -330,10 +284,8 @@
     "dice": 3,
     "afterProcessVacancy": 23,
     "enrolledStudents": 67,
-    "bidActualMedian": 46.43,
-    "bidActualMin": 34.97,
-    "bidPredictedMedian": 46.66,
-    "bidPredictedMin": 8.55
+    "median": 46.43,
+    "min": 34.97
   },
   {
     "bidWindowId": 13,
@@ -344,10 +296,8 @@
     "dice": 10,
     "afterProcessVacancy": 0,
     "enrolledStudents": 15,
-    "bidActualMedian": 38.15,
-    "bidActualMin": 36.05,
-    "bidPredictedMedian": 38.42,
-    "bidPredictedMin": 7.87
+    "median": 38.15,
+    "min": 36.05
   },
   {
     "bidWindowId": 17,
@@ -358,10 +308,8 @@
     "dice": 2,
     "afterProcessVacancy": 1,
     "enrolledStudents": 63,
-    "bidActualMedian": 19.84,
-    "bidActualMin": 2.34,
-    "bidPredictedMedian": 1.34,
-    "bidPredictedMin": 1.1
+    "median": 19.84,
+    "min": 2.34
   },
   {
     "bidWindowId": 3,
@@ -372,10 +320,8 @@
     "dice": 9,
     "afterProcessVacancy": 6,
     "enrolledStudents": 8,
-    "bidActualMedian": 41.35,
-    "bidActualMin": 36.57,
-    "bidPredictedMedian": 5.88,
-    "bidPredictedMin": 5.34
+    "median": 41.35,
+    "min": 36.57
   },
   {
     "bidWindowId": 19,
@@ -386,10 +332,8 @@
     "dice": 0,
     "afterProcessVacancy": 2,
     "enrolledStudents": 17,
-    "bidActualMedian": 33.4,
-    "bidActualMin": 26.7,
-    "bidPredictedMedian": 20.69,
-    "bidPredictedMin": 8.6
+    "median": 33.4,
+    "min": 26.7
   },
   {
     "bidWindowId": 6,
@@ -400,10 +344,8 @@
     "dice": 7,
     "afterProcessVacancy": 27,
     "enrolledStudents": 83,
-    "bidActualMedian": 3.74,
-    "bidActualMin": 2.35,
-    "bidPredictedMedian": 34.73,
-    "bidPredictedMin": 18.67
+    "median": 3.74,
+    "min": 2.35
   },
   {
     "bidWindowId": 4,
@@ -414,9 +356,7 @@
     "dice": 7,
     "afterProcessVacancy": 4,
     "enrolledStudents": 91,
-    "bidActualMedian": 8.93,
-    "bidActualMin": 6.18,
-    "bidPredictedMedian": 10.64,
-    "bidPredictedMin": 7.08
+    "median": 8.93,
+    "min": 6.18
   }
 ]

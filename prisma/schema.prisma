@@ -357,16 +357,14 @@ model BidWindow {
 model BidResult {
   bidWindowId          Int    @map("bid_window_id")
   classId              String @map("class_id")
-  vacancy              Int    @map("vacancy")
-  openingVacancy       Int    @map("opening_vacancy")
+  vacancy              Int
+  openingVacancy       Int?   @map("opening_vacancy")
   beforeProcessVacancy Int    @map("before_process_vacancy")
-  dice                 Int    @map("d_i_c_e")
-  afterProcessVacancy  Int    @map("after_process_vacancy")
+  dice                 Int?   @map("d_i_c_e")
+  afterProcessVacancy  Int?   @map("after_process_vacancy")
   enrolledStudents     Int    @map("enrolled_students")
-  bidActualMedian      Float  @map("bid_actual_median")
-  bidActualMin         Float  @map("bid_actual_min")
-  bidPredictedMedian   Float  @map("bid_predicted_median")
-  bidPredictedMin      Float  @map("bid_predicted_min")
+  median               Float?
+  min                  Float?
 
   bidWindow BidWindow @relation(fields: [bidWindowId], references: [id])
   class     Classes   @relation(fields: [classId], references: [id])
