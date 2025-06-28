@@ -63,8 +63,9 @@ model Users {
   votes              ReviewVotes[]
   reviews            Reviews[]
   reviewEvents       ReviewEvents[]
-  ReviewReactions    ReviewReactions[]
-  HackSubmissionVote HackSubmissionVote[]
+  reviewReactions    ReviewReactions[]
+  hackSubmissionVote HackSubmissionVote[]
+  userBid            UserBid[]
 
   @@map("users")
 }
@@ -187,13 +188,14 @@ model Classes {
 
   classTimings      ClassTiming[]
   classExamTimings  ClassExamTiming[]
-  ClassAvailability ClassAvailability[]
+  classAvailability ClassAvailability[]
   bidResult         BidResult[]
-  PredictionResult  PredictionResult[]
+  bidPrediction     BidPrediction[]
 
   course    Courses     @relation(fields: [courseId], references: [id])
   professor Professors? @relation(fields: [professorId], references: [id])
   acadTerm  AcadTerm    @relation(fields: [acadTermId], references: [id])
+  userBid   UserBid[]
 
   @@unique([bossId, acadTermId, professorId])
   @@unique([courseId, section, acadTermId, professorId])
@@ -281,8 +283,8 @@ model AcadTerm {
   endDt         DateTime @map("end_dt") @db.Timestamptz(3)
 
   classes           Classes[]
-  BidWindow         BidWindow[]
-  SafetyFactorTable SafetyFactorTable[]
+  bidWindow         BidWindow[]
+  safetyFactorTable SafetyFactorTable[]
 
   @@map("acad_term")
 }
@@ -344,9 +346,10 @@ model BidWindow {
 
   classAvailability ClassAvailability[]
   bidResult         BidResult[]
-  PredictionResult  PredictionResult[]
+  bidPrediction     BidPrediction[]
 
-  acadTerm AcadTerm @relation(fields: [acadTermId], references: [id])
+  acadTerm AcadTerm  @relation(fields: [acadTermId], references: [id])
+  userBid  UserBid[]
 
   @@map("bid_window")
 }
@@ -367,6 +370,7 @@ model BidResult {
 
   bidWindow BidWindow @relation(fields: [bidWindowId], references: [id])
   class     Classes   @relation(fields: [classId], references: [id])
+  userBid   UserBid[]
 
   @@id([bidWindowId, classId])
   @@map("bid_result")
@@ -379,7 +383,7 @@ model HackSubmission {
   slideEmbedUrl      String               @map("slide_embed_url")
   createdAt          DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt          DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
-  HackSubmissionVote HackSubmissionVote[]
+  hackSubmissionVote HackSubmissionVote[]
 
   @@map("hack_submission")
 }
@@ -398,7 +402,7 @@ model HackSubmissionVote {
   @@map("hack_submission_vote")
 }
 
-model PredictionResult {
+model BidPrediction {
   classId      String @map("class_id")
   bidWindowId  Int    @map("bid_window_id")
   modelVersion String @map("model_version")
@@ -424,12 +428,14 @@ model PredictionResult {
   recommendations Json
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
+  userBid UserBid[]
+
   class     Classes   @relation(fields: [classId], references: [id])
   bidWindow BidWindow @relation(fields: [bidWindowId], references: [id])
 
   @@id([classId, bidWindowId])
   @@index([modelVersion])
-  @@map("prediction_result")
+  @@map("bid_prediction")
 }
 
 model SafetyFactorTable {
@@ -447,6 +453,26 @@ model SafetyFactorTable {
 
   @@id([acadTermId, predictionType, safetyFactor])
   @@map("safety_factor_table")
+}
+
+model UserBid {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  classId     String   @map("class_id")
+  bidWindowId Int      @map("bid_window_id")
+  bidAmount   Float    @map("bid_amount")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user          Users          @relation(fields: [userId], references: [id])
+  class         Classes        @relation(fields: [classId], references: [id])
+  bidWindow     BidWindow      @relation(fields: [bidWindowId], references: [id])
+  bidResult     BidResult?     @relation(fields: [classId, bidWindowId], references: [classId, bidWindowId], map: "user_bid_bid_result_class_id_bid_window_id_fkey")
+  bidPrediction BidPrediction? @relation(fields: [classId, bidWindowId], references: [classId, bidWindowId], map: "user_bid_bid_prediction_class_id_bid_window_id_fkey")
+
+  @@index([userId, createdAt])
+  @@index([classId, bidWindowId])
+  @@map("user_bid")
 }
 
 enum UniversityAbbreviation {
