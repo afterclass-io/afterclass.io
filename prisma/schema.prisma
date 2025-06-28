@@ -406,9 +406,8 @@ model BidPrediction {
   modelVersion String @map("model_version")
 
   // Classification Results
-  clfHasBidsProbability Float  @map("clf_has_bids_prob")
-  clfConfidenceScore    Float  @map("clf_confidence_score")
-  clfConfidenceLevel    String @map("clf_confidence_level")
+  clfHasBidsProbability Float @map("clf_has_bids_prob")
+  clfConfidenceScore    Float @map("clf_confidence_score")
 
   // Median/Min Regression Results
   medianPredicted   Float @map("median_predicted")
