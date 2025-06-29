@@ -1,7 +1,5 @@
 import { coursesRouter } from "@/server/api/courses/router";
 import { classesRouter } from "@/server/api/classes/router";
-import { hackVotesRouter } from "@/server/api/hackVotes/router";
-import { hackSubmissionRouter } from "@/server/api/hackSubmission/router";
 import { labelsRouter } from "@/server/api/labels/router";
 import { professorsRouter } from "@/server/api/professors/router";
 import { reviewsRouter } from "@/server/api/reviews/router";
@@ -19,8 +17,6 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 export const appRouter = createTRPCRouter({
   classes: classesRouter,
   courses: coursesRouter,
-  hackSubmission: hackSubmissionRouter,
-  hackVotes: hackVotesRouter,
   labels: labelsRouter,
   professors: professorsRouter,
   reviews: reviewsRouter,
