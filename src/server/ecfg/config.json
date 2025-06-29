@@ -4,11 +4,5 @@
   "enableReviewEventsTracking": true,
   "enableReviewSort": true,
   "enableReviewFilter": true,
-  "enableReviewReactions": true,
-  "viewHackSubmission": {
-    "enabled": false,
-    "allowedUsers": [
-      "test@smu.edu.sg"
-    ]
-  }
+  "enableReviewReactions": true
 }
