@@ -30,6 +30,7 @@ import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
 import { usePathname } from "next/navigation";
 import { useIsMobile } from "@/common/hooks";
 import { ProgressLink } from "@/common/components/progress-link";
+import { Tag } from "@/common/components/tag";
 
 type SidebarItemType = {
   label: string;
@@ -39,6 +40,7 @@ type SidebarItemType = {
   target?: string;
   showMobileOnly?: boolean;
   devOnly?: boolean;
+  isNew?: boolean;
 };
 
 type SidebarCategoryType = {
@@ -57,11 +59,13 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       label: "Bid Analytics",
       icon: <ChartLineIcon />,
       href: "/bidding",
+      isNew: true,
     },
     {
       label: "Bid History",
       icon: <TableIcon />,
       href: "/bidding/history",
+      isNew: true,
     },
     // Development-only links
     ...(process.env.NODE_ENV === "development" ? [] : []),
@@ -151,6 +155,16 @@ export const AppSidebar = () => {
                     >
                       {item.icon}
                       {item.label}
+                      {item.isNew && (
+                        <Tag
+                          variant="outline"
+                          color="success"
+                          size="xs"
+                          deletable={false}
+                        >
+                          new
+                        </Tag>
+                      )}
                     </ProgressLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -187,6 +201,16 @@ export const AppSidebar = () => {
                           >
                             {item.icon}
                             {item.label}
+                            {item.isNew && (
+                              <Tag
+                                variant="outline"
+                                color="success"
+                                size="xs"
+                                deletable={false}
+                              >
+                                new
+                              </Tag>
+                            )}
                           </ProgressLink>
                         </SidebarMenuButton>
                       </SidebarMenuItem>

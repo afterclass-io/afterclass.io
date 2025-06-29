@@ -155,6 +155,7 @@ const tagVariants = cva(
         error: "",
       },
       size: {
+        xs: "h-5 [&>.label]:px-1.5 [&>.label]:text-xs [&>.start-icon]:size-3 [&>.start-icon>span]:size-3 [&>.start-icon>svg]:size-3 [&>.start-icon]:ml-0.5 [&>.start-icon]:-mr-1 [&>.deletable]:mr-0.5 [&>.deletable]:-ml-1",
         sm: "h-6 [&>.label]:px-2 [&>.start-icon]:size-5 [&>.start-icon>span]:size-5 [&>.start-icon>svg]:size-5 [&>.start-icon]:ml-0.5 [&>.start-icon]:-mr-1 [&>.deletable]:mr-0.5 [&>.deletable]:-ml-1",
         md: "h-8 [&>.label]:px-3 [&>.start-icon]:size-6 [&>.start-icon>span]:size-6 [&>.start-icon>svg]:size-6 [&>.start-icon]:ml-1 [&>.start-icon]:-mr-1.5 [&>.deletable]:mr-1 [&>.deletable]:-ml-1.5",
       },
@@ -202,7 +203,7 @@ const deletableVariants = cva(
 export interface TagProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "color">,
     VariantProps<typeof tagVariants> {
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
   deletable?: boolean;
   avatar?: React.JSX.Element;
   deleteIcon?: React.JSX.Element;
@@ -226,7 +227,7 @@ function Tag({
       onClick={onClick}
     >
       {!!avatar && <div className="start-icon">{avatar}</div>}
-      <div className="label">{children}</div>
+      <div className="label align-middle">{children}</div>
       {!!deletable && (
         <div
           className={cn(deletableVariants({ variant, color }), "deletable")}
