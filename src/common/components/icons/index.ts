@@ -35,6 +35,7 @@ export * from "./smiley-icon";
 export * from "./spinner";
 export * from "./star-line-alt-icon";
 export * from "./sun-icon";
+export * from "./table-icon";
 export * from "./thumb-up-filled-icon";
 export * from "./user-icon";
 export * from "./warning-circle-icon";

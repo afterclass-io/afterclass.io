@@ -20,6 +20,7 @@ import {
   PlusIcon,
   StarLineAltIcon,
   StatisticsTableIcon,
+  TableIcon,
   TelegramIcon,
 } from "@/common/components/icons";
 import { env } from "@/env";
@@ -34,7 +35,6 @@ type SidebarItemType = {
   label: string;
   icon: React.ReactNode;
   href: string;
-  exact?: boolean;
   external?: boolean;
   target?: string;
   showMobileOnly?: boolean;
@@ -52,12 +52,16 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       label: "Reviews",
       icon: <StarLineAltIcon size={16} />,
       href: "/",
-      exact: true,
     },
     {
       label: "Bid Analytics",
       icon: <ChartLineIcon />,
       href: "/bidding",
+    },
+    {
+      label: "Bid History",
+      icon: <TableIcon />,
+      href: "/bidding/history",
     },
     // Development-only links
     ...(process.env.NODE_ENV === "development" ? [] : []),
@@ -138,14 +142,7 @@ export const AppSidebar = () => {
             <SidebarMenu>
               {SIDEBAR_MAIN_ITEMS.map((item) => (
                 <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={
-                      item.exact
-                        ? pathname === item.href
-                        : pathname?.startsWith(item.href) // pathname is null in storybook context
-                    }
-                  >
+                  <SidebarMenuButton asChild isActive={pathname === item.href}>
                     <ProgressLink
                       variant="ghost"
                       href={item.href}
@@ -174,11 +171,7 @@ export const AppSidebar = () => {
                       <SidebarMenuItem key={item.label}>
                         <SidebarMenuButton
                           asChild
-                          isActive={
-                            item.exact
-                              ? pathname === item.href
-                              : pathname?.startsWith(item.href) // pathname is null in storybook context
-                          }
+                          isActive={pathname === item.href}
                         >
                           <ProgressLink
                             variant="ghost"
