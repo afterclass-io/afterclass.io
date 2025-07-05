@@ -3,17 +3,21 @@ import { Combobox } from "@/modules/bidding/components/Combobox";
 import { texts } from "@/modules/submit/constants";
 import { type UniversityAbbreviation } from "@prisma/client";
 
-export default async function BiddingPage() {
+export default async function BiddingHistoryPage() {
   // TODO: get school from user field, to be populated automatically on successful signup based on user's email domain
   const school = "SMU" satisfies UniversityAbbreviation;
 
-  const [courses, professors] = await Promise.all([
-    api.courses.getAllByUniAbbrv({ universityAbbrv: school }),
-    api.professors.getAllByUniAbbrv({ universityAbbrv: school }),
-  ]);
+  // const { data: courses, isLoading } = api.courses.getAllByUniAbbrv.useQuery({
+  //   universityAbbrv: school,
+  // });
+  // if (isLoading) {
+  //   return <div>Loading...</div>;
+  // }
+  const courses = await api.courses.getAllByUniAbbrv({
+    universityAbbrv: school,
+  });
   return (
     <div className="flex justify-center">
-      Watch out for the red dot in the sidebar once this is done!
       <Combobox
         items={courses.map((course) => ({
           value: course.id,
