@@ -72,6 +72,21 @@ export const HomeBreadcrumb = (
       isSuccess = true;
       break;
     }
+
+    case "bidding": {
+      switch (pathSegments[1]) {
+        case "history": {
+          elements.push({ label: "Bid History" });
+          isSuccess = true;
+          break;
+        }
+        case "analytics": {
+          elements.push({ label: "Bid Analytics" });
+          isSuccess = true;
+          break;
+        }
+      }
+    }
   }
 
   if (!isSuccess) {
@@ -80,7 +95,10 @@ export const HomeBreadcrumb = (
         <BreadcrumbList>
           <BreadcrumbItem>
             {path != "/" && (
-              <BreadcrumbLink href={HOME_BREADCRUMB.href} className="max-w-80 truncate">
+              <BreadcrumbLink
+                href={HOME_BREADCRUMB.href}
+                className="max-w-80 truncate"
+              >
                 {HOME_BREADCRUMB.label}
               </BreadcrumbLink>
             )}

@@ -1,3 +1,4 @@
+"use client";
 import { forwardRef, type ComponentPropsWithoutRef } from "react";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import type { FieldValues, ControllerRenderProps } from "react-hook-form";

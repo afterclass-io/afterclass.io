@@ -1,3 +1,6 @@
+import { acadTermsRouter } from "@/server/api/acadTerms/router";
+import { bidResultsRouter } from "@/server/api/bidResults/router";
+import { bidPredictionsRouter } from "@/server/api/bidPredictions/router";
 import { coursesRouter } from "@/server/api/courses/router";
 import { classesRouter } from "@/server/api/classes/router";
 import { labelsRouter } from "@/server/api/labels/router";
@@ -15,6 +18,9 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
+  acadTerms: acadTermsRouter,
+  bidResults: bidResultsRouter,
+  bidPredictions: bidPredictionsRouter,
   classes: classesRouter,
   courses: coursesRouter,
   labels: labelsRouter,

@@ -43,7 +43,7 @@ export const ClassCard = ({
     <ProgressLink
       variant="outline"
       className="hover:bg-secondary focus-ring bg-card flex h-fit w-75 cursor-pointer flex-col items-start gap-2 rounded-md border p-4 text-left font-normal md:gap-4"
-      href={`/bidding/analytics?classId=${classId}`}
+      href={`/bidding/analytics?course=${course.code}&section=${section}&classId=${classId}`}
     >
       <div className="flex w-full flex-col items-start gap-1">
         <div className="flex items-center gap-2">

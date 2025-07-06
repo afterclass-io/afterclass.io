@@ -60,7 +60,7 @@ export const Combobox = forwardRef<
           <Button
             variant="outline"
             aria-expanded={open}
-            className="bg-card min-h-12 w-full max-w-80 flex-1 items-center justify-start self-stretch rounded-lg p-2 text-left"
+            className="bg-card min-h-12 w-full max-w-75 flex-1 items-center justify-start self-stretch rounded-lg p-2 text-left"
             data-test="combobox-trigger"
           >
             <SearchIcon />

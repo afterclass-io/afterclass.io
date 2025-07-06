@@ -1,61 +1,109 @@
 import { api } from "@/common/tools/trpc/server";
-import { ClassCard } from "@/modules/bidding/components/ClassCard";
-import { Combobox } from "@/modules/bidding/components/Combobox";
-import { texts } from "@/modules/bidding/constants";
-import { type UniversityAbbreviation } from "@prisma/client";
+import { BidChart } from "@/modules/bidding/components/BidChart";
+import { BidChartFilterTagGroup } from "@/modules/bidding/components/BidChartFilterTagGroup";
 
 export default async function BiddingHistoryPage({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  // TODO: get school from user field, to be populated automatically on successful signup based on user's email domain
-  const school = "SMU" satisfies UniversityAbbreviation;
+  const _searchParams = await searchParams;
+  const classId = _searchParams.classId;
+  const courseCode = _searchParams.course;
+  const section = _searchParams.section;
+  const rounds = _searchParams.rounds as string | string[];
+  const windows = _searchParams.windows as string | string[];
 
-  const courseCode = (await searchParams).course;
-  const profSlug = (await searchParams).professor;
-
-  const [courses, professors] = await Promise.all([
-    api.courses.getAllByUniAbbrv({ universityAbbrv: school }),
-    api.professors.getAllByUniAbbrv({ universityAbbrv: school }),
+  const [bidResults, bidPrediction] = await Promise.all([
+    api.bidResults.getBy({ courseCode, section, classId }),
+    api.bidPredictions.getBy({
+      classId,
+    }),
   ]);
 
+  if (!bidPrediction) return <div>No data available</div>;
+
+  const bidResultsWithBids = bidResults.filter(
+    (r) =>
+      !!r.afterProcessVacancy &&
+      !!r.min &&
+      !!r.median &&
+      r.min > 0 &&
+      r.median > 0,
+  );
+
+  const [roundsInBidResultsWithBids, windowsInBidResultsWithBids] =
+    bidResultsWithBids
+      .map((br) => br.bidWindow)
+      .reduce(
+        (acc, bidWindow) => {
+          if (!acc[0].includes(bidWindow.round)) {
+            acc[0].push(bidWindow.round);
+          }
+          if (!acc[1].includes(bidWindow.window.toString())) {
+            acc[1].push(bidWindow.window.toString());
+          }
+          return acc;
+        },
+        [[], []] as [string[], string[]],
+      );
+
+  const isConfidentBidParticipation =
+    bidPrediction.clfHasBidsProbability >= 0.5;
+
+  const confidenceLevel =
+    bidPrediction.clfConfidenceScore < 0.3
+      ? "Very Low Confidence"
+      : bidPrediction.clfConfidenceScore < 0.5
+        ? "Low Confidence"
+        : bidPrediction.clfConfidenceScore < 0.7
+          ? "Medium Confidence"
+          : bidPrediction.clfConfidenceScore < 0.9
+            ? "High Confidence"
+            : "Very High Confidence";
+
   return (
-    <div className="flex-col justify-center">
-      <div>
-        <Combobox
-          items={courses.map((course) => ({
-            value: course.code,
-            label: `${course.code} ${course.name}`,
+    <div className="max-w-200 flex-col justify-center">
+      <pre>{JSON.stringify(bidPrediction, null, 2)}</pre>
+      <BidChart
+        chartData={bidResultsWithBids
+          .filter((br) => {
+            let matched = true;
+            if (rounds && Array.isArray(rounds)) {
+              matched = matched && rounds.includes(br.bidWindow.round);
+            } else if (rounds) {
+              matched = matched && br.bidWindow.round === rounds;
+            }
+
+            if (windows && Array.isArray(windows)) {
+              matched =
+                matched && windows.includes(br.bidWindow.window.toString());
+            } else if (windows) {
+              matched = matched && br.bidWindow.window.toString() === windows;
+            }
+
+            return matched;
+          })
+          .map((br) => ({
+            bidWindow: `${br.bidWindow.acadTermId}/${br.bidWindow.round}/${br.bidWindow.window}`,
+            price: [br.min!, br.median!],
+            size: br.beforeProcessVacancy - br.afterProcessVacancy!,
           }))}
-          queryStringKey="course"
-          placeholder={texts.COMBOBOX.PLACEHOLDER.course}
-          triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.course}
-        />
-        <Combobox
-          items={professors.map((prof) => ({
-            value: prof.slug,
-            label: prof.name,
-          }))}
-          queryStringKey="prof"
-          placeholder={texts.COMBOBOX.PLACEHOLDER.professor}
-          triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.professor}
-        />
-      </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {classes.length > 0 &&
-          classes.map((c) => (
-            <ClassCard
-              key={c.id}
-              classId={c.id}
-              course={c.course}
-              section={c.section}
-              classTiming={c.classTimings}
-              examTiming={c.classExamTimings}
-              professor={c.professor}
-            />
-          ))}
-      </div>
+      />
+      <BidChartFilterTagGroup
+        label="Rounds"
+        items={roundsInBidResultsWithBids.sort().map((round) => ({
+          label: round,
+          value: round,
+        }))}
+      />
+      <BidChartFilterTagGroup
+        label="Windows"
+        items={windowsInBidResultsWithBids.sort().map((round) => ({
+          label: round,
+          value: round,
+        }))}
+      />
     </div>
   );
 }

@@ -10,9 +10,9 @@ export default async function BiddingHistoryPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const school = "SMU" satisfies UniversityAbbreviation;
-
-  const courseCode = (await searchParams).course;
-  const profSlug = (await searchParams).prof;
+  const _searchParams = await searchParams;
+  const courseCode = _searchParams.course;
+  const profSlug = _searchParams.prof;
   const hasSearchParams = !!courseCode || !!profSlug;
 
   const [courses, professors] = await Promise.all([
