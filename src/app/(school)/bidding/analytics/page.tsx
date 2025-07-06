@@ -12,6 +12,7 @@ import {
 import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
 import { notFound } from "next/navigation";
 import { MultiplierType, PredictionType } from "@prisma/client";
+import { Info } from "lucide-react";
 
 export default async function BiddingHistoryPage({
   searchParams,
@@ -69,8 +70,31 @@ export default async function BiddingHistoryPage({
         [[], []] as [string[], string[]],
       );
 
+  const chartData = bidResultsWithBids
+    .filter((br) => {
+      let matched = true;
+      if (rounds && Array.isArray(rounds)) {
+        matched = matched && rounds.includes(br.bidWindow.round);
+      } else if (rounds) {
+        matched = matched && br.bidWindow.round === rounds;
+      }
+
+      if (windows && Array.isArray(windows)) {
+        matched = matched && windows.includes(br.bidWindow.window.toString());
+      } else if (windows) {
+        matched = matched && br.bidWindow.window.toString() === windows;
+      }
+
+      return matched;
+    })
+    .map((br) => ({
+      bidWindow: `${br.bidWindow.acadTermId}/${br.bidWindow.round}/${br.bidWindow.window}`,
+      price: [br.min!, br.median!] as [number, number],
+      size: br.beforeProcessVacancy - br.afterProcessVacancy!,
+    }));
+
   return (
-    <div className="flex w-160 flex-col justify-center gap-6">
+    <div className="flex w-160 flex-col justify-center gap-6 pt-2">
       <Card>
         <CardHeader>
           <CardTitle className="pt-2 text-2xl">
@@ -81,9 +105,12 @@ export default async function BiddingHistoryPage({
               {courseCode} {section} - historical bids across academic terms and
               rounds
             </div>
-            <div>
-              <span>Note: missing bid information implies one of</span>
-              <ol className="list-decimal pl-6">
+            <div className="italic">
+              <span className="flex items-center gap-2 pl-1">
+                <Info size={16} className="inline" /> Note: missing bid
+                information implies one of
+              </span>
+              <ol className="list-decimal pl-12">
                 <li className="pl-2">Class was not offered in that term</li>
                 <li className="pl-2">Class was preassigned</li>
                 <li className="pl-2">Class received no bids</li>
@@ -91,48 +118,29 @@ export default async function BiddingHistoryPage({
             </div>
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <BidChart
-            chartData={bidResultsWithBids
-              .filter((br) => {
-                let matched = true;
-                if (rounds && Array.isArray(rounds)) {
-                  matched = matched && rounds.includes(br.bidWindow.round);
-                } else if (rounds) {
-                  matched = matched && br.bidWindow.round === rounds;
-                }
-
-                if (windows && Array.isArray(windows)) {
-                  matched =
-                    matched && windows.includes(br.bidWindow.window.toString());
-                } else if (windows) {
-                  matched =
-                    matched && br.bidWindow.window.toString() === windows;
-                }
-
-                return matched;
-              })
-              .map((br) => ({
-                bidWindow: `${br.bidWindow.acadTermId}/${br.bidWindow.round}/${br.bidWindow.window}`,
-                price: [br.min!, br.median!],
-                size: br.beforeProcessVacancy - br.afterProcessVacancy!,
+        {chartData.length > 0 ? (
+          <CardContent className="flex flex-col gap-4">
+            <BidChart chartData={chartData} />
+            <BidChartFilterTagGroup
+              label="Rounds"
+              items={roundsInBidResultsWithBids.sort().map((round) => ({
+                label: round,
+                value: round,
               }))}
-          />
-          <BidChartFilterTagGroup
-            label="Rounds"
-            items={roundsInBidResultsWithBids.sort().map((round) => ({
-              label: round,
-              value: round,
-            }))}
-          />
-          <BidChartFilterTagGroup
-            label="Windows"
-            items={windowsInBidResultsWithBids.sort().map((round) => ({
-              label: round,
-              value: round,
-            }))}
-          />
-        </CardContent>
+            />
+            <BidChartFilterTagGroup
+              label="Windows"
+              items={windowsInBidResultsWithBids.sort().map((round) => ({
+                label: round,
+                value: round,
+              }))}
+            />
+          </CardContent>
+        ) : (
+          <CardContent className="text-muted-foreground text-center">
+            No bid data available for this class.
+          </CardContent>
+        )}
       </Card>
 
       {!bidPrediction ? (

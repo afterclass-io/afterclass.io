@@ -42,7 +42,7 @@ export const ClassCard = ({
   return (
     <ProgressLink
       variant="outline"
-      className="hover:bg-secondary focus-ring bg-card flex h-fit w-75 cursor-pointer flex-col items-start gap-2 rounded-md border p-4 text-left font-normal md:gap-4"
+      className="hover:bg-secondary focus-ring bg-card flex h-fit w-64 cursor-pointer flex-col items-start gap-2 rounded-md border p-4 text-left font-normal md:gap-4"
       href={`/bidding/analytics?course=${course.code}&section=${section}&classId=${classId}`}
     >
       <div className="flex w-full flex-col items-start gap-1">
@@ -81,7 +81,9 @@ export const ClassCard = ({
               </div>
               <div className="flex items-center gap-1">
                 <PinIcon size={16} className="mr-1" />
-                <span className="text-xs">{timing.venue ?? "TBA"}</span>
+                <span className="text-muted-foreground text-xs">
+                  {timing.venue ?? "TBA"}
+                </span>
               </div>
             </div>
           ))
@@ -120,7 +122,9 @@ export const ClassCard = ({
               </div>
               <div className="flex items-center gap-1">
                 <PinIcon size={16} className="mr-1" />
-                <span className="text-xs">{timing.venue ?? "TBA"}</span>
+                <span className="text-muted-foreground text-xs">
+                  {timing.venue ?? "TBA"}
+                </span>
               </div>
             </div>
           ))

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
@@ -12,6 +13,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/common/components/chart";
+import { inferAcadTerm } from "@/common/functions";
 
 export const description = "A bar chart with a label";
 
@@ -49,9 +51,7 @@ export const BidChart = ({
           axisLine={false}
           tickFormatter={(value) => {
             const acadTerm = value.split("/")[0];
-            const [acadYear, term] = acadTerm.split("T");
-            const displayYear =
-              acadYear.slice(2, 6) + "-" + acadYear.slice(6, 8);
+            const { term, displayYear } = inferAcadTerm(acadTerm);
             return `${displayYear} T${term}`;
           }}
         />
@@ -92,9 +92,7 @@ export const BidChart = ({
             <ChartTooltipContent
               labelFormatter={(value) => {
                 const [acadTerm, round, window] = value.split("/");
-                const [acadYear, term] = acadTerm.split("T");
-                const displayYear =
-                  acadYear.slice(2, 6) + "-" + acadYear.slice(6, 8);
+                const { term, displayYear } = inferAcadTerm(acadTerm);
                 return (
                   <div className="flex flex-col">
                     <span>

@@ -3,6 +3,7 @@ import { type ReactNode } from "react";
 import { CtaButton } from "@/common/components/cta-button";
 import { EditIcon, GithubIcon, PlusIcon } from "@/common/components/icons";
 import { env } from "@/env";
+import { BidWindowScheduleCard } from "@/modules/bidding/components/BidWindowScheduleCard";
 
 export default function ReviewLayout({
   header,
@@ -45,6 +46,7 @@ export default function ReviewLayout({
             data-test="cta-contribute-oss"
             data-umami-event="cta-btn-contribute-oss"
           />
+          <BidWindowScheduleCard />
         </div>
       </div>
     </div>

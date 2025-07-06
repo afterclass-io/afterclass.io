@@ -14,6 +14,7 @@ import { formatNumberShortScale, formatPercentage } from "@/common/functions";
 import { BidPredictionFormula } from "@/modules/bidding/components/BidPredictionFormula";
 import { type SafetyFactor } from "@prisma/client";
 import { useState } from "react";
+import { Info } from "lucide-react";
 
 type BidPrediction = {
   value: number;
@@ -84,7 +85,14 @@ export const BidPredictionCard = ({
           )}
         </CardTitle>
         <CardDescription className="flex flex-col gap-2 text-base">
-          {courseCode} {section} - {acadTermId}
+          <div>
+            {courseCode} {section} - {acadTermId}
+          </div>
+          <div className="flex items-center gap-2 pl-1 italic">
+            <Info size={16} className="inline" />
+            Note: AfterClass is not liable for any unsuccessful bids. Use at
+            your own risk!
+          </div>
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

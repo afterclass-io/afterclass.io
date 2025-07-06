@@ -1,3 +1,4 @@
+import { Separator } from "@/common/components/separator";
 import { api } from "@/common/tools/trpc/server";
 import { ClassCard } from "@/modules/bidding/components/ClassCard";
 import { Combobox } from "@/modules/bidding/components/Combobox";
@@ -27,7 +28,7 @@ export default async function BiddingHistoryPage({
   });
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 pt-2">
       <div className="flex flex-col gap-4 md:flex-row">
         <Combobox
           items={courses.map((course) => ({
@@ -50,7 +51,8 @@ export default async function BiddingHistoryPage({
           triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.professor}
         />
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <Separator />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {classes.length > 0 ? (
           classes.map((c) => (
             <ClassCard
@@ -64,7 +66,7 @@ export default async function BiddingHistoryPage({
             />
           ))
         ) : (
-          <div className="col-span-3 text-center text-gray-500">
+          <div className="col-span-2 text-center text-gray-500">
             No classes found for the selected filters.
           </div>
         )}
