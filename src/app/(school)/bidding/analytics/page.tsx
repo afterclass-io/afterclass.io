@@ -1,17 +1,17 @@
 import { api } from "@/common/tools/trpc/server";
 import { BidChart } from "@/modules/bidding/components/BidChart";
 import { BidChartFilterTagGroup } from "@/modules/bidding/components/BidChartFilterTagGroup";
-import { SuccessRateSlider } from "@/modules/bidding/components/SuccessRateSlider";
+
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/common/components/card";
-import { Progress } from "@/common/components/progress";
-import { Tag } from "@/common/components/tag";
+import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
+import { notFound } from "next/navigation";
+import { MultiplierType, PredictionType } from "@prisma/client";
 
 export default async function BiddingHistoryPage({
   searchParams,
@@ -20,19 +20,29 @@ export default async function BiddingHistoryPage({
 }) {
   const _searchParams = await searchParams;
   const classId = _searchParams.classId;
-  const courseCode = _searchParams.course;
-  const section = _searchParams.section;
+  let courseCode = _searchParams.course;
+  let section = _searchParams.section;
   const rounds = _searchParams.rounds as string | string[];
   const windows = _searchParams.windows as string | string[];
 
-  const [bidResults, bidPrediction] = await Promise.all([
+  const [bidResults, bidPrediction, safetyFactor] = await Promise.all([
     api.bidResults.getBy({ courseCode, section, classId }),
     api.bidPredictions.getBy({
       classId,
     }),
+    api.safetyFactors.getAll(),
   ]);
 
-  if (!bidPrediction) return <div>No data available</div>;
+  if (bidResults.length === 0) return <div>No data available</div>;
+
+  if (!courseCode || !section) {
+    const _class = await api.classes.getAll({ id: classId, limit: 1 });
+    if (_class.length === 0) {
+      return notFound();
+    }
+    courseCode = _class[0]!.course.code;
+    section = _class[0]!.section;
+  }
 
   const bidResultsWithBids = bidResults.filter(
     (r) =>
@@ -59,23 +69,8 @@ export default async function BiddingHistoryPage({
         [[], []] as [string[], string[]],
       );
 
-  const isConfidentBidParticipation =
-    bidPrediction.clfHasBidsProbability >= 0.5;
-
-  const confidenceLevel =
-    bidPrediction.clfConfidenceScore < 0.3
-      ? "Very Low"
-      : bidPrediction.clfConfidenceScore < 0.5
-        ? "Low"
-        : bidPrediction.clfConfidenceScore < 0.7
-          ? "Medium"
-          : bidPrediction.clfConfidenceScore < 0.9
-            ? "High"
-            : "Very High";
-
   return (
     <div className="flex w-160 flex-col justify-center gap-6">
-      <pre>{JSON.stringify(bidPrediction, null, 2)}</pre>
       <Card>
         <CardHeader>
           <CardTitle className="pt-2 text-2xl">
@@ -140,127 +135,39 @@ export default async function BiddingHistoryPage({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between pt-2">
-            <span className="text-2xl">Bid Prediction</span>
-            <span className="flex items-center gap-1 font-bold tracking-tighter">
-              <span className="text-muted-foreground text-xl font-normal">
-                e$
-              </span>
-              <span className="text-primary font-mono text-3xl tabular-nums">
-                30.71
-              </span>
-            </span>
-          </CardTitle>
-          <CardDescription className="flex flex-col gap-2 text-base">
-            {courseCode} {section} - {bidPrediction.bidWindow.acadTermId}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="grid grid-cols-3 gap-4">
-            <div>Odds of having other bids</div>
-            <div className="flex items-center gap-2">
-              <Progress value={85} />
-              <span>85%</span>
-            </div>
-            <div>
-              <Tag
-                variant="soft"
-                color={isConfidentBidParticipation ? "success" : "error"}
-                size="sm"
-                deletable={false}
-              >
-                {isConfidentBidParticipation ? "Likely" : "Unlikely"}
-              </Tag>
-            </div>
-            <div>Confidence Level</div>
-            <div className="flex items-center gap-2">
-              <Progress value={89} />
-              <span>89%</span>
-            </div>
-            <div>
-              <Tag
-                variant="soft"
-                color={
-                  bidPrediction.clfConfidenceScore >= 0.5 ? "success" : "error"
-                }
-                size="sm"
-                deletable={false}
-              >
-                {confidenceLevel}
-              </Tag>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <div>Estimated success rate</div>
-            <SuccessRateSlider />
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col items-stretch gap-4 py-2">
-          <div className="text-base">Formula</div>
-          <div className="">
-            <div>Min</div>
-            <div className="flex items-center justify-center gap-2">
-              <div className="text-center">
-                <div className="text-3xl font-bold">30</div>
-                <pre className="text-muted-foreground text-sm">recommended</pre>
-              </div>
-              <pre className="text-muted-foreground text-2xl">=</pre>
-              <div className="text-center">
-                <div className="text-3xl font-bold">30</div>
-                <pre className="text-muted-foreground text-sm">predicted</pre>
-              </div>
-              <div className="text-muted-foreground text-2xl">+</div>
-              <div className="flex flex-col items-center">
-                <pre className="text-muted-foreground text-2xl">(</pre>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold">1.04</div>
-                <pre className="text-muted-foreground text-sm">multiplier</pre>
-              </div>
-              <div className="text-muted-foreground text-2xl">*</div>
-              <div className="text-center">
-                <div className="text-3xl font-bold">2.23</div>
-                <pre className="text-muted-foreground text-sm">uncertainty</pre>
-              </div>
-              <div className="flex flex-col items-center">
-                <pre className="text-muted-foreground text-2xl">)</pre>
-              </div>
-            </div>
-          </div>
-          <div className="">
-            <div>Median</div>
-            <div className="flex items-center justify-center gap-2">
-              <div className="text-center">
-                <div className="text-3xl font-bold">30</div>
-                <pre className="text-muted-foreground text-sm">recommended</pre>
-              </div>
-              <pre className="text-muted-foreground text-2xl">=</pre>
-              <div className="text-center">
-                <div className="text-3xl font-bold">30</div>
-                <pre className="text-muted-foreground text-sm">predicted</pre>
-              </div>
-              <div className="text-muted-foreground text-2xl">+</div>
-              <div className="flex flex-col items-center">
-                <pre className="text-muted-foreground text-2xl">(</pre>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold">1.04</div>
-                <pre className="text-muted-foreground text-sm">multiplier</pre>
-              </div>
-              <div className="text-muted-foreground text-2xl">*</div>
-              <div className="text-center">
-                <div className="text-3xl font-bold">2.23</div>
-                <pre className="text-muted-foreground text-sm">uncertainty</pre>
-              </div>
-              <div className="flex flex-col items-center">
-                <pre className="text-muted-foreground text-2xl">)</pre>
-              </div>
-            </div>
-          </div>
-        </CardFooter>
-      </Card>
+      {!bidPrediction ? (
+        <div className="text-muted-foreground text-center">
+          No bid prediction available for this class.
+        </div>
+      ) : (
+        <BidPredictionCard
+          courseCode={courseCode}
+          section={section}
+          acadTermId={bidPrediction.bidWindow.acadTermId}
+          hasBidsProbability={bidPrediction.clfHasBidsProbability}
+          confidenceScore={bidPrediction.clfConfidenceScore}
+          minPrediction={{
+            value: bidPrediction.minPredicted,
+            safetyFactor: safetyFactor.filter(
+              (sf) =>
+                sf.acadTermId === bidPrediction.bidWindow.acadTermId &&
+                sf.multiplierType === MultiplierType.EMPIRICAL &&
+                sf.predictionType === PredictionType.MIN,
+            ),
+            uncertainty: bidPrediction.minUncertainty,
+          }}
+          medianPrediction={{
+            value: bidPrediction.medianPredicted,
+            safetyFactor: safetyFactor.filter(
+              (sf) =>
+                sf.acadTermId === bidPrediction.bidWindow.acadTermId &&
+                sf.multiplierType === MultiplierType.EMPIRICAL &&
+                sf.predictionType === PredictionType.MEDIAN,
+            ),
+            uncertainty: bidPrediction.medianUncertainty,
+          }}
+        />
+      )}
     </div>
   );
 }

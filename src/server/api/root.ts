@@ -9,6 +9,7 @@ import { reviewsRouter } from "@/server/api/reviews/router";
 import { reviewEventsRouter } from "@/server/api/reviewEvents/router";
 import { reviewReactionsRouter } from "@/server/api/reviewReactions/router";
 import { reviewVotesRouter } from "@/server/api/reviewVotes/router";
+import { safetyFactorsRouter } from "@/server/api/safetyFactors/router";
 
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 
@@ -29,6 +30,7 @@ export const appRouter = createTRPCRouter({
   reviewEvents: reviewEventsRouter,
   reviewReactions: reviewReactionsRouter,
   reviewVotes: reviewVotesRouter,
+  safetyFactors: safetyFactorsRouter,
 });
 
 // export type definition of API

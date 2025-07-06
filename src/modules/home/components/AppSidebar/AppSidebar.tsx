@@ -40,6 +40,7 @@ type SidebarItemType = {
   showMobileOnly?: boolean;
   devOnly?: boolean;
   isNew?: boolean;
+  isActiveWithoutExact?: boolean; // Optional prop to indicate if the item should be active without exact match
 };
 
 type SidebarCategoryType = {
@@ -58,6 +59,7 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       label: "Bid Analytics",
       icon: <ChartLineIcon />,
       href: "/bidding",
+      isActiveWithoutExact: true,
       isNew: true,
     },
     // Development-only links
@@ -139,7 +141,14 @@ export const AppSidebar = () => {
             <SidebarMenu>
               {SIDEBAR_MAIN_ITEMS.map((item) => (
                 <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton asChild isActive={pathname === item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={
+                      item.isActiveWithoutExact
+                        ? pathname.startsWith(item.href)
+                        : pathname === item.href
+                    }
+                  >
                     <ProgressLink
                       variant="ghost"
                       href={item.href}

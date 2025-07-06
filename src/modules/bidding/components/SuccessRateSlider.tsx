@@ -1,8 +1,9 @@
 "use client";
+import { type ComponentProps } from "react";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 
-export const SuccessRateSlider = () => {
+export const SuccessRateSlider = (props: ComponentProps<typeof Slider>) => {
   return (
     <div className="p-6 pt-2">
       <Slider
@@ -31,6 +32,7 @@ export const SuccessRateSlider = () => {
             height: 5,
           },
         }}
+        {...props}
       />
     </div>
   );

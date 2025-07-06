@@ -6,6 +6,7 @@ import { PUBLIC_CLASS_FIELDS } from "@/server/api/classes/constants";
 export const getAll = publicProcedure
   .input(
     z.object({
+      id: z.string().optional(),
       professorId: z.string().optional(),
       profSlug: z.string().optional(),
       courseId: z.string().optional(),
@@ -24,6 +25,7 @@ export const getAll = publicProcedure
     const classes = await ctx.db.classes.findMany({
       select: PUBLIC_CLASS_FIELDS,
       where: {
+        id: input.id,
         courseId: input.courseId,
         section: input.section,
         acadTermId: input.acadTermId ?? latestAcadTerm?.id,
