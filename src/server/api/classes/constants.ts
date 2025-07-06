@@ -13,4 +13,31 @@ export const PUBLIC_CLASS_FIELDS = {
   gradingBasis: true,
   courseOutlineUrl: true,
   bossId: true,
+  course: {
+    select: {
+      code: true,
+      name: true,
+    },
+  },
+  classTimings: {
+    select: {
+      dayOfWeek: true,
+      startTime: true,
+      endTime: true,
+      venue: true,
+    },
+  },
+  classExamTimings: {
+    select: {
+      dayOfWeek: true,
+      date: true,
+      startTime: true,
+      endTime: true,
+    },
+  },
+  professor: {
+    select: {
+      name: true,
+    },
+  },
 } satisfies Prisma.ClassesSelect;
