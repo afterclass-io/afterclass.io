@@ -20,7 +20,6 @@ import {
   PlusIcon,
   StarLineAltIcon,
   StatisticsTableIcon,
-  TableIcon,
   TelegramIcon,
 } from "@/common/components/icons";
 import { env } from "@/env";
@@ -59,12 +58,6 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       label: "Bid Analytics",
       icon: <ChartLineIcon />,
       href: "/bidding",
-      isNew: true,
-    },
-    {
-      label: "Bid History",
-      icon: <TableIcon />,
-      href: "/bidding/history",
       isNew: true,
     },
     // Development-only links
@@ -162,7 +155,7 @@ export const AppSidebar = () => {
                           size="xs"
                           deletable={false}
                         >
-                          new
+                          beta
                         </Tag>
                       )}
                     </ProgressLink>

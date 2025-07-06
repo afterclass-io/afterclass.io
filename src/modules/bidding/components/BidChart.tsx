@@ -4,14 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  LabelList,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from "recharts";
 
 import {
   type ChartConfig,
@@ -62,7 +55,10 @@ export const BidChart = ({
             return `${displayYear} T${term}`;
           }}
         />
-        <YAxis axisLine={false} tickLine={false} />
+        {/* y-axis leaves an ugly left margin...
+         * see https://github.com/recharts/recharts/issues/947
+         */}
+        {/* <YAxis axisLine={false} tickLine={false}  /> */}
         <Bar
           dataKey="price"
           fill="var(--color-price)"

@@ -12,5 +12,8 @@ export const getBy = publicProcedure
       where: {
         classId: input.classId,
       },
+      include: {
+        bidWindow: true,
+      },
     }),
   );

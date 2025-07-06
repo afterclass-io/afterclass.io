@@ -32,7 +32,7 @@ export const BidChartFilterTagGroup = ({
   );
 
   return (
-    <div className="">
+    <div className="flex flex-col gap-2">
       <span>{label}:</span>
       <TagToggleGroup
         items={items}
