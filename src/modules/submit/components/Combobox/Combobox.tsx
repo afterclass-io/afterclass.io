@@ -42,14 +42,18 @@ export const Combobox = forwardRef<
         <Button
           variant="outline"
           aria-expanded={open}
-          className="bg-card min-h-12 w-full max-w-72 flex-1 items-center justify-between self-stretch rounded-lg p-2 text-left"
+          className="bg-card min-h-12 w-full max-w-80 flex-1 items-center justify-between self-stretch rounded-lg p-2 text-left"
           data-test="combobox-trigger"
         >
-          {value ? items.find((el) => el.value === value)?.label : triggerLabel}
+          <span className="truncate">
+            {value
+              ? items.find((el) => el.value === value)?.label
+              : triggerLabel}
+          </span>
           <ChevronDownIcon />
         </Button>
       </PopoverTrigger>
-      <PopoverContent>
+      <PopoverContent className="p-0">
         <Command
           value={value}
           filter={(_, search, keywords) => {

@@ -29,16 +29,18 @@ import { SearchCmdk } from "@/modules/search/components/SearchCmdk";
 import { usePathname } from "next/navigation";
 import { useIsMobile } from "@/common/hooks";
 import { ProgressLink } from "@/common/components/progress-link";
+import { Tag } from "@/common/components/tag";
 
 type SidebarItemType = {
   label: string;
   icon: React.ReactNode;
   href: string;
-  exact?: boolean;
   external?: boolean;
   target?: string;
   showMobileOnly?: boolean;
   devOnly?: boolean;
+  isNew?: boolean;
+  isActiveWithoutExact?: boolean; // Optional prop to indicate if the item should be active without exact match
 };
 
 type SidebarCategoryType = {
@@ -52,12 +54,13 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       label: "Reviews",
       icon: <StarLineAltIcon size={16} />,
       href: "/",
-      exact: true,
     },
     {
       label: "Bid Analytics",
       icon: <ChartLineIcon />,
       href: "/bidding",
+      isActiveWithoutExact: true,
+      isNew: true,
     },
     // Development-only links
     ...(process.env.NODE_ENV === "development" ? [] : []),
@@ -141,9 +144,9 @@ export const AppSidebar = () => {
                   <SidebarMenuButton
                     asChild
                     isActive={
-                      item.exact
-                        ? pathname === item.href
-                        : pathname?.startsWith(item.href) // pathname is null in storybook context
+                      item.isActiveWithoutExact
+                        ? pathname.startsWith(item.href)
+                        : pathname === item.href
                     }
                   >
                     <ProgressLink
@@ -154,6 +157,16 @@ export const AppSidebar = () => {
                     >
                       {item.icon}
                       {item.label}
+                      {item.isNew && (
+                        <Tag
+                          variant="outline"
+                          color="success"
+                          size="xs"
+                          deletable={false}
+                        >
+                          beta
+                        </Tag>
+                      )}
                     </ProgressLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -174,11 +187,7 @@ export const AppSidebar = () => {
                       <SidebarMenuItem key={item.label}>
                         <SidebarMenuButton
                           asChild
-                          isActive={
-                            item.exact
-                              ? pathname === item.href
-                              : pathname?.startsWith(item.href) // pathname is null in storybook context
-                          }
+                          isActive={pathname === item.href}
                         >
                           <ProgressLink
                             variant="ghost"
@@ -194,6 +203,16 @@ export const AppSidebar = () => {
                           >
                             {item.icon}
                             {item.label}
+                            {item.isNew && (
+                              <Tag
+                                variant="outline"
+                                color="success"
+                                size="xs"
+                                deletable={false}
+                              >
+                                new
+                              </Tag>
+                            )}
                           </ProgressLink>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
