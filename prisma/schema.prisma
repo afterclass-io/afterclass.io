@@ -282,9 +282,9 @@ model AcadTerm {
   startDt       DateTime @map("start_dt") @db.Timestamptz(3)
   endDt         DateTime @map("end_dt") @db.Timestamptz(3)
 
-  classes           Classes[]
-  bidWindow         BidWindow[]
-  safetyFactorTable SafetyFactorTable[]
+  classes      Classes[]
+  bidWindow    BidWindow[]
+  safetyFactor SafetyFactor[]
 
   @@map("acad_term")
 }
@@ -432,21 +432,18 @@ model BidPrediction {
   @@map("bid_prediction")
 }
 
-model SafetyFactorTable {
-  acadTermId          String   @map("acad_term_id")
-  predictionType      String   @map("prediction_type") // "median" or "min"
-  safetyFactor        Float    @map("safety_factor")
-  tpr                 Float // True Positive Rate
-  meanLoss            Float    @map("mean_loss")
-  underPredictionRate Float?   @map("under_prediction_rate")
-  mae                 Float // Mean Absolute Error
-  mse                 Float // Mean Squared Error
-  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+model SafetyFactor {
+  acadTermId      String         @map("acad_term_id")
+  predictionType  PredictionType @map("prediction_type")
+  beatsPercentage Int            @map("beats_percentage") // 1-99 (confidence level)
+  multiplierType  MultiplierType @map("multiplier_type")
+  multiplier      Float
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
 
   acadTerm AcadTerm @relation(fields: [acadTermId], references: [id])
 
-  @@id([acadTermId, predictionType, safetyFactor])
-  @@map("safety_factor_table")
+  @@id([acadTermId, predictionType, beatsPercentage, multiplierType])
+  @@map("safety_factor")
 }
 
 model UserBid {
@@ -511,4 +508,14 @@ enum GradingBasis {
   PASS_FAIL @map("Pass/Fail")
   GRADED    @map("Graded")
   NA        @map("NA")
+}
+
+enum MultiplierType {
+  EMPIRICAL   @map("empirical")
+  THEORETICAL @map("theoretical")
+}
+
+enum PredictionType {
+  MEDIAN @map("median")
+  MIN    @map("min")
 }
