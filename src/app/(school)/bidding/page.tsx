@@ -4,51 +4,70 @@ import { Combobox } from "@/modules/bidding/components/Combobox";
 import { texts } from "@/modules/bidding/constants";
 import { type UniversityAbbreviation } from "@prisma/client";
 
-export default async function BiddingPage() {
-  // TODO: get school from user field, to be populated automatically on successful signup based on user's email domain
+export default async function BiddingHistoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const school = "SMU" satisfies UniversityAbbreviation;
 
-  const [courses, professors, classes] = await Promise.all([
+  const courseCode = (await searchParams).course;
+  const profSlug = (await searchParams).prof;
+  const hasSearchParams = !!courseCode || !!profSlug;
+
+  const [courses, professors] = await Promise.all([
     api.courses.getAllByUniAbbrv({ universityAbbrv: school }),
     api.professors.getAllByUniAbbrv({ universityAbbrv: school }),
-    api.classes.getAllByCourseId({
-      courseId: "fa1e4a9a-7b26-4fc3-a78b-9fa53d1ee471",
-    }),
   ]);
+
+  const classes = await api.classes.getAll({
+    courseCode: courseCode,
+    profSlug: profSlug,
+    limit: !hasSearchParams ? 6 : undefined,
+  });
+
   return (
-    <div className="flex-col justify-center">
-      <div>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 md:flex-row">
         <Combobox
           items={courses.map((course) => ({
-            value: course.id,
+            value: course.code,
             label: `${course.code} ${course.name}`,
           }))}
+          queryStringKey="course"
+          selectedValue={courseCode}
           placeholder={texts.COMBOBOX.PLACEHOLDER.course}
           triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.course}
-          // onSelectChange={field.onChange}
         />
         <Combobox
           items={professors.map((prof) => ({
-            value: prof.id,
+            value: prof.slug,
             label: prof.name,
           }))}
+          queryStringKey="prof"
+          selectedValue={profSlug}
           placeholder={texts.COMBOBOX.PLACEHOLDER.professor}
           triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.professor}
-          // onSelectChange={field.onChange}
         />
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {classes.length > 0 &&
+        {classes.length > 0 ? (
           classes.map((c) => (
             <ClassCard
               key={c.id}
+              classId={c.id}
               course={c.course}
               section={c.section}
               classTiming={c.classTimings}
               examTiming={c.classExamTimings}
               professor={c.professor}
             />
-          ))}
+          ))
+        ) : (
+          <div className="col-span-3 text-center text-gray-500">
+            No classes found for the selected filters.
+          </div>
+        )}
       </div>
     </div>
   );

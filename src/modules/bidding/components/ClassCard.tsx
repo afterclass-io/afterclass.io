@@ -1,14 +1,9 @@
 import {
-  CheckIcon,
   ClockIcon,
   GraduationCapColoredIcon,
   MemoIcon,
   PinIcon,
-  SearchIcon,
 } from "@/common/components/icons";
-import { Button } from "@/common/components/button";
-import { CommandItem } from "@/common/components/command";
-import { cn } from "@/common/functions/cn";
 import {
   type Courses,
   type ClassExamTiming,
@@ -16,26 +11,27 @@ import {
   type Professors,
 } from "@prisma/client";
 import { Tag } from "@/common/components/tag";
-import { getHumanReadableTimestampString } from "@/common/functions";
 import React from "react";
 import { Heading } from "@/common/components/heading";
+import { ProgressLink } from "@/common/components/progress-link";
 
-// TODO: find a better way for searching
 export const ClassCard = ({
   course,
   section,
+  classId,
   classTiming,
   examTiming,
   professor,
 }: {
-  course: Courses;
+  course: Partial<Courses>;
   section: string;
+  classId: string;
   classTiming: Pick<
     ClassTiming,
     "dayOfWeek" | "startTime" | "endTime" | "venue"
   >[];
   examTiming: Partial<ClassExamTiming>[];
-  professor?: Partial<Professors>;
+  professor: Partial<Professors> | null;
 }) => {
   const hasFullExamTiming =
     examTiming.length > 0 &&
@@ -44,7 +40,11 @@ export const ClassCard = ({
         timing.date && timing.dayOfWeek && timing.startTime && timing.endTime,
     );
   return (
-    <div className="focus-ring bg-card flex h-fit w-75 cursor-pointer flex-col items-start gap-2 rounded-md border p-4 text-left md:gap-4">
+    <ProgressLink
+      variant="outline"
+      className="hover:bg-secondary focus-ring bg-card flex h-fit w-75 cursor-pointer flex-col items-start gap-2 rounded-md border p-4 text-left font-normal md:gap-4"
+      href={`/bidding/analytics?classId=${classId}`}
+    >
       <div className="flex w-full flex-col items-start gap-1">
         <div className="flex items-center gap-2">
           <Heading className="text-primary text-xl tracking-tight">
@@ -57,41 +57,49 @@ export const ClassCard = ({
         <Heading className="w-full truncate font-bold tracking-tight">
           {course.name}
         </Heading>
+
+        <div className="flex items-center gap-2">
+          <GraduationCapColoredIcon size={24} />
+          <span className="w-full truncate tracking-tight">
+            {professor?.name ?? "TBA"}
+          </span>
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        <GraduationCapColoredIcon size={24} />
-        <span className="w-full truncate tracking-tight">
-          {professor?.name ?? "TBA"}
-        </span>
-      </div>
-      <div>
+
+      <div className="flex flex-col gap-2">
         {classTiming.length > 0 ? (
           classTiming.map((timing, index) => (
-            <React.Fragment key={index}>
-              <div className="flex items-center gap-2">
-                <ClockIcon size={24} />
-                <span className="">{timing.dayOfWeek}</span>
-                <span className="">
+            <div key={index}>
+              <div className="flex items-center gap-1">
+                <ClockIcon size={16} className="mr-1" />
+                <span className="max-w-16 truncate text-sm">
+                  {timing.dayOfWeek}
+                </span>
+                <span className="text-sm">
                   {timing.startTime}-{timing.endTime}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <PinIcon size={24} />
-                <span className="tracking-tight">{timing.venue ?? "TBA"}</span>
+              <div className="flex items-center gap-1">
+                <PinIcon size={16} className="mr-1" />
+                <span className="text-xs">{timing.venue ?? "TBA"}</span>
               </div>
-            </React.Fragment>
+            </div>
           ))
         ) : (
-          <div className="">No class timings available</div>
+          <div className="flex items-center gap-1">
+            <ClockIcon size={16} className="mr-1" />
+            <div className="text-sm">No class timings available</div>
+          </div>
         )}
       </div>
-      <div>
+
+      <div className="flex flex-col gap-2">
         {hasFullExamTiming ? (
           examTiming.map((timing, index) => (
-            <React.Fragment key={index}>
-              <div className="flex items-center gap-2">
-                <MemoIcon size={24} />
-                <span className="">
+            <div key={index}>
+              <div className="flex items-center gap-1">
+                <MemoIcon size={16} className="mr-1" />
+                <span className="text-sm">
                   {timing.date
                     ? new Intl.DateTimeFormat("en-GB", {
                         day: "2-digit",
@@ -103,21 +111,26 @@ export const ClassCard = ({
                     : ""}
                   ,
                 </span>
-                <span className="">{timing.dayOfWeek}</span>
-                <span className="">
+                <span className="max-w-16 truncate text-sm">
+                  {timing.dayOfWeek}
+                </span>
+                <span className="text-sm">
                   {timing.startTime}-{timing.endTime}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <PinIcon size={24} />
-                <span className="tracking-tight">{timing.venue ?? "TBA"}</span>
+              <div className="flex items-center gap-1">
+                <PinIcon size={16} className="mr-1" />
+                <span className="text-xs">{timing.venue ?? "TBA"}</span>
               </div>
-            </React.Fragment>
+            </div>
           ))
         ) : (
-          <div className="">No exam timings available</div>
+          <div className="flex items-center gap-1">
+            <MemoIcon size={16} className="mr-1" />
+            <div className="text-sm">No exam timings available</div>
+          </div>
         )}
       </div>
-    </div>
+    </ProgressLink>
   );
 };
