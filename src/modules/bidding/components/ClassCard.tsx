@@ -44,6 +44,9 @@ export const ClassCard = ({
       variant="outline"
       className="hover:bg-secondary focus-ring bg-card flex h-fit w-64 cursor-pointer flex-col items-start gap-2 rounded-md border p-4 text-left font-normal md:gap-4"
       href={`/bidding/analytics?course=${course.code}&section=${section}&classId=${classId}`}
+      data-umami-event="boss-bid-class-select"
+      data-umami-event-class-id={classId}
+      data-umami-event-prof-slug={professor?.slug}
     >
       <div className="flex w-full flex-col items-start gap-1">
         <div className="flex items-center gap-2">

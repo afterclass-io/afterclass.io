@@ -46,34 +46,6 @@ const TIMELINE_ITEMS = [
   },
 ];
 
-// const TimelineWithIcon = ({ now }: { now: Date }) => {
-//   return (
-//     <Timeline>
-//       {TIMELINE_ITEMS.map((item, index) => {
-//         const isPast = item.date < now;
-
-//         return (
-//           <TimelineItem key={index}>
-//             <TimelineSeparator>
-//               <TimelineDot>{item.icon}</TimelineDot>
-//               {index < TIMELINE_ITEMS.length - 1 && (
-//                 <TimelineConnector
-//                   className={cn(isPast && "bg-accent-foreground")}
-//                 />
-//               )}
-//             </TimelineSeparator>
-//             <TimelineContent>
-//               <TimelineTitle>{item.title}</TimelineTitle>
-//               <TimelineDescription className="font-mono">
-//                 {format(item.date, item.dateFormat)}
-//               </TimelineDescription>
-//             </TimelineContent>
-//           </TimelineItem>
-//         );
-//       })}
-//     </Timeline>
-//   );
-// };
 const TimelineWithIcon = ({ now }: { now: Date }) => {
   return (
     <Timeline>
@@ -155,7 +127,7 @@ export const BidWindowScheduleCard = async () => {
     <Card className="w-full max-w-[321px]">
       <CardHeader className="gap-2">
         <CardTitle>
-          BOSS {displayYear} Term {term} Round 1A
+          BOSS {displayYear} Term {term} Round 1
         </CardTitle>
       </CardHeader>
       <CardContent className="">
@@ -167,6 +139,7 @@ export const BidWindowScheduleCard = async () => {
               href="https://smu.sharepoint.com/sites/oasis/Documents/Downloads/RO/UGRD.pdf"
               target="_blank"
               rel="noopener noreferrer"
+              data-umami-event="boss-bid-date"
             >
               BOSS Bidding Dates
             </a>
@@ -180,6 +153,7 @@ export const BidWindowScheduleCard = async () => {
             href="/bidding"
             variant="link"
             className="inline px-1 py-0"
+            data-umami-event="boss-bid-recommendation"
           >
             bid recommendations
           </ProgressLink>
