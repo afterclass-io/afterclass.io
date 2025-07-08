@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { publicProcedure } from "@/server/api/trpc";
+import { TRPCError } from "@trpc/server";
 
 const HARD_LIMIT = 200; // hard limit to prevent too many results
 
@@ -31,9 +32,11 @@ export const getBy = publicProcedure
     }
 
     if (!input.classId) {
-      throw new Error(
-        "classId is required when courseCode and section are not provided",
-      );
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message:
+          "classId is required when courseCode and section are not provided",
+      });
     }
 
     const _class = await ctx.db.classes.findUnique({
@@ -50,7 +53,7 @@ export const getBy = publicProcedure
     });
 
     if (!_class) {
-      throw new Error(`Class with id ${input.classId} not found`);
+      return [];
     }
 
     return await ctx.db.bidResult.findMany({
