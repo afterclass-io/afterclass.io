@@ -26,6 +26,19 @@ export default async function BiddingHistoryPage({
   const rounds = _searchParams.rounds as string | string[];
   const windows = _searchParams.windows as string | string[];
 
+  if (!courseCode || !section) {
+    if (!classId) {
+      return notFound();
+    }
+
+    const _class = await api.classes.getAll({ id: classId, limit: 1 });
+    if (_class.length === 0) {
+      return notFound();
+    }
+    courseCode = _class[0]!.course.code;
+    section = _class[0]!.section;
+  }
+
   const [bidResults, bidPrediction, safetyFactor] = await Promise.all([
     api.bidResults.getBy({ courseCode, section, classId }),
     api.bidPredictions.getBy({
@@ -35,15 +48,6 @@ export default async function BiddingHistoryPage({
   ]);
 
   if (bidResults.length === 0) return <div>No data available</div>;
-
-  if (!courseCode || !section) {
-    const _class = await api.classes.getAll({ id: classId, limit: 1 });
-    if (_class.length === 0) {
-      return notFound();
-    }
-    courseCode = _class[0]!.course.code;
-    section = _class[0]!.section;
-  }
 
   const bidResultsWithBids = bidResults.filter(
     (r) =>
