@@ -28,19 +28,19 @@ import { Button } from "@/common/components/button";
 const TIMELINE_ITEMS = [
   {
     title: "Window 1 Opens",
-    date: new Date(2025, 6, 7, 10),
+    date: new Date(2025, 6, 9, 17),
     dateFormat: "dd MMM yyyy, EEE haaa",
     icon: <Edit />,
   },
   {
     title: "Window 1 Closes",
-    date: new Date(2025, 6, 9, 10),
+    date: new Date(2025, 6, 11, 10),
     dateFormat: "dd MMM yyyy, EEE haaa",
     icon: <Lock />,
   },
   {
     title: "Window 1 Results Released",
-    date: new Date(2025, 6, 9, 14),
+    date: new Date(2025, 6, 11, 14),
     dateFormat: "dd MMM yyyy, EEE haaa",
     icon: <ScreenShare />,
   },
@@ -127,7 +127,7 @@ export const BidWindowScheduleCard = async () => {
     <Card className="w-full max-w-[321px]">
       <CardHeader className="gap-2">
         <CardTitle>
-          BOSS {displayYear} Term {term} Round 1
+          BOSS {displayYear} Term {term} Round 1A
         </CardTitle>
       </CardHeader>
       <CardContent className="">
