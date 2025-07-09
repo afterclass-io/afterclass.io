@@ -28,19 +28,19 @@ import { Button } from "@/common/components/button";
 const TIMELINE_ITEMS = [
   {
     title: "Window 1 Opens",
-    date: new Date(2025, 6, 9, 17),
+    date: new Date(Date.UTC(2025, 6, 9, 9)),
     dateFormat: "dd MMM yyyy, EEE haaa",
     icon: <Edit />,
   },
   {
     title: "Window 1 Closes",
-    date: new Date(2025, 6, 11, 10),
+    date: new Date(Date.UTC(2025, 6, 11, 2)),
     dateFormat: "dd MMM yyyy, EEE haaa",
     icon: <Lock />,
   },
   {
     title: "Window 1 Results Released",
-    date: new Date(2025, 6, 11, 14),
+    date: new Date(Date.UTC(2025, 6, 11, 6)),
     dateFormat: "dd MMM yyyy, EEE haaa",
     icon: <ScreenShare />,
   },
@@ -118,7 +118,7 @@ const TimelineWithIcon = ({ now }: { now: Date }) => {
 
 export const BidWindowScheduleCard = async () => {
   await connection();
-  const now = new Date();
+  const now = new Date(Date.now());
   const acadTermId = (await api.acadTerms.getLatest())[0]!.id;
 
   const { term, displayYear } = inferAcadTerm(acadTermId);
