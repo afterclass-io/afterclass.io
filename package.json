@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@ctrl/tinycolor": "4.1.0",
+    "@date-fns/tz": "^1.2.0",
     "@hookform/resolvers": "^5.0.1",
     "@number-flow/react": "^0.5.9",
     "@prisma/client": "6.3.0",

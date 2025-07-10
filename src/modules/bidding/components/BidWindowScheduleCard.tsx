@@ -1,5 +1,6 @@
 import { connection } from "next/server";
 import { format } from "date-fns";
+import { TZDate, tz } from "@date-fns/tz";
 import { Edit, Lock, ScreenShare } from "lucide-react";
 import {
   Card,
@@ -25,22 +26,25 @@ import { inferAcadTerm } from "@/common/functions";
 import { ProgressLink } from "@/common/components/progress-link";
 import { Button } from "@/common/components/button";
 
+// Singapore time zone constant
+const sgTz = tz("Asia/Singapore");
+
 const TIMELINE_ITEMS = [
   {
     title: "Window 1 Opens",
-    date: new Date(Date.UTC(2025, 6, 9, 9)),
+    date: new TZDate(2025, 6, 9, 17, 0, 0, "Asia/Singapore"), // 9 Jul 2025, 5PM SGT
     dateFormat: "dd MMM yyyy, EEE haaa",
     icon: <Edit />,
   },
   {
     title: "Window 1 Closes",
-    date: new Date(Date.UTC(2025, 6, 11, 2)),
+    date: new TZDate(2025, 6, 11, 10, 0, 0, "Asia/Singapore"), // 11 Jul 2025, 10AM SGT
     dateFormat: "dd MMM yyyy, EEE haaa",
     icon: <Lock />,
   },
   {
     title: "Window 1 Results Released",
-    date: new Date(Date.UTC(2025, 6, 11, 6)),
+    date: new TZDate(2025, 6, 11, 14, 0, 0, "Asia/Singapore"), // 11 Jul 2025, 2PM SGT
     dateFormat: "dd MMM yyyy, EEE haaa",
     icon: <ScreenShare />,
   },
@@ -52,13 +56,11 @@ const TimelineWithIcon = ({ now }: { now: Date }) => {
       {TIMELINE_ITEMS.map((item, index) => {
         const isPast = item.date < now;
         const nextItem = TIMELINE_ITEMS.at(index + 1);
-
         const msIn2Hours = 2 * 60 * 60 * 1000;
         const timeUntil = item.date.getTime() - now.getTime();
 
         let tagLabel: string | null = null;
 
-        // Show tag only if event is in the future and within 2 hours
         if (item.date > now && timeUntil <= msIn2Hours) {
           if (item.title.toLowerCase().includes("opens"))
             tagLabel = "Opening Soon";
@@ -106,7 +108,7 @@ const TimelineWithIcon = ({ now }: { now: Date }) => {
                 )}
               </TimelineTitle>
               <TimelineDescription className="font-mono">
-                {format(item.date, item.dateFormat)}
+                {format(item.date, item.dateFormat, { in: sgTz })}
               </TimelineDescription>
             </TimelineContent>
           </TimelineItem>
@@ -118,9 +120,9 @@ const TimelineWithIcon = ({ now }: { now: Date }) => {
 
 export const BidWindowScheduleCard = async () => {
   await connection();
-  const now = new Date(Date.now());
-  const acadTermId = (await api.acadTerms.getLatest())[0]!.id;
+  const now = new TZDate(Date.now(), "Asia/Singapore");
 
+  const acadTermId = (await api.acadTerms.getLatest())[0]!.id;
   const { term, displayYear } = inferAcadTerm(acadTermId);
 
   return (
@@ -130,7 +132,7 @@ export const BidWindowScheduleCard = async () => {
           BOSS {displayYear} Term {term} Round 1A
         </CardTitle>
       </CardHeader>
-      <CardContent className="">
+      <CardContent>
         <TimelineWithIcon now={now} />
         <div className="text-muted-foreground text-wrap">
           <span>For more detailed schedules, refer to</span>
