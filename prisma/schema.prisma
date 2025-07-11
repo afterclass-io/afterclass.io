@@ -411,13 +411,9 @@ model BidPrediction {
 
   // Median/Min Regression Results
   medianPredicted   Float @map("median_predicted")
-  medianLower95ci   Float @map("median_lower_95ci")
-  medianUpper95ci   Float @map("median_upper_95ci")
   medianUncertainty Float @map("median_uncertainty")
 
   minPredicted   Float @map("min_predicted")
-  minLower95ci   Float @map("min_lower_95ci")
-  minUpper95ci   Float @map("min_upper_95ci")
   minUncertainty Float @map("min_uncertainty")
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
