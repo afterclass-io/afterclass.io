@@ -297,7 +297,7 @@ model ClassTiming {
   dayOfWeek String?  @map("day_of_week")
   startTime String   @map("start_time")
   endTime   String   @map("end_time")
-  venue     String   @map("venue")
+  venue     String?  @map("venue")
 
   class Classes @relation(fields: [classId], references: [id])
 
