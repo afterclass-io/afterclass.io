@@ -31,20 +31,20 @@ const sgTz = tz("Asia/Singapore");
 
 const TIMELINE_ITEMS = [
   {
-    title: "Window 1 Opens",
-    date: new TZDate(2025, 6, 9, 17, 0, 0, "Asia/Singapore"), // 9 Jul 2025, 5PM SGT
+    title: "Window 2 Opens",
+    date: new TZDate(2025, 6, 11, 17, 0, 0, "Asia/Singapore"),
     dateFormat: "dd MMM yyyy, EEE haaa",
     icon: <Edit />,
   },
   {
-    title: "Window 1 Closes",
-    date: new TZDate(2025, 6, 11, 10, 0, 0, "Asia/Singapore"), // 11 Jul 2025, 10AM SGT
+    title: "Window 2 Closes",
+    date: new TZDate(2025, 6, 14, 10, 0, 0, "Asia/Singapore"),
     dateFormat: "dd MMM yyyy, EEE haaa",
     icon: <Lock />,
   },
   {
-    title: "Window 1 Results Released",
-    date: new TZDate(2025, 6, 11, 14, 0, 0, "Asia/Singapore"), // 11 Jul 2025, 2PM SGT
+    title: "Window 2 Results Released",
+    date: new TZDate(2025, 6, 14, 14, 0, 0, "Asia/Singapore"),
     dateFormat: "dd MMM yyyy, EEE haaa",
     icon: <ScreenShare />,
   },
