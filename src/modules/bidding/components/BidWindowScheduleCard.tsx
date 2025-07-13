@@ -122,7 +122,7 @@ export const BidWindowScheduleCard = async () => {
   await connection();
   const now = new TZDate(Date.now(), "Asia/Singapore");
 
-  const acadTermId = (await api.acadTerms.getLatest())[0]!.id;
+  const acadTermId = (await api.acadTerms.getLatest())!.id;
   const { term, displayYear } = inferAcadTerm(acadTermId);
 
   return (

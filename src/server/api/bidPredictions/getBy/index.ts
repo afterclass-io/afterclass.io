@@ -7,13 +7,19 @@ export const getBy = publicProcedure
       classId: z.string().optional(),
     }),
   )
-  .query(({ ctx, input }) =>
-    ctx.db.bidPrediction.findFirst({
+  .query(async ({ ctx, input }) => {
+    const latestBidWindow = await ctx.db.bidWindow.findFirst({
+      orderBy: {
+        id: "desc",
+      },
+    });
+    return await ctx.db.bidPrediction.findFirst({
       where: {
         classId: input.classId,
+        bidWindowId: latestBidWindow?.id,
       },
       include: {
         bidWindow: true,
       },
-    }),
-  );
+    });
+  });
