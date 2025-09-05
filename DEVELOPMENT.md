@@ -68,12 +68,19 @@ docker-compose up
 > On first run, you will need to run the migrations to create the
 > database schema
 
+
+> [!TIP]
+> If you're using Supabase for your Postgres database, go to the [connect](https://supabase.com/dashboard/project/_?showConnect=true) tab and use the Transaction Pooler configuration details. Postgres host should be something like `aws-1-ap-southeast-1.pooler.supabase.com`.
+
 ```sh
 bunx prisma migrate dev
 ```
 
 Only needs to be done once. This command will create the database schema and
 seed the database with some initial data.
+
+If data is not seeded, run `bun run prisma/seed.ts`.
+
 
 > [!TIP]
 > The seed data are in the [`prisma/data`](prisma/data/) directory's json
