@@ -21,10 +21,12 @@ export default async function BiddingHistoryPage({
     api.professors.getAllByUniAbbrv({ universityAbbrv: school }),
   ]);
 
+
   const classes = await api.classes.getAll({
     courseCode: courseCode,
     profSlug: profSlug,
     limit: !hasSearchParams ? 6 : undefined,
+    
   });
 
   return (
