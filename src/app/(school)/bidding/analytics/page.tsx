@@ -1,7 +1,7 @@
+// pages/BiddingHistoryPage.tsx (or app/bidding/page.tsx)
 import { api } from "@/common/tools/trpc/server";
 import { BidChart } from "@/modules/bidding/components/BidChart";
 import { BidChartFilterTagGroup } from "@/modules/bidding/components/BidChartFilterTagGroup";
-
 import {
   Card,
   CardContent,
@@ -13,6 +13,8 @@ import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCar
 import { notFound } from "next/navigation";
 import { MultiplierType, PredictionType } from "@prisma/client";
 import { Info } from "lucide-react";
+import { ModAlternativesClientWrapper } from "@/modules/bidding/components/ModAlternativesClientWrapper";
+import { ModuleSummary } from "@/modules/bidding/components/ModAlternativesCard";
 
 export default async function BiddingHistoryPage({
   searchParams,
@@ -30,7 +32,6 @@ export default async function BiddingHistoryPage({
     if (!classId) {
       return notFound();
     }
-
     const _class = await api.classes.getAll({ id: classId, limit: 1 });
     if (_class.length === 0) {
       return notFound();
@@ -82,13 +83,11 @@ export default async function BiddingHistoryPage({
       } else if (rounds) {
         matched = matched && br.bidWindow.round === rounds;
       }
-
       if (windows && Array.isArray(windows)) {
         matched = matched && windows.includes(br.bidWindow.window.toString());
       } else if (windows) {
         matched = matched && br.bidWindow.window.toString() === windows;
       }
-
       return matched;
     })
     .map((br) => ({
@@ -97,13 +96,52 @@ export default async function BiddingHistoryPage({
       size: br.beforeProcessVacancy - br.afterProcessVacancy!,
     }));
 
+  // Define the initial data for the ModAlternativesClientWrapper
+  const selectedModule: ModuleSummary = {
+    instructor: "Tan XX",
+    day: "Tue",
+    time: "08:15-11:30",
+    vacancies: "0/48",
+    change: 0,
+    min: 34.42,
+    median: 34.48,
+  };
+
+  const similarModules: ModuleSummary[] = [
+    {
+      instructor: "Tan XX",
+      day: "Tue",
+      time: "08:15-11:30",
+      vacancies: "0/48",
+      change: -3,
+      min: 34.42,
+      median: 34.48,
+    },
+    {
+      instructor: "James Wong",
+      day: "Tue",
+      time: "08:15-11:30",
+      vacancies: "3/48",
+      change: -3,
+      min: 34.42,
+      median: 34.48,
+    },
+    {
+      instructor: "Tan XX",
+      day: "Mon",
+      time: "14:00-17:30",
+      vacancies: "5/48",
+      change: 5,
+      min: 25.0,
+      median: 28.5,
+    },
+  ];
+
   return (
     <div className="flex w-160 flex-col justify-center gap-6 pt-2">
       <Card>
         <CardHeader>
-          <CardTitle className="pt-2 text-2xl">
-            Historical Bidding Trend
-          </CardTitle>
+          <CardTitle className="pt-2 text-2xl">Historical Bidding Trend</CardTitle>
           <CardDescription className="flex flex-col gap-2">
             <div>
               {courseCode} {section} - historical bids across academic terms and
@@ -180,6 +218,11 @@ export default async function BiddingHistoryPage({
           }}
         />
       )}
+
+      <ModAlternativesClientWrapper
+        initialSelectedModule={selectedModule}
+        initialSimilarModules={similarModules}
+      />
     </div>
   );
 }
