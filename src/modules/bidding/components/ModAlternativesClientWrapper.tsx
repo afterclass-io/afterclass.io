@@ -51,7 +51,7 @@ const allModules: ModuleSummary[] = [
   },
 ];
 
-type ModAlternativesClientWrapperProps = {};
+type ModAlternativesClientWrapperProps = Record<string, never>;
 
 export function ModAlternativesClientWrapper({}: ModAlternativesClientWrapperProps) {
   const [scope, setScope] = useState("CS301");

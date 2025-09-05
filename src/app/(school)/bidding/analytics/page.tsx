@@ -14,7 +14,6 @@ import { notFound } from "next/navigation";
 import { MultiplierType, PredictionType } from "@prisma/client";
 import { Info } from "lucide-react";
 import { ModAlternativesClientWrapper } from "@/modules/bidding/components/ModAlternativesClientWrapper";
-import { ModuleSummary } from "@/modules/bidding/components/ModAlternativesCard";
 
 export default async function BiddingHistoryPage({
   searchParams,
@@ -96,46 +95,6 @@ export default async function BiddingHistoryPage({
       size: br.beforeProcessVacancy - br.afterProcessVacancy!,
     }));
 
-  // Define the initial data for the ModAlternativesClientWrapper
-  const selectedModule: ModuleSummary = {
-    instructor: "Tan XX",
-    day: "Tue",
-    time: "08:15-11:30",
-    vacancies: "0/48",
-    change: 0,
-    min: 34.42,
-    median: 34.48,
-  };
-
-  const similarModules: ModuleSummary[] = [
-    {
-      instructor: "Tan XX",
-      day: "Tue",
-      time: "08:15-11:30",
-      vacancies: "0/48",
-      change: -3,
-      min: 34.42,
-      median: 34.48,
-    },
-    {
-      instructor: "James Wong",
-      day: "Tue",
-      time: "08:15-11:30",
-      vacancies: "3/48",
-      change: -3,
-      min: 34.42,
-      median: 34.48,
-    },
-    {
-      instructor: "Tan XX",
-      day: "Mon",
-      time: "14:00-17:30",
-      vacancies: "5/48",
-      change: 5,
-      min: 25.0,
-      median: 28.5,
-    },
-  ];
 
   return (
     <div className="flex w-160 flex-col justify-center gap-6 pt-2">
@@ -220,8 +179,6 @@ export default async function BiddingHistoryPage({
       )}
 
       <ModAlternativesClientWrapper
-        initialSelectedModule={selectedModule}
-        initialSimilarModules={similarModules}
       />
     </div>
   );

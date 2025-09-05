@@ -14,7 +14,9 @@ interface SortableTableProps<T> {
   columns: Column<T>[];
 }
 
-export function SortableTable<T extends Record<string, any>>({
+// Refine the generic constraint for T.
+// T must be a record with string or number values for the sortable keys.
+export function SortableTable<T extends Record<string, string | number | null | undefined>>({
   data,
   columns,
 }: SortableTableProps<T>) {
@@ -39,19 +41,20 @@ export function SortableTable<T extends Record<string, any>>({
       const aValue = a[sortColumn];
       const bValue = b[sortColumn];
 
+      // Handle null and undefined values first to prevent errors
       if (aValue === null || aValue === undefined) return 1;
       if (bValue === null || bValue === undefined) return -1;
 
+      // The key is now guaranteed to have string or number values.
       if (typeof aValue === "string" && typeof bValue === "string") {
-        return sortDirection === "asc"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
+        return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
       }
 
       if (typeof aValue === "number" && typeof bValue === "number") {
         return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
       }
 
+      // If types are mixed or unhandled, return 0 to maintain original order
       return 0;
     });
 
