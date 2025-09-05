@@ -1,19 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { BidPredictionCard } from "./BidPredictionCard";
+import { BidPredictionCard, BidPrediction } from "./BidPredictionCard";
+import { MultiplierType } from "@prisma/client";
 
-
-type SafetyFactor = { // re-declared as dates are not required
+type MiniSafetyFactor = { // re-declared as dates are not required
   beatsPercentage: number;
   multiplier: number;
 };
-type BidPrediction = {
+type MiniBidPrediction = {
   value: number;
-  safetyFactor: SafetyFactor[];
+  safetyFactor: MiniSafetyFactor[];
   uncertainty: number;
 };
 
 
-const minPrediction: BidPrediction = {
+const minPrediction: MiniBidPrediction = {
   value: 12000,
   uncertainty: 2000,
   safetyFactor: [
@@ -30,7 +30,7 @@ const minPrediction: BidPrediction = {
   ],
 };
 
-const medianPrediction = {
+const medianPrediction: MiniBidPrediction = {
   value: 15000,
   uncertainty: 2500,
   safetyFactor: [
@@ -47,6 +47,39 @@ const medianPrediction = {
   ],
 };
 
+const transformBidPrediction = (
+  prediction: MiniBidPrediction,
+  acadTermId: string,
+  predictionType: "MIN" | "MEDIAN"
+): BidPrediction => {
+  const transformedSafetyFactors = prediction.safetyFactor.map(sf => ({
+    ...sf,
+    acadTermId,
+    predictionType,
+    // Cast the literal string to the required MultiplierType
+    multiplierType: "BID_SAFETY_FACTOR" as MultiplierType, 
+    createdAt: new Date(),
+  }));
+
+  return {
+    ...prediction,
+    safetyFactor: transformedSafetyFactors,
+  };
+};
+
+
+// Transform the data before passing it to the component
+const transformedMinPrediction = transformBidPrediction(
+  minPrediction,
+  "AY2024/2025 Semester 1",
+  "MIN"
+);
+const transformedMedianPrediction = transformBidPrediction(
+  medianPrediction,
+  "AY2024/2025 Semester 1",
+  "MEDIAN"
+);
+
 const meta: Meta<typeof BidPredictionCard> = {
   title: "Bid Analytics/BidPredictionCard",
   component: BidPredictionCard,
@@ -57,9 +90,8 @@ const meta: Meta<typeof BidPredictionCard> = {
     acadTermId: "AY2024/2025 Semester 1",
     hasBidsProbability: 0.8,
     confidenceScore: 0.75,
-    minPrediction: minPrediction,
-    medianPrediction: medianPrediction,
-
+    minPrediction: transformedMinPrediction,
+    medianPrediction: transformedMedianPrediction,
   },
 };
 
@@ -73,17 +105,23 @@ export const Default: Story = {};
 export const LowConfidence: Story = {
   args: {
     confidenceScore: 0.4,
+    minPrediction: transformedMinPrediction,
+    medianPrediction: transformedMedianPrediction,
   },
 };
 
 export const VeryHighConfidence: Story = {
   args: {
     confidenceScore: 0.95,
+    minPrediction: transformedMinPrediction,
+    medianPrediction: transformedMedianPrediction,
   },
 };
 
 export const UnlikelyToHaveBids: Story = {
   args: {
     hasBidsProbability: 0.2,
+    minPrediction: transformedMinPrediction,
+    medianPrediction: transformedMedianPrediction,
   },
 };
