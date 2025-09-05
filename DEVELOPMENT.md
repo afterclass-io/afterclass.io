@@ -79,7 +79,7 @@ bunx prisma migrate dev
 Only needs to be done once. This command will create the database schema and
 seed the database with some initial data.
 
-If data is not seeded, run `bun run prisma/seed.ts`.
+If data is not seeded, run `bunx prisma db seed`.
 
 
 > [!TIP]
