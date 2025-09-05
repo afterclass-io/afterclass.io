@@ -11,10 +11,10 @@ const meta: Meta<typeof ClassCard> = {
     classId: "12345",
     course: {
       code: "CS101",
-      name: "Introduction to Computer Science",
+      name: "Introduction to Computer Science: A very very long course name.",
     },
     professor: {
-      name: "Dr. Jane Doe",
+      name: "Dr. Jane Doe A Professor With An Equally Lengthy Name",
       slug: "jane-doe",
     },
     classTiming: [
