@@ -1,4 +1,3 @@
-// pages/BiddingHistoryPage.tsx (or app/bidding/page.tsx)
 import { api } from "@/common/tools/trpc/server";
 import { BidChart } from "@/modules/bidding/components/BidChart";
 import { BidChartFilterTagGroup } from "@/modules/bidding/components/BidChartFilterTagGroup";
