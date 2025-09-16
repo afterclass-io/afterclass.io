@@ -16,7 +16,7 @@ import { type SafetyFactor } from "@prisma/client";
 import { useState } from "react";
 import { Info } from "lucide-react";
 
-type BidPrediction = {
+export type BidPrediction = {
   value: number;
   safetyFactor: SafetyFactor[];
   uncertainty: number;
