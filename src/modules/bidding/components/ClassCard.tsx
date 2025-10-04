@@ -105,7 +105,7 @@ export const ClassCard = ({
             <div key={index}>
               <div className="flex items-center gap-1">
                 <MemoIcon size={16} className="mr-1" />
-                <span className="text-sm">
+                <span className="text-sm ">
                   {timing.date
                     ? new Intl.DateTimeFormat("en-GB", {
                         day: "2-digit",
@@ -115,12 +115,9 @@ export const ClassCard = ({
                         .format(timing.date)
                         .replace(/ /g, "-")
                     : ""}
-                  ,
-                </span>
-                <span className="max-w-16 whitespace-normal text-sm">
-                  {timing.dayOfWeek}
-                </span>
-                <span className="text-sm">
+                  <br></br>
+                  {timing.dayOfWeek}&nbsp;
+                        
                   {timing.startTime}-{timing.endTime}
                 </span>
               </div>
