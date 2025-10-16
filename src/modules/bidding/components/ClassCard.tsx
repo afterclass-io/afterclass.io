@@ -107,12 +107,12 @@ export const ClassCard = ({
                 <span className="text-sm">
                   {timing.date
                     ? new Intl.DateTimeFormat("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })
-                        .format(timing.date)
-                        .replace(/ /g, "-")
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })
+                      .format(timing.date)
+                      .replace(/ /g, "-")
                     : ""}
                   ,
                 </span>
