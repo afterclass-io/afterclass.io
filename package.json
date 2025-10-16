@@ -14,7 +14,8 @@
     "db:reset": "prisma migrate reset",
     "ecfg:fetch": "bun run scripts/ecfg/fetch-all.ts",
     "ecfg:update": "bun run scripts/ecfg/update-remote.ts",
-    "ecfg:test": "bun run scripts/ecfg/validate-json.ts src/server/ecfg/config.json"
+    "ecfg:test": "bun run scripts/ecfg/validate-json.ts src/server/ecfg/config.json",
+    "export": "bun run prisma/exportData.js"
   },
   "prisma": {
     "seed": "bun run prisma/seed.ts"

@@ -1,5 +1,6 @@
 [
   {
+    "id": 1,
     "classId": "068440df-7e9a-71ec-bbc6-1246091e7064",
     "date": "2025-01-13T00:00:00.000Z",
     "dayOfWeek": "Mon",
@@ -8,6 +9,7 @@
     "venue": "SOE Lecture Theatre 3"
   },
   {
+    "id": 2,
     "classId": "068440df-7e9a-72fc-9fb6-305d722e11e1",
     "date": "2025-01-15T00:00:00.000Z",
     "dayOfWeek": "Wed",
@@ -16,6 +18,7 @@
     "venue": "SCIS2 Seminar Room 2-10"
   },
   {
+    "id": 3,
     "classId": "068440df-7e9a-73cc-897b-b8789c3081c5",
     "date": "2025-04-10T00:00:00.000Z",
     "dayOfWeek": "Fri",
@@ -24,6 +27,7 @@
     "venue": null
   },
   {
+    "id": 4,
     "classId": "068440df-7e9a-7482-816f-7c18eb4084f2",
     "date": "2025-04-15T00:00:00.000Z",
     "dayOfWeek": "Tue",
@@ -32,6 +36,7 @@
     "venue": "SCIS1 Seminar Room 1-5"
   },
   {
+    "id": 5,
     "classId": "068440df-7e9a-753d-a130-939684568133",
     "date": "2025-06-22T00:00:00.000Z",
     "dayOfWeek": "Thu",
@@ -40,6 +45,7 @@
     "venue": "SOE Lecture Theatre 1"
   },
   {
+    "id": 6,
     "classId": "068440df-7e9a-75ec-b583-f0b37de62cd6",
     "date": "2025-08-10T00:00:00.000Z",
     "dayOfWeek": "Sun",
@@ -48,6 +54,7 @@
     "venue": null
   },
   {
+    "id": 7,
     "classId": "068440df-7e9a-7697-b12a-4581e35e742d",
     "date": "2025-07-05T00:00:00.000Z",
     "dayOfWeek": "Sat",
@@ -56,6 +63,7 @@
     "venue": "SCIS2 Seminar Room 3-8"
   },
   {
+    "id": 8,
     "classId": "068440df-7e9a-7740-ab7e-21712dd7e6a5",
     "date": "2025-09-18T00:00:00.000Z",
     "dayOfWeek": "Thu",
@@ -64,6 +72,7 @@
     "venue": "SOE Lecture Theatre 2"
   },
   {
+    "id": 9,
     "classId": "068440df-7e9a-77e9-af48-aad047fba40e",
     "date": "2025-10-25T00:00:00.000Z",
     "dayOfWeek": "Tue",
@@ -72,11 +81,93 @@
     "venue": "SCIS1 Seminar Room 2-14"
   },
   {
+    "id": 10,
     "classId": "068440df-7e9a-7892-9f58-c4d50b198dfa",
     "date": "2025-11-11T00:00:00.000Z",
     "dayOfWeek": "Fri",
     "startTime": "12:00",
     "endTime": "15:15",
     "venue": null
+  },
+  {
+    "id": 21448,
+    "classId": "024e66ba-c8f3-4175-8b4a-21ba9134e8d5",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "10:30",
+    "venue": ""
+  },
+  {
+    "id": 21446,
+    "classId": "0fd30711-a661-45f0-bbac-c29d27a65792",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "10:30",
+    "venue": ""
+  },
+  {
+    "id": 21450,
+    "classId": "82cd1f4c-df54-474d-b980-1988d699281a",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "10:30",
+    "venue": ""
+  },
+  {
+    "id": 21445,
+    "classId": "abfae615-152a-48e9-afe5-bcf834f7f850",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "10:30",
+    "venue": ""
+  },
+  {
+    "id": 21447,
+    "classId": "d0ab0cfb-e770-41eb-99ad-05c30faa4563",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "10:30",
+    "venue": ""
+  },
+  {
+    "id": 21443,
+    "classId": "e3d2cd4f-8b25-42fb-b65f-355e5ab313a5",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "10:30",
+    "venue": ""
+  },
+  {
+    "id": 21979,
+    "classId": "e7d022a6-2111-450c-ba63-0403d23e899b",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "10:30",
+    "venue": ""
+  },
+  {
+    "id": 21449,
+    "classId": "f115b942-e210-4ad0-a787-a52ddf33feb2",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "10:30",
+    "venue": ""
+  },
+  {
+    "id": 21444,
+    "classId": "f2dcba9c-cea8-4a01-82cf-2ace92db8106",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "10:30",
+    "venue": ""
   }
 ]
