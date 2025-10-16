@@ -2,106 +2,106 @@
   {
     "id": 33,
     "professorId": "d4afdbed-c1d0-4c9e-9a44-bc0968cc000f",
+    "facultyId": 4,
     "createdAt": "2024-03-02T10:28:00.054Z",
-    "updatedAt": "2024-03-02T10:28:00.054Z",
-    "facultyId": 4
+    "updatedAt": "2024-03-02T10:28:00.054Z"
   },
   {
     "id": 64,
     "professorId": "e81c4059-0b05-4885-9bda-2233be00b9dc",
+    "facultyId": 4,
     "createdAt": "2024-03-02T10:28:00.065Z",
-    "updatedAt": "2024-03-02T10:28:00.065Z",
-    "facultyId": 4
+    "updatedAt": "2024-03-02T10:28:00.065Z"
   },
   {
     "id": 123,
     "professorId": "9f252cfa-5df6-4d26-80fc-04673012ee90",
+    "facultyId": 6,
     "createdAt": "2024-03-02T10:28:00.088Z",
-    "updatedAt": "2024-03-02T10:28:00.088Z",
-    "facultyId": 6
+    "updatedAt": "2024-03-02T10:28:00.088Z"
   },
   {
     "id": 153,
     "professorId": "84886341-2253-4dd7-bc56-da858e5601a2",
+    "facultyId": 3,
     "createdAt": "2024-03-02T10:28:00.099Z",
-    "updatedAt": "2024-03-02T10:28:00.099Z",
-    "facultyId": 3
+    "updatedAt": "2024-03-02T10:28:00.099Z"
   },
   {
     "id": 268,
     "professorId": "d896251f-7f32-49e6-b623-d1cd1887fed1",
+    "facultyId": 4,
     "createdAt": "2024-03-02T10:28:00.145Z",
-    "updatedAt": "2024-03-02T10:28:00.145Z",
-    "facultyId": 4
+    "updatedAt": "2024-03-02T10:28:00.145Z"
   },
   {
     "id": 276,
     "professorId": "16e726fe-d2f0-4e04-ad34-3bbb01654b15",
+    "facultyId": 3,
     "createdAt": "2024-03-02T10:28:00.148Z",
-    "updatedAt": "2024-03-02T10:28:00.148Z",
-    "facultyId": 3
+    "updatedAt": "2024-03-02T10:28:00.148Z"
   },
   {
     "id": 319,
     "professorId": "fe439f51-db1d-4441-8be0-a951b2a12d53",
+    "facultyId": 4,
     "createdAt": "2024-03-02T10:28:00.164Z",
-    "updatedAt": "2024-03-02T10:28:00.164Z",
-    "facultyId": 4
+    "updatedAt": "2024-03-02T10:28:00.164Z"
   },
   {
     "id": 320,
     "professorId": "73fb24bb-7e88-4108-864c-0a1fdc072007",
+    "facultyId": 6,
     "createdAt": "2024-03-02T10:28:00.165Z",
-    "updatedAt": "2024-03-02T10:28:00.165Z",
-    "facultyId": 6
+    "updatedAt": "2024-03-02T10:28:00.165Z"
   },
   {
     "id": 344,
     "professorId": "199d793f-e4f4-4464-92c6-e3debbbe8b55",
+    "facultyId": 4,
     "createdAt": "2024-03-02T10:28:00.172Z",
-    "updatedAt": "2024-03-02T10:28:00.172Z",
-    "facultyId": 4
+    "updatedAt": "2024-03-02T10:28:00.172Z"
   },
   {
     "id": 354,
     "professorId": "40c00ac1-fcee-4b0d-81bf-affdde78812b",
+    "facultyId": 4,
     "createdAt": "2024-03-02T10:28:00.176Z",
-    "updatedAt": "2024-03-02T10:28:00.176Z",
-    "facultyId": 4
+    "updatedAt": "2024-03-02T10:28:00.176Z"
   },
   {
     "id": 376,
     "professorId": "b5a4de1f-e829-4fb1-8d6a-7b2566358d89",
+    "facultyId": 6,
     "createdAt": "2024-03-02T10:28:00.183Z",
-    "updatedAt": "2024-03-02T10:28:00.183Z",
-    "facultyId": 6
+    "updatedAt": "2024-03-02T10:28:00.183Z"
   },
   {
     "id": 394,
     "professorId": "e0d1c563-93d3-48aa-a096-f7ac93b9d57b",
+    "facultyId": 4,
     "createdAt": "2024-03-02T10:28:00.188Z",
-    "updatedAt": "2024-03-02T10:28:00.188Z",
-    "facultyId": 4
+    "updatedAt": "2024-03-02T10:28:00.188Z"
   },
   {
     "id": 466,
     "professorId": "d8ac733b-6990-4f0f-af55-1a658a0b9546",
+    "facultyId": 4,
     "createdAt": "2024-03-02T10:28:00.214Z",
-    "updatedAt": "2024-03-02T10:28:00.214Z",
-    "facultyId": 4
+    "updatedAt": "2024-03-02T10:28:00.214Z"
   },
   {
     "id": 562,
     "professorId": "f9270868-9b1c-4f11-be59-9787e7336da9",
+    "facultyId": 4,
     "createdAt": "2024-03-02T10:28:00.244Z",
-    "updatedAt": "2024-03-02T10:28:00.244Z",
-    "facultyId": 4
+    "updatedAt": "2024-03-02T10:28:00.244Z"
   },
   {
     "id": 567,
     "professorId": "610da81e-1f9b-4775-b25a-69a67d6e8588",
+    "facultyId": 6,
     "createdAt": "2024-03-02T10:28:00.245Z",
-    "updatedAt": "2024-03-02T10:28:00.245Z",
-    "facultyId": 6
+    "updatedAt": "2024-03-02T10:28:00.245Z"
   }
 ]

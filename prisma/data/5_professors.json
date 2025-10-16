@@ -2,166 +2,296 @@
   {
     "id": "d4afdbed-c1d0-4c9e-9a44-bc0968cc000f",
     "name": "Yixin CAO",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "yixin-cao",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/yxcao/100x120",
     "profileUrl": "https://example.org",
-    "slug": "yixin-cao"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "e81c4059-0b05-4885-9bda-2233be00b9dc",
     "name": "CHENG Shih-Fen",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "cheng-shih-fen",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/sfcheng/100x120",
     "profileUrl": "https://example.org",
-    "slug": "cheng-shih-fen"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "9f252cfa-5df6-4d26-80fc-04673012ee90",
     "name": "FANG Bingxu",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "fang-bingxu",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/bxfang/100x120",
     "profileUrl": "https://example.org",
-    "slug": "fang-bingxu"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "84886341-2253-4dd7-bc56-da858e5601a2",
     "name": "GOH, Jing Rong",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "goh-jing-rong",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/jrgoh/100x120",
     "profileUrl": "https://example.org",
-    "slug": "goh-jing-rong"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "d896251f-7f32-49e6-b623-d1cd1887fed1",
     "name": "LEE Yeow Leong",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "lee-yeow-leong",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/yllee/100x120",
     "profileUrl": "https://example.org",
-    "slug": "lee-yeow-leong"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "16e726fe-d2f0-4e04-ad34-3bbb01654b15",
     "name": "LI Jia",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "li-jia",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/jiali/100x120",
     "profileUrl": "https://example.org",
-    "slug": "li-jia"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "fe439f51-db1d-4441-8be0-a951b2a12d53",
     "name": "LO Siaw Ling",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "lo-siaw-ling",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/sllo/100x120",
     "profileUrl": "https://example.org",
-    "slug": "lo-siaw-ling"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "73fb24bb-7e88-4108-864c-0a1fdc072007",
     "name": "LOH Wei Ting",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "loh-wei-ting",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/wtloh/100x120",
     "profileUrl": "https://example.org",
-    "slug": "loh-wei-ting"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "199d793f-e4f4-4464-92c6-e3debbbe8b55",
     "name": "MAI Anh Tien",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "mai-anh-tien",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/atmai/100x120",
     "profileUrl": "https://example.org",
-    "slug": "mai-anh-tien"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "40c00ac1-fcee-4b0d-81bf-affdde78812b",
     "name": "MOK, Heng Ngee",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "mok-heng-ngee",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/hnmok/100x120",
     "profileUrl": "https://example.org",
-    "slug": "mok-heng-ngee"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "b5a4de1f-e829-4fb1-8d6a-7b2566358d89",
     "name": "Kelly NGO",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "kelly-ngo",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/kellyngo/100x120",
     "profileUrl": "https://example.org",
-    "slug": "kelly-ngo"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "e0d1c563-93d3-48aa-a096-f7ac93b9d57b",
     "name": "OUH Eng Lieh",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "ouh-eng-lieh",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/elouh/100x120",
     "profileUrl": "https://example.org",
-    "slug": "ouh-eng-lieh"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "d8ac733b-6990-4f0f-af55-1a658a0b9546",
     "name": "Vivien SOON",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "vivien-soon",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/viviensoon/100x120",
     "profileUrl": "https://example.org",
-    "slug": "vivien-soon"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "f9270868-9b1c-4f11-be59-9787e7336da9",
     "name": "Swavek WLODKOWSKI",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "swavek-wlodkowski",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/swlodkowski/100x120",
     "profileUrl": "https://example.org",
-    "slug": "swavek-wlodkowski"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
   },
   {
     "id": "610da81e-1f9b-4775-b25a-69a67d6e8588",
     "name": "WONG Suay Peng",
-    "belongToUniversityId": 1,
-    "createdAt": "2024-03-02T10:14:14.772Z",
-    "updatedAt": "2024-03-02T10:14:14.772Z",
+    "bossAliases": [],
     "email": "first.last@example.org",
+    "slug": "wong-suay-peng",
     "photoUrl": "https://staffphoto.smu.edu.sg/s/spwong/100x120",
     "profileUrl": "https://example.org",
-    "slug": "wong-suay-peng"
+    "belongToUniversityId": 1,
+    "createdAt": "2024-03-02T10:14:14.772Z",
+    "updatedAt": "2024-03-02T10:14:14.772Z"
+  },
+  {
+    "id": "9aa4f498-bce0-4cc1-a916-5d51863f87b5",
+    "name": "Whitney, ZHANG Wei",
+    "bossAliases": [
+      "WHITNEY, ZHANG WEI",
+      "WHITNEY ZHANG"
+    ],
+    "email": "whitneyzhang@smu.edu.sg",
+    "slug": "whitney-zhang-wei",
+    "photoUrl": "https://staffphoto.smu.edu.sg/s/whitneyzhang/100x120",
+    "profileUrl": "https://faculty.smu.edu.sg/profile/whitney-zhang-wei-1506",
+    "belongToUniversityId": 1,
+    "createdAt": "2024-09-29T04:41:41.407Z",
+    "updatedAt": "2024-09-29T04:41:41.407Z"
+  },
+  {
+    "id": "df76d7fd-682e-4466-854b-b3eb2585983c",
+    "name": "S N Venkat",
+    "bossAliases": [
+      "VENKAT",
+      "S N VENKAT"
+    ],
+    "email": "snvenkat@smu.edu.sg",
+    "slug": "s-n-venkat",
+    "photoUrl": "https://staffphoto.smu.edu.sg/s/snvenkat/100x120",
+    "profileUrl": "https://faculty.smu.edu.sg/profile/s-n-venkat-6196",
+    "belongToUniversityId": 1,
+    "createdAt": "2024-09-29T04:41:41.407Z",
+    "updatedAt": "2024-09-29T04:41:41.407Z"
+  },
+  {
+    "id": "ba0b7383-88cb-47af-8b37-e9d34f221461",
+    "name": "Rand HIRMIZ",
+    "bossAliases": [
+      "RAND HIRMIZ"
+    ],
+    "email": "enquiry@smu.edu.sg",
+    "slug": "rand-hirmiz",
+    "photoUrl": "https://smu.edu.sg",
+    "profileUrl": "https://smu.edu.sg",
+    "belongToUniversityId": 1,
+    "createdAt": "2025-07-13T01:31:56.503Z",
+    "updatedAt": "2025-07-13T01:31:56.503Z"
+  },
+  {
+    "id": "45791438-04ec-4055-8d1c-cab68ff79ce9",
+    "name": "Sovan PATRA",
+    "bossAliases": [
+      "SOVAN PATRA"
+    ],
+    "email": "sovanpatra@smu.edu.sg",
+    "slug": "sovan-patra",
+    "photoUrl": "https://staffphoto.smu.edu.sg/s/sovanpatra/100x120",
+    "profileUrl": "https://faculty.smu.edu.sg/profile/sovan-patra-2481",
+    "belongToUniversityId": 1,
+    "createdAt": "2024-09-29T04:41:41.407Z",
+    "updatedAt": "2024-09-29T04:41:41.407Z"
+  },
+  {
+    "id": "c3ee6864-fd66-45f7-a23a-03c1ccc4df8a",
+    "name": "Jared POON",
+    "bossAliases": [
+      "JARED POON",
+      "JARED POON JUN KEAT"
+    ],
+    "email": "jaredpoon@smu.edu.sg",
+    "slug": "jared-poon",
+    "photoUrl": "https://staffphoto.smu.edu.sg/s/jaredpoon/100x120",
+    "profileUrl": "https://faculty.smu.edu.sg/profile/jared-poon-7771",
+    "belongToUniversityId": 1,
+    "createdAt": "2024-09-29T04:41:41.407Z",
+    "updatedAt": "2024-09-29T04:41:41.407Z"
+  },
+  {
+    "id": "7db176f4-7833-4483-a699-43131ca20c36",
+    "name": "HAMMERTON Matthew",
+    "bossAliases": [
+      "HAMMERTON MATTHEW"
+    ],
+    "email": "mhammerton@smu.edu.sg",
+    "slug": "hammerton-matthew",
+    "photoUrl": "https://staffphoto.smu.edu.sg/s/mhammerton/100x120",
+    "profileUrl": "https://faculty.smu.edu.sg/profile/hammerton-matthew-2071",
+    "belongToUniversityId": 1,
+    "createdAt": "2024-09-29T04:41:41.407Z",
+    "updatedAt": "2024-09-29T04:41:41.407Z"
+  },
+  {
+    "id": "1486e801-fd3b-4584-9ac1-1936427c782a",
+    "name": "Brandon YIP",
+    "bossAliases": [
+      "BRANDON YIP"
+    ],
+    "email": "brandonyip@smu.edu.sg",
+    "slug": "brandon-yip",
+    "photoUrl": "https://staffphoto.smu.edu.sg/s/brandonyip/100x120",
+    "profileUrl": "https://faculty.smu.edu.sg/profile/brandon-yip-2366",
+    "belongToUniversityId": 1,
+    "createdAt": "2024-09-29T04:41:41.407Z",
+    "updatedAt": "2024-09-29T04:41:41.407Z"
+  },
+  {
+    "id": "17f2cecb-d4e3-4646-99f1-093590bcdc22",
+    "name": "TAN Sor Hoon",
+    "bossAliases": [
+      "TAN SOR HOON"
+    ],
+    "email": "sorhoontan@smu.edu.sg",
+    "slug": "tan-sor-hoon",
+    "photoUrl": "https://staffphoto.smu.edu.sg/s/sorhoontan/100x120",
+    "profileUrl": "https://faculty.smu.edu.sg/profile/tan-sor-hoon-1671",
+    "belongToUniversityId": 1,
+    "createdAt": "2024-09-29T04:41:41.407Z",
+    "updatedAt": "2024-09-29T04:41:41.407Z"
   }
 ]
