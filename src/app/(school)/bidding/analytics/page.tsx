@@ -12,7 +12,7 @@ import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCar
 import { notFound } from "next/navigation";
 import { MultiplierType, PredictionType } from "@prisma/client";
 import { Info } from "lucide-react";
-import { ModAlternativesClientWrapper } from "@/modules/bidding/components/ModAlternativesClientWrapper";
+import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
 
 export default async function BiddingHistoryPage({
   searchParams,
@@ -26,17 +26,20 @@ export default async function BiddingHistoryPage({
   const rounds = _searchParams.rounds as string | string[];
   const windows = _searchParams.windows as string | string[];
 
+  const _class = await api.classes.getAll({ id: classId, limit: 1 });
   if (!courseCode || !section) {
     if (!classId) {
       return notFound();
     }
-    const _class = await api.classes.getAll({ id: classId, limit: 1 });
     if (_class.length === 0) {
       return notFound();
     }
     courseCode = _class[0]!.course.code;
     section = _class[0]!.section;
   }
+
+
+  const professors = await api.professors.getProfessorsByClassId({ classId: classId! });
 
   const [bidResults, bidPrediction, safetyFactor] = await Promise.all([
     api.bidResults.getBy({ courseCode, section, classId }),
@@ -72,6 +75,9 @@ export default async function BiddingHistoryPage({
         },
         [[], []] as [string[], string[]],
       );
+
+
+  
 
   const chartData = bidResultsWithBids
     .filter((br) => {
@@ -177,8 +183,11 @@ export default async function BiddingHistoryPage({
         />
       )}
 
-      <ModAlternativesClientWrapper
-      />
+        <ModAlternativesCard
+          professors={professors}
+          sessions={_class[0]!.classTimings || ''}
+          courseCode={courseCode}
+        />
     </div>
   );
 }

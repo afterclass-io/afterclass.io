@@ -1,163 +1,127 @@
-"use client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/card";
-import { SortableTable } from "@/common/components/sortable-table";
-import { formatNumberShortScale } from "@/common/functions";
-import { GraduationCapColoredIcon, ClockIcon } from "@/common/components/icons";
+import Link from "next/link";
+import { Card, CardHeader, CardTitle, CardContent } from "@/common/components/card";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/common/components/select";
+    ClockIcon,
+    GraduationCapColoredIcon,
+    // Assuming these icons are custom components, keep them as is
+} from "@/common/components/icons";
 
-// Main type for a module's summary data
-export type ModuleSummary = {
-  instructor: string;
-  day: string;
-  time: string;
-  vacancies: string;
-  change: number;
-  min: number;
-  median: number;
-  courseCode: string;
-  section: string;
-};
 
-export const ModAlternativesCard = ({
-  selectedModule,
-  similarModules,
-  onScopeChange,
-}: {
-  selectedModule: ModuleSummary;
-  similarModules: ModuleSummary[];
-  onScopeChange: (scope: string) => void;
-}) => {
-  const hasAlternatives = similarModules.length > 0;
+interface ModAlternativesCardProps {
+    courseCode: string;
 
-  const instructorTableData = similarModules.filter(
-    (mod) => mod.instructor === selectedModule.instructor
-  );
+    professors: {
+        name: string;
+        slug: string;
+    }[];
 
-  const timeTableData = similarModules.filter(
-    (mod) => mod.day === selectedModule.day && mod.time === selectedModule.time
-  );
+    sessions: {
+        dayOfWeek: string | null;
+        startTime: string | null;
+        endTime: string | null;
+        venue?: string | null;
+    }[];
+}
 
-  const instructorColumns = [
-    { key: "courseCode" as const, title: "Course" }, // Moved to the first position
-    { key: "section" as const, title: "Section" }, // Moved to the second position
-    { key: "day" as const, title: "Day" },
-    { key: "time" as const, title: "Time" },
-    {
-      key: "vacancies" as const,
-      title: "Vacancies",
-      render: (mod: ModuleSummary) => {
-        const [filled, capacity] = mod.vacancies.split("/").map(Number);
-        const formattedChange = mod.change > 0 ? `+${mod.change}` : mod.change.toString();
-        const changeColor =
-          mod.change > 0 ? "text-green-500" : mod.change < 0 ? "text-red-500" : "text-white";
-        return (
-          <span>
-            {filled}/{capacity}{" "}
-            <span className={changeColor}>({formattedChange})</span>
-          </span>
-        );
-      },
-    },
-    {
-      key: "min" as const,
-      title: "Min",
-      render: (mod: ModuleSummary) =>
-        formatNumberShortScale(mod.min, { minimumFractionDigits: 2, decimals: 2 }),
-    },
-    {
-      key: "median" as const,
-      title: "Median",
-      render: (mod: ModuleSummary) =>
-        formatNumberShortScale(mod.median, { minimumFractionDigits: 2, decimals: 2 }),
-    },
-  ];
+export function ModAlternativesCard({
+    courseCode,
+    professors,
+    sessions
+}: ModAlternativesCardProps) {
 
-  const timeColumns = [
-    { key: "courseCode" as const, title: "Course" }, // Moved to the first position
-    { key: "section" as const, title: "Section" }, // Moved to the second position
-    { key: "instructor" as const, title: "Instructor" },
-    {
-      key: "vacancies" as const,
-      title: "Vacancies",
-      render: (mod: ModuleSummary) => {
-        const [filled, capacity] = mod.vacancies.split("/").map(Number);
-        const formattedChange = mod.change > 0 ? `+${mod.change}` : mod.change.toString();
-        const changeColor =
-          mod.change > 0 ? "text-green-500" : mod.change < 0 ? "text-red-500" : "text-white";
-        return (
-          <span>
-            {filled}/{capacity}{" "}
-            <span className={changeColor}>({formattedChange})</span>
-          </span>
-        );
-      },
-    },
-    {
-      key: "min" as const,
-      title: "Min",
-      render: (mod: ModuleSummary) =>
-        formatNumberShortScale(mod.min, { minimumFractionDigits: 2, decimals: 2 }),
-    },
-    {
-      key: "median" as const,
-      title: "Median",
-      render: (mod: ModuleSummary) =>
-        formatNumberShortScale(mod.median, { minimumFractionDigits: 2, decimals: 2 }),
-    },
-  ];
+    // Helper to get unique session links (in case multiple sessions share the same time/day)
+    const uniqueSessions = sessions.reduce((acc, session) => {
+        // Ensure all components of the key exist before using them
+        if (session.dayOfWeek && session.startTime && session.endTime) {
+            const key = `${session.dayOfWeek}-${session.startTime}-${session.endTime}`;
+            if (!acc.has(key)) {
+                acc.set(key, session);
+            }
+        }
+        return acc;
+    }, new Map<string, typeof sessions[0]>());
 
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <CardTitle>Alternative classes for</CardTitle>
-          <Select defaultValue="CS301" onValueChange={onScopeChange}>
-            <SelectTrigger className="w-fit">
-              <SelectValue placeholder="Select an alternative" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="CS301">this module</SelectItem>
-                <SelectItem value="Solution Management">Solution Management basket</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-8">
-        {!hasAlternatives ? (
-          <div className="text-center text-muted-foreground">No alternatives found.</div>
-        ) : (
-          <>
-            {instructorTableData.length > 0 && (
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2 text-lg font-semibold">
-                  <GraduationCapColoredIcon size={24} />
-                  Instructor: {selectedModule.instructor ?? "N/A"}
+    const uniqueSessionArray = Array.from(uniqueSessions.values());
+
+    // Only render the card if there are professors OR sessions to show
+    if (professors.length === 0 && uniqueSessionArray.length === 0) {
+        return null;
+    }
+
+    return (
+        <Card className="shadow-lg border-2">
+            <CardHeader>
+                <CardTitle className="text-xl">Explore Alternatives</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* === Column 1: Professor Alternatives === */}
+                <div className="flex flex-col gap-3">
+                    <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-100 pl-2">
+                        {/* Added a title/header for the column */}
+                        <span className="text-base font-medium">By Professor</span>
+                    </h3>
+
+                    {professors.map((prof) => {
+                        const profLink = `/bidding?course=${courseCode}&prof=${prof.slug}`;
+                        return (
+                            // Link wrapper with the requested styles
+                            <Link
+                                key={prof.slug}
+                                href={profLink}
+                                className="block w-full p-3 rounded-md border hover:bg-secondary focus-ring bg-card transition-color"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <GraduationCapColoredIcon size={24} />
+                                    <span className="w-full truncate tracking-tight text-sm font-medium">
+                                        {prof?.name ?? "TBA"}
+                                    </span>
+                                </div>
+                            </Link>
+                        );
+                    })}
+                    {professors.length === 0 && (
+                        <p className="text-sm text-gray-500 italic">No professors assigned.</p>
+                    )}
                 </div>
-                <SortableTable data={instructorTableData} columns={instructorColumns} />
-              </div>
-            )}
 
-            {timeTableData.length > 0 && (
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2 text-lg font-semibold">
-                  <ClockIcon size={24} />
-                  Class Timing: {selectedModule.day} {selectedModule.time ?? "N/A"}
+                {/* === Column 2: Time Slot Alternatives === */}
+                <div className="flex flex-col gap-3">
+                    <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-100 pl-2">
+                        {/* Added a title/header for the column */}
+                        <span className="text-base font-medium">By Time Slot</span>
+                    </h3>
+
+                    {uniqueSessionArray.map((session, index) => {
+                        // Ensure required fields for the link are not null before rendering
+                        if (!session.dayOfWeek || !session.startTime || !session.endTime) return null;
+
+                        const timeLink = `/bidding?course=${courseCode}&day=${session.dayOfWeek}&start=${session.startTime}&end=${session.endTime}`;
+
+                        return (
+                            // Link wrapper with the requested styles
+                            <Link
+                                key={index}
+                                href={timeLink}
+                                className="block w-full p-3 rounded-md border hover:bg-secondary focus-ring  transition-color"
+                            >
+                                <div className="flex items-center gap-1">
+                                    <ClockIcon size={16} className="mr-1" />
+                                    <span className="max-w-16 truncatefont-medium">
+                                        {session.dayOfWeek}
+                                    </span>
+                                    <span>
+                                        {session.startTime}-{session.endTime}
+                                    </span>
+                                </div>
+                            </Link>
+                        );
+                    })}
+                    {uniqueSessionArray.length === 0 && (
+                        <p className=" text-gray-500 italic">No class timings assigned.</p>
+                    )}
                 </div>
-                <SortableTable data={timeTableData} columns={timeColumns} />
-              </div>
-            )}
-          </>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
+            </CardContent>
+        </Card>
+    );
+}
