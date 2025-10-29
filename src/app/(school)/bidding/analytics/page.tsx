@@ -183,11 +183,16 @@ export default async function BiddingHistoryPage({
         />
       )}
 
+<<<<<<< mod-alternatives-ui
         <ModAlternativesCard
           professors={professors}
           sessions={_class[0]!.classTimings || ''}
           courseCode={courseCode}
         />
+=======
+      <ModAlternativesClientWrapper
+      />
+>>>>>>> main
     </div>
   );
 }

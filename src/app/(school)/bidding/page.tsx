@@ -1,173 +1,193 @@
-import { Separator } from "@/common/components/separator";
 import { api } from "@/common/tools/trpc/server";
-import { ClassCard } from "@/modules/bidding/components/ClassCard";
-import { Combobox } from "@/modules/bidding/components/Combobox";
-import { texts as originalTexts } from "@/modules/bidding/constants";
-import { type UniversityAbbreviation } from "@prisma/client";
-
-// Extended texts object to include placeholders/labels for the new time filters
-const texts = {
-  ...originalTexts,
-  COMBOBOX: {
-    ...originalTexts.COMBOBOX,
-    PLACEHOLDER: {
-      ...originalTexts.COMBOBOX.PLACEHOLDER,
-      day: "Select Day",
-      startsAfter: "Starts After...",
-      endsBefore: "Ends Before...",
-    },
-    TRIGGER_LABEL: {
-      ...originalTexts.COMBOBOX.TRIGGER_LABEL,
-      day: "Day",
-      startsAfter: "Starts After",
-      endsBefore: "Ends Before",
-    },
-  },
-};
-
-
-// Define allowed days for the Day filter combobox items
-const allowedDays = [
-  "Mon",
-  "Tue",
-  "Wed",
-  "Thu",
-  "Fri",
-  "Sat",
-  "Sun",
-] as const;
-type AllowedDay = typeof allowedDays[number];
-
-// Define common time options for display in the Starts After / Ends Before Comboboxes
-// The logic will now use the raw string from searchParams, but we need some options to display.
-const TIME_OPTIONS = [
-  "08:15", "11:30", "12:00", "15:15", "15:30", "18:45", "19:00", "22:00"
-];
-
+import { BidChart } from "@/modules/bidding/components/BidChart";
+import { BidChartFilterTagGroup } from "@/modules/bidding/components/BidChartFilterTagGroup";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/common/components/card";
+import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
+import { notFound } from "next/navigation";
+import { MultiplierType, PredictionType } from "@prisma/client";
+import { Info } from "lucide-react";
+import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
 
 export default async function BiddingHistoryPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const school = "SMU" satisfies UniversityAbbreviation;
   const _searchParams = await searchParams;
+  const classId = _searchParams.classId;
+  let courseCode = _searchParams.course;
+  let section = _searchParams.section;
+  const rounds = _searchParams.rounds as string | string[];
+  const windows = _searchParams.windows as string | string[];
 
-  const courseCode = _searchParams.course;
-  const profSlug = _searchParams.prof;
+  const _class = await api.classes.getAll({ id: classId, limit: 1 });
+  if (!courseCode || !section) {
+    if (!classId) {
+      return notFound();
+    }
+    if (_class.length === 0) {
+      return notFound();
+    }
+    courseCode = _class[0]!.course.code;
+    section = _class[0]!.section;
+  }
 
-  // 1. Validate Day (Still necessary to validate against allowed days)
-  const day = allowedDays.includes(_searchParams.day as AllowedDay)
-    ? (_searchParams.day as AllowedDay)
-    : undefined;
 
-  // 2. Pass raw strings for Starts After and Ends Before (No validation/hardcoding)
-  const startsAfter = _searchParams.startsAfter;
-  const endsBefore = _searchParams.endsBefore;
+  const professors = await api.professors.getProfessorsByClassId({ classId: classId! });
 
-  console.log("Search Params:", startsAfter, endsBefore);
-
-  const hasSearchParams =
-    !!courseCode || !!profSlug || !!day || !!startsAfter || !!endsBefore;
-
-  const [courses, professors] = await Promise.all([
-    api.courses.getAllByUniAbbrv({ universityAbbrv: school }),
-    api.professors.getAllByUniAbbrv({ universityAbbrv: school }),
+  const [bidResults, bidPrediction, safetyFactor] = await Promise.all([
+    api.bidResults.getBy({ courseCode, section, classId }),
+    api.bidPredictions.getBy({
+      classId,
+    }),
+    api.safetyFactors.getAll(),
   ]);
 
-  // Fetch classes, passing all filter parameters
-  const classes = await api.classes.getAll({
-    courseCode: courseCode,
-    profSlug: profSlug,
-    day: day,
-    startsAfter: startsAfter, // Passed as raw string
-    endsBefore: endsBefore,   // Passed as raw string
-    limit: !hasSearchParams ? 6 : undefined,
-  });
+  if (bidResults.length === 0) return <div>No data available</div>;
+
+  const bidResultsWithBids = bidResults.filter(
+    (r) =>
+      !!r.afterProcessVacancy &&
+      !!r.min &&
+      !!r.median &&
+      r.min > 0 &&
+      r.median > 0,
+  );
+
+  const [roundsInBidResultsWithBids, windowsInBidResultsWithBids] =
+    bidResultsWithBids
+      .map((br) => br.bidWindow)
+      .reduce(
+        (acc, bidWindow) => {
+          if (!acc[0].includes(bidWindow.round)) {
+            acc[0].push(bidWindow.round);
+          }
+          if (!acc[1].includes(bidWindow.window.toString())) {
+            acc[1].push(bidWindow.window.toString());
+          }
+          return acc;
+        },
+        [[], []] as [string[], string[]],
+      );
+
+
+  
+
+  const chartData = bidResultsWithBids
+    .filter((br) => {
+      let matched = true;
+      if (rounds && Array.isArray(rounds)) {
+        matched = matched && rounds.includes(br.bidWindow.round);
+      } else if (rounds) {
+        matched = matched && br.bidWindow.round === rounds;
+      }
+      if (windows && Array.isArray(windows)) {
+        matched = matched && windows.includes(br.bidWindow.window.toString());
+      } else if (windows) {
+        matched = matched && br.bidWindow.window.toString() === windows;
+      }
+      return matched;
+    })
+    .map((br) => ({
+      bidWindow: `${br.bidWindow.acadTermId}/${br.bidWindow.round}/${br.bidWindow.window}`,
+      price: [br.min!, br.median!] as [number, number],
+      size: br.beforeProcessVacancy - br.afterProcessVacancy!,
+    }));
+
 
   return (
-    <div className="flex flex-col gap-6 pt-2">
-      <div className="flex flex-col gap-4 md:flex-row md:flex-wrap">
-        {/* Course Combobox (Existing) */}
-        <Combobox
-          items={courses.map((course) => ({
-            value: course.code,
-            label: `${course.code} ${course.name}`,
-          }))}
-          queryStringKey="course"
-          selectedValue={courseCode}
-          placeholder={texts.COMBOBOX.PLACEHOLDER.course}
-          triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.course}
-        />
-
-        {/* Professor Combobox (Existing) */}
-        <Combobox
-          items={professors.map((prof) => ({
-            value: prof.slug,
-            label: prof.name,
-          }))}
-          queryStringKey="prof"
-          selectedValue={profSlug}
-          placeholder={texts.COMBOBOX.PLACEHOLDER.professor}
-          triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.professor}
-        />
-
-        {/* Day Combobox (New) */}
-        <Combobox
-          items={allowedDays.map((d) => ({
-            value: d,
-            label: d,
-          }))}
-          queryStringKey="day"
-          selectedValue={day}
-          placeholder={texts.COMBOBOX.PLACEHOLDER.day}
-          triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.day}
-        />
-
-        {/* Starts After Combobox (New - Uses common time options) */}
-        <Combobox
-          items={TIME_OPTIONS.map((time) => ({
-            value: time,
-            label: time,
-          }))}
-          queryStringKey="startsAfter"
-          selectedValue={startsAfter}
-          placeholder={texts.COMBOBOX.PLACEHOLDER.startsAfter}
-          triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.startsAfter}
-        />
-
-        {/* Ends Before Combobox (New - Uses common time options) */}
-        <Combobox
-          items={TIME_OPTIONS.map((time) => ({
-            value: time,
-            label: time,
-          }))}
-          queryStringKey="endsBefore"
-          selectedValue={endsBefore}
-          placeholder={texts.COMBOBOX.PLACEHOLDER.endsBefore}
-          triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.endsBefore}
-        />
-      </div>
-      <Separator />
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {classes.length > 0 ? (
-          classes.map((c) => (
-            <ClassCard
-              key={c.id}
-              classId={c.id}
-              course={c.course}
-              section={c.section}
-              classTiming={c.classTimings}
-              examTiming={c.classExamTimings}
-              professor={c.professor}
+    <div className="flex w-160 flex-col justify-center gap-6 pt-2">
+      <Card>
+        <CardHeader>
+          <CardTitle className="pt-2 text-2xl">Historical Bidding Trend</CardTitle>
+          <CardDescription className="flex flex-col gap-2">
+            <div>
+              {courseCode} {section} - historical bids across academic terms and
+              rounds
+            </div>
+            <div className="italic">
+              <span className="flex items-center gap-2 pl-1">
+                <Info size={16} className="inline" /> Note: missing bid
+                information implies one of
+              </span>
+              <ol className="list-decimal pl-12">
+                <li className="pl-2">Class was not offered in that term</li>
+                <li className="pl-2">Class was preassigned</li>
+                <li className="pl-2">Class received no bids</li>
+              </ol>
+            </div>
+          </CardDescription>
+        </CardHeader>
+        {chartData.length > 0 ? (
+          <CardContent className="flex flex-col gap-4">
+            <BidChart chartData={chartData} />
+            <BidChartFilterTagGroup
+              label="Rounds"
+              items={roundsInBidResultsWithBids.sort().map((round) => ({
+                label: round,
+                value: round,
+              }))}
             />
-          ))
+            <BidChartFilterTagGroup
+              label="Windows"
+              items={windowsInBidResultsWithBids.sort().map((round) => ({
+                label: round,
+                value: round,
+              }))}
+            />
+          </CardContent>
         ) : (
-          <div className="col-span-2 text-center text-gray-500">
-            No classes found for the selected filters.
-          </div>
+          <CardContent className="text-muted-foreground text-center">
+            No bid data available for this class.
+          </CardContent>
         )}
-      </div>
+      </Card>
+
+      {!bidPrediction ? (
+        <div className="text-muted-foreground text-center">
+          No bid prediction available for this class.
+        </div>
+      ) : (
+        <BidPredictionCard
+          courseCode={courseCode}
+          section={section}
+          acadTermId={bidPrediction.bidWindow.acadTermId}
+          hasBidsProbability={bidPrediction.clfHasBidsProbability}
+          confidenceScore={bidPrediction.clfConfidenceScore}
+          minPrediction={{
+            value: bidPrediction.minPredicted,
+            safetyFactor: safetyFactor.filter(
+              (sf) =>
+                sf.acadTermId === bidPrediction.bidWindow.acadTermId &&
+                sf.multiplierType === MultiplierType.EMPIRICAL &&
+                sf.predictionType === PredictionType.MIN,
+            ),
+            uncertainty: bidPrediction.minUncertainty,
+          }}
+          medianPrediction={{
+            value: bidPrediction.medianPredicted,
+            safetyFactor: safetyFactor.filter(
+              (sf) =>
+                sf.acadTermId === bidPrediction.bidWindow.acadTermId &&
+                sf.multiplierType === MultiplierType.EMPIRICAL &&
+                sf.predictionType === PredictionType.MEDIAN,
+            ),
+            uncertainty: bidPrediction.medianUncertainty,
+          }}
+        />
+      )}
+
+        <ModAlternativesCard
+          professors={professors}
+          sessions={_class[0]!.classTimings || ''}
+          courseCode={courseCode}
+        />
     </div>
   );
 }
