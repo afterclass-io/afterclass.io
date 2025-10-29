@@ -1,13 +1,6 @@
 [
   {
     "reviewId": "68b0150c-212f-4af5-a7ca-e71fef3a2cc1",
-    "reactingUserId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
-    "reaction": "LIKE",
-    "createdAt": "2023-11-07T06:22:33.222Z",
-    "updatedAt": "2023-11-07T06:22:33.222Z"
-  },
-  {
-    "reviewId": "68b0150c-212f-4af5-a7ca-e71fef3a2cc1",
     "reactingUserId": "11894f96-aa54-4632-bf33-8c46999aab1b",
     "reaction": "THANKFUL",
     "createdAt": "2023-11-07T06:22:33.222Z",
@@ -145,5 +138,12 @@
     "reaction": "SLAY",
     "createdAt": "2023-11-07T06:22:33.222Z",
     "updatedAt": "2023-11-07T06:22:33.222Z"
+  },
+  {
+    "reviewId": "68b0150c-212f-4af5-a7ca-e71fef3a2cc1",
+    "reactingUserId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "reaction": "FUNNY",
+    "createdAt": "2025-09-02T14:17:43.399Z",
+    "updatedAt": "2025-09-02T14:17:45.796Z"
   }
 ]

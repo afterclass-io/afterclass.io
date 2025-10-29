@@ -2,16 +2,22 @@
   {
     "id": 1,
     "domain": "smu.edu.sg",
-    "belongToUniversityId": 1
+    "belongToUniversityId": 1,
+    "createdAt": "2025-09-02T12:43:09.976Z",
+    "updatedAt": "2025-09-02T12:43:09.976Z"
   },
   {
     "id": 2,
     "domain": "u.nus.edu",
-    "belongToUniversityId": 2
+    "belongToUniversityId": 2,
+    "createdAt": "2025-09-02T12:43:09.976Z",
+    "updatedAt": "2025-09-02T12:43:09.976Z"
   },
   {
     "id": 3,
     "domain": "ntu.edu.sg",
-    "belongToUniversityId": 3
+    "belongToUniversityId": 3,
+    "createdAt": "2025-09-02T12:43:09.976Z",
+    "updatedAt": "2025-09-02T12:43:09.976Z"
   }
 ]

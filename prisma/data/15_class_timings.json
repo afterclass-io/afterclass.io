@@ -138,5 +138,225 @@
     "startTime": "12:00",
     "endTime": "15:15",
     "venue": "SCIS1 Seminar Room 3-19"
+  },
+  {
+    "id": 116967,
+    "classId": "024e66ba-c8f3-4175-8b4a-21ba9134e8d5",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "LKCSB Seminar Room 2-8"
+  },
+  {
+    "id": 116965,
+    "classId": "0fd30711-a661-45f0-bbac-c29d27a65792",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "LKCSB Seminar Room 2-6"
+  },
+  {
+    "id": 116969,
+    "classId": "82cd1f4c-df54-474d-b980-1988d699281a",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOA Seminar Room 1-2"
+  },
+  {
+    "id": 116964,
+    "classId": "abfae615-152a-48e9-afe5-bcf834f7f850",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "LKCSB Seminar Room 2-6"
+  },
+  {
+    "id": 116966,
+    "classId": "d0ab0cfb-e770-41eb-99ad-05c30faa4563",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 2-8"
+  },
+  {
+    "id": 116962,
+    "classId": "e3d2cd4f-8b25-42fb-b65f-355e5ab313a5",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "LKCSB Seminar Room 3-2"
+  },
+  {
+    "id": 117860,
+    "classId": "e7d022a6-2111-450c-ba63-0403d23e899b",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": null,
+    "startTime": "TBA",
+    "endTime": "TBA",
+    "venue": ""
+  },
+  {
+    "id": 120441,
+    "classId": "e7d022a6-2111-450c-ba63-0403d23e899b",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": null,
+    "startTime": "TBA",
+    "endTime": "TBA",
+    "venue": ""
+  },
+  {
+    "id": 116968,
+    "classId": "f115b942-e210-4ad0-a787-a52ddf33feb2",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SOA Seminar Room 3-5"
+  },
+  {
+    "id": 116963,
+    "classId": "f2dcba9c-cea8-4a01-82cf-2ace92db8106",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "LKCSB Seminar Room 2-6"
+  },
+  {
+    "id": 117524,
+    "classId": "2b2b850f-6cb5-4fd0-b7b7-a1b3b22fd977",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SOSS/CIS Seminar Room 2-2"
+  },
+  {
+    "id": 116997,
+    "classId": "334532b7-56bb-41cb-a874-0c6ad1ceef49",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOSS/CIS Seminar Room 1-3"
+  },
+  {
+    "id": 117732,
+    "classId": "3a1f3f81-88da-4b59-b2d4-34ae1caa5496",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOSS/CIS Seminar Room 1-1"
+  },
+  {
+    "id": 117217,
+    "classId": "813e524a-e9f6-4193-a996-10882c657f3e",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOSS/CIS Seminar Room 1-3"
+  },
+  {
+    "id": 117466,
+    "classId": "81b57c71-0009-4d55-bb7d-bfa8fc50ead5",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SOSS/CIS Seminar Room 1-3"
+  },
+  {
+    "id": 117367,
+    "classId": "82a261f9-2360-4cd5-961c-704b73d41f08",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOSS/CIS Classroom 1-2"
+  },
+  {
+    "id": 117465,
+    "classId": "8860c910-6b39-4e01-b7d7-598a77ffd3bb",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOSS/CIS Seminar Room 1-1"
+  },
+  {
+    "id": 117266,
+    "classId": "92775c34-7d43-4d2a-87b3-c31ec75d90a4",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOSS/CIS Seminar Room 2-2"
+  },
+  {
+    "id": 117136,
+    "classId": "a7698e86-06ce-4b6b-84c4-ceecbba8c1d1",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOSS/CIS Seminar Room B1-1"
+  },
+  {
+    "id": 117525,
+    "classId": "a7a133cb-c8ae-4092-be49-c2604e243c69",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SOSS/CIS Seminar Room 2-1"
+  },
+  {
+    "id": 117467,
+    "classId": "dfc96761-41d5-4765-a6ac-b6d46a9478e9",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SOSS/CIS Classroom 1-2"
+  },
+  {
+    "id": 116996,
+    "classId": "e3cf9554-d4bd-430d-9537-38b99ac94c92",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-23T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SOSS/CIS Seminar Room 1-1"
   }
 ]

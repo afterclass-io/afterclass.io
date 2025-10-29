@@ -2,82 +2,82 @@
   {
     "id": 1,
     "name": "Lee Kong Chian School of Business",
+    "acronym": "LKCSB",
     "siteUrl": "https://business.smu.edu.sg",
     "belongToUniversityId": 1,
     "createdAt": "2024-03-02T08:00:29.883Z",
-    "updatedAt": "2024-03-02T08:00:29.883Z",
-    "acronym": "LKCSB"
+    "updatedAt": "2024-03-02T08:00:29.883Z"
   },
   {
     "id": 2,
     "name": "Yong Pung How School of Law",
+    "acronym": "YPHSL",
     "siteUrl": "https://law.smu.edu.sg",
     "belongToUniversityId": 1,
     "createdAt": "2024-03-02T08:00:29.883Z",
-    "updatedAt": "2024-03-02T08:00:29.883Z",
-    "acronym": "YPHSL"
+    "updatedAt": "2024-03-02T08:00:29.883Z"
   },
   {
     "id": 3,
     "name": "School of Economics",
+    "acronym": "SOE",
     "siteUrl": "https://economics.smu.edu.sg",
     "belongToUniversityId": 1,
     "createdAt": "2024-03-02T08:00:29.883Z",
-    "updatedAt": "2024-03-02T08:00:29.883Z",
-    "acronym": "SOE"
+    "updatedAt": "2024-03-02T08:00:29.883Z"
   },
   {
     "id": 4,
     "name": "School of Computing and Information Systems",
+    "acronym": "SCIS",
     "siteUrl": "https://computing.smu.edu.sg",
     "belongToUniversityId": 1,
     "createdAt": "2024-03-02T08:00:29.883Z",
-    "updatedAt": "2024-03-02T08:00:29.883Z",
-    "acronym": "SCIS"
+    "updatedAt": "2024-03-02T08:00:29.883Z"
   },
   {
     "id": 5,
     "name": "School of Social Sciences",
+    "acronym": "SOSS",
     "siteUrl": "https://socsc.smu.edu.sg",
     "belongToUniversityId": 1,
     "createdAt": "2024-03-02T08:00:29.883Z",
-    "updatedAt": "2024-03-02T08:00:29.883Z",
-    "acronym": "SOSS"
+    "updatedAt": "2024-03-02T08:00:29.883Z"
   },
   {
     "id": 6,
     "name": "School of Accountancy",
+    "acronym": "SOA",
     "siteUrl": "https://accountancy.smu.edu.sg",
     "belongToUniversityId": 1,
     "createdAt": "2024-03-02T08:00:29.883Z",
-    "updatedAt": "2024-03-02T08:00:29.883Z",
-    "acronym": "SOA"
+    "updatedAt": "2024-03-02T08:00:29.883Z"
   },
   {
     "id": 7,
     "name": "College of Integrative Studies",
+    "acronym": "CIS",
     "siteUrl": "https://cis.smu.edu.sg",
     "belongToUniversityId": 1,
     "createdAt": "2024-03-02T08:00:29.883Z",
-    "updatedAt": "2024-03-02T08:00:29.883Z",
-    "acronym": "CIS"
+    "updatedAt": "2024-03-02T08:00:29.883Z"
   },
   {
     "id": 8,
     "name": "Yong Pung How School of Law",
+    "acronym": "SOL",
     "siteUrl": "https://law.smu.edu.sg",
     "belongToUniversityId": 1,
     "createdAt": "2024-03-02T08:00:29.883Z",
-    "updatedAt": "2024-03-02T08:00:29.883Z",
-    "acronym": "SOL"
+    "updatedAt": "2024-03-02T08:00:29.883Z"
   },
   {
     "id": 9,
     "name": "Center for English Communication",
+    "acronym": "CEC",
     "siteUrl": "https://cec.smu.edu.sg",
     "belongToUniversityId": 1,
     "createdAt": "2024-03-02T08:00:29.883Z",
-    "updatedAt": "2024-03-02T08:00:29.883Z",
-    "acronym": "CEC"
+    "updatedAt": "2024-03-02T08:00:29.883Z"
   }
 ]
