@@ -1,92 +1,193 @@
-"use client";
-import React, { useState, useMemo } from "react";
-import { ModAlternativesCard, ModuleSummary } from "./ModAlternativesCard";
+import { api } from "@/common/tools/trpc/server";
+import { BidChart } from "@/modules/bidding/components/BidChart";
+import { BidChartFilterTagGroup } from "@/modules/bidding/components/BidChartFilterTagGroup";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/common/components/card";
+import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
+import { notFound } from "next/navigation";
+import { MultiplierType, PredictionType } from "@prisma/client";
+import { Info } from "lucide-react";
+import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
 
-const initialSelectedModule: ModuleSummary = {
-  instructor: "Tan XX",
-  day: "Tue",
-  time: "08:15-11:30",
-  vacancies: "0/48",
-  change: 0,
-  min: 34.42,
-  median: 34.48,
-  courseCode: "CS301",
-  section: "G1",
-};
+export default async function BiddingHistoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const _searchParams = await searchParams;
+  const classId = _searchParams.classId;
+  let courseCode = _searchParams.course;
+  let section = _searchParams.section;
+  const rounds = _searchParams.rounds as string | string[];
+  const windows = _searchParams.windows as string | string[];
 
-const allModules: ModuleSummary[] = [
-  initialSelectedModule,
-  {
-    instructor: "Tan XX",
-    day: "Mon",
-    time: "14:00-17:30",
-    vacancies: "5/48",
-    change: 5,
-    min: 25.0,
-    median: 28.5,
-    courseCode: "CS301",
-    section: "G4",
-  },
-  {
-    instructor: "James Wong",
-    day: "Tue",
-    time: "08:15-11:30",
-    vacancies: "3/48",
-    change: -3,
-    min: 34.42,
-    median: 34.48,
-    courseCode: "CS301",
-    section: "G3",
-  },
-  {
-    instructor: "John Doe",
-    day: "Fri",
-    time: "10:00-12:00",
-    vacancies: "10/60",
-    change: 1,
-    min: 20.0,
-    median: 22.5,
-    courseCode: "CS301",
-    section: "G10",
-  },
-];
-
-type ModAlternativesClientWrapperProps = Record<string, never>;
-
-export function ModAlternativesClientWrapper({}: ModAlternativesClientWrapperProps) {
-  const [scope, setScope] = useState("CS301");
-
-  const handleScopeChange = (newScope: string) => {
-    setScope(newScope);
-  };
-
-  const similarModules = useMemo(() => {
-    if (scope === "CS301") {
-      return allModules.filter((mod) => mod !== initialSelectedModule);
+  const _class = await api.classes.getAll({ id: classId, limit: 1 });
+  if (!courseCode || !section) {
+    if (!classId) {
+      return notFound();
     }
-    else if (scope === "Solution Management") {
-        return [...allModules.filter((mod) => mod !== initialSelectedModule),
-          {
-            instructor: "New Person",
-            day: "Tue",
-            time: "08:15-11:30",
-            vacancies: "15/45",
-            change: -10,
-            min: 30.0,
-            median: 31.5,
-            courseCode: "CS302",
-            section: "G1" 
-          },
-        ];
+    if (_class.length === 0) {
+      return notFound();
     }
-    return [];
-  }, [scope]);
+    courseCode = _class[0]!.course.code;
+    section = _class[0]!.section;
+  }
+
+
+  const professors = await api.professors.getProfessorsByClassId({ classId: classId! });
+
+  const [bidResults, bidPrediction, safetyFactor] = await Promise.all([
+    api.bidResults.getBy({ courseCode, section, classId }),
+    api.bidPredictions.getBy({
+      classId,
+    }),
+    api.safetyFactors.getAll(),
+  ]);
+
+  if (bidResults.length === 0) return <div>No data available</div>;
+
+  const bidResultsWithBids = bidResults.filter(
+    (r) =>
+      !!r.afterProcessVacancy &&
+      !!r.min &&
+      !!r.median &&
+      r.min > 0 &&
+      r.median > 0,
+  );
+
+  const [roundsInBidResultsWithBids, windowsInBidResultsWithBids] =
+    bidResultsWithBids
+      .map((br) => br.bidWindow)
+      .reduce(
+        (acc, bidWindow) => {
+          if (!acc[0].includes(bidWindow.round)) {
+            acc[0].push(bidWindow.round);
+          }
+          if (!acc[1].includes(bidWindow.window.toString())) {
+            acc[1].push(bidWindow.window.toString());
+          }
+          return acc;
+        },
+        [[], []] as [string[], string[]],
+      );
+
+
+  
+
+  const chartData = bidResultsWithBids
+    .filter((br) => {
+      let matched = true;
+      if (rounds && Array.isArray(rounds)) {
+        matched = matched && rounds.includes(br.bidWindow.round);
+      } else if (rounds) {
+        matched = matched && br.bidWindow.round === rounds;
+      }
+      if (windows && Array.isArray(windows)) {
+        matched = matched && windows.includes(br.bidWindow.window.toString());
+      } else if (windows) {
+        matched = matched && br.bidWindow.window.toString() === windows;
+      }
+      return matched;
+    })
+    .map((br) => ({
+      bidWindow: `${br.bidWindow.acadTermId}/${br.bidWindow.round}/${br.bidWindow.window}`,
+      price: [br.min!, br.median!] as [number, number],
+      size: br.beforeProcessVacancy - br.afterProcessVacancy!,
+    }));
+
 
   return (
-    <ModAlternativesCard
-      selectedModule={initialSelectedModule}
-      similarModules={similarModules}
-      onScopeChange={handleScopeChange}
-    />
+    <div className="flex w-160 flex-col justify-center gap-6 pt-2">
+      <Card>
+        <CardHeader>
+          <CardTitle className="pt-2 text-2xl">Historical Bidding Trend</CardTitle>
+          <CardDescription className="flex flex-col gap-2">
+            <div>
+              {courseCode} {section} - historical bids across academic terms and
+              rounds
+            </div>
+            <div className="italic">
+              <span className="flex items-center gap-2 pl-1">
+                <Info size={16} className="inline" /> Note: missing bid
+                information implies one of
+              </span>
+              <ol className="list-decimal pl-12">
+                <li className="pl-2">Class was not offered in that term</li>
+                <li className="pl-2">Class was preassigned</li>
+                <li className="pl-2">Class received no bids</li>
+              </ol>
+            </div>
+          </CardDescription>
+        </CardHeader>
+        {chartData.length > 0 ? (
+          <CardContent className="flex flex-col gap-4">
+            <BidChart chartData={chartData} />
+            <BidChartFilterTagGroup
+              label="Rounds"
+              items={roundsInBidResultsWithBids.sort().map((round) => ({
+                label: round,
+                value: round,
+              }))}
+            />
+            <BidChartFilterTagGroup
+              label="Windows"
+              items={windowsInBidResultsWithBids.sort().map((round) => ({
+                label: round,
+                value: round,
+              }))}
+            />
+          </CardContent>
+        ) : (
+          <CardContent className="text-muted-foreground text-center">
+            No bid data available for this class.
+          </CardContent>
+        )}
+      </Card>
+
+      {!bidPrediction ? (
+        <div className="text-muted-foreground text-center">
+          No bid prediction available for this class.
+        </div>
+      ) : (
+        <BidPredictionCard
+          courseCode={courseCode}
+          section={section}
+          acadTermId={bidPrediction.bidWindow.acadTermId}
+          hasBidsProbability={bidPrediction.clfHasBidsProbability}
+          confidenceScore={bidPrediction.clfConfidenceScore}
+          minPrediction={{
+            value: bidPrediction.minPredicted,
+            safetyFactor: safetyFactor.filter(
+              (sf) =>
+                sf.acadTermId === bidPrediction.bidWindow.acadTermId &&
+                sf.multiplierType === MultiplierType.EMPIRICAL &&
+                sf.predictionType === PredictionType.MIN,
+            ),
+            uncertainty: bidPrediction.minUncertainty,
+          }}
+          medianPrediction={{
+            value: bidPrediction.medianPredicted,
+            safetyFactor: safetyFactor.filter(
+              (sf) =>
+                sf.acadTermId === bidPrediction.bidWindow.acadTermId &&
+                sf.multiplierType === MultiplierType.EMPIRICAL &&
+                sf.predictionType === PredictionType.MEDIAN,
+            ),
+            uncertainty: bidPrediction.medianUncertainty,
+          }}
+        />
+      )}
+
+        <ModAlternativesCard
+          professors={professors}
+          sessions={_class[0]!.classTimings || ''}
+          courseCode={courseCode}
+        />
+    </div>
   );
 }
