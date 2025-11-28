@@ -102,8 +102,8 @@ export const Combobox = forwardRef<
                       setOpen(false);
                       void router.push(
                         pathname +
-                          "?" +
-                          createQueryString(queryStringKey, selectedValue),
+                        "?" +
+                        createQueryString(queryStringKey, selectedValue),
                       );
                     }}
                     aria-selected={isMatched(el.value)}
