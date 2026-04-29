@@ -122,7 +122,7 @@
     "prettier-plugin-tailwindcss": "^0.6.11",
     "prisma": "6.3.0",
     "sass-loader": "16.0.2",
-    "storybook": "8.3.4",
+    "storybook": "8.6.17",
     "style-loader": "4.0.0",
     "tailwindcss": "^4.1.4",
     "tailwindcss-animate": "1.0.7",
