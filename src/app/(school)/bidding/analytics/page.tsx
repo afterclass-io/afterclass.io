@@ -77,6 +77,7 @@ export default async function BiddingHistoryPage({
   const allBidResults = professorId
     ? selectOneClassPerTerm(
         await api.bidResults.getByCourseProfessor({
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
           courseCode: courseCode!,
           professorId,
         }),
@@ -211,7 +212,9 @@ export default async function BiddingHistoryPage({
       {/* Chart + Filters + Table — client component */}
       <BidAnalyticsClient
         allBidResults={allBidResults}
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         courseCode={courseCode!}
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         section={section!}
         initialRounds={initialRounds}
         initialWindows={initialWindows}
@@ -261,7 +264,7 @@ export default async function BiddingHistoryPage({
 
       <ModAlternativesCard
         professors={professors}
-        sessions={classInfo?.classTimings || []}
+        sessions={classInfo?.classTimings ?? []}
         courseCode={courseCode}
       />
     </div>

@@ -259,7 +259,7 @@ export const BidAnalyticsClient = ({
                 <TagToggleGroup
                   items={availableRounds.map((r) => ({ label: r, value: r }))}
                   value={selectedRounds}
-                  onChange={handleRoundsChange as any}
+                  onChange={(values) => handleRoundsChange(values as string[] ?? [])}
                 />
               </div>
             )}
@@ -271,7 +271,7 @@ export const BidAnalyticsClient = ({
                 <TagToggleGroup
                   items={availableWindows.map((w) => ({ label: w, value: w }))}
                   value={selectedWindows}
-                  onChange={handleWindowsChange as any}
+                  onChange={(values) => handleWindowsChange(values as string[] ?? [])}
                 />
               </div>
             )}

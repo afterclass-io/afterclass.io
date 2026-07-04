@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { BidPredictionCard, BidPrediction } from "./BidPredictionCard";
-import { MultiplierType } from "@prisma/client";
+import { BidPredictionCard } from "./BidPredictionCard";
+import type { BidPrediction } from "./BidPredictionCard";
+import type { MultiplierType } from "@prisma/client";
 
 type MiniSafetyFactor = { // re-declared as dates are not required
   beatsPercentage: number;

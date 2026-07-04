@@ -28,7 +28,7 @@ function ReviewCtaButtonsInner() {
 
   // Professor from URL param (prof=) takes precedence, then from class lookup.
   // TBA classes (no professor) won't have a slug → button hidden.
-  const professorSlug = profSlug || classInfo?.professor?.slug;
+  const professorSlug = profSlug ?? classInfo?.professor?.slug;
   const professorName = profData?.name ?? classInfo?.professor?.name;
 
   return (

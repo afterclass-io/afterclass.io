@@ -7,7 +7,7 @@
  */
 import { api } from "@/common/tools/trpc/server";
 import { BidChart } from "@/modules/bidding/components/BidChart";
-import { BidChartFilterTagGroup } from "@/modules/bidding/components/BidChartFilterTagGroup";
+
 import {
   Card,
   CardContent,
@@ -67,25 +67,6 @@ export default async function BiddingHistoryPage({
       r.median > 0,
   );
 
-  const [roundsInBidResultsWithBids, windowsInBidResultsWithBids] =
-    bidResultsWithBids
-      .map((br) => br.bidWindow)
-      .reduce(
-        (acc, bidWindow) => {
-          if (!acc[0].includes(bidWindow.round)) {
-            acc[0].push(bidWindow.round);
-          }
-          if (!acc[1].includes(bidWindow.window.toString())) {
-            acc[1].push(bidWindow.window.toString());
-          }
-          return acc;
-        },
-        [[], []] as [string[], string[]],
-      );
-
-
-  
-
   const chartData = bidResultsWithBids
     .filter((br) => {
       let matched = true;
@@ -134,20 +115,6 @@ export default async function BiddingHistoryPage({
         {chartData.length > 0 ? (
           <CardContent className="flex flex-col gap-4">
             <BidChart chartData={chartData} />
-            <BidChartFilterTagGroup
-              label="Rounds"
-              items={roundsInBidResultsWithBids.sort().map((round) => ({
-                label: round,
-                value: round,
-              }))}
-            />
-            <BidChartFilterTagGroup
-              label="Windows"
-              items={windowsInBidResultsWithBids.sort().map((round) => ({
-                label: round,
-                value: round,
-              }))}
-            />
           </CardContent>
         ) : (
           <CardContent className="text-muted-foreground text-center">

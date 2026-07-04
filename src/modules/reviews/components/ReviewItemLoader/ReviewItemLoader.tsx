@@ -87,7 +87,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
         return apiFn.useSuspenseInfiniteQuery(
           { code, slugs, filterFor, sortBy },
           {
-            getNextPageParam: (lastPage) => lastPage.nextCursor,
+            getNextPageParam: (lastPage: { nextCursor?: string }) => lastPage.nextCursor,
           },
         );
       }
@@ -99,7 +99,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
         return apiFn.useSuspenseInfiniteQuery(
           { slug, courseCodes, filterFor, sortBy },
           {
-            getNextPageParam: (lastPage) => lastPage.nextCursor,
+            getNextPageParam: (lastPage: { nextCursor?: string }) => lastPage.nextCursor,
           },
         );
       }
@@ -110,7 +110,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
         return apiFn.useSuspenseInfiniteQuery(
           { filterFor, sortBy },
           {
-            getNextPageParam: (lastPage) => lastPage.nextCursor,
+            getNextPageParam: (lastPage: { nextCursor?: string }) => lastPage.nextCursor,
           },
         );
       }

@@ -14,7 +14,6 @@ export default async function BiddingHistoryPage({
   const _searchParams = await searchParams;
   const courseCode = _searchParams.course;
   const profSlug = _searchParams.prof;
-  const hasSearchParams = !!courseCode || !!profSlug;
 
   const [courses, professors] = await Promise.all([
     api.courses.getAllByUniAbbrv({ universityAbbrv: school }),
