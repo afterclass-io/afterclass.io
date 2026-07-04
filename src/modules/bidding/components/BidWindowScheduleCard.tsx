@@ -7,6 +7,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/common/components/card";
 import { Tag } from "@/common/components/tag";
 import {
@@ -225,9 +226,10 @@ export const BidWindowScheduleCard = async () => {
   return (
     <Card className="w-full max-w-[321px]">
       <CardHeader className="gap-2">
-        <CardTitle>
-          BOSS {displayYear} Term {term} Round {titleRound}
-        </CardTitle>
+        <CardTitle>BOSS {displayYear} Term {term}</CardTitle>
+        <CardDescription>
+          Round {titleRound} Window {currentWindow.window}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <TimelineWithIcon items={timelineItems} now={now} />
