@@ -99,6 +99,15 @@ async function main() {
     data: bidResult,
   });
 
+    const safetyFactor = require("./data/22_safety_factors.json");
+  await prisma.safetyFactor.createMany({ data: safetyFactor, skipDuplicates: true });
+
+const bidPrediction = require("./data/21_bid_predictions.json");
+  await prisma.bidPrediction.createMany({
+    data: bidPrediction,
+    skipDuplicates: true,
+  });
+
   const hackSubmission = require("./data/20_hack_submissions.json");
   await prisma.hackSubmission.createMany({
     data: hackSubmission,

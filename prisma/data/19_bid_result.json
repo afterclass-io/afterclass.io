@@ -20,8 +20,8 @@
     "dice": 5,
     "afterProcessVacancy": 2,
     "enrolledStudents": 31,
-    "median": 5.23,
-    "min": 3.23
+    "median": 21.11,
+    "min": 12.24
   },
   {
     "bidWindowId": 3,
@@ -32,8 +32,8 @@
     "dice": 0,
     "afterProcessVacancy": 0,
     "enrolledStudents": 95,
-    "median": 3.5,
-    "min": 3.3
+    "median": 25.66,
+    "min": 14.93
   },
   {
     "bidWindowId": 5,
@@ -56,8 +56,8 @@
     "dice": 5,
     "afterProcessVacancy": 5,
     "enrolledStudents": 96,
-    "median": 3.69,
-    "min": 2.74
+    "median": 26,
+    "min": 17.96
   },
   {
     "bidWindowId": 7,
@@ -80,8 +80,8 @@
     "dice": 1,
     "afterProcessVacancy": 0,
     "enrolledStudents": 97,
-    "median": 12.41,
-    "min": 9.98
+    "median": 17.4,
+    "min": 16.21
   },
   {
     "bidWindowId": 19,
@@ -93,7 +93,7 @@
     "afterProcessVacancy": 1,
     "enrolledStudents": 52,
     "median": 23.04,
-    "min": 8.86
+    "min": 10.56
   },
   {
     "bidWindowId": 5,
@@ -104,8 +104,8 @@
     "dice": 10,
     "afterProcessVacancy": 1,
     "enrolledStudents": 72,
-    "median": 7.31,
-    "min": 1.99
+    "median": 21.04,
+    "min": 15.84
   },
   {
     "bidWindowId": 7,
@@ -116,8 +116,8 @@
     "dice": 10,
     "afterProcessVacancy": 29,
     "enrolledStudents": 23,
-    "median": 13.21,
-    "min": 3.12
+    "median": 27.630000000000003,
+    "min": 17.53
   },
   {
     "bidWindowId": 16,
@@ -129,7 +129,7 @@
     "afterProcessVacancy": 6,
     "enrolledStudents": 88,
     "median": 16.9,
-    "min": 4.16
+    "min": 13.89
   },
   {
     "bidWindowId": 12,
@@ -153,7 +153,7 @@
     "afterProcessVacancy": 41,
     "enrolledStudents": 48,
     "median": 47.98,
-    "min": 6.5
+    "min": 13.48
   },
   {
     "bidWindowId": 19,
@@ -164,7 +164,7 @@
     "dice": 4,
     "afterProcessVacancy": 28,
     "enrolledStudents": 63,
-    "median": 21.0,
+    "median": 21,
     "min": 18.75
   },
   {
@@ -213,7 +213,7 @@
     "afterProcessVacancy": 12,
     "enrolledStudents": 83,
     "median": 20.28,
-    "min": 5.07
+    "min": 13.04
   },
   {
     "bidWindowId": 1,
@@ -236,8 +236,8 @@
     "dice": 4,
     "afterProcessVacancy": 10,
     "enrolledStudents": 28,
-    "median": 6.55,
-    "min": 5.61
+    "median": 19.98,
+    "min": 16.71
   },
   {
     "bidWindowId": 4,
@@ -272,8 +272,8 @@
     "dice": 4,
     "afterProcessVacancy": 1,
     "enrolledStudents": 54,
-    "median": 6.82,
-    "min": 1.44
+    "median": 20.08,
+    "min": 18.27
   },
   {
     "bidWindowId": 11,
@@ -309,7 +309,7 @@
     "afterProcessVacancy": 1,
     "enrolledStudents": 63,
     "median": 19.84,
-    "min": 2.34
+    "min": 10.29
   },
   {
     "bidWindowId": 3,
@@ -344,8 +344,8 @@
     "dice": 7,
     "afterProcessVacancy": 27,
     "enrolledStudents": 83,
-    "median": 3.74,
-    "min": 2.35
+    "median": 27.97,
+    "min": 15.08
   },
   {
     "bidWindowId": 4,
@@ -356,7 +356,907 @@
     "dice": 7,
     "afterProcessVacancy": 4,
     "enrolledStudents": 91,
-    "median": 8.93,
-    "min": 6.18
+    "median": 27.03,
+    "min": 17.85
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-is215-g1",
+    "vacancy": 25,
+    "openingVacancy": 25,
+    "beforeProcessVacancy": 7,
+    "dice": 3,
+    "afterProcessVacancy": 3,
+    "enrolledStudents": 22,
+    "median": 18.87,
+    "min": 15.25
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-is215-g1",
+    "vacancy": 25,
+    "openingVacancy": 25,
+    "beforeProcessVacancy": 8,
+    "dice": 3,
+    "afterProcessVacancy": 3,
+    "enrolledStudents": 22,
+    "median": 17.66,
+    "min": 14.280000000000001
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-is215-g1",
+    "vacancy": 25,
+    "openingVacancy": 25,
+    "beforeProcessVacancy": 8,
+    "dice": 2,
+    "afterProcessVacancy": 2,
+    "enrolledStudents": 23,
+    "median": 22.64,
+    "min": 11.58
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-is215-g2",
+    "vacancy": 26,
+    "openingVacancy": 26,
+    "beforeProcessVacancy": 8,
+    "dice": 3,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 21,
+    "median": 19.93,
+    "min": 12.84
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-is215-g2",
+    "vacancy": 26,
+    "openingVacancy": 26,
+    "beforeProcessVacancy": 8,
+    "dice": 1,
+    "afterProcessVacancy": 3,
+    "enrolledStudents": 23,
+    "median": 22.34,
+    "min": 11.4
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-is215-g2",
+    "vacancy": 26,
+    "openingVacancy": 26,
+    "beforeProcessVacancy": 9,
+    "dice": 3,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 21,
+    "median": 20.44,
+    "min": 10.26
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-is215-g3",
+    "vacancy": 27,
+    "openingVacancy": 27,
+    "beforeProcessVacancy": 9,
+    "dice": 1,
+    "afterProcessVacancy": 6,
+    "enrolledStudents": 21,
+    "median": 18.14,
+    "min": 15.629999999999999
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-is215-g3",
+    "vacancy": 27,
+    "openingVacancy": 27,
+    "beforeProcessVacancy": 9,
+    "dice": 5,
+    "afterProcessVacancy": 3,
+    "enrolledStudents": 24,
+    "median": 18.08,
+    "min": 11.31
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-is215-g3",
+    "vacancy": 27,
+    "openingVacancy": 27,
+    "beforeProcessVacancy": 8,
+    "dice": 4,
+    "afterProcessVacancy": 3,
+    "enrolledStudents": 24,
+    "median": 22.21,
+    "min": 11.33
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-is215-g4",
+    "vacancy": 28,
+    "openingVacancy": 28,
+    "beforeProcessVacancy": 11,
+    "dice": 1,
+    "afterProcessVacancy": 4,
+    "enrolledStudents": 24,
+    "median": 21.86,
+    "min": 11.11
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-is215-g4",
+    "vacancy": 28,
+    "openingVacancy": 28,
+    "beforeProcessVacancy": 11,
+    "dice": 4,
+    "afterProcessVacancy": 6,
+    "enrolledStudents": 22,
+    "median": 19.89,
+    "min": 11.129999999999999
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-is215-g4",
+    "vacancy": 28,
+    "openingVacancy": 28,
+    "beforeProcessVacancy": 9,
+    "dice": 3,
+    "afterProcessVacancy": 4,
+    "enrolledStudents": 24,
+    "median": 21.18,
+    "min": 10.71
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-is215-g5",
+    "vacancy": 29,
+    "openingVacancy": 29,
+    "beforeProcessVacancy": 12,
+    "dice": 2,
+    "afterProcessVacancy": 4,
+    "enrolledStudents": 25,
+    "median": 21.24,
+    "min": 10.74
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-is215-g5",
+    "vacancy": 29,
+    "openingVacancy": 29,
+    "beforeProcessVacancy": 12,
+    "dice": 5,
+    "afterProcessVacancy": 7,
+    "enrolledStudents": 22,
+    "median": 20.79,
+    "min": 10.48
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-is215-g5",
+    "vacancy": 29,
+    "openingVacancy": 29,
+    "beforeProcessVacancy": 11,
+    "dice": 5,
+    "afterProcessVacancy": 6,
+    "enrolledStudents": 23,
+    "median": 17,
+    "min": 16.64
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-mgmt214-g1",
+    "vacancy": 30,
+    "openingVacancy": 30,
+    "beforeProcessVacancy": 9,
+    "dice": 1,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 25,
+    "median": 26.85,
+    "min": 16.33
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-mgmt214-g1",
+    "vacancy": 30,
+    "openingVacancy": 30,
+    "beforeProcessVacancy": 7,
+    "dice": 5,
+    "afterProcessVacancy": 3,
+    "enrolledStudents": 27,
+    "median": 21.42,
+    "min": 12.42
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-mgmt214-g1",
+    "vacancy": 30,
+    "openingVacancy": 30,
+    "beforeProcessVacancy": 11,
+    "dice": 1,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 25,
+    "median": 21.73,
+    "min": 12.64
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-mgmt214-g2",
+    "vacancy": 31,
+    "openingVacancy": 31,
+    "beforeProcessVacancy": 8,
+    "dice": 5,
+    "afterProcessVacancy": 4,
+    "enrolledStudents": 27,
+    "median": 27.91,
+    "min": 17.1
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-mgmt214-g2",
+    "vacancy": 31,
+    "openingVacancy": 31,
+    "beforeProcessVacancy": 7,
+    "dice": 4,
+    "afterProcessVacancy": 3,
+    "enrolledStudents": 28,
+    "median": 25.29,
+    "min": 15.21
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-mgmt214-g2",
+    "vacancy": 31,
+    "openingVacancy": 31,
+    "beforeProcessVacancy": 10,
+    "dice": 3,
+    "afterProcessVacancy": 4,
+    "enrolledStudents": 27,
+    "median": 24.16,
+    "min": 14.4
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-mgmt214-g3",
+    "vacancy": 32,
+    "openingVacancy": 32,
+    "beforeProcessVacancy": 11,
+    "dice": 4,
+    "afterProcessVacancy": 7,
+    "enrolledStudents": 25,
+    "median": 27.57,
+    "min": 16.85
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-mgmt214-g3",
+    "vacancy": 32,
+    "openingVacancy": 32,
+    "beforeProcessVacancy": 12,
+    "dice": 1,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 27,
+    "median": 28.64,
+    "min": 17.62
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-mgmt214-g3",
+    "vacancy": 32,
+    "openingVacancy": 32,
+    "beforeProcessVacancy": 9,
+    "dice": 2,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 27,
+    "median": 23.52,
+    "min": 13.93
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-mgmt214-g4",
+    "vacancy": 33,
+    "openingVacancy": 33,
+    "beforeProcessVacancy": 8,
+    "dice": 3,
+    "afterProcessVacancy": 3,
+    "enrolledStudents": 30,
+    "median": 25.57,
+    "min": 15.41
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-mgmt214-g4",
+    "vacancy": 33,
+    "openingVacancy": 33,
+    "beforeProcessVacancy": 16,
+    "dice": 1,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 28,
+    "median": 25.24,
+    "min": 15.17
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-mgmt214-g4",
+    "vacancy": 33,
+    "openingVacancy": 33,
+    "beforeProcessVacancy": 10,
+    "dice": 1,
+    "afterProcessVacancy": 6,
+    "enrolledStudents": 27,
+    "median": 25.24,
+    "min": 15.18
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-mgmt214-g5",
+    "vacancy": 34,
+    "openingVacancy": 34,
+    "beforeProcessVacancy": 9,
+    "dice": 1,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 29,
+    "median": 26.05,
+    "min": 15.75
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-mgmt214-g5",
+    "vacancy": 34,
+    "openingVacancy": 34,
+    "beforeProcessVacancy": 10,
+    "dice": 3,
+    "afterProcessVacancy": 6,
+    "enrolledStudents": 28,
+    "median": 26.93,
+    "min": 16.39
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-mgmt214-g5",
+    "vacancy": 34,
+    "openingVacancy": 34,
+    "beforeProcessVacancy": 8,
+    "dice": 4,
+    "afterProcessVacancy": 3,
+    "enrolledStudents": 31,
+    "median": 27.95,
+    "min": 17.13
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-acct102-g1",
+    "vacancy": 35,
+    "openingVacancy": 35,
+    "beforeProcessVacancy": 10,
+    "dice": 2,
+    "afterProcessVacancy": 3,
+    "enrolledStudents": 32,
+    "median": 25.61,
+    "min": 14.84
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-acct102-g1",
+    "vacancy": 35,
+    "openingVacancy": 35,
+    "beforeProcessVacancy": 13,
+    "dice": 4,
+    "afterProcessVacancy": 4,
+    "enrolledStudents": 31,
+    "median": 28.19,
+    "min": 16.7
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-acct102-g1",
+    "vacancy": 35,
+    "openingVacancy": 35,
+    "beforeProcessVacancy": 9,
+    "dice": 4,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 30,
+    "median": 29.58,
+    "min": 17.7
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-acct102-g2",
+    "vacancy": 36,
+    "openingVacancy": 36,
+    "beforeProcessVacancy": 12,
+    "dice": 4,
+    "afterProcessVacancy": 6,
+    "enrolledStudents": 30,
+    "median": 28.4,
+    "min": 16.85
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-acct102-g2",
+    "vacancy": 36,
+    "openingVacancy": 36,
+    "beforeProcessVacancy": 8,
+    "dice": 2,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 31,
+    "median": 32.54,
+    "min": 19.83
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-acct102-g2",
+    "vacancy": 36,
+    "openingVacancy": 36,
+    "beforeProcessVacancy": 12,
+    "dice": 5,
+    "afterProcessVacancy": 7,
+    "enrolledStudents": 29,
+    "median": 33.46,
+    "min": 20.49
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-acct102-g3",
+    "vacancy": 37,
+    "openingVacancy": 37,
+    "beforeProcessVacancy": 17,
+    "dice": 3,
+    "afterProcessVacancy": 6,
+    "enrolledStudents": 31,
+    "median": 34.28,
+    "min": 21.08
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-acct102-g3",
+    "vacancy": 37,
+    "openingVacancy": 37,
+    "beforeProcessVacancy": 18,
+    "dice": 5,
+    "afterProcessVacancy": 7,
+    "enrolledStudents": 30,
+    "median": 28.46,
+    "min": 16.89
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-acct102-g3",
+    "vacancy": 37,
+    "openingVacancy": 37,
+    "beforeProcessVacancy": 15,
+    "dice": 3,
+    "afterProcessVacancy": 9,
+    "enrolledStudents": 28,
+    "median": 26.87,
+    "min": 15.75
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-acct102-g4",
+    "vacancy": 38,
+    "openingVacancy": 38,
+    "beforeProcessVacancy": 8,
+    "dice": 4,
+    "afterProcessVacancy": 2,
+    "enrolledStudents": 36,
+    "median": 25.86,
+    "min": 15.02
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-acct102-g4",
+    "vacancy": 38,
+    "openingVacancy": 38,
+    "beforeProcessVacancy": 16,
+    "dice": 1,
+    "afterProcessVacancy": 8,
+    "enrolledStudents": 30,
+    "median": 30.26,
+    "min": 18.19
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-acct102-g4",
+    "vacancy": 38,
+    "openingVacancy": 38,
+    "beforeProcessVacancy": 15,
+    "dice": 2,
+    "afterProcessVacancy": 7,
+    "enrolledStudents": 31,
+    "median": 30.95,
+    "min": 18.69
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-acct102-g5",
+    "vacancy": 39,
+    "openingVacancy": 39,
+    "beforeProcessVacancy": 10,
+    "dice": 2,
+    "afterProcessVacancy": 6,
+    "enrolledStudents": 33,
+    "median": 27.16,
+    "min": 15.95
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-acct102-g5",
+    "vacancy": 39,
+    "openingVacancy": 39,
+    "beforeProcessVacancy": 17,
+    "dice": 1,
+    "afterProcessVacancy": 8,
+    "enrolledStudents": 31,
+    "median": 32.73,
+    "min": 19.97
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-acct102-g5",
+    "vacancy": 39,
+    "openingVacancy": 39,
+    "beforeProcessVacancy": 14,
+    "dice": 5,
+    "afterProcessVacancy": 8,
+    "enrolledStudents": 31,
+    "median": 27.86,
+    "min": 16.46
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-comm662-g1",
+    "vacancy": 40,
+    "openingVacancy": 40,
+    "beforeProcessVacancy": 9,
+    "dice": 2,
+    "afterProcessVacancy": 3,
+    "enrolledStudents": 37,
+    "median": 22.27,
+    "min": 12.18
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-comm662-g1",
+    "vacancy": 40,
+    "openingVacancy": 40,
+    "beforeProcessVacancy": 12,
+    "dice": 4,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 35,
+    "median": 24.4,
+    "min": 13.57
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-comm662-g1",
+    "vacancy": 40,
+    "openingVacancy": 40,
+    "beforeProcessVacancy": 8,
+    "dice": 5,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 35,
+    "median": 25.23,
+    "min": 14.11
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-comm662-g2",
+    "vacancy": 41,
+    "openingVacancy": 41,
+    "beforeProcessVacancy": 19,
+    "dice": 4,
+    "afterProcessVacancy": 8,
+    "enrolledStudents": 33,
+    "median": 22.84,
+    "min": 12.55
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-comm662-g2",
+    "vacancy": 41,
+    "openingVacancy": 41,
+    "beforeProcessVacancy": 12,
+    "dice": 3,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 36,
+    "median": 23.93,
+    "min": 13.27
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-comm662-g2",
+    "vacancy": 41,
+    "openingVacancy": 41,
+    "beforeProcessVacancy": 14,
+    "dice": 5,
+    "afterProcessVacancy": 9,
+    "enrolledStudents": 32,
+    "median": 20.86,
+    "min": 11.26
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-comm662-g3",
+    "vacancy": 42,
+    "openingVacancy": 42,
+    "beforeProcessVacancy": 14,
+    "dice": 2,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 37,
+    "median": 24.33,
+    "min": 13.52
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-comm662-g3",
+    "vacancy": 42,
+    "openingVacancy": 42,
+    "beforeProcessVacancy": 14,
+    "dice": 1,
+    "afterProcessVacancy": 8,
+    "enrolledStudents": 34,
+    "median": 18.71,
+    "min": 18.7
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-comm662-g3",
+    "vacancy": 42,
+    "openingVacancy": 42,
+    "beforeProcessVacancy": 13,
+    "dice": 2,
+    "afterProcessVacancy": 6,
+    "enrolledStudents": 36,
+    "median": 22.82,
+    "min": 12.54
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-comm662-g4",
+    "vacancy": 43,
+    "openingVacancy": 43,
+    "beforeProcessVacancy": 10,
+    "dice": 1,
+    "afterProcessVacancy": 6,
+    "enrolledStudents": 37,
+    "median": 21.99,
+    "min": 11.99
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-comm662-g4",
+    "vacancy": 43,
+    "openingVacancy": 43,
+    "beforeProcessVacancy": 12,
+    "dice": 5,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 38,
+    "median": 22.95,
+    "min": 12.62
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-comm662-g4",
+    "vacancy": 43,
+    "openingVacancy": 43,
+    "beforeProcessVacancy": 21,
+    "dice": 4,
+    "afterProcessVacancy": 11,
+    "enrolledStudents": 32,
+    "median": 24.23,
+    "min": 13.46
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-comm662-g5",
+    "vacancy": 44,
+    "openingVacancy": 44,
+    "beforeProcessVacancy": 10,
+    "dice": 4,
+    "afterProcessVacancy": 4,
+    "enrolledStudents": 40,
+    "median": 24.38,
+    "min": 13.56
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-comm662-g5",
+    "vacancy": 44,
+    "openingVacancy": 44,
+    "beforeProcessVacancy": 20,
+    "dice": 2,
+    "afterProcessVacancy": 12,
+    "enrolledStudents": 32,
+    "median": 22.35,
+    "min": 12.23
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-comm662-g5",
+    "vacancy": 44,
+    "openingVacancy": 44,
+    "beforeProcessVacancy": 20,
+    "dice": 5,
+    "afterProcessVacancy": 11,
+    "enrolledStudents": 33,
+    "median": 24.02,
+    "min": 13.32
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-cor-is1702-g1",
+    "vacancy": 45,
+    "openingVacancy": 45,
+    "beforeProcessVacancy": 9,
+    "dice": 2,
+    "afterProcessVacancy": 3,
+    "enrolledStudents": 42,
+    "median": 27.95,
+    "min": 15.97
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-cor-is1702-g1",
+    "vacancy": 45,
+    "openingVacancy": 45,
+    "beforeProcessVacancy": 16,
+    "dice": 2,
+    "afterProcessVacancy": 7,
+    "enrolledStudents": 38,
+    "median": 26.05,
+    "min": 14.66
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-cor-is1702-g1",
+    "vacancy": 45,
+    "openingVacancy": 45,
+    "beforeProcessVacancy": 20,
+    "dice": 1,
+    "afterProcessVacancy": 7,
+    "enrolledStudents": 38,
+    "median": 27.54,
+    "min": 15.68
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-cor-is1702-g2",
+    "vacancy": 46,
+    "openingVacancy": 46,
+    "beforeProcessVacancy": 20,
+    "dice": 2,
+    "afterProcessVacancy": 8,
+    "enrolledStudents": 38,
+    "median": 27.06,
+    "min": 15.36
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-cor-is1702-g2",
+    "vacancy": 46,
+    "openingVacancy": 46,
+    "beforeProcessVacancy": 12,
+    "dice": 1,
+    "afterProcessVacancy": 5,
+    "enrolledStudents": 41,
+    "median": 24.2,
+    "min": 13.4
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-cor-is1702-g2",
+    "vacancy": 46,
+    "openingVacancy": 46,
+    "beforeProcessVacancy": 10,
+    "dice": 1,
+    "afterProcessVacancy": 4,
+    "enrolledStudents": 42,
+    "median": 30.74,
+    "min": 17.88
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-cor-is1702-g3",
+    "vacancy": 47,
+    "openingVacancy": 47,
+    "beforeProcessVacancy": 14,
+    "dice": 4,
+    "afterProcessVacancy": 9,
+    "enrolledStudents": 38,
+    "median": 29.74,
+    "min": 17.19
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-cor-is1702-g3",
+    "vacancy": 47,
+    "openingVacancy": 47,
+    "beforeProcessVacancy": 22,
+    "dice": 5,
+    "afterProcessVacancy": 11,
+    "enrolledStudents": 36,
+    "median": 27.72,
+    "min": 15.81
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-cor-is1702-g3",
+    "vacancy": 47,
+    "openingVacancy": 47,
+    "beforeProcessVacancy": 17,
+    "dice": 2,
+    "afterProcessVacancy": 7,
+    "enrolledStudents": 40,
+    "median": 27.43,
+    "min": 15.61
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-cor-is1702-g4",
+    "vacancy": 48,
+    "openingVacancy": 48,
+    "beforeProcessVacancy": 13,
+    "dice": 3,
+    "afterProcessVacancy": 8,
+    "enrolledStudents": 40,
+    "median": 31.05,
+    "min": 18.09
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-cor-is1702-g4",
+    "vacancy": 48,
+    "openingVacancy": 48,
+    "beforeProcessVacancy": 21,
+    "dice": 5,
+    "afterProcessVacancy": 6,
+    "enrolledStudents": 42,
+    "median": 26.83,
+    "min": 15.2
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-cor-is1702-g4",
+    "vacancy": 48,
+    "openingVacancy": 48,
+    "beforeProcessVacancy": 17,
+    "dice": 1,
+    "afterProcessVacancy": 10,
+    "enrolledStudents": 38,
+    "median": 29.8,
+    "min": 17.23
+  },
+  {
+    "bidWindowId": 37,
+    "classId": "seed-ay202627t1-cor-is1702-g5",
+    "vacancy": 49,
+    "openingVacancy": 49,
+    "beforeProcessVacancy": 16,
+    "dice": 2,
+    "afterProcessVacancy": 7,
+    "enrolledStudents": 42,
+    "median": 29.57,
+    "min": 17.08
+  },
+  {
+    "bidWindowId": 39,
+    "classId": "seed-ay202627t1-cor-is1702-g5",
+    "vacancy": 49,
+    "openingVacancy": 49,
+    "beforeProcessVacancy": 19,
+    "dice": 2,
+    "afterProcessVacancy": 8,
+    "enrolledStudents": 41,
+    "median": 24.11,
+    "min": 13.33
+  },
+  {
+    "bidWindowId": 47,
+    "classId": "seed-ay202627t1-cor-is1702-g5",
+    "vacancy": 49,
+    "openingVacancy": 49,
+    "beforeProcessVacancy": 18,
+    "dice": 3,
+    "afterProcessVacancy": 8,
+    "enrolledStudents": 41,
+    "median": 30.6,
+    "min": 17.78
   }
 ]

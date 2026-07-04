@@ -1,122 +1,287 @@
 [
-    {
-        "id": 1,
-        "acadTermId": "AY202425T3B",
-        "round": "1B",
-        "window": 3
-    },
-    {
-        "id": 2,
-        "acadTermId": "AY202425T1",
-        "round": "1C",
-        "window": 3
-    },
-    {
-        "id": 3,
-        "acadTermId": "AY202425T1",
-        "round": "2",
-        "window": 2
-    },
-    {
-        "id": 4,
-        "acadTermId": "AY202425T3B",
-        "round": "1A",
-        "window": 1
-    },
-    {
-        "id": 5,
-        "acadTermId": "AY202425T3B",
-        "round": "2A",
-        "window": 3
-    },
-    {
-        "id": 6,
-        "acadTermId": "AY202425T1",
-        "round": "1A",
-        "window": 3
-    },
-    {
-        "id": 7,
-        "acadTermId": "AY202425T2",
-        "round": "2A",
-        "window": 4
-    },
-    {
-        "id": 8,
-        "acadTermId": "AY202425T2",
-        "round": "1A",
-        "window": 1
-    },
-    {
-        "id": 9,
-        "acadTermId": "AY202425T3B",
-        "round": "1",
-        "window": 4
-    },
-    {
-        "id": 10,
-        "acadTermId": "AY202425T3A",
-        "round": "1A",
-        "window": 6
-    },
-    {
-        "id": 11,
-        "acadTermId": "AY202425T1",
-        "round": "1C",
-        "window": 3
-    },
-    {
-        "id": 12,
-        "acadTermId": "AY202425T3A",
-        "round": "2A",
-        "window": 6
-    },
-    {
-        "id": 13,
-        "acadTermId": "AY202425T1",
-        "round": "1C",
-        "window": 4
-    },
-    {
-        "id": 14,
-        "acadTermId": "AY202425T1",
-        "round": "1",
-        "window": 4
-    },
-    {
-        "id": 15,
-        "acadTermId": "AY202425T3B",
-        "round": "1B",
-        "window": 1
-    },
-    {
-        "id": 16,
-        "acadTermId": "AY202425T2",
-        "round": "1B",
-        "window": 1
-    },
-    {
-        "id": 17,
-        "acadTermId": "AY202425T2",
-        "round": "1B",
-        "window": 3
-    },
-    {
-        "id": 18,
-        "acadTermId": "AY202425T2",
-        "round": "2",
-        "window": 5
-    },
-    {
-        "id": 19,
-        "acadTermId": "AY202425T2",
-        "round": "2A",
-        "window": 4
-    },
-    {
-        "id": 20,
-        "acadTermId": "AY202425T3B",
-        "round": "2",
-        "window": 6
-    }
+  {
+    "id": 1,
+    "acadTermId": "AY202425T3B",
+    "round": "1B",
+    "window": 3
+  },
+  {
+    "id": 2,
+    "acadTermId": "AY202425T1",
+    "round": "1C",
+    "window": 3
+  },
+  {
+    "id": 3,
+    "acadTermId": "AY202425T1",
+    "round": "2",
+    "window": 2
+  },
+  {
+    "id": 4,
+    "acadTermId": "AY202425T3B",
+    "round": "1A",
+    "window": 1
+  },
+  {
+    "id": 5,
+    "acadTermId": "AY202425T3B",
+    "round": "2A",
+    "window": 3
+  },
+  {
+    "id": 6,
+    "acadTermId": "AY202425T1",
+    "round": "1A",
+    "window": 3
+  },
+  {
+    "id": 7,
+    "acadTermId": "AY202425T2",
+    "round": "2A",
+    "window": 4
+  },
+  {
+    "id": 8,
+    "acadTermId": "AY202425T2",
+    "round": "1A",
+    "window": 1
+  },
+  {
+    "id": 9,
+    "acadTermId": "AY202425T3B",
+    "round": "1",
+    "window": 4
+  },
+  {
+    "id": 10,
+    "acadTermId": "AY202425T3A",
+    "round": "1A",
+    "window": 6
+  },
+  {
+    "id": 12,
+    "acadTermId": "AY202425T3A",
+    "round": "2A",
+    "window": 6
+  },
+  {
+    "id": 13,
+    "acadTermId": "AY202425T1",
+    "round": "1C",
+    "window": 4
+  },
+  {
+    "id": 14,
+    "acadTermId": "AY202425T1",
+    "round": "1",
+    "window": 4
+  },
+  {
+    "id": 15,
+    "acadTermId": "AY202425T3B",
+    "round": "1B",
+    "window": 1
+  },
+  {
+    "id": 16,
+    "acadTermId": "AY202425T2",
+    "round": "1B",
+    "window": 1
+  },
+  {
+    "id": 17,
+    "acadTermId": "AY202425T2",
+    "round": "1B",
+    "window": 3
+  },
+  {
+    "id": 18,
+    "acadTermId": "AY202425T2",
+    "round": "2",
+    "window": 5
+  },
+  {
+    "id": 19,
+    "acadTermId": "AY202425T2",
+    "round": "2A",
+    "window": 4
+  },
+  {
+    "id": 20,
+    "acadTermId": "AY202425T3B",
+    "round": "2",
+    "window": 6
+  },
+  {
+    "id": 34,
+    "acadTermId": "AY202627T1",
+    "round": "1",
+    "window": 1,
+    "opensAt": "2026-07-06T10:00:00+08:00",
+    "closesAt": "2026-07-08T10:00:00+08:00",
+    "resultsAt": "2026-07-08T14:00:00+08:00"
+  },
+  {
+    "id": 35,
+    "acadTermId": "AY202627T1",
+    "round": "1A",
+    "window": 1,
+    "opensAt": "2026-07-08T17:00:00+08:00",
+    "closesAt": "2026-07-10T10:00:00+08:00",
+    "resultsAt": "2026-07-10T14:00:00+08:00"
+  },
+  {
+    "id": 36,
+    "acadTermId": "AY202627T1",
+    "round": "1A",
+    "window": 2,
+    "opensAt": "2026-07-10T17:00:00+08:00",
+    "closesAt": "2026-07-13T10:00:00+08:00",
+    "resultsAt": "2026-07-13T14:00:00+08:00"
+  },
+  {
+    "id": 37,
+    "acadTermId": "AY202627T1",
+    "round": "1A",
+    "window": 3,
+    "opensAt": "2026-07-13T17:00:00+08:00",
+    "closesAt": "2026-07-15T10:00:00+08:00",
+    "resultsAt": "2026-07-15T14:00:00+08:00"
+  },
+  {
+    "id": 38,
+    "acadTermId": "AY202627T1",
+    "round": "1B",
+    "window": 1,
+    "opensAt": "2026-07-15T17:00:00+08:00",
+    "closesAt": "2026-07-17T10:00:00+08:00",
+    "resultsAt": "2026-07-17T14:00:00+08:00"
+  },
+  {
+    "id": 39,
+    "acadTermId": "AY202627T1",
+    "round": "1B",
+    "window": 2,
+    "opensAt": "2026-07-17T17:00:00+08:00",
+    "closesAt": "2026-07-20T10:00:00+08:00",
+    "resultsAt": "2026-07-20T14:00:00+08:00"
+  },
+  {
+    "id": 40,
+    "acadTermId": "AY202627T1",
+    "round": "1C",
+    "window": 1,
+    "opensAt": "2026-07-27T10:00:00+08:00",
+    "closesAt": "2026-07-29T10:00:00+08:00",
+    "resultsAt": "2026-07-29T14:00:00+08:00"
+  },
+  {
+    "id": 41,
+    "acadTermId": "AY202627T1",
+    "round": "1C",
+    "window": 2,
+    "opensAt": "2026-07-29T17:00:00+08:00",
+    "closesAt": "2026-07-30T10:00:00+08:00",
+    "resultsAt": "2026-07-30T14:00:00+08:00"
+  },
+  {
+    "id": 42,
+    "acadTermId": "AY202627T1",
+    "round": "1C",
+    "window": 3,
+    "opensAt": "2026-07-30T17:00:00+08:00",
+    "closesAt": "2026-07-31T10:00:00+08:00",
+    "resultsAt": "2026-07-31T14:00:00+08:00"
+  },
+  {
+    "id": 43,
+    "acadTermId": "AY202627T1",
+    "round": "1F",
+    "window": 1,
+    "opensAt": "2026-08-07T10:00:00+08:00",
+    "closesAt": "2026-08-11T10:00:00+08:00",
+    "resultsAt": "2026-08-11T14:00:00+08:00"
+  },
+  {
+    "id": 44,
+    "acadTermId": "AY202627T1",
+    "round": "1F",
+    "window": 2,
+    "opensAt": "2026-08-11T17:00:00+08:00",
+    "closesAt": "2026-08-12T10:00:00+08:00",
+    "resultsAt": "2026-08-12T14:00:00+08:00"
+  },
+  {
+    "id": 45,
+    "acadTermId": "AY202627T1",
+    "round": "1F",
+    "window": 3,
+    "opensAt": "2026-08-12T17:00:00+08:00",
+    "closesAt": "2026-08-13T10:00:00+08:00",
+    "resultsAt": "2026-08-13T14:00:00+08:00"
+  },
+  {
+    "id": 46,
+    "acadTermId": "AY202627T1",
+    "round": "1F",
+    "window": 4,
+    "opensAt": "2026-08-13T17:00:00+08:00",
+    "closesAt": "2026-08-14T10:00:00+08:00",
+    "resultsAt": "2026-08-14T14:00:00+08:00"
+  },
+  {
+    "id": 47,
+    "acadTermId": "AY202627T1",
+    "round": "2",
+    "window": 1,
+    "opensAt": "2026-08-17T10:00:00+08:00",
+    "closesAt": "2026-08-19T10:00:00+08:00",
+    "resultsAt": "2026-08-19T14:00:00+08:00"
+  },
+  {
+    "id": 48,
+    "acadTermId": "AY202627T1",
+    "round": "2",
+    "window": 2,
+    "opensAt": "2026-08-19T17:00:00+08:00",
+    "closesAt": "2026-08-21T10:00:00+08:00",
+    "resultsAt": "2026-08-21T14:00:00+08:00"
+  },
+  {
+    "id": 49,
+    "acadTermId": "AY202627T1",
+    "round": "2",
+    "window": 3,
+    "opensAt": "2026-08-21T17:00:00+08:00",
+    "closesAt": "2026-08-24T10:00:00+08:00",
+    "resultsAt": "2026-08-24T14:00:00+08:00"
+  },
+  {
+    "id": 50,
+    "acadTermId": "AY202627T1",
+    "round": "2A",
+    "window": 1,
+    "opensAt": "2026-08-24T17:00:00+08:00",
+    "closesAt": "2026-08-26T10:00:00+08:00",
+    "resultsAt": "2026-08-26T14:00:00+08:00"
+  },
+  {
+    "id": 51,
+    "acadTermId": "AY202627T1",
+    "round": "2A",
+    "window": 2,
+    "opensAt": "2026-08-26T17:00:00+08:00",
+    "closesAt": "2026-08-28T10:00:00+08:00",
+    "resultsAt": "2026-08-28T14:00:00+08:00"
+  },
+  {
+    "id": 52,
+    "acadTermId": "AY202627T1",
+    "round": "2A",
+    "window": 3,
+    "opensAt": "2026-08-28T17:00:00+08:00",
+    "closesAt": "2026-08-31T10:00:00+08:00",
+    "resultsAt": "2026-08-31T14:00:00+08:00"
+  }
 ]
