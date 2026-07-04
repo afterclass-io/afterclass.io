@@ -339,10 +339,13 @@ model ClassAvailability {
 
 model BidWindow {
   // Each unique bid window is determined by acadTerm, round, and window
-  id         Int    @id @default(autoincrement())
-  acadTermId String @map("acad_term_id")
-  round      String @map("round") @db.VarChar(2)
-  window     Int    @map("window")
+  id         Int       @id @default(autoincrement())
+  acadTermId String    @map("acad_term_id")
+  round      String    @map("round") @db.VarChar(2)
+  window     Int       @map("window")
+  opensAt    DateTime? @map("opens_at") @db.Timestamptz(3)   // Window opens (bidding starts) in SGT
+  closesAt   DateTime? @map("closes_at") @db.Timestamptz(3)  // Window closes (bidding ends) in SGT
+  resultsAt  DateTime? @map("results_at") @db.Timestamptz(3) // Results release datetime in SGT
 
   classAvailability ClassAvailability[]
   bidResult         BidResult[]
