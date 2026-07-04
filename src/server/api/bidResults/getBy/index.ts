@@ -17,7 +17,11 @@ export const getBy = publicProcedure
       return await ctx.db.bidResult.findMany({
         include: {
           bidWindow: true,
-          class: true,
+          class: {
+            include: {
+              professor: { select: { name: true } },
+            },
+          },
         },
         where: {
           class: {
@@ -27,6 +31,11 @@ export const getBy = publicProcedure
             },
           },
         },
+        orderBy: [
+          { bidWindow: { acadTermId: "desc" } },
+          { bidWindow: { round: "asc" } },
+          { bidWindow: { window: "asc" } },
+        ],
         take: HARD_LIMIT,
       });
     }
@@ -59,7 +68,11 @@ export const getBy = publicProcedure
     return await ctx.db.bidResult.findMany({
       include: {
         bidWindow: true,
-        class: true,
+        class: {
+          include: {
+            professor: { select: { name: true } },
+          },
+        },
       },
       where: {
         class: {
@@ -69,6 +82,11 @@ export const getBy = publicProcedure
           },
         },
       },
+      orderBy: [
+        { bidWindow: { acadTermId: "desc" } },
+        { bidWindow: { round: "asc" } },
+        { bidWindow: { window: "asc" } },
+      ],
       take: HARD_LIMIT,
     });
   });

@@ -1,6 +1,7 @@
 import { acadTermsRouter } from "@/server/api/acadTerms/router";
 import { bidResultsRouter } from "@/server/api/bidResults/router";
 import { bidPredictionsRouter } from "@/server/api/bidPredictions/router";
+import { bidWindowsRouter } from "@/server/api/bidWindows/router";
 import { coursesRouter } from "@/server/api/courses/router";
 import { classesRouter } from "@/server/api/classes/router";
 import { labelsRouter } from "@/server/api/labels/router";
@@ -22,6 +23,7 @@ export const appRouter = createTRPCRouter({
   acadTerms: acadTermsRouter,
   bidResults: bidResultsRouter,
   bidPredictions: bidPredictionsRouter,
+  bidWindows: bidWindowsRouter,
   classes: classesRouter,
   courses: coursesRouter,
   labels: labelsRouter,

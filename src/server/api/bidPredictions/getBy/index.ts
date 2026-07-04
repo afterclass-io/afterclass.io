@@ -8,18 +8,14 @@ export const getBy = publicProcedure
     }),
   )
   .query(async ({ ctx, input }) => {
-    const latestBidWindow = await ctx.db.bidWindow.findFirst({
-      orderBy: {
-        id: "desc",
-      },
+    // Find the most recent prediction for this class in a single query.
+    // Walking backwards through bid windows by resultsAt (desc) ensures we
+    // get the prediction for the latest window that actually has one.
+    const prediction = await ctx.db.bidPrediction.findFirst({
+      where: { classId: input.classId },
+      include: { bidWindow: true },
+      orderBy: { bidWindow: { resultsAt: "desc" } },
     });
-    return await ctx.db.bidPrediction.findFirst({
-      where: {
-        classId: input.classId,
-        bidWindowId: latestBidWindow?.id,
-      },
-      include: {
-        bidWindow: true,
-      },
-    });
+
+    return prediction;
   });

@@ -33,11 +33,14 @@ export const PUBLIC_CLASS_FIELDS = {
       date: true,
       startTime: true,
       endTime: true,
+      venue: true,
     },
   },
   professor: {
     select: {
+      id: true,
       name: true,
+      slug: true,
     },
   },
 } satisfies Prisma.ClassesSelect;
