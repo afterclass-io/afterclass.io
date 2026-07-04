@@ -16,13 +16,13 @@ export const RevieweeGroup = ({ review, variant }: RevieweeGroupProps) => {
   const isShowCourse = variant === "home" && isShowProf;
 
   return (
-    <div className="flex w-full items-center md:w-fit">
+    <div className="flex w-full min-w-0 items-center md:w-fit">
       <SchoolIcon school={review.university} className="mr-2" />
       {isShowProf ? (
         <ProgressLink
           variant="link"
           href={`/professor/${review.professorSlug}`}
-          className="hover:text-primary text-muted-foreground hover:no-underline"
+          className="hover:text-primary text-muted-foreground hover:no-underline truncate"
           aria-label="professor"
           data-test="review-professor-label"
         >

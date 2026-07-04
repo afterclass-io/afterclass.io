@@ -57,8 +57,7 @@ export function ModAlternativesCard({
 
                 {/* === Column 1: Professor Alternatives === */}
                 <div className="flex flex-col gap-3">
-                    <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-100 pl-2">
-                        {/* Added a title/header for the column */}
+                    <h3 className="flex items-center gap-2 text-lg font-semibold pl-2">
                         <span className="text-base font-medium">By Professor</span>
                     </h3>
 
@@ -87,27 +86,27 @@ export function ModAlternativesCard({
 
                 {/* === Column 2: Time Slot Alternatives === */}
                 <div className="flex flex-col gap-3">
-                    <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-100 pl-2">
-                        {/* Added a title/header for the column */}
+                    <h3 className="flex items-center gap-2 text-lg font-semibold pl-2">
                         <span className="text-base font-medium">By Time Slot</span>
                     </h3>
 
-                    {uniqueSessionArray.map((session, index) => {
+                    {uniqueSessionArray.map((session) => {
                         // Ensure required fields for the link are not null before rendering
                         if (!session.dayOfWeek || !session.startTime || !session.endTime) return null;
 
+                        const sessionKey = `${session.dayOfWeek}-${session.startTime}-${session.endTime}`;
                         const timeLink = `/bidding?course=${courseCode}&day=${session.dayOfWeek}&start=${session.startTime}&end=${session.endTime}`;
 
                         return (
                             // Link wrapper with the requested styles
                             <Link
-                                key={index}
+                                key={sessionKey}
                                 href={timeLink}
-                                className="block w-full p-3 rounded-md border hover:bg-secondary focus-ring  transition-color"
+                                className="block w-full p-3 rounded-md border hover:bg-secondary focus-ring transition-color"
                             >
                                 <div className="flex items-center gap-1">
                                     <ClockIcon size={16} className="mr-1" />
-                                    <span className="max-w-16 truncatefont-medium">
+                                    <span className="max-w-16 truncate font-medium">
                                         {session.dayOfWeek}
                                     </span>
                                     <span>
@@ -118,7 +117,7 @@ export function ModAlternativesCard({
                         );
                     })}
                     {uniqueSessionArray.length === 0 && (
-                        <p className=" text-gray-500 italic">No class timings assigned.</p>
+                        <p className="text-sm text-gray-500 italic">No class timings assigned.</p>
                     )}
                 </div>
             </CardContent>

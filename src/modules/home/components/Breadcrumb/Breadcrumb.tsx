@@ -27,19 +27,26 @@ export const HomeBreadcrumb = (
   const path = usePathname();
   const pathSegments = (path ?? "").split("/").filter(Boolean);
 
+  // Hooks must be called unconditionally — always register both queries,
+  // but only enable the one matching the current route.
+  const profQuery = api.professors.getBySlug.useQuery(
+    { slug: pathSegments[1] ?? "" },
+    { enabled: pathSegments[0] === "professor" },
+  );
+  const courseQuery = api.courses.getByCourseCode.useQuery(
+    { code: pathSegments[1] ?? "" },
+    { enabled: pathSegments[0] === "course" },
+  );
+
   const elements = [HOME_BREADCRUMB];
   let isSuccess = false;
 
   switch (pathSegments[0]) {
     case "professor": {
-      const query = api.professors.getBySlug.useQuery({
-        slug: pathSegments[1] ?? "",
-      });
-
-      if (query.isSuccess && query.data) {
+      if (profQuery.isSuccess && profQuery.data) {
         elements.push({
-          label: `Prof. ${query.data.name}`,
-          href: `/professor/${query.data.slug}`,
+          label: `Prof. ${profQuery.data.name}`,
+          href: `/professor/${profQuery.data.slug}`,
         });
         isSuccess = true;
       }
@@ -47,14 +54,10 @@ export const HomeBreadcrumb = (
     }
 
     case "course": {
-      const query = api.courses.getByCourseCode.useQuery({
-        code: pathSegments[1] ?? "",
-      });
-
-      if (query.isSuccess && query.data) {
+      if (courseQuery.isSuccess && courseQuery.data) {
         elements.push({
-          label: `${query.data.code} ${query.data.name}`,
-          href: `/course/${query.data.code}`,
+          label: `${courseQuery.data.code} ${courseQuery.data.name}`,
+          href: `/course/${courseQuery.data.code}`,
         });
         isSuccess = true;
       }
@@ -85,7 +88,13 @@ export const HomeBreadcrumb = (
           isSuccess = true;
           break;
         }
+        default: {
+          elements.push({ label: "Bidding" });
+          isSuccess = true;
+          break;
+        }
       }
+      break;
     }
   }
 

@@ -42,7 +42,7 @@ export type ReviewItemLoaderProps =
 const NoReviewCtaNote = () => (
   <>
     <FullWidthEnforcer />
-    <div className="text-muted-foreground w-full space-x-1 px-3 py-10 text-center md:py-12 md:text-sm">
+    <div className="text-muted-foreground w-full space-x-1 px-3 py-4 text-center md:py-6 md:text-sm">
       <span className="text-accent-foreground mr-1">Oh no!</span>
       <span>Looks like no one has reviewed yet.</span>
       <br />

@@ -1,3 +1,10 @@
+/**
+ * 🗑️ ORPHANED — scheduled for deletion.
+ * This was an intermediate copy of the analytics page.tsx during the migration
+ * from Mark Bosco's prototype to the current server-component architecture.
+ * The real page lives at src/app/(school)/bidding/analytics/page.tsx.
+ * Not imported anywhere. Remove after the commit-chunking migration is complete.
+ */
 import { api } from "@/common/tools/trpc/server";
 import { BidChart } from "@/modules/bidding/components/BidChart";
 import { BidChartFilterTagGroup } from "@/modules/bidding/components/BidChartFilterTagGroup";

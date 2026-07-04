@@ -231,7 +231,11 @@ export default async function BiddingHistoryPage({
         <BidPredictionCard
           courseCode={courseCode}
           section={section}
-          acadTermId={bidPrediction.bidWindow.acadTermId}
+          bidWindow={{
+            acadTermId: bidPrediction.bidWindow.acadTermId,
+            round: bidPrediction.bidWindow.round,
+            window: bidPrediction.bidWindow.window,
+          }}
           hasBidsProbability={bidPrediction.clfHasBidsProbability}
           confidenceScore={bidPrediction.clfConfidenceScore}
           minPrediction={{
@@ -252,9 +256,6 @@ export default async function BiddingHistoryPage({
             ),
             uncertainty: bidPrediction.medianUncertainty,
           }}
-          // SPEC-6: Pass round and window for display in the card
-          round={bidPrediction.bidWindow.round}
-          window={bidPrediction.bidWindow.window}
         />
       )}
 
