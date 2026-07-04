@@ -157,7 +157,11 @@ export default async function BiddingHistoryPage({
         <BidPredictionCard
           courseCode={courseCode}
           section={section}
-          acadTermId={bidPrediction.bidWindow.acadTermId}
+          bidWindow={{
+            acadTermId: bidPrediction.bidWindow.acadTermId,
+            round: bidPrediction.bidWindow.round,
+            window: bidPrediction.bidWindow.window,
+          }}
           hasBidsProbability={bidPrediction.clfHasBidsProbability}
           confidenceScore={bidPrediction.clfConfidenceScore}
           minPrediction={{

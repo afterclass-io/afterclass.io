@@ -87,7 +87,11 @@ const meta: Meta<typeof BidPredictionCard> = {
   args: {
     courseCode: "CS101",
     section: "T01",
-    acadTermId: "AY2024/2025 Semester 1",
+    bidWindow: {
+      acadTermId: "AY2024/2025 Semester 1",
+      round: "1A",
+      window: 2,
+    },
     hasBidsProbability: 0.8,
     confidenceScore: 0.75,
     minPrediction: transformedMinPrediction,

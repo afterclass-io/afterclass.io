@@ -11,12 +11,14 @@ import { cn } from "@/common/functions";
 
 export type CtaButtonProps = ComponentProps<typeof ProgressLink> & {
   ctaText: string;
+  subtext?: string;
   iconLeft?: ReactNode;
   iconRight?: ReactNode;
 };
 
 export const CtaButton = ({
   ctaText,
+  subtext,
   iconLeft,
   iconRight,
   className,
@@ -42,7 +44,12 @@ export const CtaButton = ({
     >
       <div className="flex items-center gap-3">
         {renderIcon(iconLeft)}
-        <span className="text-lg font-semibold">{ctaText}</span>
+        <div className="flex flex-col">
+          <span className="text-lg font-semibold">{ctaText}</span>
+          {subtext && (
+            <span className="text-muted-foreground text-sm">{subtext}</span>
+          )}
+        </div>
       </div>
       {renderIcon(iconRight)}
     </ProgressLink>
