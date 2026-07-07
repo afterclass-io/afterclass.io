@@ -1,4 +1,4 @@
-import { Checkbox, type CheckedState } from "@/common/components/checkbox";
+import { Checkbox } from "@/common/components/checkbox";
 import { cn } from "@/common/functions";
 
 export type FilterStat = {
@@ -42,7 +42,7 @@ export const FilterToggleSectionItem = ({
       )}
       {...props}
     >
-      <Checkbox checked={selected as CheckedState} />
+      <Checkbox checked={selected} />
       <div className="flex flex-[1_0_0] items-center justify-between gap-2 md:flex-auto md:flex-col md:items-start md:justify-center">
         <p className="text-accent-foreground line-clamp-1 flex-[1_0_0] leading-4 font-medium text-ellipsis md:line-clamp-none md:flex-auto md:text-sm md:font-semibold">
           {label}

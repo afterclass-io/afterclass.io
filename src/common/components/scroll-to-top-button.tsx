@@ -12,7 +12,7 @@ export function ScrollToTopButton() {
       root: null,
       rootMargin: "0px",
       threshold: 0,
-    } as IntersectionObserverInit,
+    } satisfies IntersectionObserverInit,
     SCROLL_TO_TOP_ID,
   );
 

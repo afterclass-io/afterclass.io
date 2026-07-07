@@ -90,6 +90,7 @@ function computeAYGroups(
     const [acadTermId] = point.bidWindow.split("/");
     if (!acadTermId) continue;
 
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     if (!current || current.acadTermId !== acadTermId) {
       const { shortLabel } = inferAcadTerm(acadTermId);
       current = {
