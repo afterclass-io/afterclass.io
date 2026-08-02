@@ -66,6 +66,8 @@ model Users {
   reviewReactions    ReviewReactions[]
   hackSubmissionVote HackSubmissionVote[]
   userBid            UserBid[]
+  userTimetable      UserTimetable[]
+  userBidBudget      UserBidBudget[]
 
   @@map("users")
 }
@@ -197,10 +199,13 @@ model Classes {
   acadTerm  AcadTerm    @relation(fields: [acadTermId], references: [id])
   userBid   UserBid[]
 
+  userTimetableSlot UserTimetableSlot[]
+
   @@unique([bossId, acadTermId, professorId])
   @@unique([courseId, section, acadTermId, professorId])
   @@index([courseId], type: BTree)
   @@index([professorId], type: BTree)
+  @@index([acadTermId, courseId])
   @@map("classes")
 }
 
@@ -286,6 +291,9 @@ model AcadTerm {
   bidWindow    BidWindow[]
   safetyFactor SafetyFactor[]
 
+  userTimetable UserTimetable[]
+  userBidBudget UserBidBudget[]
+
   @@map("acad_term")
 }
 
@@ -354,6 +362,7 @@ model BidWindow {
   acadTerm AcadTerm  @relation(fields: [acadTermId], references: [id])
   userBid  UserBid[]
 
+  @@index([acadTermId])
   @@map("bid_window")
 }
 
@@ -371,7 +380,6 @@ model BidResult {
 
   bidWindow BidWindow @relation(fields: [bidWindowId], references: [id])
   class     Classes   @relation(fields: [classId], references: [id])
-  userBid   UserBid[]
 
   @@id([bidWindowId, classId])
   @@map("bid_result")
@@ -421,8 +429,6 @@ model BidPrediction {
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  userBid UserBid[]
-
   class     Classes   @relation(fields: [classId], references: [id])
   bidWindow BidWindow @relation(fields: [bidWindowId], references: [id])
 
@@ -452,17 +458,76 @@ model UserBid {
   bidWindowId Int      @map("bid_window_id")
   bidAmount   Float    @map("bid_amount")
   notes       String?
+  status      UserBidStatus @default(PLANNED)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   user          Users          @relation(fields: [userId], references: [id])
   class         Classes        @relation(fields: [classId], references: [id])
   bidWindow     BidWindow      @relation(fields: [bidWindowId], references: [id])
-  bidResult     BidResult?     @relation(fields: [classId, bidWindowId], references: [classId, bidWindowId], map: "user_bid_bid_result_class_id_bid_window_id_fkey")
-  bidPrediction BidPrediction? @relation(fields: [classId, bidWindowId], references: [classId, bidWindowId], map: "user_bid_bid_prediction_class_id_bid_window_id_fkey")
 
   @@index([userId, createdAt])
   @@index([classId, bidWindowId])
+  @@index([userId, classId])
   @@map("user_bid")
+}
+
+model UserTimetable {
+  id         String     @id @default(uuid())
+  userId     String     @map("user_id")
+  acadTermId String     @map("acad_term_id")
+  name       String
+  isActive   Boolean    @default(false) @map("is_active")
+  visibility Visibility @default(PRIVATE)
+  shareToken String?    @unique @map("share_token")
+  icalToken  String?    @unique @map("ical_token")
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user     Users               @relation(fields: [userId], references: [id])
+  acadTerm AcadTerm            @relation(fields: [acadTermId], references: [id])
+  slots    UserTimetableSlot[]
+
+  @@index([userId, acadTermId])
+  @@map("user_timetable")
+}
+
+model UserTimetableSlot {
+  id          String @id @default(uuid())
+  timetableId String @map("timetable_id")
+  classId     String @map("class_id")
+
+  timetable UserTimetable @relation(fields: [timetableId], references: [id], onDelete: Cascade)
+  class     Classes       @relation(fields: [classId], references: [id])
+
+  @@unique([timetableId, classId])
+  @@index([timetableId])
+  @@map("user_timetable_slot")
+}
+
+model UserBidBudget {
+  userId     String @map("user_id")
+  acadTermId String @map("acad_term_id")
+  balance    Float
+
+  user     Users    @relation(fields: [userId], references: [id])
+  acadTerm AcadTerm @relation(fields: [acadTermId], references: [id])
+
+  @@id([userId, acadTermId])
+  @@map("user_bid_budget")
+}
+
+enum Visibility {
+  PRIVATE
+  UNLISTED
+  PUBLIC
+}
+
+enum UserBidStatus {
+  PLANNED
+  SECURED
+  MISSED
+  DROPPED
+  CANCELLED
 }
 
 enum UniversityAbbreviation {
