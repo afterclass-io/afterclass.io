@@ -158,5 +158,645 @@
     "multiplierType": "EMPIRICAL",
     "multiplier": 1.81,
     "createdAt": "2026-07-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MIN",
+    "beatsPercentage": 50,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MIN",
+    "beatsPercentage": 55,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.13,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MIN",
+    "beatsPercentage": 60,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.25,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MIN",
+    "beatsPercentage": 65,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.39,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MIN",
+    "beatsPercentage": 70,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.54,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MIN",
+    "beatsPercentage": 75,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.7,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MIN",
+    "beatsPercentage": 80,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.88,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MIN",
+    "beatsPercentage": 85,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.09,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MIN",
+    "beatsPercentage": 90,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.37,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MIN",
+    "beatsPercentage": 95,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.81,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 50,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 55,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.13,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 60,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.25,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 65,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.39,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 70,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.54,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 75,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.7,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 80,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.88,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 85,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.09,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 90,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.37,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T1",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 95,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.81,
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MIN",
+    "beatsPercentage": 50,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MIN",
+    "beatsPercentage": 55,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.13,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MIN",
+    "beatsPercentage": 60,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.25,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MIN",
+    "beatsPercentage": 65,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.39,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MIN",
+    "beatsPercentage": 70,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.54,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MIN",
+    "beatsPercentage": 75,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.7,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MIN",
+    "beatsPercentage": 80,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.88,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MIN",
+    "beatsPercentage": 85,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.09,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MIN",
+    "beatsPercentage": 90,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.37,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MIN",
+    "beatsPercentage": 95,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.81,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 50,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 55,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.13,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 60,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.25,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 65,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.39,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 70,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.54,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 75,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.7,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 80,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.88,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 85,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.09,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 90,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.37,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T2",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 95,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.81,
+    "createdAt": "2025-11-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MIN",
+    "beatsPercentage": 50,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MIN",
+    "beatsPercentage": 55,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.13,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MIN",
+    "beatsPercentage": 60,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.25,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MIN",
+    "beatsPercentage": 65,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.39,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MIN",
+    "beatsPercentage": 70,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.54,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MIN",
+    "beatsPercentage": 75,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.7,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MIN",
+    "beatsPercentage": 80,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.88,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MIN",
+    "beatsPercentage": 85,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.09,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MIN",
+    "beatsPercentage": 90,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.37,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MIN",
+    "beatsPercentage": 95,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.81,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 50,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 55,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.13,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 60,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.25,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 65,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.39,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 70,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.54,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 75,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.7,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 80,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.88,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 85,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.09,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 90,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.37,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3A",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 95,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.81,
+    "createdAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MIN",
+    "beatsPercentage": 50,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MIN",
+    "beatsPercentage": 55,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.13,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MIN",
+    "beatsPercentage": 60,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.25,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MIN",
+    "beatsPercentage": 65,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.39,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MIN",
+    "beatsPercentage": 70,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.54,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MIN",
+    "beatsPercentage": 75,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.7,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MIN",
+    "beatsPercentage": 80,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.88,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MIN",
+    "beatsPercentage": 85,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.09,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MIN",
+    "beatsPercentage": 90,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.37,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MIN",
+    "beatsPercentage": 95,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.81,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 50,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 55,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.13,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 60,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.25,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 65,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.39,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 70,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.54,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 75,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.7,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 80,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 0.88,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 85,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.09,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 90,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.37,
+    "createdAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "acadTermId": "AY202526T3B",
+    "predictionType": "MEDIAN",
+    "beatsPercentage": 95,
+    "multiplierType": "EMPIRICAL",
+    "multiplier": 1.81,
+    "createdAt": "2026-04-01T00:00:00.000Z"
   }
 ]

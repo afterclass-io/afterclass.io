@@ -448,5 +448,1301 @@
     "startTime": "12:00",
     "endTime": "15:15",
     "venue": "LKCSB Seminar Room 3-1"
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g1",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g2",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g3",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g4",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g5",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g1",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g2",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g3",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g4",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g5",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g1",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g2",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g3",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g4",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g5",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g1",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g2",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g3",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g4",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g5",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g1",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g2",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g3",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g4",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g5",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g14",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g15",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g15",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 2-4"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g15",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "YPHSL Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g15",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-3"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g15",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 3-1"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g16",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g16",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 2-4"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g16",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "YPHSL Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g16",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-3"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g16",
+    "startDate": "2025-08-18T00:00:00.000Z",
+    "endDate": "2025-11-28T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 3-1"
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g1",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g2",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g3",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g4",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g5",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g1",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g2",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g3",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g4",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g5",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g1",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g2",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g3",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g4",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g5",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g1",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g2",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g3",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g4",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g5",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g1",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g2",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g3",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g4",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g5",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g14",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g15",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g15",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 2-4"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g15",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "YPHSL Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g15",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-3"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g15",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 3-1"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g16",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g16",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 2-4"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g16",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "YPHSL Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g16",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-3"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g16",
+    "startDate": "2026-01-12T00:00:00.000Z",
+    "endDate": "2026-04-24T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 3-1"
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g1",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g2",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g3",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g4",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g5",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g1",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g2",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g3",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g4",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g5",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g1",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g2",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g3",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g4",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g5",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g1",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g2",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g3",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g4",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g5",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g1",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g2",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g3",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g4",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g5",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g14",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g15",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g15",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 2-4"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g15",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "YPHSL Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g15",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-3"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g15",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 3-1"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g16",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g16",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 2-4"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g16",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "YPHSL Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g16",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-3"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g16",
+    "startDate": "2026-05-04T00:00:00.000Z",
+    "endDate": "2026-06-19T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 3-1"
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g1",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g2",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g3",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g4",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g5",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g1",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g2",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g3",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g4",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g5",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g1",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g2",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g3",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g4",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g5",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g1",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g2",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g3",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g4",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g5",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g1",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g2",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g3",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "SCIS1 Seminar Room 3-4"
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g4",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "YPHSL Seminar Room 2-04"
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g5",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "SOA Seminar Room 3-3"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g14",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g15",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g15",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 2-4"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g15",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "YPHSL Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g15",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-3"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g15",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 3-1"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g16",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-1"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g16",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Tue",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 2-4"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g16",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Wed",
+    "startTime": "15:30",
+    "endTime": "18:45",
+    "venue": "YPHSL Seminar Room 1-2"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g16",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Thu",
+    "startTime": "08:15",
+    "endTime": "11:30",
+    "venue": "SOE/SCIS2 Seminar Room 2-3"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g16",
+    "startDate": "2026-06-29T00:00:00.000Z",
+    "endDate": "2026-08-14T23:59:59.999Z",
+    "dayOfWeek": "Fri",
+    "startTime": "12:00",
+    "endTime": "15:15",
+    "venue": "LKCSB Seminar Room 3-1"
   }
 ]

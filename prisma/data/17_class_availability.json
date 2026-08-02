@@ -158,5 +158,2405 @@
     "currentEnrolled": 16,
     "reserved": 7,
     "available": 40
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g1",
+    "bidWindowId": 55,
+    "total": 48,
+    "currentEnrolled": 28,
+    "reserved": 11,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g2",
+    "bidWindowId": 55,
+    "total": 56,
+    "currentEnrolled": 29,
+    "reserved": 18,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g3",
+    "bidWindowId": 55,
+    "total": 60,
+    "currentEnrolled": 27,
+    "reserved": 19,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g4",
+    "bidWindowId": 55,
+    "total": 43,
+    "currentEnrolled": 33,
+    "reserved": 0,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g5",
+    "bidWindowId": 55,
+    "total": 44,
+    "currentEnrolled": 7,
+    "reserved": 35,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g1",
+    "bidWindowId": 55,
+    "total": 42,
+    "currentEnrolled": 38,
+    "reserved": 0,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g2",
+    "bidWindowId": 55,
+    "total": 51,
+    "currentEnrolled": 38,
+    "reserved": 8,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g3",
+    "bidWindowId": 55,
+    "total": 44,
+    "currentEnrolled": 25,
+    "reserved": 8,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g4",
+    "bidWindowId": 55,
+    "total": 42,
+    "currentEnrolled": 15,
+    "reserved": 14,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g5",
+    "bidWindowId": 55,
+    "total": 56,
+    "currentEnrolled": 24,
+    "reserved": 27,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g1",
+    "bidWindowId": 55,
+    "total": 52,
+    "currentEnrolled": 40,
+    "reserved": 6,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g2",
+    "bidWindowId": 55,
+    "total": 40,
+    "currentEnrolled": 23,
+    "reserved": 2,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g3",
+    "bidWindowId": 55,
+    "total": 49,
+    "currentEnrolled": 15,
+    "reserved": 26,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g4",
+    "bidWindowId": 55,
+    "total": 46,
+    "currentEnrolled": 6,
+    "reserved": 38,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g5",
+    "bidWindowId": 55,
+    "total": 51,
+    "currentEnrolled": 32,
+    "reserved": 9,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g1",
+    "bidWindowId": 55,
+    "total": 54,
+    "currentEnrolled": 29,
+    "reserved": 17,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g2",
+    "bidWindowId": 55,
+    "total": 45,
+    "currentEnrolled": 25,
+    "reserved": 10,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g3",
+    "bidWindowId": 55,
+    "total": 57,
+    "currentEnrolled": 14,
+    "reserved": 33,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g4",
+    "bidWindowId": 55,
+    "total": 50,
+    "currentEnrolled": 14,
+    "reserved": 22,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g5",
+    "bidWindowId": 55,
+    "total": 56,
+    "currentEnrolled": 20,
+    "reserved": 26,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g1",
+    "bidWindowId": 55,
+    "total": 55,
+    "currentEnrolled": 15,
+    "reserved": 26,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g2",
+    "bidWindowId": 55,
+    "total": 49,
+    "currentEnrolled": 1,
+    "reserved": 39,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g3",
+    "bidWindowId": 55,
+    "total": 54,
+    "currentEnrolled": 20,
+    "reserved": 31,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g4",
+    "bidWindowId": 55,
+    "total": 50,
+    "currentEnrolled": 8,
+    "reserved": 30,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g5",
+    "bidWindowId": 55,
+    "total": 58,
+    "currentEnrolled": 26,
+    "reserved": 29,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g1",
+    "bidWindowId": 58,
+    "total": 56,
+    "currentEnrolled": 8,
+    "reserved": 38,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g2",
+    "bidWindowId": 58,
+    "total": 58,
+    "currentEnrolled": 28,
+    "reserved": 27,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g3",
+    "bidWindowId": 58,
+    "total": 46,
+    "currentEnrolled": 32,
+    "reserved": 9,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g4",
+    "bidWindowId": 58,
+    "total": 42,
+    "currentEnrolled": 15,
+    "reserved": 25,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g5",
+    "bidWindowId": 58,
+    "total": 42,
+    "currentEnrolled": 39,
+    "reserved": 0,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g1",
+    "bidWindowId": 58,
+    "total": 47,
+    "currentEnrolled": 19,
+    "reserved": 19,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g2",
+    "bidWindowId": 58,
+    "total": 40,
+    "currentEnrolled": 36,
+    "reserved": 0,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g3",
+    "bidWindowId": 58,
+    "total": 51,
+    "currentEnrolled": 2,
+    "reserved": 46,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g4",
+    "bidWindowId": 58,
+    "total": 55,
+    "currentEnrolled": 21,
+    "reserved": 26,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g5",
+    "bidWindowId": 58,
+    "total": 43,
+    "currentEnrolled": 14,
+    "reserved": 14,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g1",
+    "bidWindowId": 58,
+    "total": 42,
+    "currentEnrolled": 5,
+    "reserved": 26,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g2",
+    "bidWindowId": 58,
+    "total": 59,
+    "currentEnrolled": 19,
+    "reserved": 32,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g3",
+    "bidWindowId": 58,
+    "total": 48,
+    "currentEnrolled": 16,
+    "reserved": 26,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g4",
+    "bidWindowId": 58,
+    "total": 56,
+    "currentEnrolled": 6,
+    "reserved": 38,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g5",
+    "bidWindowId": 58,
+    "total": 41,
+    "currentEnrolled": 10,
+    "reserved": 23,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g1",
+    "bidWindowId": 58,
+    "total": 51,
+    "currentEnrolled": 38,
+    "reserved": 6,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g2",
+    "bidWindowId": 58,
+    "total": 43,
+    "currentEnrolled": 18,
+    "reserved": 10,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g3",
+    "bidWindowId": 58,
+    "total": 53,
+    "currentEnrolled": 18,
+    "reserved": 24,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g4",
+    "bidWindowId": 58,
+    "total": 51,
+    "currentEnrolled": 28,
+    "reserved": 10,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g5",
+    "bidWindowId": 58,
+    "total": 56,
+    "currentEnrolled": 22,
+    "reserved": 21,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g1",
+    "bidWindowId": 58,
+    "total": 40,
+    "currentEnrolled": 18,
+    "reserved": 16,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g2",
+    "bidWindowId": 58,
+    "total": 42,
+    "currentEnrolled": 24,
+    "reserved": 8,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g3",
+    "bidWindowId": 58,
+    "total": 49,
+    "currentEnrolled": 31,
+    "reserved": 3,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g4",
+    "bidWindowId": 58,
+    "total": 60,
+    "currentEnrolled": 22,
+    "reserved": 23,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g5",
+    "bidWindowId": 58,
+    "total": 52,
+    "currentEnrolled": 21,
+    "reserved": 25,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g1",
+    "bidWindowId": 66,
+    "total": 43,
+    "currentEnrolled": 27,
+    "reserved": 14,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g2",
+    "bidWindowId": 66,
+    "total": 41,
+    "currentEnrolled": 32,
+    "reserved": 0,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g3",
+    "bidWindowId": 66,
+    "total": 53,
+    "currentEnrolled": 17,
+    "reserved": 31,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g4",
+    "bidWindowId": 66,
+    "total": 41,
+    "currentEnrolled": 11,
+    "reserved": 15,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g5",
+    "bidWindowId": 66,
+    "total": 45,
+    "currentEnrolled": 39,
+    "reserved": 0,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g1",
+    "bidWindowId": 66,
+    "total": 59,
+    "currentEnrolled": 7,
+    "reserved": 41,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g2",
+    "bidWindowId": 66,
+    "total": 49,
+    "currentEnrolled": 32,
+    "reserved": 12,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g3",
+    "bidWindowId": 66,
+    "total": 45,
+    "currentEnrolled": 24,
+    "reserved": 17,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g4",
+    "bidWindowId": 66,
+    "total": 53,
+    "currentEnrolled": 2,
+    "reserved": 47,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g5",
+    "bidWindowId": 66,
+    "total": 59,
+    "currentEnrolled": 6,
+    "reserved": 49,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g1",
+    "bidWindowId": 66,
+    "total": 54,
+    "currentEnrolled": 40,
+    "reserved": 4,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g2",
+    "bidWindowId": 66,
+    "total": 58,
+    "currentEnrolled": 35,
+    "reserved": 11,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g3",
+    "bidWindowId": 66,
+    "total": 40,
+    "currentEnrolled": 30,
+    "reserved": 0,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g4",
+    "bidWindowId": 66,
+    "total": 59,
+    "currentEnrolled": 9,
+    "reserved": 42,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g5",
+    "bidWindowId": 66,
+    "total": 59,
+    "currentEnrolled": 6,
+    "reserved": 45,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g1",
+    "bidWindowId": 66,
+    "total": 43,
+    "currentEnrolled": 22,
+    "reserved": 9,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g2",
+    "bidWindowId": 66,
+    "total": 57,
+    "currentEnrolled": 27,
+    "reserved": 20,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g3",
+    "bidWindowId": 66,
+    "total": 48,
+    "currentEnrolled": 35,
+    "reserved": 8,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g4",
+    "bidWindowId": 66,
+    "total": 45,
+    "currentEnrolled": 26,
+    "reserved": 4,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g5",
+    "bidWindowId": 66,
+    "total": 48,
+    "currentEnrolled": 26,
+    "reserved": 19,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g1",
+    "bidWindowId": 66,
+    "total": 46,
+    "currentEnrolled": 24,
+    "reserved": 14,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g2",
+    "bidWindowId": 66,
+    "total": 44,
+    "currentEnrolled": 13,
+    "reserved": 27,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g3",
+    "bidWindowId": 66,
+    "total": 55,
+    "currentEnrolled": 14,
+    "reserved": 37,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g4",
+    "bidWindowId": 66,
+    "total": 44,
+    "currentEnrolled": 32,
+    "reserved": 0,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g5",
+    "bidWindowId": 66,
+    "total": 49,
+    "currentEnrolled": 39,
+    "reserved": 0,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g1",
+    "bidWindowId": 74,
+    "total": 48,
+    "currentEnrolled": 37,
+    "reserved": 9,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g2",
+    "bidWindowId": 74,
+    "total": 43,
+    "currentEnrolled": 30,
+    "reserved": 7,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g3",
+    "bidWindowId": 74,
+    "total": 59,
+    "currentEnrolled": 35,
+    "reserved": 9,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g4",
+    "bidWindowId": 74,
+    "total": 44,
+    "currentEnrolled": 23,
+    "reserved": 10,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g5",
+    "bidWindowId": 74,
+    "total": 56,
+    "currentEnrolled": 3,
+    "reserved": 50,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g1",
+    "bidWindowId": 74,
+    "total": 43,
+    "currentEnrolled": 27,
+    "reserved": 8,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g2",
+    "bidWindowId": 74,
+    "total": 51,
+    "currentEnrolled": 17,
+    "reserved": 21,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g3",
+    "bidWindowId": 74,
+    "total": 60,
+    "currentEnrolled": 38,
+    "reserved": 7,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g4",
+    "bidWindowId": 74,
+    "total": 59,
+    "currentEnrolled": 10,
+    "reserved": 41,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g5",
+    "bidWindowId": 74,
+    "total": 52,
+    "currentEnrolled": 21,
+    "reserved": 21,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g1",
+    "bidWindowId": 74,
+    "total": 57,
+    "currentEnrolled": 23,
+    "reserved": 20,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g2",
+    "bidWindowId": 74,
+    "total": 41,
+    "currentEnrolled": 21,
+    "reserved": 11,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g3",
+    "bidWindowId": 74,
+    "total": 50,
+    "currentEnrolled": 8,
+    "reserved": 33,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g4",
+    "bidWindowId": 74,
+    "total": 58,
+    "currentEnrolled": 34,
+    "reserved": 19,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g5",
+    "bidWindowId": 74,
+    "total": 50,
+    "currentEnrolled": 24,
+    "reserved": 24,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g1",
+    "bidWindowId": 74,
+    "total": 50,
+    "currentEnrolled": 15,
+    "reserved": 28,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g2",
+    "bidWindowId": 74,
+    "total": 51,
+    "currentEnrolled": 34,
+    "reserved": 8,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g3",
+    "bidWindowId": 74,
+    "total": 53,
+    "currentEnrolled": 29,
+    "reserved": 9,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g4",
+    "bidWindowId": 74,
+    "total": 55,
+    "currentEnrolled": 28,
+    "reserved": 13,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g5",
+    "bidWindowId": 74,
+    "total": 57,
+    "currentEnrolled": 20,
+    "reserved": 34,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g1",
+    "bidWindowId": 74,
+    "total": 58,
+    "currentEnrolled": 1,
+    "reserved": 46,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g2",
+    "bidWindowId": 74,
+    "total": 51,
+    "currentEnrolled": 4,
+    "reserved": 34,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g3",
+    "bidWindowId": 74,
+    "total": 51,
+    "currentEnrolled": 2,
+    "reserved": 39,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g4",
+    "bidWindowId": 74,
+    "total": 56,
+    "currentEnrolled": 38,
+    "reserved": 8,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g5",
+    "bidWindowId": 74,
+    "total": 41,
+    "currentEnrolled": 31,
+    "reserved": 1,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g1",
+    "bidWindowId": 77,
+    "total": 55,
+    "currentEnrolled": 1,
+    "reserved": 43,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g2",
+    "bidWindowId": 77,
+    "total": 48,
+    "currentEnrolled": 16,
+    "reserved": 22,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g3",
+    "bidWindowId": 77,
+    "total": 53,
+    "currentEnrolled": 5,
+    "reserved": 35,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g4",
+    "bidWindowId": 77,
+    "total": 53,
+    "currentEnrolled": 18,
+    "reserved": 23,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g5",
+    "bidWindowId": 77,
+    "total": 55,
+    "currentEnrolled": 40,
+    "reserved": 7,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g1",
+    "bidWindowId": 77,
+    "total": 40,
+    "currentEnrolled": 15,
+    "reserved": 20,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g2",
+    "bidWindowId": 77,
+    "total": 48,
+    "currentEnrolled": 5,
+    "reserved": 36,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g3",
+    "bidWindowId": 77,
+    "total": 40,
+    "currentEnrolled": 3,
+    "reserved": 28,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g4",
+    "bidWindowId": 77,
+    "total": 56,
+    "currentEnrolled": 10,
+    "reserved": 37,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g5",
+    "bidWindowId": 77,
+    "total": 52,
+    "currentEnrolled": 12,
+    "reserved": 30,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g1",
+    "bidWindowId": 77,
+    "total": 54,
+    "currentEnrolled": 40,
+    "reserved": 11,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g2",
+    "bidWindowId": 77,
+    "total": 48,
+    "currentEnrolled": 28,
+    "reserved": 7,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g3",
+    "bidWindowId": 77,
+    "total": 55,
+    "currentEnrolled": 28,
+    "reserved": 15,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g4",
+    "bidWindowId": 77,
+    "total": 55,
+    "currentEnrolled": 40,
+    "reserved": 10,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g5",
+    "bidWindowId": 77,
+    "total": 46,
+    "currentEnrolled": 30,
+    "reserved": 8,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g1",
+    "bidWindowId": 77,
+    "total": 42,
+    "currentEnrolled": 20,
+    "reserved": 18,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g2",
+    "bidWindowId": 77,
+    "total": 42,
+    "currentEnrolled": 39,
+    "reserved": 1,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g3",
+    "bidWindowId": 77,
+    "total": 41,
+    "currentEnrolled": 29,
+    "reserved": 0,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g4",
+    "bidWindowId": 77,
+    "total": 57,
+    "currentEnrolled": 21,
+    "reserved": 34,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g5",
+    "bidWindowId": 77,
+    "total": 59,
+    "currentEnrolled": 21,
+    "reserved": 32,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g1",
+    "bidWindowId": 77,
+    "total": 44,
+    "currentEnrolled": 26,
+    "reserved": 14,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g2",
+    "bidWindowId": 77,
+    "total": 44,
+    "currentEnrolled": 6,
+    "reserved": 36,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g3",
+    "bidWindowId": 77,
+    "total": 47,
+    "currentEnrolled": 12,
+    "reserved": 24,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g4",
+    "bidWindowId": 77,
+    "total": 60,
+    "currentEnrolled": 34,
+    "reserved": 23,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g5",
+    "bidWindowId": 77,
+    "total": 43,
+    "currentEnrolled": 35,
+    "reserved": 6,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g1",
+    "bidWindowId": 85,
+    "total": 53,
+    "currentEnrolled": 20,
+    "reserved": 22,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g2",
+    "bidWindowId": 85,
+    "total": 60,
+    "currentEnrolled": 6,
+    "reserved": 39,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g3",
+    "bidWindowId": 85,
+    "total": 56,
+    "currentEnrolled": 18,
+    "reserved": 29,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g4",
+    "bidWindowId": 85,
+    "total": 47,
+    "currentEnrolled": 26,
+    "reserved": 9,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g5",
+    "bidWindowId": 85,
+    "total": 59,
+    "currentEnrolled": 29,
+    "reserved": 24,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g1",
+    "bidWindowId": 85,
+    "total": 40,
+    "currentEnrolled": 16,
+    "reserved": 16,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g2",
+    "bidWindowId": 85,
+    "total": 40,
+    "currentEnrolled": 30,
+    "reserved": 0,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g3",
+    "bidWindowId": 85,
+    "total": 46,
+    "currentEnrolled": 36,
+    "reserved": 0,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g4",
+    "bidWindowId": 85,
+    "total": 52,
+    "currentEnrolled": 13,
+    "reserved": 24,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g5",
+    "bidWindowId": 85,
+    "total": 44,
+    "currentEnrolled": 33,
+    "reserved": 2,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g1",
+    "bidWindowId": 85,
+    "total": 57,
+    "currentEnrolled": 9,
+    "reserved": 45,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g2",
+    "bidWindowId": 85,
+    "total": 57,
+    "currentEnrolled": 8,
+    "reserved": 35,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g3",
+    "bidWindowId": 85,
+    "total": 50,
+    "currentEnrolled": 11,
+    "reserved": 35,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g4",
+    "bidWindowId": 85,
+    "total": 54,
+    "currentEnrolled": 33,
+    "reserved": 19,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g5",
+    "bidWindowId": 85,
+    "total": 58,
+    "currentEnrolled": 18,
+    "reserved": 35,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g1",
+    "bidWindowId": 85,
+    "total": 53,
+    "currentEnrolled": 23,
+    "reserved": 24,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g2",
+    "bidWindowId": 85,
+    "total": 59,
+    "currentEnrolled": 34,
+    "reserved": 17,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g3",
+    "bidWindowId": 85,
+    "total": 46,
+    "currentEnrolled": 7,
+    "reserved": 34,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g4",
+    "bidWindowId": 85,
+    "total": 55,
+    "currentEnrolled": 30,
+    "reserved": 13,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g5",
+    "bidWindowId": 85,
+    "total": 40,
+    "currentEnrolled": 25,
+    "reserved": 4,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g1",
+    "bidWindowId": 85,
+    "total": 48,
+    "currentEnrolled": 8,
+    "reserved": 26,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g2",
+    "bidWindowId": 85,
+    "total": 50,
+    "currentEnrolled": 40,
+    "reserved": 2,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g3",
+    "bidWindowId": 85,
+    "total": 45,
+    "currentEnrolled": 38,
+    "reserved": 0,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g4",
+    "bidWindowId": 85,
+    "total": 60,
+    "currentEnrolled": 20,
+    "reserved": 33,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g5",
+    "bidWindowId": 85,
+    "total": 58,
+    "currentEnrolled": 39,
+    "reserved": 6,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g1",
+    "bidWindowId": 93,
+    "total": 52,
+    "currentEnrolled": 20,
+    "reserved": 21,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g2",
+    "bidWindowId": 93,
+    "total": 53,
+    "currentEnrolled": 33,
+    "reserved": 17,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g3",
+    "bidWindowId": 93,
+    "total": 46,
+    "currentEnrolled": 18,
+    "reserved": 23,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g4",
+    "bidWindowId": 93,
+    "total": 45,
+    "currentEnrolled": 33,
+    "reserved": 10,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g5",
+    "bidWindowId": 93,
+    "total": 47,
+    "currentEnrolled": 27,
+    "reserved": 16,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g1",
+    "bidWindowId": 93,
+    "total": 47,
+    "currentEnrolled": 35,
+    "reserved": 1,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g2",
+    "bidWindowId": 93,
+    "total": 60,
+    "currentEnrolled": 10,
+    "reserved": 43,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g3",
+    "bidWindowId": 93,
+    "total": 53,
+    "currentEnrolled": 19,
+    "reserved": 27,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g4",
+    "bidWindowId": 93,
+    "total": 48,
+    "currentEnrolled": 38,
+    "reserved": 1,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g5",
+    "bidWindowId": 93,
+    "total": 50,
+    "currentEnrolled": 17,
+    "reserved": 26,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g1",
+    "bidWindowId": 93,
+    "total": 42,
+    "currentEnrolled": 6,
+    "reserved": 23,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g2",
+    "bidWindowId": 93,
+    "total": 55,
+    "currentEnrolled": 13,
+    "reserved": 27,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g3",
+    "bidWindowId": 93,
+    "total": 55,
+    "currentEnrolled": 9,
+    "reserved": 32,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g4",
+    "bidWindowId": 93,
+    "total": 58,
+    "currentEnrolled": 36,
+    "reserved": 12,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g5",
+    "bidWindowId": 93,
+    "total": 44,
+    "currentEnrolled": 1,
+    "reserved": 37,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g1",
+    "bidWindowId": 93,
+    "total": 45,
+    "currentEnrolled": 9,
+    "reserved": 33,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g2",
+    "bidWindowId": 93,
+    "total": 60,
+    "currentEnrolled": 21,
+    "reserved": 24,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g3",
+    "bidWindowId": 93,
+    "total": 60,
+    "currentEnrolled": 5,
+    "reserved": 51,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g4",
+    "bidWindowId": 93,
+    "total": 50,
+    "currentEnrolled": 31,
+    "reserved": 16,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g5",
+    "bidWindowId": 93,
+    "total": 42,
+    "currentEnrolled": 7,
+    "reserved": 23,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g1",
+    "bidWindowId": 93,
+    "total": 43,
+    "currentEnrolled": 18,
+    "reserved": 20,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g2",
+    "bidWindowId": 93,
+    "total": 59,
+    "currentEnrolled": 11,
+    "reserved": 45,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g3",
+    "bidWindowId": 93,
+    "total": 57,
+    "currentEnrolled": 37,
+    "reserved": 12,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g4",
+    "bidWindowId": 93,
+    "total": 49,
+    "currentEnrolled": 29,
+    "reserved": 17,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g5",
+    "bidWindowId": 93,
+    "total": 45,
+    "currentEnrolled": 5,
+    "reserved": 33,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g1",
+    "bidWindowId": 96,
+    "total": 52,
+    "currentEnrolled": 31,
+    "reserved": 19,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g2",
+    "bidWindowId": 96,
+    "total": 45,
+    "currentEnrolled": 2,
+    "reserved": 38,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g3",
+    "bidWindowId": 96,
+    "total": 50,
+    "currentEnrolled": 31,
+    "reserved": 13,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g4",
+    "bidWindowId": 96,
+    "total": 59,
+    "currentEnrolled": 33,
+    "reserved": 21,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g5",
+    "bidWindowId": 96,
+    "total": 53,
+    "currentEnrolled": 19,
+    "reserved": 19,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g1",
+    "bidWindowId": 96,
+    "total": 55,
+    "currentEnrolled": 17,
+    "reserved": 32,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g2",
+    "bidWindowId": 96,
+    "total": 58,
+    "currentEnrolled": 9,
+    "reserved": 45,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g3",
+    "bidWindowId": 96,
+    "total": 41,
+    "currentEnrolled": 23,
+    "reserved": 15,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g4",
+    "bidWindowId": 96,
+    "total": 48,
+    "currentEnrolled": 1,
+    "reserved": 37,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g5",
+    "bidWindowId": 96,
+    "total": 44,
+    "currentEnrolled": 22,
+    "reserved": 14,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g1",
+    "bidWindowId": 96,
+    "total": 58,
+    "currentEnrolled": 25,
+    "reserved": 19,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g2",
+    "bidWindowId": 96,
+    "total": 59,
+    "currentEnrolled": 8,
+    "reserved": 41,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g3",
+    "bidWindowId": 96,
+    "total": 60,
+    "currentEnrolled": 40,
+    "reserved": 17,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g4",
+    "bidWindowId": 96,
+    "total": 47,
+    "currentEnrolled": 14,
+    "reserved": 27,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g5",
+    "bidWindowId": 96,
+    "total": 42,
+    "currentEnrolled": 19,
+    "reserved": 18,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g1",
+    "bidWindowId": 96,
+    "total": 51,
+    "currentEnrolled": 8,
+    "reserved": 41,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g2",
+    "bidWindowId": 96,
+    "total": 40,
+    "currentEnrolled": 18,
+    "reserved": 11,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g3",
+    "bidWindowId": 96,
+    "total": 58,
+    "currentEnrolled": 29,
+    "reserved": 23,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g4",
+    "bidWindowId": 96,
+    "total": 44,
+    "currentEnrolled": 18,
+    "reserved": 22,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g5",
+    "bidWindowId": 96,
+    "total": 43,
+    "currentEnrolled": 2,
+    "reserved": 37,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g1",
+    "bidWindowId": 96,
+    "total": 59,
+    "currentEnrolled": 2,
+    "reserved": 46,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g2",
+    "bidWindowId": 96,
+    "total": 43,
+    "currentEnrolled": 17,
+    "reserved": 24,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g3",
+    "bidWindowId": 96,
+    "total": 58,
+    "currentEnrolled": 15,
+    "reserved": 30,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g4",
+    "bidWindowId": 96,
+    "total": 43,
+    "currentEnrolled": 18,
+    "reserved": 14,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g5",
+    "bidWindowId": 96,
+    "total": 51,
+    "currentEnrolled": 3,
+    "reserved": 45,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g1",
+    "bidWindowId": 104,
+    "total": 57,
+    "currentEnrolled": 11,
+    "reserved": 41,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g2",
+    "bidWindowId": 104,
+    "total": 52,
+    "currentEnrolled": 14,
+    "reserved": 25,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g3",
+    "bidWindowId": 104,
+    "total": 50,
+    "currentEnrolled": 14,
+    "reserved": 26,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g4",
+    "bidWindowId": 104,
+    "total": 48,
+    "currentEnrolled": 8,
+    "reserved": 25,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g5",
+    "bidWindowId": 104,
+    "total": 56,
+    "currentEnrolled": 0,
+    "reserved": 53,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g1",
+    "bidWindowId": 104,
+    "total": 48,
+    "currentEnrolled": 23,
+    "reserved": 13,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g2",
+    "bidWindowId": 104,
+    "total": 56,
+    "currentEnrolled": 20,
+    "reserved": 32,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g3",
+    "bidWindowId": 104,
+    "total": 56,
+    "currentEnrolled": 27,
+    "reserved": 24,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g4",
+    "bidWindowId": 104,
+    "total": 45,
+    "currentEnrolled": 16,
+    "reserved": 17,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g5",
+    "bidWindowId": 104,
+    "total": 50,
+    "currentEnrolled": 22,
+    "reserved": 16,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g1",
+    "bidWindowId": 104,
+    "total": 41,
+    "currentEnrolled": 16,
+    "reserved": 17,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g2",
+    "bidWindowId": 104,
+    "total": 49,
+    "currentEnrolled": 39,
+    "reserved": 1,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g3",
+    "bidWindowId": 104,
+    "total": 52,
+    "currentEnrolled": 8,
+    "reserved": 39,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g4",
+    "bidWindowId": 104,
+    "total": 57,
+    "currentEnrolled": 13,
+    "reserved": 42,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g5",
+    "bidWindowId": 104,
+    "total": 43,
+    "currentEnrolled": 5,
+    "reserved": 26,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g1",
+    "bidWindowId": 104,
+    "total": 55,
+    "currentEnrolled": 22,
+    "reserved": 21,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g2",
+    "bidWindowId": 104,
+    "total": 57,
+    "currentEnrolled": 25,
+    "reserved": 25,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g3",
+    "bidWindowId": 104,
+    "total": 50,
+    "currentEnrolled": 1,
+    "reserved": 45,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g4",
+    "bidWindowId": 104,
+    "total": 45,
+    "currentEnrolled": 12,
+    "reserved": 29,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g5",
+    "bidWindowId": 104,
+    "total": 60,
+    "currentEnrolled": 13,
+    "reserved": 34,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g1",
+    "bidWindowId": 104,
+    "total": 47,
+    "currentEnrolled": 38,
+    "reserved": 0,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g2",
+    "bidWindowId": 104,
+    "total": 59,
+    "currentEnrolled": 10,
+    "reserved": 43,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g3",
+    "bidWindowId": 104,
+    "total": 50,
+    "currentEnrolled": 20,
+    "reserved": 19,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g4",
+    "bidWindowId": 104,
+    "total": 45,
+    "currentEnrolled": 24,
+    "reserved": 8,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g5",
+    "bidWindowId": 104,
+    "total": 44,
+    "currentEnrolled": 33,
+    "reserved": 0,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g1",
+    "bidWindowId": 112,
+    "total": 59,
+    "currentEnrolled": 24,
+    "reserved": 22,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g2",
+    "bidWindowId": 112,
+    "total": 41,
+    "currentEnrolled": 16,
+    "reserved": 18,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g3",
+    "bidWindowId": 112,
+    "total": 51,
+    "currentEnrolled": 37,
+    "reserved": 10,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g4",
+    "bidWindowId": 112,
+    "total": 52,
+    "currentEnrolled": 27,
+    "reserved": 20,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g5",
+    "bidWindowId": 112,
+    "total": 46,
+    "currentEnrolled": 40,
+    "reserved": 0,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g1",
+    "bidWindowId": 112,
+    "total": 47,
+    "currentEnrolled": 6,
+    "reserved": 37,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g2",
+    "bidWindowId": 112,
+    "total": 48,
+    "currentEnrolled": 9,
+    "reserved": 24,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g3",
+    "bidWindowId": 112,
+    "total": 46,
+    "currentEnrolled": 39,
+    "reserved": 4,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g4",
+    "bidWindowId": 112,
+    "total": 40,
+    "currentEnrolled": 37,
+    "reserved": 0,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g5",
+    "bidWindowId": 112,
+    "total": 43,
+    "currentEnrolled": 38,
+    "reserved": 2,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g1",
+    "bidWindowId": 112,
+    "total": 57,
+    "currentEnrolled": 1,
+    "reserved": 41,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g2",
+    "bidWindowId": 112,
+    "total": 48,
+    "currentEnrolled": 35,
+    "reserved": 4,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g3",
+    "bidWindowId": 112,
+    "total": 56,
+    "currentEnrolled": 39,
+    "reserved": 9,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g4",
+    "bidWindowId": 112,
+    "total": 44,
+    "currentEnrolled": 37,
+    "reserved": 0,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g5",
+    "bidWindowId": 112,
+    "total": 42,
+    "currentEnrolled": 35,
+    "reserved": 2,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g1",
+    "bidWindowId": 112,
+    "total": 45,
+    "currentEnrolled": 14,
+    "reserved": 25,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g2",
+    "bidWindowId": 112,
+    "total": 40,
+    "currentEnrolled": 24,
+    "reserved": 8,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g3",
+    "bidWindowId": 112,
+    "total": 50,
+    "currentEnrolled": 8,
+    "reserved": 38,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g4",
+    "bidWindowId": 112,
+    "total": 52,
+    "currentEnrolled": 11,
+    "reserved": 39,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g5",
+    "bidWindowId": 112,
+    "total": 42,
+    "currentEnrolled": 22,
+    "reserved": 11,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g1",
+    "bidWindowId": 112,
+    "total": 41,
+    "currentEnrolled": 18,
+    "reserved": 20,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g2",
+    "bidWindowId": 112,
+    "total": 43,
+    "currentEnrolled": 33,
+    "reserved": 0,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g3",
+    "bidWindowId": 112,
+    "total": 54,
+    "currentEnrolled": 21,
+    "reserved": 25,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g4",
+    "bidWindowId": 112,
+    "total": 41,
+    "currentEnrolled": 33,
+    "reserved": 0,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g5",
+    "bidWindowId": 112,
+    "total": 56,
+    "currentEnrolled": 11,
+    "reserved": 41,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g1",
+    "bidWindowId": 115,
+    "total": 44,
+    "currentEnrolled": 40,
+    "reserved": 0,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g2",
+    "bidWindowId": 115,
+    "total": 59,
+    "currentEnrolled": 25,
+    "reserved": 24,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g3",
+    "bidWindowId": 115,
+    "total": 46,
+    "currentEnrolled": 33,
+    "reserved": 5,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g4",
+    "bidWindowId": 115,
+    "total": 41,
+    "currentEnrolled": 17,
+    "reserved": 21,
+    "available": 3
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g5",
+    "bidWindowId": 115,
+    "total": 48,
+    "currentEnrolled": 28,
+    "reserved": 10,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g1",
+    "bidWindowId": 115,
+    "total": 51,
+    "currentEnrolled": 0,
+    "reserved": 37,
+    "available": 14
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g2",
+    "bidWindowId": 115,
+    "total": 59,
+    "currentEnrolled": 38,
+    "reserved": 17,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g3",
+    "bidWindowId": 115,
+    "total": 46,
+    "currentEnrolled": 22,
+    "reserved": 12,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g4",
+    "bidWindowId": 115,
+    "total": 50,
+    "currentEnrolled": 28,
+    "reserved": 15,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g5",
+    "bidWindowId": 115,
+    "total": 53,
+    "currentEnrolled": 6,
+    "reserved": 43,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g1",
+    "bidWindowId": 115,
+    "total": 60,
+    "currentEnrolled": 29,
+    "reserved": 21,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g2",
+    "bidWindowId": 115,
+    "total": 60,
+    "currentEnrolled": 10,
+    "reserved": 37,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g3",
+    "bidWindowId": 115,
+    "total": 40,
+    "currentEnrolled": 34,
+    "reserved": 4,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g4",
+    "bidWindowId": 115,
+    "total": 49,
+    "currentEnrolled": 26,
+    "reserved": 12,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g5",
+    "bidWindowId": 115,
+    "total": 54,
+    "currentEnrolled": 34,
+    "reserved": 13,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g1",
+    "bidWindowId": 115,
+    "total": 50,
+    "currentEnrolled": 5,
+    "reserved": 32,
+    "available": 13
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g2",
+    "bidWindowId": 115,
+    "total": 54,
+    "currentEnrolled": 19,
+    "reserved": 31,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g3",
+    "bidWindowId": 115,
+    "total": 54,
+    "currentEnrolled": 0,
+    "reserved": 49,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g4",
+    "bidWindowId": 115,
+    "total": 60,
+    "currentEnrolled": 13,
+    "reserved": 42,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g5",
+    "bidWindowId": 115,
+    "total": 56,
+    "currentEnrolled": 37,
+    "reserved": 14,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g1",
+    "bidWindowId": 115,
+    "total": 55,
+    "currentEnrolled": 8,
+    "reserved": 40,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g2",
+    "bidWindowId": 115,
+    "total": 56,
+    "currentEnrolled": 19,
+    "reserved": 25,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g3",
+    "bidWindowId": 115,
+    "total": 45,
+    "currentEnrolled": 1,
+    "reserved": 36,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g4",
+    "bidWindowId": 115,
+    "total": 48,
+    "currentEnrolled": 7,
+    "reserved": 33,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g5",
+    "bidWindowId": 115,
+    "total": 44,
+    "currentEnrolled": 0,
+    "reserved": 32,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g1",
+    "bidWindowId": 123,
+    "total": 51,
+    "currentEnrolled": 17,
+    "reserved": 24,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g2",
+    "bidWindowId": 123,
+    "total": 57,
+    "currentEnrolled": 13,
+    "reserved": 32,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g3",
+    "bidWindowId": 123,
+    "total": 47,
+    "currentEnrolled": 4,
+    "reserved": 31,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g4",
+    "bidWindowId": 123,
+    "total": 49,
+    "currentEnrolled": 26,
+    "reserved": 13,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g5",
+    "bidWindowId": 123,
+    "total": 47,
+    "currentEnrolled": 21,
+    "reserved": 24,
+    "available": 2
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g1",
+    "bidWindowId": 123,
+    "total": 59,
+    "currentEnrolled": 7,
+    "reserved": 48,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g2",
+    "bidWindowId": 123,
+    "total": 52,
+    "currentEnrolled": 18,
+    "reserved": 19,
+    "available": 15
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g3",
+    "bidWindowId": 123,
+    "total": 41,
+    "currentEnrolled": 27,
+    "reserved": 7,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g4",
+    "bidWindowId": 123,
+    "total": 59,
+    "currentEnrolled": 6,
+    "reserved": 45,
+    "available": 8
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g5",
+    "bidWindowId": 123,
+    "total": 50,
+    "currentEnrolled": 16,
+    "reserved": 24,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g1",
+    "bidWindowId": 123,
+    "total": 60,
+    "currentEnrolled": 23,
+    "reserved": 26,
+    "available": 11
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g2",
+    "bidWindowId": 123,
+    "total": 40,
+    "currentEnrolled": 30,
+    "reserved": 4,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g3",
+    "bidWindowId": 123,
+    "total": 48,
+    "currentEnrolled": 6,
+    "reserved": 35,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g4",
+    "bidWindowId": 123,
+    "total": 59,
+    "currentEnrolled": 35,
+    "reserved": 12,
+    "available": 12
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g5",
+    "bidWindowId": 123,
+    "total": 60,
+    "currentEnrolled": 32,
+    "reserved": 23,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g1",
+    "bidWindowId": 123,
+    "total": 41,
+    "currentEnrolled": 32,
+    "reserved": 4,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g2",
+    "bidWindowId": 123,
+    "total": 51,
+    "currentEnrolled": 20,
+    "reserved": 24,
+    "available": 7
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g3",
+    "bidWindowId": 123,
+    "total": 58,
+    "currentEnrolled": 8,
+    "reserved": 44,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g4",
+    "bidWindowId": 123,
+    "total": 46,
+    "currentEnrolled": 34,
+    "reserved": 2,
+    "available": 10
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g5",
+    "bidWindowId": 123,
+    "total": 45,
+    "currentEnrolled": 5,
+    "reserved": 31,
+    "available": 9
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g1",
+    "bidWindowId": 123,
+    "total": 59,
+    "currentEnrolled": 11,
+    "reserved": 43,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g2",
+    "bidWindowId": 123,
+    "total": 40,
+    "currentEnrolled": 14,
+    "reserved": 21,
+    "available": 5
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g3",
+    "bidWindowId": 123,
+    "total": 60,
+    "currentEnrolled": 15,
+    "reserved": 39,
+    "available": 6
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g4",
+    "bidWindowId": 123,
+    "total": 49,
+    "currentEnrolled": 0,
+    "reserved": 45,
+    "available": 4
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g5",
+    "bidWindowId": 123,
+    "total": 53,
+    "currentEnrolled": 10,
+    "reserved": 29,
+    "available": 14
   }
 ]
