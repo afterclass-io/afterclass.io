@@ -24,7 +24,7 @@ import { cn } from "@/common/functions";
 // Types
 // ---------------------------------------------------------------------------
 
-export type ShareEntity = "timetable";
+export type ShareEntity = "timetable" | "roadmap";
 export type ShareVisibility = "PRIVATE" | "UNLISTED" | "PUBLIC";
 
 export type ShareDialogProps = {
@@ -101,10 +101,16 @@ export function ShareDialog({
     setOrigin(window.location.origin);
   }, []);
 
+  // Engagement: count roadmap share-link copies (fire-and-forget).
+  const recordShareMutation = api.roadmaps.recordShare.useMutation();
+
   const copyLink = async (url: string) => {
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied");
+      if (entity === "roadmap") {
+        recordShareMutation.mutate({ roadmapId: entityId });
+      }
     } catch {
       toast.error("Failed to copy link");
     }
@@ -114,13 +120,20 @@ export function ShareDialog({
     onSuccess: (data) => {
       setToken(data.shareToken);
       toast.success("Sharing settings updated");
-      void utils.timetable.invalidate();
+      if (entity === "timetable") {
+        void utils.timetable.invalidate();
+      } else {
+        void utils.roadmaps.invalidate();
+      }
       onChanged?.(data);
       if (data.visibility !== "PRIVATE" && data.shareToken) {
         // Keep the dialog open so the fresh link is visible, and copy it.
         // data.shareToken comes straight from the mutation response, so this
         // never copies a stale token.
-        const url = `${origin}/share/${entity}/${data.shareToken}`;
+        const url =
+          entity === "roadmap" && data.visibility === "PUBLIC"
+            ? `${origin}/roadmaps/${entityId}`
+            : `${origin}/share/${entity}/${data.shareToken}`;
         void copyLink(url);
       } else {
         // PRIVATE — no link to show, close as before.
@@ -132,11 +145,16 @@ export function ShareDialog({
     },
   });
 
-  // Timetables are shared via their token link. The link reflects the SAVED
-  // visibility so a not-yet-public timetable never shows a live-looking URL.
+  // PUBLIC roadmaps are shared via their canonical public page; unlisted
+  // roadmaps (and all timetables, which have no public-by-id page) use the
+  // token link. The link reflects the SAVED visibility so a not-yet-public
+  // roadmap never shows a live-looking URL.
   const shareUrl = useMemo(() => {
+    if (entity === "roadmap" && visibility === "PUBLIC") {
+      return `${origin}/roadmaps/${entityId}`;
+    }
     return token ? `${origin}/share/${entity}/${token}` : null;
-  }, [entity, origin, token]);
+  }, [entity, entityId, origin, token, visibility]);
 
   const handleCopy = async () => {
     if (!shareUrl) return;
@@ -221,7 +239,9 @@ export function ShareDialog({
             )}
             {draft === "PUBLIC" && (
               <p className="text-muted-foreground text-xs">
-                Public timetables are discoverable by other students.
+                {entity === "roadmap"
+                  ? "Public roadmaps appear in the public gallery for other students to discover."
+                  : "Public timetables are discoverable by other students."}
               </p>
             )}
           </div>

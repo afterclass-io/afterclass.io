@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { api } from "@/common/tools/trpc/react";
 import {
   Breadcrumb,
@@ -49,6 +49,34 @@ const BreadcrumbTrail = ({
   </Breadcrumb>
 );
 
+/** Trail for /roadmaps, /roadmaps?view=mine and /roadmaps/[id]. */
+const RoadmapsBreadcrumb = ({
+  id,
+  ...props
+}: React.ComponentProps<typeof Breadcrumb> & { id?: string }) => {
+  const searchParams = useSearchParams();
+  // "mine" is the redirect route for the personal editor — never a roadmap id.
+  // Only query the roadmap name on genuine public detail pages; the editor
+  // trail shows "Personal" instead.
+  const isMine = id === "mine" || searchParams.get("view") === "mine";
+  const roadmapQuery = api.roadmaps.getById.useQuery(
+    { id: id ?? "" },
+    { enabled: !!id && !isMine, retry: false },
+  );
+
+  const elements: BreadcrumbElement[] = [
+    HOME_BREADCRUMB,
+    { label: "Roadmaps", href: "/roadmaps" },
+  ];
+  if (isMine) {
+    elements.push({ label: "Personal" });
+  } else if (id) {
+    elements.push({ label: roadmapQuery.data?.roadmap.name ?? "Roadmap" });
+  }
+
+  return <BreadcrumbTrail elements={elements} {...props} />;
+};
+
 export const HomeBreadcrumb = (
   props: React.ComponentProps<typeof Breadcrumb>,
 ) => {
@@ -68,6 +96,23 @@ export const HomeBreadcrumb = (
 
   const elements = [HOME_BREADCRUMB];
   let isSuccess = false;
+
+  // /roadmaps needs search params + a slug lookup, so it lives in its own
+  // Suspense-wrapped component (useSearchParams must sit inside Suspense).
+  if (pathSegments[0] === "roadmaps") {
+    return (
+      <React.Suspense
+        fallback={
+          <BreadcrumbTrail
+            elements={[HOME_BREADCRUMB, { label: "Roadmaps" }]}
+            {...props}
+          />
+        }
+      >
+        <RoadmapsBreadcrumb id={pathSegments[1]} {...props} />
+      </React.Suspense>
+    );
+  }
 
   switch (pathSegments[0]) {
     case "timetable": {

@@ -125,6 +125,16 @@ const bidPrediction = require("./data/21_bid_predictions.json");
     data: userTimetableSlots,
   });
 
+  const userRoadmaps = require("./data/25_user_roadmaps.json");
+  await prisma.userRoadmap.createMany({
+    data: userRoadmaps,
+  });
+
+  const userRoadmapEntries = require("./data/26_user_roadmap_entries.json");
+  await prisma.userRoadmapEntry.createMany({
+    data: userRoadmapEntries,
+  });
+
   const userBidBudgets = require("./data/27_user_bid_budgets.json");
   await prisma.userBidBudget.createMany({
     data: userBidBudgets,
