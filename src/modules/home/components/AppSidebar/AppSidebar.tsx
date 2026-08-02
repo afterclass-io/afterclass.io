@@ -14,7 +14,9 @@ import {
 } from "@/common/components/sidebar";
 import { Logo } from "@/common/components/logo";
 import {
+  BooksIcon,
   ChartLineIcon,
+  ClockIcon,
   GithubIcon,
   HelpDeskIcon,
   PlusIcon,
@@ -57,8 +59,22 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
     },
     {
       label: "Bid Analytics",
-      icon: <ChartLineIcon />,
-      href: "/bidding",
+      icon: <ChartLineIcon size={16} />,
+      href: "/bidding/analytics",
+      isActiveWithoutExact: true,
+      isNew: true,
+    },
+    {
+      label: "Timetable",
+      icon: <ClockIcon size={16} />,
+      href: "/timetable",
+      isActiveWithoutExact: true,
+      isNew: true,
+    },
+    {
+      label: "Roadmaps",
+      icon: <BooksIcon size={16} />,
+      href: "/roadmaps",
       isActiveWithoutExact: true,
       isNew: true,
     },

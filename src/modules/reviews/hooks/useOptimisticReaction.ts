@@ -52,12 +52,12 @@ export function useOptimisticReaction() {
 
   const applyOptimisticUpdate = useCallback(
     (variables: Parameters<typeof mutate>[0]) => {
-      const { reviewId, reaction, userId } = variables;
+      const { reviewId, reaction } = variables;
 
       utils.reviewReactions.getByReviewId.setData(
         { reviewId },
         (oldQueryData) => {
-          const reactingUserId = userId ?? session?.user.id ?? "";
+          const reactingUserId = session?.user.id ?? "";
 
           // when user undo their reaction
           if (!reaction) {

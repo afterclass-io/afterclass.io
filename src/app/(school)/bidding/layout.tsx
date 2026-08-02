@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 
+import { ConstrainedContainer } from "@/common/components/constrained-container";
 import { CtaButton } from "@/common/components/cta-button";
 import { EditIcon, GithubIcon, PlusIcon } from "@/common/components/icons";
 import { env } from "@/env";
@@ -8,7 +9,7 @@ import { ReviewCtaButtons } from "@/modules/bidding/components/ReviewCtaButtons"
 
 export default function BidLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="relative flex w-full justify-center gap-6">
+    <ConstrainedContainer className="relative flex w-full justify-center gap-6">
       {children}
       <div className="sticky top-24 hidden h-fit max-w-min flex-col items-start gap-6 text-nowrap lg:flex">
         <CtaButton
@@ -33,6 +34,6 @@ export default function BidLayout({ children }: { children: ReactNode }) {
         <ReviewCtaButtons />
         <BidWindowScheduleCard />
       </div>
-    </div>
+    </ConstrainedContainer>
   );
 }

@@ -38,6 +38,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# review artifacts
+.review-shots/
+
 # typescript
 *.tsbuildinfo
 
@@ -46,3 +49,6 @@ storybook-static/
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# git worktrees
+.worktrees/

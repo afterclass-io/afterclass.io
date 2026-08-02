@@ -1,0 +1,32 @@
+[
+  {
+    "id": "bid-001-user-a-acct102",
+    "userId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "classId": "seed-ay202627t1-acct102-g1",
+    "bidWindowId": 37,
+    "bidAmount": 50,
+    "notes": "Need this for my accounting core requirements",
+    "status": "PLANNED",
+    "createdAt": "2026-07-20T10:00:00.000Z"
+  },
+  {
+    "id": "bid-002-user-a-mgmt214",
+    "userId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "classId": "seed-ay202627t1-mgmt214-g1",
+    "bidWindowId": 37,
+    "bidAmount": 30,
+    "notes": null,
+    "status": "SECURED",
+    "createdAt": "2026-07-20T10:05:00.000Z"
+  },
+  {
+    "id": "bid-003-user-a-comm662",
+    "userId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "classId": "seed-ay202627t1-comm662-g1",
+    "bidWindowId": 37,
+    "bidAmount": 25,
+    "notes": "Backup option if first choice fails",
+    "status": "MISSED",
+    "createdAt": "2026-07-20T10:10:00.000Z"
+  }
+]

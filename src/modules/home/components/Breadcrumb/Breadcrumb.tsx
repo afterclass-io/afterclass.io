@@ -21,6 +21,34 @@ const HOME_BREADCRUMB: BreadcrumbElement = {
   href: "/",
 };
 
+const BreadcrumbTrail = ({
+  elements,
+  ...props
+}: React.ComponentProps<typeof Breadcrumb> & {
+  elements: BreadcrumbElement[];
+}) => (
+  <Breadcrumb {...props}>
+    <BreadcrumbList>
+      {elements.map((element, index) => (
+        <React.Fragment key={element.label}>
+          <BreadcrumbItem>
+            {element.href && index < elements.length - 1 ? (
+              <BreadcrumbLink href={element.href} className="max-w-80 truncate">
+                {element.label}
+              </BreadcrumbLink>
+            ) : (
+              <BreadcrumbPage className="max-w-80 truncate">
+                {element.label}
+              </BreadcrumbPage>
+            )}
+          </BreadcrumbItem>
+          {index < elements.length - 1 && <BreadcrumbSeparator />}
+        </React.Fragment>
+      ))}
+    </BreadcrumbList>
+  </Breadcrumb>
+);
+
 export const HomeBreadcrumb = (
   props: React.ComponentProps<typeof Breadcrumb>,
 ) => {
@@ -42,6 +70,12 @@ export const HomeBreadcrumb = (
   let isSuccess = false;
 
   switch (pathSegments[0]) {
+    case "timetable": {
+      elements.push({ label: "Timetable" });
+      isSuccess = true;
+      break;
+    }
+
     case "professor": {
       if (profQuery.isSuccess && profQuery.data) {
         elements.push({
@@ -117,29 +151,5 @@ export const HomeBreadcrumb = (
     );
   }
 
-  return (
-    <Breadcrumb {...props}>
-      <BreadcrumbList>
-        {elements.map((element, index) => (
-          <React.Fragment key={element.label}>
-            <BreadcrumbItem>
-              {element.href && index < elements.length - 1 ? (
-                <BreadcrumbLink
-                  href={element.href}
-                  className="max-w-80 truncate"
-                >
-                  {element.label}
-                </BreadcrumbLink>
-              ) : (
-                <BreadcrumbPage className="max-w-80 truncate">
-                  {element.label}
-                </BreadcrumbPage>
-              )}
-            </BreadcrumbItem>
-            {index < elements.length - 1 && <BreadcrumbSeparator />}
-          </React.Fragment>
-        ))}
-      </BreadcrumbList>
-    </Breadcrumb>
-  );
+  return <BreadcrumbTrail elements={elements} {...props} />;
 };

@@ -11,6 +11,9 @@ import { reviewEventsRouter } from "@/server/api/reviewEvents/router";
 import { reviewReactionsRouter } from "@/server/api/reviewReactions/router";
 import { reviewVotesRouter } from "@/server/api/reviewVotes/router";
 import { safetyFactorsRouter } from "@/server/api/safetyFactors/router";
+import { sharingRouter } from "@/server/api/sharing/router";
+import { timetableRouter } from "@/server/api/timetable/router";
+import { userBidsRouter } from "@/server/api/userBids/router";
 
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 
@@ -33,6 +36,9 @@ export const appRouter = createTRPCRouter({
   reviewReactions: reviewReactionsRouter,
   reviewVotes: reviewVotesRouter,
   safetyFactors: safetyFactorsRouter,
+  sharing: sharingRouter,
+  timetable: timetableRouter,
+  userBids: userBidsRouter,
 });
 
 // export type definition of API

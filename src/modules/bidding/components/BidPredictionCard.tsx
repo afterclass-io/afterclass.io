@@ -12,6 +12,7 @@ import { Progress } from "@/common/components/progress";
 import { Tag } from "@/common/components/tag";
 import { formatNumberShortScale, formatPercentage } from "@/common/functions";
 import { BidPredictionFormula } from "@/modules/bidding/components/BidPredictionFormula";
+import { multiplierAt } from "@/modules/bidding/utils/bid-prediction";
 import { type SafetyFactor } from "@prisma/client";
 import { useState } from "react";
 import { Info } from "lucide-react";
@@ -160,11 +161,10 @@ export const BidPredictionCard = ({
           <div>Min</div>
           <BidPredictionFormula
             predicted={minPrediction.value}
-            multiplier={
-              minPrediction.safetyFactor.find(
-                (sf) => sf.beatsPercentage === beatsPercentage,
-              )?.multiplier ?? 1
-            }
+            multiplier={multiplierAt(
+              minPrediction.safetyFactor,
+              beatsPercentage,
+            )}
             uncertainty={minPrediction.uncertainty}
             onRecommendedChange={(value) => setRecommendedMin(value)}
           />
@@ -173,11 +173,10 @@ export const BidPredictionCard = ({
           <div>Median</div>
           <BidPredictionFormula
             predicted={medianPrediction.value}
-            multiplier={
-              medianPrediction.safetyFactor.find(
-                (sf) => sf.beatsPercentage === beatsPercentage,
-              )?.multiplier ?? 1
-            }
+            multiplier={multiplierAt(
+              medianPrediction.safetyFactor,
+              beatsPercentage,
+            )}
             uncertainty={medianPrediction.uncertainty}
             onRecommendedChange={(value) => setRecommendedMedian(value)}
           />

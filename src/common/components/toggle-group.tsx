@@ -7,9 +7,19 @@ import { type VariantProps } from "class-variance-authority";
 import { cn } from "@/common/functions";
 import { toggleVariants } from "@/common/components/toggle";
 
-const ToggleGroupContext = React.createContext<
-  VariantProps<typeof toggleVariants>
->({
+/**
+ * `segmented` renders the group as a proper segmented control (muted track,
+ * raised active item) that stays legible in both light and dark themes.
+ * The base toggle variants (`default`, `outline`) are untouched.
+ */
+type ToggleGroupVariant =
+  | VariantProps<typeof toggleVariants>["variant"]
+  | "segmented";
+
+const ToggleGroupContext = React.createContext<{
+  variant?: ToggleGroupVariant;
+  size?: VariantProps<typeof toggleVariants>["size"];
+}>({
   size: "default",
   variant: "default",
 });
@@ -20,8 +30,10 @@ function ToggleGroup({
   size,
   children,
   ...props
-}: React.ComponentProps<typeof ToggleGroupPrimitive.Root> &
-  VariantProps<typeof toggleVariants>) {
+}: React.ComponentProps<typeof ToggleGroupPrimitive.Root> & {
+  variant?: ToggleGroupVariant;
+  size?: VariantProps<typeof toggleVariants>["size"];
+}) {
   return (
     <ToggleGroupPrimitive.Root
       data-slot="toggle-group"
@@ -29,6 +41,8 @@ function ToggleGroup({
       data-size={size}
       className={cn(
         "group/toggle-group flex w-fit items-center rounded-md data-[variant=outline]:shadow-xs",
+        variant === "segmented" &&
+          "bg-muted text-muted-foreground gap-1 rounded-lg p-1",
         className,
       )}
       {...props}
@@ -46,21 +60,27 @@ function ToggleGroupItem({
   variant,
   size,
   ...props
-}: React.ComponentProps<typeof ToggleGroupPrimitive.Item> &
-  VariantProps<typeof toggleVariants>) {
+}: React.ComponentProps<typeof ToggleGroupPrimitive.Item> & {
+  variant?: ToggleGroupVariant;
+  size?: VariantProps<typeof toggleVariants>["size"];
+}) {
   const context = React.useContext(ToggleGroupContext);
+  const resolvedVariant = context.variant ?? variant;
 
   return (
     <ToggleGroupPrimitive.Item
       data-slot="toggle-group-item"
-      data-variant={context.variant ?? variant}
+      data-variant={resolvedVariant}
       data-size={context.size ?? size}
       className={cn(
         toggleVariants({
-          variant: context.variant ?? variant,
+          variant:
+            resolvedVariant === "segmented" ? "default" : resolvedVariant,
           size: context.size ?? size,
         }),
         "min-w-0 flex-1 shrink-0 rounded-none shadow-none first:rounded-l-md last:rounded-r-md focus:z-10 focus-visible:z-10 data-[variant=outline]:border-l-0 data-[variant=outline]:first:border-l",
+        resolvedVariant === "segmented" &&
+          "hover:bg-background/60 hover:text-foreground data-[state=on]:bg-background data-[state=on]:text-foreground rounded-md first:rounded-md last:rounded-md data-[state=on]:shadow-xs",
         className,
       )}
       {...props}

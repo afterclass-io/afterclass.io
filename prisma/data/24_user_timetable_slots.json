@@ -1,0 +1,32 @@
+[
+  {
+    "id": "slot-001-user-a-y1t1-cor1702",
+    "timetableId": "timetable-001-user-a",
+    "classId": "068440df-7e9b-76b1-9f78-c7994c74064e"
+  },
+  {
+    "id": "slot-002-user-a-y1t2-is215",
+    "timetableId": "timetable-002-user-a",
+    "classId": "068440df-7e9b-72a7-9b9e-af3bb6bd263f"
+  },
+  {
+    "id": "slot-003-user-a-y1t2-acct102",
+    "timetableId": "timetable-002-user-a",
+    "classId": "068440df-7e9a-7029-ab0f-b14e830a0392"
+  },
+  {
+    "id": "slot-004-user-a-y2t1-mgmt214",
+    "timetableId": "timetable-003-user-a",
+    "classId": "seed-ay202526t1-mgmt214-g1"
+  },
+  {
+    "id": "slot-005-user-a-y3t1-comm662",
+    "timetableId": "timetable-004-user-a",
+    "classId": "seed-ay202627t1-comm662-g1"
+  },
+  {
+    "id": "slot-006-user-b-y1t1-cor1702",
+    "timetableId": "timetable-005-user-b",
+    "classId": "068440df-7e9b-76b1-9f78-c7994c74064e"
+  }
+]

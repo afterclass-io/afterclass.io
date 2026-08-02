@@ -1,0 +1,27 @@
+[
+  {
+    "userId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "acadTermId": "AY202425T1",
+    "balance": 100
+  },
+  {
+    "userId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "acadTermId": "AY202425T2",
+    "balance": 100
+  },
+  {
+    "userId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "acadTermId": "AY202526T1",
+    "balance": 100
+  },
+  {
+    "userId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "acadTermId": "AY202627T1",
+    "balance": 100
+  },
+  {
+    "userId": "11894f96-aa54-4632-bf33-8c46999aab1b",
+    "acadTermId": "AY202425T1",
+    "balance": 80
+  }
+]

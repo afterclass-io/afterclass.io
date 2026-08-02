@@ -112,6 +112,28 @@ const bidPrediction = require("./data/21_bid_predictions.json");
   await prisma.hackSubmission.createMany({
     data: hackSubmission,
   });
+
+// === Planning integration seed data ===
+
+  const userTimetables = require("./data/23_user_timetables.json");
+  await prisma.userTimetable.createMany({
+    data: userTimetables,
+  });
+
+  const userTimetableSlots = require("./data/24_user_timetable_slots.json");
+  await prisma.userTimetableSlot.createMany({
+    data: userTimetableSlots,
+  });
+
+  const userBidBudgets = require("./data/27_user_bid_budgets.json");
+  await prisma.userBidBudget.createMany({
+    data: userBidBudgets,
+  });
+
+  const userBids = require("./data/28_user_bids.json");
+  await prisma.userBid.createMany({
+    data: userBids,
+  });
 }
 
 main()

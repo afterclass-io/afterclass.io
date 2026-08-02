@@ -2,10 +2,14 @@
 import { type ComponentProps } from "react";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
+import { cn } from "@/common/functions";
 
-export const SuccessRateSlider = (props: ComponentProps<typeof Slider>) => {
+export const SuccessRateSlider = ({
+  wrapperClassName,
+  ...props
+}: ComponentProps<typeof Slider> & { wrapperClassName?: string }) => {
   return (
-    <div className="p-6 pt-2">
+    <div className={cn("p-6 pt-2", wrapperClassName)}>
       <Slider
         min={50}
         max={95}

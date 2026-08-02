@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 
+import { ConstrainedContainer } from "@/common/components/constrained-container";
 import { CtaButton } from "@/common/components/cta-button";
 import { EditIcon, GithubIcon, PlusIcon } from "@/common/components/icons";
 import { env } from "@/env";
@@ -19,7 +20,7 @@ export default function ReviewLayout({
   reviews: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center space-y-4 md:space-y-6">
+    <ConstrainedContainer className="flex flex-col items-center space-y-4 md:space-y-6">
       {header}
       {rating}
       {filter}
@@ -49,6 +50,6 @@ export default function ReviewLayout({
           <BidWindowScheduleCard />
         </div>
       </div>
-    </div>
+    </ConstrainedContainer>
   );
 }
