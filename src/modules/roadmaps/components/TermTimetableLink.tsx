@@ -26,7 +26,6 @@ import {
 // ---------------------------------------------------------------------------
 
 export function TermTimetableLink({
-  yearNumber,
   term,
   acadTerms,
   className,

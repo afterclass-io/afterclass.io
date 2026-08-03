@@ -38,7 +38,7 @@ export const ReviewSectionHeaderSortGroup = () => {
     if (sortBy !== defaultSortBy) {
       setSortBy(defaultSortBy);
     }
-  }, [defaultSortBy]);
+  }, [defaultSortBy, sortBy]);
 
   const ecfg = useEdgeConfigs();
 

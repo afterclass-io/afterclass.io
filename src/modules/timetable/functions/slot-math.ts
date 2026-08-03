@@ -80,11 +80,6 @@ export function timeToMinutes(t: string): number {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-/** Two intervals [s1,e1) and [s2,e2) overlap? */
-function overlaps(s1: number, e1: number, s2: number, e2: number): boolean {
-  return s1 < e2 && s2 < e1;
-}
-
 /** Clamp a minute value into [GRID_START_MIN, GRID_END_MIN]. */
 function clampToGrid(minutes: number): number {
   return Math.max(GRID_START_MIN, Math.min(GRID_END_MIN, minutes));

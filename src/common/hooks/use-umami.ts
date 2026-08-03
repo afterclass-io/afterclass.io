@@ -24,9 +24,9 @@ type EventData = Record<string, string | number>;
 type SessionData = Record<string, unknown>;
 
 interface Umami {
-  pageView(data?: Partial<PageView>): void;
-  event(name: EventName, data?: EventData): void;
-  identify(session_data: SessionData): void;
+  pageView: (data?: Partial<PageView>) => void;
+  event: (name: EventName, data?: EventData) => void;
+  identify: (session_data: SessionData) => void;
 }
 
 interface _Umami {

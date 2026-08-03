@@ -104,7 +104,7 @@ export const LoginForm = () => {
     // which triggers this effect
     // see https://github.com/orgs/supabase/discussions/12939
     // see https://github.com/vercel/next.js/discussions/49465
-  }, [searchParams]);
+  }, [searchParams, form]);
 
   const onSubmit: SubmitHandler<LoginFormInputs> = async ({
     email,

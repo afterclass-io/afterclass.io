@@ -187,23 +187,6 @@ export function RoadmapGrid({
     [conflicts],
   );
 
-  // Sortable IDs for each term cell
-  const sortableIdsByTerm = useMemo(() => {
-    const map = new Map<string, string[]>();
-    for (let i = 0; i < localEntries.length; i++) {
-      const entry = localEntries[i]!;
-      const key = `${entry.yearNumber}-${entry.term}`;
-      const ids = map.get(key);
-      const sid = entrySortableId(entry, i);
-      if (ids) {
-        ids.push(sid);
-      } else {
-        map.set(key, [sid]);
-      }
-    }
-    return map;
-  }, [localEntries]);
-
   // Build a lookup from sortableId → entry index
   const entryIndexById = useMemo(() => {
     const map = new Map<string, number>();

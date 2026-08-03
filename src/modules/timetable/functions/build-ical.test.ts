@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildIcal } from "./build-ical";
 import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
-import ical from "ical-generator";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -27,12 +26,6 @@ function makeClass(overrides: Partial<ArrangedClass> = {}): ArrangedClass {
     examTimings: [],
     ...overrides,
   };
-}
-
-/** Parse iCal string back through ical-generator for validation. */
-function parseIcal(_ics: string) {
-  // Validate by creating a new calendar — just check it doesn't throw
-  ical({});
 }
 
 // ---------------------------------------------------------------------------

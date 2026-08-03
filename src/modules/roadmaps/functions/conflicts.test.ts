@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { detectConflicts, findEntryByCourse } from "./conflicts";
-import type { Entry, Conflict, ExamTiming } from "./conflicts";
+import type { Entry, ExamTiming } from "./conflicts";
 
 // ---------------------------------------------------------------------------
 // Helper factories

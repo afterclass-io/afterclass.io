@@ -168,7 +168,7 @@ export function RoadmapTimeline({
     [entries],
   );
 
-  const [_nodes, _setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [, , onNodesChange] = useNodesState(initialNodes);
 
   // Compute max Y for dynamic height
   const maxY = useMemo(() => {

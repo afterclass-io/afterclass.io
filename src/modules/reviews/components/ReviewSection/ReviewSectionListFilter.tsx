@@ -29,7 +29,7 @@ export const ReviewSectionListFilter = () => {
     if (filterFor !== defaultFilterFor) {
       setFilterFor(defaultFilterFor);
     }
-  }, [defaultFilterFor]);
+  }, [defaultFilterFor, filterFor]);
 
   const ecfg = useEdgeConfigs();
   if (!ecfg.enableReviewFilter) {

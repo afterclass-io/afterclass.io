@@ -63,17 +63,20 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   // Build lookup maps from bidResults
-  const profMap = new Map<string, string>();
-  const sectionMap = new Map<string, string>();
-  for (const br of bidResults) {
-    const key = `${br.bidWindow.acadTermId}/${br.bidWindow.round}/${br.bidWindow.window}`;
-    if (!profMap.has(key) && br.class.professor?.name) {
-      profMap.set(key, br.class.professor.name);
+  const { profMap, sectionMap } = useMemo(() => {
+    const profMap = new Map<string, string>();
+    const sectionMap = new Map<string, string>();
+    for (const br of bidResults) {
+      const key = `${br.bidWindow.acadTermId}/${br.bidWindow.round}/${br.bidWindow.window}`;
+      if (!profMap.has(key) && br.class.professor?.name) {
+        profMap.set(key, br.class.professor.name);
+      }
+      if (!sectionMap.has(key) && br.class.section) {
+        sectionMap.set(key, br.class.section);
+      }
     }
-    if (!sectionMap.has(key) && br.class.section) {
-      sectionMap.set(key, br.class.section);
-    }
-  }
+    return { profMap, sectionMap };
+  }, [bidResults]);
 
   // Compute academic term groups for zebra striping
   const termGroups = useMemo(() => {

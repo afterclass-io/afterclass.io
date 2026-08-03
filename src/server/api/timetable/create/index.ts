@@ -4,7 +4,6 @@ import { protectedProcedure } from "@/server/api/trpc";
 
 function autoName(plansCount: number): string {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const letters = alphabet.split("").filter((_, i, arr) => i < arr.length);
   return `Plan ${alphabet[plansCount] ?? String(plansCount)}`;
 }
 

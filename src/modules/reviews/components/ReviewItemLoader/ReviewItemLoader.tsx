@@ -119,9 +119,13 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
 
   const [{ pages }, reviewQuery] = getInfiniteQuery();
   const { fetchNextPage, hasNextPage, isPending, isRefetching } = reviewQuery;
+  // reviewQuery is a tRPC infinite-query result, recreated on every render;
+  // we only want to refetch when the search params change. refetch is a
+  // stable React Query function, so `reviewQuery` is intentionally excluded.
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     reviewQuery.refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const reviews = pages.flatMap((page) => page.items);

@@ -1,6 +1,5 @@
 import ical, { ICalCalendarMethod, ICalEventRepeatingFreq, ICalWeekday } from "ical-generator";
-import type { ArrangedClass, ClassExamTiming } from "@/modules/timetable/components/TimetableGrid";
-import type { ClassTimingLike } from "@/modules/timetable/functions/slot-math";
+import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
 
 // ---------------------------------------------------------------------------
 // Types

@@ -5,7 +5,7 @@ import {
   GRID_START_MIN,
   GRID_END_MIN,
 } from "./slot-math";
-import type { ClassTimingLike, PositionedSlot } from "./slot-math";
+import type { ClassTimingLike } from "./slot-math";
 
 // ---------------------------------------------------------------------------
 // timeToMinutes
