@@ -133,7 +133,7 @@ function AgendaRow({
             <span className="ml-1 font-normal opacity-75">· Exam</span>
           )}
         </span>
-        {(venue || slot.professorName) && (
+        {(venue ?? slot.professorName) && (
           <span className="block truncate opacity-75">
             {[venue, slot.professorName].filter(Boolean).join(" · ")}
           </span>

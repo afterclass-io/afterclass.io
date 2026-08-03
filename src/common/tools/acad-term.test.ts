@@ -245,8 +245,13 @@ describe("_fetchAcadTerms", () => {
  */
 function buildCircularMockDb(rows: unknown[]) {
   const findMany = vi.fn().mockResolvedValue(rows);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockDb: any = { acadTerm: { findMany } };
+  const mockDb = {
+    acadTerm: { findMany },
+    _engine: undefined,
+  } as {
+    acadTerm: { findMany: typeof findMany };
+    _engine?: unknown;
+  };
   mockDb._engine = { client: mockDb }; // circular, like a real PrismaClient
   expect(() => JSON.stringify(mockDb)).toThrow(); // sanity: not serializable
   return { mockDb, findMany };
