@@ -1,6 +1,4 @@
 import { api } from "@/common/tools/trpc/server";
-import { BidChart } from "@/modules/bidding/components/BidChart";
-import { BidChartFilterTagGroup } from "@/modules/bidding/components/BidChartFilterTagGroup";
 import {
   Card,
   CardContent,
@@ -11,8 +9,24 @@ import {
 import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
 import { notFound } from "next/navigation";
 import { MultiplierType, PredictionType } from "@prisma/client";
-import { Info } from "lucide-react";
+import type { SafetyFactor } from "@prisma/client";
 import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
+import { BidAnalyticsClient } from "@/modules/bidding/components/BidAnalyticsClient";
+import { selectOneClassPerTerm } from "@/modules/bidding/utils/selectOneClassPerTerm";
+
+/** Filter safety factors to the subset used by bid prediction cards. */
+function filterSafetyFactors(
+  factors: SafetyFactor[],
+  acadTermId: string,
+  predictionType: PredictionType,
+): SafetyFactor[] {
+  return factors.filter(
+    (sf) =>
+      sf.acadTermId === acadTermId &&
+      sf.multiplierType === MultiplierType.EMPIRICAL &&
+      sf.predictionType === predictionType,
+  );
+}
 
 export default async function BiddingHistoryPage({
   searchParams,
@@ -23,8 +37,16 @@ export default async function BiddingHistoryPage({
   const classId = _searchParams.classId;
   let courseCode = _searchParams.course;
   let section = _searchParams.section;
-  const rounds = _searchParams.rounds as string | string[];
-  const windows = _searchParams.windows as string | string[];
+  const initialRounds = _searchParams.rounds
+    ? Array.isArray(_searchParams.rounds)
+      ? _searchParams.rounds
+      : [_searchParams.rounds]
+    : [];
+  const initialWindows = _searchParams.windows
+    ? Array.isArray(_searchParams.windows)
+      ? _searchParams.windows
+      : [_searchParams.windows]
+    : [];
 
   const _class = await api.classes.getAll({ id: classId, limit: 1 });
   if (!courseCode || !section) {
@@ -38,117 +60,172 @@ export default async function BiddingHistoryPage({
     section = _class[0]!.section;
   }
 
+  const classInfo = _class[0];
+  const professorId = classInfo?.professor?.id;
+
+  // Reference timings for timing-based section selection
+  const referenceTimings =
+    classInfo?.classTimings.map((t) => ({
+      dayOfWeek: t.dayOfWeek,
+      startTime: t.startTime,
+    })) ?? [];
 
   const professors = await api.professors.getProfessorsByClassId({ classId: classId! });
 
-  const [bidResults, bidPrediction, safetyFactor] = await Promise.all([
-    api.bidResults.getBy({ courseCode, section, classId }),
-    api.bidPredictions.getBy({
-      classId,
-    }),
+  // SPEC-2: Single data source — course+professor matching when professor exists,
+  // fall back to section-specific only when professor is null (TBA).
+  const allBidResults = professorId
+    ? selectOneClassPerTerm(
+        await api.bidResults.getByCourseProfessor({
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+          courseCode: courseCode!,
+          professorId,
+        }),
+        referenceTimings,
+        section,
+      )
+    : await api.bidResults.getBy({
+        courseCode,
+        section,
+        classId,
+      });
+
+  const [bidPrediction, safetyFactor] = await Promise.all([
+    api.bidPredictions.getBy({ classId }),
     api.safetyFactors.getAll(),
   ]);
 
-  if (bidResults.length === 0) return <div>No data available</div>;
-
-  const bidResultsWithBids = bidResults.filter(
-    (r) =>
-      !!r.afterProcessVacancy &&
-      !!r.min &&
-      !!r.median &&
-      r.min > 0 &&
-      r.median > 0,
-  );
-
-  const [roundsInBidResultsWithBids, windowsInBidResultsWithBids] =
-    bidResultsWithBids
-      .map((br) => br.bidWindow)
-      .reduce(
-        (acc, bidWindow) => {
-          if (!acc[0].includes(bidWindow.round)) {
-            acc[0].push(bidWindow.round);
-          }
-          if (!acc[1].includes(bidWindow.window.toString())) {
-            acc[1].push(bidWindow.window.toString());
-          }
-          return acc;
-        },
-        [[], []] as [string[], string[]],
-      );
-
-
-  
-
-  const chartData = bidResultsWithBids
-    .filter((br) => {
-      let matched = true;
-      if (rounds && Array.isArray(rounds)) {
-        matched = matched && rounds.includes(br.bidWindow.round);
-      } else if (rounds) {
-        matched = matched && br.bidWindow.round === rounds;
-      }
-      if (windows && Array.isArray(windows)) {
-        matched = matched && windows.includes(br.bidWindow.window.toString());
-      } else if (windows) {
-        matched = matched && br.bidWindow.window.toString() === windows;
-      }
-      return matched;
-    })
-    .map((br) => ({
-      bidWindow: `${br.bidWindow.acadTermId}/${br.bidWindow.round}/${br.bidWindow.window}`,
-      price: [br.min!, br.median!] as [number, number],
-      size: br.beforeProcessVacancy - br.afterProcessVacancy!,
-    }));
-
+  if (allBidResults.length === 0 && !bidPrediction) {
+    return (
+      <div className="flex w-full max-w-5xl flex-col gap-6 pt-2">
+        <div className="text-muted-foreground text-center">No data available</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex w-160 flex-col justify-center gap-6 pt-2">
-      <Card>
-        <CardHeader>
-          <CardTitle className="pt-2 text-2xl">Historical Bidding Trend</CardTitle>
-          <CardDescription className="flex flex-col gap-2">
-            <div>
-              {courseCode} {section} - historical bids across academic terms and
-              rounds
-            </div>
-            <div className="italic">
-              <span className="flex items-center gap-2 pl-1">
-                <Info size={16} className="inline" /> Note: missing bid
-                information implies one of
-              </span>
-              <ol className="list-decimal pl-12">
-                <li className="pl-2">Class was not offered in that term</li>
-                <li className="pl-2">Class was preassigned</li>
-                <li className="pl-2">Class received no bids</li>
-              </ol>
-            </div>
-          </CardDescription>
-        </CardHeader>
-        {chartData.length > 0 ? (
+    <div className="flex w-full max-w-5xl flex-col gap-6 pt-2">
+      {/* Class Info Summary Card — server rendered */}
+      {classInfo && (
+        <Card>
+          <CardHeader>
+            {/* SPEC-5: Course name as primary title */}
+            <CardTitle className="text-xl">
+              {classInfo.course.name}
+            </CardTitle>
+            {/* SPEC-5: Course code as subtitle */}
+            <CardDescription>
+              {classInfo.course.code}
+            </CardDescription>
+          </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <BidChart chartData={chartData} />
-            <BidChartFilterTagGroup
-              label="Rounds"
-              items={roundsInBidResultsWithBids.sort().map((round) => ({
-                label: round,
-                value: round,
-              }))}
-            />
-            <BidChartFilterTagGroup
-              label="Windows"
-              items={windowsInBidResultsWithBids.sort().map((round) => ({
-                label: round,
-                value: round,
-              }))}
-            />
-          </CardContent>
-        ) : (
-          <CardContent className="text-muted-foreground text-center">
-            No bid data available for this class.
-          </CardContent>
-        )}
-      </Card>
+            {/* SPEC-5: Professor | Section | Grading Basis in 3-column grid */}
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">Professor</span>
+                <p className="font-medium">{classInfo.professor?.name ?? "TBA"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Section</span>
+                <p className="font-medium">{classInfo.section}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Grading Basis</span>
+                <p className="font-medium">{classInfo.gradingBasis ?? "N/A"}</p>
+              </div>
+            </div>
 
+            {/* Meeting Information Table — BOSS-style */}
+            {(classInfo.classTimings.length > 0 ||
+              classInfo.classExamTimings.some((t) => t.date)) && (
+              <>
+                <div className="text-sm">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-muted-foreground border-b">
+                        <th className="py-1 text-left font-medium">Type</th>
+                        <th className="py-1 text-left font-medium">Day</th>
+                        <th className="py-1 text-left font-medium">Time</th>
+                        <th className="py-1 text-left font-medium">Venue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {classInfo.classTimings.map((t, i) => (
+                        <tr key={`class-${i}`} className="border-b border-border/50">
+                          <td className="py-1.5 font-medium">Class</td>
+                          <td className="py-1.5">{t.dayOfWeek}</td>
+                          <td className="py-1.5 font-mono tabular-nums">
+                            {t.startTime}-{t.endTime}
+                          </td>
+                          {/* SPEC-5: Venue uses text-foreground for readability */}
+                          <td className="py-1.5 text-foreground">
+                            {t.venue ?? "—"}
+                          </td>
+                        </tr>
+                      ))}
+                      {classInfo.classExamTimings
+                        .filter((t) => t.date)
+                        .map((t, i) => (
+                          <tr key={`exam-${i}`} className="border-b border-border/50">
+                            <td className="py-1.5 font-medium">Exam</td>
+                            <td className="py-1.5">
+                              {t.date
+                                ? new Date(t.date).toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  })
+                                : ""}
+                              <br />
+                              <span>{t.dayOfWeek}</span>
+                            </td>
+                            <td className="py-1.5 font-mono tabular-nums">
+                              {t.startTime}-{t.endTime}
+                            </td>
+                            <td className="py-1.5 text-foreground">
+                              {t.venue ?? "—"}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+
+            {/* No schedule data fallback */}
+            {classInfo.classTimings.length === 0 &&
+              !classInfo.classExamTimings.some((t) => t.date) && (
+                <div className="text-sm">
+                  <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                    Meeting Information
+                  </span>
+                  <p className="text-muted-foreground text-sm italic mt-1">
+                    No schedule data available
+                  </p>
+                </div>
+              )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Chart + Filters + Table — client component */}
+      <BidAnalyticsClient
+        allBidResults={allBidResults}
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        courseCode={courseCode!}
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        section={section!}
+        initialRounds={initialRounds}
+        initialWindows={initialWindows}
+        currentWindowBidWindow={
+          bidPrediction
+            ? `${bidPrediction.bidWindow.acadTermId}/${bidPrediction.bidWindow.round}/${bidPrediction.bidWindow.window}`
+            : undefined
+        }
+      />
+
+      {/* Prediction Card — server rendered */}
       {!bidPrediction ? (
         <div className="text-muted-foreground text-center">
           No bid prediction available for this class.
@@ -157,37 +234,39 @@ export default async function BiddingHistoryPage({
         <BidPredictionCard
           courseCode={courseCode}
           section={section}
-          acadTermId={bidPrediction.bidWindow.acadTermId}
+          bidWindow={{
+            acadTermId: bidPrediction.bidWindow.acadTermId,
+            round: bidPrediction.bidWindow.round,
+            window: bidPrediction.bidWindow.window,
+          }}
           hasBidsProbability={bidPrediction.clfHasBidsProbability}
           confidenceScore={bidPrediction.clfConfidenceScore}
           minPrediction={{
             value: bidPrediction.minPredicted,
-            safetyFactor: safetyFactor.filter(
-              (sf) =>
-                sf.acadTermId === bidPrediction.bidWindow.acadTermId &&
-                sf.multiplierType === MultiplierType.EMPIRICAL &&
-                sf.predictionType === PredictionType.MIN,
+            safetyFactor: filterSafetyFactors(
+              safetyFactor,
+              bidPrediction.bidWindow.acadTermId,
+              PredictionType.MIN,
             ),
             uncertainty: bidPrediction.minUncertainty,
           }}
           medianPrediction={{
             value: bidPrediction.medianPredicted,
-            safetyFactor: safetyFactor.filter(
-              (sf) =>
-                sf.acadTermId === bidPrediction.bidWindow.acadTermId &&
-                sf.multiplierType === MultiplierType.EMPIRICAL &&
-                sf.predictionType === PredictionType.MEDIAN,
+            safetyFactor: filterSafetyFactors(
+              safetyFactor,
+              bidPrediction.bidWindow.acadTermId,
+              PredictionType.MEDIAN,
             ),
             uncertainty: bidPrediction.medianUncertainty,
           }}
         />
       )}
 
-        <ModAlternativesCard
-          professors={professors}
-          sessions={_class[0]!.classTimings || ''}
-          courseCode={courseCode}
-        />
+      <ModAlternativesCard
+        professors={professors}
+        sessions={classInfo?.classTimings ?? []}
+        courseCode={courseCode}
+      />
     </div>
   );
 }

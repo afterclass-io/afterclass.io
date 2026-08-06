@@ -45,7 +45,11 @@ export const Combobox = forwardRef<
     const createQueryString = useCallback(
       (name: string, value: string) => {
         const params = new URLSearchParams(searchParams.toString());
-        params.set(name, value);
+        if (value) {
+          params.set(name, value);
+        } else {
+          params.delete(name);
+        }
 
         return params.toString();
       },
@@ -98,12 +102,13 @@ export const Combobox = forwardRef<
                     value={el.value}
                     keywords={[el.label]}
                     onSelect={(selectedValue) => {
-                      setValue(selectedValue === value ? "" : selectedValue);
+                      const newValue = selectedValue === value ? "" : selectedValue;
+                      setValue(newValue);
                       setOpen(false);
                       void router.push(
                         pathname +
                         "?" +
-                        createQueryString(queryStringKey, selectedValue),
+                        createQueryString(queryStringKey, newValue),
                       );
                     }}
                     aria-selected={isMatched(el.value)}

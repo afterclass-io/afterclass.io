@@ -34,5 +34,50 @@
     "bossId": 2432,
     "startDt": "2025-06-30T00:00:00.000Z",
     "endDt": "2025-08-17T23:59:59.999Z"
+  },
+  {
+    "id": "AY202627T1",
+    "acadYearStart": 2026,
+    "acadYearEnd": 2027,
+    "term": "1",
+    "bossId": 2610,
+    "startDt": "2026-08-17T00:00:00.000Z",
+    "endDt": "2026-12-06T23:59:59.999Z"
+  },
+  {
+    "id": "AY202526T1",
+    "acadYearStart": 2025,
+    "acadYearEnd": 2026,
+    "term": "1",
+    "bossId": 2510,
+    "startDt": "2025-08-18T00:00:00.000Z",
+    "endDt": "2025-11-30T23:59:59.999Z"
+  },
+  {
+    "id": "AY202526T2",
+    "acadYearStart": 2025,
+    "acadYearEnd": 2026,
+    "term": "2",
+    "bossId": 2520,
+    "startDt": "2026-01-12T00:00:00.000Z",
+    "endDt": "2026-04-26T23:59:59.999Z"
+  },
+  {
+    "id": "AY202526T3A",
+    "acadYearStart": 2025,
+    "acadYearEnd": 2026,
+    "term": "3A",
+    "bossId": 2531,
+    "startDt": "2026-05-04T00:00:00.000Z",
+    "endDt": "2026-06-21T23:59:59.999Z"
+  },
+  {
+    "id": "AY202526T3B",
+    "acadYearStart": 2025,
+    "acadYearEnd": 2026,
+    "term": "3B",
+    "bossId": 2532,
+    "startDt": "2026-06-29T00:00:00.000Z",
+    "endDt": "2026-08-16T23:59:59.999Z"
   }
 ]

@@ -4,6 +4,7 @@ import { CtaButton } from "@/common/components/cta-button";
 import { EditIcon, GithubIcon, PlusIcon } from "@/common/components/icons";
 import { env } from "@/env";
 import { BidWindowScheduleCard } from "@/modules/bidding/components/BidWindowScheduleCard";
+import { ReviewCtaButtons } from "@/modules/bidding/components/ReviewCtaButtons";
 
 export default function BidLayout({ children }: { children: ReactNode }) {
   return (
@@ -29,6 +30,7 @@ export default function BidLayout({ children }: { children: ReactNode }) {
           data-test="cta-contribute-oss"
           data-umami-event="cta-btn-contribute-oss"
         />
+        <ReviewCtaButtons />
         <BidWindowScheduleCard />
       </div>
     </div>

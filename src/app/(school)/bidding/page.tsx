@@ -1,193 +1,78 @@
+import { Separator } from "@/common/components/separator";
 import { api } from "@/common/tools/trpc/server";
-import { BidChart } from "@/modules/bidding/components/BidChart";
-import { BidChartFilterTagGroup } from "@/modules/bidding/components/BidChartFilterTagGroup";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/common/components/card";
-import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
-import { notFound } from "next/navigation";
-import { MultiplierType, PredictionType } from "@prisma/client";
-import { Info } from "lucide-react";
-import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
+import { BiddingClassList } from "@/modules/bidding/components/BiddingClassList";
+import { Combobox } from "@/modules/bidding/components/Combobox";
+import { texts } from "@/modules/bidding/constants";
+import { type UniversityAbbreviation } from "@prisma/client";
 
 export default async function BiddingHistoryPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
+  const school = "SMU" satisfies UniversityAbbreviation;
   const _searchParams = await searchParams;
-  const classId = _searchParams.classId;
-  let courseCode = _searchParams.course;
-  let section = _searchParams.section;
-  const rounds = _searchParams.rounds as string | string[];
-  const windows = _searchParams.windows as string | string[];
+  const courseCode = _searchParams.course;
+  const profSlug = _searchParams.prof;
 
-  const _class = await api.classes.getAll({ id: classId, limit: 1 });
-  if (!courseCode || !section) {
-    if (!classId) {
-      return notFound();
-    }
-    if (_class.length === 0) {
-      return notFound();
-    }
-    courseCode = _class[0]!.course.code;
-    section = _class[0]!.section;
-  }
-
-
-  const professors = await api.professors.getProfessorsByClassId({ classId: classId! });
-
-  const [bidResults, bidPrediction, safetyFactor] = await Promise.all([
-    api.bidResults.getBy({ courseCode, section, classId }),
-    api.bidPredictions.getBy({
-      classId,
-    }),
-    api.safetyFactors.getAll(),
+  const [courses, professors] = await Promise.all([
+    api.courses.getAllByUniAbbrv({ universityAbbrv: school }),
+    api.professors.getAllByUniAbbrv({ universityAbbrv: school }),
   ]);
 
-  if (bidResults.length === 0) return <div>No data available</div>;
+  const classes = await api.classes.getAll({
+    courseCode: courseCode,
+    profSlug: profSlug,
+    // No limit — class metadata is small (~200 bytes per class) and the
+    // IntersectionObserver in BiddingClassList handles client-side pagination.
+  });
 
-  const bidResultsWithBids = bidResults.filter(
-    (r) =>
-      !!r.afterProcessVacancy &&
-      !!r.min &&
-      !!r.median &&
-      r.min > 0 &&
-      r.median > 0,
-  );
+  // Bidirectional scoping: when a course is selected, only show professors
+  // teaching that course. When a professor is selected, only show courses
+  // taught by that professor. Both derived from the existing `classes` query.
+  const filteredProfessors = courseCode
+    ? professors.filter((p) => classes.some((c) => c.professor?.slug === p.slug))
+    : professors;
 
-  const [roundsInBidResultsWithBids, windowsInBidResultsWithBids] =
-    bidResultsWithBids
-      .map((br) => br.bidWindow)
-      .reduce(
-        (acc, bidWindow) => {
-          if (!acc[0].includes(bidWindow.round)) {
-            acc[0].push(bidWindow.round);
-          }
-          if (!acc[1].includes(bidWindow.window.toString())) {
-            acc[1].push(bidWindow.window.toString());
-          }
-          return acc;
-        },
-        [[], []] as [string[], string[]],
-      );
-
-
-  
-
-  const chartData = bidResultsWithBids
-    .filter((br) => {
-      let matched = true;
-      if (rounds && Array.isArray(rounds)) {
-        matched = matched && rounds.includes(br.bidWindow.round);
-      } else if (rounds) {
-        matched = matched && br.bidWindow.round === rounds;
-      }
-      if (windows && Array.isArray(windows)) {
-        matched = matched && windows.includes(br.bidWindow.window.toString());
-      } else if (windows) {
-        matched = matched && br.bidWindow.window.toString() === windows;
-      }
-      return matched;
-    })
-    .map((br) => ({
-      bidWindow: `${br.bidWindow.acadTermId}/${br.bidWindow.round}/${br.bidWindow.window}`,
-      price: [br.min!, br.median!] as [number, number],
-      size: br.beforeProcessVacancy - br.afterProcessVacancy!,
-    }));
-
+  const filteredCourses = profSlug
+    ? courses.filter((co) => classes.some((c) => c.course.code === co.code))
+    : courses;
 
   return (
-    <div className="flex w-160 flex-col justify-center gap-6 pt-2">
-      <Card>
-        <CardHeader>
-          <CardTitle className="pt-2 text-2xl">Historical Bidding Trend</CardTitle>
-          <CardDescription className="flex flex-col gap-2">
-            <div>
-              {courseCode} {section} - historical bids across academic terms and
-              rounds
-            </div>
-            <div className="italic">
-              <span className="flex items-center gap-2 pl-1">
-                <Info size={16} className="inline" /> Note: missing bid
-                information implies one of
-              </span>
-              <ol className="list-decimal pl-12">
-                <li className="pl-2">Class was not offered in that term</li>
-                <li className="pl-2">Class was preassigned</li>
-                <li className="pl-2">Class received no bids</li>
-              </ol>
-            </div>
-          </CardDescription>
-        </CardHeader>
-        {chartData.length > 0 ? (
-          <CardContent className="flex flex-col gap-4">
-            <BidChart chartData={chartData} />
-            <BidChartFilterTagGroup
-              label="Rounds"
-              items={roundsInBidResultsWithBids.sort().map((round) => ({
-                label: round,
-                value: round,
-              }))}
-            />
-            <BidChartFilterTagGroup
-              label="Windows"
-              items={windowsInBidResultsWithBids.sort().map((round) => ({
-                label: round,
-                value: round,
-              }))}
-            />
-          </CardContent>
-        ) : (
-          <CardContent className="text-muted-foreground text-center">
-            No bid data available for this class.
-          </CardContent>
-        )}
-      </Card>
-
-      {!bidPrediction ? (
-        <div className="text-muted-foreground text-center">
-          No bid prediction available for this class.
-        </div>
-      ) : (
-        <BidPredictionCard
-          courseCode={courseCode}
-          section={section}
-          acadTermId={bidPrediction.bidWindow.acadTermId}
-          hasBidsProbability={bidPrediction.clfHasBidsProbability}
-          confidenceScore={bidPrediction.clfConfidenceScore}
-          minPrediction={{
-            value: bidPrediction.minPredicted,
-            safetyFactor: safetyFactor.filter(
-              (sf) =>
-                sf.acadTermId === bidPrediction.bidWindow.acadTermId &&
-                sf.multiplierType === MultiplierType.EMPIRICAL &&
-                sf.predictionType === PredictionType.MIN,
-            ),
-            uncertainty: bidPrediction.minUncertainty,
-          }}
-          medianPrediction={{
-            value: bidPrediction.medianPredicted,
-            safetyFactor: safetyFactor.filter(
-              (sf) =>
-                sf.acadTermId === bidPrediction.bidWindow.acadTermId &&
-                sf.multiplierType === MultiplierType.EMPIRICAL &&
-                sf.predictionType === PredictionType.MEDIAN,
-            ),
-            uncertainty: bidPrediction.medianUncertainty,
-          }}
+    <div className="flex flex-col gap-6 pt-2">
+      <div className="flex flex-col gap-4 md:flex-row">
+        <Combobox
+          items={filteredCourses.map((course) => ({
+            value: course.code,
+            label: `${course.code} ${course.name}`,
+          }))}
+          queryStringKey="course"
+          selectedValue={courseCode}
+          placeholder={texts.COMBOBOX.PLACEHOLDER.course}
+          triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.course}
         />
-      )}
-
-        <ModAlternativesCard
-          professors={professors}
-          sessions={_class[0]!.classTimings || ''}
-          courseCode={courseCode}
+        <Combobox
+          items={filteredProfessors.map((prof) => ({
+            value: prof.slug,
+            label: prof.name,
+          }))}
+          queryStringKey="prof"
+          selectedValue={profSlug}
+          placeholder={texts.COMBOBOX.PLACEHOLDER.professor}
+          triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.professor}
         />
+      </div>
+      <Separator />
+      <BiddingClassList
+        initialClasses={classes.map((c) => ({
+          id: c.id,
+          section: c.section,
+          course: c.course,
+          classTimings: c.classTimings,
+          classExamTimings: c.classExamTimings,
+          professor: c.professor,
+        }))}
+      />
     </div>
   );
 }

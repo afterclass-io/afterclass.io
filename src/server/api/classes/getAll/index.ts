@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { publicProcedure } from "@/server/api/trpc";
 import { PUBLIC_CLASS_FIELDS } from "@/server/api/classes/constants";
+import { getCurrentWindowLogic } from "@/server/api/bidWindows/getCurrentWindow/helpers";
 
 export const getAll = publicProcedure
   .input(
@@ -24,11 +25,13 @@ export const getAll = publicProcedure
     }),
   )
   .query(async ({ ctx, input }) => {
-    const latestAcadTerm = await ctx.db.acadTerm.findFirst({
-      orderBy: {
-        startDt: "desc",
-      },
-    });
+    // Resolve the "current" acad term by finding the currently active or
+    // upcoming bid window and deriving the term from it.
+    let defaultAcadTermId: string | undefined;
+    if (!input.id && !input.acadTermId) {
+      const currentWindow = await getCurrentWindowLogic(ctx.db);
+      defaultAcadTermId = currentWindow?.acadTermId;
+    }
 
     const sessionFilters = [];
 
@@ -65,7 +68,9 @@ export const getAll = publicProcedure
         id: input.id,
         courseId: input.courseId,
         section: input.section,
-        acadTermId: input.acadTermId ?? latestAcadTerm?.id,
+        acadTermId: input.id
+          ? input.acadTermId // lookup by primary key: don't force term default
+          : (input.acadTermId ?? defaultAcadTermId),
         professorId: input.professorId,
         professor: {
           slug: input.profSlug,

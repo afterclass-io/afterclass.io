@@ -78,5 +78,1045 @@
     "startTime": "12:00",
     "endTime": "15:15",
     "venue": null
+  },
+  {
+    "classId": "seed-ay202627t1-is215-g1",
+    "date": "2026-12-07T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-is215-g2",
+    "date": "2026-12-08T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-is215-g3",
+    "date": "2026-12-09T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-is215-g4",
+    "date": "2026-12-10T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-is215-g5",
+    "date": "2026-12-11T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-mgmt214-g1",
+    "date": "2026-12-07T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-mgmt214-g2",
+    "date": "2026-12-08T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-mgmt214-g3",
+    "date": "2026-12-09T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-mgmt214-g4",
+    "date": "2026-12-10T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-mgmt214-g5",
+    "date": "2026-12-11T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-acct102-g1",
+    "date": "2026-12-07T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-acct102-g2",
+    "date": "2026-12-08T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-acct102-g3",
+    "date": "2026-12-09T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-acct102-g4",
+    "date": "2026-12-10T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-acct102-g5",
+    "date": "2026-12-11T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-comm662-g1",
+    "date": "2026-12-07T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-comm662-g2",
+    "date": "2026-12-08T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-comm662-g3",
+    "date": "2026-12-09T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-comm662-g4",
+    "date": "2026-12-10T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-comm662-g5",
+    "date": "2026-12-11T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-cor-is1702-g1",
+    "date": "2026-12-07T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-cor-is1702-g2",
+    "date": "2026-12-08T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-cor-is1702-g3",
+    "date": "2026-12-09T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-cor-is1702-g4",
+    "date": "2026-12-10T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-cor-is1702-g5",
+    "date": "2026-12-11T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202627t1-acct102-g16",
+    "date": "2026-12-07T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": null
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g1",
+    "date": "2025-12-01T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g2",
+    "date": "2025-12-02T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g3",
+    "date": "2025-12-03T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g4",
+    "date": "2025-12-04T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-is215-g5",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g1",
+    "date": "2025-12-01T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g2",
+    "date": "2025-12-02T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g3",
+    "date": "2025-12-03T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g4",
+    "date": "2025-12-04T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-mgmt214-g5",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g1",
+    "date": "2025-12-01T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g2",
+    "date": "2025-12-02T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g3",
+    "date": "2025-12-03T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g4",
+    "date": "2025-12-04T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g5",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g1",
+    "date": "2025-12-01T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g2",
+    "date": "2025-12-02T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g3",
+    "date": "2025-12-03T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g4",
+    "date": "2025-12-04T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-comm662-g5",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g1",
+    "date": "2025-12-01T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g2",
+    "date": "2025-12-02T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g3",
+    "date": "2025-12-03T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g4",
+    "date": "2025-12-04T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-cor-is1702-g5",
+    "date": "2025-12-05T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t1-acct102-g16",
+    "date": "2025-12-01T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": null
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g1",
+    "date": "2026-04-27T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g2",
+    "date": "2026-04-28T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g3",
+    "date": "2026-04-29T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g4",
+    "date": "2026-04-30T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-is215-g5",
+    "date": "2026-05-01T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g1",
+    "date": "2026-04-27T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g2",
+    "date": "2026-04-28T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g3",
+    "date": "2026-04-29T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g4",
+    "date": "2026-04-30T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-mgmt214-g5",
+    "date": "2026-05-01T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g1",
+    "date": "2026-04-27T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g2",
+    "date": "2026-04-28T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g3",
+    "date": "2026-04-29T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g4",
+    "date": "2026-04-30T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g5",
+    "date": "2026-05-01T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g1",
+    "date": "2026-04-27T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g2",
+    "date": "2026-04-28T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g3",
+    "date": "2026-04-29T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g4",
+    "date": "2026-04-30T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-comm662-g5",
+    "date": "2026-05-01T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g1",
+    "date": "2026-04-27T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g2",
+    "date": "2026-04-28T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g3",
+    "date": "2026-04-29T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g4",
+    "date": "2026-04-30T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-cor-is1702-g5",
+    "date": "2026-05-01T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t2-acct102-g16",
+    "date": "2026-04-27T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": null
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g1",
+    "date": "2026-06-22T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g2",
+    "date": "2026-06-23T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g3",
+    "date": "2026-06-24T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g4",
+    "date": "2026-06-25T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-is215-g5",
+    "date": "2026-06-26T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g1",
+    "date": "2026-06-22T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g2",
+    "date": "2026-06-23T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g3",
+    "date": "2026-06-24T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g4",
+    "date": "2026-06-25T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-mgmt214-g5",
+    "date": "2026-06-26T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g1",
+    "date": "2026-06-22T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g2",
+    "date": "2026-06-23T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g3",
+    "date": "2026-06-24T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g4",
+    "date": "2026-06-25T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g5",
+    "date": "2026-06-26T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g1",
+    "date": "2026-06-22T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g2",
+    "date": "2026-06-23T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g3",
+    "date": "2026-06-24T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g4",
+    "date": "2026-06-25T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-comm662-g5",
+    "date": "2026-06-26T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g1",
+    "date": "2026-06-22T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g2",
+    "date": "2026-06-23T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g3",
+    "date": "2026-06-24T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g4",
+    "date": "2026-06-25T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-cor-is1702-g5",
+    "date": "2026-06-26T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3a-acct102-g16",
+    "date": "2026-06-22T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": null
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g1",
+    "date": "2026-08-17T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g2",
+    "date": "2026-08-18T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g3",
+    "date": "2026-08-19T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g4",
+    "date": "2026-08-20T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-is215-g5",
+    "date": "2026-08-21T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g1",
+    "date": "2026-08-17T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g2",
+    "date": "2026-08-18T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g3",
+    "date": "2026-08-19T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g4",
+    "date": "2026-08-20T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-mgmt214-g5",
+    "date": "2026-08-21T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g1",
+    "date": "2026-08-17T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g2",
+    "date": "2026-08-18T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g3",
+    "date": "2026-08-19T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g4",
+    "date": "2026-08-20T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g5",
+    "date": "2026-08-21T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g1",
+    "date": "2026-08-17T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g2",
+    "date": "2026-08-18T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g3",
+    "date": "2026-08-19T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g4",
+    "date": "2026-08-20T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-comm662-g5",
+    "date": "2026-08-21T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g1",
+    "date": "2026-08-17T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g2",
+    "date": "2026-08-18T00:00:00.000Z",
+    "dayOfWeek": "Tue",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g3",
+    "date": "2026-08-19T00:00:00.000Z",
+    "dayOfWeek": "Wed",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Ngee Ann Kongsi Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g4",
+    "date": "2026-08-20T00:00:00.000Z",
+    "dayOfWeek": "Thu",
+    "startTime": "13:00",
+    "endTime": "16:00",
+    "venue": "SPH Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-cor-is1702-g5",
+    "date": "2026-08-21T00:00:00.000Z",
+    "dayOfWeek": "Fri",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": "Mochtar Riady Auditorium"
+  },
+  {
+    "classId": "seed-ay202526t3b-acct102-g16",
+    "date": "2026-08-17T00:00:00.000Z",
+    "dayOfWeek": "Mon",
+    "startTime": "08:30",
+    "endTime": "11:30",
+    "venue": null
   }
 ]

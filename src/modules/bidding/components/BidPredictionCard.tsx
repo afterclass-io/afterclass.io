@@ -25,7 +25,7 @@ export type BidPrediction = {
 export const BidPredictionCard = ({
   courseCode,
   section,
-  acadTermId,
+  bidWindow,
   hasBidsProbability,
   confidenceScore,
   minPrediction,
@@ -33,7 +33,11 @@ export const BidPredictionCard = ({
 }: {
   courseCode: string;
   section: string;
-  acadTermId: string;
+  bidWindow: {
+    acadTermId: string;
+    round: string;
+    window: number;
+  };
   hasBidsProbability: number;
   confidenceScore: number;
   minPrediction: BidPrediction;
@@ -86,7 +90,10 @@ export const BidPredictionCard = ({
         </CardTitle>
         <CardDescription className="flex flex-col gap-2 text-base">
           <div>
-            {courseCode} {section} - {acadTermId}
+            {courseCode} {section} · {bidWindow.acadTermId}
+          </div>
+          <div className="text-muted-foreground text-sm">
+            Round {bidWindow.round} · Window {bidWindow.window}
           </div>
           <div className="flex items-center gap-2 pl-1 italic">
             <Info size={16} className="inline" />

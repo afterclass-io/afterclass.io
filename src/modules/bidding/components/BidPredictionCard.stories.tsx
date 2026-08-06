@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { BidPredictionCard, BidPrediction } from "./BidPredictionCard";
-import { MultiplierType } from "@prisma/client";
+import { BidPredictionCard } from "./BidPredictionCard";
+import type { BidPrediction } from "./BidPredictionCard";
+import type { MultiplierType } from "@prisma/client";
 
 type MiniSafetyFactor = { // re-declared as dates are not required
   beatsPercentage: number;
@@ -87,7 +88,11 @@ const meta: Meta<typeof BidPredictionCard> = {
   args: {
     courseCode: "CS101",
     section: "T01",
-    acadTermId: "AY2024/2025 Semester 1",
+    bidWindow: {
+      acadTermId: "AY2024/2025 Semester 1",
+      round: "1A",
+      window: 2,
+    },
     hasBidsProbability: 0.8,
     confidenceScore: 0.75,
     minPrediction: transformedMinPrediction,

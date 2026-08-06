@@ -91,7 +91,7 @@ export const RatingGroup = ({
       return {
         color: ratingToUse > index ? color : "gray",
         fill: ratingToUse > index ? color : "transparent",
-      } as React.CSSProperties;
+      } satisfies React.CSSProperties;
     },
     [readOnly, hoverRating, value, color],
   );

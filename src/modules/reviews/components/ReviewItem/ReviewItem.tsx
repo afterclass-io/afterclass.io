@@ -31,7 +31,7 @@ export const ReviewItem = ({
 
   const ReviewHeader = useCallback(
     () => (
-      <div className="flex flex-col content-center gap-3 self-stretch md:flex-row-reverse md:justify-between">
+      <div className="flex flex-col content-center gap-3 self-stretch overflow-hidden md:flex-row-reverse md:justify-between">
         <ReviewerGroup review={review} />
         <RevieweeGroup review={review} variant={variant} />
       </div>

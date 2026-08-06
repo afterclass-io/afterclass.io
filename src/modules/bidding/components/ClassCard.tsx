@@ -42,7 +42,7 @@ export const ClassCard = ({
   return (
     <ProgressLink
       variant="outline"
-      className="hover:bg-secondary focus-ring bg-card flex h-fit w-64 cursor-pointer flex-col items-start gap-2 rounded-md border p-4 text-left font-normal md:gap-4"
+      className="hover:bg-secondary focus-ring bg-card flex h-auto w-64 cursor-pointer flex-col items-start justify-start gap-2 rounded-md border p-4 text-left font-normal whitespace-normal md:gap-4"
       href={`/bidding/analytics?course=${course.code}&section=${section}&classId=${classId}`}
       data-umami-event="boss-bid-class-select"
       data-umami-event-class-id={classId}
@@ -62,8 +62,8 @@ export const ClassCard = ({
         </Heading>
 
         <div className="flex items-center gap-2">
-          <GraduationCapColoredIcon size={24} />
-          <span className="w-full  tracking-tight whitespace-normal">
+          <GraduationCapColoredIcon size={24} className="shrink-0" />
+          <span className="w-full tracking-tight whitespace-normal">
             {professor?.name ?? "TBA"}
           </span>
         </div>
@@ -71,30 +71,38 @@ export const ClassCard = ({
 
       <div className="flex flex-col gap-2">
         {classTiming.length > 0 ? (
-          classTiming.map((timing, index) => (
-            <div key={index}>
-              <div className="flex items-center gap-1">
-                <ClockIcon size={16} className="mr-1" />
-                <span className="max-w-16 
-                 text-sm">
-                  {timing.dayOfWeek}
-                </span>
-                <span className="text-sm">
-                  {timing.startTime}-{timing.endTime}
-                </span>
+          <>
+            {classTiming.slice(0, 1).map((timing, index) => (
+              <div key={index}>
+                <div className="flex items-center gap-1">
+                  <ClockIcon size={16} className="mr-1" />
+                  <span className="max-w-16 text-sm">
+                    {timing.dayOfWeek}
+                  </span>
+                  <span className="text-sm">
+                    {timing.startTime}-{timing.endTime}
+                  </span>
+                </div>
+                {timing.venue && timing.venue !== "TBA" && (
+                  <div className="flex items-center gap-1">
+                    <PinIcon size={16} className="mr-1" />
+                    <span className="text-muted-foreground text-xs">
+                      {timing.venue}
+                    </span>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-1">
-                <PinIcon size={16} className="mr-1" />
-                <span className="text-muted-foreground text-xs">
-                  {timing.venue ?? "TBA"}
-                </span>
-              </div>
-            </div>
-          ))
+            ))}
+            {classTiming.length > 1 && (
+              <span className="text-muted-foreground text-xs pl-6">
+                +{classTiming.length - 1} more session{classTiming.length - 1 > 1 ? "s" : ""}
+              </span>
+            )}
+          </>
         ) : (
           <div className="flex items-center gap-1">
             <ClockIcon size={16} className="mr-1" />
-            <div className="text-sm">No class timings available</div>
+            <div className="text-muted-foreground text-sm">No class timings</div>
           </div>
         )}
       </div>
@@ -117,22 +125,23 @@ export const ClassCard = ({
                     : ""}
                   <br></br>
                   {timing.dayOfWeek}&nbsp;
-                        
                   {timing.startTime}-{timing.endTime}
                 </span>
               </div>
-              <div className="flex items-center gap-1">
-                <PinIcon size={16} className="mr-1" />
-                <span className="text-muted-foreground text-xs">
-                  {timing.venue ?? "TBA"}
-                </span>
-              </div>
+              {timing.venue && timing.venue !== "TBA" && (
+                <div className="flex items-center gap-1">
+                  <PinIcon size={16} className="mr-1" />
+                  <span className="text-muted-foreground text-xs">
+                    {timing.venue}
+                  </span>
+                </div>
+              )}
             </div>
           ))
         ) : (
           <div className="flex items-center gap-1">
             <MemoIcon size={16} className="mr-1" />
-            <div className="text-sm">No exam timings available</div>
+            <div className="text-muted-foreground text-sm">No exam</div>
           </div>
         )}
       </div>
