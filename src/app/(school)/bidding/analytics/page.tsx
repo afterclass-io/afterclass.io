@@ -270,7 +270,7 @@ export default async function BiddingHistoryPage({
                 acadTermId={classInfo.acadTermId}
                 courseName={classInfo.course.name}
               />
-            </div>{" "}
+            </div>
           </CardContent>
         </Card>
       )}
