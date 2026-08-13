@@ -1,40 +1,45 @@
-import { api } from "@/common/tools/trpc/react";
+import { api, type RouterInputs } from "@/common/tools/trpc/react";
 import type { ReviewReactionType } from "@prisma/client";
+import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { debounce } from "lodash";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 
 export function useOptimisticReaction() {
   const utils = api.useUtils();
+  const lastInputRef = useRef<{ roadmapId: string } | null>(null);
 
   const mutation = api.roadmapReactions.upsert.useMutation({
-    onMutate: async ({ roadmapId }) => {
-      // Snapshot the previous value
-      const previousReactions = utils.roadmapReactions.getByRoadmapId.getData({
-        roadmapId,
-      });
-      return { previousReactions };
-    },
-    onError: (_err, { roadmapId }, context) => {
-      // Rollback to the previous value if mutation fails
-      utils.roadmapReactions.getByRoadmapId.setData(
-        { roadmapId },
-        context?.previousReactions,
-      );
-    },
-    onSettled: (_data, _err, { roadmapId }) => {
-      // Refetch to sync with server state after mutation completes
-      void utils.roadmapReactions.getByRoadmapId.invalidate({ roadmapId });
-    },
+    ...createOptimisticMutationCallbacks<
+      RouterInputs["roadmapReactions"]["upsert"],
+      unknown
+    >({
+      cancel: async () => {
+        if (lastInputRef.current) {
+          await utils.roadmapReactions.getByRoadmapId.cancel(lastInputRef.current);
+        }
+      },
+      getSnapshot: () =>
+        lastInputRef.current
+          ? utils.roadmapReactions.getByRoadmapId.getData(lastInputRef.current)
+          : undefined,
+      // Pattern A: the caller (mutateWithDebounce) already applied the optimistic
+      // update for instant feedback — re-applying here would double-increment.
+      applyOptimistic: () => {
+        /* Pattern A: caller (mutateWithDebounce) already applied */
+      },
+      restoreSnapshot: (prev) => {
+        if (lastInputRef.current) {
+          utils.roadmapReactions.getByRoadmapId.setData(lastInputRef.current, prev as never);
+        }
+      },
+      invalidate: async () => {
+        if (lastInputRef.current) {
+          await utils.roadmapReactions.getByRoadmapId.invalidate(lastInputRef.current);
+        }
+      },
+    }),
   });
   const mutate = mutation.mutate;
-
-  const debouncedMutate = useMemo(
-    () =>
-      debounce((variables: Parameters<typeof mutate>[0]) => {
-        mutate(variables);
-      }, 300),
-    [mutate],
-  ); // 300 ms before mutate is called
 
   const applyOptimisticUpdate = useCallback(
     (variables: Parameters<typeof mutate>[0]) => {
@@ -80,8 +85,17 @@ export function useOptimisticReaction() {
     [utils.roadmapReactions.getByRoadmapId],
   );
 
+  const debouncedMutate = useMemo(
+    () =>
+      debounce((variables: Parameters<typeof mutate>[0]) => {
+        mutate(variables);
+      }, 300),
+    [mutate],
+  );
+
   const mutateWithDebounce = useCallback(
     (variables: Parameters<typeof mutate>[0]) => {
+      lastInputRef.current = { roadmapId: variables.roadmapId };
       applyOptimisticUpdate(variables); // immediate UI update
       debouncedMutate(variables); // debounced server mutation
     },

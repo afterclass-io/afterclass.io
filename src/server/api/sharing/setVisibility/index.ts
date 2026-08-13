@@ -1,8 +1,12 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { nanoid } from "nanoid";
 
 import { protectedProcedure } from "@/server/api/trpc";
+import {
+  requireOwnedRoadmap,
+  requireOwnedTimetable,
+  mintToken,
+} from "@/server/api/ownership";
 
 export const setVisibility = protectedProcedure
   .input(
@@ -16,43 +20,40 @@ export const setVisibility = protectedProcedure
     const { entity, id, visibility } = input;
 
     if (entity === "timetable") {
-      const timetable = await ctx.db.userTimetable.findUnique({
-        where: { id },
-      });
-
-      if (!timetable || timetable.userId !== ctx.session.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN" });
+      if (visibility === "PUBLIC") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Timetables can only be private or shared via link",
+        });
       }
 
-      let shareToken: string | null = timetable.shareToken;
+      const timetable = await requireOwnedTimetable(ctx.db, id, ctx.session.user.id);
 
-      if (visibility === "UNLISTED" || visibility === "PUBLIC") {
-        shareToken ??= nanoid(21);
+      let shareToken: string | null = timetable.shareToken;
+      let icalToken: string | null = timetable.icalToken;
+
+      if (visibility === "UNLISTED") {
+        shareToken ??= mintToken();
       } else {
-        // PRIVATE — clear the token
+        // PRIVATE — clear BOTH the share link and the calendar feed token.
         shareToken = null;
+        icalToken = null;
       }
 
       await ctx.db.userTimetable.update({
         where: { id },
-        data: { visibility, shareToken },
+        data: { visibility, shareToken, icalToken },
       });
 
       return { visibility, shareToken };
     } else {
-      // roadmap
-      const roadmap = await ctx.db.userRoadmap.findUnique({
-        where: { id },
+      // roadmap — faculty is per-roadmap (set via roadmaps.setFaculty).
+      const roadmap = await requireOwnedRoadmap(ctx.db, id, ctx.session.user.id, {
+        shareToken: true,
+        facultyId: true,
+        publishedAt: true,
       });
 
-      if (!roadmap || roadmap.userId !== ctx.session.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
-
-      // Public roadmaps go through the publish path: only verified users may
-      // publish, and publishing snapshots the owner's faculty for gallery
-      // filtering. There is no UI to set faculty on private roadmaps — it
-      // always comes from the owner's verified profile at publish time.
       if (visibility === "PUBLIC" && !ctx.session.user.isVerified) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -63,7 +64,7 @@ export const setVisibility = protectedProcedure
       let shareToken: string | null = roadmap.shareToken;
 
       if (visibility === "UNLISTED" || visibility === "PUBLIC") {
-        shareToken ??= nanoid(21);
+        shareToken ??= mintToken();
       } else {
         // PRIVATE — clear the token
         shareToken = null;
@@ -74,9 +75,10 @@ export const setVisibility = protectedProcedure
         data: {
           visibility,
           shareToken,
+          // Faculty stays on the roadmap row (per-roadmap, not per-user).
           ...(visibility === "PUBLIC"
             ? {
-                facultyId: ctx.session.user.facultyId,
+                facultyId: roadmap.facultyId,
                 publishedAt: roadmap.publishedAt ?? new Date(),
               }
             : { publishedAt: null }),

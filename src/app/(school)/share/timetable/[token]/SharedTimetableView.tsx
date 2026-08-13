@@ -2,6 +2,7 @@
 
 import { TimetableGrid } from "@/modules/timetable/components/TimetableGrid";
 import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import { PageTitle } from "@/common/components/page-title";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,9 +27,9 @@ export function SharedTimetableView({
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
+        <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">
           Shared Timetable: {timetableName}
-        </h1>
+        </PageTitle>
         <p className="text-sm text-muted-foreground">
           by {ownerUsername}
         </p>

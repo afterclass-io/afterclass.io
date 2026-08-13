@@ -1,5 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 
+vi.mock("@/server/db", () => ({ db: {} }));
+vi.mock("@/server/auth", () => ({ auth: () => null }));
+vi.mock("@sentry/nextjs", () => ({
+  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
+}));
+
+import { createTRPCRouter } from "@/server/api/trpc";
+
+import { listPublic } from "./index";
 import { listPublicInput } from "./input";
 
 describe("listPublicInput", () => {
@@ -50,5 +59,60 @@ describe("listPublicInput", () => {
   it("rejects out-of-range limits", () => {
     expect(() => listPublicInput.parse({ limit: 0 })).toThrow();
     expect(() => listPublicInput.parse({ limit: 51 })).toThrow();
+  });
+});
+
+describe("listPublic", () => {
+  const router = createTRPCRouter({ listPublic });
+
+  function makeCaller(dbMock: unknown) {
+    return router.createCaller({
+      db: dbMock,
+      session: null,
+      headers: new Headers(),
+    } as never);
+  }
+
+  beforeEach(() => vi.clearAllMocks());
+
+  it("orders most-liked by upvoteCount desc via DB orderBy", async () => {
+    const findMany = vi.fn().mockResolvedValue([]);
+    const dbMock = {
+      userRoadmap: { findMany },
+      faculties: { findMany: vi.fn().mockResolvedValue([]) },
+    };
+    const caller = makeCaller(dbMock);
+    await caller.listPublic({ sort: "most-liked" });
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [
+          { upvoteCount: "desc" },
+          { publishedAt: "desc" },
+          { id: "desc" },
+        ],
+      }),
+    );
+  });
+
+  it("uses cursor pagination for most-liked (take limit+1 with skip/cursor)", async () => {
+    const findMany = vi.fn().mockResolvedValue([]);
+    const dbMock = {
+      userRoadmap: { findMany },
+      faculties: { findMany: vi.fn().mockResolvedValue([]) },
+    };
+    const caller = makeCaller(dbMock);
+    await caller.listPublic({ sort: "most-liked", cursor: "c1", limit: 10 });
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [
+          { upvoteCount: "desc" },
+          { publishedAt: "desc" },
+          { id: "desc" },
+        ],
+        take: 11,
+        skip: 1,
+        cursor: { id: "c1" },
+      }),
+    );
   });
 });

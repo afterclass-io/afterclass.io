@@ -17,6 +17,7 @@ import { setMatricTerm } from "./setMatricTerm";
 import { syncProgress } from "./syncProgress";
 import { recordView } from "./recordView";
 import { recordShare } from "./recordShare";
+import { setFaculty } from "./setFaculty";
 
 export const roadmapsRouter = createTRPCRouter({
   listMine,
@@ -36,4 +37,5 @@ export const roadmapsRouter = createTRPCRouter({
   syncProgress,
   recordView,
   recordShare,
+  setFaculty,
 });

@@ -62,16 +62,7 @@ export function findEntryByCourse(
   return entries.find((e) => e.courseId === courseId);
 }
 
-/**
- * Parse a "HH:MM" time string into total minutes from midnight.
- * Returns 0 for unparseable strings.
- */
-function timeToMinutes(time: string): number {
-  const parts = time.split(":");
-  const hours = parseInt(parts[0] ?? "0", 10);
-  const minutes = parseInt(parts[1] ?? "0", 10);
-  return hours * 60 + minutes;
-}
+import { timeToMinutes } from "@/common/functions/time";
 
 /**
  * Check whether two exam timings overlap.

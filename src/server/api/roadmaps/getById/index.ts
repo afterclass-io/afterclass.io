@@ -17,15 +17,13 @@ export const getById = publicProcedure
         name: true,
         description: true,
         userId: true,
+        facultyId: true,
         publishedAt: true,
         viewCount: true,
         shareCount: true,
         user: {
           select: {
             username: true,
-            faculty: {
-              select: { name: true, acronym: true },
-            },
           },
         },
         entries: {
@@ -69,16 +67,22 @@ export const getById = publicProcedure
         }))
       : false;
 
+    // Faculty is per-roadmap via UserRoadmap.facultyId (roadmaps.setFaculty).
+    // Seed rows with null facultyId simply render no faculty pill.
+    let ownerFaculty: { name: string; acronym: string } | null = null;
+    if (roadmap.facultyId !== null) {
+      const f = await ctx.db.faculties.findUnique({
+        where: { id: roadmap.facultyId },
+        select: { name: true, acronym: true },
+      });
+      ownerFaculty = f ? { name: f.name, acronym: f.acronym } : null;
+    }
+
     return {
       roadmap,
       entries: roadmap.entries,
       ownerUsername: roadmap.user.username,
-      ownerFaculty: roadmap.user.faculty
-        ? {
-            name: roadmap.user.faculty.name,
-            acronym: roadmap.user.faculty.acronym,
-          }
-        : null,
+      ownerFaculty,
       voteCount: roadmap._count.votes,
       viewerHasVoted,
     };

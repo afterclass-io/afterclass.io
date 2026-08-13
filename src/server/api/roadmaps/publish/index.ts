@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 import { protectedProcedure } from "@/server/api/trpc";
+import { requireOwnedRoadmap } from "@/server/api/ownership";
 
 export const publish = protectedProcedure
   .input(z.object({ roadmapId: z.string() }))
@@ -13,26 +14,21 @@ export const publish = protectedProcedure
       });
     }
 
-    const roadmap = await ctx.db.userRoadmap.findUnique({
-      where: { id: input.roadmapId },
-    });
-
-    if (!roadmap || roadmap.userId !== ctx.session.user.id) {
-      throw new TRPCError({ code: "FORBIDDEN" });
-    }
-
-    // Read the faculty live from the DB — the session JWT may be stale
-    // (e.g. right after the user declares their faculty).
-    const user = await ctx.db.users.findUnique({
-      where: { id: ctx.session.user.id },
-      select: { facultyId: true },
-    });
+    const roadmap = await requireOwnedRoadmap(
+      ctx.db,
+      input.roadmapId,
+      ctx.session.user.id,
+      {
+        userId: true,
+        facultyId: true,
+      },
+    );
 
     await ctx.db.userRoadmap.update({
       where: { id: input.roadmapId },
       data: {
         visibility: "PUBLIC",
-        facultyId: user?.facultyId ?? null,
+        facultyId: roadmap.facultyId,
         publishedAt: new Date(),
       },
     });

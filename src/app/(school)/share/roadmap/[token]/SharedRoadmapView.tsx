@@ -17,6 +17,7 @@ import { api } from "@/common/tools/trpc/react";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
 import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
 import { Button } from "@/common/components/button";
+import { PageTitle } from "@/common/components/page-title";
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
 import { censorProfanity } from "@/common/functions";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
@@ -95,9 +96,9 @@ export function SharedRoadmapView({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">
             Shared Roadmap: {censorProfanity(roadmapName)}
-          </h1>
+          </PageTitle>
           <p className="text-muted-foreground text-sm">
             by {censorProfanity(ownerUsername)}
           </p>

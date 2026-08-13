@@ -1,6 +1,7 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
+import { SortableContext } from "@dnd-kit/sortable";
 import type { Entry } from "../functions/conflicts";
 import { RoadmapCourseChip } from "./RoadmapCourseChip";
 import { cn } from "@/common/functions";
@@ -61,6 +62,8 @@ export function RoadmapTermCell({
     return `${e.courseId}::${e.yearNumber}::${e.term}`;
   }
 
+  const sortableItems = entries.map((e) => sortableIds?.get(entryKey(e)) ?? e.courseId);
+
   return (
     <div
       ref={setNodeRef}
@@ -88,22 +91,26 @@ export function RoadmapTermCell({
         )}
       </div>
 
-      {/* Entry chips */}
-      <div className="flex flex-col gap-1">
-        {entries.map((entry) => (
-          <RoadmapCourseChip
-            key={entry.courseId}
-            courseId={entry.courseId}
-            courseCode={entry.courseCode}
-            courseName={entry.courseName}
-            creditUnits={entry.creditUnits}
-            draggable={!readOnly}
-            sortableId={sortableIds?.get(entryKey(entry))}
-            onClick={onCourseClick ? () => onCourseClick(entry) : undefined}
-            onRemove={onRemove && !readOnly ? () => onRemove(entry) : undefined}
-          />
-        ))}
-      </div>
+      {/* Entry chips — isolated per term so cross-term hover doesn't trigger
+          sortable reorder animations (dnd-kit only reorders within the same
+          SortableContext). */}
+      <SortableContext items={sortableItems}>
+        <div className="flex flex-col gap-1">
+          {entries.map((entry) => (
+            <RoadmapCourseChip
+              key={entry.courseId}
+              courseId={entry.courseId}
+              courseCode={entry.courseCode}
+              courseName={entry.courseName}
+              creditUnits={entry.creditUnits}
+              draggable={!readOnly}
+              sortableId={sortableIds?.get(entryKey(entry))}
+              onClick={onCourseClick ? () => onCourseClick(entry) : undefined}
+              onRemove={onRemove && !readOnly ? () => onRemove(entry) : undefined}
+            />
+          ))}
+        </div>
+      </SortableContext>
 
       {/* Empty state */}
       {entries.length === 0 && (

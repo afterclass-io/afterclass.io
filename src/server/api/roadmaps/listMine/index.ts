@@ -10,6 +10,7 @@ export const listMine = protectedProcedure.query(async ({ ctx }) => {
       visibility: true,
       shareToken: true,
       slug: true,
+      facultyId: true,
       publishedAt: true,
       isActive: true,
       matricTermId: true,

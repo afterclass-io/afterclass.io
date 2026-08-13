@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 import { publicProcedure } from "@/server/api/trpc";
+import { toArrangedClass } from "@/modules/timetable/functions/arranged-class";
 
 export const getSharedTimetable = publicProcedure
   .input(z.object({ token: z.string() }))
@@ -31,16 +32,7 @@ export const getSharedTimetable = publicProcedure
       throw new TRPCError({ code: "NOT_FOUND" });
     }
 
-    const slots = timetable.slots.map((slot) => ({
-      classId: slot.class.id,
-      courseCode: slot.class.course.code,
-      courseName: slot.class.course.name,
-      section: slot.class.section,
-      professorName: slot.class.professor?.name ?? null,
-      creditUnits: slot.class.course.creditUnits,
-      timings: slot.class.classTimings,
-      examTimings: slot.class.classExamTimings,
-    }));
+    const slots = timetable.slots.map((slot) => toArrangedClass(slot));
 
     return {
       timetable: {

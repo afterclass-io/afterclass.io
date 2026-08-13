@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useDraggable } from "@dnd-kit/core";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Search } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
 import { Input } from "@/common/components/input";
@@ -125,15 +125,26 @@ export function CourseSearchSidebar({
 
   const isLoading = searchQuery.isFetching && debouncedQuery.length >= 1;
 
+  // Droppable "cancel" zone — dropping a sidebar-originated drag back here
+  // is a no-op (cancels the add). This gives the search panel affordance
+  // as a drop target without deleting grid items dragged from the panel.
+  const { setNodeRef: setCancelRef, isOver: isOverCancel } = useDroppable({
+    id: "sidebar-cancel-zone",
+    data: { type: "sidebar-cancel" },
+  });
+
   return (
     <aside
+      ref={setCancelRef}
+      data-droppable-id="sidebar-cancel-zone"
       className={cn(
-        "bg-background flex h-full min-h-0 flex-col border-r",
+        "bg-background flex h-full min-h-0 flex-col transition-colors",
+        isOverCancel && "bg-muted/40",
         className,
       )}
     >
       {/* Header */}
-      <div className="border-b px-3 py-2">
+      <div className="w-full border-b px-3 py-2">
         <h3 className="text-sm font-semibold">Courses</h3>
         <p className="text-muted-foreground text-xs">
           Drag courses into the roadmap grid
@@ -156,7 +167,7 @@ export function CourseSearchSidebar({
       </div>
 
       {/* Results (scrolls internally — never scrolls the whole page) */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2 [scrollbar-gutter:stable]">
         {isLoading && (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (

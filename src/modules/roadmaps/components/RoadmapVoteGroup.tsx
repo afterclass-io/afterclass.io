@@ -2,7 +2,8 @@
 import { useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 
-import { api } from "@/common/tools/trpc/react";
+import { api, type RouterInputs } from "@/common/tools/trpc/react";
+import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { VoteGroup } from "@/common/components/vote-group";
 
 import { debounce } from "lodash";
@@ -20,7 +21,7 @@ export const RoadmapVoteGroup = ({
   const utils = api.useUtils();
   const roadmapVotesCountQuery = api.roadmapVotes.count.useQuery(
     { roadmapId },
-    { enabled: !!session },
+    { enabled: true },
   );
   const getUserVoteQuery = api.roadmapVotes.getByUser.useQuery(
     { roadmapId },
@@ -28,40 +29,45 @@ export const RoadmapVoteGroup = ({
   );
 
   const mutation = api.roadmapVotes.voteOrUnvote.useMutation({
-    onMutate: async ({ roadmapId }) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await utils.roadmapVotes.count.cancel();
-      await utils.roadmapVotes.getByUser.cancel();
-      // Snapshot the previous value
-      const previousCount = utils.roadmapVotes.count.getData({ roadmapId });
-      const previousUserVote = utils.roadmapVotes.getByUser.getData({
-        roadmapId,
-      });
-      // Return a context object with the snapshotted value
-      return { previousCount, previousUserVote };
-    },
-    onError: (_err, _variables, context) => {
-      // Rollback to the previous value if mutation fails
-      utils.roadmapVotes.count.setData({ roadmapId }, context?.previousCount);
-      utils.roadmapVotes.getByUser.setData(
-        { roadmapId },
-        context?.previousUserVote,
-      );
-    },
-    onSettled: () => {
-      void utils.roadmapVotes.count.invalidate({ roadmapId });
-      void utils.roadmapVotes.getByUser.invalidate({ roadmapId });
-    },
+    ...createOptimisticMutationCallbacks<
+      RouterInputs["roadmapVotes"]["voteOrUnvote"],
+      unknown
+    >({
+      cancel: async () => {
+        await utils.roadmapVotes.count.cancel({ roadmapId });
+        await utils.roadmapVotes.getByUser.cancel({ roadmapId });
+      },
+      getSnapshot: () => ({
+        previousCount: utils.roadmapVotes.count.getData({ roadmapId }),
+        previousUserVote: utils.roadmapVotes.getByUser.getData({ roadmapId }),
+      }),
+      // Pattern A: caller already applied for instant feedback.
+      applyOptimistic: () => {
+        /* Pattern A: caller (mutateWithDebounce) already applied */
+      },
+      restoreSnapshot: (prev) => {
+        const snapshot = prev as
+          | {
+              previousCount?: number;
+              previousUserVote?: { weight: number } | null;
+            }
+          | undefined;
+        if (snapshot) {
+          utils.roadmapVotes.count.setData({ roadmapId }, snapshot.previousCount);
+          utils.roadmapVotes.getByUser.setData(
+            { roadmapId },
+            snapshot.previousUserVote as never,
+          );
+        }
+      },
+      invalidate: async () => {
+        await utils.roadmapVotes.count.invalidate({ roadmapId });
+        await utils.roadmapVotes.getByUser.invalidate({ roadmapId });
+        await utils.roadmaps.getById.invalidate({ id: roadmapId });
+      },
+    }),
   });
   const voteOrUnvote = mutation.mutate;
-
-  const debouncedVoteOrUnvote = useMemo(
-    () =>
-      debounce((variables: Parameters<typeof voteOrUnvote>[0]) => {
-        voteOrUnvote(variables);
-      }, 300),
-    [voteOrUnvote],
-  ); // 300 ms before voteOrUnvote is called
 
   const applyOptimisticUpdate = useCallback(
     (variables: Parameters<typeof voteOrUnvote>[0]) => {
@@ -72,22 +78,22 @@ export const RoadmapVoteGroup = ({
         roadmapId,
       });
 
-      // Optimistically update vote count
+      // Optimistically update vote count.
+      // Count only tracks upvotes (weight: 1) — server-side semantics
+      // changed in Task 2 from sum-based to count-only-upvotes.
+      // The count changes only when an upvote is added or removed:
+      //   gainUpvote: new weight is 1 but prev wasn't 1 → +1
+      //   loseUpvote: prev weight was 1 but new weight isn't 1 → −1
+      //   otherwise: no change (downvotes don't affect the count at all)
       utils.roadmapVotes.count.setData(
         { roadmapId },
         (oldQueryData: number | undefined) => {
           const prevVoteCount = oldQueryData ?? 0;
+          const prevWeight = previousUserVote?.weight ?? 0;
 
-          if (previousUserVote?.weight) {
-            if (weight === 0) {
-              // user undid their vote
-              return prevVoteCount - previousUserVote.weight;
-            }
-            // user changed their vote
-            return prevVoteCount + weight * 2;
-          }
-          // user voted for the first time
-          return prevVoteCount + weight;
+          const gainUpvote = weight === 1 && prevWeight !== 1 ? 1 : 0;
+          const loseUpvote = prevWeight === 1 && weight !== 1 ? -1 : 0;
+          return prevVoteCount + gainUpvote + loseUpvote;
         },
       );
 
@@ -101,6 +107,14 @@ export const RoadmapVoteGroup = ({
       });
     },
     [utils.roadmapVotes.count, utils.roadmapVotes.getByUser],
+  );
+
+  const debouncedVoteOrUnvote = useMemo(
+    () =>
+      debounce((variables: Parameters<typeof voteOrUnvote>[0]) => {
+        voteOrUnvote(variables);
+      }, 300),
+    [voteOrUnvote],
   );
 
   const mutateWithDebounce = useCallback(

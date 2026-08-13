@@ -24,6 +24,7 @@ import { RoadmapVoteGroup } from "@/modules/roadmaps/components/RoadmapVoteGroup
 import { RoadmapReactionButton } from "@/modules/roadmaps/components/RoadmapReactionButton";
 import { RoadmapReactionsGroup } from "@/modules/roadmaps/components/RoadmapReactionsGroup";
 import { Button } from "@/common/components/button";
+import { PageTitle } from "@/common/components/page-title";
 import { ShareIcon } from "@/common/components/icons";
 import {
   Tooltip,
@@ -108,8 +109,8 @@ export function PublicRoadmapView({
         router.push(`/roadmaps/mine`);
       }, 500);
     },
-    onError: () => {
-      toast.error("Failed to copy roadmap");
+    onError: (error) => {
+      toast.error(error.message || "Failed to copy roadmap");
       setCopying(false);
     },
   });
@@ -156,7 +157,7 @@ export function PublicRoadmapView({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{safeName}</h1>
+          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">{safeName}</PageTitle>
           {/* Author line: who made this roadmap, their faculty, and when it
               was published */}
           <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">

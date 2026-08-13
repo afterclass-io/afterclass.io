@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BookOpen, CalendarDays, Eye, Heart, Search } from "lucide-react";
 
 import { api } from "@/common/tools/trpc/react";
+import { formatDateSGT } from "@/common/functions/format-date-sgt";
 import {
   Card,
   CardContent,
@@ -22,6 +23,7 @@ import {
 } from "@/common/components/select";
 import { Tag } from "@/common/components/tag";
 import { Skeleton } from "@/common/components/skeleton";
+import { EmptyState } from "@/common/components/empty-state";
 import { censorProfanity, censorProfanityOrNull } from "@/common/functions";
 
 // ---------------------------------------------------------------------------
@@ -131,43 +133,32 @@ export function PublicRoadmapsGallery() {
 
       {/* Error */}
       {isError && (
-        <div className="border-border bg-muted/30 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-16 text-center">
-          <p className="text-muted-foreground text-sm">
-            {error?.message ?? "Failed to load public roadmaps."}
-          </p>
-        </div>
+        <EmptyState
+          title="Failed to load roadmaps"
+          description={error?.message ?? "Failed to load public roadmaps."}
+        />
       )}
 
       {/* Empty states */}
-      {!isLoading && !isError && items.length === 0 && (
-        <div className="border-border bg-muted/30 flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-16 text-center">
-          <BookOpen className="text-muted-foreground size-10" />
-          {hasActiveFilters ? (
-            <>
-              <p className="text-lg font-semibold">
-                No roadmaps match your filters.
-              </p>
-              <p className="text-muted-foreground text-sm">
-                Try a different search term or faculty.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-2"
-                onClick={clearFilters}
-              >
-                Clear filters
-              </Button>
-            </>
-          ) : (
-            <>
-              <p className="text-lg font-semibold">No public roadmaps yet.</p>
-              <p className="text-muted-foreground text-sm">
-                Be the first to publish your roadmap!
-              </p>
-            </>
-          )}
-        </div>
+      {!isLoading && !isError && items.length === 0 && hasActiveFilters && (
+        <EmptyState
+          icon={<BookOpen />}
+          title="No roadmaps match your filters."
+          description="Try a different search term or faculty."
+          action={
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              Clear filters
+            </Button>
+          }
+        />
+      )}
+
+      {!isLoading && !isError && items.length === 0 && !hasActiveFilters && (
+        <EmptyState
+          icon={<BookOpen />}
+          title="No public roadmaps yet."
+          description="Be the first to publish your roadmap!"
+        />
       )}
 
       {/* Grid */}
@@ -208,7 +199,7 @@ export function PublicRoadmapsGallery() {
                     by {censorProfanity(item.ownerUsername)}
                   </p>
 
-                  <div className="text-muted-foreground flex items-center gap-4 text-xs">
+                  <div className="text-muted-foreground flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-xs">
                     <span className="inline-flex items-center gap-1">
                       <BookOpen className="size-3" />
                       {item.entryCount}{" "}
@@ -228,10 +219,7 @@ export function PublicRoadmapsGallery() {
                     {item.roadmap.publishedAt && (
                       <span className="inline-flex items-center gap-1">
                         <CalendarDays className="size-3" />
-                        {new Date(item.roadmap.publishedAt).toLocaleDateString(
-                          "en-SG",
-                          { day: "numeric", month: "short", year: "numeric" },
-                        )}
+                        {formatDateSGT(item.roadmap.publishedAt)}
                       </span>
                     )}
                   </div>

@@ -48,7 +48,7 @@ type VisibilityOption = {
   icon: ComponentType<{ className?: string }>;
 };
 
-const VISIBILITY_OPTIONS: VisibilityOption[] = [
+const ALL_VISIBILITY_OPTIONS: VisibilityOption[] = [
   {
     value: "PRIVATE",
     label: "Private",
@@ -68,6 +68,16 @@ const VISIBILITY_OPTIONS: VisibilityOption[] = [
     icon: Globe,
   },
 ];
+
+// Timetables have no public gallery — keep the component reusable but hide
+// the PUBLIC option when entity === "timetable" (server also rejects it).
+const VISIBILITY_OPTIONS_BY_ENTITY: Record<
+  ShareEntity,
+  VisibilityOption[]
+> = {
+  timetable: ALL_VISIBILITY_OPTIONS.filter((o) => o.value !== "PUBLIC"),
+  roadmap: ALL_VISIBILITY_OPTIONS,
+};
 
 // ---------------------------------------------------------------------------
 // Component
@@ -184,7 +194,7 @@ export function ShareDialog({
           onValueChange={(v) => setDraft(v as ShareVisibility)}
           className="gap-2"
         >
-          {VISIBILITY_OPTIONS.map((option) => (
+          {VISIBILITY_OPTIONS_BY_ENTITY[entity].map((option) => (
             <Label
               key={option.value}
               htmlFor={`share-visibility-${option.value}`}
@@ -221,6 +231,7 @@ export function ShareDialog({
                   onFocus={(e) => e.target.select()}
                   className="text-sm"
                   aria-label="Shareable link"
+                  data-test="share-link-input"
                 />
                 <Button
                   variant="outline"

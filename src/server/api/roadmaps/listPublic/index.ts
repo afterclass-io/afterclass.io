@@ -45,32 +45,22 @@ export const listPublic = publicProcedure
       },
     } satisfies Prisma.UserRoadmapSelect;
 
-    let roadmaps;
-    if (sort === "most-liked") {
-      // Prisma cannot order by a filtered relation count, so sort by
-      // upvotes in memory before applying cursor pagination.
-      const all = await ctx.db.userRoadmap.findMany({ where, select });
-      all.sort(
-        (a, b) =>
-          b._count.votes - a._count.votes ||
-          (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0),
-      );
-      const start = cursor ? all.findIndex((r) => r.id === cursor) + 1 : 0;
-      roadmaps = all.slice(start, start + limit + 1);
-    } else {
-      const orderBy: Prisma.UserRoadmapOrderByWithRelationInput =
-        sort === "most-viewed"
-          ? { viewCount: "desc" }
-          : { publishedAt: "desc" };
+    const orderBy:
+      | Prisma.UserRoadmapOrderByWithRelationInput
+      | Prisma.UserRoadmapOrderByWithRelationInput[] =
+      sort === "most-liked"
+        ? [{ upvoteCount: "desc" }, { publishedAt: "desc" }, { id: "desc" }]
+        : sort === "most-viewed"
+          ? [{ viewCount: "desc" }, { publishedAt: "desc" }, { id: "desc" }]
+          : [{ publishedAt: "desc" }, { id: "desc" }];
 
-      roadmaps = await ctx.db.userRoadmap.findMany({
-        where,
-        select,
-        orderBy,
-        take: limit + 1,
-        ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-      });
-    }
+    const roadmaps = await ctx.db.userRoadmap.findMany({
+      where,
+      select,
+      orderBy,
+      take: limit + 1,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+    });
 
     let nextCursor: string | null = null;
     if (roadmaps.length > limit) {

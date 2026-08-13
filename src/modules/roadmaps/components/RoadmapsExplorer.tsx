@@ -7,6 +7,7 @@ import { LogIn } from "lucide-react";
 
 import { Button } from "@/common/components/button";
 import { EmptyState } from "@/common/components/empty-state";
+import { PageTitle } from "@/common/components/page-title";
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
 import { PublicRoadmapsGallery } from "@/modules/roadmaps/components/PublicRoadmapsGallery";
 import { MyRoadmapsEditor } from "@/modules/roadmaps/components/MyRoadmapsEditor";
@@ -59,7 +60,7 @@ export function RoadmapsExplorer({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Roadmaps</h1>
+          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">Roadmaps</PageTitle>
           <p className="text-muted-foreground text-sm">
             Plan your degree and explore roadmaps shared by the SMU community.
           </p>

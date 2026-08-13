@@ -30,6 +30,7 @@ import {
   AlertDialogTitle,
 } from "@/common/components/alert-dialog";
 import { cn } from "@/common/functions";
+import { EmptyState } from "@/common/components/empty-state";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -210,11 +211,11 @@ export function RoadmapList({
       {/* List */}
       <div className="flex-1 overflow-y-auto py-1">
         {roadmaps.length === 0 && !isCreating && (
-          <p className="text-muted-foreground px-3 py-6 text-center text-xs">
-            No roadmaps yet.
-            <br />
-            Click + to create one.
-          </p>
+          <EmptyState
+            title="No roadmaps yet"
+            description="Click the + button above to create your first roadmap."
+            className="border-none bg-transparent"
+          />
         )}
 
         {roadmaps.map((item) => {
@@ -306,13 +307,13 @@ export function RoadmapList({
                 </button>
               )}
 
-              {/* Entry count badge */}
+              {/* Entry count badge — stays put; actions are always visible (no hover reveal) */}
               <span className="bg-muted text-muted-foreground shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
                 {item.entryCount}
               </span>
 
-              {/* Actions (visible on hover) */}
-              <div className="flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100">
+              {/* Actions (always visible; hover reveal hid the only affordance to edit/delete) */}
+              <div className="flex shrink-0 items-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button

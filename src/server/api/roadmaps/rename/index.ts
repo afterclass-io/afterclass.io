@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 
 import { protectedProcedure } from "@/server/api/trpc";
+import { requireOwnedRoadmap } from "@/server/api/ownership";
 
 export const rename = protectedProcedure
   .input(
@@ -12,13 +12,9 @@ export const rename = protectedProcedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const roadmap = await ctx.db.userRoadmap.findUnique({
-      where: { id: input.roadmapId },
+    await requireOwnedRoadmap(ctx.db, input.roadmapId, ctx.session.user.id, {
+      userId: true,
     });
-
-    if (!roadmap || roadmap.userId !== ctx.session.user.id) {
-      throw new TRPCError({ code: "FORBIDDEN" });
-    }
 
     return ctx.db.userRoadmap.update({
       where: { id: input.roadmapId },

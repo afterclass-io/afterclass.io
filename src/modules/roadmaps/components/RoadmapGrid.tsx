@@ -11,10 +11,7 @@ import {
   useSensors,
   closestCenter,
 } from "@dnd-kit/core";
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import type { Entry, Conflict } from "../functions/conflicts";
 import { detectConflicts, findEntryByCourse } from "../functions/conflicts";
 import { RoadmapYearRow, YEAR_LABEL_COL } from "./RoadmapYearRow";
@@ -42,7 +39,7 @@ export type RoadmapGridProps = {
   entries: Entry[];
   readOnly?: boolean;
   onEntriesChange: (entries: Entry[]) => void;
-  onSave?: (entries: Entry[]) => void;
+  onSave?: (entries: Entry[]) => Promise<void> | void;
   /** Optional sidebar rendered inside the DndContext (e.g. course search). */
   sidebar?: React.ReactNode;
   /** Optional footer renderer below each term cell (e.g. timetable links). */
@@ -63,13 +60,9 @@ const DEBOUNCE_MS = 800;
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Generate a stable sortable ID for an entry.
- * Uses the entry's position in the array combined with a hash to remain
- * stable across moves (dnd-kit needs stable IDs).
- */
-function entrySortableId(entry: Entry, index: number): string {
-  return `entry-${index}-${entry.courseId}`;
+/** Stable sortable ID — courseId is unique (duplicate adds are blocked). */
+function entrySortableId(entry: Entry): string {
+  return entry.courseId;
 }
 
 /** Categorize conflicts by term for inline badge display. */
@@ -110,40 +103,55 @@ export function RoadmapGrid({
     useState<RoadmapCourseInfo | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  // Sync external entries when they change (e.g. after server save)
+  // Keep the LATEST values in refs so the empty-deps unmount cleanup below can
+  // always flush the most recent state (a closure over first-render values
+  // would otherwise see dirty === false and drop the edit).
+  const dirtyRef = useRef(dirty);
+  const localEntriesRef = useRef(localEntries);
+  const onSaveRef = useRef(onSave);
+  dirtyRef.current = dirty;
+  localEntriesRef.current = localEntries;
+  onSaveRef.current = onSave;
+
   useEffect(() => {
-    if (!dirty) {
-      setLocalEntries(entries);
-    }
-  }, [entries, dirty]);
+    if (!dirty && !saving) setLocalEntries(entries);
+  }, [entries, dirty, saving]);
 
-  // Reset manually added years when switching to another roadmap
   useEffect(() => {
     setAddedYears(0);
   }, [roadmapId]);
 
-  // ---- Debounced save ----
   useEffect(() => {
-    if (!dirty || !onSave) return;
-
+    if (!dirty || !onSave || saving) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      onSave(localEntries);
-      setDirty(false);
+      debounceRef.current = null;
+      const snapshot = localEntriesRef.current;
+      setSaving(true);
+      void Promise.resolve(onSaveRef.current!(snapshot))
+        .then(() => {
+          if (localEntriesRef.current === snapshot) setDirty(false);
+        })
+        .catch(() => undefined)
+        .finally(() => setSaving(false));
     }, DEBOUNCE_MS);
-
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [localEntries, dirty, onSave]);
+  }, [localEntries, dirty, onSave, saving]);
 
-  // Flush save on unmount
   useEffect(() => {
     return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      if (dirty && onSave) {
-        onSave(localEntries);
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
+      if (dirtyRef.current && onSaveRef.current) {
+        void Promise.resolve(onSaveRef.current(localEntriesRef.current)).catch(
+          () => undefined,
+        );
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -187,12 +195,10 @@ export function RoadmapGrid({
     [conflicts],
   );
 
-  // Build a lookup from sortableId → entry index
   const entryIndexById = useMemo(() => {
     const map = new Map<string, number>();
-    for (let i = 0; i < localEntries.length; i++) {
-      const entry = localEntries[i]!;
-      map.set(entrySortableId(entry, i), i);
+    for (const [i, entry] of localEntries.entries()) {
+      map.set(entrySortableId(entry), i);
     }
     return map;
   }, [localEntries]);
@@ -205,7 +211,15 @@ export function RoadmapGrid({
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
+      // Dropped outside any droppable, or back on the search sidebar's cancel
+      // zone — cancelling a sidebar-originated drag is a no-op (don't add the
+      // course anywhere). Grid-originated drops outside are also no-ops.
       if (!over) return;
+      if (
+        (over.data.current as { type?: string } | undefined)?.type ===
+        "sidebar-cancel"
+      )
+        return;
 
       const activeIdStr = String(active.id);
       const overIdStr = String(over.id);
@@ -334,20 +348,18 @@ export function RoadmapGrid({
     [localEntries, onEntriesChange],
   );
 
-  /** Map from entryKey → sortableId for all entries. */
   const sortableIdMap = useMemo(() => {
     const map = new Map<string, string>();
-    for (let i = 0; i < localEntries.length; i++) {
-      const entry = localEntries[i]!;
+    for (const entry of localEntries) {
       const key = `${entry.courseId}::${entry.yearNumber}::${entry.term}`;
-      map.set(key, entrySortableId(entry, i));
+      map.set(key, entrySortableId(entry));
     }
     return map;
   }, [localEntries]);
 
   // ---- Render ----
   return (
-    <div className={cn("space-y-4 h-full", className)}>
+    <div className={cn("space-y-4 h-full", className)} aria-busy={saving || undefined}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -360,9 +372,10 @@ export function RoadmapGrid({
             main area, so the separator meets the editor's bottom border. */}
         <div className="relative flex h-full flex-col gap-4 lg:flex-row">
           {/* Main grid area (scrolls horizontally on small screens). The
-              right padding reserves space for the absolute sidebar + handle. */}
-          <div className="min-w-0 flex-1 overflow-x-auto lg:pr-[calc(var(--roadmap-sidebar-width)_+_4px)]">
-            <div className="min-w-[540px]">
+              right padding reserves space for the absolute sidebar + handle
+              plus breathing room so T3B's 2px dashed border isn't clipped. */}
+          <div className="min-w-0 flex-1 overflow-x-auto lg:pr-[calc(var(--roadmap-sidebar-width)_+_12px)]">
+            <div className="min-w-[540px] pr-1">
               {/* Grid header */}
               <div className={cn("grid gap-2", YEAR_LABEL_COL)}>
                 <div />
@@ -377,21 +390,10 @@ export function RoadmapGrid({
 
               {/* Year rows */}
               <div className="space-y-3">
-                {yearNumbers.map((yearNumber) => {
-                  const cellSortableIds: string[] = [];
-
-                  // Gather sortable IDs for all entries in this year
-                  for (let i = 0; i < localEntries.length; i++) {
-                    const e = localEntries[i]!;
-                    if (e.yearNumber === yearNumber) {
-                      cellSortableIds.push(entrySortableId(e, i));
-                    }
-                  }
-
-                  return (
-                    <SortableContext key={yearNumber} items={cellSortableIds}>
-                      <RoadmapYearRow
-                        yearNumber={yearNumber}
+                {yearNumbers.map((yearNumber) => (
+                  <div key={yearNumber}>
+                    <RoadmapYearRow
+                      yearNumber={yearNumber}
                         entries={localEntries}
                         sortableIds={sortableIdMap}
                         readOnly={readOnly}
@@ -422,9 +424,8 @@ export function RoadmapGrid({
                           ))}
                         </div>
                       )}
-                    </SortableContext>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
 
               {/* Add year button — disabled (with reason) at the 5-year
