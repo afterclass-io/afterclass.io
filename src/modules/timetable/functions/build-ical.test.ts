@@ -389,4 +389,34 @@ describe("buildIcal", () => {
     expect(result).toContain("SUMMARY:CS101 Exam");
     expect(result).toContain("DTSTART;TZID=Asia/Singapore:20250425T090000");
   });
+
+  // -- Short "Mon" day format (production/seed data) -------------------------
+
+  it("emits recurring VEVENTs for the short 'Mon' day format used in production data", () => {
+    const ics = buildIcal({
+      termStart: new Date("2026-08-17T00:00:00+08:00"),
+      termEnd: new Date("2026-12-05T00:00:00+08:00"),
+      timetableName: "Test",
+      classes: [
+        {
+          classId: "cl1",
+          courseCode: "CS101",
+          courseName: "Intro",
+          section: "G1",
+          creditUnits: 4,
+          timings: [
+            {
+              dayOfWeek: "Mon",
+              startTime: "08:15",
+              endTime: "11:30",
+              venue: "SOB-A",
+            },
+          ],
+          examTimings: [],
+        },
+      ],
+    });
+    expect(ics).toContain("RRULE:FREQ=WEEKLY");
+    expect(ics).toContain("DTSTART");
+  });
 });

@@ -1,14 +1,6 @@
-export function formatBidAmount(n: number): string {
-  return `e$${n.toLocaleString("en-SG", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
+import { formatBidCurrency } from "@/common/functions/format-bid-currency";
+import { formatDateSGT } from "@/common/functions/format-date-sgt";
 
-export function formatDateSG(d: Date | string): string {
-  return new Date(d).toLocaleDateString("en-SG", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
+export const formatBidAmount = formatBidCurrency;
+
+export const formatDateSG = formatDateSGT;

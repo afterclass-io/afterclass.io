@@ -1,38 +1,29 @@
 "use client";
 
 import { useCallback } from "react";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { toast } from "sonner";
 import { Plus, ArrowLeftRight } from "lucide-react";
-import { api } from "@/common/tools/trpc/react";
 import { activeTimetableIdAtom } from "@/modules/timetable/atoms/timetable";
+import { pushHistoryAtom } from "@/modules/timetable/atoms/history";
+import {
+  useAddSlotMutation,
+  useSetSlotSectionMutation,
+  type SectionExamTiming,
+  type SectionOption,
+  type SectionTiming,
+} from "@/modules/timetable/hooks/use-slot-mutations";
 import { Button } from "@/common/components/button";
 import { cn } from "@/common/functions";
+import { formatDateSGT } from "@/common/functions/format-date-sgt";
+import {
+  hasTimeConflict,
+  toTimingLikes,
+} from "@/modules/timetable/functions/slot-math";
+import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
 
-/** Timing shape returned per section from `searchCourses`. */
-export type SectionTiming = {
-  dayOfWeek?: string | null;
-  startTime: string;
-  endTime: string;
-  venue?: string | null;
-};
-
-/** Exam timing shape returned per section from `searchCourses`. */
-export type SectionExamTiming = {
-  date: Date | string;
-  startTime: string;
-  endTime: string;
-  venue?: string | null;
-};
-
-/** Shape of a section returned from `searchCourses`. */
-export type SectionOption = {
-  classId: string;
-  section: string;
-  professorName?: string | null;
-  timings?: SectionTiming[];
-  examTimings?: SectionExamTiming[];
-};
+/** Re-exported so callers can keep importing `SectionOption` from here. */
+export type { SectionOption } from "@/modules/timetable/hooks/use-slot-mutations";
 
 export type SectionPickerProps = {
   /** The course these sections belong to. */
@@ -42,6 +33,8 @@ export type SectionPickerProps = {
   alreadyInTimetable: boolean;
   /** The sections available for this course. */
   sections: SectionOption[];
+  /** Classes currently on the active timetable's grid (for clash checks). */
+  existingSlots?: ArrangedClass[];
   /** Called after a successful add/swap. */
   onDone?: () => void;
   className?: string;
@@ -49,25 +42,20 @@ export type SectionPickerProps = {
 
 function formatTimingLine(t: SectionTiming): string {
   const day = t.dayOfWeek ?? "?";
-  return `${day} ${t.startTime}–${t.endTime}${t.venue ? ` · ${t.venue}` : ""}`;
+  return `${day} ${t.startTime}ΓÇô${t.endTime}${t.venue ? ` ┬╖ ${t.venue}` : ""}`;
 }
 
 function formatExamLine(t: SectionExamTiming): string {
-  const date = typeof t.date === "string" ? new Date(t.date) : t.date;
-  const dateLabel = date.toLocaleDateString("en-SG", {
-    day: "numeric",
-    month: "short",
-    timeZone: "Asia/Singapore",
-  });
-  return `Exam ${dateLabel} ${t.startTime}–${t.endTime}${t.venue ? ` · ${t.venue}` : ""}`;
+  const dateLabel = formatDateSGT(t.date, { day: "numeric", month: "short" });
+  return `Exam ${dateLabel} ${t.startTime}ΓÇô${t.endTime}${t.venue ? ` ┬╖ ${t.venue}` : ""}`;
 }
 
 /**
  * Displays all sections for a course with an "Add to timetable" or
  * "Swap section" button per section.
  *
- * - If the course is NOT yet in the timetable → `addSlot` mutation
- * - If the course IS already in the timetable → `setSlotSection` mutation
+ * - If the course is NOT yet in the timetable ΓåÆ `addSlot` mutation
+ * - If the course IS already in the timetable ΓåÆ `setSlotSection` mutation
  *
  * Both mutations invalidate on success; errors surface via sonner toast.
  */
@@ -76,44 +64,58 @@ export function SectionPicker({
   courseCode,
   alreadyInTimetable,
   sections,
+  existingSlots = [],
   onDone,
   className,
 }: SectionPickerProps) {
   const activeTimetableId = useAtomValue(activeTimetableIdAtom);
-  const utils = api.useUtils();
+  const pushHistory = useSetAtom(pushHistoryAtom);
 
-  const addSlotMutation = api.timetable.addSlot.useMutation({
-    onSuccess: () => {
-      void utils.timetable.getArrangement.invalidate({
-        timetableId: activeTimetableId!,
-      });
-      toast.success(`Added ${courseCode} to timetable`);
-      onDone?.();
-    },
-    onError: () => {
-      toast.error(`Failed to add ${courseCode}. Please try again.`);
-    },
-  });
-
-  const setSlotSectionMutation = api.timetable.setSlotSection.useMutation({
-    onSuccess: () => {
-      void utils.timetable.getArrangement.invalidate({
-        timetableId: activeTimetableId!,
-      });
-      toast.success(`Swapped section for ${courseCode}`);
-      onDone?.();
-    },
-    onError: () => {
-      toast.error("Failed to swap section. Please try again.");
-    },
+  // Shared optimistic mutation hooks ΓÇö the same configs the undo/redo
+  // history hook executes, so history and the UI can never drift.
+  const addSlotMutation = useAddSlotMutation({ sections, courseCode, onDone });
+  const setSlotSectionMutation = useSetSlotSectionMutation({
+    sections,
+    courseCode,
+    onDone,
   });
 
   const handleAdd = useCallback(
     (classId: string) => {
       if (!activeTimetableId) return;
+      const picked = sections.find((s) => s.classId === classId);
+      if (picked) {
+        // Block free adds that clash with a class already on the grid.
+        const conflictCheckSlots = existingSlots.map((s) => ({
+          classTimings: toTimingLikes(s.timings),
+        }));
+        const candidate = {
+          classTimings: toTimingLikes(picked.timings ?? []),
+        };
+        if (hasTimeConflict(conflictCheckSlots, candidate)) {
+          toast.error(
+            `Time conflict with an existing class ΓÇö ${courseCode} ${picked.section} was not added`,
+          );
+          return;
+        }
+      }
       addSlotMutation.mutate({ timetableId: activeTimetableId, classId });
+      // Record for undo/redo ΓÇö the inverse (removeSlot) runs through the
+      // same shared mutation config.
+      pushHistory({
+        type: "addSlot",
+        timetableId: activeTimetableId,
+        classId,
+      });
     },
-    [activeTimetableId, addSlotMutation],
+    [
+      activeTimetableId,
+      addSlotMutation,
+      sections,
+      existingSlots,
+      courseCode,
+      pushHistory,
+    ],
   );
 
   const handleSwap = useCallback(
@@ -124,8 +126,30 @@ export function SectionPicker({
         courseId,
         classId,
       });
+      // Record the swap for undo/redo: from the section currently on the
+      // grid to the newly picked one. `existingSlots` is the active
+      // timetable's grid, so the current classId is authoritative.
+      const currentClassId = existingSlots.find(
+        (s) => s.courseCode === courseCode,
+      )?.classId;
+      if (currentClassId) {
+        pushHistory({
+          type: "setSlotSection",
+          timetableId: activeTimetableId,
+          courseId,
+          fromClassId: currentClassId,
+          toClassId: classId,
+        });
+      }
     },
-    [activeTimetableId, courseId, setSlotSectionMutation],
+    [
+      activeTimetableId,
+      courseId,
+      setSlotSectionMutation,
+      existingSlots,
+      courseCode,
+      pushHistory,
+    ],
   );
 
   if (sections.length === 0) {

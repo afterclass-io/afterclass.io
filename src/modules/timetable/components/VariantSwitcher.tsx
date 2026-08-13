@@ -5,7 +5,8 @@ import { useAtom, useAtomValue } from "jotai";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Pencil, Trash2, Plus, Star } from "lucide-react";
-import { api } from "@/common/tools/trpc/react";
+import { api, type RouterInputs } from "@/common/tools/trpc/react";
+import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import {
   selectedTermIdAtom,
   activeTimetableIdAtom,
@@ -122,27 +123,40 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
 
   // ---- Set active (star) — one active plan per term, enforced server-side ----
   const setActiveMutation = api.timetable.setActive.useMutation({
-    onMutate: async ({ timetableId }) => {
-      if (!selectedTermId) return;
-      const input = { acadTermId: selectedTermId };
-      await utils.timetable.listMine.cancel(input);
-      const prev = utils.timetable.listMine.getData(input);
-      // Optimistically star the target and unstar its same-term siblings, so
-      // the UI never shows two active plans (or none) for a term.
-      utils.timetable.listMine.setData(input, (old) =>
-        old?.map((t) => ({ ...t, isActive: t.id === timetableId })),
-      );
-      return { prev };
-    },
-    onError: (_err, _vars, ctx) => {
-      if (selectedTermId && ctx?.prev) {
+    ...createOptimisticMutationCallbacks<
+      RouterInputs["timetable"]["setActive"],
+      unknown
+    >({
+      cancel: async () => {
+        if (!selectedTermId) return;
+        await utils.timetable.listMine.cancel({ acadTermId: selectedTermId });
+      },
+      getSnapshot: () => {
+        if (!selectedTermId) return undefined;
+        return utils.timetable.listMine.getData({ acadTermId: selectedTermId });
+      },
+      // Pattern B: the caller does NOT apply optimistically.
+      applyOptimistic: ({ timetableId }) => {
+        if (!selectedTermId) return;
         utils.timetable.listMine.setData(
           { acadTermId: selectedTermId },
-          ctx.prev,
+          (old) =>
+            old?.map((t) => ({ ...t, isActive: t.id === timetableId })),
         );
-      }
-      toast.error("Failed to set active timetable");
-    },
+      },
+      restoreSnapshot: (prev) => {
+        if (!selectedTermId) return;
+        utils.timetable.listMine.setData(
+          { acadTermId: selectedTermId },
+          prev as never,
+        );
+      },
+      invalidate: async () => {
+        if (!selectedTermId) return;
+        await utils.timetable.listMine.invalidate({ acadTermId: selectedTermId });
+      },
+      onError: () => toast.error("Failed to set active timetable"),
+    }),
     onSuccess: () => {
       void utils.timetable.listMine.invalidate({ acadTermId: selectedTermId! });
     },

@@ -5,6 +5,11 @@
  * cumulative overshoot against a user-set e$ balance.
  *
  * All functions are pure — no side effects, no dependencies beyond stdlib.
+ *
+ * Round ordering is delegated to {@link @/modules/bidding/utils/round-order}
+ * which is the single source of truth for BOSS canonical round order
+ * (1, 1A, 1B, 1C, 1F, 2, 2A, …). Unknown rounds sort alphabetically after
+ * all known rounds.
  */
 
 // ---------------------------------------------------------------------------
@@ -37,29 +42,18 @@ export type BudgetSummary = {
 // BOSS canonical round ordering
 // ---------------------------------------------------------------------------
 
-/**
- * Parse a BOSS round label into a sortable tuple.
- *
- * Canonical order: 1, 1A, 1B, 1C, 2, 2A, 3, …
- *
- * Returns `[numericPart, letterSuffix]` where an empty suffix sorts
- * before any letter (so "1" < "1A").
- */
-function parseRoundKey(round: string): [number, string] {
-  const match = /^(\d+)([A-Z]*)$/.exec(round);
-  if (!match) return [Infinity, round];
-  return [parseInt(match[1]!, 10), match[2]!];
-}
+import { compareRounds } from "@/modules/bidding/utils/round-order";
 
-/** Compare two round labels in canonical BOSS order. */
-function compareRound(a: string, b: string): number {
-  const [aNum, aLet] = parseRoundKey(a);
-  const [bNum, bLet] = parseRoundKey(b);
-  if (aNum !== bNum) return aNum - bNum;
-  if (aLet === "" && bLet !== "") return -1;
-  if (aLet !== "" && bLet === "") return 1;
-  return aLet.localeCompare(bLet);
-}
+/**
+ * Compare two round labels in canonical BOSS order.
+ *
+ * Delegates to the single source of truth:
+ * {@link @/modules/bidding/utils/round-order#compareRounds}.
+ *
+ * Known rounds (1, 1A, 1B, 1C, 1F, 2, 2A) are ordered by their fixed index;
+ * unknown rounds sort alphabetically after all known rounds.
+ */
+export { compareRounds as compareRound };
 
 // ---------------------------------------------------------------------------
 // summarizeBidsByRound
@@ -69,7 +63,8 @@ function compareRound(a: string, b: string): number {
  * Group bids by round, compute per-window & per-round totals, and
  * calculate cumulative overshoot against a user-set balance.
  *
- * Rounds are returned in canonical BOSS order (1, 1A, 1B, 1C, 2, 2A, 3, …).
+ * Rounds are returned in canonical BOSS order. See
+ * {@link @/modules/bidding/utils/round-order} for the single source of truth.
  *
  * @param bids    Flat list of bid amounts keyed by round & window.
  * @param balance The user's e$ balance for the academic term.
@@ -92,7 +87,7 @@ export function summarizeBidsByRound(
   }
 
   // --- Sort rounds canonically ---
-  const sortedRounds = [...byRound.keys()].sort(compareRound);
+  const sortedRounds = [...byRound.keys()].sort(compareRounds);
 
   // --- Build RoundTotal[] ---
   let grandTotal = 0;

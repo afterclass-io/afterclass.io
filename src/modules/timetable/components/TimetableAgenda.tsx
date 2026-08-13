@@ -11,6 +11,7 @@ import { courseColor } from "@/modules/timetable/functions/course-color";
 import { formatBidAmount } from "@/modules/timetable/functions/format";
 import {
   bidChipVariant,
+  slotCardVariant,
   type UserBidStatus,
 } from "@/modules/timetable/functions/bid-status";
 import type { BidInfo } from "./TimetableSlotCard";
@@ -102,6 +103,9 @@ function AgendaRow({
   bidInfo?: BidInfo;
 }) {
   const { className: colorClasses } = courseColor(slot.courseCode);
+  const bidStatus = bidInfo?.status as UserBidStatus | undefined;
+  const cardVariant = slotCardVariant(bidStatus);
+  const cardClasses = bidInfo ? (cardVariant ?? colorClasses) : colorClasses;
   const venue = slot.venue ?? slot.timing.venue ?? null;
 
   return (
@@ -119,7 +123,7 @@ function AgendaRow({
         onClick={readOnly ? undefined : () => onSlotClick?.(slot.classId)}
         className={cn(
           "min-w-0 flex-1 rounded-md border px-2 py-1.5 text-left text-xs leading-tight",
-          colorClasses,
+          cardClasses,
           slot.isExam && "border-dashed",
           readOnly
             ? "cursor-default"

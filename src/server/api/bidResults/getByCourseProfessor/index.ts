@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { publicProcedure } from "@/server/api/trpc";
-
-const HARD_LIMIT = 200;
+import { getAcadYearCutoff } from "@/server/api/bidResults/acad-year-window";
+import { findBidResults } from "@/server/api/bidResults/findBidResults";
 
 export const getByCourseProfessor = publicProcedure
   .input(
@@ -26,31 +26,12 @@ export const getByCourseProfessor = publicProcedure
 
     if (!professor) return [];
 
-    return await ctx.db.bidResult.findMany({
-      where: {
-        class: {
-          courseId: course.id,
-          professorId: input.professorId,
-        },
+    const acadYearCutoff = await getAcadYearCutoff(ctx.db);
+
+    return findBidResults(ctx.db, {
+      class: {
+        courseId: course.id,
+        professorId: input.professorId,
       },
-      include: {
-        bidWindow: true,
-        class: {
-          include: {
-            professor: { select: { name: true } },
-            course: { select: { code: true, name: true } },
-            classTimings: {
-              select: { dayOfWeek: true, startTime: true, endTime: true },
-              orderBy: { startTime: "asc" },
-            },
-          },
-        },
-      },
-      orderBy: [
-        { bidWindow: { acadTermId: "desc" } },
-        { bidWindow: { round: "asc" } },
-        { bidWindow: { window: "asc" } },
-      ],
-      take: HARD_LIMIT,
-    });
+    }, acadYearCutoff);
   });

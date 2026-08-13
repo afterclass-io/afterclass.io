@@ -6,16 +6,15 @@ import { cn } from "@/common/functions";
 export function Th({
   children,
   className,
-}: {
-  children?: React.ReactNode;
-  className?: string;
-}) {
+  ...rest
+}: React.ComponentPropsWithoutRef<"th">) {
   return (
     <th
       className={cn(
         "text-muted-foreground h-10 px-3 text-left align-middle text-xs font-medium tracking-wide uppercase",
         className,
       )}
+      {...rest}
     >
       {children}
     </th>
@@ -36,12 +35,15 @@ export function SortableTh({
   className?: string;
 }) {
   return (
-    <Th className={className}>
+    <Th
+      className={className}
+      aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : undefined}
+    >
       <button
         type="button"
         onClick={onClick}
         className={cn(
-          "hover:text-foreground inline-flex items-center gap-1 uppercase",
+          "hover:text-foreground inline-flex items-center gap-1",
           className?.includes("text-right") && "flex-row-reverse",
         )}
       >

@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 
 import { protectedProcedure } from "@/server/api/trpc";
+import { requireOwnedTimetable } from "@/server/api/ownership";
 
 /**
  * Revoke the timetable's iCal feed token. Existing subscription links stop
@@ -11,14 +11,10 @@ import { protectedProcedure } from "@/server/api/trpc";
 export const revokeIcalToken = protectedProcedure
   .input(z.object({ timetableId: z.string() }))
   .mutation(async ({ ctx, input }) => {
-    const timetable = await ctx.db.userTimetable.findUnique({
-      where: { id: input.timetableId },
-      select: { userId: true },
+    // Ownership check — only the owner may revoke.
+    await requireOwnedTimetable(ctx.db, input.timetableId, ctx.session.user.id, {
+      userId: true,
     });
-
-    if (!timetable || timetable.userId !== ctx.session.user.id) {
-      throw new TRPCError({ code: "FORBIDDEN" });
-    }
 
     await ctx.db.userTimetable.update({
       where: { id: input.timetableId },

@@ -1,12 +1,12 @@
 "use client";
 
-import { cn } from "@/common/functions";
 import type { PositionedSlot } from "@/modules/timetable/functions/slot-math";
+import {
+  SMU_PERIODS,
+  periodBandStyle,
+} from "@/modules/timetable/functions/slot-math";
 import { TimetableSlotCard } from "./TimetableSlotCard";
 import type { BidInfo } from "./TimetableSlotCard";
-
-// 08:00–22:00 in 30-min increments = 28 half-hour rows
-const HALF_HOUR_SLOTS = 28;
 
 /** A class slot enriched with its course metadata. */
 export type DaySlot = PositionedSlot & {
@@ -37,8 +37,8 @@ export type TimetableDayColumnProps = {
 /**
  * A single day column in the vertical timetable grid.
  *
- * Renders a day header, evenly-spaced grid lines (hourly solid, half-hour
- * dashed), and positioned slot cards layered on top.
+ * Renders a day header, one subtle band per SMU class period, and positioned
+ * slot cards layered on top (cards paint above the bands).
  */
 export function TimetableDayColumn({
   dayLabel,
@@ -57,28 +57,19 @@ export function TimetableDayColumn({
         {dayLabel}
       </div>
 
-      {/* Grid area with background lines + slot cards */}
+      {/* Grid area with period bands + slot cards */}
       <div className="relative flex-1">
-        {/* Grid background: 28 evenly-spaced rows */}
-        <div className="pointer-events-none absolute inset-0 flex flex-col">
-          {Array.from({ length: HALF_HOUR_SLOTS }).map((_, idx) => {
-            // idx 0   = 08:00   (no border-top, first row)
-            // idx 2   = 08:30   (dashed)
-            // idx 2   = 09:00   (solid)
-            const isHour = idx % 2 === 0;
-            return (
-              <div
-                key={idx}
-                className={cn(
-                  "flex-1 border-t",
-                  isHour
-                    ? "border-border/50"
-                    : "border-border/20 border-dashed",
-                  idx === 0 && "border-t-0",
-                )}
-              />
-            );
-          })}
+        {/* One subtle band per SMU class period — teaching blocks visually
+            separated from breaks. Cards paint above via the absolute slot
+            layer below. */}
+        <div className="pointer-events-none absolute inset-0">
+          {SMU_PERIODS.map((p) => (
+            <div
+              key={p.label}
+              className="bg-muted/30 border-border/50 absolute right-0 left-0 rounded-sm border"
+              style={periodBandStyle(p)}
+            />
+          ))}
         </div>
 
         {/* Slot cards positioned within the grid */}

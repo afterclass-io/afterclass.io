@@ -136,7 +136,7 @@ export function BidsDashboard({
             </Tooltip>
           </div>
         ) : (
-          <div className="mt-1 flex items-center gap-1.5">
+          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5">
             <Input
               type="text"
               inputMode="numeric"
@@ -146,11 +146,11 @@ export function BidsDashboard({
               onChange={(e) => setBudgetRaw(e.target.value)}
               onKeyDown={handleBudgetKeyDown}
               disabled={upsertBudgetMutation.isPending}
-              className="h-7 w-24 text-sm"
+              className="h-7 min-w-0 flex-1 text-sm"
             />
             <Button
               size="sm"
-              className="h-7 px-2 text-xs"
+              className="h-7 shrink-0 px-2 text-xs"
               onClick={handleSaveBudget}
               disabled={upsertBudgetMutation.isPending}
             >

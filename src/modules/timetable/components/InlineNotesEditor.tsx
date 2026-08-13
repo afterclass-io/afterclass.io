@@ -1,6 +1,8 @@
 "use client";
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useSetAtom } from "jotai";
 import { Pencil } from "lucide-react";
+import { pushHistoryAtom } from "@/modules/timetable/atoms/history";
 import { Button } from "@/common/components/button";
 import { Textarea } from "@/common/components/textarea";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/common/components/tooltip";
@@ -9,16 +11,20 @@ interface InlineNotesEditorProps {
   initialNotes: string | null;
   disabled: boolean;
   onSave: (notes: string | null) => Promise<void>;
+  /** Bid id ΓÇö when provided, a successful save is recorded for undo/redo. */
+  bidId?: string;
 }
 
 export function InlineNotesEditor({
   initialNotes,
   disabled,
   onSave,
+  bidId,
 }: InlineNotesEditorProps) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(initialNotes ?? "");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const pushHistory = useSetAtom(pushHistoryAtom);
 
   useEffect(() => {
     setValue(initialNotes ?? "");
@@ -32,7 +38,17 @@ export function InlineNotesEditor({
     const trimmed = value.trim() || null;
     setEditing(false);
     await onSave(trimmed);
-  }, [value, onSave]);
+    // Record for undo/redo (skip no-op saves); the inverse edit is issued
+    // by the history hook via `userBids.update`.
+    if (bidId && trimmed !== initialNotes) {
+      pushHistory({
+        type: "editNotes",
+        bidId,
+        fromNotes: initialNotes,
+        toNotes: trimmed,
+      });
+    }
+  }, [value, onSave, bidId, initialNotes, pushHistory]);
 
   const handleCancel = useCallback(() => {
     setValue(initialNotes ?? "");
@@ -45,7 +61,7 @@ export function InlineNotesEditor({
         {initialNotes ? (
           <p className="text-sm whitespace-pre-line flex-1">{initialNotes}</p>
         ) : (
-          <p className="text-sm text-muted-foreground italic">No notes</p>
+          <p className="text-sm text-muted-foreground italic flex-1">No notes</p>
         )}
         {!disabled && (
           <Tooltip>
@@ -76,7 +92,7 @@ export function InlineNotesEditor({
         maxLength={500}
         rows={3}
         className="text-sm resize-none"
-        placeholder="Add a note…"
+        placeholder="Add a noteΓÇª"
         onBlur={handleSave}
         onKeyDown={(e) => {
           if (e.key === "Escape") handleCancel();

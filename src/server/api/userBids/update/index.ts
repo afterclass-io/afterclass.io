@@ -1,7 +1,30 @@
 import { z } from "zod";
+
 import { TRPCError } from "@trpc/server";
+import type { PrismaClient } from "@prisma/client";
 
 import { protectedProcedure } from "@/server/api/trpc";
+import { requireOwnedBid } from "@/server/api/ownership";
+import { assertClassInTerm } from "@/server/api/classes/assertClassInTerm";
+
+/**
+ * A bid's class and bid window must exist and belong to the SAME academic
+ * term (a bid for term A cannot point at a class from term B).
+ */
+async function validateClassWindowPair(
+  db: PrismaClient,
+  classId: string,
+  bidWindowId: number,
+): Promise<void> {
+  const window = await db.bidWindow.findUnique({
+    where: { id: bidWindowId },
+    select: { acadTermId: true },
+  });
+  if (!window) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Unknown bid window" });
+  }
+  await assertClassInTerm(db, classId, window.acadTermId);
+}
 
 /**
  * Full edit of an existing bid: amount, notes, and — unlike `upsert` — also
@@ -14,7 +37,7 @@ import { protectedProcedure } from "@/server/api/trpc";
  *   at a class from term B).
  *
  * There is no composite FK from `user_bid` to `bid_result`/`bid_prediction`
- * (dropped in migration 20260731150551), so moving a bid to another
+ * (dropped in migration 20260807151531_drop_user_bid_results_composite_fks), so moving a bid to another
  * class/window cannot violate a foreign key — result lookups simply yield no
  * row until results exist for the new (window, class) pair.
  */
@@ -29,13 +52,10 @@ export const update = protectedProcedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const bid = await ctx.db.userBid.findUnique({
-      where: { id: input.id },
+    const bid = await requireOwnedBid(ctx.db, input.id, ctx.session.user.id, {
+      classId: true,
+      bidWindowId: true,
     });
-
-    if (!bid || bid.userId !== ctx.session.user.id) {
-      throw new TRPCError({ code: "FORBIDDEN" });
-    }
 
     const nextClassId = input.classId ?? bid.classId;
     const nextBidWindowId = input.bidWindowId ?? bid.bidWindowId;
@@ -43,29 +63,7 @@ export const update = protectedProcedure
     // When the class or window changes, make sure the pair is valid and
     // belongs to one term.
     if (nextClassId !== bid.classId || nextBidWindowId !== bid.bidWindowId) {
-      const [cls, window] = await Promise.all([
-        ctx.db.classes.findUnique({
-          where: { id: nextClassId },
-          select: { acadTermId: true },
-        }),
-        ctx.db.bidWindow.findUnique({
-          where: { id: nextBidWindowId },
-          select: { acadTermId: true },
-        }),
-      ]);
-
-      if (!cls || !window) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Unknown class or bid window",
-        });
-      }
-      if (cls.acadTermId !== window.acadTermId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Class and bid window belong to different terms",
-        });
-      }
+      await validateClassWindowPair(ctx.db, nextClassId, nextBidWindowId);
     }
 
     return ctx.db.userBid.update({

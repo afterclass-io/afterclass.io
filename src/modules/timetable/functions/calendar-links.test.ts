@@ -17,4 +17,19 @@ describe("buildCalendarLinks", () => {
     const links = buildCalendarLinks("http://localhost:3000", "tok");
     expect(links.subscribeUrl).toBe("webcal://localhost:3000/api/ical/tok");
   });
+
+  it("builds one-step subscribe URLs for Google, Apple and Outlook", () => {
+    const links = buildCalendarLinks("https://afterclass.io", "tok123");
+    expect(links.googleSubscribeUrl).toBe(
+      "https://calendar.google.com/calendar/r?cid=" +
+        encodeURIComponent("webcal://afterclass.io/api/ical/tok123"),
+    );
+    expect(links.appleSubscribeUrl).toBe(
+      "webcal://afterclass.io/api/ical/tok123",
+    );
+    expect(links.outlookSubscribeUrl).toBe(
+      "https://outlook.live.com/calendar/0/addfromweb?url=" +
+        encodeURIComponent("https://afterclass.io/api/ical/tok123"),
+    );
+  });
 });

@@ -24,7 +24,7 @@ export type BidsSessionSummary = {
  * Summarise a term's bids for the dashboard.
  *
  * Only PLANNED and SECURED bids count: DROPPED (course dropped after
- * securing), CANCELLED (bid withdrawn) and MISSED bids are excluded from
+ * securing) and CANCELLED (bid withdrawn) bids are excluded from
  * every figure, so they never count toward e$ spent.
  *
  * @param bids     All bids in the term being viewed.

@@ -26,7 +26,7 @@ function isWithinGrid(minutes: number): boolean {
 
 /**
  * Calculates the vertical position as a percentage (0–100) of the grid's
- * visible range (08:00–22:00).
+ * visible range (08:00–22:15).
  */
 function minutesToPositionPct(minutes: number): number {
   const clamped = Math.max(GRID_START_MIN, Math.min(GRID_END_MIN, minutes));
@@ -42,7 +42,7 @@ export type CurrentTimeIndicatorProps = {
  * A horizontal line displaying the current SGT time on the timetable grid.
  *
  * Updates every 60 seconds.  Only renders when `highlightNow` is true and
- * the current SGT time is within 08:00–22:00.
+ * the current SGT time is within 08:00–22:15.
  */
 export function CurrentTimeIndicator({
   highlightNow = false,

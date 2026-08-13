@@ -12,6 +12,7 @@ import { courseColor } from "@/modules/timetable/functions/course-color";
 import { formatBidAmount } from "@/modules/timetable/functions/format";
 import {
   bidChipVariant,
+  slotCardVariant,
   type UserBidStatus,
 } from "@/modules/timetable/functions/bid-status";
 import type { PositionedSlot } from "@/modules/timetable/functions/slot-math";
@@ -71,6 +72,11 @@ export function TimetableSlotCard({
   const { className: colorClasses } = courseColor(courseCode);
   const { topPct, heightPct, colIndex, colCount } = slot;
 
+  const bidStatus = bidInfo?.status as UserBidStatus | undefined;
+  const cardVariant = slotCardVariant(bidStatus);
+  const cardClasses = bidInfo ? (cardVariant ?? colorClasses) : colorClasses;
+  const isSecured = bidStatus === "SECURED";
+
   // An extra gap between columns so cards don't touch
   const gapPct = colCount > 1 ? 0.5 : 0;
   const leftPct = colCount > 1 ? (colIndex / colCount) * 100 + gapPct : 0;
@@ -82,6 +88,7 @@ export function TimetableSlotCard({
   return (
     <div
       className="group absolute"
+      data-test="timetable-slot-card"
       style={{
         top: `${topPct}%`,
         height: `${heightPct}%`,
@@ -93,9 +100,10 @@ export function TimetableSlotCard({
         type="button"
         disabled={readOnly}
         onClick={readOnly ? undefined : onClick}
+        data-test={isSecured ? "timetable-slot-card-secured" : undefined}
         className={cn(
           "block h-full w-full overflow-hidden rounded-md border px-1.5 py-0.5 text-left text-xs leading-tight transition-shadow",
-          colorClasses,
+          cardClasses,
           isExam && "border-dashed",
           readOnly
             ? "cursor-default"

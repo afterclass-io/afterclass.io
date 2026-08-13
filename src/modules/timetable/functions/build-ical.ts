@@ -1,5 +1,6 @@
 import ical, { ICalCalendarMethod, ICalEventRepeatingFreq, ICalWeekday } from "ical-generator";
 import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import { dayOfWeekToIcalCode } from "@/common/functions/day-of-week";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -19,17 +20,6 @@ export type ICalInput = {
 // ---------------------------------------------------------------------------
 // Day-of-week mapping
 // ---------------------------------------------------------------------------
-
-/** Map full day-of-week strings to iCal weekday enum values. */
-const DAY_MAP: Record<string, ICalWeekday> = {
-  Monday: ICalWeekday.MO,
-  Tuesday: ICalWeekday.TU,
-  Wednesday: ICalWeekday.WE,
-  Thursday: ICalWeekday.TH,
-  Friday: ICalWeekday.FR,
-  Saturday: ICalWeekday.SA,
-  Sunday: ICalWeekday.SU,
-};
 
 /** Map iCal weekday enum to JS day-of-week number (0=Sun … 6=Sat). */
 const ICAL_DAY_TO_JS: Record<string, number> = {
@@ -86,11 +76,7 @@ function firstOccurrence(icalDay: ICalWeekday, after: Date): Date {
   return new Date(Date.UTC(y, m - 1, d + daysToAdd));
 }
 
-/** Parse "HH:MM" into [hours, minutes]. */
-function parseTime(t: string): [number, number] {
-  const parts = t.split(":").map(Number);
-  return [parts[0]!, parts[1]!];
-}
+import { parseTimePartsSafe } from "@/common/functions/time";
 
 // ---------------------------------------------------------------------------
 // Main export
@@ -117,11 +103,17 @@ export function buildIcal(input: ICalInput): string {
   for (const cls of classes) {
     // --- Class timings → weekly recurring VEVENTs ---
     for (const timing of cls.timings) {
-      const icalDay = timing.dayOfWeek ? DAY_MAP[timing.dayOfWeek] : undefined;
-      if (!icalDay) continue;
+      const icalDayCode = dayOfWeekToIcalCode(timing.dayOfWeek);
+      if (!icalDayCode) continue;
+      // ICalWeekday enum values ARE the 2-letter codes ("MO".."SU").
+      const icalDay = icalDayCode as ICalWeekday;
 
-      const [startH, startM] = parseTime(timing.startTime);
-      const [endH, endM] = parseTime(timing.endTime);
+      const startParts = parseTimePartsSafe(timing.startTime);
+      const endParts = parseTimePartsSafe(timing.endTime);
+      if (!startParts || !endParts) continue;
+
+      const [startH, startM] = startParts;
+      const [endH, endM] = endParts;
 
       const firstDate = firstOccurrence(icalDay, termStart);
       const [fy, fm, fd] = sgtYMD(firstDate);
@@ -148,8 +140,12 @@ export function buildIcal(input: ICalInput): string {
     for (const exam of cls.examTimings) {
       const examDate =
         typeof exam.date === "string" ? new Date(exam.date) : exam.date;
-      const [startH, startM] = parseTime(exam.startTime);
-      const [endH, endM] = parseTime(exam.endTime);
+      const startParts = parseTimePartsSafe(exam.startTime);
+      const endParts = parseTimePartsSafe(exam.endTime);
+      if (!startParts || !endParts) continue;
+
+      const [startH, startM] = startParts;
+      const [endH, endM] = endParts;
       const [ey, em, ed] = sgtYMD(examDate);
 
       const start = sgtDateTime(ey, em, ed, startH, startM);
@@ -167,4 +163,3 @@ export function buildIcal(input: ICalInput): string {
 
   return cal.toString();
 }
-// For now, let me restructure.

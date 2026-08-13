@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 import { protectedProcedure } from "@/server/api/trpc";
+import { toArrangedClass } from "@/modules/timetable/functions/arranged-class";
 
 export const getArrangement = protectedProcedure
   .input(z.object({ timetableId: z.string() }))
@@ -53,16 +54,35 @@ export const getArrangement = protectedProcedure
       throw new TRPCError({ code: "NOT_FOUND" });
     }
 
-    const slots = userTimetable.slots.map((slot) => ({
-      classId: slot.class.id,
-      courseCode: slot.class.course.code,
-      courseName: slot.class.course.name,
-      section: slot.class.section,
-      professorName: slot.class.professor?.name ?? null,
-      creditUnits: slot.class.course.creditUnits,
-      timings: slot.class.classTimings,
-      examTimings: slot.class.classExamTimings,
-    }));
+    const slots = userTimetable.slots.map((slot) => toArrangedClass(slot));
 
-    return { timetable: { id: userTimetable.id, name: userTimetable.name }, slots };
+    // Co-locate the user's bids for these classes so the grid can paint
+    // final bid-status colours atomically with the slots (no second-query
+    // waterfall that flashes courseColor → status colour on first load).
+    const classIds = slots.map((s) => s.classId);
+    const bids =
+      classIds.length > 0
+        ? await ctx.db.userBid.findMany({
+            where: {
+              userId: ctx.session.user.id,
+              classId: { in: classIds },
+            },
+            include: {
+              bidWindow: {
+                select: {
+                  round: true,
+                  window: true,
+                  closesAt: true,
+                  resultsAt: true,
+                },
+              },
+            },
+          })
+        : [];
+
+    return {
+      timetable: { id: userTimetable.id, name: userTimetable.name },
+      slots,
+      bids,
+    };
   });

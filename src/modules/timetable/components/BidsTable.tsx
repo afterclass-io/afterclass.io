@@ -3,13 +3,10 @@
 import { useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
 import { toast } from "sonner";
-import {
-  ChevronDown,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { CalendarPlus, ChevronDown, Loader2, Plus, Trash2 } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
 import type { RouterOutputs } from "@/common/tools/trpc/react";
+import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { cn } from "@/common/functions";
 import { Button } from "@/common/components/button";
 import { Skeleton } from "@/common/components/skeleton";
@@ -42,7 +39,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/common/components/tooltip";
-import { selectedTermIdAtom } from "@/modules/timetable/atoms/timetable";
+import {
+  selectedTermIdAtom,
+  activeTimetableIdAtom,
+} from "@/modules/timetable/atoms/timetable";
 import { pickCurrentBidWindow } from "@/modules/timetable/functions/current-window";
 import {
   formatBidAmount,
@@ -55,10 +55,9 @@ import {
   type UserBidStatus,
 } from "@/modules/timetable/functions/bid-status";
 import { BidsDashboard } from "./BidsDashboard";
-import { SlotBidPanel } from "./SlotBidPanel";
 import { InlineNotesEditor } from "./InlineNotesEditor";
-import { EditBidDialog } from "./EditBidDialog";
-import { Th, SortableTh, Td } from "./table-primitives";
+import { BidDialog } from "./BidDialog";
+import { Th, SortableTh, Td } from "@/common/components/table-primitives";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -84,8 +83,8 @@ type SortKey = "bidAmount" | "createdAt";
  *   round and window default to "All rounds" / "All windows".
  * - Sorting: by bid amount and date saved.
  * - Notes: inline-editable, auto-saved on blur.
- * - Course code/name/section open the calendar's class-info modal
- *   (SlotBidPanel) for that class.
+ * - Course code/name/section (and professor, when assigned) open the
+ *   class-info modal (BidDialog, class mode) for that class.
  * - Actions: Edit/Delete plus a status menu (planned/secured/dropped/
  *   cancelled).
  * - "Add bid" opens the same bid dialog used for editing, with empty
@@ -94,6 +93,7 @@ type SortKey = "bidAmount" | "createdAt";
 export function BidsTable() {
   const utils = api.useUtils();
   const selectedTermId = useAtomValue(selectedTermIdAtom);
+  const activeTimetableId = useAtomValue(activeTimetableIdAtom);
 
   // ---- Filter state (term follows the page's TermPicker; round/window
   // default to showing everything) ----
@@ -124,7 +124,7 @@ export function BidsTable() {
   // ---- Add-bid dialog (same dialog as editing, with empty defaults) ----
   const [showAddDialog, setShowAddDialog] = useState(false);
 
-  // ---- Class-info modal (SlotBidPanel) opened from a row's class cells ----
+  // ---- Class-info modal (BidDialog, class mode) from a row's class cells ----
   const [classInfoBid, setClassInfoBid] = useState<BidRow | null>(null);
 
   const toggleSort = (key: SortKey) => {
@@ -142,24 +142,15 @@ export function BidsTable() {
     void utils.userBids.getByClassIds.invalidate();
   };
 
-  const upsertMutation = api.userBids.upsert.useMutation({
+  // Note: add/edit saves run inside the unified BidDialog (upsert/update
+  // with its own optimistic callbacks + invalidation), so only the row-level
+  // notes/status/remove mutations live here.
+  const updateNotesMutation = api.userBids.update.useMutation({
     onSuccess: () => {
-      toast.success("Bid updated");
+      toast.success("Notes saved");
       invalidateBids();
     },
-    onError: (error) => {
-      toast.error(`Failed to save bid: ${error.message}`);
-    },
-  });
-
-  const updateMutation = api.userBids.update.useMutation({
-    onSuccess: () => {
-      toast.success("Bid updated");
-      invalidateBids();
-    },
-    onError: (error) => {
-      toast.error(`Failed to update bid: ${error.message}`);
-    },
+    onError: (error) => toast.error(`Failed to save notes: ${error.message}`),
   });
 
   const removeMutation = api.userBids.remove.useMutation({
@@ -173,12 +164,52 @@ export function BidsTable() {
   });
 
   const setStatusMutation = api.userBids.setStatus.useMutation({
+    ...createOptimisticMutationCallbacks<
+      { id: string; status: UserBidStatus },
+      RouterOutputs["userBids"]["listMine"] | undefined
+    >({
+      cancel: () => utils.userBids.listMine.cancel(),
+      getSnapshot: () => utils.userBids.listMine.getData(),
+      // Optimistically mirror server demoteSiblingBids: chosen bid gets
+      // `status`, siblings on same class go to PARTICIPATED. Any divergence
+      // is reconciled by the invalidate in onSuccess.
+      applyOptimistic: ({ id, status }) => {
+        utils.userBids.listMine.setData(undefined, (old) => {
+          if (!old) return old;
+          const target = old.find((b) => b.id === id);
+          const classId = target?.classId;
+          return old.map((b) => {
+            if (b.id === id) return { ...b, status } as typeof b;
+            if (classId && b.classId === classId)
+              return { ...b, status: "PARTICIPATED" } as typeof b;
+            return b;
+          });
+        });
+      },
+      restoreSnapshot: (prev) =>
+        utils.userBids.listMine.setData(undefined, prev),
+      invalidate: async () => {
+        await utils.userBids.listMine.invalidate();
+      },
+    }),
     onSuccess: (_data, variables) => {
       toast.success(
         variables.status === "PLANNED"
           ? "Bid reverted to planned"
           : `Bid marked as ${BID_STATUS_LABELS[variables.status].toLowerCase()}`,
       );
+      // The grid reflects a newly-secured class (and drops it when the bid
+      // leaves SECURED), so refresh the active arrangement + plan list too.
+      if (activeTimetableId) {
+        void utils.timetable.getArrangement.invalidate({
+          timetableId: activeTimetableId,
+        });
+      }
+      if (effectiveTermId) {
+        void utils.timetable.listMine.invalidate({
+          acadTermId: effectiveTermId,
+        });
+      }
       invalidateBids();
     },
     onError: (error) => {
@@ -190,12 +221,6 @@ export function BidsTable() {
   const [editingBid, setEditingBid] = useState<BidRow | null>(null);
 
   // ---- Derived rows ----
-  const termLabelById = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const t of termsQuery.data ?? []) map.set(t.id, t.label);
-    return map;
-  }, [termsQuery.data]);
-
   const roundOptions = useMemo(
     () => [...new Set(windows.map((w) => w.round))],
     [windows],
@@ -250,6 +275,41 @@ export function BidsTable() {
     [bidsQuery.data, effectiveTermId],
   );
 
+  // Denser header to match the bid analytics table: overrides the default
+  // `h-10` with `h-auto py-2` (tailwind-merge drops the taller height).
+  const denseThClass = "h-auto py-2 normal-case tracking-normal";
+
+  // Add this row's class to the active timetable for the current term.
+  const addSlotMutation = api.timetable.addSlot.useMutation({
+    onSuccess: (data, variables) => {
+      const bid = (bidsQuery.data ?? []).find(
+        (b) => b.classId === variables.classId,
+      );
+      const label = bid ? `${bid.courseCode} ${bid.section}` : "Class";
+      if (data.created) {
+        toast.success(`Added ${label} to timetable`);
+      } else {
+        toast.info(`${label} is already in timetable`);
+      }
+      if (activeTimetableId) {
+        void utils.timetable.getArrangement.invalidate({
+          timetableId: activeTimetableId,
+        });
+      }
+    },
+    onError: (error) => {
+      toast.error(`Failed to add to timetable: ${error.message}`);
+    },
+  });
+
+  const handleAddToTimetable = (classId: string) => {
+    if (!activeTimetableId) {
+      toast.error("No active timetable for this term");
+      return;
+    }
+    addSlotMutation.mutate({ timetableId: activeTimetableId, classId });
+  };
+
   // ---- Render ----
   if (bidsQuery.isLoading) {
     return (
@@ -261,8 +321,7 @@ export function BidsTable() {
   }
 
   const isBusy =
-    upsertMutation.isPending ||
-    updateMutation.isPending ||
+    updateNotesMutation.isPending ||
     removeMutation.isPending ||
     setStatusMutation.isPending;
 
@@ -348,40 +407,40 @@ export function BidsTable() {
           ancestors and forcing page-level horizontal overflow when the
           sidebar is docked (≥xl); the wrapper still scrolls internally. */}
       <div className="border-border bg-card overflow-x-auto rounded-lg border [contain:inline-size]">
-        <table className="w-full min-w-[1100px] text-sm">
+        <table className="w-full min-w-[850px] text-sm">
           <thead>
             <tr className="border-b">
-              <Th>Term</Th>
-              <Th>Round</Th>
-              <Th>Window</Th>
-              <Th>Course Code</Th>
-              <Th>Course Name</Th>
-              <Th>Section</Th>
-              <Th>Professor</Th>
-              <Th className="text-right">Median Bid</Th>
-              <Th className="text-right">Min Bid</Th>
+              <Th className={denseThClass}>Round</Th>
+              <Th className={denseThClass}>Window</Th>
+              <Th className={denseThClass}>Course Code</Th>
+              <Th className={denseThClass}>Course Name</Th>
+              <Th className={denseThClass}>Section</Th>
+              <Th className={denseThClass}>Professor</Th>
+              <Th className={`${denseThClass} text-right`}>Median Bid</Th>
+              <Th className={`${denseThClass} text-right`}>Min Bid</Th>
               <SortableTh
                 label="My Bid"
                 active={sortKey === "bidAmount"}
                 dir={sortDir}
                 onClick={() => toggleSort("bidAmount")}
-                className="text-right"
+                className={`${denseThClass} text-right`}
               />
-              <Th>Notes</Th>
+              <Th className={denseThClass}>Notes</Th>
               <SortableTh
                 label="Date Saved"
                 active={sortKey === "createdAt"}
                 dir={sortDir}
                 onClick={() => toggleSort("createdAt")}
+                className={denseThClass}
               />
-              <Th>Actions</Th>
+              <Th className={denseThClass}>Actions</Th>
             </tr>
           </thead>
           <tbody>
             {filteredBids.length === 0 && (
               <tr>
                 <td
-                  colSpan={13}
+                  colSpan={12}
                   className="text-muted-foreground p-6 text-center"
                 >
                   No bids match the current filters.
@@ -392,21 +451,26 @@ export function BidsTable() {
               <BidTableRow
                 key={bid.id}
                 bid={bid}
-                termLabel={
-                  termLabelById.get(bid.bidWindow.acadTermId) ??
-                  bid.bidWindow.acadTermId
-                }
                 isBusy={isBusy}
+                pendingAddClassId={
+                  addSlotMutation.isPending
+                    ? ((
+                        addSlotMutation.variables as
+                          | { classId: string }
+                          | undefined
+                      )?.classId ?? null)
+                    : null
+                }
+                hasActiveTimetable={!!activeTimetableId}
                 onSaveNotes={async (notes) =>
-                  upsertMutation.mutate({
-                    classId: bid.classId,
-                    bidWindowId: bid.bidWindowId,
-                    bidAmount: bid.bidAmount,
-                    notes: notes ?? "",
+                  updateNotesMutation.mutate({
+                    id: bid.id,
+                    notes: notes ?? null,
                   })
                 }
                 onShowClassInfo={() => setClassInfoBid(bid)}
                 onEdit={() => setEditingBid(bid)}
+                onAddToTimetable={() => handleAddToTimetable(bid.classId)}
                 onSetStatus={(status) =>
                   setStatusMutation.mutate({ id: bid.id, status })
                 }
@@ -417,37 +481,23 @@ export function BidsTable() {
         </table>
       </div>
 
-      {/* Bid dialog — shared by add (empty defaults) and edit */}
+      {/* Unified bid dialog — add (empty defaults) and edit */}
       {bidDialogAcadTermId && (
-        <EditBidDialog
+        <BidDialog
           key={editingBid?.id ?? "add"}
+          mode={editingBid ? "edit" : "add"}
           bid={editingBid}
           acadTermId={bidDialogAcadTermId}
-          defaultWindowId={currentWindow?.id ?? null}
-          isSaving={
-            editingBid ? updateMutation.isPending : upsertMutation.isPending
-          }
+          defaultWindowId={currentWindow?.id}
+          isOpen
           onClose={() => {
             setEditingBid(null);
             setShowAddDialog(false);
           }}
-          onSubmit={(values) => {
-            if (editingBid) {
-              updateMutation.mutate(
-                { id: editingBid.id, ...values },
-                { onSuccess: () => setEditingBid(null) },
-              );
-            } else {
-              upsertMutation.mutate(
-                { ...values, notes: values.notes ?? undefined },
-                { onSuccess: () => setShowAddDialog(false) },
-              );
-            }
-          }}
         />
       )}
 
-      {/* Class-info modal (same panel the calendar opens on slot click) */}
+      {/* Class-info modal (same dialog the calendar opens on slot click) */}
       {classInfoBid && (
         <BidClassInfoPanel
           bid={classInfoBid}
@@ -464,26 +514,30 @@ export function BidsTable() {
 
 function BidTableRow({
   bid,
-  termLabel,
   isBusy,
+  pendingAddClassId,
+  hasActiveTimetable,
   onSaveNotes,
   onShowClassInfo,
   onEdit,
+  onAddToTimetable,
   onSetStatus,
   onDelete,
 }: {
   bid: BidRow;
-  termLabel: string;
   isBusy: boolean;
+  pendingAddClassId: string | null;
+  hasActiveTimetable: boolean;
   onSaveNotes: (notes: string | null) => Promise<void>;
   onShowClassInfo: () => void;
   onEdit: () => void;
+  onAddToTimetable: () => void;
   onSetStatus: (status: UserBidStatus) => void;
   onDelete: () => void;
 }) {
+  const rowAdding = pendingAddClassId === bid.classId;
   return (
     <tr className="border-b last:border-0">
-      <Td className="whitespace-nowrap">{termLabel}</Td>
       <Td>{bid.bidWindow.round}</Td>
       <Td>{bid.bidWindow.window}</Td>
       <Td className="font-medium whitespace-nowrap">
@@ -497,10 +551,18 @@ function BidTableRow({
         </ClassInfoButton>
       </Td>
       <Td>
-        <ClassInfoButton onClick={onShowClassInfo}>{bid.section}</ClassInfoButton>
+        <ClassInfoButton onClick={onShowClassInfo}>
+          {bid.section}
+        </ClassInfoButton>
       </Td>
       <Td className="max-w-36 truncate" title={bid.professorName ?? undefined}>
-        {bid.professorName ?? "TBA"}
+        {bid.professorName ? (
+          <ClassInfoButton onClick={onShowClassInfo}>
+            {bid.professorName}
+          </ClassInfoButton>
+        ) : (
+          "TBA"
+        )}
       </Td>
       <Td className="text-right font-mono tabular-nums">
         {bid.bidResult?.median != null
@@ -513,9 +575,10 @@ function BidTableRow({
       <Td className="text-right font-mono tabular-nums">
         {formatBidAmount(bid.bidAmount)}
       </Td>
-      <Td className="min-w-44">
+      <Td className="min-w-40">
         <InlineNotesEditor
           key={`${bid.id}:${bid.notes ?? ""}`}
+          bidId={bid.id}
           initialNotes={bid.notes}
           disabled={isBusy}
           onSave={onSaveNotes}
@@ -524,6 +587,29 @@ function BidTableRow({
       <Td className="whitespace-nowrap">{formatDateSG(bid.createdAt)}</Td>
       <Td>
         <div className="flex items-center gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7"
+                onClick={onAddToTimetable}
+                disabled={!hasActiveTimetable || isBusy || rowAdding}
+                aria-label={`Add ${bid.courseCode} ${bid.section} to timetable`}
+              >
+                {rowAdding ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <CalendarPlus className="size-3.5" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {hasActiveTimetable
+                ? "Add to timetable"
+                : "No active timetable for this term"}
+            </TooltipContent>
+          </Tooltip>
           <Button
             variant="ghost"
             size="sm"
@@ -555,7 +641,9 @@ function BidTableRow({
                   key={opt.value}
                   disabled={bid.status === opt.value}
                   onClick={() => onSetStatus(opt.value)}
+                  className={bidChipVariant(opt.value)}
                 >
+                  <span className="size-2 shrink-0 rounded-full bg-current opacity-60" />
                   {opt.label}
                 </DropdownMenuItem>
               ))}
@@ -604,9 +692,9 @@ function BidTableRow({
 // ---------------------------------------------------------------------------
 
 /**
- * Opens the calendar's class-info modal (SlotBidPanel) for a bid row. The bid
- * row doesn't carry credit units or meeting/exam timings, so they're filled
- * in from the term-scoped course search by matching course code + classId.
+ * Opens the unified BidDialog in class mode for a bid row's class. The dialog
+ * resolves the full course details (credit units, timings, professor) itself
+ * from the term-scoped course search.
  */
 function BidClassInfoPanel({
   bid,
@@ -615,25 +703,13 @@ function BidClassInfoPanel({
   bid: BidRow;
   onClose: () => void;
 }) {
-  const acadTermId = bid.bidWindow.acadTermId;
-  const courseQuery = api.timetable.searchCourses.useQuery(
-    { acadTermId, query: bid.courseCode },
-    { staleTime: 60_000 },
-  );
-  const course = courseQuery.data?.find((c) => c.code === bid.courseCode);
-  const section = course?.sections.find((s) => s.classId === bid.classId);
-
   return (
-    <SlotBidPanel
+    <BidDialog
+      mode="class"
       classId={bid.classId}
       courseCode={bid.courseCode}
-      courseName={bid.courseName}
       section={bid.section}
-      professorName={bid.professorName}
-      creditUnits={course?.creditUnits ?? 0}
-      timings={section?.timings ?? []}
-      examTimings={section?.examTimings ?? []}
-      acadTermId={acadTermId}
+      acadTermId={bid.bidWindow.acadTermId}
       isOpen
       onClose={onClose}
     />

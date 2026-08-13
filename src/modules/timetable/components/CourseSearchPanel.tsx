@@ -10,10 +10,13 @@ import { Skeleton } from "@/common/components/skeleton";
 import { cn } from "@/common/functions";
 import { useDebouncedValue } from "@/common/hooks/useDebouncedValue";
 import { SectionPicker, type SectionOption } from "./SectionPicker";
+import type { ArrangedClass } from "./TimetableGrid";
 
 export type CourseSearchPanelProps = {
   /** Set of course codes currently in the active timetable (for swap detection). */
   timetableCourseCodes: Set<string>;
+  /** Classes currently on the active timetable's grid (for clash checks). */
+  existingSlots?: ArrangedClass[];
   className?: string;
 };
 
@@ -28,6 +31,7 @@ export type CourseSearchPanelProps = {
  */
 export function CourseSearchPanel({
   timetableCourseCodes,
+  existingSlots = [],
   className,
 }: CourseSearchPanelProps) {
   const selectedTermId = useAtomValue(selectedTermIdAtom);
@@ -73,6 +77,9 @@ export function CourseSearchPanel({
         professorName: s.professorName,
         timings: s.timings,
         examTimings: s.examTimings,
+        courseCode: expandedCourse.code,
+        courseName: expandedCourse.name,
+        creditUnits: expandedCourse.creditUnits,
       })) ?? [],
     [expandedCourse],
   );
@@ -95,8 +102,12 @@ export function CourseSearchPanel({
         )}
       </div>
 
-      {/* Scrollable body — results scroll inside the panel, not the page */}
-      <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
+      {/* Scrollable body — results scroll inside the panel, not the page.
+          px-1/py-1 reserve space for the result card's 1px border + 1px ring
+          (expanded state) so neither is clipped by the overflow clipping
+          rect; [scrollbar-gutter:stable] keeps the scrollbar from overlaying
+          the ring — same pattern as the roadmap T3B fix (pr-1 + 12px). */}
+      <div className="mt-3 min-h-0 flex-1 overflow-y-auto px-1 py-1 [scrollbar-gutter:stable]">
         {/* Empty state */}
         {!selectedTermId && (
           <p className="text-muted-foreground py-8 text-center text-sm">
@@ -131,7 +142,7 @@ export function CourseSearchPanel({
                   type="button"
                   onClick={() => handleExpand(course.id)}
                   className={cn(
-                    "border-border bg-card hover:bg-accent w-full rounded-md border px-3 py-2.5 text-left transition-colors",
+                    "border-border bg-card hover:bg-accent focus-visible:ring-ring w-full rounded-md border px-3 py-2.5 text-left transition-colors focus-visible:ring-1 focus-visible:outline-none",
                     expandedCourseId === course.id && "ring-ring ring-1",
                   )}
                 >
@@ -159,6 +170,7 @@ export function CourseSearchPanel({
                       courseCode={course.code}
                       alreadyInTimetable={timetableCourseCodes.has(course.code)}
                       sections={expandedSections}
+                      existingSlots={existingSlots}
                       onDone={() => setExpandedCourseId(null)}
                     />
                   </div>

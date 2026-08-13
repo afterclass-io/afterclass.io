@@ -1,8 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { cn } from "@/common/functions";
-import { layoutDay } from "@/modules/timetable/functions/slot-math";
+import { dayOfWeekToNumber, DAY_LABELS } from "@/common/functions/day-of-week";
+import { formatDateSGT } from "@/common/functions/format-date-sgt";
+import {
+  layoutDay,
+  SMU_PERIODS,
+  periodBandStyle,
+} from "@/modules/timetable/functions/slot-math";
 import type { ClassTimingLike } from "@/modules/timetable/functions/slot-math";
 import { TimetableDayColumn } from "./TimetableDayColumn";
 import type { DaySlot } from "./TimetableDayColumn";
@@ -55,34 +60,8 @@ export type TimetableGridProps = {
 // Constants
 // ---------------------------------------------------------------------------
 
-const DAY_LABELS: Record<number, string> = {
-  1: "Mon",
-  2: "Tue",
-  3: "Wed",
-  4: "Thu",
-  5: "Fri",
-};
-
 /** Mon–Fri only: weekend slots (rare, e.g. some exams) are not rendered. */
 const ALL_DAYS = [1, 2, 3, 4, 5] as const;
-
-/** Time labels 08:00–22:00 in 30-min steps (28 labels). */
-const TIME_LABELS = Array.from({ length: 28 }, (_, i) => {
-  const totalMinutes = 8 * 60 + i * 30;
-  const h = Math.floor(totalMinutes / 60);
-  const m = totalMinutes % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-});
-
-function formatExamDate(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  return date.toLocaleDateString("en-SG", {
-    day: "numeric",
-    month: "short",
-    timeZone: "Asia/Singapore",
-  });
-}
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -149,9 +128,9 @@ export function TimetableGrid({
         <div className="relative flex h-[70vh] max-h-[720px] min-h-[480px] min-w-[680px]">
           {/* Time axis column (stays visible while scrolling horizontally) */}
           <div className="border-border bg-card sticky left-0 z-10 flex w-14 shrink-0 flex-col border-r">
-            {/* Spacer header — must match day-header height exactly so
-                the 28 flex-1 grid rows in this column stay in sync
-                with the grid rows in every day column. */}
+            {/* Spacer header — must match day-header height exactly so the
+                axis labels in this column stay in sync with the period bands
+                and slot cards in every day column. */}
             <div
               className="bg-muted/50 border-border shrink-0 border-b px-2 py-1.5 text-xs font-semibold invisible"
               aria-hidden
@@ -159,62 +138,42 @@ export function TimetableGrid({
               Mon
             </div>
 
-            {/* Time labels in the grid area */}
+            {/* One label per SMU class period, absolutely positioned against
+                the same relative grid area the day columns use. */}
             <div className="relative flex-1">
-              {/* Background grid lines (same as day columns, invisible here) */}
-              <div className="pointer-events-none absolute inset-0 flex flex-col">
-                {TIME_LABELS.map((_, idx) => {
-                  const isHour = idx % 2 === 0;
-                  return (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "flex-1 border-t",
-                        isHour
-                          ? "border-border/50"
-                          : "border-border/20 border-dashed",
-                        idx === 0 && "border-t-0",
-                      )}
-                    />
-                  );
-                })}
-              </div>
-
-              {/* Labels positioned at each hour row via flex */}
-              <div className="absolute inset-0 flex flex-col">
-                {TIME_LABELS.map((label, idx) => {
-                  const isHour = idx % 2 === 0;
-                  return (
-                    <div
-                      key={idx}
-                      className="flex flex-1 items-start justify-end"
-                    >
-                      {isHour && (
-                        <span className="text-muted-foreground -mt-2 pr-1.5 text-[10px] leading-none select-none">
-                          {label}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              {SMU_PERIODS.map((p) => (
+                <div
+                  key={p.label}
+                  className="absolute right-1 left-1"
+                  style={{ top: periodBandStyle(p).top }}
+                >
+                  <span className="text-muted-foreground text-sm font-medium select-none">
+                    {p.label}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Day columns */}
-          {ALL_DAYS.map((dayIdx) => (
-            <TimetableDayColumn
-              key={dayIdx}
-              dayLabel={DAY_LABELS[dayIdx] ?? String(dayIdx)}
-              slots={days[dayIdx] ?? []}
-              highlightNow={highlightNow}
-              readOnly={readOnly}
-              onSlotClick={onSlotClick}
-              onSlotRemove={onSlotRemove}
-              removeDisabled={removeDisabled}
-              bids={bids}
-            />
-          ))}
+          {/* Day columns — px-1 gives outer cards room for hover shadows and
+              focus/now rings that paint outside their border box: Monday's left
+              edge against the sticky axis column, Friday's right edge against
+              the scrollport. */}
+          <div className="flex min-w-0 flex-1 px-1">
+            {ALL_DAYS.map((dayIdx) => (
+              <TimetableDayColumn
+                key={dayIdx}
+                dayLabel={DAY_LABELS[dayIdx] ?? String(dayIdx)}
+                slots={days[dayIdx] ?? []}
+                highlightNow={highlightNow}
+                readOnly={readOnly}
+                onSlotClick={onSlotClick}
+                onSlotRemove={onSlotRemove}
+                removeDisabled={removeDisabled}
+                bids={bids}
+              />
+            ))}
+          </div>
 
           {/* Current-time indicator overlays the grid */}
           <CurrentTimeIndicator highlightNow={highlightNow} />
@@ -272,6 +231,7 @@ function buildClassDays(classes: ArrangedClass[]): Record<number, DaySlot[]> {
         heightPct: 0,
         colIndex: 0,
         colCount: 1,
+        rawIndex: 0,
       });
     }
   }
@@ -282,16 +242,25 @@ function buildClassDays(classes: ArrangedClass[]): Record<number, DaySlot[]> {
     if (raw.length === 0) continue;
 
     const positioned = layoutDay(raw.map((s) => s.timing));
-    days[dayNum] = raw.map((slot, idx) => {
-      const pos = positioned[idx]!;
-      return {
-        ...slot,
-        topPct: pos.topPct,
-        heightPct: pos.heightPct,
-        colIndex: pos.colIndex,
-        colCount: pos.colCount,
-      };
-    });
+    const positionedByRawIndex = new Map(
+      positioned.map((p) => [p.rawIndex, p]),
+    );
+    days[dayNum] = raw
+      .map((slot, idx) => {
+        const pos = positionedByRawIndex.get(idx);
+        if (!pos) {
+          // Slot was filtered out (fully outside the visible grid) — skip it.
+          return null;
+        }
+        return {
+          ...slot,
+          topPct: pos.topPct,
+          heightPct: pos.heightPct,
+          colIndex: pos.colIndex,
+          colCount: pos.colCount,
+        };
+      })
+      .filter((s): s is DaySlot => s !== null);
   }
 
   return days;
@@ -307,7 +276,10 @@ function buildExamDays(classes: ArrangedClass[]): Record<number, DaySlot[]> {
 
       days[dayNum] ??= [];
 
-      const dateBadge = formatExamDate(timing.date);
+      const dateBadge = formatDateSGT(timing.date, {
+        day: "numeric",
+        month: "short",
+      });
       days[dayNum].push({
         classId: cls.classId,
         courseCode: cls.courseCode,
@@ -326,6 +298,7 @@ function buildExamDays(classes: ArrangedClass[]): Record<number, DaySlot[]> {
         heightPct: 0,
         colIndex: 0,
         colCount: 1,
+        rawIndex: 0,
       });
     }
   }
@@ -336,32 +309,26 @@ function buildExamDays(classes: ArrangedClass[]): Record<number, DaySlot[]> {
     if (raw.length === 0) continue;
 
     const positioned = layoutDay(raw.map((s) => s.timing));
-    days[dayNum] = raw.map((slot, idx) => {
-      const pos = positioned[idx]!;
-      return {
-        ...slot,
-        topPct: pos.topPct,
-        heightPct: pos.heightPct,
-        colIndex: pos.colIndex,
-        colCount: pos.colCount,
-      };
-    });
+    const positionedByRawIndex = new Map(
+      positioned.map((p) => [p.rawIndex, p]),
+    );
+    days[dayNum] = raw
+      .map((slot, idx) => {
+        const pos = positionedByRawIndex.get(idx);
+        if (!pos) {
+          // Slot was filtered out (fully outside the visible grid) — skip it.
+          return null;
+        }
+        return {
+          ...slot,
+          topPct: pos.topPct,
+          heightPct: pos.heightPct,
+          colIndex: pos.colIndex,
+          colCount: pos.colCount,
+        };
+      })
+      .filter((s): s is DaySlot => s !== null);
   }
 
   return days;
-}
-
-function dayOfWeekToNumber(day: string | undefined | null): number | null {
-  if (!day) return null;
-  const u = day.toUpperCase();
-  const map: Record<string, number> = {
-    MON: 1,
-    TUE: 2,
-    WED: 3,
-    THU: 4,
-    THUR: 4,
-    FRI: 5,
-    SAT: 6,
-  };
-  return map[u] ?? null;
 }

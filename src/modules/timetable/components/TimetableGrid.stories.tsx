@@ -72,6 +72,52 @@ const overlappingClasses: ArrangedClass[] = [
   }),
 ];
 
+// One slot on each outer day column (Monday + Friday) so both edge-clipping
+// cases are covered: Monday's left edge against the sticky time axis, Friday's
+// right edge against the scrollport.
+const edgeColumnClasses: ArrangedClass[] = [
+  makeClass({
+    classId: "class-004",
+    courseCode: "CS101",
+    courseName: "Monday Edge Slot",
+    section: "G1",
+    timings: [
+      { dayOfWeek: "MON", startTime: "09:00", endTime: "11:00", venue: "SOE-SR2-1" },
+    ],
+  }),
+  makeClass({
+    classId: "class-005",
+    courseCode: "MGMT101",
+    courseName: "Friday Edge Slot",
+    section: "G2",
+    timings: [
+      { dayOfWeek: "FRI", startTime: "14:00", endTime: "16:00", venue: "LKCSB-TR1" },
+    ],
+  }),
+];
+
+// Classes that exactly fill whole SMU periods — lets the period bands on the
+// time axis be checked for edge-to-edge alignment with the class cards.
+const periodAlignedClasses: ArrangedClass[] = [
+  makeClass({
+    classId: "class-006",
+    courseCode: "ACC101",
+    courseName: "Accounting",
+    section: "G1",
+    timings: [
+      { dayOfWeek: "MON", startTime: "08:15", endTime: "11:30", venue: "SOE-SR2-1" },
+    ],
+  }),
+  makeClass({
+    classId: "class-007",
+    courseCode: "FIN201",
+    courseName: "Finance",
+    section: "G2",
+    timings: [
+      { dayOfWeek: "TUE", startTime: "12:00", endTime: "15:15", venue: "SCIS-SR1" },
+    ],
+  }),
+];
 const examClasses: ArrangedClass[] = [
   makeClass({
     classId: "class-001",
@@ -116,7 +162,7 @@ const meta: Meta<typeof TimetableGrid> = {
   },
   decorators: [
     (Story) => (
-      <div className="w-full max-w-5xl">
+      <div className="min-w-[1024px] overflow-auto p-6">
         <Story />
       </div>
     ),
@@ -164,6 +210,16 @@ export const ReadOnly: Story = {
   },
 };
 
+/**
+ * Classes that exactly fill whole SMU periods (08:15–11:30, 12:00–15:15), so
+ * the period bands on the time axis align edge-to-edge with the class cards.
+ */
+export const PeriodAlignedClasses: Story = {
+  args: {
+    classes: periodAlignedClasses,
+  },
+};
+
 export const UnscheduledClasses: Story = {
   args: {
     classes: [
@@ -183,5 +239,50 @@ export const UnscheduledClasses: Story = {
         timings: [],
       }),
     ],
+  },
+};
+
+export const MobileAgenda: Story = {
+  decorators: [
+    (Story) => (
+      <div className="w-[375px]">
+        <Story />
+      </div>
+    ),
+  ],
+  args: {
+    classes: defaultClasses,
+  },
+};
+
+export const Dark: Story = {
+  args: {
+    classes: defaultClasses,
+  },
+  parameters: {
+    themes: { themeOverride: "dark" },
+  },
+};
+
+/**
+ * One slot on each outer day column (Monday + Friday) with `highlightNow` on,
+ * so the now-ring paints outside the card border box on both edges: Monday's
+ * left ring must clear the sticky time axis, Friday's right ring/shadow must
+ * clear the scrollport.
+ */
+export const EdgeColumns: Story = {
+  args: {
+    classes: edgeColumnClasses,
+    highlightNow: true,
+  },
+};
+
+export const EdgeColumnsDark: Story = {
+  args: {
+    classes: edgeColumnClasses,
+    highlightNow: true,
+  },
+  parameters: {
+    themes: { themeOverride: "dark" },
   },
 };

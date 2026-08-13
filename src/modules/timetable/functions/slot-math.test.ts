@@ -4,6 +4,10 @@ import {
   layoutDay,
   GRID_START_MIN,
   GRID_END_MIN,
+  SMU_PERIODS,
+  timingsOverlap,
+  hasTimeConflict,
+  toTimingLikes,
 } from "./slot-math";
 import type { ClassTimingLike } from "./slot-math";
 
@@ -43,7 +47,7 @@ describe("timeToMinutes", () => {
 // layoutDay — basic positioning
 // ---------------------------------------------------------------------------
 describe("layoutDay — basic positioning", () => {
-  const gridRange = GRID_END_MIN - GRID_START_MIN; // 840 min
+  const gridRange = GRID_END_MIN - GRID_START_MIN; // 855 min
 
   it("single slot: full-width (colCount=1), correct top/height percentages", () => {
     const timings: ClassTimingLike[] = [
@@ -115,9 +119,9 @@ describe("layoutDay — basic positioning", () => {
     expect(cols.has(2)).toBe(true);
   });
 
-  it("boundary slot exactly at 08:00-22:00", () => {
+  it("boundary slot exactly at 08:00-22:15", () => {
     const timings: ClassTimingLike[] = [
-      { startTime: "08:00", endTime: "22:00" },
+      { startTime: "08:00", endTime: "22:15" },
     ];
     const result = layoutDay(timings);
 
@@ -138,7 +142,7 @@ describe("layoutDay — basic positioning", () => {
     // Should clamp: topPct should be 0 (starts at grid start),
     // height should be from 08:00 to 10:00 = 120 min
     expect(slot.topPct).toBe(0);
-    expect(slot.heightPct).toBeCloseTo(((600 - 480) / 840) * 100, 5);
+    expect(slot.heightPct).toBeCloseTo(((600 - 480) / 855) * 100, 5);
   });
 
   it("clamps slot ending after GRID_END_MIN", () => {
@@ -149,10 +153,10 @@ describe("layoutDay — basic positioning", () => {
 
     expect(result).toHaveLength(1);
     const slot = result[0]!;
-    // Height should be from 20:00 to 22:00 = 120 min
-    expect(slot.heightPct).toBeCloseTo(((1320 - 1200) / 840) * 100, 5);
+    // Height should be from 20:00 to 22:15 = 135 min (clamped to grid end)
+    expect(slot.heightPct).toBeCloseTo(((1335 - 1200) / 855) * 100, 5);
     // top should be from 20:00
-    expect(slot.topPct).toBeCloseTo(((1200 - 480) / 840) * 100, 5);
+    expect(slot.topPct).toBeCloseTo(((1200 - 480) / 855) * 100, 5);
   });
 
   it("filters out slots entirely outside grid range", () => {
@@ -257,6 +261,55 @@ describe("layoutDay — overlap packing", () => {
 });
 
 // ---------------------------------------------------------------------------
+
+// layoutDay — rawIndex preservation
+// ---------------------------------------------------------------------------
+describe("layoutDay — rawIndex", () => {
+  it("preserves the original input index through sorting (rawIndex)", () => {
+    // 10:00 added BEFORE 08:30 — insertion order is not start-time order.
+    const timings = [
+      { dayOfWeek: "Mon", startTime: "10:00", endTime: "11:30" },
+      { dayOfWeek: "Mon", startTime: "08:15", endTime: "11:30" },
+    ];
+    const result = layoutDay(timings);
+    const byRaw = new Map(result.map((p) => [p.rawIndex, p]));
+    // rawIndex 1 (08:15) must start ABOVE rawIndex 0 (10:00).
+    expect(byRaw.get(1)!.topPct).toBeLessThan(byRaw.get(0)!.topPct);
+  });
+
+  it("drops slots fully outside the grid without corrupting neighbours", () => {
+    const timings = [
+      { dayOfWeek: "Mon", startTime: "07:00", endTime: "08:00" }, // fully outside
+      { dayOfWeek: "Mon", startTime: "12:00", endTime: "15:15" },
+    ];
+    const result = layoutDay(timings);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.rawIndex).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SMU_PERIODS
+// ---------------------------------------------------------------------------
+describe("SMU_PERIODS", () => {
+  it("covers all four SMU periods", () => {
+    expect(SMU_PERIODS).toEqual([
+      { label: "08:15–11:30", startMin: 495, endMin: 690 },
+      { label: "12:00–15:15", startMin: 720, endMin: 915 },
+      { label: "15:30–18:45", startMin: 930, endMin: 1125 },
+      { label: "19:00–22:15", startMin: 1140, endMin: 1335 },
+    ]);
+  });
+
+  it("grid range contains every period", () => {
+    for (const p of SMU_PERIODS) {
+      expect(p.startMin).toBeGreaterThanOrEqual(GRID_START_MIN);
+      expect(p.endMin).toBeLessThanOrEqual(GRID_END_MIN);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 describe("constants", () => {
@@ -264,7 +317,128 @@ describe("constants", () => {
     expect(GRID_START_MIN).toBe(480);
   });
 
-  it("GRID_END_MIN is 1320 (22:00)", () => {
-    expect(GRID_END_MIN).toBe(1320);
+  it("GRID_END_MIN is 1335 (22:15)", () => {
+    expect(GRID_END_MIN).toBe(1335);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// timingsOverlap
+// ---------------------------------------------------------------------------
+describe("timingsOverlap", () => {
+  it("conflicts when the same day and times overlap", () => {
+    expect(
+      timingsOverlap(
+        { dayOfWeek: 1, startTime: 540, endTime: 660 },
+        { dayOfWeek: 1, startTime: 600, endTime: 720 },
+      ),
+    ).toBe(true);
+  });
+
+  it("does not conflict when adjacent (end == start)", () => {
+    expect(
+      timingsOverlap(
+        { dayOfWeek: 1, startTime: 540, endTime: 600 },
+        { dayOfWeek: 1, startTime: 600, endTime: 660 },
+      ),
+    ).toBe(false);
+  });
+
+  it("does not conflict on different days", () => {
+    expect(
+      timingsOverlap(
+        { dayOfWeek: 1, startTime: 540, endTime: 660 },
+        { dayOfWeek: 2, startTime: 540, endTime: 660 },
+      ),
+    ).toBe(false);
+  });
+
+  it("does not conflict when fully disjoint on the same day", () => {
+    expect(
+      timingsOverlap(
+        { dayOfWeek: 1, startTime: 540, endTime: 600 },
+        { dayOfWeek: 1, startTime: 660, endTime: 720 },
+      ),
+    ).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// hasTimeConflict
+// ---------------------------------------------------------------------------
+describe("hasTimeConflict", () => {
+  it("is true when any existing slot timing overlaps the candidate", () => {
+    const existing = [
+      { classTimings: [{ dayOfWeek: 1, startTime: 540, endTime: 660 }] },
+    ];
+    const candidate = {
+      classTimings: [{ dayOfWeek: 1, startTime: 600, endTime: 720 }],
+    };
+    expect(hasTimeConflict(existing, candidate)).toBe(true);
+  });
+
+  it("is false when adjacent (end == start)", () => {
+    const existing = [
+      { classTimings: [{ dayOfWeek: 1, startTime: 540, endTime: 600 }] },
+    ];
+    const candidate = {
+      classTimings: [{ dayOfWeek: 1, startTime: 600, endTime: 660 }],
+    };
+    expect(hasTimeConflict(existing, candidate)).toBe(false);
+  });
+
+  it("is false on different days", () => {
+    const existing = [
+      { classTimings: [{ dayOfWeek: 1, startTime: 540, endTime: 660 }] },
+    ];
+    const candidate = {
+      classTimings: [{ dayOfWeek: 2, startTime: 540, endTime: 660 }],
+    };
+    expect(hasTimeConflict(existing, candidate)).toBe(false);
+  });
+
+  it("is false when the candidate has no timings (never conflicts)", () => {
+    const existing = [
+      { classTimings: [{ dayOfWeek: 1, startTime: 540, endTime: 660 }] },
+    ];
+    expect(hasTimeConflict(existing, { classTimings: [] })).toBe(false);
+  });
+
+  it("is false when every existing slot has no timings", () => {
+    expect(
+      hasTimeConflict(
+        [{ classTimings: [] }],
+        { classTimings: [{ dayOfWeek: 1, startTime: 540, endTime: 660 }] },
+      ),
+    ).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// toTimingLikes
+// ---------------------------------------------------------------------------
+describe("toTimingLikes", () => {
+  it("normalizes day + HH:MM timings to minutes-since-midnight", () => {
+    const result = toTimingLikes([
+      { dayOfWeek: "MON", startTime: "09:00", endTime: "11:00" },
+      { dayOfWeek: "TUE", startTime: "12:00", endTime: "13:30" },
+    ]);
+    expect(result).toEqual([
+      { dayOfWeek: 1, startTime: 540, endTime: 660 },
+      { dayOfWeek: 2, startTime: 720, endTime: 810 },
+    ]);
+  });
+
+  it("drops rows with a missing/invalid day or time (never conflicts)", () => {
+    const result = toTimingLikes([
+      { dayOfWeek: null, startTime: "09:00", endTime: "11:00" },
+      { dayOfWeek: "MON", startTime: "bad", endTime: "11:00" },
+      { dayOfWeek: "MON", startTime: "09:00", endTime: "11:00" },
+    ]);
+    expect(result).toEqual([{ dayOfWeek: 1, startTime: 540, endTime: 660 }]);
+  });
+
+  it("returns [] for a class with no timings", () => {
+    expect(toTimingLikes([])).toEqual([]);
   });
 });

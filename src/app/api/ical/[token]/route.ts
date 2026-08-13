@@ -14,7 +14,7 @@ import { buildIcal } from "@/modules/timetable/functions/build-ical";
  *
  * Headers:
  * - Content-Type: text/calendar; charset=utf-8
- * - Cache-Control: public, max-age=900 (15 min)
+ * - Cache-Control: private, max-age=300 (5 min — feed is per-user capability data)
  * - Content-Disposition: inline; filename="{name}.ics"
  *
  * Responses:
@@ -37,13 +37,14 @@ export async function GET(
 
   const ics = buildIcal(feedData);
 
-  const filename = `${feedData.timetableName.replace(/[^a-zA-Z0-9_\- ]/g, "")}.ics`;
+  const safe = feedData.timetableName.replace(/[^a-zA-Z0-9_\- ]/g, "").trim() || "timetable";
+  const filename = `${safe}.ics`;
 
   return new Response(ics, {
     status: 200,
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      "Cache-Control": "public, max-age=900",
+      "Cache-Control": "private, max-age=300",
       "Content-Disposition": `inline; filename="${filename}"`,
     },
   });

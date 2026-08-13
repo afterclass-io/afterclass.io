@@ -1,7 +1,9 @@
 import "server-only";
 
-import { db } from "@/server/db";
+import { db as defaultDb } from "@/server/db";
+import type { PrismaClient } from "@prisma/client";
 import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import { toArrangedClass } from "@/modules/timetable/functions/arranged-class";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -25,23 +27,32 @@ export type ICalFeedData = {
  * - Fetches slots with full class data (timings, exam timings, course).
  * - Resolves the associated AcadTerm for startDt / endDt.
  *
- * Returns `null` when the token is invalid, revoked, or the timetable
- * does not exist.  Does NOT throw — the route handler maps `null` → 404.
+ * Returns `null` when the token is invalid, revoked, the timetable
+ * does not exist, or the timetable is PRIVATE (defense-in-depth:
+ * `setVisibility` also revokes the token on PRIVATE).
+ *
+ * Does NOT throw — the route handler maps `null` → 404.
+ *
+ * Accepts an optional `dbOverride` parameter for testing.
  */
 export async function getFeedData(
   token: string,
+  dbOverride?: PrismaClient,
 ): Promise<ICalFeedData | null> {
-  const timetable = await db.userTimetable.findUnique({
+  const client = dbOverride ?? defaultDb;
+  const timetable = await client.userTimetable.findUnique({
     where: { icalToken: token },
     include: {
-      acadTerm: true,
+      acadTerm: { select: { startDt: true, endDt: true } },
       slots: {
         include: {
           class: {
-            include: {
-              course: true,
-              classTimings: true,
-              classExamTimings: true,
+            select: {
+              id: true,
+              section: true,
+              course: { select: { code: true, name: true, creditUnits: true } },
+              classTimings: { select: { dayOfWeek: true, startTime: true, endTime: true, venue: true } },
+              classExamTimings: { select: { date: true, dayOfWeek: true, startTime: true, endTime: true, venue: true } },
             },
           },
         },
@@ -51,27 +62,13 @@ export async function getFeedData(
 
   if (!timetable) return null;
 
-  const classes: ArrangedClass[] = timetable.slots.map((slot) => ({
-    classId: slot.class.id,
-    courseCode: slot.class.course.code,
-    courseName: slot.class.course.name,
-    section: slot.class.section,
-    professorName: null, // intentionally omitted — no PII in feed
-    creditUnits: slot.class.course.creditUnits,
-    timings: slot.class.classTimings.map((t) => ({
-      dayOfWeek: t.dayOfWeek,
-      startTime: t.startTime,
-      endTime: t.endTime,
-      venue: t.venue,
-    })),
-    examTimings: slot.class.classExamTimings.map((e) => ({
-      date: e.date,
-      dayOfWeek: e.dayOfWeek,
-      startTime: e.startTime,
-      endTime: e.endTime,
-      venue: e.venue,
-    })),
-  }));
+  // PRIVATE timetables never serve a calendar feed, even with a valid token
+  // (defense-in-depth: setVisibility also revokes the token on PRIVATE).
+  if (timetable.visibility === "PRIVATE") return null;
+
+  const classes = timetable.slots.map((slot) =>
+    toArrangedClass(slot, { omitProfessorName: true }),
+  );
 
   return {
     classes,

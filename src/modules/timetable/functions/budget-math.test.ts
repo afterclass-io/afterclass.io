@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { summarizeBidsByRound } from "./budget-math";
+import { summarizeBidsByRound, compareRound } from "./budget-math";
 import type { BidSummary } from "./budget-math";
 
 // ---------------------------------------------------------------------------
@@ -111,11 +111,12 @@ describe("summarizeBidsByRound", () => {
   });
 
   // ---- Round ordering: canonical BOSS order ----
-  it("orders rounds in canonical BOSS order (1, 1A, 1B, 1C, 2, 2A, 3)", () => {
+  it("orders rounds in canonical BOSS order (1, 1A, 1B, 1C, 1F, 2, 2A, 3)", () => {
     const bids: BidSummary[] = [
       { amount: 1, round: "3", window: 1 },
       { amount: 1, round: "1C", window: 1 },
       { amount: 1, round: "2A", window: 1 },
+      { amount: 1, round: "1F", window: 1 },
       { amount: 1, round: "1B", window: 1 },
       { amount: 1, round: "1A", window: 1 },
       { amount: 1, round: "2", window: 1 },
@@ -124,21 +125,26 @@ describe("summarizeBidsByRound", () => {
     const result = summarizeBidsByRound(bids, 100);
 
     const roundOrder = result.roundTotals.map((r) => r.round);
-    expect(roundOrder).toEqual(["1", "1A", "1B", "1C", "2", "2A", "3"]);
+    expect(roundOrder).toEqual(["1", "1A", "1B", "1C", "1F", "2", "2A", "3"]);
   });
 
-  // ---- Round ordering: numeric-only rounds ----
-  it("sorts numeric-only rounds correctly (1 < 2 < 10 < 11)", () => {
+  // ---- Round ordering: unknown numeric rounds sort lexicographically ----
+  // compareRounds puts known rounds (1, 1A, …, 2A) first in canonical order,
+  // then unknown rounds lexicographically. "1" and "2" happen to be known
+  // rounds; truly unknown numeric rounds like "3", "10", "99" sort as strings
+  // (so "10" < "3" < "99"). BOSS data never has unknown rounds — this test
+  // only pins the documented contract.
+  it("sorts unknown numeric rounds lexicographically after known rounds", () => {
     const bids: BidSummary[] = [
-      { amount: 1, round: "11", window: 1 },
-      { amount: 1, round: "2", window: 1 },
+      { amount: 1, round: "99", window: 1 },
+      { amount: 1, round: "3", window: 1 },
       { amount: 1, round: "10", window: 1 },
-      { amount: 1, round: "1", window: 1 },
     ];
     const result = summarizeBidsByRound(bids, 100);
 
     const roundOrder = result.roundTotals.map((r) => r.round);
-    expect(roundOrder).toEqual(["1", "2", "10", "11"]);
+    // All three are unknown → sorted alphabetically: "10" < "3" < "99"
+    expect(roundOrder).toEqual(["10", "3", "99"]);
   });
 
   // ---- Balance of 0 ----
@@ -196,5 +202,35 @@ describe("summarizeBidsByRound", () => {
       { window: 3, amount: 5 },
     ]);
     expect(result.roundTotals[0]!.total).toBe(30);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// compareRound — canonical BOSS round ordering convergence
+// ---------------------------------------------------------------------------
+
+describe("compareRound", () => {
+  it("matches the canonical BOSS round order (1, 1A, 1B, 1C, 1F, 2, 2A)", () => {
+    const rounds = ["2A", "1", "1C", "1F", "1B", "2", "1A"];
+    const sorted = [...rounds].sort(compareRound);
+    expect(sorted).toEqual(["1", "1A", "1B", "1C", "1F", "2", "2A"]);
+  });
+
+  it("sorts unknown rounds alphabetically after all known rounds", () => {
+    const rounds = ["3", "1", "2B", "2A", "99", "Z", "1A"];
+    const sorted = [...rounds].sort(compareRound);
+    // Known rounds first in order, then unknown alphabetically
+    expect(sorted).toEqual(["1", "1A", "2A", "2B", "3", "99", "Z"]);
+  });
+
+  it("returns zero for identical rounds", () => {
+    expect(compareRound("1", "1")).toBe(0);
+    expect(compareRound("1A", "1A")).toBe(0);
+    expect(compareRound("unknown", "unknown")).toBe(0);
+  });
+
+  it("sorts 1 before 1A (numeric-only before letter-suffixed)", () => {
+    expect(compareRound("1", "1A")).toBeLessThan(0);
+    expect(compareRound("1A", "1")).toBeGreaterThan(0);
   });
 });

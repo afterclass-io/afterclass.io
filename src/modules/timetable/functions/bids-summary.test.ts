@@ -36,7 +36,7 @@ describe("summarizeSessionBids", () => {
       { bidAmount: 50, status: "SECURED" },
       { bidAmount: 40, status: "DROPPED" },
       { bidAmount: 30, status: "CANCELLED" },
-      { bidAmount: 20, status: "MISSED" },
+      { bidAmount: 20, status: "PARTICIPATED" },
       { bidAmount: 10, status: "PLANNED" },
     ];
     const s = summarizeSessionBids(bids, 100);

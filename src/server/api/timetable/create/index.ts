@@ -1,11 +1,7 @@
 import { z } from "zod";
 
 import { protectedProcedure } from "@/server/api/trpc";
-
-function autoName(plansCount: number): string {
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  return `Plan ${alphabet[plansCount] ?? String(plansCount)}`;
-}
+import { autoName } from "./helpers";
 
 export const create = protectedProcedure
   .input(
@@ -25,12 +21,26 @@ export const create = protectedProcedure
     const isFirst = existingCount === 0;
     const name = input.name ?? autoName(existingCount);
 
-    return ctx.db.userTimetable.create({
-      data: {
-        userId: ctx.session.user.id,
-        acadTermId: input.acadTermId,
-        name,
-        isActive: isFirst,
-      },
-    });
+    const data = {
+      userId: ctx.session.user.id,
+      acadTermId: input.acadTermId,
+      name,
+      isActive: isFirst,
+    };
+
+    try {
+      return await ctx.db.userTimetable.create({ data });
+    } catch (err) {
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        (err as { code?: string }).code === "P2002"
+      ) {
+        return ctx.db.userTimetable.create({
+          data: { ...data, isActive: false },
+        });
+      }
+      throw err;
+    }
   });
