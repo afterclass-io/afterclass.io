@@ -523,6 +523,7 @@ model UserRoadmap {
   matricTermId String?    @map("matric_term_id") // acad term corresponding to the user's Y1T1
   viewCount    Int        @default(0) @map("view_count")
   shareCount   Int        @default(0) @map("share_count")
+  upvoteCount  Int        @default(0) @map("upvote_count")
   createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
 
@@ -601,9 +602,9 @@ enum Visibility {
 enum UserBidStatus {
   PLANNED
   SECURED
-  MISSED
   DROPPED
   CANCELLED
+  PARTICIPATED
 }
 
 enum UniversityAbbreviation {

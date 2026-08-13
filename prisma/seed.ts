@@ -1,4 +1,7 @@
 import { PrismaClient } from "@prisma/client";
+
+import { assertStrictTimeFormats } from "./validate-seed-data";
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -74,11 +77,13 @@ async function main() {
   });
 
   const classTimings = require("./data/15_class_timings.json");
+  assertStrictTimeFormats(classTimings, "15_class_timings.json");
   await prisma.classTiming.createMany({
     data: classTimings,
   });
 
   const classExamTimings = require("./data/16_class_exam_timings.json");
+  assertStrictTimeFormats(classExamTimings, "16_class_exam_timings.json");
   await prisma.classExamTiming.createMany({
     data: classExamTimings,
   });
