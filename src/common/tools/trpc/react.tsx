@@ -50,6 +50,9 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
         httpBatchStreamLink({
           transformer: SuperJSON,
           url: getBaseUrl() + "/api/trpc",
+          // Never let the browser serve tRPC responses from its HTTP cache —
+          // otherwise invalidate() refetches can read pre-mutation data.
+          fetch: (url, init) => fetch(url, { ...init, cache: "no-store" }),
           headers: () => {
             const headers = new Headers();
             headers.set("x-trpc-source", "nextjs-react");

@@ -18,20 +18,47 @@
 
 context("Roadmaps: Editor", function () {
   // -------------------------------------------------------------------------
-  // Setup: login & navigate to /roadmaps/mine before every test
+  // Setup: login & navigate to the My Roadmaps view before every test
   // -------------------------------------------------------------------------
   beforeEach(function () {
     cy.login();
-    cy.visit("/roadmaps/mine");
+    // Prevent the product tour from auto-starting and blocking the UI.
+    cy.window().then((win) => {
+      win.localStorage.setItem("hasSeenRoadmapsTour", JSON.stringify(true));
+      win.localStorage.setItem("hasSeenTimetableTour", JSON.stringify(true));
+    });
+    cy.visit("/roadmaps?view=mine");
+    // Wait for the page to settle — the roadmap list sidebar should be visible
+    cy.get("[data-test=roadmap-list]", { timeout: 15000 }).should("be.visible");
   });
 
+  /**
+   * Helper: create a roadmap via the UI and wait for it to appear in the list.
+   * Uses cy.intercept() to wait for the tRPC response before asserting UI state,
+   * avoiding race conditions with httpBatchStreamLink response processing.
+   */
+  function createRoadmap(name: string): void {
+    cy.intercept("POST", "/api/trpc/roadmaps.create*").as("createRoadmap");
+    // The button is wrapped in a TooltipTrigger span — use force:true
+    cy.get("[aria-label='Create new roadmap']").click({ force: true });
+    cy.get("[data-test=roadmap-create-input]")
+      .should("be.visible")
+      .type(`${name}{enter}`);
+    // After pressing Enter, the input disappears (form submitted, mutation in flight).
+    cy.get("[data-test=roadmap-create-input]").should("not.exist");
+    // Wait for the tRPC response to arrive at the client
+    cy.wait("@createRoadmap", { timeout: 15000 });
+    // Now the mutation has completed; onSuccess should have fired.
+    // The name should appear in the editor header and sidebar list.
+    cy.get("[data-test=roadmap-list]")
+      .contains(name, { timeout: 10000 })
+      .should("be.visible");
+  }
+
   // -------------------------------------------------------------------------
-  // 1. Page loads with empty state
+  // 1. Page loads and shows the create button
   // -------------------------------------------------------------------------
-  it("should display the empty state when no roadmaps exist", function () {
-    // The page should show the "No roadmaps yet" message or the
-    // "+" button to create one
-    cy.contains("No roadmaps yet").should("be.visible");
+  it("should display the create-new-roadmap button on load", function () {
     cy.get("[aria-label='Create new roadmap']").should("be.visible");
   });
 
@@ -39,16 +66,10 @@ context("Roadmaps: Editor", function () {
   // 2. Create a new roadmap
   // -------------------------------------------------------------------------
   it("should create a new roadmap", function () {
-    // Click the create button
-    cy.get("[aria-label='Create new roadmap']").click();
-
-    // Type a name and confirm
-    cy.get("[data-test=roadmap-create-input]").type("Test Plan{enter}");
-
-    // The new roadmap should appear in the list and be selected
-    cy.contains("Test Plan", { timeout: 10000 }).should("be.visible");
-
-    // The course search sidebar should be visible
+    const name = `Test Plan ${Date.now()}`;
+    createRoadmap(name);
+    // Click the roadmap to open it — the editor should show course search
+    cy.get("[data-test=roadmap-list]").contains(name).click();
     cy.contains("Courses").should("be.visible");
   });
 
@@ -56,17 +77,17 @@ context("Roadmaps: Editor", function () {
   // 3. Search for a course
   // -------------------------------------------------------------------------
   it("should search for a course and display results", function () {
-    // Create a roadmap first
-    cy.get("[aria-label='Create new roadmap']").click();
-    cy.get("[data-test=roadmap-create-input]").type("Test Plan{enter}");
-    cy.contains("Test Plan", { timeout: 10000 }).should("be.visible");
+    const name = `Search Test ${Date.now()}`;
+    createRoadmap(name);
+    // Click the roadmap to open it
+    cy.get("[data-test=roadmap-list]").contains(name).click();
 
     // Search for a course
     cy.get("input[aria-label='Search courses to add to roadmap']").type(
       "COR-",
     );
 
-    // Wait for results to appear
+    // Wait for results to appear (look for CU credit units indicator)
     cy.contains("CU", { timeout: 15000 }).should("be.visible");
   });
 
@@ -74,10 +95,9 @@ context("Roadmaps: Editor", function () {
   // 4. Click-to-add a course to the roadmap
   // -------------------------------------------------------------------------
   it("should add a course to the roadmap via click", function () {
-    // Create a roadmap
-    cy.get("[aria-label='Create new roadmap']").click();
-    cy.get("[data-test=roadmap-create-input]").type("Test Plan{enter}");
-    cy.contains("Test Plan", { timeout: 10000 }).should("be.visible");
+    const name = `Add Test ${Date.now()}`;
+    createRoadmap(name);
+    cy.get("[data-test=roadmap-list]").contains(name).click();
 
     // Search for a course
     cy.get("input[aria-label='Search courses to add to roadmap']").type(
@@ -93,8 +113,7 @@ context("Roadmaps: Editor", function () {
       .first()
       .click({ force: true });
 
-    // The grid should show the course (look for the course code in the grid)
-    // The term cell should have at least one course chip
+    // The grid should show the course
     cy.get("[data-droppable-id='1-T1']", { timeout: 10000 }).should(
       "be.visible",
     );
@@ -105,10 +124,9 @@ context("Roadmaps: Editor", function () {
   // 5. Reload → entries persist
   // -------------------------------------------------------------------------
   it("should persist roadmap entries after page reload", function () {
-    // Create roadmap and add a course
-    cy.get("[aria-label='Create new roadmap']").click();
-    cy.get("[data-test=roadmap-create-input]").type("Persist Test{enter}");
-    cy.contains("Persist Test", { timeout: 10000 }).should("be.visible");
+    const name = `Persist Test ${Date.now()}`;
+    createRoadmap(name);
+    cy.get("[data-test=roadmap-list]").contains(name).click();
 
     // Add a course
     cy.get("input[aria-label='Search courses to add to roadmap']").type(
@@ -128,12 +146,14 @@ context("Roadmaps: Editor", function () {
     // Reload
     cy.reload();
 
-    // After reload, the roadmap list should reload and the roadmap
-    // should still exist with its entry
-    cy.contains("Persist Test", { timeout: 15000 }).should("be.visible");
+    // After reload, the roadmap should still exist
+    cy.get("[data-test=roadmap-list]", { timeout: 15000 }).should("be.visible");
+    cy.get("[data-test=roadmap-list]")
+      .contains(name, { timeout: 10000 })
+      .should("be.visible");
 
     // Navigate to it by clicking
-    cy.contains("Persist Test").click();
+    cy.get("[data-test=roadmap-list]").contains(name).click();
 
     // The grid should still show the course
     cy.get("[data-droppable-id='1-T1']", { timeout: 10000 }).should(
@@ -145,40 +165,98 @@ context("Roadmaps: Editor", function () {
   // 6. Rename the roadmap
   // -------------------------------------------------------------------------
   it("should rename a roadmap", function () {
-    // Create a roadmap
-    cy.get("[aria-label='Create new roadmap']").click();
-    cy.get("[data-test=roadmap-create-input]").type("Original Name{enter}");
-    cy.contains("Original Name", { timeout: 10000 }).should("be.visible");
+    const original = `Original ${Date.now()}`;
+    const renamed = `Renamed ${Date.now()}`;
+    createRoadmap(original);
 
     // Hover over the item and click the rename button
-    cy.contains("Original Name")
+    cy.get("[data-test=roadmap-list]").contains(original)
       .closest(".group")
-      .find("[aria-label='Rename Original Name']")
+      .find(`[aria-label='Rename ${original}']`)
       .click({ force: true });
 
     // Edit the name
     cy.get("[data-test=roadmap-rename-input]")
       .clear()
-      .type("Renamed Plan{enter}");
+      .type(`${renamed}{enter}`);
 
     // The new name should appear
-    cy.contains("Renamed Plan", { timeout: 10000 }).should("be.visible");
-    cy.contains("Original Name").should("not.exist");
+    cy.get("[data-test=roadmap-list]")
+      .contains(renamed, { timeout: 10000 })
+      .should("be.visible");
+    cy.get("[data-test=roadmap-list]").contains(original).should("not.exist");
+  });
+
+  // -------------------------------------------------------------------------
+  // 6b. Matriculation year reflects immediately and can be re-edited
+  // -------------------------------------------------------------------------
+  it("should reflect the matriculation year selection immediately and allow changing it", function () {
+    const name = `Matric ${Date.now()}`;
+    cy.get("[aria-label='Create new roadmap']").click();
+    cy.get("[data-test=roadmap-create-input]").type(`${name}{enter}`);
+    cy.contains(name, { timeout: 10000 }).should("be.visible");
+    cy.get("[data-test=roadmap-list]").contains(name).click();
+
+    // The matriculation-year control only appears once the roadmap is active
+    cy.get("[data-test=roadmap-active-toggle]").click({ force: true });
+    cy.get("[data-test=matric-term-select]", { timeout: 10000 }).should(
+      "be.visible",
+    );
+
+    // Wait on the mutation round-trip before asserting persisted state
+    cy.intercept("POST", "/api/trpc/roadmaps.setMatricTerm*").as(
+      "setMatricTerm",
+    );
+
+    // Only the AY options (exclude the "Clear" item)
+    const ayOptions = () =>
+      cy
+        .get("[data-slot=select-content] [role=option]")
+        .filter((_i, el) =>
+          /^AY\d{4}\/\d{2,4}$/.test(Cypress.$(el).text().trim()),
+        );
+
+    // Pick the first AY; the trigger must show it immediately (optimistic
+    // echo — previously it snapped back to the placeholder until refetch).
+    cy.get("[data-test=matric-term-select]").click();
+    ayOptions().should("have.length.at.least", 2);
+    ayOptions()
+      .first()
+      .invoke("text")
+      .then((firstAyText) => {
+        const ay1 = firstAyText.trim();
+        ayOptions().first().click();
+        cy.get("[data-test=matric-term-select]").should("contain", ay1);
+        cy.wait("@setMatricTerm");
+
+        // Change to a different year and assert again
+        cy.get("[data-test=matric-term-select]").click();
+        ayOptions()
+          .filter((_i, el) => Cypress.$(el).text().trim() !== ay1)
+          .first()
+          .invoke("text")
+          .then((secondAyText) => {
+            const ay2 = secondAyText.trim();
+            cy.get("[data-slot=select-content] [role=option]")
+              .contains(ay2)
+              .click();
+            cy.get("[data-test=matric-term-select]").should("contain", ay2);
+            cy.wait("@setMatricTerm");
+          });
+      });
   });
 
   // -------------------------------------------------------------------------
   // 7. Delete the roadmap
   // -------------------------------------------------------------------------
   it("should delete a roadmap", function () {
-    // Create a roadmap
-    cy.get("[aria-label='Create new roadmap']").click();
-    cy.get("[data-test=roadmap-create-input]").type("To Delete{enter}");
-    cy.contains("To Delete", { timeout: 10000 }).should("be.visible");
+    const name = `To Delete ${Date.now()}`;
+    createRoadmap(name);
 
     // Hover and click delete
-    cy.contains("To Delete")
+    cy.get("[data-test=roadmap-list]").contains(name)
       .closest(".group")
-      .find("[aria-label='Delete To Delete']")
+      .find(`[aria-label='Delete ${name}']`)
       .click({ force: true });
 
     // Confirm deletion in the alert dialog
@@ -186,18 +264,19 @@ context("Roadmaps: Editor", function () {
     cy.get("[data-test=roadmap-delete-confirm]").click();
 
     // The roadmap should be gone
-    cy.contains("To Delete", { timeout: 10000 }).should("not.exist");
-    cy.contains("No roadmaps yet").should("be.visible");
+    cy.get("[data-test=roadmap-list]")
+      .contains(name, { timeout: 10000 })
+      .should("not.exist");
   });
 
   // -------------------------------------------------------------------------
   // 8. Full lifecycle: create → add → rename → delete
   // -------------------------------------------------------------------------
   it("should complete the full roadmap lifecycle", function () {
-    // Create
-    cy.get("[aria-label='Create new roadmap']").click();
-    cy.get("[data-test=roadmap-create-input]").type("Lifecycle Test{enter}");
-    cy.contains("Lifecycle Test", { timeout: 10000 }).should("be.visible");
+    const name = `Lifecycle ${Date.now()}`;
+    const renamed = `Lifecycle Done ${Date.now()}`;
+    createRoadmap(name);
+    cy.get("[data-test=roadmap-list]").contains(name).click();
 
     // Add a course
     cy.get("input[aria-label='Search courses to add to roadmap']").type(
@@ -215,24 +294,28 @@ context("Roadmaps: Editor", function () {
     );
 
     // Rename
-    cy.contains("Lifecycle Test")
+    cy.get("[data-test=roadmap-list]").contains(name)
       .closest(".group")
-      .find("[aria-label='Rename Lifecycle Test']")
+      .find(`[aria-label='Rename ${name}']`)
       .click({ force: true });
     cy.get("[data-test=roadmap-rename-input]")
       .clear()
-      .type("Lifecycle Done{enter}");
-    cy.contains("Lifecycle Done", { timeout: 10000 }).should("be.visible");
+      .type(`${renamed}{enter}`);
+    cy.get("[data-test=roadmap-list]")
+      .contains(renamed, { timeout: 10000 })
+      .should("be.visible");
 
     // Delete
-    cy.contains("Lifecycle Done")
+    cy.get("[data-test=roadmap-list]").contains(renamed)
       .closest(".group")
-      .find("[aria-label='Delete Lifecycle Done']")
+      .find(`[aria-label='Delete ${renamed}']`)
       .click({ force: true });
     cy.contains("Delete roadmap?").should("be.visible");
     cy.get("[data-test=roadmap-delete-confirm]").click();
 
     // Verify gone
-    cy.contains("Lifecycle Done", { timeout: 10000 }).should("not.exist");
+    cy.get("[data-test=roadmap-list]")
+      .contains(renamed, { timeout: 10000 })
+      .should("not.exist");
   });
 });

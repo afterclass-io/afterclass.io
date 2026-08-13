@@ -238,8 +238,6 @@ export const LoginForm = () => {
                 return;
               }
 
-              console.log("Google sign in response:", resp);
-
               progress.start();
               startTransition(() => {
                 router.push(resp?.url ?? "/");

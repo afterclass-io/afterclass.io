@@ -33,29 +33,29 @@ export async function requireOwnedRoadmap<
   userId: string,
   select: Select,
 ): Promise<Prisma.UserRoadmapGetPayload<{ select: Select }>>;
+// The overloads above carry the precise public return types; the
+// implementation only relies on `userId`, so its return stays opaque
+// (unknown, not any) to satisfy overload compatibility.
 export async function requireOwnedRoadmap(
   db: PrismaClient,
   roadmapId: string,
   userId: string,
   select?: Prisma.UserRoadmapSelect,
-) {
-  /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any */
-  let row: any;
-  if (select) {
-    row = await db.userRoadmap.findUnique({
-      where: { id: roadmapId },
-      select: { ...select, userId: true },
-    });
-  } else {
-    row = await db.userRoadmap.findUnique({
-      where: { id: roadmapId },
-    });
-  }
+): Promise<unknown> {
+  // Only `userId` is needed for the ownership check; the overloads give
+  // callers the precise payload type for their `select`.
+  const row: { userId: string } | null = select
+    ? await db.userRoadmap.findUnique({
+        where: { id: roadmapId },
+        select: { ...select, userId: true },
+      })
+    : await db.userRoadmap.findUnique({
+        where: { id: roadmapId },
+      });
   if (!row || row.userId !== userId) {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return row;
-  /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any */
 }
 
 // -- requireOwnedTimetable -------------------------------------------------
@@ -82,24 +82,19 @@ export async function requireOwnedTimetable(
   timetableId: string,
   userId: string,
   select?: Prisma.UserTimetableSelect,
-) {
-  /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any */
-  let row: any;
-  if (select) {
-    row = await db.userTimetable.findUnique({
-      where: { id: timetableId },
-      select: { ...select, userId: true },
-    });
-  } else {
-    row = await db.userTimetable.findUnique({
-      where: { id: timetableId },
-    });
-  }
+): Promise<unknown> {
+  const row: { userId: string } | null = select
+    ? await db.userTimetable.findUnique({
+        where: { id: timetableId },
+        select: { ...select, userId: true },
+      })
+    : await db.userTimetable.findUnique({
+        where: { id: timetableId },
+      });
   if (!row || row.userId !== userId) {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return row;
-  /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any */
 }
 
 // -- requireOwnedBid -------------------------------------------------------
@@ -122,24 +117,19 @@ export async function requireOwnedBid(
   bidId: string,
   userId: string,
   select?: Prisma.UserBidSelect,
-) {
-  /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any */
-  let row: any;
-  if (select) {
-    row = await db.userBid.findUnique({
-      where: { id: bidId },
-      select: { ...select, userId: true },
-    });
-  } else {
-    row = await db.userBid.findUnique({
-      where: { id: bidId },
-    });
-  }
+): Promise<unknown> {
+  const row: { userId: string } | null = select
+    ? await db.userBid.findUnique({
+        where: { id: bidId },
+        select: { ...select, userId: true },
+      })
+    : await db.userBid.findUnique({
+        where: { id: bidId },
+      });
   if (!row || row.userId !== userId) {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return row;
-  /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any */
 }
 
 /** Mint a high-entropy capability token for share links / iCal feeds. */

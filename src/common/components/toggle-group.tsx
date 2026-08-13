@@ -80,7 +80,10 @@ function ToggleGroupItem({
         }),
         "min-w-0 flex-1 shrink-0 rounded-none shadow-none first:rounded-l-md last:rounded-r-md focus:z-10 focus-visible:z-10 data-[variant=outline]:border-l-0 data-[variant=outline]:first:border-l",
         resolvedVariant === "segmented" &&
-          "hover:bg-background/60 hover:text-foreground data-[state=on]:bg-background data-[state=on]:text-foreground rounded-md first:rounded-md last:rounded-md data-[state=on]:shadow-xs",
+          // min-w-fit: items in a w-fit group are flex-1/basis-0, so a wider
+          // label would otherwise be squeezed below its natural width and eat
+          // its horizontal padding (icon/label touching the item borders).
+          "hover:bg-background/60 hover:text-foreground data-[state=on]:bg-background data-[state=on]:text-foreground min-w-fit rounded-md first:rounded-md last:rounded-md data-[state=on]:shadow-xs",
         className,
       )}
       {...props}

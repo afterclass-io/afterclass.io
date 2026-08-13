@@ -1,3 +1,20 @@
+## [Unreleased]
+### Added
+- Timetable planning: term-filtered search (by course + professor), single-active plan synced to bid table, secured (pastel green) vs planned (pastel purple) slot cards, budget invariant guard, conflict-blocking add, SMU period time-axis (4 slots), unified BidDialog (single round/window dropdown, class info + bid prediction, per-window notes), class dialog quick links to historical data / course reviews / professor reviews, calendar export with Google/Apple/Outlook direct subscribe and inline link-sharing, iCal feed (private caching, revoke link), save status indicator with recovery, undo/redo (Ctrl+Z/Ctrl+Shift+Z) + toolbar buttons for add/remove/swap/notes.
+- Roadmaps: grid/timeline with equal padding, stats wrap, course name wrapping, matriculation by AY, public/private gallery with faculty filtering, share counters.
+- Bid analytics: 5-year server-side window, clamped x-axis labels, e$ y-axis gutter fix, `formatBidCurrency` + compact 1M overflow fix.
+- DRY extractions: `formatDateSGT`, `time` helpers, `dayOfWeek`, `PageTitle`/`EmptyState`/`table-primitives`, `findBidResults`, `incrementEngagement`, `createOptimisticMutationCallbacks`, `requireOwned*`, `toArrangedClass`, `compareRounds`.
+### Fixed
+- Reviews: long professor/course names wrap correctly in `ReviewItem`/`RevieweeGroup` (fix #305, #453); Storybook truncation restored.
+- Timetable data freshness: stale browser HTTP cache for tRPC GETs removed (`cache: no-store`) so mutations appear immediately (fix #419/related to #446).
+- `DEVELOPMENT.md`: clarify `bunx prisma migrate dev` creates schema only; seed separately via `bunx prisma db seed` (fix #430); icon standard set to `lucide-react` for generic glyphs.
+- Timetable: `rawIndex` layout re-association fixes misaligned/crashing grid; Mon/Fri edge clipping; pencil alignment; `bidWindows.getCurrentWindow` safe fallback.
+- Roadmaps: stale-version CONFLICT ("updated elsewhere") no longer fires on normal single-session editing — `saveEntries` returns the bumped `updatedAt` (cached client-side) and saves retry once with a fresh token; copy-public failures now surface the server's error message.
+- Segmented toggle (`ToggleGroup` `segmented` variant): wider labels (e.g. roadmap Grid/Timeline, timetable Classes/Exams) no longer squeeze icon/text against the item borders — items keep their natural width (`min-w-fit`) so padding stays even on all sides.
+- Roadmap editor divider continuity: resize-separator lines now span full height and meet the header/outer borders (stray sidebar `border-r` removed); bids table drops the redundant Term column (term filter remains) and narrows so all columns fit.
+- Auth: signing in with a faculty subdomain email (e.g. `@scis.smu.edu.sg`) now resolves to the same account as `@smu.edu.sg` (fixes #344 — `users.email` backfilled to normalized form).
+- Roadmaps: faculty is now per-degree-plan instead of per-profile — declare it in the editor (syncs to `UserRoadmap.facultyId` via `roadmaps.setFaculty`) and the public gallery pill reflects the roadmap, not the owner's global profile.
+
 <a id="v1.4.0"></a>
 # [v1.4.0](https://github.com/afterclass-io/afterclass.io/releases/tag/v1.4.0) - 2025-03-01
 

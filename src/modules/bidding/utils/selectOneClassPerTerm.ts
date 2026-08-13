@@ -48,32 +48,27 @@ interface SelectableBidResult {
   };
 }
 
-// ─── Day-of-week helpers ─────────────────────────────────────────────────────
+import { dayOfWeekToNumber } from "@/common/functions/day-of-week";
 
-const DAY_ORDER: Record<string, number> = {
-  Mon: 0,
-  Tue: 1,
-  Wed: 2,
-  Thu: 3,
-  Fri: 4,
-};
+// ─── Day-of-week helpers ─────────────────────────────────────────────────────
 
 /**
  * Circular distance between two days on a 5-day (Mon–Fri) week.
  * @returns 0–2 (0 = same day, 1 = adjacent, 2 = two days apart)
  */
 function dayDistance(a: string, b: string): number {
-  const ai = DAY_ORDER[a] ?? -1;
-  const bi = DAY_ORDER[b] ?? -1;
+  const ai = dayOfWeekToNumber(a) ?? -1;
+  const bi = dayOfWeekToNumber(b) ?? -1;
   if (ai === -1 || bi === -1) return 2; // unknown day → maximum penalty
-  return Math.abs(ai - bi); // linear: Mon(0)→Fri(4) = 4, not adjacent
+  // shared util is 1-indexed (Mon=1..Fri=5); absolute differences are identical
+  return Math.abs(ai - bi);
 }
 
-/** Parse "HH:MM" or "HH:MM:SS" to minutes since midnight. */
+import { parseTimeParts } from "@/common/functions/time";
+
+/** Compute minutes since midnight from "HH:MM" or "HH:MM:SS". */
 function minutesSinceMidnight(time: string): number {
-  const parts = time.split(":");
-  const h = parseInt(parts[0] ?? "0", 10);
-  const m = parseInt(parts[1] ?? "0", 10);
+  const [h, m] = parseTimeParts(time);
   return h * 60 + m;
 }
 

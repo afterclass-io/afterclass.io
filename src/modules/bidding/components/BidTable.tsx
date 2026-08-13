@@ -2,9 +2,15 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { inferAcadTerm } from "@/common/functions";
+import { formatBidCurrency } from "@/common/functions/format-bid-currency";
 import { compareRounds } from "@/modules/bidding/utils/round-order";
+import {
+  computeAcadTermGroups,
+  buildGroupIndexMap,
+} from "@/modules/bidding/utils/acad-term-groups";
 import { Button } from "@/common/components/button";
-import { ChevronDown, ChevronUp, ArrowUpDown, Info } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Info } from "lucide-react";
+import { Th, SortableTh } from "@/common/components/table-primitives";
 import {
   Tooltip,
   TooltipContent,
@@ -79,34 +85,21 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
   }, [bidResults]);
 
   // Compute academic term groups for zebra striping
-  const termGroups = useMemo(() => {
-    const groups: { acadTermId: string; startIdx: number; endIdx: number }[] = [];
-    let current: string | null = null;
-    for (let i = 0; i < chartData.length; i++) {
-      const [acadTermId] = chartData[i]!.bidWindow.split("/");
-      if (acadTermId !== current) {
-        if (current !== null && groups.length > 0) {
-          groups[groups.length - 1]!.endIdx = i - 1;
-        }
-        groups.push({ acadTermId: acadTermId!, startIdx: i, endIdx: chartData.length - 1 });
-        current = acadTermId!;
-      }
-    }
-    return groups;
+  const groupIndexMap = useMemo(() => {
+    const groups = computeAcadTermGroups(chartData);
+    return buildGroupIndexMap(chartData, groups);
   }, [chartData]);
 
   // Build flattened rows with all display values pre-computed
   const flatRows: FlatRow[] = useMemo(() => {
-    return chartData.map((row, i) => {
+    return chartData.map((row, _i) => {
       const [acadTermId, round, window] = row.bidWindow.split("/");
       if (!acadTermId) {
         // Malformed bidWindow string — skip this row
         return null;
       }
       const { displayYear, term } = inferAcadTerm(acadTermId);
-      const groupIdx = termGroups.findIndex(
-        (g) => i >= g.startIdx && i <= g.endIdx,
-      );
+      const groupIdx = groupIndexMap.get(row.bidWindow) ?? 0;
       return {
         bidWindow: row.bidWindow,
         acadTermId: acadTermId,
@@ -122,7 +115,7 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
         groupIdx,
       };
     }).filter((row): row is FlatRow => row !== null);
-  }, [chartData, termGroups, profMap, sectionMap]);
+  }, [chartData, groupIndexMap, profMap, sectionMap]);
 
   const handleSort = useCallback(
     (column: SortColumn) => {
@@ -172,28 +165,8 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
   const visibleRows = showAll ? sortedRows : sortedRows.slice(0, DEFAULT_VISIBLE_ROWS);
   const hiddenCount = chartData.length - DEFAULT_VISIBLE_ROWS;
 
-  const SortIcon = ({ column }: { column: SortColumn }) => {
-    if (sortColumn !== column) {
-      return <ArrowUpDown size={14} className="text-muted-foreground/40" />;
-    }
-    return sortDirection === "asc" ? (
-      <ChevronUp size={16} className="text-primary" />
-    ) : (
-      <ChevronDown size={16} className="text-primary" />
-    );
-  };
-
-  const Th = ({ column, label, align = "left" }: { column: SortColumn; label: string; align?: "left" | "right" }) => (
-    <th
-      className={`px-3 py-2 font-medium cursor-pointer select-none hover:bg-muted/30 transition-colors ${align === "right" ? "text-right" : "text-left"}`}
-      onClick={() => handleSort(column)}
-    >
-      <div className={`inline-flex items-center gap-1 ${align === "right" ? "justify-end" : "justify-start"}`}>
-        {label}
-        <SortIcon column={column} />
-      </div>
-    </th>
-  );
+  const sharedThClass =
+    "h-auto py-2 font-medium cursor-pointer select-none hover:bg-muted/30 transition-colors normal-case tracking-normal";
 
   return (
     <div className="flex flex-col gap-2">
@@ -201,18 +174,70 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
-              <Th column="term" label="Term" />
-              <Th column="section" label="Section" />
-              <Th column="professor" label="Professor" />
-              <Th column="round" label="Round" />
-              <Th column="window" label="Window" />
-              <Th column="min" label="Min (e$)" align="right" />
-              <Th column="median" label="Median (e$)" align="right" />
-              <th
-                className="px-3 py-2 font-medium cursor-pointer select-none hover:bg-muted/30 transition-colors text-right"
-                onClick={() => handleSort("seats")}
+              <SortableTh
+                label="Term"
+                active={sortColumn === "term"}
+                dir={sortDirection}
+                onClick={() => handleSort("term")}
+                className={sharedThClass}
+              />
+              <SortableTh
+                label="Section"
+                active={sortColumn === "section"}
+                dir={sortDirection}
+                onClick={() => handleSort("section")}
+                className={sharedThClass}
+              />
+              <SortableTh
+                label="Professor"
+                active={sortColumn === "professor"}
+                dir={sortDirection}
+                onClick={() => handleSort("professor")}
+                className={sharedThClass}
+              />
+              <SortableTh
+                label="Round"
+                active={sortColumn === "round"}
+                dir={sortDirection}
+                onClick={() => handleSort("round")}
+                className={sharedThClass}
+              />
+              <SortableTh
+                label="Window"
+                active={sortColumn === "window"}
+                dir={sortDirection}
+                onClick={() => handleSort("window")}
+                className={sharedThClass}
+              />
+              <SortableTh
+                label="Min (e$)"
+                active={sortColumn === "min"}
+                dir={sortDirection}
+                onClick={() => handleSort("min")}
+                className={`${sharedThClass} text-right`}
+              />
+              <SortableTh
+                label="Median (e$)"
+                active={sortColumn === "median"}
+                dir={sortDirection}
+                onClick={() => handleSort("median")}
+                className={`${sharedThClass} text-right`}
+              />
+              <Th
+                className={`${sharedThClass} text-right`}
+                aria-sort={
+                  sortColumn === "seats"
+                    ? sortDirection === "asc"
+                      ? "ascending"
+                      : "descending"
+                    : undefined
+                }
               >
-                <div className="inline-flex items-center gap-1 justify-end">
+                <button
+                  type="button"
+                  onClick={() => handleSort("seats")}
+                  className="hover:text-foreground inline-flex items-center gap-1 flex-row-reverse"
+                >
                   <Tooltip delayDuration={300}>
                     <TooltipTrigger asChild>
                       <span className="inline-flex items-center gap-1 cursor-help">
@@ -224,9 +249,17 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
                       available seats before bidding minus available seats after bidding.
                     </TooltipContent>
                   </Tooltip>
-                  <SortIcon column="seats" />
-                </div>
-              </th>
+                  {sortColumn === "seats" ? (
+                    sortDirection === "asc" ? (
+                      <ArrowUp className="size-3" />
+                    ) : (
+                      <ArrowDown className="size-3" />
+                    )
+                  ) : (
+                    <ArrowUpDown className="size-3 opacity-50" />
+                  )}
+                </button>
+              </Th>
             </tr>
           </thead>
           <tbody>
@@ -245,10 +278,10 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
                   <td className="px-3 py-2 font-mono text-xs">{row.round}</td>
                   <td className="px-3 py-2 font-mono text-xs">{row.window}</td>
                   <td className="px-3 py-2 text-right font-mono tabular-nums">
-                    {row.min}
+                    {formatBidCurrency(row.min)}
                   </td>
                   <td className="px-3 py-2 text-right font-mono tabular-nums">
-                    {row.median}
+                    {formatBidCurrency(row.median)}
                   </td>
                   <td className="px-3 py-2 text-right font-mono tabular-nums">
                     {row.seats}

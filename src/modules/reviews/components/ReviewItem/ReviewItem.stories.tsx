@@ -93,3 +93,19 @@ export const LockedCoursePage: Story = {
     isLocked: true,
   },
 };
+
+export const HomePageLongProfessorName: Story = {
+  ...DefaultHomePage,
+  args: {
+    ...DefaultHomePage.args,
+    review: { ...review, professorName: "Chiraphol New Chiyachantana" },
+  },
+};
+
+export const CoursePageLongProfessorName: Story = {
+  ...DefaultCoursePage,
+  args: {
+    ...DefaultCoursePage.args,
+    review: { ...review, professorName: "Chiraphol New Chiyachantana" },
+  },
+};

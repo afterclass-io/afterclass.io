@@ -1,4 +1,5 @@
 /**
+ * NOT security — best-effort abuse reduction for anonymous view/share counting; on serverless each instance keeps its own bucket. Reviews use auth + DB dedup instead (see reviewEvents/track).
  * Minimal in-memory fixed-window (reset-at-window-end) rate limiter for
  * non-critical engagement counters (view/share). Best-effort: on serverless
  * each instance keeps its own bucket, so this reduces abuse rather than
@@ -58,7 +59,9 @@ export function resetLimits(): void {
  * unproxied requests share one bucket.
  */
 export function clientKey(headers: Headers): string {
-  return headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  return headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim()
+      ?? headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+      ?? "unknown";
 }
 
 /** Exposed for testing. */

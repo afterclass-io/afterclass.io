@@ -64,9 +64,12 @@ export function AddToTimetableButton({
         timetableName = active.name;
       }
 
-      // 3. Add slot to timetable
-      try {
-        await addSlotMutation.mutateAsync({ timetableId, classId });
+      // 3. Add slot to timetable (addSlot is idempotent; returns { created: boolean })
+      const result = await addSlotMutation.mutateAsync({
+        timetableId,
+        classId,
+      });
+      if (result.created) {
         toast.success(
           <span>
             Added to{" "}
@@ -79,35 +82,21 @@ export function AddToTimetableButton({
             .
           </span>,
         );
-        void utils.timetable.getArrangement.invalidate({ timetableId });
-      } catch (err: unknown) {
-        // Unique constraint violation → class already in timetable
-        const msg =
-          typeof err === "object" && err !== null
-            ? (err as { message?: string }).message ?? ""
-            : "";
-        if (
-          msg.includes("Unique constraint") ||
-          msg.includes("P2002") ||
-          msg.includes("already exists") ||
-          msg.includes("duplicate")
-        ) {
-          toast.info(
-            <span>
-              Already in{" "}
-              <Link
-                href="/timetable"
-                className="underline font-medium hover:opacity-80"
-              >
-                {timetableName}
-              </Link>
-              .
-            </span>,
-          );
-        } else {
-          throw err;
-        }
+      } else {
+        toast.info(
+          <span>
+            Already in{" "}
+            <Link
+              href="/timetable"
+              className="underline font-medium hover:opacity-80"
+            >
+              {timetableName}
+            </Link>
+            .
+          </span>,
+        );
       }
+      void utils.timetable.getArrangement.invalidate({ timetableId });
     } catch {
       toast.error("Failed to add to timetable. Please try again.");
     } finally {

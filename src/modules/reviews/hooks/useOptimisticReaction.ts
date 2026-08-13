@@ -1,25 +1,49 @@
 import { useEdgeConfigs } from "@/common/hooks";
-import { api } from "@/common/tools/trpc/react";
+import { api, type RouterInputs } from "@/common/tools/trpc/react";
+import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { ReviewEventType } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { debounce } from "lodash";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 
 export function useOptimisticReaction() {
   const { data: session } = useSession();
   const ecfg = useEdgeConfigs();
 
   const utils = api.useUtils();
+  const lastInputRef = useRef<{ reviewId: string } | null>(null);
   const { mutate: track } = api.reviewEvents.track.useMutation();
 
   const mutation = api.reviewReactions.upsert.useMutation({
-    onMutate: async ({ reviewId }) => {
-      // Snapshot the previous value
-      const previousReactions = utils.reviewReactions.getByReviewId.getData({
-        reviewId,
-      });
-      return { previousReactions };
-    },
+    ...createOptimisticMutationCallbacks<
+      RouterInputs["reviewReactions"]["upsert"],
+      unknown
+    >({
+      cancel: async () => {
+        if (lastInputRef.current) {
+          await utils.reviewReactions.getByReviewId.cancel(lastInputRef.current);
+        }
+      },
+      getSnapshot: () =>
+        lastInputRef.current
+          ? utils.reviewReactions.getByReviewId.getData(lastInputRef.current)
+          : undefined,
+      // Pattern A: the caller (mutateWithDebounce) already applied the optimistic
+      // update for instant feedback — re-applying here would double-increment.
+      applyOptimistic: () => {
+        /* Pattern A: caller (mutateWithDebounce) already applied */
+      },
+      restoreSnapshot: (prev) => {
+        if (lastInputRef.current) {
+          utils.reviewReactions.getByReviewId.setData(lastInputRef.current, prev as never);
+        }
+      },
+      invalidate: async () => {
+        if (lastInputRef.current) {
+          await utils.reviewReactions.getByReviewId.invalidate(lastInputRef.current);
+        }
+      },
+    }),
     onSuccess: (_data, { reviewId, reaction }) => {
       if (reaction && ecfg.enableReviewEventsTracking) {
         track({
@@ -28,27 +52,8 @@ export function useOptimisticReaction() {
         });
       }
     },
-    onError: (_err, { reviewId }, context) => {
-      // Rollback to the previous value if mutation fails
-      utils.reviewReactions.getByReviewId.setData(
-        { reviewId },
-        context?.previousReactions,
-      );
-    },
-    onSettled: (_data, _err, { reviewId }) => {
-      // Refetch to sync with server state after mutation completes
-      void utils.reviewReactions.getByReviewId.invalidate({ reviewId });
-    },
   });
   const mutate = mutation.mutate;
-
-  const debouncedMutate = useMemo(
-    () =>
-      debounce((variables: Parameters<typeof mutate>[0]) => {
-        mutate(variables);
-      }, 300),
-    [mutate],
-  ); // 300 ms before mutate is called
 
   const applyOptimisticUpdate = useCallback(
     (variables: Parameters<typeof mutate>[0]) => {
@@ -91,8 +96,17 @@ export function useOptimisticReaction() {
     [session?.user.id, utils.reviewReactions.getByReviewId],
   );
 
+  const debouncedMutate = useMemo(
+    () =>
+      debounce((variables: Parameters<typeof mutate>[0]) => {
+        mutate(variables);
+      }, 300),
+    [mutate],
+  );
+
   const mutateWithDebounce = useCallback(
     (variables: Parameters<typeof mutate>[0]) => {
+      lastInputRef.current = { reviewId: variables.reviewId };
       applyOptimisticUpdate(variables); // immediate UI update
       debouncedMutate(variables); // debounced server mutation
     },

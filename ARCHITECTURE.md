@@ -69,9 +69,13 @@ technologies:
     │   ├── tools/
     │   └── types/
     ├── modules/
+    │   ├── bidding/          # bid results, predictions, charts
     │   ├── home/
-    │   ├── reviews/
-    │   └── submit/
+    │   ├── reviews/          # ReviewItem, voting, reactions
+    │   ├── roadmaps/         # roadmap grid/timeline, progress sync, sharing
+    │   ├── sharing/          # iCal, link-share, visibility
+    │   ├── submit/
+    │   └── timetable/        # plans, slots, BidDialog, calendar export
     └── server/
         ├── api/
         │   ├── root.ts

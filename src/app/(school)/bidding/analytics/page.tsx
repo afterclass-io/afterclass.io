@@ -17,6 +17,7 @@ import { AddToTimetableButton } from "@/modules/bidding/components/AddToTimetabl
 import { BiddingClassList } from "@/modules/bidding/components/BiddingClassList";
 import { Combobox } from "@/modules/bidding/components/Combobox";
 import { texts } from "@/modules/bidding/constants";
+import { EmptyState } from "@/common/components/empty-state";
 import { selectOneClassPerTerm } from "@/modules/bidding/utils/selectOneClassPerTerm";
 import { filterSafetyFactors } from "@/modules/bidding/utils/bid-prediction";
 
@@ -152,9 +153,10 @@ export default async function BiddingHistoryPage({
   if (allBidResults.length === 0 && !bidPrediction) {
     return (
       <div className="flex w-full max-w-5xl flex-col gap-6 pt-2">
-        <div className="text-muted-foreground text-center">
-          No data available
-        </div>
+        <EmptyState
+          title="No data available"
+          description="Try a different course or section."
+        />
       </div>
     );
   }

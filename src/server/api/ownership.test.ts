@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import {
   mintToken,
   requireOwnedBid,
@@ -95,6 +95,48 @@ describe("requireOwned*", () => {
     await expect(
       requireOwnedBid(db as never, "b1", "u1"),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("types selected fields and rejects unselected fields", async () => {
+    const db = {
+      userRoadmap: {
+        findUnique: vi.fn().mockResolvedValue({ id: "r1", userId: "u1" }),
+      },
+    };
+    const row = await requireOwnedRoadmap(db as never, "r1", "u1", {
+      id: true,
+    });
+    expectTypeOf(row.id).toEqualTypeOf<string>();
+    // @ts-expect-error — `name` was not selected, so accessing it is a compile error
+    expectTypeOf(row.name).toBeString();
+  });
+
+  it("types selected fields and rejects unselected fields (timetable)", async () => {
+    const db = {
+      userTimetable: {
+        findUnique: vi.fn().mockResolvedValue({ id: "t1", userId: "u1" }),
+      },
+    };
+    const row = await requireOwnedTimetable(db as never, "t1", "u1", {
+      id: true,
+    });
+    expectTypeOf(row.id).toEqualTypeOf<string>();
+    // @ts-expect-error — `name` was not selected, so accessing it is a compile error
+    expectTypeOf(row.name).toBeString();
+  });
+
+  it("types selected fields and rejects unselected fields (bid)", async () => {
+    const db = {
+      userBid: {
+        findUnique: vi.fn().mockResolvedValue({ id: "b1", userId: "u1" }),
+      },
+    };
+    const row = await requireOwnedBid(db as never, "b1", "u1", {
+      id: true,
+    });
+    expectTypeOf(row.id).toEqualTypeOf<string>();
+    // @ts-expect-error — `bidAmount` was not selected, so accessing it is a compile error
+    expectTypeOf(row.bidAmount).toBeNumber();
   });
 });
 
