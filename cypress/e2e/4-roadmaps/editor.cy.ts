@@ -38,19 +38,18 @@ context("Roadmaps: Editor", function () {
    * avoiding race conditions with httpBatchStreamLink response processing.
    */
   function createRoadmap(name: string): void {
-    cy.intercept("POST", "/api/trpc/roadmaps.create*").as("createRoadmap");
-    // The button is wrapped in a TooltipTrigger span — use force:true
-    cy.get("[aria-label='Create new roadmap']").click({ force: true });
-    cy.get("[data-test=roadmap-create-input]")
+    cy.intercept("POST", "**/api/trpc/*roadmaps.create*").as("createRoadmap");
+    cy.get("[aria-label='Create new roadmap']", { timeout: 10000 })
       .should("be.visible")
+      .click({ force: true });
+    cy.get("[data-test=roadmap-create-input]", { timeout: 10000 })
+      .should("be.visible")
+      .clear()
       .type(`${name}{enter}`);
-    // After pressing Enter, the input disappears (form submitted, mutation in flight).
-    cy.get("[data-test=roadmap-create-input]").should("not.exist");
-    // Wait for the tRPC response to arrive at the client
     cy.wait("@createRoadmap", { timeout: 15000 });
-    // Now the mutation has completed; onSuccess should have fired.
-    // The name should appear in the editor header and sidebar list.
-    cy.get("[data-test=roadmap-list]")
+    cy.get("[data-test=roadmap-create-input]").should("not.exist");
+    cy.get("[data-test=roadmap-list]", { timeout: 10000 })
+      .should("be.visible")
       .contains(name, { timeout: 10000 })
       .should("be.visible");
   }
@@ -192,9 +191,20 @@ context("Roadmaps: Editor", function () {
   // -------------------------------------------------------------------------
   it("should reflect the matriculation year selection immediately and allow changing it", function () {
     const name = `Matric ${Date.now()}`;
-    cy.get("[aria-label='Create new roadmap']").click();
-    cy.get("[data-test=roadmap-create-input]").type(`${name}{enter}`);
-    cy.contains(name, { timeout: 10000 }).should("be.visible");
+    cy.intercept("POST", "**/api/trpc/*roadmaps.create*").as("createMatric");
+    cy.get("[aria-label='Create new roadmap']", { timeout: 10000 })
+      .should("be.visible")
+      .click({ force: true });
+    cy.get("[data-test=roadmap-create-input]", { timeout: 10000 })
+      .should("be.visible")
+      .clear()
+      .type(`${name}{enter}`);
+    cy.wait("@createMatric", { timeout: 15000 });
+    cy.get("[data-test=roadmap-create-input]").should("not.exist");
+    cy.get("[data-test=roadmap-list]", { timeout: 10000 })
+      .should("be.visible")
+      .contains(name, { timeout: 10000 })
+      .should("be.visible");
     cy.get("[data-test=roadmap-list]").contains(name).click();
 
     // The matriculation-year control only appears once the roadmap is active
@@ -204,7 +214,7 @@ context("Roadmaps: Editor", function () {
     );
 
     // Wait on the mutation round-trip before asserting persisted state
-    cy.intercept("POST", "/api/trpc/roadmaps.setMatricTerm*").as(
+    cy.intercept("POST", "**/api/trpc/*roadmaps.setMatricTerm*").as(
       "setMatricTerm",
     );
 

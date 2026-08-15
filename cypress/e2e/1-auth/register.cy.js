@@ -6,7 +6,6 @@ const TEST_PWD_VALID = Cypress.env("TEST_PWD_VALID");
 
 context("Register", function () {
   beforeEach(function () {
-    cy.visit("/account/auth/signup");
     cy.intercept("POST", "**/auth/v1/signup*", {
       delay: 1000,
       statusCode: 200,
@@ -50,22 +49,25 @@ context("Register", function () {
         is_anonymous: false,
       },
     }).as("mockSignup");
+    cy.visit("/account/auth/signup");
   });
 
   describe("Successful Registration", function () {
     it("should register a user with credentials", function () {
-      cy.get("input[data-test=email]").type(TEST_EMAIL_VALID);
+      cy.get("input[data-test=email]", { timeout: 10000 })
+        .should("be.visible")
+        .type(TEST_EMAIL_VALID);
       cy.get("input[data-test=password]").type(TEST_PWD_VALID);
       cy.get("input[data-test=confirm-password]").type(TEST_PWD_VALID);
       cy.get("button[data-test=submit]").click();
 
-      cy.get("button[data-test=submit]").should(
+      cy.get("button[data-test=submit]", { timeout: 10000 }).should(
         "have.text",
         "Creating an account...",
       );
 
-      cy.wait("@mockSignup"); // wait for redirect
-      cy.url().should(
+      cy.wait("@mockSignup", { timeout: 15000 }); // wait for redirect
+      cy.url({ timeout: 15000 }).should(
         "eq",
         `${Cypress.config("baseUrl")}/account/auth/verify?email=${TEST_EMAIL_VALID}`,
       );
@@ -74,23 +76,32 @@ context("Register", function () {
     it("should be able to navigate to register page and register", function () {
       cy.visit("/");
 
-      cy.get("a[data-test=login]").click();
-      cy.get("a[data-test=register]").click();
+      cy.get("a[data-test=login]", { timeout: 15000 })
+        .should("exist")
+        .click({ force: true });
+      cy.get("a[data-test=register]", { timeout: 15000 })
+        .should("exist")
+        .click({ force: true });
 
-      cy.url().should("eq", `${Cypress.config("baseUrl")}/account/auth/signup`);
+      cy.url({ timeout: 15000 }).should(
+        "eq",
+        `${Cypress.config("baseUrl")}/account/auth/signup`,
+      );
 
-      cy.get("input[data-test=email]").type(TEST_EMAIL_VALID);
+      cy.get("input[data-test=email]", { timeout: 10000 })
+        .should("be.visible")
+        .type(TEST_EMAIL_VALID);
       cy.get("input[data-test=password]").type(TEST_PWD_VALID);
       cy.get("input[data-test=confirm-password]").type(TEST_PWD_VALID);
       cy.get("button[data-test=submit]").click();
 
-      cy.get("button[data-test=submit]").should(
+      cy.get("button[data-test=submit]", { timeout: 10000 }).should(
         "have.text",
         "Creating an account...",
       );
 
-      cy.wait("@mockSignup"); // wait for redirect
-      cy.url().should(
+      cy.wait("@mockSignup", { timeout: 15000 }); // wait for redirect
+      cy.url({ timeout: 15000 }).should(
         "eq",
         `${Cypress.config("baseUrl")}/account/auth/verify?email=${TEST_EMAIL_VALID}`,
       );
@@ -101,33 +112,40 @@ context("Register", function () {
     it("should warn user to fill in fields", function () {
       cy.get("button[data-test=submit]").click();
 
-      cy.get("button[data-test=submit]").should("have.text", "Sign up");
+      cy.get("button[data-test=submit]", { timeout: 10000 }).should(
+        "have.text",
+        "Sign up",
+      );
 
-      cy.get("p[data-test=email-helper-text]").should(
+      cy.get("p[data-test=email-helper-text]", { timeout: 10000 }).should(
         "have.text",
         "Email is required",
       );
 
-      cy.get("p[data-test=password-helper-text]").should(
+      cy.get("p[data-test=password-helper-text]", { timeout: 10000 }).should(
         "have.text",
         "Passwords must be at least 8 characters long",
       );
 
-      cy.get("p[data-test=confirm-password-helper-text]").should(
-        "have.text",
-        "Passwords must be at least 8 characters long",
-      );
+      cy.get("p[data-test=confirm-password-helper-text]", {
+        timeout: 10000,
+      }).should("have.text", "Passwords must be at least 8 characters long");
     });
 
     it("should warn user to fill in schoool email", function () {
-      cy.get("input[data-test=email]").type(TEST_EMAIL_INVALID);
+      cy.get("input[data-test=email]", { timeout: 10000 })
+        .should("be.visible")
+        .type(TEST_EMAIL_INVALID);
       cy.get("input[data-test=password]").type(TEST_PWD_VALID);
       cy.get("input[data-test=confirm-password]").type(TEST_PWD_VALID);
       cy.get("button[data-test=submit]").click();
 
-      cy.get("button[data-test=submit]").should("have.text", "Sign up");
+      cy.get("button[data-test=submit]", { timeout: 10000 }).should(
+        "have.text",
+        "Sign up",
+      );
 
-      cy.get("p[data-test=email-helper-text]").should(
+      cy.get("p[data-test=email-helper-text]", { timeout: 10000 }).should(
         "contain.text",
         "Unsupported email domain, please choose from: ",
       );

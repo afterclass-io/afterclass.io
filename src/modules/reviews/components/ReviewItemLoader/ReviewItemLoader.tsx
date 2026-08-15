@@ -172,6 +172,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
           <InView
             as="div"
             className="flex w-full justify-center p-4"
+            data-test="review-load-more-sentinel"
             onChange={(inView) => inView && fetchNextPage()}
           >
             <AfterclassIcon
@@ -179,6 +180,15 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
               className="text-primary/80 animate-pulse transition-colors duration-1500"
             />
           </InView>
+          <button
+            type="button"
+            data-test="review-load-more"
+            className="sr-only"
+            onClick={() => fetchNextPage()}
+            aria-hidden
+          >
+            Load more
+          </button>
         </>
       )}
     </>

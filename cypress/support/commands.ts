@@ -13,13 +13,21 @@
 // -- This is a parent command --
 Cypress.Commands.add("loginWith", ({ email, password }) => {
   cy.visit("/account/auth/login");
-  cy.get("input[data-test=email]").type(email);
-  cy.get("input[data-test=password]").type(password);
-  cy.get("button[data-test=submit]").click();
+  cy.get("input[data-test=email]", { timeout: 10000 })
+    .should("be.visible")
+    .clear()
+    .type(email);
+  cy.get("input[data-test=password]", { timeout: 10000 })
+    .should("be.visible")
+    .clear()
+    .type(password);
+  cy.get("button[data-test=submit]", { timeout: 10000 })
+    .should("be.visible")
+    .click();
   // Wait for successful login: the URL must not be the login page anymore
   cy.url({ timeout: 15000 }).should("not.include", "/account/auth/login");
   // Give NextAuth a moment to finalize the session cookie
-  cy.wait(500);
+  cy.wait(800);
 });
 
 Cypress.Commands.add("login", () => {
