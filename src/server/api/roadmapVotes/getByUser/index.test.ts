@@ -24,7 +24,7 @@ describe("roadmapVotes.getByUser", () => {
 
   it("rejects calls without roadmapId", async () => {
     const caller = makeCaller({ roadmapVote: { findFirst: vi.fn() } });
-    await expect(caller.getByUser({})).rejects.toMatchObject({
+    await expect(caller.getByUser({} as never)).rejects.toMatchObject({
       code: "BAD_REQUEST",
     });
   });

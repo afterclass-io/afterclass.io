@@ -60,7 +60,7 @@ describe("userBids.upsert", () => {
 
     await caller.upsert({ classId: "c1", bidWindowId: 2, bidAmount: 50 });
 
-    const call = upsertMock.mock.calls[0][0] as {
+    const call = upsertMock.mock.calls[0]![0] as {
       update: Record<string, unknown>;
     };
     expect(call.update).not.toHaveProperty("status");
