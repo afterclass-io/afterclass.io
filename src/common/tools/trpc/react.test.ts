@@ -49,18 +49,5 @@ describe("trpc react cache no-store", () => {
     expect(hasTrpcCacheBlock).toBe(false);
     // More strictly: no source entry for /api/trpc at all should have Cache-Control
     expect(raw).not.toMatch(/source:\s*["']\/api\/trpc\/:path\*\s*["']/);
-
-    // Also try dynamic import as fallback (best-effort, may fail due to env)
-    // If import succeeds, assert headers() does not expose trpc TTL.
-    try {
-      const nextConfig = await import("../../../../next.config.js");
-      const headers = (await nextConfig.default.headers?.()) ?? [];
-      const trpcHeader = headers.find(
-        (h: { source: string }) => h.source === "/api/trpc/:path*",
-      );
-      expect(trpcHeader).toBeUndefined();
-    } catch {
-      // Import may fail in test due to jiti/env validation; fs assertion above is primary.
-    }
   });
 });
