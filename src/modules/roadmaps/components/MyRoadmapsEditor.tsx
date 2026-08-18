@@ -419,26 +419,6 @@ export function MyRoadmapsEditor() {
     onSuccess: () => toast.success("Faculty saved for this roadmap"),
   });
 
-  // ---- Auto progress sync: fire-and-forget when the active roadmap's
-  // editor mounts with a matric term declared (once per roadmap per mount).
-  const autoSyncedRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (
-      !selectedRoadmap?.isActive ||
-      !selectedRoadmap.matricTermId ||
-      autoSyncedRef.current === selectedRoadmap.id
-    ) {
-      return;
-    }
-    autoSyncedRef.current = selectedRoadmap.id;
-    syncProgressMutation.mutate({ roadmapId: selectedRoadmap.id });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    selectedRoadmap?.id,
-    selectedRoadmap?.isActive,
-    selectedRoadmap?.matricTermId,
-  ]);
-
   // ---- Handlers ----
   const handleCreate = useCallback(
     (name: string) => {
