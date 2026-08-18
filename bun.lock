@@ -58,6 +58,7 @@
         "next-auth": "^5.0.0-beta.25",
         "next-themes": "^0.4.6",
         "node-fetch": "^3.3.2",
+        "obscenity": "^0.4.6",
         "rc-slider": "^11.1.8",
         "react": "19.1.0",
         "react-dom": "19.1.0",
@@ -2272,6 +2273,8 @@
     "object.values": ["object.values@1.2.1", "", { "dependencies": { "call-bind": "^1.0.8", "call-bound": "^1.0.3", "define-properties": "^1.2.1", "es-object-atoms": "^1.0.0" } }, "sha512-gXah6aZrcUxjWg2zR2MwouP2eHlCBzdV4pygudehaKXSGW4v2AsRQUK+lwwXhii6KFZcunEnmSUoYp5CXibxtA=="],
 
     "objectorarray": ["objectorarray@1.0.5", "", {}, "sha512-eJJDYkhJFFbBBAxeh8xW+weHlkI28n2ZdQV/J/DNfWfSKlGEf2xcfAbZTv3riEXHAhL9SVOTs2pRmXiSTf78xg=="],
+
+    "obscenity": ["obscenity@0.4.6", "", {}, "sha512-pHk7kNN7j3L3zGhhGnwxjvXIGsPpLrcZl2r58fqWh/V/rH6b/dafscj2sMmAY+A/9/wPsocLmimgGk2DKeKsFQ=="],
 
     "obug": ["obug@2.1.4", "", {}, "sha512-4a+OsYv9UktOJKE+l1A4OufDgdRF9PifWj+tJnHURo/P+WOxpG4GzUFL9qCalmWauao6ogiG+QvnCovwPoyAWA=="],
 
