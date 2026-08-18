@@ -54,11 +54,11 @@ describe("buildIcal", () => {
     expect(result).toContain("METHOD:PUBLISH");
   });
 
-  // -- Single Monday class ---------------------------------------------------
+  // -- Weekly occurrences (long term: weeks 1-7, 9-14; week 8 = recess) ------
 
-  it("generates one VEVENT with BYDAY=MO and correct UNTIL for a Monday class", () => {
+  it("emits one VEVENT per teaching week for a long term, skipping recess week 8", () => {
     const termStart = new Date("2025-01-06T00:00:00+08:00"); // Monday
-    const termEnd = new Date("2025-04-30T23:59:59+08:00");
+    const termEnd = new Date("2025-04-30T23:59:59+08:00"); // 114-day span → long term
     const result = buildIcal({
       classes: [makeClass()],
       termStart,
@@ -66,20 +66,51 @@ describe("buildIcal", () => {
       timetableName: "Plan A",
     });
 
-    // Should have exactly one VEVENT
     const veventCount = (result.match(/BEGIN:VEVENT/g) ?? []).length;
-    expect(veventCount).toBe(1);
+    expect(veventCount).toBe(13); // weeks 1-7 + 9-14
 
-    expect(result).toContain("SUMMARY:CS101 G1");
-    expect(result).toContain("LOCATION:SOE/SR3-1");
-    expect(result).toContain("BYDAY=MO");
-    expect(result).toContain("FREQ=WEEKLY");
-    expect(result).toContain("UNTIL=");
+    expect(result).not.toContain("RRULE");
+    expect(result).toContain("DTSTART;TZID=Asia/Singapore:20250106T081500"); // week 1
+    expect(result).toContain("DTSTART;TZID=Asia/Singapore:20250217T081500"); // week 7
+    expect(result).not.toContain("20250224T081500"); // week 8 = recess
+    expect(result).toContain("DTSTART;TZID=Asia/Singapore:20250303T081500"); // week 9
+    expect(result).toContain("DTSTART;TZID=Asia/Singapore:20250407T081500"); // week 14 (last)
+    expect(result).not.toContain("20250414T081500"); // exam weeks have no classes
+  });
 
-    // DTSTART should be on the first Monday on/after termStart
-    // termStart IS Monday 2025-01-06, so DTSTART should be 20250106T081500
-    expect(result).toContain("DTSTART;TZID=Asia/Singapore:20250106T081500");
-    expect(result).toContain("DTEND;TZID=Asia/Singapore:20250106T114500");
+  it("reproduces the reported bug fixture: AY202627T1 skips recess Monday Oct 5 2026", () => {
+    const result = buildIcal({
+      classes: [makeClass({
+        courseCode: "COMM662",
+        timings: [{ dayOfWeek: "Mon", startTime: "08:15", endTime: "11:30", venue: "SOE/SCIS2 Seminar Room 2-1" }],
+      })],
+      termStart: new Date("2026-08-17T00:00:00+08:00"),
+      termEnd: new Date("2026-12-04T00:00:00+08:00"),
+      timetableName: "Test",
+    });
+
+    const veventCount = (result.match(/BEGIN:VEVENT/g) ?? []).length;
+    expect(veventCount).toBe(13);
+    expect(result).toContain("DTSTART;TZID=Asia/Singapore:20260817T081500"); // week 1
+    expect(result).not.toContain("20261005T081500"); // week 8 = recess
+    expect(result).toContain("DTSTART;TZID=Asia/Singapore:20261012T081500"); // week 9
+    expect(result).toContain("LOCATION:SOE/SCIS2 Seminar Room 2-1");
+  });
+
+  it("emits 5 teaching weeks for a short term (T3A/T3B span), excluding exam weeks", () => {
+    const result = buildIcal({
+      classes: [makeClass()],
+      termStart: new Date("2025-05-05T00:00:00+08:00"), // Monday
+      termEnd: new Date("2025-06-22T23:59:59+08:00"), // 48-day span → short term
+      timetableName: "Plan A",
+    });
+
+    const veventCount = (result.match(/BEGIN:VEVENT/g) ?? []).length;
+    expect(veventCount).toBe(5); // 5 instructional weeks; rest is study/exam period
+    expect(result).toContain("DTSTART;TZID=Asia/Singapore:20250505T081500"); // week 1
+    expect(result).toContain("DTSTART;TZID=Asia/Singapore:20250602T081500"); // week 5 (last)
+    expect(result).not.toContain("20250609T081500"); // exam period, no class
+    expect(result).not.toContain("20250616T081500"); // exam period, no class
   });
 
   // -- DTSTART calculates first occurrence after termStart -------------------
@@ -100,7 +131,7 @@ describe("buildIcal", () => {
 
   // -- Multiple timings per class --------------------------------------------
 
-  it("generates one VEVENT per class timing", () => {
+  it("generates weekly VEVENTs for each class timing", () => {
     const termStart = new Date("2025-01-06T00:00:00+08:00");
     const termEnd = new Date("2025-04-30T23:59:59+08:00");
     const cls = makeClass({
@@ -117,10 +148,8 @@ describe("buildIcal", () => {
     });
 
     const veventCount = (result.match(/BEGIN:VEVENT/g) ?? []).length;
-    expect(veventCount).toBe(2);
+    expect(veventCount).toBe(26); // 13 teaching weeks × 2 timings
 
-    expect(result).toContain("BYDAY=MO");
-    expect(result).toContain("BYDAY=WE");
     expect(result).toContain("LOCATION:SOE/SR3-1");
     expect(result).toContain("LOCATION:SCIS/SR2-1");
   });
@@ -230,8 +259,8 @@ describe("buildIcal", () => {
     });
 
     const veventCount = (result.match(/BEGIN:VEVENT/g) ?? []).length;
-    // 1 (CS101 timing) + 2 (MATH241 timings) + 1 (MATH241 exam) = 4
-    expect(veventCount).toBe(4);
+    // 13 (CS101 timing) + 26 (MATH241 timings) + 1 (MATH241 exam) = 40
+    expect(veventCount).toBe(40);
 
     expect(result).toContain("SUMMARY:CS101 G1");
     expect(result).toContain("SUMMARY:MATH241 G2");
@@ -270,7 +299,7 @@ describe("buildIcal", () => {
     });
 
     const veventCount = (result.match(/BEGIN:VEVENT/g) ?? []).length;
-    expect(veventCount).toBe(2);
+    expect(veventCount).toBe(26); // 13 teaching weeks × 2 same-day timings
 
     expect(result).toContain("DTSTART;TZID=Asia/Singapore:20250106T081500");
     expect(result).toContain("DTSTART;TZID=Asia/Singapore:20250106T120000");
@@ -315,20 +344,20 @@ describe("buildIcal", () => {
 
   // -- All weekdays map correctly --------------------------------------------
 
-  it("maps all weekdays to correct iCal codes", () => {
+  it("maps all weekdays to correct first-occurrence dates", () => {
     const termStart = new Date("2025-01-06T00:00:00+08:00"); // Monday
     const termEnd = new Date("2025-04-30T23:59:59+08:00");
 
     const days = [
-      { name: "Monday", code: "MO" },
-      { name: "Tuesday", code: "TU" },
-      { name: "Wednesday", code: "WE" },
-      { name: "Thursday", code: "TH" },
-      { name: "Friday", code: "FR" },
-      { name: "Saturday", code: "SA" },
+      { name: "Monday", firstDate: "20250106" },
+      { name: "Tuesday", firstDate: "20250107" },
+      { name: "Wednesday", firstDate: "20250108" },
+      { name: "Thursday", firstDate: "20250109" },
+      { name: "Friday", firstDate: "20250110" },
+      { name: "Saturday", firstDate: "20250111" },
     ];
 
-    for (const { name, code } of days) {
+    for (const { name, firstDate } of days) {
       const cls = makeClass({
         courseCode: name.toUpperCase(),
         timings: [
@@ -341,25 +370,10 @@ describe("buildIcal", () => {
         termEnd,
         timetableName: "Test",
       });
-      expect(result).toContain(`BYDAY=${code}`);
+      expect(result).toContain(
+        `DTSTART;TZID=Asia/Singapore:${firstDate}T080000`,
+      );
     }
-  });
-
-  // -- RRULE UNTIL matches termEnd -------------------------------------------
-
-  it("uses termEnd as RRULE UNTIL", () => {
-    const termStart = new Date("2025-01-06T00:00:00+08:00");
-    const termEnd = new Date("2025-05-15T23:59:59+08:00");
-    const result = buildIcal({
-      classes: [makeClass()],
-      termStart,
-      termEnd,
-      timetableName: "Plan A",
-    });
-
-    // UNTIL in RRULE uses UTC, so 2025-05-15T23:59:59+08:00 = 2025-05-15T15:59:59Z
-    // The output should contain something like UNTIL=20250515T155959
-    expect(result).toMatch(/UNTIL=20250515T\d{6}/);
   });
 
   // -- Exam with string date -------------------------------------------------
@@ -392,7 +406,7 @@ describe("buildIcal", () => {
 
   // -- Short "Mon" day format (production/seed data) -------------------------
 
-  it("emits recurring VEVENTs for the short 'Mon' day format used in production data", () => {
+  it("emits weekly VEVENTs for the short 'Mon' day format used in production data", () => {
     const ics = buildIcal({
       termStart: new Date("2026-08-17T00:00:00+08:00"),
       termEnd: new Date("2026-12-05T00:00:00+08:00"),
@@ -416,7 +430,8 @@ describe("buildIcal", () => {
         },
       ],
     });
-    expect(ics).toContain("RRULE:FREQ=WEEKLY");
-    expect(ics).toContain("DTSTART");
+    const veventCount = (ics.match(/BEGIN:VEVENT/g) ?? []).length;
+    expect(veventCount).toBe(13);
+    expect(ics).not.toContain("RRULE");
   });
 });

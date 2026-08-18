@@ -44,10 +44,7 @@ import {
   activeTimetableIdAtom,
 } from "@/modules/timetable/atoms/timetable";
 import { pickCurrentBidWindow } from "@/modules/timetable/functions/current-window";
-import {
-  formatBidAmount,
-  formatDateSG,
-} from "@/modules/timetable/functions/format";
+import { formatBidAmount } from "@/modules/timetable/functions/format";
 import {
   BID_STATUS_LABELS,
   BID_STATUS_OPTIONS,
@@ -81,7 +78,7 @@ type SortKey = "bidAmount" | "createdAt";
  *
  * - Filters: term / round / window. Term defaults to the current bid term;
  *   round and window default to "All rounds" / "All windows".
- * - Sorting: by bid amount and date saved.
+ * - Sorting: by bid amount (default: most recently saved first).
  * - Notes: inline-editable, auto-saved on blur.
  * - Course code/name/section (and professor, when assigned) open the
  *   class-info modal (BidDialog, class mode) for that class.
@@ -407,7 +404,7 @@ export function BidsTable() {
           ancestors and forcing page-level horizontal overflow when the
           sidebar is docked (≥xl); the wrapper still scrolls internally. */}
       <div className="border-border bg-card overflow-x-auto rounded-lg border [contain:inline-size]">
-        <table className="w-full min-w-[850px] text-sm">
+        <table className="w-full min-w-[700px] text-sm [&_td]:px-2 [&_th]:px-2">
           <thead>
             <tr className="border-b">
               <Th className={denseThClass}>Round</Th>
@@ -426,13 +423,6 @@ export function BidsTable() {
                 className={`${denseThClass} text-right`}
               />
               <Th className={denseThClass}>Notes</Th>
-              <SortableTh
-                label="Date Saved"
-                active={sortKey === "createdAt"}
-                dir={sortDir}
-                onClick={() => toggleSort("createdAt")}
-                className={denseThClass}
-              />
               <Th className={denseThClass}>Actions</Th>
             </tr>
           </thead>
@@ -440,7 +430,7 @@ export function BidsTable() {
             {filteredBids.length === 0 && (
               <tr>
                 <td
-                  colSpan={12}
+                  colSpan={11}
                   className="text-muted-foreground p-6 text-center"
                 >
                   No bids match the current filters.
@@ -584,7 +574,6 @@ function BidTableRow({
           onSave={onSaveNotes}
         />
       </Td>
-      <Td className="whitespace-nowrap">{formatDateSG(bid.createdAt)}</Td>
       <Td>
         <div className="flex items-center gap-1">
           <Tooltip>

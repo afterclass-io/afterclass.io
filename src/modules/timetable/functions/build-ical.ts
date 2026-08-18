@@ -1,4 +1,4 @@
-import ical, { ICalCalendarMethod, ICalEventRepeatingFreq, ICalWeekday } from "ical-generator";
+import ical, { ICalCalendarMethod, ICalWeekday } from "ical-generator";
 import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
 import { dayOfWeekToIcalCode } from "@/common/functions/day-of-week";
 
@@ -54,23 +54,6 @@ function sgtDateTime(
   return new Date(year, month - 1, day, hours, minutes);
 }
 
-/**
- * Convert a Date instant to a Date whose local wall-clock fields equal the
- * instant's SGT wall-clock time (see `sgtDateTime` for why).
- */
-function sgtWallClockAsLocal(d: Date): Date {
-  // Shift the instant to SGT, then read the shifted UTC fields as local time
-  const sgt = new Date(d.getTime() + 8 * 60 * 60 * 1000);
-  return new Date(
-    sgt.getUTCFullYear(),
-    sgt.getUTCMonth(),
-    sgt.getUTCDate(),
-    sgt.getUTCHours(),
-    sgt.getUTCMinutes(),
-    sgt.getUTCSeconds(),
-  );
-}
-
 /** Extract SGT year/month/day from a Date as [y, m, d] (1-based month). */
 function sgtYMD(d: Date): [number, number, number] {
   // Convert UTC timestamp to SGT by adding 8 hours, then read UTC fields
@@ -93,6 +76,28 @@ function firstOccurrence(icalDay: ICalWeekday, after: Date): Date {
   return new Date(Date.UTC(y, m - 1, d + daysToAdd));
 }
 
+/**
+ * Teaching week numbers (1-based) for a term, derived from its span.
+ *
+ * SMU long terms (T1/T2, ~15-16 weeks incl. exams): weeks 1-7 teaching,
+ * week 8 recess, weeks 9-14 teaching; exam weeks have no classes.
+ * Short terms (T3A/T3B, ~7-week span): 5 instructional weeks; the rest is
+ * study/exam period with no classes.
+ * Known limitation: public holidays (e.g. Vesak Day) are not excluded.
+ */
+function teachingWeekNumbers(termStart: Date, termEnd: Date): number[] {
+  const [sy, sm, sd] = sgtYMD(termStart);
+  const [ey, em, ed] = sgtYMD(termEnd);
+  const spanDays = Math.round(
+    (Date.UTC(ey, em - 1, ed) - Date.UTC(sy, sm - 1, sd)) / 86_400_000,
+  );
+  const LONG_TERM_MIN_DAYS = 13 * 7; // 91 days separates T1/T2 from T3A/T3B
+  if (spanDays >= LONG_TERM_MIN_DAYS) {
+    return [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14];
+  }
+  return [1, 2, 3, 4, 5];
+}
+
 import { parseTimePartsSafe } from "@/common/functions/time";
 
 // ---------------------------------------------------------------------------
@@ -102,7 +107,7 @@ import { parseTimePartsSafe } from "@/common/functions/time";
 /**
  * Build an iCalendar (RFC 5545) feed string for a timetable.
  *
- * - One VEVENT per class timing: weekly RRULE bounded by termEnd.
+ * - One VEVENT per weekly class occurrence (teaching weeks only; long terms skip recess week 8).
  * - One VEVENT per exam timing: single occurrence, no RRULE.
  * - All times in Asia/Singapore.
  * - No bid data or PII (professor names, etc.) in output.
@@ -117,8 +122,12 @@ export function buildIcal(input: ICalInput): string {
     method: ICalCalendarMethod.PUBLISH,
   });
 
+  // --- Class timings → one VEVENT per weekly occurrence ---
+  const weeks = teachingWeekNumbers(termStart, termEnd);
+  const [ty, tm, td] = sgtYMD(termEnd);
+  const termEndUtc = Date.UTC(ty, tm - 1, td);
+
   for (const cls of classes) {
-    // --- Class timings → weekly recurring VEVENTs ---
     for (const timing of cls.timings) {
       const icalDayCode = dayOfWeekToIcalCode(timing.dayOfWeek);
       if (!icalDayCode) continue;
@@ -132,25 +141,31 @@ export function buildIcal(input: ICalInput): string {
       const [startH, startM] = startParts;
       const [endH, endM] = endParts;
 
+      // Week-1 occurrence: first class day on/after termStart (termStart is
+      // a Monday in SMU data, so this is the term's first week).
       const firstDate = firstOccurrence(icalDay, termStart);
       const [fy, fm, fd] = sgtYMD(firstDate);
 
-      const start = sgtDateTime(fy, fm, fd, startH, startM);
-      const end = sgtDateTime(fy, fm, fd, endH, endM);
+      for (const week of weeks) {
+        const occurrence = Date.UTC(fy, fm - 1, fd + (week - 1) * 7);
+        if (occurrence > termEndUtc) continue; // safety cap at term end
+        const d = new Date(occurrence);
 
-      const event = cal.createEvent({
-        start,
-        end,
-        summary: `${cls.courseCode} ${cls.section}`,
-        location: timing.venue ?? undefined,
-        timezone: "Asia/Singapore",
-      });
+        const start = sgtDateTime(
+          d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), startH, startM,
+        );
+        const end = sgtDateTime(
+          d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), endH, endM,
+        );
 
-      event.repeating({
-        freq: ICalEventRepeatingFreq.WEEKLY,
-        byDay: [icalDay],
-        until: sgtWallClockAsLocal(termEnd),
-      });
+        cal.createEvent({
+          start,
+          end,
+          summary: `${cls.courseCode} ${cls.section}`,
+          location: timing.venue ?? undefined,
+          timezone: "Asia/Singapore",
+        });
+      }
     }
 
     // --- Exam timings → one-off VEVENTs ---

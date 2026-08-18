@@ -56,7 +56,7 @@ export type TimetableSlotCardProps = {
  */
 export function TimetableSlotCard({
   courseCode,
-  courseName: _courseName,
+  courseName,
   section,
   professorName: _professorName,
   venue,
@@ -114,6 +114,9 @@ export function TimetableSlotCard({
         <span className="block truncate font-semibold">
           {courseCode}
           <span className="ml-1 font-normal opacity-75">{section}</span>
+        </span>
+        <span className="block truncate text-[10px] opacity-75">
+          {courseName}
         </span>
         {isExam && (
           <Tag
