@@ -11,7 +11,7 @@ interface InlineNotesEditorProps {
   initialNotes: string | null;
   disabled: boolean;
   onSave: (notes: string | null) => Promise<void>;
-  /** Bid id ΓÇö when provided, a successful save is recorded for undo/redo. */
+  /** Bid id — when provided, a successful save is recorded for undo/redo. */
   bidId?: string;
 }
 
@@ -92,7 +92,7 @@ export function InlineNotesEditor({
         maxLength={500}
         rows={3}
         className="text-sm resize-none"
-        placeholder="Add a noteΓÇª"
+        placeholder="Add a note…"
         onBlur={handleSave}
         onKeyDown={(e) => {
           if (e.key === "Escape") handleCancel();

@@ -34,7 +34,7 @@ export type SectionOption = {
   professorName?: string | null;
   timings?: SectionTiming[];
   examTimings?: SectionExamTiming[];
-  /** Course context ΓÇö lets the optimistic add render without a refetch. */
+  /** Course context — lets the optimistic add render without a refetch. */
   courseCode: string;
   courseName: string;
   creditUnits: number;
@@ -42,7 +42,7 @@ export type SectionOption = {
 
 export type SlotMutationOptions = {
   /**
-   * The sections of the course being added/swapped ΓÇö used to build the
+   * The sections of the course being added/swapped — used to build the
    * optimistic arranged class. Optional so the history hook can reuse the
    * same mutations without knowing the course's sections (undo of an add
    * only carries `classId`); when absent the optimistic write is skipped
@@ -58,7 +58,7 @@ export type SlotMutationOptions = {
 /**
  * Adapter from the flattened `searchCourses` section shape to the nested
  * `SlotWithClass` the shared `toArrangedClass` mapper expects, so the
- * optimistic slot is built by the same mapper as the server ΓÇö the shape can
+ * optimistic slot is built by the same mapper as the server — the shape can
  * never drift between optimistic and refetched data.
  */
 function toSlotWithClass(sec: SectionOption): SlotWithClass {
@@ -96,7 +96,7 @@ function toSlotWithClass(sec: SectionOption): SlotWithClass {
  *
  * Optimistic: cancel in-flight arrangement fetch, snapshot the slots,
  * drop the slot from the cache immediately, restore on error, refetch on
- * settle ΓÇö so the grid updates instantly instead of waiting a round-trip.
+ * settle — so the grid updates instantly instead of waiting a round-trip.
  * Shared so page.tsx and the undo/redo history hook use the same config.
  */
 export function useRemoveSlotMutation() {
@@ -144,7 +144,7 @@ export function useRemoveSlotMutation() {
 
 /**
  * Add a class to the active timetable (course not yet present). Optimistic
- * wiring identical to removeSlot ΓÇö the picked section is mapped through the
+ * wiring identical to removeSlot — the picked section is mapped through the
  * shared `toArrangedClass` so the optimistic slot matches the server shape.
  */
 export function useAddSlotMutation({ sections = [], courseCode, onDone }: SlotMutationOptions = {}) {
@@ -246,7 +246,7 @@ export function useSetSlotSectionMutation({ sections = [], courseCode, onDone }:
                 ...old,
                 slots: [
                   // The server deletes every slot of the course, then
-                  // creates the picked section ΓÇö mirror that here.
+                  // creates the picked section — mirror that here.
                   ...old.slots.filter((s) => s.courseCode !== picked.courseCode),
                   toArrangedClass(toSlotWithClass(picked)),
                 ],

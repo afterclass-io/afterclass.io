@@ -42,20 +42,20 @@ export type SectionPickerProps = {
 
 function formatTimingLine(t: SectionTiming): string {
   const day = t.dayOfWeek ?? "?";
-  return `${day} ${t.startTime}ΓÇô${t.endTime}${t.venue ? ` ┬╖ ${t.venue}` : ""}`;
+  return `${day} ${t.startTime}–${t.endTime}${t.venue ? ` · ${t.venue}` : ""}`;
 }
 
 function formatExamLine(t: SectionExamTiming): string {
   const dateLabel = formatDateSGT(t.date, { day: "numeric", month: "short" });
-  return `Exam ${dateLabel} ${t.startTime}ΓÇô${t.endTime}${t.venue ? ` ┬╖ ${t.venue}` : ""}`;
+  return `Exam ${dateLabel} ${t.startTime}–${t.endTime}${t.venue ? ` · ${t.venue}` : ""}`;
 }
 
 /**
  * Displays all sections for a course with an "Add to timetable" or
  * "Swap section" button per section.
  *
- * - If the course is NOT yet in the timetable ΓåÆ `addSlot` mutation
- * - If the course IS already in the timetable ΓåÆ `setSlotSection` mutation
+ * - If the course is NOT yet in the timetable → `addSlot` mutation
+ * - If the course IS already in the timetable → `setSlotSection` mutation
  *
  * Both mutations invalidate on success; errors surface via sonner toast.
  */
@@ -71,7 +71,7 @@ export function SectionPicker({
   const activeTimetableId = useAtomValue(activeTimetableIdAtom);
   const pushHistory = useSetAtom(pushHistoryAtom);
 
-  // Shared optimistic mutation hooks ΓÇö the same configs the undo/redo
+  // Shared optimistic mutation hooks — the same configs the undo/redo
   // history hook executes, so history and the UI can never drift.
   const addSlotMutation = useAddSlotMutation({ sections, courseCode, onDone });
   const setSlotSectionMutation = useSetSlotSectionMutation({
@@ -94,13 +94,13 @@ export function SectionPicker({
         };
         if (hasTimeConflict(conflictCheckSlots, candidate)) {
           toast.error(
-            `Time conflict with an existing class ΓÇö ${courseCode} ${picked.section} was not added`,
+            `Time conflict with an existing class — ${courseCode} ${picked.section} was not added`,
           );
           return;
         }
       }
       addSlotMutation.mutate({ timetableId: activeTimetableId, classId });
-      // Record for undo/redo ΓÇö the inverse (removeSlot) runs through the
+      // Record for undo/redo — the inverse (removeSlot) runs through the
       // same shared mutation config.
       pushHistory({
         type: "addSlot",

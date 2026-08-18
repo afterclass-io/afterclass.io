@@ -20,16 +20,16 @@ import {
  * Client-side undo/redo for timetable actions (add slot, remove slot,
  * swap section, edit notes). Undo pops the last action and executes its
  * inverse through the SAME shared optimistic mutations the page uses
- * (DRY ΓÇö one config per mutation); redo re-executes the original action.
+ * (DRY — one config per mutation); redo re-executes the original action.
  *
- * Keyboard: Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z or Ctrl+Y redo ΓÇö ignored
+ * Keyboard: Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z or Ctrl+Y redo — ignored
  * while typing in form fields. History resets on term/plan switch (the
  * page clears both stacks). Not persisted across reloads (YAGNI).
  */
 export function useTimetableHistory() {
   const [undoStack, setUndoStack] = useAtom(undoStackAtom);
   const [redoStack, setRedoStack] = useAtom(redoStackAtom);
-  // Shared hooks ΓÇö same configs as page.tsx / SectionPicker.tsx (DRY).
+  // Shared hooks — same configs as page.tsx / SectionPicker.tsx (DRY).
   const removeSlot = useRemoveSlotMutation();
   const addSlot = useAddSlotMutation();
   const setSlotSection = useSetSlotSectionMutation();

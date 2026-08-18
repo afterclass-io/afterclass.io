@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/common/tools/trpc/react";
-import { selectedTermIdAtom } from "@/modules/timetable/atoms/timetable";
+import {
+  activeTimetableIdAtom,
+  selectedTermIdAtom,
+} from "@/modules/timetable/atoms/timetable";
 import {
   Select,
   SelectContent,
@@ -32,6 +35,7 @@ export type TermPickerProps = {
  */
 export function TermPicker({ className }: TermPickerProps) {
   const [selectedTermId, setSelectedTermId] = useAtom(selectedTermIdAtom);
+  const setActiveTimetableId = useSetAtom(activeTimetableIdAtom);
   const searchParams = useSearchParams();
   const deepLinkTermId = searchParams.get("acadTermId");
 
@@ -81,7 +85,10 @@ export function TermPicker({ className }: TermPickerProps) {
   return (
     <Select
       value={selectedTermId ?? undefined}
-      onValueChange={(id) => setSelectedTermId(id)}
+      onValueChange={(id) => {
+        setSelectedTermId(id);
+        setActiveTimetableId(null);
+      }}
     >
       <SelectTrigger
         className={cn("w-56", className)}

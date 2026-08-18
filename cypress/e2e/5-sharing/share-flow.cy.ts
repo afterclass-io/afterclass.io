@@ -4,18 +4,18 @@
  * Sharing E2E tests
  *
  * Covers the full sharing lifecycle for timetables and roadmaps:
- *   1. Login ΓåÆ go to /timetable
+ *   1. Login → go to /timetable
  *   2. Set timetable visibility to UNLISTED via real UI
- *   3. Logout ΓåÆ visit share link ΓåÆ verify read-only
- *   4. Set timetable back to PRIVATE ΓåÆ verify old URL 404s
- *   5. Publish a roadmap (Share dialog ΓåÆ Public)
+ *   3. Logout → visit share link → verify read-only
+ *   4. Set timetable back to PRIVATE → verify old URL 404s
+ *   5. Publish a roadmap (Share dialog → Public)
  *   6. Verify roadmap appears in public gallery
- *   7. Visit /roadmaps/[id] ΓÇö verify Grid + Timeline views
+ *   7. Visit /roadmaps/[id] — verify Grid + Timeline views
  *   8. Verify self-copy is blocked for own roadmaps
  *   9. Visit shared roadmap via UNLISTED token (read-only)
  *  10. Cleanup: unpublish and delete test roadmaps
  *
- * All flows are real ΓÇö no manual-step stubs. Reflects CURRENT behavior:
+ * All flows are real — no manual-step stubs. Reflects CURRENT behavior:
  * UNLISTED link-sharing for timetables, no PUBLIC for timetables,
  * self-copy blocked, tokens regenerated.
  */
@@ -83,7 +83,7 @@ context("Sharing: Share Flow", function () {
       "be.visible",
     );
 
-    // Open the Share dialog, set PUBLIC, save ΓÇö intercept BEFORE dialog opens so ?batch=1 batching doesn't race
+    // Open the Share dialog, set PUBLIC, save — intercept BEFORE dialog opens so ?batch=1 batching doesn't race
     cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as("pubSetVisibility");
     cy.get("[data-test=share-button]", { timeout: 15000 }).should("be.visible").click();
     cy.contains(`Share ${name}`, { timeout: 10000 }).should("be.visible");
@@ -140,10 +140,10 @@ context("Sharing: Share Flow", function () {
         cy.wait(1500);
       }
     });
-    // Verify slot appears (optimistic) ΓÇö wait for either mutation to settle
+    // Verify slot appears (optimistic) — wait for either mutation to settle
     cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should("exist");
 
-    // Open the Share dialog via the real UI button ΓÇö intercept BEFORE dialog opens (?batch=1)
+    // Open the Share dialog via the real UI button — intercept BEFORE dialog opens (?batch=1)
     cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as("setVisibilityT1");
     cy.get("[data-test=share-button]", { timeout: 15000 }).should("be.visible").click();
     cy.contains("Share", { timeout: 10000 }).should("be.visible");
@@ -199,7 +199,7 @@ context("Sharing: Share Flow", function () {
     });
     cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should("exist");
 
-    // Open share dialog, set UNLISTED, save ΓÇö intercept BEFORE dialog opens
+    // Open share dialog, set UNLISTED, save — intercept BEFORE dialog opens
     cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as("setVisibilityT2");
     cy.get("[data-test=share-button]", { timeout: 15000 }).should("be.visible").click();
     cy.contains("Share", { timeout: 10000 }).should("be.visible");
@@ -237,7 +237,7 @@ context("Sharing: Share Flow", function () {
   });
 
   // -------------------------------------------------------------------------
-  // 3. Private timetable ΓåÆ share URL returns 404
+  // 3. Private timetable → share URL returns 404
   // -------------------------------------------------------------------------
   it("should return 404 when timetable visibility is set back to PRIVATE", function () {
     // ---- Setup: get a share token ----
@@ -271,7 +271,7 @@ context("Sharing: Share Flow", function () {
     });
     cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should("exist");
 
-    // Set UNLISTED to get a token ΓÇö intercept BEFORE dialog opens
+    // Set UNLISTED to get a token — intercept BEFORE dialog opens
     cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as("setUnlistedT3");
     cy.get("[data-test=share-button]", { timeout: 15000 }).should("be.visible").click();
     cy.contains("Share", { timeout: 10000 }).should("be.visible");
@@ -293,7 +293,7 @@ context("Sharing: Share Flow", function () {
         cy.wait("@setPrivateT3", { timeout: 15000 });
         cy.get("[data-sonner-toast]", { timeout: 15000 }).should("contain.text", "Sharing settings updated");
 
-        // ---- Visit old share URL ΓåÆ should show not-found ----
+        // ---- Visit old share URL → should show not-found ----
         cy.clearCookies();
         cy.clearLocalStorage();
         cy.visit(`/share/timetable/${token}`, { failOnStatusCode: false });
@@ -351,12 +351,12 @@ context("Sharing: Share Flow", function () {
       cy.get<string>("@publishedName").then((name) => {
         cy.visit(`/roadmaps/${id}`);
 
-        // Header should show roadmap name and owner ΓÇö public page fetches via getById (PUBLIC visibility)
+        // Header should show roadmap name and owner — public page fetches via getById (PUBLIC visibility)
         // The username is rendered in PublicRoadmapView header; screenshot shows page stuck mid-render so wait longer
         cy.get("body", { timeout: 15000 }).should("contain.text", name);
         cy.get("body", { timeout: 15000 }).should("contain.text", "by ");
 
-        // Should have "Copy this roadmap" button ΓÇö public route uses PublicRoadmapView with header
+        // Should have "Copy this roadmap" button — public route uses PublicRoadmapView with header
         cy.contains("Copy this roadmap", { timeout: 10000 }).should("be.visible");
 
         // Default view should be Grid (ToggleGroup renders Grid/Timeline labels)
@@ -388,10 +388,10 @@ context("Sharing: Share Flow", function () {
       // The "Copy this roadmap" button is visible even for own roadmaps
       cy.contains("Copy this roadmap", { timeout: 10000 }).should("be.visible");
 
-      // Click "Copy this roadmap" ΓÇö self-copy should fail (protectedProcedure checks source.userId === caller)
+      // Click "Copy this roadmap" — self-copy should fail (protectedProcedure checks source.userId === caller)
       cy.contains("Copy this roadmap").click({ force: true });
 
-      // An error toast should appear (self-copy is blocked per P2T5/P2T8) ΓÇö sonner portal with animation, don't require visible
+      // An error toast should appear (self-copy is blocked per P2T5/P2T8) — sonner portal with animation, don't require visible
       cy.get("[data-sonner-toast]", { timeout: 15000 }).should("contain.text", "own roadmap");
 
       // We should still be on the same page (no redirect)
@@ -430,7 +430,7 @@ context("Sharing: Share Flow", function () {
       "be.visible",
     );
 
-    // Open share dialog, set UNLISTED, save ΓÇö intercept BEFORE dialog opens
+    // Open share dialog, set UNLISTED, save — intercept BEFORE dialog opens
     cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as("setVisibilityT8");
     cy.get("[data-test=share-button]", { timeout: 15000 }).should("be.visible").click();
     cy.contains(`Share ${name}`, { timeout: 10000 }).should("be.visible");

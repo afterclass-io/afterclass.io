@@ -338,7 +338,6 @@ export default function TimetablePage() {
     {
       enabled: !!activeTimetableId,
       staleTime: 30_000,
-      placeholderData: keepPreviousData,
     },
   );
 
