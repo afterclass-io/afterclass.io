@@ -141,7 +141,6 @@ const EDIT_BID: UserBidRow = {
   courseName: "Management Accounting",
   section: "G1",
   professorName: "Dr. Tan",
-  bidResult: null,
 };
 
 // ---------------------------------------------------------------------------

@@ -404,17 +404,14 @@ export function BidsTable() {
           ancestors and forcing page-level horizontal overflow when the
           sidebar is docked (≥xl); the wrapper still scrolls internally. */}
       <div className="border-border bg-card overflow-x-auto rounded-lg border [contain:inline-size]">
-        <table className="w-full min-w-[700px] text-sm [&_td]:px-2 [&_th]:px-2">
+        <table className="w-full min-w-[540px] text-sm [&_td]:px-2 [&_th]:px-2">
           <thead>
             <tr className="border-b">
-              <Th className={denseThClass}>Round</Th>
-              <Th className={denseThClass}>Window</Th>
+              <Th className={denseThClass}>Round/Window</Th>
               <Th className={denseThClass}>Course Code</Th>
               <Th className={denseThClass}>Course Name</Th>
               <Th className={denseThClass}>Section</Th>
               <Th className={denseThClass}>Professor</Th>
-              <Th className={`${denseThClass} text-right`}>Median Bid</Th>
-              <Th className={`${denseThClass} text-right`}>Min Bid</Th>
               <SortableTh
                 label="My Bid"
                 active={sortKey === "bidAmount"}
@@ -430,7 +427,7 @@ export function BidsTable() {
             {filteredBids.length === 0 && (
               <tr>
                 <td
-                  colSpan={11}
+                  colSpan={8}
                   className="text-muted-foreground p-6 text-center"
                 >
                   No bids match the current filters.
@@ -528,8 +525,9 @@ function BidTableRow({
   const rowAdding = pendingAddClassId === bid.classId;
   return (
     <tr className="border-b last:border-0">
-      <Td>{bid.bidWindow.round}</Td>
-      <Td>{bid.bidWindow.window}</Td>
+      <Td className="whitespace-nowrap">
+        R{bid.bidWindow.round} W{bid.bidWindow.window}
+      </Td>
       <Td className="font-medium whitespace-nowrap">
         <ClassInfoButton onClick={onShowClassInfo}>
           {bid.courseCode}
@@ -553,14 +551,6 @@ function BidTableRow({
         ) : (
           "TBA"
         )}
-      </Td>
-      <Td className="text-right font-mono tabular-nums">
-        {bid.bidResult?.median != null
-          ? formatBidAmount(bid.bidResult.median)
-          : "—"}
-      </Td>
-      <Td className="text-right font-mono tabular-nums">
-        {bid.bidResult?.min != null ? formatBidAmount(bid.bidResult.min) : "—"}
       </Td>
       <Td className="text-right font-mono tabular-nums">
         {formatBidAmount(bid.bidAmount)}
