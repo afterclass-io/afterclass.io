@@ -16,6 +16,7 @@ import {
 import { Button } from "@/common/components/button";
 import { cn } from "@/common/functions";
 import { formatDateSGT } from "@/common/functions/format-date-sgt";
+import { abbreviateVenue } from "@/modules/timetable/functions/abbreviate-venue";
 import {
   hasTimeConflict,
   toTimingLikes,
@@ -42,13 +43,15 @@ export type SectionPickerProps = {
 
 function formatTimingLine(t: SectionTiming): string {
   const day = t.dayOfWeek ?? "?";
-  return `${day} ${t.startTime}–${t.endTime}${t.venue ? ` · ${t.venue}` : ""}`;
+  return `🕐 ${day} ${t.startTime}–${t.endTime}`;
 }
 
 function formatExamLine(t: SectionExamTiming): string {
   const dateLabel = formatDateSGT(t.date, { day: "numeric", month: "short" });
-  return `Exam ${dateLabel} ${t.startTime}–${t.endTime}${t.venue ? ` · ${t.venue}` : ""}`;
+  return `📝 Exam ${dateLabel} ${t.startTime}–${t.endTime}`;
 }
+
+const lineClasses = "text-muted-foreground text-xs break-words tabular-nums";
 
 /**
  * Displays all sections for a course with an "Add to timetable" or
@@ -179,28 +182,30 @@ export function SectionPicker({
             <div className="flex flex-wrap items-baseline gap-x-2">
               <span className="text-sm font-medium">Section {sec.section}</span>
               <span className="text-muted-foreground text-xs">
-                {sec.professorName ?? "TBA"}
+                👤 {sec.professorName ?? "TBA"}
               </span>
             </div>
             {sec.timings && sec.timings.length > 0 && (
               <div className="mt-0.5 space-y-0.5">
                 {sec.timings.map((t, i) => (
-                  <p
-                    key={i}
-                    className="text-muted-foreground text-xs break-words tabular-nums"
-                  >
-                    {formatTimingLine(t)}
-                  </p>
+                  <div key={i}>
+                    <p className={lineClasses}>{formatTimingLine(t)}</p>
+                    {t.venue && (
+                      <p className={lineClasses}>
+                        📍 {abbreviateVenue(t.venue)}
+                      </p>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
             {sec.examTimings?.map((t, i) => (
-              <p
-                key={i}
-                className="text-muted-foreground text-xs break-words tabular-nums"
-              >
-                {formatExamLine(t)}
-              </p>
+              <div key={i}>
+                <p className={lineClasses}>{formatExamLine(t)}</p>
+                {t.venue && (
+                  <p className={lineClasses}>📍 {abbreviateVenue(t.venue)}</p>
+                )}
+              </div>
             ))}
           </div>
           <Button

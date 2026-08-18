@@ -8,6 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/common/components/tooltip";
+import { abbreviateVenue } from "@/modules/timetable/functions/abbreviate-venue";
 import { courseColor } from "@/modules/timetable/functions/course-color";
 import { formatBidAmount } from "@/modules/timetable/functions/format";
 import {
@@ -115,9 +116,7 @@ export function TimetableSlotCard({
           {courseCode}
           <span className="ml-1 font-normal opacity-75">{section}</span>
         </span>
-        <span className="block truncate text-[10px] opacity-75">
-          {courseName}
-        </span>
+        <span className="block truncate opacity-75">{courseName}</span>
         {isExam && (
           <Tag
             variant="soft"
@@ -129,7 +128,11 @@ export function TimetableSlotCard({
             EXAM
           </Tag>
         )}
-        {venue && <span className="block truncate opacity-75">{venue}</span>}
+        {venue && (
+          <span className="block truncate opacity-75">
+            {abbreviateVenue(venue)}
+          </span>
+        )}
         {showChip && (
           <span
             className={cn(
