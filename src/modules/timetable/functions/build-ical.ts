@@ -37,9 +37,12 @@ const ICAL_DAY_TO_JS: Record<string, number> = {
 // ---------------------------------------------------------------------------
 
 /**
- * Build a Date representing a specific SGT wall-clock time.
- * Uses ISO-8601 extended format with +08:00 offset so the Date carries
- * the correct UTC instant.
+ * Build a Date whose *local* wall-clock fields equal the given SGT time.
+ *
+ * ical-generator renders plain Date objects using their local wall-clock
+ * fields together with the event's TZID, so constructing the Date in local
+ * time makes the emitted `DTSTART;TZID=Asia/Singapore:...` correct regardless
+ * of the server's timezone. (Singapore is UTC+8 year-round, no DST.)
  */
 function sgtDateTime(
   year: number,
@@ -48,9 +51,23 @@ function sgtDateTime(
   hours: number,
   minutes: number,
 ): Date {
-  const pad = (n: number) => String(n).padStart(2, "0");
+  return new Date(year, month - 1, day, hours, minutes);
+}
+
+/**
+ * Convert a Date instant to a Date whose local wall-clock fields equal the
+ * instant's SGT wall-clock time (see `sgtDateTime` for why).
+ */
+function sgtWallClockAsLocal(d: Date): Date {
+  // Shift the instant to SGT, then read the shifted UTC fields as local time
+  const sgt = new Date(d.getTime() + 8 * 60 * 60 * 1000);
   return new Date(
-    `${year}-${pad(month)}-${pad(day)}T${pad(hours)}:${pad(minutes)}:00+08:00`,
+    sgt.getUTCFullYear(),
+    sgt.getUTCMonth(),
+    sgt.getUTCDate(),
+    sgt.getUTCHours(),
+    sgt.getUTCMinutes(),
+    sgt.getUTCSeconds(),
   );
 }
 
@@ -132,7 +149,7 @@ export function buildIcal(input: ICalInput): string {
       event.repeating({
         freq: ICalEventRepeatingFreq.WEEKLY,
         byDay: [icalDay],
-        until: termEnd,
+        until: sgtWallClockAsLocal(termEnd),
       });
     }
 
