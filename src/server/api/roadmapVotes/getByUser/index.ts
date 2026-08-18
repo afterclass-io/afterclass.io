@@ -6,7 +6,7 @@ export const getByUser = protectedProcedure
   .input(
     z.object({
       userId: z.string().optional(),
-      roadmapId: z.string().optional(),
+      roadmapId: z.string(),
     }),
   )
   .query(
