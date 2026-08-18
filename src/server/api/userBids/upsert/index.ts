@@ -12,26 +12,19 @@ export const upsert = protectedProcedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const existing = await ctx.db.userBid.findFirst({
+    return ctx.db.userBid.upsert({
       where: {
-        userId: ctx.session.user.id,
-        classId: input.classId,
-        bidWindowId: input.bidWindowId,
-      },
-    });
-
-    if (existing) {
-      return ctx.db.userBid.update({
-        where: { id: existing.id },
-        data: {
-          bidAmount: input.bidAmount,
-          notes: input.notes,
+        userId_classId_bidWindowId: {
+          userId: ctx.session.user.id,
+          classId: input.classId,
+          bidWindowId: input.bidWindowId,
         },
-      });
-    }
-
-    return ctx.db.userBid.create({
-      data: {
+      },
+      update: {
+        bidAmount: input.bidAmount,
+        notes: input.notes,
+      },
+      create: {
         userId: ctx.session.user.id,
         classId: input.classId,
         bidWindowId: input.bidWindowId,
