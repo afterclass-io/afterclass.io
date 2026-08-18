@@ -33,7 +33,6 @@ import {
   searchPanelWidthAtom,
   hasSeenTimetableTourAtom,
 } from "@/modules/timetable/atoms/timetable";
-import { slotBidsAtom } from "@/modules/timetable/atoms/bids";
 import {
   canRedoAtom,
   canUndoAtom,
@@ -219,7 +218,6 @@ export default function TimetablePage() {
     activeTimetableIdAtom,
   );
   const [view, setView] = useAtom(timetableViewAtom);
-  const setSlotBids = useSetAtom(slotBidsAtom);
   const { data: session, status: sessionStatus } = useSession();
   const isLoggedIn = !!session;
 
@@ -253,12 +251,11 @@ export default function TimetablePage() {
     if (prevTermRef.current === selectedTermId) return;
     prevTermRef.current = selectedTermId;
     setActiveTimetableId(null);
-    setSlotBids({});
     setSelectedSlot(null);
     // History is per-term/plan — don't let it leak across term switches.
     setUndoStack([]);
     setRedoStack([]);
-  }, [selectedTermId, setActiveTimetableId, setSlotBids, setUndoStack, setRedoStack]);
+  }, [selectedTermId, setActiveTimetableId, setUndoStack, setRedoStack]);
 
   // ---- On plan switch (within a term, via VariantSwitcher): history is
   // per-plan — Ctrl+Z after switching plans must not pop the previous
@@ -395,18 +392,6 @@ export default function TimetablePage() {
         : ((fallbackBidsData as unknown as ArrangementBids) ?? []),
     [hasArrangementBids, arrangementBids, fallbackBidsData],
   );
-
-  // Sync the single source of bids into Jotai for SlotBidPanel consumers,
-  // and build the per-slot info for the grid chips.
-  useEffect(() => {
-    if (effectiveBids.length === 0 && !arrangement) return;
-    const grouped: Record<string, ArrangementBids> = {};
-    for (const bid of effectiveBids) {
-      const arr = grouped[bid.classId] ?? (grouped[bid.classId] = []);
-      arr.push(bid);
-    }
-    setSlotBids(grouped);
-  }, [effectiveBids, arrangement, setSlotBids]);
 
   /** Map of classId → BidInfo for chip display on the grid. */
   const bidsMap = useMemo<Record<string, BidInfo>>(() => {

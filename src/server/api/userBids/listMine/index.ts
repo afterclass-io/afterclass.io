@@ -12,13 +12,9 @@ export const listMine = protectedProcedure.query(async ({ ctx }) => {
     include: {
       bidWindow: {
         select: {
-          id: true,
           acadTermId: true,
           round: true,
           window: true,
-          opensAt: true,
-          closesAt: true,
-          resultsAt: true,
         },
       },
       class: {

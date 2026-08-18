@@ -11,7 +11,6 @@ export const getArrangement = protectedProcedure
       where: { id: input.timetableId, userId: ctx.session.user.id },
       select: {
         id: true,
-        name: true,
         slots: {
           select: {
             class: {
@@ -67,13 +66,14 @@ export const getArrangement = protectedProcedure
               userId: ctx.session.user.id,
               classId: { in: classIds },
             },
-            include: {
+            // Only what the grid's bid chips read (page.tsx bidsMap).
+            select: {
+              classId: true,
+              bidAmount: true,
+              status: true,
               bidWindow: {
                 select: {
                   round: true,
-                  window: true,
-                  closesAt: true,
-                  resultsAt: true,
                 },
               },
             },
@@ -81,7 +81,6 @@ export const getArrangement = protectedProcedure
         : [];
 
     return {
-      timetable: { id: userTimetable.id, name: userTimetable.name },
       slots,
       bids,
     };

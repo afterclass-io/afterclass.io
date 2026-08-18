@@ -169,7 +169,7 @@ export function BidsTable() {
       getSnapshot: () => utils.userBids.listMine.getData(),
       // Optimistically mirror server demoteSiblingBids: chosen bid gets
       // `status`, siblings on same class go to PARTICIPATED. Any divergence
-      // is reconciled by the invalidate in onSuccess.
+      // is reconciled by the invalidate on settle.
       applyOptimistic: ({ id, status }) => {
         utils.userBids.listMine.setData(undefined, (old) => {
           if (!old) return old;
@@ -185,8 +185,13 @@ export function BidsTable() {
       },
       restoreSnapshot: (prev) =>
         utils.userBids.listMine.setData(undefined, prev),
+      // Single settle-time refresh of both bid queries; onSuccess only
+      // handles the timetable-side invalidations.
       invalidate: async () => {
-        await utils.userBids.listMine.invalidate();
+        await Promise.all([
+          utils.userBids.listMine.invalidate(),
+          utils.userBids.getByClassIds.invalidate(),
+        ]);
       },
     }),
     onSuccess: (_data, variables) => {
@@ -207,7 +212,6 @@ export function BidsTable() {
           acadTermId: effectiveTermId,
         });
       }
-      invalidateBids();
     },
     onError: (error) => {
       toast.error(`Failed to update status: ${error.message}`);

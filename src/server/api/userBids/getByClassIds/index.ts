@@ -15,7 +15,6 @@ export const getByClassIds = protectedProcedure
           select: {
             round: true,
             window: true,
-            closesAt: true,
             resultsAt: true,
           },
         },

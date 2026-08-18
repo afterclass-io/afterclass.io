@@ -89,7 +89,6 @@ const CLASS_BIDS: RouterOutputs["userBids"]["getByClassIds"] = [
     bidWindow: {
       round: "1",
       window: 1,
-      closesAt: new Date("2026-08-15T00:00:00.000Z"),
       resultsAt: new Date("2026-08-20T00:00:00.000Z"),
     },
   },
@@ -129,13 +128,9 @@ const EDIT_BID: UserBidRow = {
   status: "PLANNED",
   createdAt: new Date("2026-08-01T00:00:00.000Z"),
   bidWindow: {
-    id: 37,
     acadTermId: ACAD_TERM_ID,
     round: "1",
     window: 1,
-    opensAt: new Date("2026-08-01T00:00:00.000Z"),
-    closesAt: new Date("2026-08-15T00:00:00.000Z"),
-    resultsAt: new Date("2026-08-20T00:00:00.000Z"),
   },
   courseCode: "ACCT102",
   courseName: "Management Accounting",

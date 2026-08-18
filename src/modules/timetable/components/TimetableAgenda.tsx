@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/common/components/tooltip";
 import { courseColor } from "@/modules/timetable/functions/course-color";
+import { abbreviateVenue } from "@/modules/timetable/functions/abbreviate-venue";
 import { formatBidAmount } from "@/modules/timetable/functions/format";
 import {
   bidChipVariant,
@@ -106,7 +107,8 @@ function AgendaRow({
   const bidStatus = bidInfo?.status as UserBidStatus | undefined;
   const cardVariant = slotCardVariant(bidStatus);
   const cardClasses = bidInfo ? (cardVariant ?? colorClasses) : colorClasses;
-  const venue = slot.venue ?? slot.timing.venue ?? null;
+  const rawVenue = slot.venue ?? slot.timing.venue ?? null;
+  const venue = rawVenue ? abbreviateVenue(rawVenue) : null;
 
   return (
     <div className="group relative flex items-center gap-2 px-2 py-1.5">
