@@ -85,7 +85,7 @@
     "recharts": "^2.15.3",
     "sass": "1.79.3",
     "server-only": "0.0.1",
-    "sharp": "0.33.5",
+    "sharp": "0.35.0",
     "sonner": "^2.0.3",
     "superjson": "2.2.1",
     "tailwind-merge": "^3.2.0",
