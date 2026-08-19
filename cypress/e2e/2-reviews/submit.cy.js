@@ -44,17 +44,17 @@ context("Reviews: Submit", function () {
 
   describe("Basic Navigations", function () {
     it("should be able to navigate to bid analytics page", function () {
-      cy.intercept("GET", "/bidding*").as("navigateToBiddingPage");
+      cy.intercept("GET", "/bidding/analytics*").as("navigateToBiddingPage");
       cy.get("a[data-test=sidebar-bid-analytics]").click();
       cy.wait("@navigateToBiddingPage");
-      cy.url().should("eq", `${Cypress.config("baseUrl")}/bidding`);
+      cy.url().should("contain", `${Cypress.config("baseUrl")}/bidding/analytics`);
     });
 
     it("should be able to navigate to reviews page", function () {
-      cy.intercept("GET", "/bidding*").as("navigateToBiddingPage");
-      cy.get("a[data-test=sidebar-bid-analytics]").click();
-      cy.wait("@navigateToBiddingPage");
-      cy.url().should("eq", `${Cypress.config("baseUrl")}/bidding`);
+      cy.intercept("GET", "/?*").as("navigateToReviewsPage");
+      cy.get("a[data-test=sidebar-reviews]").click();
+      cy.wait("@navigateToReviewsPage");
+      cy.url().should("eq", `${Cypress.config("baseUrl")}/`);
     });
   });
 

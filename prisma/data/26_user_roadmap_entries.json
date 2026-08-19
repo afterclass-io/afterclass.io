@@ -1,0 +1,146 @@
+[
+  {
+    "id": "entry-r1-cor1702-y1t1",
+    "roadmapId": "roadmap-001-user-a",
+    "courseId": "c229563a-4361-4b4a-8c89-346d0c6c6553",
+    "yearNumber": 1,
+    "term": "T1",
+    "sortOrder": 0
+  },
+  {
+    "id": "entry-r1-is215-y1t2",
+    "roadmapId": "roadmap-001-user-a",
+    "courseId": "2a45bab1-5ec4-4d2e-b245-27a142a78890",
+    "yearNumber": 1,
+    "term": "T2",
+    "sortOrder": 1
+  },
+  {
+    "id": "entry-r1-acct102-y1t2",
+    "roadmapId": "roadmap-001-user-a",
+    "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
+    "yearNumber": 1,
+    "term": "T2",
+    "sortOrder": 2
+  },
+  {
+    "id": "entry-r1-mgmt214-y2t1",
+    "roadmapId": "roadmap-001-user-a",
+    "courseId": "77526d76-f88c-4e82-91d7-822a2c658ea8",
+    "yearNumber": 2,
+    "term": "T1",
+    "sortOrder": 3
+  },
+  {
+    "id": "entry-r1-comm662-y3t1",
+    "roadmapId": "roadmap-001-user-a",
+    "courseId": "7769415c-d9f3-44c1-8ead-b54d937e8978",
+    "yearNumber": 3,
+    "term": "T1",
+    "sortOrder": 4
+  },
+  {
+    "id": "entry-r2-is215-y1t1",
+    "roadmapId": "roadmap-002-user-a",
+    "courseId": "2a45bab1-5ec4-4d2e-b245-27a142a78890",
+    "yearNumber": 1,
+    "term": "T1",
+    "sortOrder": 0
+  },
+  {
+    "id": "entry-r2-acct102-y1t2",
+    "roadmapId": "roadmap-002-user-a",
+    "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
+    "yearNumber": 1,
+    "term": "T2",
+    "sortOrder": 1
+  },
+  {
+    "id": "entry-r2-mgmt214-y2t1",
+    "roadmapId": "roadmap-002-user-a",
+    "courseId": "77526d76-f88c-4e82-91d7-822a2c658ea8",
+    "yearNumber": 2,
+    "term": "T1",
+    "sortOrder": 2
+  },
+  {
+    "id": "entry-r2-obhr300-y2t2",
+    "roadmapId": "roadmap-002-user-a",
+    "courseId": "7687fd3b-cc0d-4cba-911f-efde99e864d2",
+    "yearNumber": 2,
+    "term": "T2",
+    "sortOrder": 3
+  },
+  {
+    "id": "entry-r2-stat203-y2t2",
+    "roadmapId": "roadmap-002-user-a",
+    "courseId": "53a486bb-c4e6-4795-a359-febfce39586d",
+    "yearNumber": 2,
+    "term": "T2",
+    "sortOrder": 4
+  },
+  {
+    "id": "entry-r2-law429-y3t1",
+    "roadmapId": "roadmap-002-user-a",
+    "courseId": "48573ec4-8371-44b9-9294-621c39627372",
+    "yearNumber": 3,
+    "term": "T1",
+    "sortOrder": 5
+  },
+  {
+    "id": "entry-r2-posc206-y3t2",
+    "roadmapId": "roadmap-002-user-a",
+    "courseId": "441e3d23-2257-4295-b145-b66b792af7bc",
+    "yearNumber": 3,
+    "term": "T2",
+    "sortOrder": 6
+  },
+  {
+    "id": "entry-r2-comm662-y4t1",
+    "roadmapId": "roadmap-002-user-a",
+    "courseId": "7769415c-d9f3-44c1-8ead-b54d937e8978",
+    "yearNumber": 4,
+    "term": "T1",
+    "sortOrder": 7
+  },
+  {
+    "id": "entry-r3-is215-y1t1",
+    "roadmapId": "roadmap-003-user-a",
+    "courseId": "2a45bab1-5ec4-4d2e-b245-27a142a78890",
+    "yearNumber": 1,
+    "term": "T1",
+    "sortOrder": 0
+  },
+  {
+    "id": "entry-r3-acct102-y1t2",
+    "roadmapId": "roadmap-003-user-a",
+    "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
+    "yearNumber": 1,
+    "term": "T2",
+    "sortOrder": 1
+  },
+  {
+    "id": "entry-r3-comm662-y3t1",
+    "roadmapId": "roadmap-003-user-a",
+    "courseId": "7769415c-d9f3-44c1-8ead-b54d937e8978",
+    "yearNumber": 3,
+    "term": "T1",
+    "sortOrder": 2
+  },
+  {
+    "id": "entry-r4-is215-y1t1",
+    "roadmapId": "roadmap-004-user-b",
+    "courseId": "2a45bab1-5ec4-4d2e-b245-27a142a78890",
+    "yearNumber": 1,
+    "term": "T1",
+    "sortOrder": 0
+  },
+  {
+    "id": "entry-r4-acct102-y1t1",
+    "roadmapId": "roadmap-004-user-b",
+    "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
+    "yearNumber": 1,
+    "term": "T1",
+    "sortOrder": 1
+  }
+]

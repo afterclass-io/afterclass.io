@@ -1,4 +1,5 @@
 import { formatNumberShortScale } from "@/common/functions";
+import { recommendedBid } from "@/modules/bidding/utils/bid-prediction";
 import { useEffect } from "react";
 
 export const BidPredictionFormula = ({
@@ -12,7 +13,7 @@ export const BidPredictionFormula = ({
   uncertainty: number;
   onRecommendedChange?: (value: number) => void;
 }) => {
-  const recommended = predicted + multiplier * uncertainty;
+  const recommended = recommendedBid(predicted, multiplier, uncertainty);
 
   useEffect(() => {
     if (onRecommendedChange) {

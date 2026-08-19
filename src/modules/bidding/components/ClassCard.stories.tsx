@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { ClassCard } from "./ClassCard";
-import { ClockIcon, GraduationCapColoredIcon, MemoIcon, PinIcon } from "@/common/components/icons";
 
 const meta: Meta<typeof ClassCard> = {
   title: "Bid Analytics/ClassCard",

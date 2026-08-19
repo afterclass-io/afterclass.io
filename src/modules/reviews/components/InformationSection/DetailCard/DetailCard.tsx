@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { api } from "@/common/tools/trpc/server";
 import type { getByCourseCodeResolved } from "@/server/api/courses/getByCourseCode";
+import { getCurrentWindowOrNull } from "@/server/api/bidWindows/getCurrentWindow/safe";
 import { Button } from "@/common/components/button";
 import { Heading } from "@/common/components/heading";
 import { DetailCardSkeleton } from "./DetailCardSkeleton";
@@ -11,7 +12,9 @@ interface Props {
 }
 
 export const DetailCard = async ({ course }: Props) => {
-  const currentWindow = await api.bidWindows.getCurrentWindow();
+  const currentWindow = await getCurrentWindowOrNull(() =>
+    api.bidWindows.getCurrentWindow(),
+  );
   const classes = await api.classes.getAllByCourseId({
     courseId: course.id,
     acadTermId: currentWindow?.acadTermId,

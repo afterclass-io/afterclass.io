@@ -68,7 +68,7 @@ export const SearchCmdk = ({
     } else {
       return () => clearTimeout(timeoutId);
     }
-  }, [edgeConfig, hasShownTooltip]);
+  }, [edgeConfig, hasShownTooltip, asChild, setHasShownTooltip]);
 
   useEffect(() => {
     if (asChild) return;
@@ -80,7 +80,7 @@ export const SearchCmdk = ({
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [asChild]);
 
   const getSearchDestination = () => {
     const params = new URLSearchParams();

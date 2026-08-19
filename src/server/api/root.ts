@@ -4,13 +4,21 @@ import { bidPredictionsRouter } from "@/server/api/bidPredictions/router";
 import { bidWindowsRouter } from "@/server/api/bidWindows/router";
 import { coursesRouter } from "@/server/api/courses/router";
 import { classesRouter } from "@/server/api/classes/router";
+import { facultiesRouter } from "@/server/api/faculties/router";
 import { labelsRouter } from "@/server/api/labels/router";
 import { professorsRouter } from "@/server/api/professors/router";
 import { reviewsRouter } from "@/server/api/reviews/router";
 import { reviewEventsRouter } from "@/server/api/reviewEvents/router";
 import { reviewReactionsRouter } from "@/server/api/reviewReactions/router";
 import { reviewVotesRouter } from "@/server/api/reviewVotes/router";
+import { roadmapReactionsRouter } from "@/server/api/roadmapReactions/router";
+import { roadmapsRouter } from "@/server/api/roadmaps/router";
+import { roadmapVotesRouter } from "@/server/api/roadmapVotes/router";
 import { safetyFactorsRouter } from "@/server/api/safetyFactors/router";
+import { sharingRouter } from "@/server/api/sharing/router";
+import { timetableRouter } from "@/server/api/timetable/router";
+import { userBidsRouter } from "@/server/api/userBids/router";
+import { usersRouter } from "@/server/api/users/router";
 
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 
@@ -26,13 +34,21 @@ export const appRouter = createTRPCRouter({
   bidWindows: bidWindowsRouter,
   classes: classesRouter,
   courses: coursesRouter,
+  faculties: facultiesRouter,
   labels: labelsRouter,
   professors: professorsRouter,
   reviews: reviewsRouter,
   reviewEvents: reviewEventsRouter,
   reviewReactions: reviewReactionsRouter,
   reviewVotes: reviewVotesRouter,
+  roadmapReactions: roadmapReactionsRouter,
+  roadmaps: roadmapsRouter,
+  roadmapVotes: roadmapVotesRouter,
   safetyFactors: safetyFactorsRouter,
+  sharing: sharingRouter,
+  timetable: timetableRouter,
+  userBids: userBidsRouter,
+  users: usersRouter,
 });
 
 // export type definition of API

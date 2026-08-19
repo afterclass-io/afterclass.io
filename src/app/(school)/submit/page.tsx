@@ -1,5 +1,6 @@
 import { ReviewType, type UniversityAbbreviation } from "@prisma/client";
 
+import { ConstrainedContainer } from "@/common/components/constrained-container";
 import { SchoolTag } from "@/common/components/tag-school";
 import { PageTitle } from "@/common/components/page-title";
 import { api } from "@/common/tools/trpc/server";
@@ -26,7 +27,7 @@ export default async function SubmitReviewPage() {
   ]);
 
   return (
-    <div className="flex flex-col space-y-5 md:space-y-8">
+    <ConstrainedContainer className="flex flex-col space-y-5 md:space-y-8">
       <PageTitle contentRight={<SchoolTag school={school} />}>
         Write a Review
       </PageTitle>
@@ -61,6 +62,6 @@ export default async function SubmitReviewPage() {
           isOptional
         />
       </ReviewForm>
-    </div>
+    </ConstrainedContainer>
   );
 }

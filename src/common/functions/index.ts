@@ -5,5 +5,6 @@ export * from "./getHumanReadableTimestampDelta";
 export * from "./getHumanReadableTimestampString";
 export * from "./calculateAverage";
 export * from "./inferAcadTerm";
+export * from "./profanity";
 export * from "./randomId";
 export * from "./toTitleCase";

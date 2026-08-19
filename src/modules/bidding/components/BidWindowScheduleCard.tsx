@@ -23,6 +23,7 @@ import {
 import { cn } from "@/common/functions";
 import { api } from "@/common/tools/trpc/server";
 import { inferAcadTerm } from "@/common/functions";
+import { getCurrentWindowOrNull } from "@/server/api/bidWindows/getCurrentWindow/safe";
 import { ProgressLink } from "@/common/components/progress-link";
 import { Button } from "@/common/components/button";
 
@@ -206,7 +207,9 @@ export const BidWindowScheduleCard = async () => {
   await connection();
   const now = new TZDate(Date.now(), "Asia/Singapore");
 
-  const currentWindow = await api.bidWindows.getCurrentWindow();
+  const currentWindow = await getCurrentWindowOrNull(() =>
+    api.bidWindows.getCurrentWindow(),
+  );
 
   if (!currentWindow) {
     return (

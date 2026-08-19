@@ -39,5 +39,5 @@
     ".eslintrc.cjs",
     "postcss.config.mjs"
   ],
-  "exclude": ["node_modules", "cypress/**/*.cy.js"]
+  "exclude": ["node_modules", "cypress/**/*.cy.js", "storybook-static"]
 }

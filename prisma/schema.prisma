@@ -66,6 +66,11 @@ model Users {
   reviewReactions    ReviewReactions[]
   hackSubmissionVote HackSubmissionVote[]
   userBid            UserBid[]
+  userTimetable      UserTimetable[]
+  userRoadmap        UserRoadmap[]
+  userBidBudget      UserBidBudget[]
+  roadmapVotes       RoadmapVote[]
+  roadmapReactions   RoadmapReaction[]
 
   @@map("users")
 }
@@ -116,6 +121,7 @@ model Courses {
   belongToUniversity Universities @relation(fields: [belongToUniversityId], references: [id])
   classes            Classes[]
   reviews            Reviews[]
+  userRoadmapEntry   UserRoadmapEntry[]
 
   @@map("courses")
 }
@@ -197,10 +203,13 @@ model Classes {
   acadTerm  AcadTerm    @relation(fields: [acadTermId], references: [id])
   userBid   UserBid[]
 
+  userTimetableSlot UserTimetableSlot[]
+
   @@unique([bossId, acadTermId, professorId])
   @@unique([courseId, section, acadTermId, professorId])
   @@index([courseId], type: BTree)
   @@index([professorId], type: BTree)
+  @@index([acadTermId, courseId])
   @@map("classes")
 }
 
@@ -286,6 +295,10 @@ model AcadTerm {
   bidWindow    BidWindow[]
   safetyFactor SafetyFactor[]
 
+  userTimetable UserTimetable[]
+  userBidBudget UserBidBudget[]
+  matricRoadmaps UserRoadmap[]
+
   @@map("acad_term")
 }
 
@@ -354,6 +367,7 @@ model BidWindow {
   acadTerm AcadTerm  @relation(fields: [acadTermId], references: [id])
   userBid  UserBid[]
 
+  @@index([acadTermId])
   @@map("bid_window")
 }
 
@@ -371,7 +385,6 @@ model BidResult {
 
   bidWindow BidWindow @relation(fields: [bidWindowId], references: [id])
   class     Classes   @relation(fields: [classId], references: [id])
-  userBid   UserBid[]
 
   @@id([bidWindowId, classId])
   @@map("bid_result")
@@ -421,8 +434,6 @@ model BidPrediction {
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  userBid UserBid[]
-
   class     Classes   @relation(fields: [classId], references: [id])
   bidWindow BidWindow @relation(fields: [bidWindowId], references: [id])
 
@@ -452,17 +463,148 @@ model UserBid {
   bidWindowId Int      @map("bid_window_id")
   bidAmount   Float    @map("bid_amount")
   notes       String?
+  status      UserBidStatus @default(PLANNED)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   user          Users          @relation(fields: [userId], references: [id])
   class         Classes        @relation(fields: [classId], references: [id])
   bidWindow     BidWindow      @relation(fields: [bidWindowId], references: [id])
-  bidResult     BidResult?     @relation(fields: [classId, bidWindowId], references: [classId, bidWindowId], map: "user_bid_bid_result_class_id_bid_window_id_fkey")
-  bidPrediction BidPrediction? @relation(fields: [classId, bidWindowId], references: [classId, bidWindowId], map: "user_bid_bid_prediction_class_id_bid_window_id_fkey")
 
   @@index([userId, createdAt])
   @@index([classId, bidWindowId])
+  @@unique([userId, classId, bidWindowId])
   @@map("user_bid")
+}
+
+model UserTimetable {
+  id         String     @id @default(uuid())
+  userId     String     @map("user_id")
+  acadTermId String     @map("acad_term_id")
+  name       String
+  isActive   Boolean    @default(false) @map("is_active")
+  visibility Visibility @default(PRIVATE)
+  shareToken String?    @unique @map("share_token")
+  icalToken  String?    @unique @map("ical_token")
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user     Users               @relation(fields: [userId], references: [id])
+  acadTerm AcadTerm            @relation(fields: [acadTermId], references: [id])
+  slots    UserTimetableSlot[]
+
+  @@index([userId, acadTermId])
+  @@map("user_timetable")
+}
+
+model UserTimetableSlot {
+  id          String @id @default(uuid())
+  timetableId String @map("timetable_id")
+  classId     String @map("class_id")
+
+  timetable UserTimetable @relation(fields: [timetableId], references: [id], onDelete: Cascade)
+  class     Classes       @relation(fields: [classId], references: [id])
+
+  @@unique([timetableId, classId])
+  @@index([timetableId])
+  @@map("user_timetable_slot")
+}
+
+model UserRoadmap {
+  id           String     @id @default(uuid())
+  userId       String     @map("user_id")
+  name         String
+  description  String?
+  visibility   Visibility @default(PRIVATE)
+  shareToken   String?    @unique @map("share_token")
+  slug         String?    @unique
+  facultyId    Int?       @map("faculty_id") // snapshot from owner at publish time
+  publishedAt  DateTime?  @map("published_at") @db.Timestamptz(3)
+  isActive     Boolean    @default(false) @map("is_active") // at most one active roadmap per user
+  matricTermId String?    @map("matric_term_id") // acad term corresponding to the user's Y1T1
+  viewCount    Int        @default(0) @map("view_count")
+  shareCount   Int        @default(0) @map("share_count")
+  upvoteCount  Int        @default(0) @map("upvote_count")
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user        Users              @relation(fields: [userId], references: [id])
+  matricTerm  AcadTerm?          @relation(fields: [matricTermId], references: [id])
+  entries     UserRoadmapEntry[]
+  votes       RoadmapVote[]
+  reactions   RoadmapReaction[]
+
+  @@index([userId])
+  @@index([visibility, publishedAt])
+  @@map("user_roadmap")
+}
+
+model RoadmapVote {
+  id        String   @id @default(uuid())
+  roadmapId String   @map("roadmap_id")
+  userId    String   @map("user_id")
+  weight    Int      @default(1) @db.SmallInt // 1 for UPVOTE, -1 for DOWNVOTE (existing rows were likes = upvotes)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  roadmap UserRoadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  user    Users       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roadmapId, userId])
+  @@map("roadmap_vote")
+}
+
+model RoadmapReaction {
+  roadmapId String             @map("roadmap_id")
+  userId    String             @map("user_id")
+  reaction  ReviewReactionType
+  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  roadmap UserRoadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  user    Users       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([roadmapId, userId])
+  @@map("roadmap_reaction")
+}
+
+model UserRoadmapEntry {
+  id         String @id @default(uuid())
+  roadmapId  String @map("roadmap_id")
+  courseId   String @map("course_id")
+  yearNumber Int    @map("year_number")
+  term       String @db.VarChar(3) // T1 | T2 | T3A | T3B
+  sortOrder  Int    @map("sort_order")
+
+  roadmap UserRoadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  course  Courses     @relation(fields: [courseId], references: [id])
+
+  @@index([roadmapId])
+  @@map("user_roadmap_entry")
+}
+
+model UserBidBudget {
+  userId     String @map("user_id")
+  acadTermId String @map("acad_term_id")
+  balance    Float
+
+  user     Users    @relation(fields: [userId], references: [id])
+  acadTerm AcadTerm @relation(fields: [acadTermId], references: [id])
+
+  @@id([userId, acadTermId])
+  @@map("user_bid_budget")
+}
+
+enum Visibility {
+  PRIVATE
+  UNLISTED
+  PUBLIC
+}
+
+enum UserBidStatus {
+  PLANNED
+  SECURED
+  DROPPED
+  CANCELLED
+  PARTICIPATED
 }
 
 enum UniversityAbbreviation {

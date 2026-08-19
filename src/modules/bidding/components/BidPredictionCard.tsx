@@ -10,8 +10,10 @@ import {
 } from "@/common/components/card";
 import { Progress } from "@/common/components/progress";
 import { Tag } from "@/common/components/tag";
-import { formatNumberShortScale, formatPercentage } from "@/common/functions";
+import { formatBidCurrencyCompact } from "@/common/functions/format-bid-currency";
+import { formatPercentage } from "@/common/functions";
 import { BidPredictionFormula } from "@/modules/bidding/components/BidPredictionFormula";
+import { multiplierAt } from "@/modules/bidding/utils/bid-prediction";
 import { type SafetyFactor } from "@prisma/client";
 import { useState } from "react";
 import { Info } from "lucide-react";
@@ -66,24 +68,15 @@ export const BidPredictionCard = ({
           {recommendedMin !== undefined && recommendedMedian !== undefined && (
             <span className="flex items-center gap-2">
               <span className="flex items-center gap-1 font-bold tracking-tighter">
-                <span className="text-muted-foreground text-xl font-normal">
-                  e$
-                </span>
                 <span className="text-primary font-mono text-3xl tabular-nums">
-                  {formatNumberShortScale(recommendedMin, {
-                    minimumFractionDigits: 2,
-                    decimals: 2,
-                  })}
+                  {formatBidCurrencyCompact(recommendedMin)}
                 </span>
               </span>
               <span className="text-muted-foreground text-xl font-normal">
                 -
               </span>
               <span className="text-primary font-mono text-3xl font-bold tracking-tighter tabular-nums">
-                {formatNumberShortScale(recommendedMedian, {
-                  minimumFractionDigits: 2,
-                  decimals: 2,
-                })}
+                {formatBidCurrencyCompact(recommendedMedian)}
               </span>
             </span>
           )}
@@ -160,11 +153,10 @@ export const BidPredictionCard = ({
           <div>Min</div>
           <BidPredictionFormula
             predicted={minPrediction.value}
-            multiplier={
-              minPrediction.safetyFactor.find(
-                (sf) => sf.beatsPercentage === beatsPercentage,
-              )?.multiplier ?? 1
-            }
+            multiplier={multiplierAt(
+              minPrediction.safetyFactor,
+              beatsPercentage,
+            )}
             uncertainty={minPrediction.uncertainty}
             onRecommendedChange={(value) => setRecommendedMin(value)}
           />
@@ -173,11 +165,10 @@ export const BidPredictionCard = ({
           <div>Median</div>
           <BidPredictionFormula
             predicted={medianPrediction.value}
-            multiplier={
-              medianPrediction.safetyFactor.find(
-                (sf) => sf.beatsPercentage === beatsPercentage,
-              )?.multiplier ?? 1
-            }
+            multiplier={multiplierAt(
+              medianPrediction.safetyFactor,
+              beatsPercentage,
+            )}
             uncertainty={medianPrediction.uncertainty}
             onRecommendedChange={(value) => setRecommendedMedian(value)}
           />

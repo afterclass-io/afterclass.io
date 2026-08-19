@@ -3,7 +3,8 @@ import { useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { ReviewEventType } from "@prisma/client";
 
-import { api } from "@/common/tools/trpc/react";
+import { api, type RouterInputs } from "@/common/tools/trpc/react";
+import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { useEdgeConfigs } from "@/common/hooks";
 import { VoteGroup } from "@/common/components/vote-group";
 
@@ -19,26 +20,35 @@ export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
   const getUserVoteQuery = api.reviewVotes.getByUser.useQuery({ reviewId });
 
   const mutation = api.reviewVotes.voteOrUnvote.useMutation({
-    onMutate: async ({ reviewId }) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await utils.reviewVotes.count.cancel();
-      await utils.reviewVotes.getByUser.cancel();
-      // Snapshot the previous value
-      const previousCount = utils.reviewVotes.count.getData({ reviewId });
-      const previousUserVote = utils.reviewVotes.getByUser.getData({
-        reviewId,
-      });
-      // Return a context object with the snapshotted value
-      return { previousCount, previousUserVote };
-    },
-    onError: (_err, _variables, context) => {
-      // Rollback to the previous value if mutation fails
-      utils.reviewVotes.count.setData({ reviewId }, context?.previousCount);
-      utils.reviewVotes.getByUser.setData(
-        { reviewId },
-        context?.previousUserVote,
-      );
-    },
+    ...createOptimisticMutationCallbacks<
+      RouterInputs["reviewVotes"]["voteOrUnvote"],
+      { previousCount?: number; previousUserVote?: { weight: number } | null }
+    >({
+      cancel: async () => {
+        await utils.reviewVotes.count.cancel({ reviewId });
+        await utils.reviewVotes.getByUser.cancel({ reviewId });
+      },
+      getSnapshot: () => ({
+        previousCount: utils.reviewVotes.count.getData({ reviewId }),
+        previousUserVote: utils.reviewVotes.getByUser.getData({ reviewId }),
+      }),
+      // Pattern A: the caller (mutateWithDebounce) already applied the
+      // optimistic update — re-applying here would double-count.
+      applyOptimistic: () => {
+        /* Pattern A: caller (mutateWithDebounce) already applied */
+      },
+      restoreSnapshot: (prev) => {
+        utils.reviewVotes.count.setData({ reviewId }, prev?.previousCount);
+        utils.reviewVotes.getByUser.setData(
+          { reviewId },
+          prev?.previousUserVote as never,
+        );
+      },
+      invalidate: async () => {
+        await utils.reviewVotes.count.invalidate({ reviewId });
+        await utils.reviewVotes.getByUser.invalidate({ reviewId });
+      },
+    }),
     onSuccess: (_, { weight }) => {
       if (ecfg.enableReviewEventsTracking) {
         const eventType =
@@ -46,10 +56,6 @@ export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
 
         track({ reviewId, eventType });
       }
-    },
-    onSettled: () => {
-      void utils.reviewVotes.count.invalidate({ reviewId });
-      void utils.reviewVotes.getByUser.invalidate({ reviewId });
     },
   });
   const likeOrUnlike = mutation.mutate;

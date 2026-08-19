@@ -25,7 +25,7 @@ export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
 
   useEffect(() => {
     setValue("submitAs", submitAs);
-  }, []);
+  }, [submitAs, setValue]);
 
   const submitAsBtnText =
     submitAs === ReviewerEnum.ANONYMOUS

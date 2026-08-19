@@ -159,7 +159,7 @@ export const authConfig = {
       else if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user, account, profile, trigger }) {
       if (token.sub && user) {
         // strip user object of unwanted sensitive fields before populating to token
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -182,6 +182,20 @@ export const authConfig = {
         token.user = rest;
       }
 
+      // Keep JWT in sync with profile edits (e.g. faculty declaration) that
+      // update the DB but not the signed token. With JWT strategy NextAuth
+      // only re-runs this callback when `update()` is called on the client.
+      if (trigger === "update" && token.sub) {
+        const dbUser = await db.users.findUnique({
+          where: { id: token.sub },
+        });
+        if (dbUser) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { deprecatedPasswordDigest, ...rest } = dbUser;
+          token.user = rest;
+        }
+      }
+
       return token;
     },
     session({ session, token }) {
@@ -195,9 +209,6 @@ export const authConfig = {
     },
     async signIn({ account, profile }) {
       if (account?.provider === "google") {
-        console.log("Google Profile:");
-        console.dir(profile, { depth: null });
-
         const googleProfile = profile as GoogleProfile;
 
         if (!googleProfile.email_verified) {

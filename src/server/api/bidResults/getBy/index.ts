@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-
-const HARD_LIMIT = 200; // hard limit to prevent too many results
+import { getAcadYearCutoff } from "@/server/api/bidResults/acad-year-window";
+import { findBidResults } from "@/server/api/bidResults/findBidResults";
 
 export const getBy = publicProcedure
   .input(
@@ -13,31 +13,12 @@ export const getBy = publicProcedure
     }),
   )
   .query(async ({ ctx, input }) => {
+    const acadYearCutoff = await getAcadYearCutoff(ctx.db);
+
     if (input.courseCode && input.section) {
-      return await ctx.db.bidResult.findMany({
-        include: {
-          bidWindow: true,
-          class: {
-            include: {
-              professor: { select: { name: true } },
-            },
-          },
-        },
-        where: {
-          class: {
-            section: input.section,
-            course: {
-              code: input.courseCode,
-            },
-          },
-        },
-        orderBy: [
-          { bidWindow: { acadTermId: "desc" } },
-          { bidWindow: { round: "asc" } },
-          { bidWindow: { window: "asc" } },
-        ],
-        take: HARD_LIMIT,
-      });
+      return findBidResults(ctx.db, {
+        class: { section: input.section, course: { code: input.courseCode } },
+      }, acadYearCutoff);
     }
 
     if (!input.classId) {
@@ -65,28 +46,7 @@ export const getBy = publicProcedure
       return [];
     }
 
-    return await ctx.db.bidResult.findMany({
-      include: {
-        bidWindow: true,
-        class: {
-          include: {
-            professor: { select: { name: true } },
-          },
-        },
-      },
-      where: {
-        class: {
-          section: _class.section,
-          course: {
-            code: _class.course.code,
-          },
-        },
-      },
-      orderBy: [
-        { bidWindow: { acadTermId: "desc" } },
-        { bidWindow: { round: "asc" } },
-        { bidWindow: { window: "asc" } },
-      ],
-      take: HARD_LIMIT,
-    });
+    return findBidResults(ctx.db, {
+      class: { section: _class.section, course: { code: _class.course.code } },
+    }, acadYearCutoff);
   });

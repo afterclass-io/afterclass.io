@@ -1,4 +1,8 @@
+import { randomUUID } from "crypto";
 import { PrismaClient } from "@prisma/client";
+
+import { assertStrictTimeFormats } from "./validate-seed-data";
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -74,11 +78,13 @@ async function main() {
   });
 
   const classTimings = require("./data/15_class_timings.json");
+  assertStrictTimeFormats(classTimings, "15_class_timings.json");
   await prisma.classTiming.createMany({
     data: classTimings,
   });
 
   const classExamTimings = require("./data/16_class_exam_timings.json");
+  assertStrictTimeFormats(classExamTimings, "16_class_exam_timings.json");
   await prisma.classExamTiming.createMany({
     data: classExamTimings,
   });
@@ -112,6 +118,65 @@ const bidPrediction = require("./data/21_bid_predictions.json");
   await prisma.hackSubmission.createMany({
     data: hackSubmission,
   });
+
+// === Planning integration seed data ===
+
+  const userTimetables = require("./data/23_user_timetables.json");
+  await prisma.userTimetable.createMany({
+    data: userTimetables,
+  });
+
+  const userTimetableSlots = require("./data/24_user_timetable_slots.json");
+  await prisma.userTimetableSlot.createMany({
+    data: userTimetableSlots,
+  });
+
+  const userRoadmaps = require("./data/25_user_roadmaps.json");
+  await prisma.userRoadmap.createMany({
+    data: userRoadmaps,
+  });
+
+  const userRoadmapEntries = require("./data/26_user_roadmap_entries.json");
+  await prisma.userRoadmapEntry.createMany({
+    data: userRoadmapEntries,
+  });
+
+  const userBidBudgets = require("./data/27_user_bid_budgets.json");
+  await prisma.userBidBudget.createMany({
+    data: userBidBudgets,
+  });
+
+  const userBids = require("./data/28_user_bids.json");
+  await prisma.userBid.createMany({
+    data: userBids,
+  });
+
+  // Cypress E2E test user — idempotent upsert so `prisma db seed` is the
+  // single source of truth (supersedes scripts/create-cypress-test-user.ts).
+  // Password is "Test1234!" (hash must stay in sync with cypress.env.json).
+  // Gated to non-production: known password must never be seeded in prod.
+  if (process.env.NODE_ENV !== "production") {
+    const smu = await prisma.universities.findFirst({
+      where: { abbrv: "SMU" },
+    });
+    if (smu) {
+      const hash = "$2b$10$zk1rgDGgCcuZj096Z8sIcurZhBJEE6wkcdJ2BqMiW35cGyuFLb10G";
+      await prisma.users.upsert({
+        where: { email: "cypress_test@smu.edu.sg" },
+        update: { deprecatedPasswordDigest: hash },
+        create: {
+          id: randomUUID(),
+          email: "cypress_test@smu.edu.sg",
+          username: `cypress_${Date.now().toString(36)}`,
+          isVerified: true,
+          universityId: smu.id,
+          deprecatedPasswordDigest: hash,
+          firstName: "Cypress",
+          lastName: "Test",
+        },
+      });
+    }
+  }
 }
 
 main()

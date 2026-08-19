@@ -76,17 +76,14 @@ docker-compose up
 bunx prisma migrate dev
 ```
 
-Only needs to be done once. This command will create the database schema and
-seed the database with some initial data.
-
-If data is not seeded, run `bunx prisma db seed`.
+Creates the database schema. Run `bunx prisma db seed` separately to seed data.
 
 
 > [!TIP]
 > The seed data are in the [`prisma/data`](prisma/data/) directory's json
 > files and populated using the [`prisma/seed.ts`](prisma/seed.ts) via a command
 > defined in [`package.json`](package.json) at the `prisma.seed` section. You
-> can modify these file to update seed data.
+> can modify these files to update seed data.
 
 To destroy the database and remove all data
 
@@ -130,21 +127,28 @@ Refer to the [Project Architecture](ARCHITECTURE.md) guide for more information.
 
 ## Developing with: Icons
 
-### How do I use icons from libraries like mdi or other libs?
+### Standard
 
-We are using a library called Iconify.
+Use `lucide-react` for generic icon glyphs — in feature code and the base kit
+alike. Import icons directly from `lucide-react`:
 
-On Figma, if the icon layer name is formatted like `uil:chart-line`, then it's
-likely using an icon from Iconify. Otherwise, see below for custom icon
-implementation.
+```tsx
+import { Search, Star } from "lucide-react";
+```
 
-Please also refer to Iconify guide
-[here](https://github.com/iconify/iconify/tree/main/iconify-icon/react)
+Keep the local icon set (`src/common/components/icons/`) ONLY for brand/colored
+glyphs that lucide can't express: `afterclass-icon`, `afterclass-text`,
+`books-colored-icon`, `graduation-cap-colored-icon`, `school-icon`, and filled
+variants (e.g. `thumb-up-filled-icon`). Do not add new generic glyphs to the
+local set — use lucide instead.
 
-### How do I create custom icons that are not from Iconify?
+Stroke-based local icons need `fill="none"` by default so they match lucide's
+stroke-based rendering.
+
+### How do I add a brand/colored custom icon to the local set?
 
 Refer to the README
-[here](https://github.com/AfterClass-io/afterclass.io-v2/tree/main/src/common/components/CustomIcon/README.md)
+[here](https://github.com/AfterClass-io/afterclass.io-v2/tree/main/src/common/components/icons/README.md)
 
 ## Developing with: Theming System
 

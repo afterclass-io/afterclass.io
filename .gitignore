@@ -38,6 +38,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# review artifacts
+.review-shots/
+
 # typescript
 *.tsbuildinfo
 
@@ -46,3 +49,13 @@ storybook-static/
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# git worktrees
+.worktrees/
+
+# Cypress env (contains test credentials — use cypress.env.example.json for reference)
+cypress.env.json
+
+# Cypress artifacts
+cypress/screenshots/
+cypress/videos/

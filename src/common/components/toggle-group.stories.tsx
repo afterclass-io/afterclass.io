@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { GitBranch, LayoutGrid } from "lucide-react";
 
 import { ToggleGroup, ToggleGroupItem } from "./toggle-group";
 
@@ -59,4 +60,30 @@ export const Disabled: Story = {
     ...Default.args,
     disabled: true,
   },
+};
+
+/**
+ * Segmented control with icon + unequal label widths (mirrors the roadmap
+ * Grid/Timeline toggle). Regression: items must keep even padding on all
+ * sides — the wider label must not squeeze its icon/text against the item
+ * borders.
+ */
+export const Segmented: Story = {
+  render: () => (
+    <ToggleGroup
+      type="single"
+      variant="segmented"
+      size="sm"
+      defaultValue="grid"
+    >
+      <ToggleGroupItem value="grid" aria-label="Grid view">
+        <LayoutGrid className="size-4 shrink-0" />
+        <span>Grid</span>
+      </ToggleGroupItem>
+      <ToggleGroupItem value="timeline" aria-label="Timeline view">
+        <GitBranch className="size-4 shrink-0" />
+        <span>Timeline</span>
+      </ToggleGroupItem>
+    </ToggleGroup>
+  ),
 };

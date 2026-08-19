@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CartesianGrid,
   Legend,
@@ -19,7 +19,12 @@ import {
   ChartTooltipContent,
 } from "@/common/components/chart";
 import { inferAcadTerm } from "@/common/functions";
+import { formatBidCurrencyCompact } from "@/common/functions/format-bid-currency";
 import { Label } from "recharts";
+import {
+  clampLabelCenterX,
+  estimateLabelWidth,
+} from "@/modules/bidding/utils/chart-label-layout";
 
 const chartConfig = {
   median: {
@@ -32,7 +37,11 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-import { ROUND_ORDER } from "@/modules/bidding/utils/round-order";
+import { compareRounds } from "@/modules/bidding/utils/round-order";
+import { parseBidWindowKey } from "@/modules/bidding/utils/bid-window-key";
+import {
+  computeAcadTermGroups,
+} from "@/modules/bidding/utils/acad-term-groups";
 
 export function sortChartData(
   data: (
@@ -53,64 +62,25 @@ export function sortChartData(
       };
     })
     .sort((a, b) => {
-      const [termA, roundA, winA] = a.bidWindow.split("/");
-      const [termB, roundB, winB] = b.bidWindow.split("/");
+      const aKey = parseBidWindowKey(a.bidWindow);
+      const bKey = parseBidWindowKey(b.bidWindow);
       // Sort by acadTerm first (asc / chronological), then round order, then window number
-      if (termA !== termB)
-        return (termA ?? "").localeCompare(termB ?? "");
-      const roA = ROUND_ORDER[(roundA ?? "").trim()] ?? 99;
-      const roB = ROUND_ORDER[(roundB ?? "").trim()] ?? 99;
-      if (roA !== roB) return roA - roB;
-      // Both unknown → stable lexicographic fallback
-      if (roA === 99 && roB === 99)
-        return (roundA ?? "").localeCompare(roundB ?? "");
-      return (parseInt(winA ?? "0") || 0) - (parseInt(winB ?? "0") || 0);
+      if (aKey.acadTermId !== bKey.acadTermId)
+        return aKey.acadTermId.localeCompare(bKey.acadTermId);
+      const roundCmp = compareRounds(aKey.round, bKey.round);
+      if (roundCmp !== 0) return roundCmp;
+      return (parseInt(aKey.window, 10) || 0) - (parseInt(bKey.window, 10) || 0);
     });
-}
-
-/** Academic year group computed from sorted chart data */
-interface AYGroup {
-  acadTermId: string;
-  shortLabel: string;
-  firstBidWindow: string;
-  lastBidWindow: string;
-}
-
-/**
- * Compute contiguous academic year groups from sorted data.
- * Each group represents a contiguous run of data points with the same acadTermId.
- */
-function computeAYGroups(
-  sorted: ReturnType<typeof sortChartData>,
-): AYGroup[] {
-  const groups: AYGroup[] = [];
-  let current: AYGroup | null = null;
-
-  for (const point of sorted) {
-    const [acadTermId] = point.bidWindow.split("/");
-    if (!acadTermId) continue;
-
-    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-    if (!current || current.acadTermId !== acadTermId) {
-      const { shortLabel } = inferAcadTerm(acadTermId);
-      current = {
-        acadTermId,
-        shortLabel,
-        firstBidWindow: point.bidWindow,
-        lastBidWindow: point.bidWindow,
-      };
-      groups.push(current);
-    } else {
-      current.lastBidWindow = point.bidWindow;
-    }
-  }
-
-  return groups;
 }
 
 /** Alternating background colors for AY group shading */
 const AY_BG_EVEN = "transparent";
 const AY_BG_ODD = "var(--muted)";
+
+/** Chart gutter: plot-area margins and the fixed y-axis gutter. */
+const CHART_MARGIN = { top: 24, right: 20, bottom: 5, left: 8 } as const;
+const Y_AXIS_WIDTH = 72; // 72 ensures "e$1.2K" / "e$999.00" not clipped (was 50 → "e" half clipped)
+const PLOT_LEFT = CHART_MARGIN.left + Y_AXIS_WIDTH; // 80 — used by the x-axis label clamp
 
 interface BidChartProps {
   chartData: {
@@ -130,19 +100,48 @@ export const BidChart = ({
   const manyPoints = sorted.length >= 15;
 
   // Compute academic year groups for two-tier x-axis and alternating backgrounds
-  const ayGroups = useMemo(() => computeAYGroups(sorted), [sorted]);
+  const ayGroups = useMemo(() => computeAcadTermGroups(sorted), [sorted]);
 
   // Find the data point matching the current window for the highlight
   const currentPoint = currentWindowBidWindow
     ? sorted.find((d) => d.bidWindow === currentWindowBidWindow)
     : null;
 
+  // Track the chart's rendered width so we can clamp axis labels into the
+  // plot area (labels must never overflow the left/right edges).
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const measure = () => setContainerWidth(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Map the MIDDLE bidWindow of each AY group to its short label, so the
+  // label renders once per group, centered under the group.
+  const groupMidTicks = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const group of ayGroups) {
+      const firstIdx = sorted.findIndex((d) => d.bidWindow === group.firstBidWindow);
+      const lastIdx = sorted.findIndex((d) => d.bidWindow === group.lastBidWindow);
+      const midIdx = firstIdx + Math.max(0, Math.floor((lastIdx - firstIdx) / 2));
+      const midWindow = sorted[midIdx]?.bidWindow;
+      if (midWindow) map.set(midWindow, group.shortLabel);
+    }
+    return map;
+  }, [ayGroups, sorted]);
+
   return (
-    <ChartContainer config={chartConfig}>
+    <ChartContainer ref={containerRef} config={chartConfig}>
       <LineChart
         accessibilityLayer
         data={sorted}
-        margin={{ top: 24, right: 20, bottom: 5, left: 0 }}
+        margin={CHART_MARGIN}
       >
         <CartesianGrid
           strokeDasharray="3 3"
@@ -150,7 +149,7 @@ export const BidChart = ({
           stroke="var(--border)"
         />
 
-        {/* Alternating academic year background shading + AY labels */}
+        {/* Alternating academic year background shading */}
         {ayGroups.map((group, i) => (
           <ReferenceArea
             key={group.acadTermId}
@@ -158,29 +157,54 @@ export const BidChart = ({
             x2={group.lastBidWindow}
             fill={i % 2 === 0 ? AY_BG_EVEN : AY_BG_ODD}
             fillOpacity={i % 2 === 0 ? 0 : 0.4}
-            // AY label at the bottom of each group — acts as the x-axis label
-            label={{
-              value: group.shortLabel,
-              position: "insideBottom",
-              fill: "var(--muted-foreground)",
-              fontSize: 11,
-              fontWeight: 600,
-              offset: 4,
-            }}
           />
         ))}
 
         <XAxis
           dataKey="bidWindow"
-          tick={false}
           axisLine={false}
+          tickLine={false}
+          interval={0}
+          tick={(props) => {
+            const { x, y, payload } = props as {
+              x: number;
+              y: number;
+              payload: { value: string };
+            };
+            const label = groupMidTicks.get(payload.value);
+            if (!label) return <g />;
+
+            const labelWidth = estimateLabelWidth(label);
+            // Plot bounds: left = YAxis width (Y_AXIS_WIDTH) + margin.left;
+            // right = measured container width - margin.right.
+            const plotLeft = PLOT_LEFT;
+            const plotRight =
+              containerWidth > 0 ? containerWidth - CHART_MARGIN.right : 0;
+            const centerX =
+              plotRight > plotLeft
+                ? clampLabelCenterX(x, plotLeft, plotRight, labelWidth)
+                : x;
+
+            return (
+              <text
+                x={centerX}
+                y={y + 12}
+                textAnchor="middle"
+                fill="var(--muted-foreground)"
+                fontSize={11}
+                fontWeight={600}
+              >
+                {label}
+              </text>
+            );
+          }}
         />
         <YAxis
           axisLine={false}
           tickLine={false}
-          tickFormatter={(value) => `e$${value}`}
+          tickFormatter={(value) => formatBidCurrencyCompact(Number(value))}
           domain={[0, "auto"]}
-          width={50}
+          width={Y_AXIS_WIDTH}
           tick={{ fontSize: 12 }}
         />
 

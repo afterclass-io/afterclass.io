@@ -13,6 +13,7 @@ import {
 import { Tag } from "@/common/components/tag";
 import React from "react";
 import { Heading } from "@/common/components/heading";
+import { formatDateSGT } from "@/common/functions/format-date-sgt";
 import { ProgressLink } from "@/common/components/progress-link";
 
 export const ClassCard = ({
@@ -115,13 +116,11 @@ export const ClassCard = ({
                 <MemoIcon size={16} className="mr-1" />
                 <span className="text-sm ">
                   {timing.date
-                    ? new Intl.DateTimeFormat("en-GB", {
+                    ? formatDateSGT(timing.date, {
                       day: "2-digit",
                       month: "short",
                       year: "numeric",
                     })
-                      .format(timing.date)
-                      .replace(/ /g, "-")
                     : ""}
                   <br></br>
                   {timing.dayOfWeek}&nbsp;
