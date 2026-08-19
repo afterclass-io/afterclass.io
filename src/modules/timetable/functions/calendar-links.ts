@@ -9,7 +9,8 @@ export type CalendarLinks = {
   /** webcal:// URL — opens desktop calendar apps (Apple Calendar, Outlook)
    *  directly. Web calendars generally expect the https `feedUrl` instead. */
   subscribeUrl: string;
-  /** One-step subscribe URLs for the major calendar apps. */
+  /** Google Calendar one-step subscribe — uses the https `feedUrl` in `cid`
+   *  (Google stores the URL verbatim; webcal fails to sync). */
   googleSubscribeUrl: string;
   appleSubscribeUrl: string;
   outlookSubscribeUrl: string;
@@ -18,10 +19,11 @@ export type CalendarLinks = {
 /**
  * Build the feed and subscription URLs for an iCal token.
  *
- * `subscribeUrl` swaps the http(s) scheme for `webcal://`, which calendar
- * apps register as their subscription protocol. The Google / Apple / Outlook
- * one-step URLs reuse it (or the plain `feedUrl`) inside each app's own
- * subscribe flow.
+ * `subscribeUrl` swaps the http(s) scheme for `webcal://`, which Apple
+ * Calendar (and similar desktop apps) register as their subscription protocol.
+ * Google Calendar expects the plain https `feedUrl` in `cid`; passing the
+ * webcal URL causes the subscription to sync empty. Outlook uses the https
+ * `feedUrl` in `url`.
  */
 export function buildCalendarLinks(
   origin: string,
@@ -32,7 +34,7 @@ export function buildCalendarLinks(
   return {
     feedUrl,
     subscribeUrl,
-    googleSubscribeUrl: `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(subscribeUrl)}`,
+    googleSubscribeUrl: `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(feedUrl)}`,
     appleSubscribeUrl: subscribeUrl,
     outlookSubscribeUrl: `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(feedUrl)}`,
   };
