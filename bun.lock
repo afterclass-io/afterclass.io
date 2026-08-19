@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "dependencies": {
@@ -132,6 +133,7 @@
   "overrides": {
     "@types/react": "19.1.2",
     "@types/react-dom": "19.1.2",
+    "jackspeak": "4.0.1",
   },
   "packages": {
     "@adobe/css-tools": ["@adobe/css-tools@4.4.1", "", {}, "sha512-12WGKBQzjUAI4ayyF4IAtfw2QR/IDoqk6jTddXDhtYTJF9ASmoE1zst7cVtP0aL/F1jUJL5r+JxKXKEgHNbEUQ=="],
