@@ -1,23 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/auth", () => ({ auth: () => null }));
-vi.mock("@sentry/nextjs", () => ({
-  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
-}));
-
+import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { removeSlot } from "./index";
 
 const router = createTRPCRouter({ removeSlot });
-
-function makeCaller(dbMock: unknown) {
-  return router.createCaller({
-    db: dbMock,
-    session: { user: { id: "u1" } },
-    headers: new Headers(),
-  } as never);
-}
 
 describe("timetable.removeSlot", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -32,7 +19,7 @@ describe("timetable.removeSlot", () => {
       },
       userTimetableSlot: { deleteMany },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     const result = await caller.removeSlot({
       timetableId: "t1",
       classId: "c1",
@@ -53,7 +40,7 @@ describe("timetable.removeSlot", () => {
       },
       userTimetableSlot: { deleteMany },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     // A missing slot (e.g. double-clicked remove) is already the desired
     // end state — still succeeds, no throw.
     await expect(
@@ -69,7 +56,7 @@ describe("timetable.removeSlot", () => {
       },
       userTimetableSlot: { deleteMany },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(
       caller.removeSlot({ timetableId: "t1", classId: "c1" }),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });

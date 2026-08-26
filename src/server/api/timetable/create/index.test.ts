@@ -1,23 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/auth", () => ({ auth: () => null }));
-vi.mock("@sentry/nextjs", () => ({
-  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
-}));
-
+import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { create } from "./index";
 
 const router = createTRPCRouter({ create });
-
-function makeCaller(dbMock: unknown) {
-  return router.createCaller({
-    db: dbMock,
-    session: { user: { id: "u1" } },
-    headers: new Headers(),
-  } as never);
-}
 
 describe("timetable.create", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -38,7 +25,7 @@ describe("timetable.create", () => {
     const dbMock = {
       userTimetable: { count, create: createMock },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
 
     const result = await caller.create({ acadTermId: "term-a" });
 
@@ -71,7 +58,7 @@ describe("timetable.create", () => {
     const dbMock = {
       userTimetable: { count, create: createMock },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
 
     const result = await caller.create({ acadTermId: "term-a", name: "My Plan" });
 
@@ -92,7 +79,7 @@ describe("timetable.create", () => {
     const dbMock = {
       userTimetable: { count, create: createMock },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
 
     await expect(caller.create({ acadTermId: "term-a" })).rejects.toThrow("boom");
     expect(createMock).toHaveBeenCalledTimes(1);
@@ -104,7 +91,7 @@ describe("timetable.create", () => {
     const dbMock = {
       userTimetable: { count, create: createMock },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
 
     await expect(caller.create({ acadTermId: "term-a" })).rejects.toThrow("generic boom");
     expect(createMock).toHaveBeenCalledTimes(1);

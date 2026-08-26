@@ -1,24 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-// Prisma client must never be instantiated in tests: mock db + transitive deps
-vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/auth", () => ({ auth: () => null }));
-vi.mock("@sentry/nextjs", () => ({
-  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
-}));
-
+import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { setFaculty } from "./index";
 
 const router = createTRPCRouter({ setFaculty });
-
-function makeCaller(dbMock: unknown) {
-  return router.createCaller({
-    db: dbMock,
-    session: { user: { id: "u1" } },
-    headers: new Headers(),
-  } as never);
-}
 
 describe("roadmaps.setFaculty", () => {
   beforeEach(() => {
@@ -35,7 +21,7 @@ describe("roadmaps.setFaculty", () => {
         findUnique: vi.fn().mockResolvedValue({ id: 2, name: "SCIS", acronym: "SCIS" }),
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setFaculty({ roadmapId: "r1", facultyId: 2 });
     expect(dbMock.faculties.findUnique).toHaveBeenCalledWith({ where: { id: 2 } });
     expect(dbMock.userRoadmap.update).toHaveBeenCalledWith({
@@ -54,7 +40,7 @@ describe("roadmaps.setFaculty", () => {
         findUnique: vi.fn(),
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setFaculty({ roadmapId: "r1", facultyId: null });
     expect(dbMock.faculties.findUnique).not.toHaveBeenCalled();
     expect(dbMock.userRoadmap.update).toHaveBeenCalledWith({
@@ -73,7 +59,7 @@ describe("roadmaps.setFaculty", () => {
         findUnique: vi.fn(),
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(caller.setFaculty({ roadmapId: "r1", facultyId: 2 })).rejects.toMatchObject({
       code: "FORBIDDEN",
     });
@@ -90,7 +76,7 @@ describe("roadmaps.setFaculty", () => {
         findUnique: vi.fn().mockResolvedValue(null),
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(caller.setFaculty({ roadmapId: "r1", facultyId: 999 })).rejects.toMatchObject({
       code: "BAD_REQUEST",
     });

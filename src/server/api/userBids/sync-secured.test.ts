@@ -1,24 +1,11 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/auth", () => ({ auth: () => null }));
-vi.mock("@sentry/nextjs", () => ({
-  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
-}));
-
+import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { demoteSiblingBids, syncSecuredBidToActiveTimetable } from "./sync-secured";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { setStatus } from "./setStatus";
 
 const router = createTRPCRouter({ setStatus });
-
-function makeCaller(dbMock: unknown) {
-  return router.createCaller({
-    db: dbMock,
-    session: { user: { id: "u1" } },
-    headers: new Headers(),
-  } as never);
-}
 
 /** Build a db mock wired to an interactive-transaction callback. */
 function makeSetStatusDb() {
@@ -153,7 +140,7 @@ describe("userBids.setStatus — active-timetable sync", () => {
       isActive: true,
     });
 
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setStatus({ id: "b1", status: "SECURED" });
 
     expect(userBidUpdate).toHaveBeenCalledWith({
@@ -193,7 +180,7 @@ describe("userBids.setStatus — active-timetable sync", () => {
       isActive: true,
     });
 
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setStatus({ id: "b1", status: "SECURED" });
 
     expect(timetableCreate).toHaveBeenCalledWith({
@@ -209,7 +196,7 @@ describe("userBids.setStatus — active-timetable sync", () => {
     const { dbMock, userBidUpdate, userBidUpdateMany, slotCreateMany } =
       makeSetStatusDb();
 
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setStatus({ id: "b1", status: "DROPPED" });
 
     expect(userBidUpdate).toHaveBeenCalledWith({
@@ -223,7 +210,7 @@ describe("userBids.setStatus — active-timetable sync", () => {
   it("marking PLANNED/CANCELLED also flips siblings but never touches the timetable", async () => {
     for (const status of ["PLANNED", "CANCELLED"] as const) {
       const { dbMock, userBidUpdateMany, slotCreateMany } = makeSetStatusDb();
-      const caller = makeCaller(dbMock);
+      const caller = makeCaller(router.createCaller, dbMock);
       await caller.setStatus({ id: "b1", status });
       expect(userBidUpdateMany).toHaveBeenCalled();
       expect(slotCreateMany).not.toHaveBeenCalled();
@@ -232,7 +219,7 @@ describe("userBids.setStatus — active-timetable sync", () => {
 
   it("allows PARTICIPATED via the dropdown (same-window siblings default to participated)", async () => {
     const { dbMock, userBidUpdate } = makeSetStatusDb();
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setStatus({ id: "b1", status: "PARTICIPATED" as never });
     expect(userBidUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: "b1" }, data: { status: "PARTICIPATED" } }),
@@ -246,7 +233,7 @@ describe("userBids.setStatus — active-timetable sync", () => {
       acadTermId: "term-a",
       isActive: true,
     });
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setStatus({ id: "b1", status: "SECURED" });
     expect(userBidUpdateMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -266,7 +253,7 @@ describe("userBids.setStatus — active-timetable sync", () => {
     (dbMock.userBid.findFirst as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       id: "other-secured",
     });
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(
       caller.setStatus({ id: "b1", status: "SECURED" }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
@@ -274,10 +261,81 @@ describe("userBids.setStatus — active-timetable sync", () => {
 
   it("rejects an invalid status with a zod validation error", async () => {
     const { dbMock } = makeSetStatusDb();
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(
       caller.setStatus({ id: "b1", status: "INVALID" as never }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+});
+
+describe("userBids.setStatus — guards and P2002 retry", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("throws FORBIDDEN when the bid is not owned by the caller", async () => {
+    const { dbMock, userBidUpdate } = makeSetStatusDb();
+    (dbMock.userBid.findUnique as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      null,
+    );
+    const caller = makeCaller(router.createCaller, dbMock);
+    await expect(
+      caller.setStatus({ id: "b1", status: "DROPPED" }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(userBidUpdate).not.toHaveBeenCalled();
+  });
+
+  it("throws BAD_REQUEST when the bid's class no longer exists", async () => {
+    const { dbMock, userBidUpdate } = makeSetStatusDb();
+    (dbMock.classes.findUnique as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      null,
+    );
+    const caller = makeCaller(router.createCaller, dbMock);
+    await expect(
+      caller.setStatus({ id: "b1", status: "DROPPED" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(userBidUpdate).not.toHaveBeenCalled();
+  });
+
+  it("throws BAD_REQUEST before any write when securing would exceed the term budget", async () => {
+    const { dbMock, userBidUpdate } = makeSetStatusDb();
+    (
+      dbMock.userBidBudget.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValueOnce({ balance: 100 });
+    (dbMock.userBid.aggregate as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      _sum: { bidAmount: 90 },
+    });
+    const caller = makeCaller(router.createCaller, dbMock);
+    // bid.bidAmount is 50 (see makeSetStatusDb); 90 spent + 50 > 100 budget.
+    await expect(
+      caller.setStatus({ id: "b1", status: "SECURED" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(userBidUpdate).not.toHaveBeenCalled();
+  });
+
+  it("retries the whole transaction once on a P2002 race and returns the result", async () => {
+    const { dbMock, timetableFindFirst } = makeSetStatusDb();
+    timetableFindFirst.mockResolvedValue({
+      id: "t1",
+      acadTermId: "term-a",
+      isActive: true,
+    });
+    dbMock.$transaction.mockRejectedValueOnce({ code: "P2002" });
+
+    const caller = makeCaller(router.createCaller, dbMock);
+    const result = await caller.setStatus({ id: "b1", status: "SECURED" });
+
+    expect(dbMock.$transaction).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({ id: "b1" });
+  });
+
+  it("re-throws a non-P2002 transaction error without retrying", async () => {
+    const { dbMock } = makeSetStatusDb();
+    dbMock.$transaction.mockRejectedValue(new Error("boom"));
+
+    const caller = makeCaller(router.createCaller, dbMock);
+    await expect(
+      caller.setStatus({ id: "b1", status: "SECURED" }),
+    ).rejects.toThrow("boom");
+    expect(dbMock.$transaction).toHaveBeenCalledTimes(1);
   });
 });
 
