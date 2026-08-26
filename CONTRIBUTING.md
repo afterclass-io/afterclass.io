@@ -22,7 +22,7 @@ participating in this project.
 
 ## Our Philosophy
 
-Refer to our [Project Philosophy](PHILOSOPHY.md) for the standards that we
+Refer to our [Project Philosophy](docs/PHILOSOPHY.md) for the standards that we
 adhere to.
 
 ## Open Development

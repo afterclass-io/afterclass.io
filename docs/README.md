@@ -3,6 +3,14 @@
 Additional documentation for the project that are not included the various
 project root markdown documents.
 
+## Guides
+
+- [Project Philosophy](PHILOSOPHY.md)
+- [Project Architecture](ARCHITECTURE.md)
+- [Development Guide](DEVELOPMENT.md)
+- [Deployment Guide](DEPLOYMENT.md)
+- [Notice](NOTICE.md)
+
 ## Decisions
 
 This directory contains documents that describe the decisions made during the

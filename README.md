@@ -59,16 +59,16 @@ technologies:
 - [Vercel](https://vercel.com/) - Hosting and deployment
 - [Supabase](https://supabase.com/) - Database and authentication
 
-For more information, see the [Development Guide](DEVELOPMENT.md) and
-[Deployment Guide](DEPLOYMENT.md).
+For more information, see the [Development Guide](docs/DEVELOPMENT.md) and
+[Deployment Guide](docs/DEPLOYMENT.md).
 
 ## 📚 Documentation
 
-- [Project Philosophy](PHILOSOPHY.md)
+- [Project Philosophy](docs/PHILOSOPHY.md)
 - [Contributing Guide](CONTRIBUTING.md)
-- [Project Architecture](ARCHITECTURE.md)
-- [Development Guide](DEVELOPMENT.md)
-- [Deployment Guide](DEPLOYMENT.md)
+- [Project Architecture](docs/ARCHITECTURE.md)
+- [Development Guide](docs/DEVELOPMENT.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
 
 ## 🤝 Contributing
 
