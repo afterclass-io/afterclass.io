@@ -1,26 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-// The Prisma client must never be instantiated in tests: mock the db module
-// used by trpc.ts at import time. Also mock transitive dependencies pulled
-// by @/server/api/trpc (same pattern as saveEntries/syncProgress tests).
-vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/auth", () => ({ auth: () => null }));
-vi.mock("@sentry/nextjs", () => ({
-  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
-}));
-
+import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { setMatricTerm } from "./index";
 
 const router = createTRPCRouter({ setMatricTerm });
-
-function makeCaller(dbMock: unknown) {
-  return router.createCaller({
-    db: dbMock,
-    session: { user: { id: "u1" } },
-    headers: new Headers(),
-  } as never);
-}
 
 describe("roadmaps.setMatricTerm", () => {
   beforeEach(() => {
@@ -44,7 +28,7 @@ describe("roadmaps.setMatricTerm", () => {
         findUnique: vi.fn().mockResolvedValue({ id: "AY202425T1" }),
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setMatricTerm({
       roadmapId: "r1",
       matricTermId: "AY202425T1",
@@ -75,13 +59,28 @@ describe("roadmaps.setMatricTerm", () => {
         findUnique: vi.fn(),
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setMatricTerm({ roadmapId: "r1", matricTermId: null });
     expect(dbMock.acadTerm.findUnique).not.toHaveBeenCalled();
     expect(dbMock.userRoadmap.update).toHaveBeenCalledWith({
       where: { id: "r1" },
       data: { matricTermId: null },
     });
+  });
+
+  it("rejects an unknown academic term", async () => {
+    const dbMock = {
+      userRoadmap: {
+        findUnique: vi.fn().mockResolvedValue({ id: "r1", userId: "u1" }),
+        update: vi.fn(),
+      },
+      acadTerm: { findUnique: vi.fn().mockResolvedValue(null) },
+    };
+    const caller = makeCaller(router.createCaller, dbMock);
+    await expect(
+      caller.setMatricTerm({ roadmapId: "r1", matricTermId: "nope" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(dbMock.userRoadmap.update).not.toHaveBeenCalled();
   });
 
   it("rejects roadmaps owned by another user", async () => {
@@ -97,7 +96,7 @@ describe("roadmaps.setMatricTerm", () => {
         findUnique: vi.fn(),
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(
       caller.setMatricTerm({ roadmapId: "r1", matricTermId: "AY202425T1" }),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });

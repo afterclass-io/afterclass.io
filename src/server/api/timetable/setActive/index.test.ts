@@ -1,23 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/auth", () => ({ auth: () => null }));
-vi.mock("@sentry/nextjs", () => ({
-  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
-}));
-
+import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { setActive } from "./index";
 
 const router = createTRPCRouter({ setActive });
-
-function makeCaller(dbMock: unknown) {
-  return router.createCaller({
-    db: dbMock,
-    session: { user: { id: "u1" } },
-    headers: new Headers(),
-  } as never);
-}
 
 describe("timetable.setActive", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -40,7 +27,7 @@ describe("timetable.setActive", () => {
       },
       $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setActive({ timetableId: "t2" });
 
     expect(updateMany).toHaveBeenCalledWith({
@@ -82,7 +69,7 @@ describe("timetable.setActive", () => {
       },
       $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setActive({ timetableId: "t2" });
 
     // Slots are only ever written into the newly active plan (t2) — nothing
@@ -111,7 +98,7 @@ describe("timetable.setActive", () => {
       },
       $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setActive({ timetableId: "t2" });
     expect(createMany).not.toHaveBeenCalled();
   });
@@ -120,7 +107,7 @@ describe("timetable.setActive", () => {
     const dbMock = {
       userTimetable: { findUnique: vi.fn().mockResolvedValue(null) },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(caller.setActive({ timetableId: "t2" })).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
@@ -144,7 +131,7 @@ describe("timetable.setActive", () => {
       },
       $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(caller.setActive({ timetableId: "t2" })).rejects.toThrow("slot boom");
     expect(createMany).toHaveBeenCalled();
     expect(dbMock.$transaction).toHaveBeenCalledTimes(1);

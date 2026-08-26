@@ -1,11 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/auth", () => ({ auth: () => null }));
-vi.mock("@sentry/nextjs", () => ({
-  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
-}));
-
+import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 
 import { listPublic } from "./index";
@@ -65,14 +60,6 @@ describe("listPublicInput", () => {
 describe("listPublic", () => {
   const router = createTRPCRouter({ listPublic });
 
-  function makeCaller(dbMock: unknown) {
-    return router.createCaller({
-      db: dbMock,
-      session: null,
-      headers: new Headers(),
-    } as never);
-  }
-
   beforeEach(() => vi.clearAllMocks());
 
   it("orders most-liked by upvoteCount desc via DB orderBy", async () => {
@@ -81,7 +68,7 @@ describe("listPublic", () => {
       userRoadmap: { findMany },
       faculties: { findMany: vi.fn().mockResolvedValue([]) },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock, null);
     await caller.listPublic({ sort: "most-liked" });
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -100,7 +87,7 @@ describe("listPublic", () => {
       userRoadmap: { findMany },
       faculties: { findMany: vi.fn().mockResolvedValue([]) },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock, null);
     await caller.listPublic({ sort: "most-liked", cursor: "c1", limit: 10 });
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -114,5 +101,107 @@ describe("listPublic", () => {
         cursor: { id: "c1" },
       }),
     );
+  });
+
+  it.each([
+    ["most-viewed", [{ viewCount: "desc" }, { publishedAt: "desc" }, { id: "desc" }]],
+    ["newest", [{ publishedAt: "desc" }, { id: "desc" }]],
+  ])("orders %s via DB orderBy", async (sort, orderBy) => {
+    const findMany = vi.fn().mockResolvedValue([]);
+    const dbMock = {
+      userRoadmap: { findMany },
+      faculties: { findMany: vi.fn() },
+    };
+    const caller = makeCaller(router.createCaller, dbMock, null);
+    await caller.listPublic({ sort: sort as "most-viewed" | "newest" });
+    expect(findMany).toHaveBeenCalledWith(expect.objectContaining({ orderBy }));
+  });
+
+  const roadmapRow = (over: Record<string, unknown>) => ({
+    id: "x",
+    name: "R",
+    description: "d",
+    slug: "r",
+    facultyId: null,
+    visibility: "PUBLIC",
+    publishedAt: new Date("2026-01-01T00:00:00Z"),
+    viewCount: 0,
+    shareCount: 0,
+    isActive: false,
+    userId: "owner",
+    user: { username: "alice" },
+    _count: { entries: 3, votes: 2 },
+    ...over,
+  });
+
+  it("pops the extra row for nextCursor, resolves faculty names, and maps items", async () => {
+    const findMany = vi.fn().mockResolvedValue([
+      roadmapRow({ id: "r1", facultyId: 10 }),
+      roadmapRow({ id: "r2", facultyId: null }),
+      roadmapRow({ id: "r3", facultyId: 10 }), // the limit+1 overflow row
+    ]);
+    const facultiesFindMany = vi
+      .fn()
+      .mockResolvedValue([{ id: 10, name: "School of Economics", acronym: "SOE" }]);
+    const dbMock = {
+      userRoadmap: { findMany },
+      faculties: { findMany: facultiesFindMany },
+    };
+    const caller = makeCaller(router.createCaller, dbMock, null);
+
+    const result = await caller.listPublic({
+      limit: 2,
+      facultyId: 10,
+      query: "data",
+    });
+
+    // facultyId + query both fold into the where clause.
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          visibility: "PUBLIC",
+          publishedAt: { not: null },
+          facultyId: 10,
+          OR: [
+            { name: { contains: "data", mode: "insensitive" } },
+            { description: { contains: "data", mode: "insensitive" } },
+          ],
+        },
+        take: 3,
+      }),
+    );
+    // Only the kept faculty ids are looked up (r2's null is filtered out).
+    expect(facultiesFindMany).toHaveBeenCalledWith({
+      where: { id: { in: [10] } },
+      select: { id: true, name: true, acronym: true },
+    });
+
+    expect(result.nextCursor).toBe("r2");
+    expect(result.items).toHaveLength(2);
+    expect(result.items[0]).toMatchObject({
+      ownerUsername: "alice",
+      entryCount: 3,
+      voteCount: 2,
+      faculty: { id: 10, name: "School of Economics", acronym: "SOE" },
+    });
+    expect(result.items[1]!.faculty).toBeNull();
+  });
+
+  it("skips the faculty lookup entirely when no kept roadmap has a faculty", async () => {
+    const findMany = vi
+      .fn()
+      .mockResolvedValue([roadmapRow({ id: "r1", facultyId: null })]);
+    const facultiesFindMany = vi.fn();
+    const dbMock = {
+      userRoadmap: { findMany },
+      faculties: { findMany: facultiesFindMany },
+    };
+    const caller = makeCaller(router.createCaller, dbMock, null);
+
+    const result = await caller.listPublic({ limit: 20 });
+
+    expect(facultiesFindMany).not.toHaveBeenCalled();
+    expect(result.nextCursor).toBeNull();
+    expect(result.items[0]!.faculty).toBeNull();
   });
 });

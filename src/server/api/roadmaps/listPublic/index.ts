@@ -64,8 +64,8 @@ export const listPublic = publicProcedure
 
     let nextCursor: string | null = null;
     if (roadmaps.length > limit) {
-      const nextItem = roadmaps.pop()!;
-      nextCursor = nextItem.id;
+      roadmaps.pop();
+      nextCursor = roadmaps[roadmaps.length - 1]!.id;
     }
 
     // facultyId is a plain snapshot column (no Prisma relation), so resolve

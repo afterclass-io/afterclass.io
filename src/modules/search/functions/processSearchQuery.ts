@@ -1,7 +1,4 @@
 export function processSearchQuery(query: string): string {
-  const cleanedQuery = query.trim();
-
-  return cleanedQuery.includes(" ")
-    ? cleanedQuery.split(" ").join(" & ")
-    : cleanedQuery;
+  const terms = query.trim().split(/\s+/).filter(Boolean);
+  return terms.join(" & ");
 }

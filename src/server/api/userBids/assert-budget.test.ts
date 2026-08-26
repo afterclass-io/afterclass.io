@@ -1,24 +1,11 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/auth", () => ({ auth: () => null }));
-vi.mock("@sentry/nextjs", () => ({
-  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
-}));
-
+import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { spentForTerm, assertSecuredWithinBudget } from "./assert-budget";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { upsertBudget } from "./upsertBudget";
 
 const router = createTRPCRouter({ upsertBudget });
-
-function makeCaller(dbMock: unknown) {
-  return router.createCaller({
-    db: dbMock,
-    session: { user: { id: "u1" } },
-    headers: new Headers(),
-  } as never);
-}
 
 describe("spentForTerm", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -116,14 +103,14 @@ describe("userBids.upsertBudget — balance cannot go below spent", () => {
       },
       userBidBudget: { upsert: vi.fn() },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(
       caller.upsertBudget({ acadTermId: "term-a", balance: 100 }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     expect(dbMock.userBidBudget.upsert).not.toHaveBeenCalled();
   });
 
-  it("allows a balance exactly equal to current spent", async () => {
+  it("allows a balance exactly equal to current spent and upserts it keyed by (userId, acadTermId)", async () => {
     const dbMock = {
       userBid: {
         aggregate: vi.fn().mockResolvedValue({ _sum: { bidAmount: 100 } }),
@@ -132,12 +119,18 @@ describe("userBids.upsertBudget — balance cannot go below spent", () => {
         upsert: vi.fn().mockResolvedValue({ balance: 100 }),
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     const result = await caller.upsertBudget({
       acadTermId: "term-a",
       balance: 100,
     });
     expect(result).toEqual({ balance: 100 });
-    expect(dbMock.userBidBudget.upsert).toHaveBeenCalled();
+    expect(dbMock.userBidBudget.upsert).toHaveBeenCalledWith({
+      where: {
+        userId_acadTermId: { userId: "u1", acadTermId: "term-a" },
+      },
+      create: { userId: "u1", acadTermId: "term-a", balance: 100 },
+      update: { balance: 100 },
+    });
   });
 });

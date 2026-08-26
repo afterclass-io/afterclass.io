@@ -1,23 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/auth", () => ({ auth: () => null }));
-vi.mock("@sentry/nextjs", () => ({
-  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
-}));
-
+import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { addSlot } from "./index";
 
 const router = createTRPCRouter({ addSlot });
-
-function makeCaller(dbMock: unknown) {
-  return router.createCaller({
-    db: dbMock,
-    session: { user: { id: "u1" } },
-    headers: new Headers(),
-  } as never);
-}
 
 describe("timetable.addSlot", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -37,7 +24,7 @@ describe("timetable.addSlot", () => {
         createMany,
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     const result = await caller.addSlot({ timetableId: "t1", classId: "c1" });
     expect(result.created).toBe(false);
     expect(createMany).toHaveBeenCalledWith({
@@ -61,7 +48,7 @@ describe("timetable.addSlot", () => {
         createMany,
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     const result = await caller.addSlot({ timetableId: "t1", classId: "c1" });
     expect(result.created).toBe(true);
     expect(createMany).toHaveBeenCalledWith({
@@ -76,7 +63,7 @@ describe("timetable.addSlot", () => {
         findUnique: vi.fn().mockResolvedValue(null),
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(
       caller.addSlot({ timetableId: "t1", classId: "c1" }),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
@@ -93,7 +80,7 @@ describe("timetable.addSlot", () => {
         findUnique: vi.fn().mockResolvedValue({ acadTermId: "term-b" }),
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(
       caller.addSlot({ timetableId: "t1", classId: "c1" }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
