@@ -30,7 +30,7 @@ export const getByCourseCode = publicProcedure
       cursor: input.cursor ? { id: input.cursor } : undefined,
       where: {
         reviewedCourse: { code: input.code },
-        reviewedProfessor: { slug: { in: input.slugs } },
+        reviewedProfessor: input.slugs && { slug: { in: input.slugs } },
       },
       orderBy: getOrderBy(input.sortBy),
       select: PUBLIC_REVIEW_FIELDS,

@@ -1,0 +1,40 @@
+name: Integration Tests
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "src/**"
+      - "prisma/**"
+      - "package.json"
+      - "bun.lock"
+      - "vitest.config.ts"
+      - "vitest.integration.setup.ts"
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - "src/**"
+      - "prisma/**"
+      - "package.json"
+      - "bun.lock"
+      - "vitest.config.ts"
+      - "vitest.integration.setup.ts"
+
+jobs:
+  vitest-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
+
+      - run: bun install
+
+      - name: Run integration tests
+        env:
+          SKIP_COVERAGE_THRESHOLDS: "1"
+        run: bun run test:integration:coverage
