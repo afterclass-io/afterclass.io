@@ -1,5 +1,8 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
 
+// Not a createCaller test: incrementEngagement is a plain exported function that
+// takes `db` as an argument, so it doesn't use the shared trpc-test-helpers
+// caller — it only needs @/server/db stubbed so the module graph loads.
 vi.mock("@/server/db", () => ({ db: {} }));
 
 import { incrementEngagement } from "./incrementEngagement";

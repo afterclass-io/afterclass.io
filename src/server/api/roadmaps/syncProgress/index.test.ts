@@ -1,10 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/auth", () => ({ auth: () => null }));
-vi.mock("@sentry/nextjs", () => ({
-  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
-}));
+import { makeCaller } from "@/server/api/trpc-test-helpers";
+
 vi.mock("@/server/api/bidWindows/getCurrentWindow/helpers", () => ({
   getCurrentWindowLogic: vi.fn(),
 }));
@@ -19,19 +16,66 @@ import { getCurrentAcadTerm } from "@/common/tools/acad-term";
 
 const router = createTRPCRouter({ syncProgress });
 
-function makeCaller(dbMock: unknown) {
-  return router.createCaller({
-    db: dbMock,
-    session: { user: { id: "u1" } },
-    headers: new Headers(),
-  } as never);
-}
-
 describe("roadmaps.syncProgress", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getCurrentWindowLogic).mockResolvedValue(null);
     vi.mocked(getCurrentAcadTerm).mockResolvedValue(null);
+  });
+
+  const ownedRoadmap = (over: Record<string, unknown> = {}) => ({
+    id: "r1",
+    userId: "u1",
+    isActive: true,
+    matricTermId: "t0",
+    updatedAt: new Date(),
+    ...over,
+  });
+
+  it("rejects syncing a non-active roadmap", async () => {
+    const dbMock = {
+      userRoadmap: {
+        findUnique: vi.fn().mockResolvedValue(ownedRoadmap({ isActive: false })),
+      },
+    };
+    const caller = makeCaller(router.createCaller, dbMock);
+    await expect(
+      caller.syncProgress({ roadmapId: "r1" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("rejects syncing before a matriculation term is declared", async () => {
+    const dbMock = {
+      userRoadmap: {
+        findUnique: vi.fn().mockResolvedValue(ownedRoadmap({ matricTermId: null })),
+      },
+    };
+    const caller = makeCaller(router.createCaller, dbMock);
+    await expect(
+      caller.syncProgress({ roadmapId: "r1" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("no-ops when no current term can be resolved (no bid window, no calendar term)", async () => {
+    const dbMock = {
+      userRoadmap: { findUnique: vi.fn().mockResolvedValue(ownedRoadmap()) },
+      userRoadmapEntry: { findMany: vi.fn().mockResolvedValue([]) },
+    };
+    const caller = makeCaller(router.createCaller, dbMock);
+    const result = await caller.syncProgress({ roadmapId: "r1" });
+    expect(result).toEqual({ synced: 0, courseIds: [] });
+  });
+
+  it("no-ops when the sync plan is empty (no terms between matriculation and now)", async () => {
+    vi.mocked(getCurrentWindowLogic).mockResolvedValue({ acadTermId: "t1" } as never);
+    const dbMock = {
+      userRoadmap: { findUnique: vi.fn().mockResolvedValue(ownedRoadmap()) },
+      userRoadmapEntry: { findMany: vi.fn().mockResolvedValue([]) },
+      acadTerm: { findMany: vi.fn().mockResolvedValue([]) },
+    };
+    const caller = makeCaller(router.createCaller, dbMock);
+    const result = await caller.syncProgress({ roadmapId: "r1" });
+    expect(result).toEqual({ synced: 0, courseIds: [] });
   });
 
   it("does not sync when the roadmap already has 100 entries", async () => {
@@ -54,7 +98,7 @@ describe("roadmaps.syncProgress", () => {
         ),
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     const result = await caller.syncProgress({ roadmapId: "r1" });
     expect(result.synced).toBe(0);
     expect(dbMock.userRoadmapEntry.findMany).toHaveBeenCalled();
@@ -98,7 +142,7 @@ describe("roadmaps.syncProgress", () => {
       bidWindow: { findMany: vi.fn().mockResolvedValue([]) },
       $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     const result = await caller.syncProgress({ roadmapId: "r1" });
 
     expect(result.synced).toBe(1);
@@ -144,7 +188,7 @@ describe("roadmaps.syncProgress", () => {
         throw Object.assign(new Error("Unique constraint"), { code: "P2002" });
       }),
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     const result = await caller.syncProgress({ roadmapId: "r1" });
     expect(result).toEqual({ synced: 0, courseIds: [] });
   });
@@ -184,7 +228,7 @@ describe("roadmaps.syncProgress", () => {
       bidWindow: { findMany: vi.fn().mockResolvedValue([]) },
       $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(caller.syncProgress({ roadmapId: "r1" })).rejects.toThrow("createMany boom");
     expect(createMany).toHaveBeenCalled();
     expect(dbMock.$transaction).toHaveBeenCalledTimes(1);
