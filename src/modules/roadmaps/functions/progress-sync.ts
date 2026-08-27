@@ -80,14 +80,11 @@ export function buildProgressSyncPlan(
         t.startDt.getTime() <= current.startDt.getTime(),
     )
     .sort((a, b) => a.startDt.getTime() - b.startDt.getTime())
-    .map((t) => {
-      const computed = t.acadYearStart - matric.acadYearStart + 1;
-      return {
-        acadTermId: t.id,
-        yearNumber: Math.min(8, Math.max(1, computed)),
-        term: roadmapTermForAcadTerm(t.term),
-      };
-    })
+    .map((t) => ({
+      acadTermId: t.id,
+      yearNumber: t.acadYearStart - matric.acadYearStart + 1,
+      term: roadmapTermForAcadTerm(t.term),
+    }))
     .filter((t) => t.yearNumber >= 1);
 }
 

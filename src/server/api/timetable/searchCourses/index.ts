@@ -2,6 +2,13 @@ import { z } from "zod";
 
 import { publicProcedure } from "@/server/api/trpc";
 
+type SearchRow = {
+  id: string;
+  code: string;
+  name: string;
+  creditUnits: number;
+};
+
 export const searchCourses = publicProcedure
   .input(
     z.object({
@@ -10,35 +17,53 @@ export const searchCourses = publicProcedure
     }),
   )
   .query(async ({ ctx, input }) => {
-    const results = await ctx.db.courses.findMany({
-      where: {
-        classes: {
-          some: { acadTermId: input.acadTermId },
-        },
-        OR: [
-          { code: { contains: input.query, mode: "insensitive" } },
-          { name: { contains: input.query, mode: "insensitive" } },
-          {
-            classes: {
-              some: {
-                acadTermId: input.acadTermId,
-                professor: {
-                  name: { contains: input.query, mode: "insensitive" },
-                },
-              },
-            },
-          },
-        ],
-      },
-      select: {
-        id: true,
-        code: true,
-        name: true,
-        creditUnits: true,
-        classes: {
-          where: { acadTermId: input.acadTermId },
+    const q = input.query.trim();
+    if (!q) return [];
+
+    // Ranked fuzzy search: exact/prefix code first, then FTS over code+name,
+    // then trigram name similarity (typo-tolerant), then professor-name match
+    // in the same acad term (mirrors the pre-upgrade `classes.some({
+    // acadTermId, professor: { name: contains } })` branch). Offered-in-term
+    // filter via EXISTS on classes. Parameterized - safe (prepared statement).
+    const rows = await ctx.db.$queryRaw<SearchRow[]>`
+      SELECT c.id, c.code, c.name, c.credit_units AS "creditUnits"
+      FROM courses c
+      WHERE EXISTS (
+        SELECT 1 FROM classes cl
+        WHERE cl.course_id = c.id AND cl.acad_term_id = ${input.acadTermId}
+      )
+      AND (
+        c.code ILIKE ('%' || ${q} || '%')
+        OR to_tsvector('simple', c.code || ' ' || c.name)
+           @@ plainto_tsquery('simple', ${q})
+        OR similarity(c.name, ${q}) > 0.3
+        OR EXISTS (
+          SELECT 1 FROM classes clp
+          JOIN professors p ON p.id = clp.professor_id
+          WHERE clp.course_id = c.id
+            AND clp.acad_term_id = ${input.acadTermId}
+            AND (
+              p.name ILIKE ('%' || ${q} || '%')
+              OR similarity(p.name, ${q}) > 0.3
+            )
+        )
+      )
+      ORDER BY
+        (c.code ILIKE (${q} || '%'))::int DESC,
+        similarity(c.name, ${q}) DESC,
+        c.code
+      LIMIT 20;
+    `;
+
+    // Keep the pre-upgrade response shape (sections/timings/exam timings),
+    // now fetched in ONE follow-up query instead of per-row.
+    const courseIds = rows.map((r) => r.id);
+    const classes = courseIds.length
+      ? await ctx.db.classes.findMany({
+          where: { acadTermId: input.acadTermId, courseId: { in: courseIds } },
           select: {
             id: true,
+            courseId: true,
             section: true,
             professor: { select: { name: true } },
             classTimings: {
@@ -61,27 +86,32 @@ export const searchCourses = publicProcedure
             },
           },
           orderBy: { section: "asc" },
-        },
-      },
-      take: 20,
-    });
+        })
+      : [];
 
-    return results.map((course) => ({
-      id: course.id,
-      code: course.code,
-      name: course.name,
-      creditUnits: course.creditUnits,
-      sections: course.classes.map((c) => ({
-        classId: c.id,
-        section: c.section,
-        professorName: c.professor?.name ?? null,
-        timings: c.classTimings.map((t) => ({
+    const classesByCourse = new Map<string, typeof classes>();
+    for (const cl of classes) {
+      const list = classesByCourse.get(cl.courseId) ?? [];
+      list.push(cl);
+      classesByCourse.set(cl.courseId, list);
+    }
+
+    return rows.map((c) => ({
+      id: c.id,
+      code: c.code,
+      name: c.name,
+      creditUnits: c.creditUnits,
+      sections: (classesByCourse.get(c.id) ?? []).map((cl) => ({
+        classId: cl.id,
+        section: cl.section,
+        professorName: cl.professor?.name ?? null,
+        timings: cl.classTimings.map((t) => ({
           dayOfWeek: t.dayOfWeek,
           startTime: t.startTime,
           endTime: t.endTime,
           venue: t.venue,
         })),
-        examTimings: c.classExamTimings.map((t) => ({
+        examTimings: cl.classExamTimings.map((t) => ({
           date: t.date,
           startTime: t.startTime,
           endTime: t.endTime,
