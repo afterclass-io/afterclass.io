@@ -28,6 +28,7 @@ export const emailValidationSchema = z
  */
 const courseReviewFormSchema = z.object({
   value: z.string().min(1, "This field is required"),
+  // NOTE: was z.coerce.number(); switched to z.number() for zod v4 - zodResolver's input/output types diverge with coerce (input: unknown, output: number); producers (RatingGroup/ReviewForm) already emit number; if a string source is added, reintroduce coercion via .pipe(z.coerce.number()).
   rating: z
     .number()
     .min(1, "Please select your rating for this course")
@@ -46,6 +47,7 @@ const courseReviewFormSchema = z.object({
 
 const professorReviewFormSchema = z.object({
   value: z.string().min(1, "Please select a professor"),
+  // NOTE: was z.coerce.number(); same reason as courseReviewFormSchema - zod v4 resolver type incompatibility; re-add via .pipe(z.coerce.number()) if a string source appears.
   rating: z
     .number()
     .min(1, "Please select your rating for this professor")
