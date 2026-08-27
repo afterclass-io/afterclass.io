@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       include: ["src/**/*.test.{ts,tsx}"],
+      setupFiles: ["./vitest.setup.ts"],
       env,
       // Expose `describe`/`it`/`expect`/`afterEach` globals so
       // `@testing-library/react` can auto-register its `afterEach(cleanup)` -
