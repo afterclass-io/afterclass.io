@@ -23,8 +23,7 @@
     "plugins": [{ "name": "next" }],
     "incremental": true,
 
-    /* Path Aliases */
-    "baseUrl": ".",
+    /* Path Aliases - paths are resolved relative to this tsconfig, so no baseUrl needed */
     "paths": {
       "@/*": ["./src/*"]
     }
@@ -39,5 +38,5 @@
     ".eslintrc.cjs",
     "postcss.config.mjs"
   ],
-  "exclude": ["node_modules", "cypress/**/*.cy.js", "storybook-static"]
+  "exclude": ["node_modules", "cypress/**/*.cy.js", "storybook-static", "dist"]
 }
