@@ -28,7 +28,7 @@ export const emailValidationSchema = z
  */
 const courseReviewFormSchema = z.object({
   value: z.string().min(1, "This field is required"),
-  rating: z.coerce
+  rating: z
     .number()
     .min(1, "Please select your rating for this course")
     .max(5, "Rating must be between 1 and 5"),
@@ -46,7 +46,7 @@ const courseReviewFormSchema = z.object({
 
 const professorReviewFormSchema = z.object({
   value: z.string().min(1, "Please select a professor"),
-  rating: z.coerce
+  rating: z
     .number()
     .min(1, "Please select your rating for this professor")
     .max(5, "Rating must be between 1 and 5"),

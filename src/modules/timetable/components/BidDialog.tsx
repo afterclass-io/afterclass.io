@@ -55,7 +55,7 @@ import { resolveBidDialogNotes } from "@/modules/timetable/functions/bid-dialog-
 import { z } from "zod";
 
 const bidAmountSchema = z
-  .number({ invalid_type_error: "Enter a valid bid amount" })
+  .number({ error: "Enter a valid bid amount" })
   .positive("Bid must be greater than 0")
   .max(99999, "Bid cannot exceed e$99,999");
 import { ClassInfoCard } from "./ClassInfoCard";
@@ -99,7 +99,7 @@ function parseBidAmount(raw: string): { value: number } | { error: string } {
   if (Number.isNaN(parsed)) return { error: "Enter a valid number" };
   const result = bidAmountSchema.safeParse(parsed);
   if (!result.success)
-    return { error: result.error.errors[0]?.message ?? "Invalid amount" };
+    return { error: result.error.issues[0]?.message ?? "Invalid amount" };
   return { value: result.data };
 }
 

@@ -30,7 +30,7 @@ type Story = StoryObj<typeof meta>;
 
 const formSchema = z.object({
   type: z.enum(["all", "mentions", "none"], {
-    required_error: "You need to select a notification type.",
+    error: "You need to select a notification type.",
   }),
 });
 type FormInputsSchema = z.infer<typeof formSchema>;
