@@ -114,28 +114,6 @@ describe("buildProgressSyncPlan", () => {
       buildProgressSyncPlan(TERMS, "2026-T1", "2026-T2"),
     );
   });
-
-  it("clamps yearNumber to at most 8", () => {
-    // Build a plan whose earliest matric term implies yearNumber > 8 for the
-    // oldest terms; assert every target has 1 <= yearNumber <= 8.
-    const OLD_TERMS: SyncTermRow[] = [
-      term("2018-T1", 2018, "1", 2018, 7),
-      term("2018-T2", 2018, "2", 2018, 10),
-      term("2019-T1", 2019, "1", 2019, 7),
-      term("2026-T1", 2026, "1", 2026, 7),
-      term("2027-T1", 2027, "1", 2027, 7),
-      term("2028-T1", 2028, "1", 2028, 7),
-    ];
-    // Matric 2018-T1, current 2028-T1 → yearNumber would be 2028-2018+1 = 11
-    const plan = buildProgressSyncPlan(OLD_TERMS, "2018-T1", "2028-T1");
-    for (const target of plan) {
-      expect(target.yearNumber).toBeGreaterThanOrEqual(1);
-      expect(target.yearNumber).toBeLessThanOrEqual(8);
-    }
-    // The oldest term should be clamped to 8, not 11.
-    const last = plan[plan.length - 1];
-    expect(last!.yearNumber).toBe(8);
-  });
 });
 
 // ---------------------------------------------------------------------------

@@ -15,6 +15,7 @@ import { copyPublic } from "./copyPublic";
 import { setActive } from "./setActive";
 import { setMatricTerm } from "./setMatricTerm";
 import { syncProgress } from "./syncProgress";
+import { planSemester } from "./planSemester";
 import { recordView } from "./recordView";
 import { recordShare } from "./recordShare";
 import { setFaculty } from "./setFaculty";
@@ -35,6 +36,7 @@ export const roadmapsRouter = createTRPCRouter({
   setActive,
   setMatricTerm,
   syncProgress,
+  planSemester,
   recordView,
   recordShare,
   setFaculty,
