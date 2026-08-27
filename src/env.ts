@@ -36,6 +36,16 @@ export const env = createEnv({
     ),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
+    // LLM provider (OpenAI-compatible) - any endpoint that speaks the OpenAI chat API.
+    LLM_API_KEY: z.string(),
+    LLM_BASE_URL: z.string().optional(),
+    LLM_MODEL: z.string().optional(),
+    // Optional rate-limit overrides (per minute, fixed window). When set they
+    // override the defaults in src/server/ecfg/config.json.
+    CHAT_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).max(1000).optional(),
+    CHAT_MCP_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).max(10000).optional(),
+    CHAT_WRITE_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).max(1000).optional(),
+    CHAT_RATE_LIMIT_WINDOW_MINUTES: z.coerce.number().int().min(1).max(60).optional(),
   },
 
   /**
@@ -82,6 +92,10 @@ export const env = createEnv({
     NEXT_PUBLIC_AC_CHANNEL_LINK: z.string().url(),
     NEXT_PUBLIC_AC_HELPDESK_LINK: z.string().url(),
     NEXT_PUBLIC_AC_GITHUB_LINK: z.string().url(),
+    // Public MCP endpoint used by the Settings -> Agents connect page to build
+    // deep links. Optional until the server is deployed - connect-links.ts
+    // falls back to a placeholder URL.
+    NEXT_PUBLIC_MCP_PUBLIC_URL: z.string().url().optional(),
   },
 
   /**
@@ -95,6 +109,13 @@ export const env = createEnv({
     NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? process.env.VERCEL_URL,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    LLM_API_KEY: process.env.LLM_API_KEY,
+    LLM_BASE_URL: process.env.LLM_BASE_URL,
+    LLM_MODEL: process.env.LLM_MODEL,
+    CHAT_RATE_LIMIT_PER_MINUTE: process.env.CHAT_RATE_LIMIT_PER_MINUTE,
+    CHAT_MCP_RATE_LIMIT_PER_MINUTE: process.env.CHAT_MCP_RATE_LIMIT_PER_MINUTE,
+    CHAT_WRITE_RATE_LIMIT_PER_MINUTE: process.env.CHAT_WRITE_RATE_LIMIT_PER_MINUTE,
+    CHAT_RATE_LIMIT_WINDOW_MINUTES: process.env.CHAT_RATE_LIMIT_WINDOW_MINUTES,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_OLD_SITE_URL: process.env.NEXT_PUBLIC_OLD_SITE_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -104,6 +125,7 @@ export const env = createEnv({
     NEXT_PUBLIC_AC_CHANNEL_LINK: process.env.NEXT_PUBLIC_AC_CHANNEL_LINK,
     NEXT_PUBLIC_AC_HELPDESK_LINK: process.env.NEXT_PUBLIC_AC_HELPDESK_LINK,
     NEXT_PUBLIC_AC_GITHUB_LINK: process.env.NEXT_PUBLIC_AC_GITHUB_LINK,
+    NEXT_PUBLIC_MCP_PUBLIC_URL: process.env.NEXT_PUBLIC_MCP_PUBLIC_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

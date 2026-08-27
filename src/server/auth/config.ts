@@ -25,7 +25,20 @@ declare module "next-auth" {
    * Returned by `auth`, `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
    */
   interface Session {
-    user: SessionUser;
+    user: SessionUser & { supabaseAccessToken?: string | null };
+  }
+
+  /**
+   * User object returned by `authorize()` and passed to the `jwt` callback.
+   */
+  interface User {
+    supabaseAccessToken?: string | null;
+  }
+}
+
+declare module "@auth/core/jwt" {
+  interface JWT {
+    supabaseAccessToken?: string | null;
   }
 }
 
@@ -95,8 +108,10 @@ export const authConfig = {
         }
 
         if (user) {
-          // Any object returned will be saved in `user` property of the JWT
-          return user;
+          // Any object returned will be saved in `user` property of the JWT.
+          // Carry the Supabase access token so the OAuth consent flow can
+          // re-authenticate as the user against Supabase's OAuth server.
+          return { ...user, supabaseAccessToken: data.session?.access_token ?? null };
         }
 
         // user signed into supabase successfully, but user doesn't exist in our database
@@ -128,7 +143,7 @@ export const authConfig = {
             universityId: uniOfThisEmail.id,
           },
         });
-        return newUser;
+        return { ...newUser, supabaseAccessToken: data.session?.access_token ?? null };
       },
     }),
     /**
@@ -166,6 +181,10 @@ export const authConfig = {
         const { deprecatedPasswordDigest, ...rest } = user as Users;
         // to expose user object in session
         token.user = rest;
+        // Persist the Supabase access token in the JWT so the OAuth consent
+        // flow can call Supabase's OAuth server as this user.
+        token.supabaseAccessToken =
+          (user as { supabaseAccessToken?: string | null }).supabaseAccessToken ?? null;
       }
 
       if (account?.provider === "google") {
@@ -204,6 +223,8 @@ export const authConfig = {
         // Since we are using "JWT" strategy instead of "database",
         // we should be expecting `SessionUser`, not `AdapterUser`
         session.user = token.user as SessionUser;
+        // Carry the Supabase access token into the session for consent-time use.
+        session.user.supabaseAccessToken = token.supabaseAccessToken ?? null;
       }
       return session;
     },
