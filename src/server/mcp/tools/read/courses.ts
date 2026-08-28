@@ -1,0 +1,106 @@
+import { z } from "zod";
+
+import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+
+const searchCoursesSchema = z.object({
+  acadTermId: z.string().describe("Academic term id; obtain via list-acad-terms"),
+  query: z.string().min(1).describe("Search text: course code, course name, or professor name"),
+});
+
+export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
+  name: "search-courses",
+  description:
+    "Search courses offered in an academic term by code, name, or professor name. Fuzzy/typo-tolerant (e.g. 'statistics' matches 'Statistical Analysis'); returns matching courses with sections and timings.",
+  inputSchema: searchCoursesSchema,
+  readOnly: true,
+  widgetName: "course-search",
+  toWidgetProps: (result) => {
+    // The tool emits a JSON array of courses; wrap it as `{ results }` for the widget.
+    const text = result.content.find((c) => c.type === "text")?.text ?? "";
+    try {
+      const parsed: unknown = JSON.parse(text);
+      return { results: Array.isArray(parsed) ? parsed : [] };
+    } catch {
+      return { results: [] };
+    }
+  },
+  run: async ({ caller }, { acadTermId, query }) => {
+    try {
+      return jsonText(await caller.timetable.searchCourses({ acadTermId, query }));
+    } catch (e) {
+      return errText(errorMessage(e));
+    }
+  },
+};
+
+const getCourseSchema = z.object({ code: z.string().describe("Exact course code") });
+
+export const getCourseTool: McpTool<typeof getCourseSchema> = {
+  name: "get-course",
+  description:
+    "Get detailed information for one course by its exact code (e.g. COR-STAT1202), including its SIS prerequisite / enrolment requirements (enrolmentRequirements) and degree-area tags (courseArea) when present.",
+  inputSchema: getCourseSchema,
+  readOnly: true,
+  run: async ({ caller }, { code }) => {
+    try {
+      const course = await caller.courses.getByCourseCode({ code });
+      if (!course) return errText(`Course ${code} not found`);
+      return jsonText(course);
+    } catch (e) {
+      return errText(errorMessage(e));
+    }
+  },
+};
+
+/**
+ * Spec cap for get-classes: at most this many rows are returned. Clients may
+ * still send a larger `limit` (kept backward compatible); the tool clamps it
+ * to MAX_CLASSES_LIMIT before calling classes.getAll.
+ */
+const MAX_CLASSES_LIMIT = 20;
+
+const getClassesSchema = z.object({
+  courseCode: z.string().optional(),
+  acadTermId: z.string().optional(),
+  section: z.string().optional(),
+  professorId: z.string().optional(),
+  limit: z
+    .number()
+    .int()
+    .min(1)
+    .max(200)
+    .describe("Max rows to return (capped at 20).")
+    .default(100),
+});
+
+export const getClassesTool: McpTool<typeof getClassesSchema> = {
+  name: "get-classes",
+  description:
+    "Get class sections with timings, venue, and professor for a course and term. All filters are optional. Returns at most 20 rows.",
+  inputSchema: getClassesSchema,
+  readOnly: true,
+  run: async ({ caller }, input) => {
+    try {
+      const clamped = { ...input, limit: Math.min(input.limit, MAX_CLASSES_LIMIT) };
+      return jsonText(await caller.classes.getAll(clamped));
+    } catch (e) {
+      return errText(errorMessage(e));
+    }
+  },
+};
+
+const getProfessorSchema = z.object({ slug: z.string().describe("Professor slug") });
+
+export const getProfessorTool: McpTool<typeof getProfessorSchema> = {
+  name: "get-professor",
+  description: "Get a professor's profile by their URL slug (e.g. 'john-doe').",
+  inputSchema: getProfessorSchema,
+  readOnly: true,
+  run: async ({ caller }, { slug }) => {
+    try {
+      return jsonText(await caller.professors.getBySlug({ slug }));
+    } catch (e) {
+      return errText(errorMessage(e));
+    }
+  },
+};
