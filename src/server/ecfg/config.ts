@@ -9,11 +9,9 @@ export const DEFAULT_CHAT_CONFIG = {
   maxInputTokens: 16000,
   maxOutputTokens: 1024,
   maxToolRounds: 6,
-  maxMessages: 12,
-  priceInputPerM: 0.14,   // DeepSeek V4 Flash cache-miss (conservative)
-  priceCachedInputPerM: 0.014, // 10x cheaper cache-hit
+  priceInputPerM: 0.14,
+  priceCachedInputPerM: 0.014,
   priceOutputPerM: 0.28,
-  provider: "deepseek-v4-flash",
 } as const;
 
 export const chatConfigSchema = z
@@ -30,7 +28,6 @@ export const chatConfigSchema = z
     priceInputPerM: z.number().nonnegative(),
     priceCachedInputPerM: z.number().nonnegative(),
     priceOutputPerM: z.number().nonnegative(),
-    provider: z.string(),
   })
   .partial()
   .default(DEFAULT_CHAT_CONFIG)

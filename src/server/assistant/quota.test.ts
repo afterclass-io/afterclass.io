@@ -36,7 +36,7 @@ vi.mock("@/server/ecfg/chat", () => ({
   getChatConfig: async () => ({
     quotaPerMonth: 50, nudgeAt: 40, rateLimitPerMinute: 10, mcpRateLimitPerMinute: 60,
     spendCapPerMonthUsd: 20, maxInputTokens: 16000, maxOutputTokens: 1024, maxToolRounds: 6,
-    priceInputPerM: 0.14, priceCachedInputPerM: 0.014, priceOutputPerM: 0.28, provider: "deepseek-v4-flash",
+    priceInputPerM: 0.14, priceCachedInputPerM: 0.014, priceOutputPerM: 0.28,
   }),
 }));
 
@@ -124,7 +124,7 @@ describe("quota", () => {
     expect(result).toEqual({ ok: false, remaining: 0, quota: 50 });
     expect(txChatUsageUpsert).toHaveBeenCalledTimes(1);
     expect(txChatUsageUpdateMany).toHaveBeenCalledTimes(1);
-    // No fresh read when blocked — remaining derived as 0
+    // No fresh read when blocked - remaining derived as 0
     expect(txChatUsageFindUnique).not.toHaveBeenCalled();
   });
 
@@ -154,7 +154,7 @@ describe("quota", () => {
   it("reserveMessage re-reads fresh count for accurate remaining after concurrent increments", async () => {
     txChatUsageUpsert.mockResolvedValue(undefined);
     txChatUsageUpdateMany.mockResolvedValue({ count: 1 });
-    // Fresh read returns 50 (quota exhausted after our increment) — remaining 0
+    // Fresh read returns 50 (quota exhausted after our increment) - remaining 0
     txChatUsageFindUnique.mockResolvedValue({ messageCount: 50 });
     const result = await reserveMessage("u1");
     expect(result).toEqual({ ok: true, remaining: 0, quota: 50 });

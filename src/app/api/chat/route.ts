@@ -57,7 +57,7 @@ function guardAgainstFailedStream<T>(
 ): ReadableStream<T> {
   let failed = false;
   const refund = () => {
-    if (quotaSettled.value) return; // onEnd already settled — the slot is kept
+    if (quotaSettled.value) return; // onEnd already settled - the slot is kept
     quotaSettled.value = true; // claim the turn; onEnd can never settle after a refund
     void onFailure().catch(() => {
       // best-effort: a refund DB error must never break the response stream
@@ -99,7 +99,7 @@ function guardAgainstFailedStream<T>(
       // Client disconnected (abort): do NOT refund. The reserved slot stays consumed
       // so reading the answer then aborting cannot yield a free message or unrecorded
       // spend. Settlement (onEnd) will still account token usage best-effort; if the
-      // stream is torn down before it can fire, the slot remains consumed — intentional.
+      // stream is torn down before it can fire, the slot remains consumed - intentional.
       if (!quotaSettled.value) quotaSettled.value = true;
       void reader.cancel().catch(() => {
         // best-effort: propagate the downstream cancel to the source
@@ -152,7 +152,7 @@ export async function POST(req: Request) {
     const modelMessages = await trimToBudget(messages);
 
     // Shared quota decision for this turn: onEnd (settlement) and the stream
-    // guard's refund are mutually exclusive — whichever claims the turn first
+    // guard's refund are mutually exclusive - whichever claims the turn first
     // wins and the other becomes a no-op (see guardAgainstFailedStream). This
     // holds regardless of how the SDK sequences flush vs. the error part.
     const quotaSettled = { value: false };
@@ -166,12 +166,12 @@ export async function POST(req: Request) {
       maxOutputTokens: chat.maxOutputTokens,
       // NOTE: The message slot was pre-reserved by reserveMessage(), so quota
       // cannot be bypassed by disconnecting. Token/spend settlement remains
-      // best-effort on disconnect (onEnd may not fire) — this is a documented,
+      // best-effort on disconnect (onEnd may not fire) - this is a documented,
       // accepted trade-off since the spend cap is already enforced atomically
       // in settleUsage and the primary abuse vector (free messages) is closed.
       // On failure, guardAgainstFailedStream below refunds the reserved slot.
       onEnd: async ({ usage }) => {
-        if (quotaSettled.value) return; // already refunded — never settle after a refund
+        if (quotaSettled.value) return; // already refunded - never settle after a refund
         quotaSettled.value = true; // claim the turn for settlement
         // AI SDK v5: cached input tokens are in usage.inputTokenDetails.cacheReadTokens
         // (provider cache-hit, e.g. prompt caching). Falls back to 0 if unavailable.
@@ -190,7 +190,7 @@ export async function POST(req: Request) {
 
     return createUIMessageStreamResponse({ stream: toUIMessageStream({ stream: guarded }) });
   } catch (error) {
-    // Synchronous failure after reservation (e.g. model/config error) — the
+    // Synchronous failure after reservation (e.g. model/config error) - the
     // client sees a 500 and the reserved slot is rolled back so the failed
     // send never burns quota.
     if (reserved) {
