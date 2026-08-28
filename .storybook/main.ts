@@ -1,3 +1,4 @@
+import path from "path";
 import type { StorybookConfig } from "@storybook/nextjs";
 
 const config: StorybookConfig = {
@@ -28,6 +29,10 @@ const config: StorybookConfig = {
       ...config.resolve.alias,
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       obscenity$: require.resolve("obscenity"),
+      // Storybook-only: point @ai-sdk/react at the mock that swaps useChat for
+      // one driven by `parameters.chatState`. Vitest does not use webpack, so
+      // the unit suite is unaffected.
+      "@ai-sdk/react": path.resolve(__dirname, "./mocks/ai-sdk-react.ts"),
     };
     return config;
   },

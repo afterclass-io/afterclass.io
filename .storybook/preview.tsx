@@ -9,6 +9,7 @@ import ProgressProvider from "../src/common/providers/ProgressProvider";
 import { Toaster } from "../src/common/components/sonner";
 import { SessionContext } from "next-auth/react";
 import { mockAuthStates } from "./auth";
+import { withAssistant } from "./assistant";
 
 const preview: Preview = {
   parameters: {
@@ -76,6 +77,7 @@ const preview: Preview = {
       },
       defaultTheme: "light",
     }),
+    withAssistant,
   ],
 };
 
