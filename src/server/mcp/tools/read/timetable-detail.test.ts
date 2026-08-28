@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Mock } from "vitest";
 import type { ToolContext, ToolResult } from "../../types";
 import type { SessionUser } from "@/server/auth/config";
 import { getMyTimetableDetailTool } from "./timetable-detail";
@@ -91,6 +92,14 @@ const arrangement = {
 };
 
 describe("get-my-timetable-detail read tool", () => {
+  beforeEach(() => {
+    userTimetableFindUnique.mockReset();
+    // Default: DB fallback must not be hit for paths that resolve via
+    // arrangement.timetable or listMine. If it is hit unexpectedly the test
+    // will get errText instead of the expected result, failing clearly.
+    userTimetableFindUnique.mockResolvedValue(null);
+  });
+
   it("is registered read-only", () => {
     expect(getMyTimetableDetailTool.readOnly).toBe(true);
   });
