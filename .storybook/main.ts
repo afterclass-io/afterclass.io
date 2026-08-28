@@ -1,4 +1,5 @@
 import { createRequire } from "node:module";
+import path from "path";
 import type { StorybookConfig } from "@storybook/nextjs";
 
 const require = createRequire(import.meta.url);
@@ -54,6 +55,10 @@ const config: StorybookConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       obscenity$: require.resolve("obscenity"),
+      // Storybook-only: point @ai-sdk/react at the mock that swaps useChat for
+      // one driven by `parameters.chatState`. Vitest does not use webpack, so
+      // the unit suite is unaffected.
+      "@ai-sdk/react": path.resolve(__dirname, "./mocks/ai-sdk-react.ts"),
     };
     return config;
   },
