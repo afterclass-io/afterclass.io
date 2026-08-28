@@ -70,6 +70,8 @@ function ConsentForm() {
       });
       const data = (await res.json()) as { redirectUrl?: string; error?: string };
       if (!res.ok || data.error) throw new Error(data.error ?? "Consent request failed.");
+      // Redirect target is Supabase-validated against the client's registered
+      // redirect_uris (never user-supplied beyond the authorization_id flow).
       if (data.redirectUrl) window.location.href = data.redirectUrl;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Consent request failed.");
