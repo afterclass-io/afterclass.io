@@ -29,5 +29,4 @@ export async function checkAndIncrement(
     }
     return { ok: true, retryAfterSeconds: 0 };
   });
-  return { ok: true, retryAfterSeconds: 0 };
 }

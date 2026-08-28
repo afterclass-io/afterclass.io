@@ -66,9 +66,8 @@ export async function reserveMessage(userId: string): Promise<{ ok: boolean; rem
   const period = currentMonthPeriod();
   const quota = chat.quotaPerMonth;
   return db.$transaction(async (tx) => {
-    const row = await tx.chatUsage.findUnique({ where: { userId_period: { userId, period } } });
-    const used = row?.messageCount ?? 0;
-    if (used >= quota) return { ok: false, remaining: 0, quota };
+    // Ensure a row exists for this period; the no-op update avoids touching the
+    // row when it already exists (keeps the statement idempotent).
     await tx.chatUsage.upsert({
       where: { userId_period: { userId, period } },
       create: { userId, period, messageCount: 0, inputTokens: 0, outputTokens: 0, cachedInputTokens: 0, spendUsd: 0 },

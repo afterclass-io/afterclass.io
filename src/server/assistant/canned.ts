@@ -47,14 +47,7 @@ export function findCannedAnswer(messages: UIMessage[]): string | null {
     .map((p) => ("text" in p ? p.text : ""))
     .join(" ");
   const normalized = normalizePrompt(text);
-  if (CANNED[normalized]) return CANNED[normalized];
-  // Fall back to a contains match so full-sentence capability questions — e.g.
-  // the welcome-suggestion prompt "What are your capabilities? What can you
-  // help me with?" — still hit the canned answer instead of burning quota.
-  for (const key of Object.keys(CANNED)) {
-    if (normalized.includes(key)) return CANNED[key] ?? null;
-  }
-  return null;
+  return CANNED[normalized] ?? null;
 }
 
 function splitChunks(text: string, size = 24): string[] {
