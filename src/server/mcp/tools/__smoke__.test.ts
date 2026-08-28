@@ -4,6 +4,7 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { okText, errText, jsonText } from "@/server/mcp/types";
+import { allTools } from "@/server/mcp/tools";
 
 describe("tool schema & types smoke", () => {
   it("zod schema validates via ~standard protocol", async () => {
@@ -26,5 +27,15 @@ describe("tool schema & types smoke", () => {
     const j = jsonText({ a: 1 });
     expect(j.content[0]).toHaveProperty("type", "text");
     expect((j.content[0] as { text: string }).text).toContain("1");
+  });
+
+  it("catalog keeps the documented 42 tools: 23 readOnly + 19 write", () => {
+    expect(allTools).toHaveLength(42);
+    // Every tool except `recommend-bid-amount` (a read-only recommendation
+    // that lives under write/ for historical reasons) is non-readOnly.
+    const writeTools = allTools.filter((t) => !t.readOnly);
+    expect(writeTools).toHaveLength(19);
+    expect(writeTools.some((t) => t.name === "recommend-bid-amount")).toBe(false);
+    expect(allTools.find((t) => t.name === "recommend-bid-amount")?.readOnly).toBe(true);
   });
 });
