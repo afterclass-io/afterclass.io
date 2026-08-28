@@ -1,4 +1,5 @@
 import { auth } from "@/server/auth";
+import { getSupabaseAccessToken } from "@/server/auth/supabase-access-token";
 import { listUserGrants } from "@/server/supabase-consent";
 import { revokeAgent } from "./revoke-agent";
 
@@ -7,7 +8,7 @@ export async function AgentsPage() {
   if (!session?.user) {
     return <p>Please sign in to view your connected agents.</p>;
   }
-  const token = session.user.supabaseAccessToken;
+  const token = await getSupabaseAccessToken();
 
   if (!token) {
     return (

@@ -1,16 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 
-const { mockAuth, mockApproveConsent, mockDenyConsent, mockGetConsentDetails } = vi.hoisted(
+const { mockGetToken, mockApproveConsent, mockDenyConsent, mockGetConsentDetails } = vi.hoisted(
   () => ({
-    mockAuth: vi.fn() as Mock,
+    mockGetToken: vi.fn() as Mock,
     mockApproveConsent: vi.fn() as Mock,
     mockDenyConsent: vi.fn() as Mock,
     mockGetConsentDetails: vi.fn() as Mock,
   }),
 );
 
-vi.mock("@/server/auth", () => ({ auth: mockAuth }));
+vi.mock("@/server/auth/supabase-access-token", () => ({
+  getSupabaseAccessToken: mockGetToken,
+}));
 vi.mock("@/server/supabase-consent", () => ({
   approveConsent: mockApproveConsent,
   denyConsent: mockDenyConsent,
@@ -32,7 +34,7 @@ function req(
 
 describe("GET /api/oauth/consent", () => {
   beforeEach(() => {
-    mockAuth.mockReset();
+    mockGetToken.mockReset();
     mockGetConsentDetails.mockReset();
     mockGetConsentDetails.mockResolvedValue({
       status: "details",
@@ -42,8 +44,8 @@ describe("GET /api/oauth/consent", () => {
     });
   });
 
-  it("returns 401 without a session", async () => {
-    mockAuth.mockResolvedValue(null);
+  it("returns 401 without a supabase access token", async () => {
+    mockGetToken.mockResolvedValue(null);
     const res = await GET(req("http://localhost/api/oauth/consent?authorization_id=a1"));
     expect(res.status).toBe(401);
   });
@@ -51,16 +53,16 @@ describe("GET /api/oauth/consent", () => {
 
 describe("POST /api/oauth/consent", () => {
   beforeEach(() => {
-    mockAuth.mockReset();
+    mockGetToken.mockReset();
     mockApproveConsent.mockReset();
     mockDenyConsent.mockReset();
     mockApproveConsent.mockResolvedValue({ redirectUrl: "https://client/cb?code=x" });
     mockDenyConsent.mockResolvedValue({ redirectUrl: "https://client/cb?error=access_denied" });
-    mockAuth.mockResolvedValue({ user: { supabaseAccessToken: "tok" } } as unknown as Awaited<ReturnType<typeof mockAuth>>);
+    mockGetToken.mockResolvedValue("tok");
   });
 
-  it("returns 401 without a session", async () => {
-    mockAuth.mockResolvedValue(null);
+  it("returns 401 without a supabase access token", async () => {
+    mockGetToken.mockResolvedValue(null);
     const res = await POST(
       req("http://localhost/api/oauth/consent", {
         method: "POST",

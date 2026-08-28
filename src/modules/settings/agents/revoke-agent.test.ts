@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/server/auth", () => ({ auth: vi.fn() }));
+vi.mock("@/server/auth/supabase-access-token", () => ({
+  getSupabaseAccessToken: vi.fn(),
+}));
 vi.mock("@/server/supabase-consent", () => ({
   listUserGrants: vi.fn(),
   revokeUserGrant: vi.fn(),
@@ -9,10 +12,12 @@ vi.mock("@/server/supabase-consent", () => ({
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/server/auth";
+import { getSupabaseAccessToken } from "@/server/auth/supabase-access-token";
 import { listUserGrants, revokeUserGrant } from "@/server/supabase-consent";
 import { revokeAgent } from "./revoke-agent";
 
 const mockedAuth = vi.mocked(auth);
+const mockedGetToken = vi.mocked(getSupabaseAccessToken);
 const mockedList = vi.mocked(listUserGrants);
 const mockedRevoke = vi.mocked(revokeUserGrant);
 
@@ -23,7 +28,8 @@ describe("revokeAgent", () => {
     vi.clearAllMocks();
     mockedRevoke.mockResolvedValue(undefined);
     mockedList.mockResolvedValue([ownerGrant]);
-    mockedAuth.mockResolvedValue({ user: { id: "u1", supabaseAccessToken: "tok" } } as never);
+    mockedAuth.mockResolvedValue({ user: { id: "u1" } } as never);
+    mockedGetToken.mockResolvedValue("tok");
   });
 
   it("revokes the grant and revalidates the agents page when the user owns the grant", async () => {

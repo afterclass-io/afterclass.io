@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { auth } from "@/server/auth";
+import { getSupabaseAccessToken } from "@/server/auth/supabase-access-token";
 import { listUserGrants, revokeUserGrant } from "@/server/supabase-consent";
 
 const input = z.object({ clientId: z.string().min(1) });
@@ -11,7 +12,7 @@ const input = z.object({ clientId: z.string().min(1) });
 export async function revokeAgent(formData: FormData): Promise<void> {
   const session = await auth();
   if (!session?.user) throw new Error("Not authenticated");
-  const token = session.user.supabaseAccessToken;
+  const token = await getSupabaseAccessToken();
   if (!token) throw new Error("Not authenticated with Supabase");
 
   const parsed = input.safeParse({ clientId: formData.get("clientId") });
