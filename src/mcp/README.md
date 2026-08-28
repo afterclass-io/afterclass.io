@@ -161,7 +161,7 @@ dashboard / host — see [Deploy procedure](#deploy-procedure)):
 | `MCP_USE_OAUTH_SUPABASE_JWT_SECRET` | *Optional.* Only for **legacy HS256** Supabase JWT projects. Omit for the default RS256 (JWKS-verified) projects. |
 | `DATABASE_URL` | The same Postgres the Next.js app uses — tools read via the tRPC caller (Prisma). |
 | `SKIP_ENV_VALIDATION` | **Do not set.** With the flag set, `@t3-oss/env-nextjs` skips the env schema transforms, so `NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS` stays a comma-string and `src/common/tools/zod/schemas.ts` crashes on `.join()` at boot. Provide the full app env set instead. |
-| Full Next.js app env | `env` validation runs on the mcp process (it imports `@/env` via tRPC), so the host needs the same server vars as the app: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DEEPSEEK_API_KEY`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, plus the `NEXT_PUBLIC_*` vars below. The repo `.env` already has these. |
+| Full Next.js app env | `env` validation runs on the mcp process (it imports `@/env` via tRPC), so the host needs the same server vars as the app: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `LLM_API_KEY`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, plus the `NEXT_PUBLIC_*` vars below. The repo `.env` already has these. |
 | `NEXT_PUBLIC_*` vars | Any client env var a tool path reads (e.g. `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS`). Add more as runtime errors surface during E2E. |
 | `NEXT_PUBLIC_MCP_PUBLIC_URL` | *Optional.* Public MCP URL used by the Settings → Agents connect page deep links (`src/modules/settings/agents/connect-links.ts` → `MCP_PUBLIC_URL`). Falls back to the placeholder until deployed. |
 

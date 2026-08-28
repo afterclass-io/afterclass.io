@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 
-// ── vi.hoisted mocks (TDZ-safe) ──────────────────────────────────────────
+// -- vi.hoisted mocks (TDZ-safe) ------------------------------------------
 const {
   mockAuth,
   mockCheckSpendGuard,
@@ -28,7 +28,7 @@ const {
   mockCreateCallerForUser: vi.fn() as Mock,
 }));
 
-// ── vi.mock calls ─────────────────────────────────────────────────────────
+// -- vi.mock calls ---------------------------------------------------------
 vi.mock("@/server/auth", () => ({ auth: mockAuth }));
 vi.mock("@/server/assistant/quota", () => ({
   checkSpendGuard: mockCheckSpendGuard,
@@ -142,14 +142,14 @@ describe("POST /api/chat", () => {
     mockCreateCallerForUser.mockReturnValue({});
   });
 
-  // ── 401 ──
+  // -- 401 --
   it("returns 401 when not authenticated", async () => {
     mockAuth.mockResolvedValue(null);
     const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
     expect(res.status).toBe(401);
   });
 
-  // ── 429 ──
+  // -- 429 --
   it("returns 429 when rate limited; reserveMessage NOT called", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     mockCheckAndIncrement.mockResolvedValue({ ok: false, retryAfterSeconds: 1 });
@@ -158,7 +158,7 @@ describe("POST /api/chat", () => {
     expect(mockReserveMessage).not.toHaveBeenCalled();
   });
 
-  // ── 403 spend ──
+  // -- 403 spend --
   it("returns 403 {gate:'spend'} when spend guard tripped; reserveMessage NOT called", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     mockCheckSpendGuard.mockResolvedValue(false);
@@ -169,7 +169,7 @@ describe("POST /api/chat", () => {
     expect(mockReserveMessage).not.toHaveBeenCalled();
   });
 
-  // ── 403 quota ──
+  // -- 403 quota --
   it("returns 403 {gate:'quota'} when reserveMessage fails", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     mockReserveMessage.mockResolvedValue({ ok: false, remaining: 0, quota: 50 });
@@ -180,7 +180,7 @@ describe("POST /api/chat", () => {
     expect(mockReserveMessage).toHaveBeenCalledWith("u1");
   });
 
-  // ── 403 quota gate must NOT refund (nothing was reserved) ──
+  // -- 403 quota gate must NOT refund (nothing was reserved) --
   it("does not call refundMessage when the quota gate rejects the reservation", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     mockReserveMessage.mockResolvedValue({ ok: false, remaining: 0, quota: 50 });
@@ -190,7 +190,7 @@ describe("POST /api/chat", () => {
     expect(mockSettleUsage).not.toHaveBeenCalled();
   });
 
-  // ── 400 x2 (malformed bodies must NOT burn a quota slot) ──
+  // -- 400 x2 (malformed bodies must NOT burn a quota slot) --
   it("returns 400 on non-JSON body; reserveMessage NOT called", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     const res = await POST(new Request("http://localhost/api/chat", {
@@ -208,14 +208,13 @@ describe("POST /api/chat", () => {
     expect(mockReserveMessage).not.toHaveBeenCalled();
   });
 
-  // ── 200 happy path ──
+  // -- 200 happy path --
   it("returns 200 on happy path, calls streamText, and onEnd invokes settleUsage", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
 
     const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
     expect(res.status).toBe(200);
 
-    // streamText should have been called
     expect(mockStreamText).toHaveBeenCalledWith(
       expect.objectContaining({
         instructions: expect.any(String) as string,
@@ -230,13 +229,12 @@ describe("POST /api/chat", () => {
     // eslint-disable-next-line @typescript-eslint/await-thenable -- onEnd returns void|Promise<void>
     await capturedOnEnd!({ usage: { inputTokens: 10, outputTokens: 5 } });
 
-    // settleUsage should have been called with correct token counts (cachedInput defaults to 0)
     expect(mockSettleUsage).toHaveBeenCalledWith("u1", { input: 10, output: 5, cachedInput: 0 });
     // a successful stream must never refund the reserved slot
     expect(mockRefundMessage).not.toHaveBeenCalled();
   });
 
-  // ── 500 + refund (synchronous failure after reservation) ──
+  // -- 500 + refund (synchronous failure after reservation) --
   it("refunds the reserved slot and returns 500 when streamText throws", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     mockStreamText.mockImplementation(() => {
@@ -259,7 +257,7 @@ describe("POST /api/chat", () => {
     expect(mockSettleUsage).not.toHaveBeenCalled();
   });
 
-  // ── async stream failure after the response started ──
+  // -- async stream failure after the response started --
   it("refunds the reserved slot when the stream emits an error part", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     mockStreamText.mockImplementation(
@@ -290,7 +288,7 @@ describe("POST /api/chat", () => {
     expect(mockSettleUsage).not.toHaveBeenCalled();
   });
 
-  it("does NOT refund when the client disconnects — the slot stays consumed (abort is not free)", async () => {
+  it("does NOT refund when the client disconnects - the slot stays consumed (abort is not free)", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     mockStreamText.mockImplementation(
       () => ({ stream: new ReadableStream({}) }) as unknown as ReturnType<typeof streamText>,
@@ -306,19 +304,19 @@ describe("POST /api/chat", () => {
 
     const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
     expect(res.status).toBe(200);
-    // Security fix H1: abort must NOT refund — reading the answer then disconnecting
+    // Aborting must NOT refund - reading the answer then disconnecting
     // must not yield a free message or unrecorded spend.
     expect(mockRefundMessage).not.toHaveBeenCalled();
     // onEnd best-effort settlement may still run; no assertion on settleUsage here.
   });
 
-  // ── settle/refund mutual exclusivity (shared quotaSettled flag) ──
-  it("settles (not refunds) when onEnd fires after a mid-stream error part — partial usage is recorded", async () => {
-    // Reviewer scenario: a tool-loop step completes, then a LATER step errors
+  // -- settle/refund mutual exclusivity (shared quotaSettled flag) --
+  it("settles (not refunds) when onEnd fires after a mid-stream error part - partial usage is recorded", async () => {
+    // Scenario: a tool-loop step completes, then a LATER step errors
     // with a non-NoOutputGeneratedError. The SDK's eventProcessor.flush then
     // calls onEnd (settlement) even though the stream also carried an error
     // part. Settlement must win: partial spend is recorded and the slot is
-    // kept — the refund must NOT also fire.
+    // kept - the refund must NOT also fire.
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     mockStreamText.mockImplementation(
       ((opts: {
@@ -340,7 +338,7 @@ describe("POST /api/chat", () => {
     mockCreateUIMessageStreamResponse.mockImplementation(
       (async ({ stream }: { stream: ReadableStream }) => {
         const reader = stream.getReader();
-        // read the error part (the guard defers the refund — no settle yet)
+        // read the error part (the guard defers the refund - no settle yet)
         await reader.read();
         // the SDK's flush then settles the partial usage via onEnd
         expect(capturedOnEnd).not.toBeNull();
@@ -383,12 +381,12 @@ describe("POST /api/chat", () => {
 
     const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
     expect(res.status).toBe(200);
-    // H1: cancel must not refund — even after an error part, the abort keeps the slot.
+    // Cancel must not refund - even after an error part, the abort keeps the slot.
     expect(mockRefundMessage).not.toHaveBeenCalled();
     expect(mockSettleUsage).not.toHaveBeenCalled();
   });
 
-  // ── canned answers stay quota-free (no reserve, no refund) ──
+  // -- canned answers stay quota-free (no reserve, no refund) --
   it("serves canned answers without reserving or refunding quota", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     const res = await POST(

@@ -51,7 +51,6 @@ const MOCK_CHAT_CONFIG = {
   maxMessages: 12,
   priceInputPerM: 0.14,
   priceOutputPerM: 0.28,
-  provider: "deepseek-v4-flash",
 };
 
 // Keep the nested-subrouter mock shape used by the other tool tests; the

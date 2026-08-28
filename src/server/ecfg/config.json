@@ -17,7 +17,6 @@
     "maxMessages": 12,
     "priceInputPerM": 0.14,
     "priceCachedInputPerM": 0.014,
-    "priceOutputPerM": 0.28,
-    "provider": "deepseek-v4-flash"
+    "priceOutputPerM": 0.28
   }
 }

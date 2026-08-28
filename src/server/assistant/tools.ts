@@ -11,7 +11,7 @@ import { checkAndIncrement } from "@/server/assistant/ratelimit";
  * caller's per-user write budget (`chat-write:<userId>`, DB-backed fixed
  * window via `checkAndIncrement`, limit = effective write limit). On
  * exhaustion the tool returns a friendly "slow down" result instead of
- * running — the model relays it and the stream is not broken by a throw.
+ * running - the model relays it and the stream is not broken by a throw.
  * Read-only tools have no budget and pass through untouched. (The MCP path
  * has its own limiter in `src/mcp/register.ts`; this one is separate and
  * does not share its budget.)
@@ -35,7 +35,7 @@ export function buildAssistantTools(
           );
           if (!ok) {
             return (
-              `You're making changes too quickly — at most ${writeRateLimitPerMinute} ` +
+              `You're making changes too quickly - at most ${writeRateLimitPerMinute} ` +
               `write actions per minute are allowed. Please wait ~${retryAfterSeconds}s ` +
               `and ask me to try again.`
             );
