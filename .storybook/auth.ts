@@ -1,5 +1,5 @@
 import type { DefaultSession, Session } from "next-auth";
-import type { Users } from "@prisma/client";
+import type { Users } from "@/generated/prisma/client";
 
 type SessionUser = Omit<Users, "deprecatedPasswordDigest">;
 

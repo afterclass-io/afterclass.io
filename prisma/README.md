@@ -28,11 +28,14 @@ To apply schema migrations, make changes at `schema.prisma` then run the
 following command:
 
 ```sh
-npx prisma migrate dev
+bunx prisma migrate dev
 ```
 
 See [Prisma Migrate](https://www.prisma.io/docs/orm/prisma-migrate) for more
 details.
+
+> Prisma 7 uses `prisma.config.ts` (`defineConfig` with `DIRECT_URL`) and
+> `@prisma/adapter-pg`; the generated client lives at `src/generated/prisma`.
 
 ### Data Migrations
 
@@ -41,14 +44,14 @@ following command:
 
 ```sh
 # applies the seed
-npx prisma db seed
+bunx prisma db seed
 ```
 
 or
 
 ```sh
 # resets the database and applies the seed
-npx prisma migrate reset
+bunx prisma migrate reset
 ```
 
 See [Prisma
