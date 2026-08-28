@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
-import { ReviewEventType } from "@prisma/client";
+import { ReviewEventType } from "@/generated/prisma/enums";
 
 import { api, type RouterInputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";

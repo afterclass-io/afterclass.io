@@ -17,7 +17,7 @@ import {
 } from "@/common/components/card";
 import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
 import { notFound } from "next/navigation";
-import { MultiplierType, PredictionType } from "@prisma/client";
+import { MultiplierType, PredictionType } from "@/generated/prisma/client";
 import { Info } from "lucide-react";
 import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
 

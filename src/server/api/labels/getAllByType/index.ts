@@ -1,4 +1,4 @@
-import { ReviewType } from "@prisma/client";
+import { ReviewType } from "@/generated/prisma/client";
 import { z } from "zod";
 
 import { publicProcedure } from "@/server/api/trpc";

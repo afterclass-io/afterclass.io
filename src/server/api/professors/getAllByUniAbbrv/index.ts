@@ -1,4 +1,4 @@
-import { type Prisma, UniversityAbbreviation } from "@prisma/client";
+import { type Prisma, UniversityAbbreviation } from "@/generated/prisma/client";
 import { z } from "zod";
 
 import { publicProcedure } from "@/server/api/trpc";

@@ -1,8 +1,11 @@
+import { createRequire } from "node:module";
 import type { StorybookConfig } from "@storybook/nextjs";
+
+const require = createRequire(import.meta.url);
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
-  addons: ["@storybook/addon-essentials", "@storybook/addon-themes"],
+  addons: ["@storybook/addon-themes"],
   framework: {
     name: "@storybook/nextjs",
     options: {},
@@ -26,7 +29,6 @@ const config: StorybookConfig = {
     config.resolve ??= {};
     config.resolve.alias = {
       ...config.resolve.alias,
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       obscenity$: require.resolve("obscenity"),
     };
     return config;

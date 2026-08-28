@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { type Prisma, UniversityAbbreviation } from "@prisma/client";
+import { type Prisma, UniversityAbbreviation } from "@/generated/prisma/client";
 
 import { publicProcedure } from "@/server/api/trpc";
 

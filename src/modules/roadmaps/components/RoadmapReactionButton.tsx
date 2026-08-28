@@ -1,5 +1,5 @@
 "use client";
-import { type ReviewReactionType as DbReviewReactionType } from "@prisma/client";
+import { type ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/client";
 
 import { toTitleCase } from "@/common/functions";
 import { Button } from "@/common/components/button";

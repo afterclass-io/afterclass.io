@@ -3,7 +3,7 @@ import { CustomIcon, type CustomIconProps } from "../custom-icon";
 import { NTUIcon } from "./icon-ntu";
 import { NUSIcon } from "./icon-nus";
 import { SMUIcon } from "./icon-smu";
-import { type UniversityAbbreviation } from "@prisma/client";
+import { type UniversityAbbreviation } from "@/generated/prisma/client";
 import {
   Tooltip,
   TooltipTrigger,

@@ -1,7 +1,7 @@
 import { useEdgeConfigs } from "@/common/hooks";
 import { api, type RouterInputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
-import { ReviewEventType } from "@prisma/client";
+import { ReviewEventType } from "@/generated/prisma/enums";
 import { useSession } from "next-auth/react";
 import { debounce } from "lodash";
 import { useCallback, useMemo, useRef } from "react";
