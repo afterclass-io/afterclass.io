@@ -51,7 +51,7 @@ export function CurrentTimeIndicator({
 
   // Re-render every 60 s so the line moves with real time
   useEffect(() => {
-    if (!highlightNow) return;
+    if (!highlightNow) return undefined;
 
     const interval = setInterval(() => {
       setTick((n) => n + 1);

@@ -92,4 +92,4 @@ if (!vercelApiToken || !edgeConfigId || !jsonFilePath) {
 }
 
 // Update the Edge Config
-updateEdgeConfig(vercelApiToken, edgeConfigId, jsonFilePath);
+void updateEdgeConfig(vercelApiToken, edgeConfigId, jsonFilePath);

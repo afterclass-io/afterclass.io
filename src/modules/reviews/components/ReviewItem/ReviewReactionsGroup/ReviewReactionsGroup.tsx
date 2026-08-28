@@ -1,6 +1,6 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { type ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/client";
+import type { ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/client";
 
 import { api } from "@/common/tools/trpc/react";
 import { ReviewReactionType } from "@/modules/reviews/types";
@@ -17,7 +17,7 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
   const { mutate: upsertReaction } = useOptimisticReaction();
 
   if (!reviewReactionsQuery.data || !session) {
-    return;
+    return null;
   }
 
   const reactionsMetadataMap = reviewReactionsQuery.data.reduce(

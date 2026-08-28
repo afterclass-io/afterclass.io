@@ -1,4 +1,5 @@
-import { Visibility, type Prisma } from "@/generated/prisma/client";
+import { Visibility } from "@/generated/prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 
 import { publicProcedure } from "@/server/api/trpc";
 

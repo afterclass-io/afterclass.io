@@ -72,7 +72,7 @@ export function resolveCurrentTerm(
   if (terms.length === 0) return null;
 
   // Sort by startDt descending for consistent iteration
-  const sorted = [...terms].sort(
+  const sorted = [...terms].toSorted(
     (a, b) => b.startDt.getTime() - a.startDt.getTime(),
   );
 
@@ -83,13 +83,13 @@ export function resolveCurrentTerm(
   // 2. Nearest upcoming term (startDt > now, closest start)
   const upcoming = sorted
     .filter((t) => t.startDt > now)
-    .sort((a, b) => a.startDt.getTime() - b.startDt.getTime());
+    .toSorted((a, b) => a.startDt.getTime() - b.startDt.getTime());
   if (upcoming[0]) return upcoming[0];
 
   // 3. Latest past term (endDt < now, most recent end)
   const past = sorted
     .filter((t) => t.endDt < now)
-    .sort((a, b) => b.endDt.getTime() - a.endDt.getTime());
+    .toSorted((a, b) => b.endDt.getTime() - a.endDt.getTime());
   if (past[0]) return past[0];
 
   return null;

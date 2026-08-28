@@ -35,13 +35,13 @@ const PasswordInput = ({
     onChange: onVisibleChange,
   });
 
+  const contextValue = React.useMemo(
+    () => ({ visible, onVisibleChange: setVisible }),
+    [visible, setVisible],
+  );
+
   return (
-    <PasswordInputContext.Provider
-      value={{
-        visible,
-        onVisibleChange: setVisible,
-      }}
-    >
+    <PasswordInputContext.Provider value={contextValue}>
       {children}
     </PasswordInputContext.Provider>
   );

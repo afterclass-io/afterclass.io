@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { ComponentType } from "react";
 import { Copy, Globe, Link2, Loader2, Lock, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -71,10 +72,7 @@ const ALL_VISIBILITY_OPTIONS: VisibilityOption[] = [
 
 // Timetables have no public gallery — keep the component reusable but hide
 // the PUBLIC option when entity === "timetable" (server also rejects it).
-const VISIBILITY_OPTIONS_BY_ENTITY: Record<
-  ShareEntity,
-  VisibilityOption[]
-> = {
+const VISIBILITY_OPTIONS_BY_ENTITY: Record<ShareEntity, VisibilityOption[]> = {
   timetable: ALL_VISIBILITY_OPTIONS.filter((o) => o.value !== "PUBLIC"),
   roadmap: ALL_VISIBILITY_OPTIONS,
 };

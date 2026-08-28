@@ -1,5 +1,6 @@
 "use client";
-import { type ComponentProps, startTransition } from "react";
+import { startTransition } from "react";
+import type { ComponentProps } from "react";
 import Link from "next/link";
 import Router from "next/router";
 import { useRouter } from "next/navigation";
@@ -8,7 +9,7 @@ import { resolveHref } from "next/dist/client/resolve-href";
 import { useProgress } from "@/common/providers/ProgressProvider";
 import { buttonVariants } from "@/common/components/button";
 
-import { type VariantProps } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import { cn } from "@/common/functions";
 
 /**

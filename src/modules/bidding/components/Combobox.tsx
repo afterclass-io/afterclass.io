@@ -1,5 +1,6 @@
 "use client";
-import { type ComponentRef, forwardRef, useCallback, useState } from "react";
+import { forwardRef, useCallback, useState } from "react";
+import type { ComponentRef } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 
 import { CheckIcon, SearchIcon } from "@/common/components/icons";
@@ -102,13 +103,14 @@ export const Combobox = forwardRef<
                     value={el.value}
                     keywords={[el.label]}
                     onSelect={(selectedValue) => {
-                      const newValue = selectedValue === value ? "" : selectedValue;
+                      const newValue =
+                        selectedValue === value ? "" : selectedValue;
                       setValue(newValue);
                       setOpen(false);
-                      void router.push(
+                      router.push(
                         pathname +
-                        "?" +
-                        createQueryString(queryStringKey, newValue),
+                          "?" +
+                          createQueryString(queryStringKey, newValue),
                       );
                     }}
                     aria-selected={isMatched(el.value)}

@@ -2,7 +2,7 @@
 
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useState } from "react";
-import { type DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
+import type { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
 
 import {
   DropdownMenu,

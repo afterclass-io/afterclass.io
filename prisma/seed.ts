@@ -184,6 +184,7 @@ const bidPrediction = require("./data/21_bid_predictions.json");
 main()
   .then(async () => {
     await prisma.$disconnect();
+    return;
   })
   .catch(async (e) => {
     console.error(e);

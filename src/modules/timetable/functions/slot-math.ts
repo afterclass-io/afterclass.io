@@ -7,6 +7,8 @@
  *
  * All functions are pure — no side effects, no dependencies beyond stdlib.
  */
+import { timeToMinutes, parseTimePartsSafe } from "@/common/functions/time";
+import { dayOfWeekToNumber } from "@/common/functions/day-of-week";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -70,8 +72,6 @@ export type PositionedSlot = {
 // timeToMinutes (re-exported from shared util)
 // ---------------------------------------------------------------------------
 
-import { timeToMinutes, parseTimePartsSafe } from "@/common/functions/time";
-import { dayOfWeekToNumber } from "@/common/functions/day-of-week";
 export { timeToMinutes };
 
 // ---------------------------------------------------------------------------

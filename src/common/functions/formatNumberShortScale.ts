@@ -29,7 +29,7 @@ interface ScaleFormatOptions extends Intl.NumberFormatOptions {
  */
 export function formatNumberShortScale(
   amount: number,
-  options: ScaleFormatOptions | undefined = undefined,
+  options?: ScaleFormatOptions,
 ) {
   const decimals = options?.decimals ?? 1;
 

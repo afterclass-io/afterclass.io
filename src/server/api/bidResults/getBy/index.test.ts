@@ -1,5 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
+import { createTRPCRouter } from "@/server/api/trpc";
+import { getBy } from "./index";
+
 vi.mock("@/server/db", () => ({ db: {} }));
 vi.mock("@/env", () => ({
   env: {
@@ -19,9 +22,6 @@ vi.mock("@/env", () => ({
     NEXT_PUBLIC_OLD_SITE_URL: "https://old.afterclass.io",
   },
 }));
-
-import { createTRPCRouter } from "@/server/api/trpc";
-import { getBy } from "./index";
 
 const router = createTRPCRouter({ getBy });
 

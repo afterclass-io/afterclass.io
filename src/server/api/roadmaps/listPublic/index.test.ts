@@ -1,15 +1,14 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
+import { createTRPCRouter } from "@/server/api/trpc";
+import { listPublic } from "./index";
+import { listPublicInput } from "./input";
+
 vi.mock("@/server/db", () => ({ db: {} }));
 vi.mock("@/server/auth", () => ({ auth: () => null }));
 vi.mock("@sentry/nextjs", () => ({
   trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
 }));
-
-import { createTRPCRouter } from "@/server/api/trpc";
-
-import { listPublic } from "./index";
-import { listPublicInput } from "./input";
 
 describe("listPublicInput", () => {
   it("applies the default limit", () => {

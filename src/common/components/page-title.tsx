@@ -1,4 +1,4 @@
-import { type ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 import { Heading } from "@/common/components/heading";
 import { cn } from "@/common/functions";
 

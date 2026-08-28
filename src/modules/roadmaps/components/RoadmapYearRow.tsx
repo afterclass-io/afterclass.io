@@ -1,4 +1,5 @@
 "use client";
+/* oxlint-disable jsx-a11y/prefer-tag-over-role -- roadmap grid uses ARIA grid roles on CSS-grid divs, not a <table> */
 
 import type { Entry } from "../functions/conflicts";
 import { RoadmapTermCell } from "./RoadmapTermCell";

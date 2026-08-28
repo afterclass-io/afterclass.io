@@ -1,6 +1,11 @@
-import { AfterclassIcon, CustomIcon } from "@/common/components/icons";
-import { NTUIcon, NUSIcon, SMUIcon } from "@/common/components/icons";
-import { type UniversityAbbreviation } from "@/generated/prisma/client";
+import {
+  AfterclassIcon,
+  CustomIcon,
+  NTUIcon,
+  NUSIcon,
+  SMUIcon,
+} from "@/common/components/icons";
+import type { UniversityAbbreviation } from "@/generated/prisma/client";
 
 const svgs = {
   SMU: SMUIcon,

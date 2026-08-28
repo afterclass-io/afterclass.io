@@ -1,4 +1,4 @@
-import { type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { getFeedData } from "@/server/api/timetable/getFeedData";
 import { buildIcal } from "@/modules/timetable/functions/build-ical";
 
@@ -37,7 +37,9 @@ export async function GET(
 
   const ics = buildIcal(feedData);
 
-  const safe = feedData.timetableName.replace(/[^a-zA-Z0-9_\- ]/g, "").trim() || "timetable";
+  const safe =
+    feedData.timetableName.replace(/[^a-zA-Z0-9_\- ]/g, "").trim() ||
+    "timetable";
   const filename = `${safe}.ics`;
 
   return new Response(ics, {

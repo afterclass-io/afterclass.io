@@ -1,9 +1,10 @@
 "use client";
-import { CustomIcon, type CustomIconProps } from "../custom-icon";
+import { CustomIcon } from "../custom-icon";
+import type { CustomIconProps } from "../custom-icon";
 import { NTUIcon } from "./icon-ntu";
 import { NUSIcon } from "./icon-nus";
 import { SMUIcon } from "./icon-smu";
-import { type UniversityAbbreviation } from "@/generated/prisma/client";
+import type { UniversityAbbreviation } from "@/generated/prisma/client";
 import {
   Tooltip,
   TooltipTrigger,

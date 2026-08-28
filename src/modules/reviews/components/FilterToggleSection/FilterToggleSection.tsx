@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { type ReviewType } from "@/generated/prisma/client";
+import type { ReviewType } from "@/generated/prisma/client";
 
 import { FilterToggleSection as Filter } from "@/common/components/FilterToggleSection";
-import { type FilterItem } from "@/common/components/FilterToggleSection/FilterToggleSectionItem";
+import type { FilterItem } from "@/common/components/FilterToggleSection/FilterToggleSectionItem";
 import { Button } from "@/common/components/button";
 import { cn } from "@/common/functions";
 

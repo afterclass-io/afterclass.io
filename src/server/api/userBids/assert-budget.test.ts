@@ -1,14 +1,14 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
+import { spentForTerm, assertSecuredWithinBudget } from "./assert-budget";
+import { createTRPCRouter } from "@/server/api/trpc";
+import { upsertBudget } from "./upsertBudget";
+
 vi.mock("@/server/db", () => ({ db: {} }));
 vi.mock("@/server/auth", () => ({ auth: () => null }));
 vi.mock("@sentry/nextjs", () => ({
   trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
 }));
-
-import { spentForTerm, assertSecuredWithinBudget } from "./assert-budget";
-import { createTRPCRouter } from "@/server/api/trpc";
-import { upsertBudget } from "./upsertBudget";
 
 const router = createTRPCRouter({ upsertBudget });
 

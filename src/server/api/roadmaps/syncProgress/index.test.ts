@@ -1,5 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
+import { createTRPCRouter } from "@/server/api/trpc";
+import { syncProgress } from "./index";
+import { getCurrentWindowLogic } from "@/server/api/bidWindows/getCurrentWindow/helpers";
+import { getCurrentAcadTerm } from "@/common/tools/acad-term";
+
 vi.mock("@/server/db", () => ({ db: {} }));
 vi.mock("@/server/auth", () => ({ auth: () => null }));
 vi.mock("@sentry/nextjs", () => ({
@@ -11,11 +16,6 @@ vi.mock("@/server/api/bidWindows/getCurrentWindow/helpers", () => ({
 vi.mock("@/common/tools/acad-term", () => ({
   getCurrentAcadTerm: vi.fn(),
 }));
-
-import { createTRPCRouter } from "@/server/api/trpc";
-import { syncProgress } from "./index";
-import { getCurrentWindowLogic } from "@/server/api/bidWindows/getCurrentWindow/helpers";
-import { getCurrentAcadTerm } from "@/common/tools/acad-term";
 
 const router = createTRPCRouter({ syncProgress });
 

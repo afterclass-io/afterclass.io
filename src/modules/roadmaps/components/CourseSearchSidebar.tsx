@@ -1,15 +1,15 @@
 "use client";
+/* oxlint-disable jsx-a11y/prefer-tag-over-role -- dnd-kit draggable: keyboard handling implemented manually, cannot be a native <button> with drag listeners */
 
 import { useMemo, useState } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
-import { Search } from "lucide-react";
+import { Search, GripVertical } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
 import { Input } from "@/common/components/input";
 import { Skeleton } from "@/common/components/skeleton";
 import { courseColor } from "@/modules/timetable/functions/course-color";
 import { cn } from "@/common/functions";
 import { useDebouncedValue } from "@/common/hooks/useDebouncedValue";
-import { GripVertical } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Types

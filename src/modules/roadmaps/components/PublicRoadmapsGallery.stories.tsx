@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
+import type { ReactNode } from "react";
 import { Visibility } from "@/generated/prisma/enums";
 
-import { api, type RouterOutputs } from "@/common/tools/trpc/react";
+import { api } from "@/common/tools/trpc/react";
+import type { RouterOutputs } from "@/common/tools/trpc/react";
 import { PublicRoadmapsGallery } from "./PublicRoadmapsGallery";
 
 type ListPublicPage = RouterOutputs["roadmaps"]["listPublic"];

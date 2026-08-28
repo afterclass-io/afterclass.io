@@ -13,10 +13,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/common/components/tooltip";
-import {
-  summarizeSessionBids,
-  type SessionBid,
-} from "@/modules/timetable/functions/bids-summary";
+import { summarizeSessionBids } from "@/modules/timetable/functions/bids-summary";
+import type { SessionBid } from "@/modules/timetable/functions/bids-summary";
 import { formatBidAmount } from "@/modules/timetable/functions/format";
 
 // ---------------------------------------------------------------------------

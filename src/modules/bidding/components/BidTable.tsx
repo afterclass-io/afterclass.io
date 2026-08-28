@@ -133,9 +133,9 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
   const sortedRows = useMemo(() => {
     if (!sortColumn) {
       // Default: newest first (reverse of chronological chartData order)
-      return [...flatRows].reverse();
+      return [...flatRows].toReversed();
     }
-    return [...flatRows].sort((a, b) => {
+    return [...flatRows].toSorted((a, b) => {
       let cmp: number;
       if (sortColumn === "term") {
         // Use acadTermId for correct academic term ordering

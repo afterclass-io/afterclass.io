@@ -18,11 +18,11 @@ interface Props {
   user: SessionUser;
 }
 
-export const UserProfile = ({ user }: Props) => {
-  const handleLogout = async () => {
-    await signOut();
-  };
+const handleLogout = async () => {
+  await signOut();
+};
 
+export const UserProfile = ({ user }: Props) => {
   return (
     <Popover>
       <PopoverTrigger className="hidden items-center gap-2 md:flex">

@@ -1,4 +1,5 @@
-import { CustomIcon, type CustomIconProps } from "./custom-icon";
+import { CustomIcon } from "./custom-icon";
+import type { CustomIconProps } from "./custom-icon";
 
 interface RatingHeartProps extends CustomIconProps {
   fillPercentage?: number; // 0 to 1

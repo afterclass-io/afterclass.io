@@ -11,20 +11,14 @@ import {
   Controls,
   Handle,
   Position,
-  type Edge,
-  type Node,
-  type NodeProps,
   useNodesState,
 } from "@xyflow/react";
+import type { Edge, Node, NodeProps } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import {
-  RoadmapTimelineNode,
-  type TimelineNodeData,
-} from "./RoadmapTimelineNode";
-import {
-  RoadmapCourseDialog,
-  type RoadmapCourseInfo,
-} from "./RoadmapCourseDialog";
+import { RoadmapTimelineNode } from "./RoadmapTimelineNode";
+import type { TimelineNodeData } from "./RoadmapTimelineNode";
+import { RoadmapCourseDialog } from "./RoadmapCourseDialog";
+import type { RoadmapCourseInfo } from "./RoadmapCourseDialog";
 import { cn } from "@/common/functions";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
 import {

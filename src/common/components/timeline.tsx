@@ -23,21 +23,23 @@ export interface TimelineProps extends React.ComponentPropsWithoutRef<"ol"> {
 }
 
 export const Timeline = React.forwardRef<React.ElementRef<"ol">, TimelineProps>(
-  ({ className, orientation = "vertical", ...props }, ref) => (
-    <TimelineContext.Provider value={{ orientation }}>
-      <ol
-        ref={ref}
-        role="list"
-        data-orientation={orientation}
-        className={cn(
-          "flex",
-          orientation === "vertical" && "flex-col",
-          className,
-        )}
-        {...props}
-      />
-    </TimelineContext.Provider>
-  ),
+  ({ className, orientation = "vertical", ...props }, ref) => {
+    const contextValue = React.useMemo(() => ({ orientation }), [orientation]);
+    return (
+      <TimelineContext.Provider value={contextValue}>
+        <ol
+          ref={ref}
+          data-orientation={orientation}
+          className={cn(
+            "flex",
+            orientation === "vertical" && "flex-col",
+            className,
+          )}
+          {...props}
+        />
+      </TimelineContext.Provider>
+    );
+  },
 );
 Timeline.displayName = "Timeline";
 
@@ -83,8 +85,7 @@ export const TimelineSeparator = React.forwardRef<
 });
 TimelineSeparator.displayName = "TimelineSeparator";
 
-export interface TimelineDotProps
-  extends React.ComponentPropsWithoutRef<"div"> {
+export interface TimelineDotProps extends React.ComponentPropsWithoutRef<"div"> {
   variant?: "default" | "outline";
 }
 

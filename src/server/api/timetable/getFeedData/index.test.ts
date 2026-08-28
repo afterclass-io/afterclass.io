@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
 // getFeedData imports "server-only" which throws outside Next.
-vi.mock("server-only", () => ({}));
-vi.mock("@/server/db", () => ({ db: {} }));
 
 import { getFeedData } from "./index";
+
+vi.mock("server-only", () => ({}));
+vi.mock("@/server/db", () => ({ db: {} }));
 
 describe("getFeedData", () => {
   it("returns null for a PRIVATE timetable even with a valid token", async () => {

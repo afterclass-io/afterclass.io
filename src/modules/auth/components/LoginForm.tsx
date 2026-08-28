@@ -1,6 +1,7 @@
 "use client";
 import { startTransition, useEffect, Fragment } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { z } from "zod";
@@ -162,7 +163,6 @@ export const LoginForm = () => {
                       disabled={form.formState.isSubmitting}
                       placeholder="john.doe.2023@smu.edu.sg"
                       autoComplete="on"
-                      tabIndex={1}
                       data-test="email"
                     />
                   </InputControl>
@@ -183,7 +183,6 @@ export const LoginForm = () => {
                   href="/account/auth/forgot"
                   variant="link"
                   className="md:text-sm"
-                  tabIndex={5}
                   data-test="forget"
                 >
                   Forgot password?
@@ -199,7 +198,6 @@ export const LoginForm = () => {
                     disabled={form.formState.isSubmitting}
                     placeholder="Enter password"
                     autoComplete="on"
-                    tabIndex={2}
                     data-test="password"
                   />
                   <PasswordInputAdornmentToggle />
@@ -214,7 +212,6 @@ export const LoginForm = () => {
             type="submit"
             className="w-full"
             disabled={form.formState.isSubmitting}
-            tabIndex={3}
             data-test="submit"
           >
             {form.formState.isSubmitting ? "Signing in..." : "Login"}
@@ -257,7 +254,6 @@ export const LoginForm = () => {
               href="/account/auth/signup"
               type="button"
               variant="link"
-              tabIndex={6}
               data-test="register"
             >
               Create an account

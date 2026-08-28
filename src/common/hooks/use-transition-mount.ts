@@ -103,8 +103,8 @@ export function useTransitionMount(): TransitionMountReturn {
   }
 
   function done() {
-    setState((state) =>
-      state === "initial" || state === "in-progress" ? "completing" : state,
+    setState((prev) =>
+      prev === "initial" || prev === "in-progress" ? "completing" : prev,
     );
   }
 

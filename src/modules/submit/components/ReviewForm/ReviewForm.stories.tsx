@@ -1,14 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
-import { FormProvider, type SubmitHandler, useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { ReviewFormSection } from "./ReviewFormSection";
 
-import {
-  type ReviewFormInputsSchema,
-  reviewFormSchema,
-} from "@/common/tools/zod/schemas";
+import { reviewFormSchema } from "@/common/tools/zod/schemas";
+import type { ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
 import { ReviewableEnum } from "@/modules/submit/types";
 
 const comboboxItems = [

@@ -1,4 +1,5 @@
 "use client";
+/* oxlint-disable jsx-a11y/prefer-tag-over-role, jsx-a11y/no-static-element-interactions -- dnd-kit draggable: role + Enter/Space handling implemented manually */
 
 import { useSortable } from "@dnd-kit/sortable";
 import { GripVertical, X } from "lucide-react";

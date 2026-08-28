@@ -1,5 +1,5 @@
 "use client";
-import { type ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { cn } from "@/common/functions";

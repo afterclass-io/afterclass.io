@@ -26,6 +26,7 @@ export const create = protectedProcedure
     }
     try {
       for (const r of reviewsToCreate) {
+        // oxlint-disable-next-line no-await-in-loop -- sequential inserts: per-review label fan-out needs the created review id
         const review = await ctx.db.reviews.create({
           data: {
             body: r.body,
@@ -40,6 +41,7 @@ export const create = protectedProcedure
           },
         });
         if (r.labels) {
+          // oxlint-disable-next-line no-await-in-loop -- part of the sequential per-review write above
           await ctx.db.reviewLabels.createMany({
             data: r.labels.map((label) => ({
               reviewId: review.id,

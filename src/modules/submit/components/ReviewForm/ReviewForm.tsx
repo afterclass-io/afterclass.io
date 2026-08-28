@@ -1,16 +1,16 @@
 "use client";
 
-import { startTransition, useEffect, useState, type ReactNode } from "react";
+import { startTransition, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type SubmitHandler, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 
-import {
-  type ReviewFormInputsSchema,
-  reviewFormSchema,
-} from "@/common/tools/zod/schemas";
+import { reviewFormSchema } from "@/common/tools/zod/schemas";
+import type { ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
 import { api } from "@/common/tools/trpc/react";
 import { Form } from "@/common/components/form";
 import { ReviewableEnum } from "@/modules/submit/types";

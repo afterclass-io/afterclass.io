@@ -8,8 +8,8 @@ import {
   invertAction,
   redoStackAtom,
   undoStackAtom,
-  type TimetableAction,
 } from "@/modules/timetable/atoms/history";
+import type { TimetableAction } from "@/modules/timetable/atoms/history";
 import {
   useAddSlotMutation,
   useRemoveSlotMutation,
@@ -48,10 +48,16 @@ export function useTimetableHistory() {
     (action: TimetableAction) => {
       switch (action.type) {
         case "addSlot":
-          addSlot.mutate({ timetableId: action.timetableId, classId: action.classId });
+          addSlot.mutate({
+            timetableId: action.timetableId,
+            classId: action.classId,
+          });
           break;
         case "removeSlot":
-          removeSlot.mutate({ timetableId: action.timetableId, classId: action.classId });
+          removeSlot.mutate({
+            timetableId: action.timetableId,
+            classId: action.classId,
+          });
           break;
         case "setSlotSection":
           setSlotSection.mutate({

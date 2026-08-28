@@ -13,7 +13,7 @@ import {
   SelectTrigger,
 } from "@/common/components/select";
 import { ChevronDownIcon } from "@/common/components/icons";
-import { type ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
+import type { ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
 
 import { ReviewerEnum } from "@/modules/submit/types";
 import { Loader2 } from "lucide-react";

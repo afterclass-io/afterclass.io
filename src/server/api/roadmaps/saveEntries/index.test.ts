@@ -3,14 +3,15 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 // The Prisma client must never be instantiated in tests: mock the db module
 // used by trpc.ts at import time. Also mock transitive dependencies pulled
 // by @/server/api/trpc (same pattern as isEmailTaken/index.test.ts).
+
+import { createTRPCRouter } from "@/server/api/trpc";
+import { saveEntries } from "./index";
+
 vi.mock("@/server/db", () => ({ db: {} }));
 vi.mock("@/server/auth", () => ({ auth: () => null }));
 vi.mock("@sentry/nextjs", () => ({
   trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
 }));
-
-import { createTRPCRouter } from "@/server/api/trpc";
-import { saveEntries } from "./index";
 
 const router = createTRPCRouter({ saveEntries });
 

@@ -4,7 +4,8 @@
 "use client";
 
 import { memo } from "react";
-import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import type { NodeProps } from "@xyflow/react";
 import { courseColor } from "@/modules/timetable/functions/course-color";
 import { cn } from "@/common/functions";
 

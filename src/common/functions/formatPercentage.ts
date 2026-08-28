@@ -1,6 +1,6 @@
 export function formatPercentage(
   amount: number,
-  options: Intl.NumberFormatOptions | undefined = undefined,
+  options?: Intl.NumberFormatOptions,
 ) {
   return new Intl.NumberFormat("en-US", {
     style: "percent",

@@ -5,7 +5,7 @@ export default defineConfig({
     baseUrl: "http://localhost:3000",
     viewportHeight: 800, // equivalent to cy.viewport("macbook-13")
     viewportWidth: 1280, // equivalent to cy.viewport("macbook-13")
-    setupNodeEvents(on, config) {
+    setupNodeEvents(_on, _config) {
       // implement node event listeners here
     },
   },

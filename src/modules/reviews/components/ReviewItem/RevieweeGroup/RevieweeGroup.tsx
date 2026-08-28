@@ -1,4 +1,4 @@
-import { type Review } from "@/modules/reviews/types";
+import type { Review } from "@/modules/reviews/types";
 import { SchoolIcon } from "@/common/components/icons";
 import { ProgressLink } from "@/common/components/progress-link";
 

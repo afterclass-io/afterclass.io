@@ -9,8 +9,11 @@ import { Input } from "@/common/components/input";
 import { Skeleton } from "@/common/components/skeleton";
 import { cn } from "@/common/functions";
 import { useDebouncedValue } from "@/common/hooks/useDebouncedValue";
-import { SectionPicker, type SectionOption } from "./SectionPicker";
+import { SectionPicker } from "./SectionPicker";
+import type { SectionOption } from "./SectionPicker";
 import type { ArrangedClass } from "./TimetableGrid";
+
+const EMPTY_ARRAY: never[] = [];
 
 export type CourseSearchPanelProps = {
   /** Set of course codes currently in the active timetable (for swap detection). */
@@ -31,7 +34,7 @@ export type CourseSearchPanelProps = {
  */
 export function CourseSearchPanel({
   timetableCourseCodes,
-  existingSlots = [],
+  existingSlots = EMPTY_ARRAY,
   className,
 }: CourseSearchPanelProps) {
   const selectedTermId = useAtomValue(selectedTermIdAtom);
@@ -40,10 +43,12 @@ export function CourseSearchPanel({
   const debouncedQuery = useDebouncedValue(query, 300);
   const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null);
 
-  // Clear stale search state when the term changes — results are term-scoped
+  // Clear stale search state when the term changes — results are term-scoped.
+  // selectedTermId is the change trigger, not read in the body.
   useEffect(() => {
     setQuery("");
     setExpandedCourseId(null);
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies
   }, [selectedTermId]);
 
   const searchQuery = api.timetable.searchCourses.useQuery(

@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
+import type { ReactNode } from "react";
 
-import {
-  api,
-  type RouterOutputs,
-} from "@/common/tools/trpc/react";
-import { BidDialog, type UserBidRow } from "./BidDialog";
+import { api } from "@/common/tools/trpc/react";
+import type { RouterOutputs } from "@/common/tools/trpc/react";
+import { BidDialog } from "./BidDialog";
+import type { UserBidRow } from "./BidDialog";
 
 // ---------------------------------------------------------------------------
 // Sample data

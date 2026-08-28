@@ -37,7 +37,7 @@ export function SortableTable<T extends Record<string, string | number | null | 
       return data;
     }
 
-    const sorted = [...data].sort((a, b) => {
+    const sorted = [...data].toSorted((a, b) => {
       const aValue = a[sortColumn];
       const bValue = b[sortColumn];
 

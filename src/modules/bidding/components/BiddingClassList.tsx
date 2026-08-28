@@ -28,9 +28,9 @@ export const BiddingClassList = ({ initialClasses }: { initialClasses: ClassItem
 
   // IntersectionObserver for infinite scroll
   useEffect(() => {
-    if (!hasMore) return;
+    if (!hasMore) return undefined;
     const sentinel = sentinelRef.current;
-    if (!sentinel) return;
+    if (!sentinel) return undefined;
 
     const observer = new IntersectionObserver(
       (entries) => {

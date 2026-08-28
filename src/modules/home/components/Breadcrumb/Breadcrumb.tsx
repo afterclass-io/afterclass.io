@@ -182,7 +182,7 @@ export const HomeBreadcrumb = (
       <Breadcrumb {...props}>
         <BreadcrumbList>
           <BreadcrumbItem>
-            {path != "/" && (
+            {path !== "/" && (
               <BreadcrumbLink
                 href={HOME_BREADCRUMB.href}
                 className="max-w-80 truncate"

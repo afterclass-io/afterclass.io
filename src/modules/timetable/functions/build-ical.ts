@@ -1,6 +1,7 @@
 import ical, { ICalCalendarMethod, ICalWeekday } from "ical-generator";
 import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
 import { dayOfWeekToIcalCode } from "@/common/functions/day-of-week";
+import { parseTimePartsSafe } from "@/common/functions/time";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -97,8 +98,6 @@ function teachingWeekNumbers(termStart: Date, termEnd: Date): number[] {
   }
   return [1, 2, 3, 4, 5];
 }
-
-import { parseTimePartsSafe } from "@/common/functions/time";
 
 // ---------------------------------------------------------------------------
 // Main export

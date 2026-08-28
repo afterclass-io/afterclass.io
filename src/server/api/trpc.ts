@@ -104,7 +104,7 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 
   const end = Date.now();
   if (process.env.NODE_ENV === "development") {
-    console.debug(`[TRPC] ${path} took ${end - start}ms to execute`);
+    console.warn(`[TRPC] ${path} took ${end - start}ms to execute`);
   }
 
   return result;

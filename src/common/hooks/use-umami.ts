@@ -52,7 +52,7 @@ export default function useUmami(): Umami {
   const windowUmami = useCallback(() => {
     if (!isUmamiAvailable()) {
       console.warn("UmamiProvider not found");
-      return;
+      return undefined;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access

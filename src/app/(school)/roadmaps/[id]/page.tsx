@@ -2,7 +2,7 @@ import { cache } from "react";
 import { api } from "@/common/tools/trpc/server";
 import { notFound } from "next/navigation";
 import { TRPCError } from "@trpc/server";
-import { type Metadata } from "next";
+import type { Metadata } from "next";
 import { PublicRoadmapView } from "./PublicRoadmapView";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
 

@@ -1,5 +1,5 @@
 "use client";
-import { type ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/client";
+import type { ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/client";
 
 import { toTitleCase } from "@/common/functions";
 import { Button } from "@/common/components/button";
@@ -17,12 +17,12 @@ import {
 import { ReviewReactionType } from "@/modules/reviews/types";
 import { useOptimisticReaction } from "@/modules/reviews/hooks";
 
-export const ReviewReactionButton = ({ reviewId }: { reviewId: string }) => {
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
+const handleClick = (e: React.MouseEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+};
 
+export const ReviewReactionButton = ({ reviewId }: { reviewId: string }) => {
   const { mutate: upsertReaction } = useOptimisticReaction();
 
   const handleEmojiClick = (emoji: DbReviewReactionType) => {
@@ -52,13 +52,14 @@ export const ReviewReactionButton = ({ reviewId }: { reviewId: string }) => {
       >
         {Object.entries(ReviewReactionType).map(([label, emoji]) => (
           <Tooltip key={label}>
-            <TooltipTrigger className="h-fit w-fit">
-              <span
+            <TooltipTrigger asChild>
+              <button
+                type="button"
                 className="px-1 text-sm hover:text-3xl"
                 onClick={() => handleEmojiClick(label as DbReviewReactionType)}
               >
                 {emoji}
-              </span>
+              </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">{toTitleCase(label)}</TooltipContent>
           </Tooltip>

@@ -5,7 +5,8 @@ import { useAtom, useAtomValue } from "jotai";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Pencil, Trash2, Plus, Star } from "lucide-react";
-import { api, type RouterInputs } from "@/common/tools/trpc/react";
+import { api } from "@/common/tools/trpc/react";
+import type { RouterInputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import {
   selectedTermIdAtom,
@@ -57,8 +58,9 @@ export type VariantSwitcherProps = {
  */
 export function VariantSwitcher({ className }: VariantSwitcherProps) {
   const selectedTermId = useAtomValue(selectedTermIdAtom);
-  const [activeTimetableId, setActiveTimetableId] =
-    useAtom(activeTimetableIdAtom);
+  const [activeTimetableId, setActiveTimetableId] = useAtom(
+    activeTimetableIdAtom,
+  );
 
   const utils = api.useUtils();
 
@@ -112,10 +114,10 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
       toast.success("Deleted");
       // If deleting the active variant, clear selection
       if (activeTimetableId) {
-        const remaining = (timetables ?? []).filter(
+        const nextActive = (timetables ?? []).find(
           (t) => t.id !== activeTimetableId,
         );
-        setActiveTimetableId(remaining[0]?.id ?? null);
+        setActiveTimetableId(nextActive?.id ?? null);
       }
     },
     onError: () => toast.error("Failed to delete"),
@@ -140,8 +142,7 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
         if (!selectedTermId) return;
         utils.timetable.listMine.setData(
           { acadTermId: selectedTermId },
-          (old) =>
-            old?.map((t) => ({ ...t, isActive: t.id === timetableId })),
+          (old) => old?.map((t) => ({ ...t, isActive: t.id === timetableId })),
         );
       },
       restoreSnapshot: (prev) => {
@@ -153,7 +154,9 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
       },
       invalidate: async () => {
         if (!selectedTermId) return;
-        await utils.timetable.listMine.invalidate({ acadTermId: selectedTermId });
+        await utils.timetable.listMine.invalidate({
+          acadTermId: selectedTermId,
+        });
       },
       onError: () => toast.error("Failed to set active timetable"),
     }),
@@ -193,12 +196,20 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
         value={activeTimetableId ?? undefined}
         onValueChange={handleSwitch}
       >
-        <SelectTrigger className="w-44" size="sm" data-test="timetable-variant-switcher">
+        <SelectTrigger
+          className="w-44"
+          size="sm"
+          data-test="timetable-variant-switcher"
+        >
           <SelectValue placeholder="No timetable" />
         </SelectTrigger>
         <SelectContent>
           {timetables.map((t) => (
-            <SelectItem key={t.id} value={t.id} data-test={`timetable-variant-${t.id}`}>
+            <SelectItem
+              key={t.id}
+              value={t.id}
+              data-test={`timetable-variant-${t.id}`}
+            >
               {t.name}
               <span className="ml-2 text-xs text-muted-foreground">
                 ({t._count.slots})
@@ -217,9 +228,7 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
               variant="ghost"
               size="icon"
               aria-label={
-                active.isActive
-                  ? "Active plan"
-                  : "Mark as active plan"
+                active.isActive ? "Active plan" : "Mark as active plan"
               }
               disabled={active.isActive || setActiveMutation.isPending}
               onClick={() =>
@@ -313,6 +322,7 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
               </DialogDescription>
             </DialogHeader>
             <Input
+              // oxlint-disable-next-line jsx-a11y/no-autofocus -- focus the rename field on open
               autoFocus
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}

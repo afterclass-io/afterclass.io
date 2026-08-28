@@ -2,13 +2,13 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import {
-  type ChartConfig,
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "./chart";
+import type { ChartConfig } from "./chart";
 
 import {
   Card,

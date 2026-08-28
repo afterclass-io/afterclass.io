@@ -8,6 +8,7 @@
  *
  * All functions are pure — no side effects, no dependencies beyond stdlib.
  */
+import { timeToMinutes } from "@/common/functions/time";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -61,8 +62,6 @@ export function findEntryByCourse(
 ): Entry | undefined {
   return entries.find((e) => e.courseId === courseId);
 }
-
-import { timeToMinutes } from "@/common/functions/time";
 
 /**
  * Check whether two exam timings overlap.

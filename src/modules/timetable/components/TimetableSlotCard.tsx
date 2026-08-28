@@ -14,8 +14,8 @@ import { formatBidAmount } from "@/modules/timetable/functions/format";
 import {
   bidChipVariant,
   slotCardVariant,
-  type UserBidStatus,
 } from "@/modules/timetable/functions/bid-status";
+import type { UserBidStatus } from "@/modules/timetable/functions/bid-status";
 import type { PositionedSlot } from "@/modules/timetable/functions/slot-math";
 
 export type BidInfo = {
@@ -140,8 +140,7 @@ export function TimetableSlotCard({
               bidChipVariant(bidInfo.status as UserBidStatus),
             )}
           >
-            {formatBidAmount(bidInfo.amount)}{" "}
-            · R{bidInfo.round}
+            {formatBidAmount(bidInfo.amount)} · R{bidInfo.round}
           </span>
         )}
       </button>

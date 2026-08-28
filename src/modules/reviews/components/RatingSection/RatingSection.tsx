@@ -1,6 +1,7 @@
 import { HeartIcon } from "@/common/components/icons";
 import { LockedOverlay } from "@/common/components/locked-overlay";
-import { StatItem, type StatItemProps } from "@/common/components/stat-item";
+import { StatItem } from "@/common/components/stat-item";
+import type { StatItemProps } from "@/common/components/stat-item";
 
 export type RatingSectionProps = {
   headingRatingItem: StatItemProps;

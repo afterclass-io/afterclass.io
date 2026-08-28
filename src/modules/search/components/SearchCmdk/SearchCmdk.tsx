@@ -1,12 +1,7 @@
 "use client";
 
-import {
-  type FormEvent,
-  type ReactNode,
-  startTransition,
-  useEffect,
-  useState,
-} from "react";
+import { startTransition, useEffect, useState } from "react";
+import type { FormEvent, ReactNode } from "react";
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { useRouter } from "next/navigation";
@@ -57,7 +52,7 @@ export const SearchCmdk = ({
   const edgeConfig = useEdgeConfigs();
 
   useEffect(() => {
-    if (asChild) return;
+    if (asChild) return undefined;
     const timeoutId = setTimeout(() => {
       setIsTooltipOpen(true);
       setHasShownTooltip(true);
@@ -65,17 +60,17 @@ export const SearchCmdk = ({
 
     if (!edgeConfig.enableCmdkTooltip || hasShownTooltip) {
       clearTimeout(timeoutId);
-    } else {
-      return () => clearTimeout(timeoutId);
+      return undefined;
     }
+    return () => clearTimeout(timeoutId);
   }, [edgeConfig, hasShownTooltip, asChild, setHasShownTooltip]);
 
   useEffect(() => {
-    if (asChild) return;
+    if (asChild) return undefined;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "/") {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen((prev) => !prev);
       }
     };
     document.addEventListener("keydown", onKeyDown);

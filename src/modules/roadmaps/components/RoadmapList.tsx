@@ -151,6 +151,7 @@ export function RoadmapList({
       {isCreating && (
         <div className="flex items-center gap-1 border-b px-3 py-2">
           <Input
+            // oxlint-disable-next-line jsx-a11y/no-autofocus -- focus the name field on open
             autoFocus
             placeholder="Roadmap name…"
             value={createName}
@@ -284,6 +285,7 @@ export function RoadmapList({
               {/* Name (editable) */}
               {editingId === item.id ? (
                 <Input
+                  // oxlint-disable-next-line jsx-a11y/no-autofocus -- focus the name field on open
                   autoFocus
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}

@@ -2,7 +2,8 @@
 import { useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 
-import { api, type RouterInputs } from "@/common/tools/trpc/react";
+import { api } from "@/common/tools/trpc/react";
+import type { RouterInputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { VoteGroup } from "@/common/components/vote-group";
 
@@ -53,7 +54,10 @@ export const RoadmapVoteGroup = ({
             }
           | undefined;
         if (snapshot) {
-          utils.roadmapVotes.count.setData({ roadmapId }, snapshot.previousCount);
+          utils.roadmapVotes.count.setData(
+            { roadmapId },
+            snapshot.previousCount,
+          );
           utils.roadmapVotes.getByUser.setData(
             { roadmapId },
             snapshot.previousUserVote as never,

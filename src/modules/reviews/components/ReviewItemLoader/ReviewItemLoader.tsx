@@ -87,7 +87,8 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
         return apiFn.useSuspenseInfiniteQuery(
           { code, slugs, filterFor, sortBy },
           {
-            getNextPageParam: (lastPage: { nextCursor?: string }) => lastPage.nextCursor,
+            getNextPageParam: (lastPage: { nextCursor?: string }) =>
+              lastPage.nextCursor,
           },
         );
       }
@@ -99,7 +100,8 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
         return apiFn.useSuspenseInfiniteQuery(
           { slug, courseCodes, filterFor, sortBy },
           {
-            getNextPageParam: (lastPage: { nextCursor?: string }) => lastPage.nextCursor,
+            getNextPageParam: (lastPage: { nextCursor?: string }) =>
+              lastPage.nextCursor,
           },
         );
       }
@@ -110,7 +112,8 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
         return apiFn.useSuspenseInfiniteQuery(
           { filterFor, sortBy },
           {
-            getNextPageParam: (lastPage: { nextCursor?: string }) => lastPage.nextCursor,
+            getNextPageParam: (lastPage: { nextCursor?: string }) =>
+              lastPage.nextCursor,
           },
         );
       }
@@ -185,7 +188,6 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
             data-test="review-load-more"
             className="sr-only"
             onClick={() => fetchNextPage()}
-            aria-hidden
           >
             Load more
           </button>

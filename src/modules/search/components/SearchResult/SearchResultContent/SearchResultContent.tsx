@@ -1,8 +1,8 @@
 "use client";
 import { z } from "zod";
 import { useState } from "react";
-import { type SearchCourseResult } from "@/modules/search/functions/searchCourse";
-import { type SearchProfResult } from "@/modules/search/functions/searchProf";
+import type { SearchCourseResult } from "@/modules/search/functions/searchCourse";
+import type { SearchProfResult } from "@/modules/search/functions/searchProf";
 import {
   BooksIcon,
   GraduationCapIcon,
@@ -12,7 +12,7 @@ import { SearchResultList } from "../SearchResultList";
 import { SearchResultItem } from "../SearchResultItem";
 import { SearchResultFilter } from "../SearchResultFilter";
 import { SearchResultEmpty } from "../SearchResultEmpty";
-import { type UniversityAbbreviation } from "@/generated/prisma/client";
+import type { UniversityAbbreviation } from "@/generated/prisma/client";
 import { Separator } from "@/common/components/separator";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -51,6 +51,8 @@ export const SearchResultContent = ({
         return schoolFilteredCourse.length === 0;
       case "professor":
         return schoolFilteredProf.length === 0;
+      default:
+        return false;
     }
   };
 

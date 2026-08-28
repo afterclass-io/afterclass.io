@@ -3,7 +3,8 @@ import { useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { ReviewEventType } from "@/generated/prisma/enums";
 
-import { api, type RouterInputs } from "@/common/tools/trpc/react";
+import { api } from "@/common/tools/trpc/react";
+import type { RouterInputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { useEdgeConfigs } from "@/common/hooks";
 import { VoteGroup } from "@/common/components/vote-group";

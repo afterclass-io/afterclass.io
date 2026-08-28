@@ -1,9 +1,9 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
 
-vi.mock("@/server/db", () => ({ db: {} }));
-
 import { incrementEngagement } from "./incrementEngagement";
 import { resetLimits } from "@/server/api/engagement-limit";
+
+vi.mock("@/server/db", () => ({ db: {} }));
 
 describe("incrementEngagement", () => {
   afterEach(() => resetLimits());

@@ -49,8 +49,8 @@ import {
   BID_STATUS_LABELS,
   BID_STATUS_OPTIONS,
   bidChipVariant,
-  type UserBidStatus,
 } from "@/modules/timetable/functions/bid-status";
+import type { UserBidStatus } from "@/modules/timetable/functions/bid-status";
 import { BidsDashboard } from "./BidsDashboard";
 import { InlineNotesEditor } from "./InlineNotesEditor";
 import { BidDialog } from "./BidDialog";
@@ -176,9 +176,9 @@ export function BidsTable() {
           const target = old.find((b) => b.id === id);
           const classId = target?.classId;
           return old.map((b) => {
-            if (b.id === id) return { ...b, status } as typeof b;
+            if (b.id === id) return { ...b, status };
             if (classId && b.classId === classId)
-              return { ...b, status: "PARTICIPATED" } as typeof b;
+              return { ...b, status: "PARTICIPATED" };
             return b;
           });
         });
@@ -227,7 +227,7 @@ export function BidsTable() {
     [windows],
   );
   const windowOptions = useMemo(
-    () => [...new Set(windows.map((w) => w.window))].sort((a, b) => a - b),
+    () => [...new Set(windows.map((w) => w.window))].toSorted((a, b) => a - b),
     [windows],
   );
 
@@ -246,7 +246,7 @@ export function BidsTable() {
     });
 
     const dir = sortDir === "asc" ? 1 : -1;
-    return [...rows].sort((a, b) => {
+    return [...rows].toSorted((a, b) => {
       if (sortKey === "bidAmount") return (a.bidAmount - b.bidAmount) * dir;
       const at = new Date(a.createdAt).getTime();
       const bt = new Date(b.createdAt).getTime();
@@ -607,10 +607,7 @@ function BidTableRow({
               <Button
                 variant="ghost"
                 size="sm"
-                className={cn(
-                  "h-7 px-2 text-xs",
-                  bidChipVariant(bid.status as UserBidStatus),
-                )}
+                className={cn("h-7 px-2 text-xs", bidChipVariant(bid.status))}
                 disabled={isBusy}
                 aria-label={`Change status for ${bid.courseCode} ${bid.section} bid`}
               >

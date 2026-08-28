@@ -1,4 +1,5 @@
-import { ReviewType, type Prisma } from "@/generated/prisma/client";
+import { ReviewType } from "@/generated/prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 import { z } from "zod";
 
 import { publicProcedure } from "@/server/api/trpc";
@@ -63,12 +64,14 @@ export const getMetadataForCourse = publicProcedure
     return {
       averageRating: reviewsMetadataForThisCourse._avg.rating ?? 0,
       reviewCount: reviewsMetadataForThisCourse._count._all,
-      reviewLabels: courseReviewLabels.sort().map((label) => ({
-        name: toTitleCase(label.name.replaceAll("_", " ")),
-        count:
-          reviewLabelsMetadataForThisCourse.find(
-            (rl) => rl.labelId === label.id,
-          )?._count.labelId ?? 0,
-      })),
+      reviewLabels: courseReviewLabels
+        .toSorted((a, b) => a.name.localeCompare(b.name))
+        .map((label) => ({
+          name: toTitleCase(label.name.replaceAll("_", " ")),
+          count:
+            reviewLabelsMetadataForThisCourse.find(
+              (rl) => rl.labelId === label.id,
+            )?._count.labelId ?? 0,
+        })),
     };
   });

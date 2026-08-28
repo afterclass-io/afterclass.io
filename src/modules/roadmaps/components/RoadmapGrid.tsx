@@ -3,23 +3,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
-  type DragEndEvent,
-  type DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
   closestCenter,
 } from "@dnd-kit/core";
+import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import type { Entry, Conflict } from "../functions/conflicts";
 import { detectConflicts, findEntryByCourse } from "../functions/conflicts";
 import { RoadmapYearRow, YEAR_LABEL_COL } from "./RoadmapYearRow";
 import { RoadmapConflictBadge } from "./RoadmapConflictBadge";
-import {
-  RoadmapCourseDialog,
-  type RoadmapCourseInfo,
-} from "./RoadmapCourseDialog";
+import { RoadmapCourseDialog } from "./RoadmapCourseDialog";
+import type { RoadmapCourseInfo } from "./RoadmapCourseDialog";
 import { Button } from "@/common/components/button";
 import {
   Tooltip,
@@ -124,7 +121,7 @@ export function RoadmapGrid({
   }, [roadmapId]);
 
   useEffect(() => {
-    if (!dirty || !onSave || saving) return;
+    if (!dirty || !onSave || saving) return undefined;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       debounceRef.current = null;
@@ -133,6 +130,7 @@ export function RoadmapGrid({
       void Promise.resolve(onSaveRef.current!(snapshot))
         .then(() => {
           if (localEntriesRef.current === snapshot) setDirty(false);
+          return undefined;
         })
         .catch(() => undefined)
         .finally(() => setSaving(false));
@@ -359,7 +357,10 @@ export function RoadmapGrid({
 
   // ---- Render ----
   return (
-    <div className={cn("space-y-4 h-full", className)} aria-busy={saving || undefined}>
+    <div
+      className={cn("space-y-4 h-full", className)}
+      aria-busy={saving || undefined}
+    >
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -394,36 +395,36 @@ export function RoadmapGrid({
                   <div key={yearNumber}>
                     <RoadmapYearRow
                       yearNumber={yearNumber}
-                        entries={localEntries}
-                        sortableIds={sortableIdMap}
-                        readOnly={readOnly}
-                        onCourseClick={handleCourseClick}
-                        onRemove={readOnly ? undefined : handleRemoveEntry}
-                      />
+                      entries={localEntries}
+                      sortableIds={sortableIdMap}
+                      readOnly={readOnly}
+                      onCourseClick={handleCourseClick}
+                      onRemove={readOnly ? undefined : handleRemoveEntry}
+                    />
 
-                      {/* Conflict badges per term */}
+                    {/* Conflict badges per term */}
+                    <div className={cn("grid gap-2 px-1", YEAR_LABEL_COL)}>
+                      <div />
+                      {TERMS.map((term) => {
+                        const key = `${yearNumber}-${term}`;
+                        const termConflicts = conflictsByTerm.get(key) ?? [];
+                        return (
+                          <div key={term}>
+                            <RoadmapConflictBadge conflicts={termConflicts} />
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Term footer (e.g. timetable links) */}
+                    {termFooter && (
                       <div className={cn("grid gap-2 px-1", YEAR_LABEL_COL)}>
                         <div />
-                        {TERMS.map((term) => {
-                          const key = `${yearNumber}-${term}`;
-                          const termConflicts = conflictsByTerm.get(key) ?? [];
-                          return (
-                            <div key={term}>
-                              <RoadmapConflictBadge conflicts={termConflicts} />
-                            </div>
-                          );
-                        })}
+                        {TERMS.map((term) => (
+                          <div key={term}>{termFooter(yearNumber, term)}</div>
+                        ))}
                       </div>
-
-                      {/* Term footer (e.g. timetable links) */}
-                      {termFooter && (
-                        <div className={cn("grid gap-2 px-1", YEAR_LABEL_COL)}>
-                          <div />
-                          {TERMS.map((term) => (
-                            <div key={term}>{termFooter(yearNumber, term)}</div>
-                          ))}
-                        </div>
-                      )}
+                    )}
                   </div>
                 ))}
               </div>
@@ -446,6 +447,7 @@ export function RoadmapGrid({
                     <TooltipTrigger asChild>
                       {/* Disabled buttons don't fire pointer events, so the
                           tooltip anchors to this wrapper instead. */}
+                      {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- focusable tooltip anchor for the disabled button */}
                       <span className="mt-2 block w-full" tabIndex={0}>
                         <Button
                           variant="outline"

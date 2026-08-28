@@ -1,4 +1,5 @@
-import { SchoolIcon, type SchoolIconProps } from "@/common/components/icons";
+import { SchoolIcon } from "@/common/components/icons";
+import type { SchoolIconProps } from "@/common/components/icons";
 import { Heading } from "@/common/components/heading";
 import { Tag } from "@/common/components/tag";
 

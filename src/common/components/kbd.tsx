@@ -1,6 +1,7 @@
 // https://ui-x.junwen-k.dev/docs/components/kbd
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 
 import { cn } from "@/common/functions";
 
@@ -23,7 +24,8 @@ const kbdVariants = cva(
 );
 
 export interface KbdProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof kbdVariants> {}
 
 function Kbd({ className, variant, ...props }: KbdProps) {

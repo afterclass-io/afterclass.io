@@ -1,4 +1,4 @@
-import { type PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 import { AppSidebar } from "@/modules/home/components/AppSidebar";
 import { SidebarProvider, SidebarInset } from "@/common/components/sidebar";
 import { CoreLayoutHeader } from "@/common/components/core-layout-header";

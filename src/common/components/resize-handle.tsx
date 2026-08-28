@@ -1,4 +1,5 @@
 "use client";
+/* oxlint-disable jsx-a11y/prefer-tag-over-role -- a resizable separator legitimately uses role="separator" with keyboard resize; <hr> cannot carry handlers */
 import { useCallback } from "react";
 import { cn } from "@/common/functions";
 

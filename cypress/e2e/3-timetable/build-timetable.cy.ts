@@ -310,7 +310,7 @@ context("Timetable: Build", function () {
     })
       .invoke("text")
       .then((text) => {
-        if (String(text).includes("Secured")) {
+        if (text.includes("Secured")) {
           cy.get('[aria-label^="Change status for ACCT102 G2 bid"]').click();
           cy.get('[role="menuitem"]').contains("Planned").click({ force: true });
           cy.wait("@setStatusBid", { timeout: 15000 });
@@ -357,7 +357,7 @@ context("Timetable: Build", function () {
     })
       .invoke("text")
       .then((text) => {
-        if (!String(text).includes("Secured")) {
+        if (!text.includes("Secured")) {
           cy.get('[aria-label^="Change status for ACCT102 G2 bid"]').click();
           cy.get('[role="menuitem"]').contains("Secured").click({
             force: true,

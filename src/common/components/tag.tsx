@@ -1,6 +1,7 @@
 // https://supercharged-shadcn-components.dykennethryan.com/docs/components/chip
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 import { cn } from "@/common/functions";
 
@@ -201,7 +202,8 @@ const deletableVariants = cva(
 );
 
 export interface TagProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "color">,
+  extends
+    Omit<React.HTMLAttributes<HTMLDivElement>, "color">,
     VariantProps<typeof tagVariants> {
   size?: "xs" | "sm" | "md";
   deletable?: boolean;
@@ -221,14 +223,27 @@ function Tag({
   className,
 }: TagProps) {
   return (
+    // oxlint-disable-next-line jsx-a11y/no-static-element-interactions -- role/tabIndex/keyboard are added together with onClick below
     <div
       className={cn(tagVariants({ variant, color, className, size }))}
       data-clickable={!!onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                e.currentTarget.click();
+              }
+            }
+          : undefined
+      }
     >
       {!!avatar && <div className="start-icon">{avatar}</div>}
       <div className="label align-middle">{children}</div>
-      {!!deletable && (
+      {deletable && (
         <div
           className={cn(deletableVariants({ variant, color }), "deletable")}
           data-variant={variant}

@@ -1,12 +1,10 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { type UniversityAbbreviation } from "@/generated/prisma/client";
+import type { UniversityAbbreviation } from "@/generated/prisma/client";
 
 import { ChevronRightIcon, SchoolIcon } from "@/common/components/icons";
-import {
-  type FilterStat,
-  FilterItemStats,
-} from "@/common/components/FilterToggleSection/FilterToggleSectionItem";
+import { FilterItemStats } from "@/common/components/FilterToggleSection/FilterToggleSectionItem";
+import type { FilterStat } from "@/common/components/FilterToggleSection/FilterToggleSectionItem";
 import { Heading } from "@/common/components/heading";
 import { ProgressLink } from "@/common/components/progress-link";
 import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";

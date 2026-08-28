@@ -1,8 +1,20 @@
-import { api, type RouterInputs } from "@/common/tools/trpc/react";
+import { api } from "@/common/tools/trpc/react";
+import type { RouterInputs } from "@/common/tools/trpc/react";
 import type { ReviewReactionType } from "@/generated/prisma/client";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { debounce } from "lodash";
 import { useCallback, useMemo, useRef } from "react";
+
+/** Decrement the count for reaction `r` in `list`, dropping entries that hit 0. */
+const decrement = (
+  list: { reaction: ReviewReactionType; count: number }[],
+  r: ReviewReactionType | null,
+) =>
+  list
+    .map((c) =>
+      c.reaction === r ? { ...c, count: Math.max(0, c.count - 1) } : c,
+    )
+    .filter((c) => c.count > 0);
 
 export function useOptimisticReaction() {
   const utils = api.useUtils();
@@ -15,7 +27,9 @@ export function useOptimisticReaction() {
     >({
       cancel: async () => {
         if (lastInputRef.current) {
-          await utils.roadmapReactions.getByRoadmapId.cancel(lastInputRef.current);
+          await utils.roadmapReactions.getByRoadmapId.cancel(
+            lastInputRef.current,
+          );
         }
       },
       getSnapshot: () =>
@@ -29,12 +43,17 @@ export function useOptimisticReaction() {
       },
       restoreSnapshot: (prev) => {
         if (lastInputRef.current) {
-          utils.roadmapReactions.getByRoadmapId.setData(lastInputRef.current, prev as never);
+          utils.roadmapReactions.getByRoadmapId.setData(
+            lastInputRef.current,
+            prev as never,
+          );
         }
       },
       invalidate: async () => {
         if (lastInputRef.current) {
-          await utils.roadmapReactions.getByRoadmapId.invalidate(lastInputRef.current);
+          await utils.roadmapReactions.getByRoadmapId.invalidate(
+            lastInputRef.current,
+          );
         }
       },
     }),
@@ -51,16 +70,6 @@ export function useOptimisticReaction() {
           const counts = oldQueryData?.counts ?? [];
           const prevViewer = oldQueryData?.viewerReaction ?? null;
 
-          const decrement = (
-            list: { reaction: ReviewReactionType; count: number }[],
-            r: ReviewReactionType | null,
-          ) =>
-            list
-              .map((c) =>
-                c.reaction === r ? { ...c, count: Math.max(0, c.count - 1) } : c,
-              )
-              .filter((c) => c.count > 0);
-
           // when user undoes their reaction
           if (!reaction) {
             return {
@@ -70,7 +79,9 @@ export function useOptimisticReaction() {
           }
 
           // when user reacts (or switches to a new reaction)
-          const afterRemove = prevViewer ? decrement(counts, prevViewer) : counts;
+          const afterRemove = prevViewer
+            ? decrement(counts, prevViewer)
+            : counts;
           const existing = afterRemove.find((c) => c.reaction === reaction);
           const nextCounts = existing
             ? afterRemove.map((c) =>

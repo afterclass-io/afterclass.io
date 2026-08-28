@@ -2,9 +2,11 @@
 
 import { startTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "sonner";
 
 import { Button } from "@/common/components/button";
 import {
@@ -84,7 +86,7 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
       }
       form.reset();
     } catch (err) {
-      alert(err);
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     }
   };
 
@@ -111,7 +113,6 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
                       disabled={form.formState.isSubmitting}
                       placeholder="john.doe.2023@smu.edu.sg"
                       autoComplete="on"
-                      tabIndex={1}
                       data-test="email"
                     />
                   </InputControl>
@@ -137,7 +138,6 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
                     disabled={form.formState.isSubmitting}
                     placeholder="Enter password"
                     autoComplete="on"
-                    tabIndex={2}
                     data-test="password"
                   />
                   <PasswordInputAdornmentToggle />
@@ -163,7 +163,6 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
                     disabled={form.formState.isSubmitting}
                     placeholder="Confirm password"
                     autoComplete="on"
-                    tabIndex={3}
                     data-test="confirm-password"
                   />
                   <PasswordInputAdornmentToggle />
@@ -176,7 +175,6 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
         <Button
           type="submit"
           disabled={form.formState.isSubmitting}
-          tabIndex={4}
           data-test="submit"
         >
           {form.formState.isSubmitting ? "Creating an account..." : "Sign up"}
@@ -185,12 +183,7 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
           <span className="text-muted-foreground text-center font-semibold">
             Already have an account?
           </span>
-          <ProgressLink
-            href="/account/auth/login"
-            type="button"
-            variant="link"
-            tabIndex={7}
-          >
+          <ProgressLink href="/account/auth/login" type="button" variant="link">
             Login
           </ProgressLink>
         </div>

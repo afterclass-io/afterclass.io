@@ -78,8 +78,6 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       isActiveWithoutExact: true,
       isNew: true,
     },
-    // Development-only links
-    ...(process.env.NODE_ENV === "development" ? [] : []),
   ],
   contribute: [
     {

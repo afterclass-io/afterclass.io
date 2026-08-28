@@ -5,11 +5,8 @@ import { protectedProcedure } from "@/server/api/trpc";
 import { DEFAULT_PAGE_SIZE, PRIVATE_REVIEW_FIELDS } from "../constants";
 import { getOrderBy } from "../functions";
 
-import {
-  type Review,
-  ReviewsFilterFor,
-  ReviewsSortBy,
-} from "@/modules/reviews/types";
+import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
+import type { Review } from "@/modules/reviews/types";
 
 export const getAllProtected = protectedProcedure
   .input(

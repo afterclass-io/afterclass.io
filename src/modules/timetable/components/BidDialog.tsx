@@ -5,11 +5,8 @@ import { useAtomValue } from "jotai";
 import { toast } from "sonner";
 import { Loader2, Trash2, X } from "lucide-react";
 import Link from "next/link";
-import {
-  api,
-  type RouterInputs,
-  type RouterOutputs,
-} from "@/common/tools/trpc/react";
+import { api } from "@/common/tools/trpc/react";
+import type { RouterInputs, RouterOutputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { cn } from "@/common/functions";
 import {
@@ -47,20 +44,18 @@ import { useDebouncedValue } from "@/common/hooks/useDebouncedValue";
 import { activeTimetableIdAtom } from "@/modules/timetable/atoms/timetable";
 import { pickCurrentBidWindow } from "@/modules/timetable/functions/current-window";
 import { formatBidAmount } from "@/modules/timetable/functions/format";
-import {
-  BID_STATUS_OPTIONS,
-  type UserBidStatus,
-} from "@/modules/timetable/functions/bid-status";
+import { BID_STATUS_OPTIONS } from "@/modules/timetable/functions/bid-status";
+import type { UserBidStatus } from "@/modules/timetable/functions/bid-status";
 import { resolveBidDialogNotes } from "@/modules/timetable/functions/bid-dialog-notes";
 import { z } from "zod";
+import { ClassInfoCard } from "./ClassInfoCard";
+import { BidPredictionPanel } from "./BidPredictionPanel";
+import { InlineNotesEditor } from "./InlineNotesEditor";
 
 const bidAmountSchema = z
   .number({ error: "Enter a valid bid amount" })
   .positive("Bid must be greater than 0")
   .max(99999, "Bid cannot exceed e$99,999");
-import { ClassInfoCard } from "./ClassInfoCard";
-import { BidPredictionPanel } from "./BidPredictionPanel";
-import { InlineNotesEditor } from "./InlineNotesEditor";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -335,7 +330,9 @@ export function BidDialog({
                     {
                       classId: initialClassId,
                       section:
-                        mode === "edit" ? (bid?.section ?? "") : (section ?? ""),
+                        mode === "edit"
+                          ? (bid?.section ?? "")
+                          : (section ?? ""),
                       professorName:
                         mode === "edit" ? (bid?.professorName ?? null) : null,
                       timings: [],
@@ -392,7 +389,8 @@ export function BidDialog({
   const sectionLabel =
     activeSection?.section ?? (mode === "edit" ? bid?.section : section) ?? "";
   const professorName =
-    activeSection?.professorName ?? (mode === "edit" ? bid?.professorName : null);
+    activeSection?.professorName ??
+    (mode === "edit" ? bid?.professorName : null);
   const creditUnits = activeCourse?.creditUnits ?? 0;
   const timings = activeSection?.timings ?? [];
   const examTimings = activeSection?.examTimings ?? [];
@@ -427,7 +425,8 @@ export function BidDialog({
 
   // Add/class mode: default to the current/upcoming window once windows load.
   useEffect(() => {
-    if (mode === "edit" || selectedBidWindowId || bidWindows.length === 0) return;
+    if (mode === "edit" || selectedBidWindowId || bidWindows.length === 0)
+      return;
     const current = pickCurrentBidWindow(bidWindows);
     const fallback =
       current ??
@@ -469,8 +468,7 @@ export function BidDialog({
   // getByClassIds cache (which would wipe pre-filled notes in edit mode), and
   // in edit mode the notes pre-filled from `bid` are never overwritten.
   const [loadedNotesKey, setLoadedNotesKey] = useState<string | null>(null);
-  const classBidsSettled =
-    classBidsQuery.isFetched || classBidsQuery.isSuccess;
+  const classBidsSettled = classBidsQuery.isFetched || classBidsQuery.isSuccess;
   useEffect(() => {
     const result = resolveBidDialogNotes({
       mode,
@@ -608,9 +606,9 @@ export function BidDialog({
           { classIds: [selectedClassId ?? ""] },
           (old) =>
             old?.map((bid) => {
-              if (bid.id === id) return { ...bid, status } as typeof bid;
+              if (bid.id === id) return { ...bid, status };
               if (bid.classId === selectedClassId)
-                return { ...bid, status: "PARTICIPATED" } as typeof bid;
+                return { ...bid, status: "PARTICIPATED" };
               return bid;
             }),
         );
@@ -995,7 +993,9 @@ export function BidDialog({
             </Button>
             <Button
               onClick={handleSave}
-              disabled={isSaving || !selectedBidWindowId || !bidAmountRaw.trim()}
+              disabled={
+                isSaving || !selectedBidWindowId || !bidAmountRaw.trim()
+              }
             >
               {isSaving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
               {mode === "edit" ? "Save changes" : "Save bid"}

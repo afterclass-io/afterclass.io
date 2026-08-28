@@ -20,9 +20,8 @@ import {
   TimelineSeparator,
   TimelineTitle,
 } from "@/common/components/timeline";
-import { cn } from "@/common/functions";
+import { cn, inferAcadTerm } from "@/common/functions";
 import { api } from "@/common/tools/trpc/server";
-import { inferAcadTerm } from "@/common/functions";
 import { getCurrentWindowOrNull } from "@/server/api/bidWindows/getCurrentWindow/safe";
 import { ProgressLink } from "@/common/components/progress-link";
 import { Button } from "@/common/components/button";
@@ -57,7 +56,8 @@ function formatSgt(date: Date, formatStr: string): string {
       timeZone: "Asia/Singapore",
     }).formatToParts(date);
 
-    const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+    const get = (type: string) =>
+      parts.find((p) => p.type === type)?.value ?? "";
     const month = get("month");
     const day = get("day");
     const year = get("year");
@@ -69,9 +69,8 @@ function formatSgt(date: Date, formatStr: string): string {
     // Convert 12-hour to 1-12 without leading zero
     if (hour === 0) hour = 12;
 
-    const timeStr = minute === "00"
-      ? `${hour}${dayPeriod}`
-      : `${hour}:${minute}${dayPeriod}`;
+    const timeStr =
+      minute === "00" ? `${hour}${dayPeriod}` : `${hour}:${minute}${dayPeriod}`;
 
     return `${day} ${month} ${year}, ${weekday} ${timeStr}`;
   }
@@ -229,7 +228,9 @@ export const BidWindowScheduleCard = async () => {
   return (
     <Card className="w-full max-w-[321px]">
       <CardHeader className="gap-2">
-        <CardTitle>BOSS {displayYear} Term {term}</CardTitle>
+        <CardTitle>
+          BOSS {displayYear} Term {term}
+        </CardTitle>
         <CardDescription>
           Round {titleRound} Window {currentWindow.window}
         </CardDescription>

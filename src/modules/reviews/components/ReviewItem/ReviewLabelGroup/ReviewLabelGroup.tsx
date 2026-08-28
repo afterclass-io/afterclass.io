@@ -1,5 +1,5 @@
 import { toTitleCase } from "@/common/functions";
-import { type Review } from "@/modules/reviews/types";
+import type { Review } from "@/modules/reviews/types";
 
 export const ReviewLabelGroup = ({
   reviewLabels,

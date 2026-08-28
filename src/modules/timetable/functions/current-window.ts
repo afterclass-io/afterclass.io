@@ -36,7 +36,7 @@ export function pickCurrentBidWindow<T extends BidWindowLike>(
 ): T | null {
   if (windows.length === 0) return null;
 
-  const sorted = [...windows].sort((a, b) => {
+  const sorted = [...windows].toSorted((a, b) => {
     const aOpen = toTime(a.opensAt);
     const bOpen = toTime(b.opensAt);
     if (aOpen === null && bOpen === null) return 0;

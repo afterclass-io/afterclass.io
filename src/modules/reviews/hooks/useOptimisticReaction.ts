@@ -1,5 +1,6 @@
 import { useEdgeConfigs } from "@/common/hooks";
-import { api, type RouterInputs } from "@/common/tools/trpc/react";
+import { api } from "@/common/tools/trpc/react";
+import type { RouterInputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { ReviewEventType } from "@/generated/prisma/enums";
 import { useSession } from "next-auth/react";
@@ -21,7 +22,9 @@ export function useOptimisticReaction() {
     >({
       cancel: async () => {
         if (lastInputRef.current) {
-          await utils.reviewReactions.getByReviewId.cancel(lastInputRef.current);
+          await utils.reviewReactions.getByReviewId.cancel(
+            lastInputRef.current,
+          );
         }
       },
       getSnapshot: () =>
@@ -35,12 +38,17 @@ export function useOptimisticReaction() {
       },
       restoreSnapshot: (prev) => {
         if (lastInputRef.current) {
-          utils.reviewReactions.getByReviewId.setData(lastInputRef.current, prev as never);
+          utils.reviewReactions.getByReviewId.setData(
+            lastInputRef.current,
+            prev as never,
+          );
         }
       },
       invalidate: async () => {
         if (lastInputRef.current) {
-          await utils.reviewReactions.getByReviewId.invalidate(lastInputRef.current);
+          await utils.reviewReactions.getByReviewId.invalidate(
+            lastInputRef.current,
+          );
         }
       },
     }),

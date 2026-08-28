@@ -43,5 +43,11 @@ export function invertAction(action: TimetableAction): TimetableAction {
       };
     case "editNotes":
       return { type: "editNotes", bidId: action.bidId, fromNotes: action.toNotes, toNotes: action.fromNotes };
+    default: {
+      const exhaustiveCheck: never = action;
+      throw new Error(
+        `invertAction: unhandled action ${JSON.stringify(exhaustiveCheck)}`,
+      );
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { Separator } from "@/common/components/separator";
 import { cn } from "@/common/functions";
 
-export const SearchResultEmpty = ({ show = false }: { show: boolean }) => {
+export const SearchResultEmpty = ({ show }: { show: boolean }) => {
   return (
     <div
       className={cn(

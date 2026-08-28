@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { protectedProcedure } from "@/server/api/trpc";
 import { PRIVATE_REVIEW_FIELDS } from "@/server/api/reviews/constants";
-import { type Review } from "@/modules/reviews/types";
+import type { Review } from "@/modules/reviews/types";
 
 export const getById = protectedProcedure
   .input(z.string())

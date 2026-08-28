@@ -13,8 +13,8 @@ import { formatBidAmount } from "@/modules/timetable/functions/format";
 import {
   bidChipVariant,
   slotCardVariant,
-  type UserBidStatus,
 } from "@/modules/timetable/functions/bid-status";
+import type { UserBidStatus } from "@/modules/timetable/functions/bid-status";
 import type { BidInfo } from "./TimetableSlotCard";
 import type { DaySlot } from "./TimetableDayColumn";
 
@@ -52,12 +52,12 @@ export function TimetableAgenda({
   const dayNumbers = Object.keys(days)
     .map(Number)
     .filter((d) => (days[d]?.length ?? 0) > 0)
-    .sort((a, b) => a - b);
+    .toSorted((a, b) => a - b);
 
   return (
     <div className="flex flex-col gap-3" data-test="timetable-agenda">
       {dayNumbers.map((dayNum) => {
-        const slots = [...(days[dayNum] ?? [])].sort((a, b) =>
+        const slots = [...(days[dayNum] ?? [])].toSorted((a, b) =>
           a.timing.startTime.localeCompare(b.timing.startTime),
         );
         return (
@@ -151,8 +151,7 @@ function AgendaRow({
               bidChipVariant(bidInfo.status as UserBidStatus),
             )}
           >
-            {formatBidAmount(bidInfo.amount)}{" "}
-            · R{bidInfo.round}
+            {formatBidAmount(bidInfo.amount)} · R{bidInfo.round}
           </span>
         )}
       </button>

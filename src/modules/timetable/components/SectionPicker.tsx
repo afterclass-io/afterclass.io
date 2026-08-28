@@ -9,9 +9,11 @@ import { pushHistoryAtom } from "@/modules/timetable/atoms/history";
 import {
   useAddSlotMutation,
   useSetSlotSectionMutation,
-  type SectionExamTiming,
-  type SectionOption,
-  type SectionTiming,
+} from "@/modules/timetable/hooks/use-slot-mutations";
+import type {
+  SectionExamTiming,
+  SectionOption,
+  SectionTiming,
 } from "@/modules/timetable/hooks/use-slot-mutations";
 import { Button } from "@/common/components/button";
 import { cn } from "@/common/functions";
@@ -22,6 +24,8 @@ import {
   toTimingLikes,
 } from "@/modules/timetable/functions/slot-math";
 import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+
+const EMPTY_ARRAY: never[] = [];
 
 /** Re-exported so callers can keep importing `SectionOption` from here. */
 export type { SectionOption } from "@/modules/timetable/hooks/use-slot-mutations";
@@ -67,7 +71,7 @@ export function SectionPicker({
   courseCode,
   alreadyInTimetable,
   sections,
-  existingSlots = [],
+  existingSlots = EMPTY_ARRAY,
   onDone,
   className,
 }: SectionPickerProps) {

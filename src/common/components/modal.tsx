@@ -1,15 +1,8 @@
+import { createContext, useContext } from "react";
+import type { PropsWithChildren, JSX, ComponentPropsWithoutRef } from "react";
 import {
-  createContext,
-  useContext,
-  type PropsWithChildren,
-  type JSX,
-  type ComponentPropsWithoutRef,
-} from "react";
-import {
-  type DialogProps,
   Root,
   Portal,
-  type DialogContentProps,
   Content,
   Close as ModalClose,
   Overlay,
@@ -17,6 +10,7 @@ import {
   Description as ModalDescription,
   Trigger as ModalTrigger,
 } from "@radix-ui/react-dialog";
+import type { DialogProps, DialogContentProps } from "@radix-ui/react-dialog";
 
 import { XCloseIcon } from "@/common/components/icons";
 import { cn } from "@/common/functions";

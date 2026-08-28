@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/common/components/dialog";
-import { type Review } from "@/modules/reviews/types";
+import type { Review } from "@/modules/reviews/types";
 import { ProgressLink } from "@/common/components/progress-link";
 
 import { RevieweeGroup } from "../RevieweeGroup";

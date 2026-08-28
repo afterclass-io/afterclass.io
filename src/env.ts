@@ -67,16 +67,15 @@ export const env = createEnv({
           .string()
           .array()
           .superRefine((val, ctx) => {
-            val.map((v) => {
+            for (const v of val) {
               if (!validator.isFQDN(v)) {
                 ctx.addIssue({
                   code: z.ZodIssueCode.custom,
                   message: `Invalid FQDN: ${v}`,
                   fatal: true,
                 });
-                return z.NEVER;
               }
-            });
+            }
           }),
       ),
     NEXT_PUBLIC_AC_CHANNEL_LINK: z.string().url(),

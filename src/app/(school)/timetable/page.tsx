@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useCallback, useRef, useState, Suspense } from "react";
+import {
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+  useState,
+  Suspense,
+} from "react";
 import type { CSSProperties } from "react";
 import type { SetStateAction, WritableAtom } from "jotai";
 import {
@@ -8,8 +15,8 @@ import {
   useIsMutating,
   useMutationState,
   useQueryClient,
-  type QueryClient,
 } from "@tanstack/react-query";
+import type { QueryClient } from "@tanstack/react-query";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -440,7 +447,9 @@ export default function TimetablePage() {
     <div className="flex flex-col gap-4">
       {/* Page header — matches the Roadmaps page pattern */}
       <div>
-        <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">Timetable</PageTitle>
+        <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">
+          Timetable
+        </PageTitle>
         <p className="text-muted-foreground text-sm">
           Plan your classes, track bids and share your schedule.
         </p>

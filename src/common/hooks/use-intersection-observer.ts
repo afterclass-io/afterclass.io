@@ -22,7 +22,8 @@ export function useIntersectionObserver(
     return () => {
       if (currentElement) intersectionObserver.unobserve(currentElement);
     };
-  }, [options, elementId]);
+    // `options` is intentionally not observed — the effect keys off elementId only.
+  }, [elementId]);
 
   return [isVisible];
 }

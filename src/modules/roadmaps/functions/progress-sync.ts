@@ -79,7 +79,7 @@ export function buildProgressSyncPlan(
         t.startDt.getTime() >= matric.startDt.getTime() &&
         t.startDt.getTime() <= current.startDt.getTime(),
     )
-    .sort((a, b) => a.startDt.getTime() - b.startDt.getTime())
+    .toSorted((a, b) => a.startDt.getTime() - b.startDt.getTime())
     .map((t) => {
       const computed = t.acadYearStart - matric.acadYearStart + 1;
       return {

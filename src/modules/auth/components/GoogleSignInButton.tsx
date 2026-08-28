@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import {
-  signIn,
-  type SignInResponse,
-  type SignInOptions,
-} from "next-auth/react";
+import { useState } from "react";
+import type { ReactNode } from "react";
+import { signIn } from "next-auth/react";
+import type { SignInResponse, SignInOptions } from "next-auth/react";
 
 import { Button } from "@/common/components/button";
 import { Loader2 } from "lucide-react";
@@ -58,7 +56,6 @@ export const GoogleSignInButton = ({
       type="button"
       className="w-full"
       onClick={handleGoogleSignIn}
-      tabIndex={4}
       disabled={isLoading}
       data-umami-event="signin-with-google"
     >

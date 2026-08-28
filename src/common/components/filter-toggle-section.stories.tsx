@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ReviewType } from "@/generated/prisma/enums";
 
 import { FilterToggleSection } from "./FilterToggleSection";
-import { type FilterItem } from "./FilterToggleSection/FilterToggleSectionItem";
+import type { FilterItem } from "./FilterToggleSection/FilterToggleSectionItem";
 import {
   BooksIcon,
   GraduationCapIcon,

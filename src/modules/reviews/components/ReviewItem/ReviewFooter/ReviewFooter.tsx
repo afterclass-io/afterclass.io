@@ -1,4 +1,4 @@
-import { type Review } from "@/modules/reviews/types";
+import type { Review } from "@/modules/reviews/types";
 
 import { formatNumberShortScale } from "@/common/functions";
 import { EyeIcon } from "@/common/components/icons";

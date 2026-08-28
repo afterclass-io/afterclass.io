@@ -4,11 +4,11 @@ import {
   MemoIcon,
   PinIcon,
 } from "@/common/components/icons";
-import {
-  type Courses,
-  type ClassExamTiming,
-  type ClassTiming,
-  type Professors,
+import type {
+  Courses,
+  ClassExamTiming,
+  ClassTiming,
+  Professors,
 } from "@/generated/prisma/client";
 import { Tag } from "@/common/components/tag";
 import React from "react";
@@ -77,9 +77,7 @@ export const ClassCard = ({
               <div key={index}>
                 <div className="flex items-center gap-1">
                   <ClockIcon size={16} className="mr-1" />
-                  <span className="max-w-16 text-sm">
-                    {timing.dayOfWeek}
-                  </span>
+                  <span className="max-w-16 text-sm">{timing.dayOfWeek}</span>
                   <span className="text-sm">
                     {timing.startTime}-{timing.endTime}
                   </span>
@@ -96,14 +94,17 @@ export const ClassCard = ({
             ))}
             {classTiming.length > 1 && (
               <span className="text-muted-foreground text-xs pl-6">
-                +{classTiming.length - 1} more session{classTiming.length - 1 > 1 ? "s" : ""}
+                +{classTiming.length - 1} more session
+                {classTiming.length - 1 > 1 ? "s" : ""}
               </span>
             )}
           </>
         ) : (
           <div className="flex items-center gap-1">
             <ClockIcon size={16} className="mr-1" />
-            <div className="text-muted-foreground text-sm">No class timings</div>
+            <div className="text-muted-foreground text-sm">
+              No class timings
+            </div>
           </div>
         )}
       </div>
@@ -117,10 +118,10 @@ export const ClassCard = ({
                 <span className="text-sm ">
                   {timing.date
                     ? formatDateSGT(timing.date, {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })
                     : ""}
                   <br></br>
                   {timing.dayOfWeek}&nbsp;

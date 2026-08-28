@@ -4,8 +4,8 @@ import {
   buildProgressSyncPlan,
   pickNewCourseIds,
   roadmapTermForAcadTerm,
-  type SyncTermRow,
 } from "./progress-sync";
+import type { SyncTermRow } from "./progress-sync";
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -109,7 +109,7 @@ describe("buildProgressSyncPlan", () => {
   });
 
   it("is independent of input row ordering", () => {
-    const shuffled = [...TERMS].reverse();
+    const shuffled = [...TERMS].toReversed();
     expect(buildProgressSyncPlan(shuffled, "2026-T1", "2026-T2")).toEqual(
       buildProgressSyncPlan(TERMS, "2026-T1", "2026-T2"),
     );

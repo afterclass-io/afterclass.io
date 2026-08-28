@@ -35,9 +35,7 @@ export interface AYGroup {
  *                display order (chronological: acadTermId → round → window).
  * @returns       One group per unique contiguous acadTermId run.
  */
-export function computeAcadTermGroups<T extends HasBidWindow>(
-  sorted: T[],
-): AYGroup[] {
+export function computeAcadTermGroups(sorted: HasBidWindow[]): AYGroup[] {
   const groups: AYGroup[] = [];
   let current: AYGroup | null = null;
 
@@ -69,8 +67,8 @@ export function computeAcadTermGroups<T extends HasBidWindow>(
  * @param sorted  The same sorted array passed to {@link computeAcadTermGroups}.
  * @param groups  The groups returned by {@link computeAcadTermGroups}.
  */
-export function buildGroupIndexMap<T extends HasBidWindow>(
-  sorted: T[],
+export function buildGroupIndexMap(
+  sorted: HasBidWindow[],
   groups: AYGroup[],
 ): Map<string, number> {
   const map = new Map<string, number>();

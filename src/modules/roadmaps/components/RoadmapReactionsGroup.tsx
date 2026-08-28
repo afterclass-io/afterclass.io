@@ -1,5 +1,5 @@
 "use client";
-import { type ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/client";
+import type { ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/client";
 
 import { api } from "@/common/tools/trpc/react";
 import { ReviewReactionType } from "@/modules/reviews/types";
@@ -14,7 +14,7 @@ export const RoadmapReactionsGroup = ({ roadmapId }: { roadmapId: string }) => {
   const { mutate: upsertReaction } = useOptimisticReaction();
 
   if (!roadmapReactionsQuery.data) {
-    return;
+    return null;
   }
 
   const { counts, viewerReaction } = roadmapReactionsQuery.data;

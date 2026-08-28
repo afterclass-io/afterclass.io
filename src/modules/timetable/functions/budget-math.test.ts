@@ -212,13 +212,13 @@ describe("summarizeBidsByRound", () => {
 describe("compareRound", () => {
   it("matches the canonical BOSS round order (1, 1A, 1B, 1C, 1F, 2, 2A)", () => {
     const rounds = ["2A", "1", "1C", "1F", "1B", "2", "1A"];
-    const sorted = [...rounds].sort(compareRound);
+    const sorted = [...rounds].toSorted(compareRound);
     expect(sorted).toEqual(["1", "1A", "1B", "1C", "1F", "2", "2A"]);
   });
 
   it("sorts unknown rounds alphabetically after all known rounds", () => {
     const rounds = ["3", "1", "2B", "2A", "99", "Z", "1A"];
-    const sorted = [...rounds].sort(compareRound);
+    const sorted = [...rounds].toSorted(compareRound);
     // Known rounds first in order, then unknown alphabetically
     expect(sorted).toEqual(["1", "1A", "2A", "2B", "3", "99", "Z"]);
   });
