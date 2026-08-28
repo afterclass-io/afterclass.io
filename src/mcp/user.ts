@@ -31,13 +31,24 @@ function toSessionUser(u: NonNullable<Awaited<ReturnType<typeof db.users.findUni
  * today (id-first path unchanged and remains the primary resolver) unless a
  * future provider/token starts forwarding the OIDC `email_verified` claim.
  */
-export async function resolveMcpUser(auth: { userId?: string; email?: string }): Promise<SessionUser | undefined> {
+export async function resolveMcpUser(auth: {
+  userId?: string;
+  email?: string;
+  email_verified?: boolean;
+  emailVerified?: boolean;
+  email_confirmed_at?: string | null;
+}): Promise<SessionUser | undefined> {
   if (!auth.userId && !auth.email) return undefined;
   if (auth.userId) {
     const byId = await db.users.findUnique({ where: { id: auth.userId } });
     if (byId) return toSessionUser(byId);
   }
   if (auth.email) {
+    const verified =
+      auth.email_verified === true ||
+      auth.emailVerified === true ||
+      (typeof auth.email_confirmed_at === "string" && auth.email_confirmed_at.length > 0);
+    if (!verified) return undefined;
     const byEmail = await db.users.findUnique({ where: { email: auth.email } });
     if (byEmail) return toSessionUser(byEmail);
   }
@@ -45,7 +56,13 @@ export async function resolveMcpUser(auth: { userId?: string; email?: string }):
 }
 
 /** Resolve auth and build a tRPC caller scoped to the user. */
-export async function buildToolContext(auth: { userId?: string; email?: string }): Promise<ToolContext | undefined> {
+export async function buildToolContext(auth: {
+  userId?: string;
+  email?: string;
+  email_verified?: boolean;
+  emailVerified?: boolean;
+  email_confirmed_at?: string | null;
+}): Promise<ToolContext | undefined> {
   const user = await resolveMcpUser(auth);
   if (!user) return undefined;
   return createCallerForUser(user);
