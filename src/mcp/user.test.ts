@@ -29,9 +29,9 @@ describe("resolveMcpUser", () => {
     expect(usersFindUnique).toHaveBeenCalledWith({ where: { id: "supa-1" } });
   });
 
-  it("falls back to email when id lookup misses", async () => {
+  it("falls back to email when id lookup misses (verified email)", async () => {
     usersFindUnique.mockResolvedValueOnce(null).mockResolvedValueOnce(row);
-    await expect(resolveMcpUser({ userId: "ghost", email: "a@x.com" })).resolves.toMatchObject({ id: "supa-1" });
+    await expect(resolveMcpUser({ userId: "ghost", email: "a@x.com", email_verified: true })).resolves.toMatchObject({ id: "supa-1" });
     expect(usersFindUnique).toHaveBeenNthCalledWith(2, { where: { email: "a@x.com" } });
   });
 
