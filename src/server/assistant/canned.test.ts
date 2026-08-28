@@ -12,10 +12,9 @@ describe("canned", () => {
     expect(findCannedAnswer([userMsg("What are your capabilities?")])).toBeTruthy();
     expect(findCannedAnswer([userMsg("What can you do?")])).toBeTruthy();
   });
-  it("matches the first welcome suggestion prompt via the contains fallback", () => {
-    // The welcome-suggestion prompt normalizes to "what are your capabilities
-    // what can you help me with" — not an exact CANNED key — so this only
-    // resolves via the contains-match fallback. It must never burn quota.
+  it("matches the first welcome suggestion prompt as an exact canned phrase", () => {
+    // WELCOME_SUGGESTIONS[0].prompt normalizes to an explicit CANNED key so the
+    // suggestion chip stays quota-free without substring matching.
     expect(findCannedAnswer([userMsg("What are your capabilities? What can you help me with?")])).toBeTruthy();
   });
   it("does NOT short-circuit on a free-typed near-miss - it must reach the model", () => {
