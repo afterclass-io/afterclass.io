@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { db } from "@/server/db";
+
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const getMyTimetableDetailSchema = z.object({
@@ -65,11 +67,12 @@ function toFlatSlots(arrangement: Arrangement) {
 function toDetail(
   arrangement: Arrangement,
   timetableId: string,
+  name: string,
   meta?: { isActive: boolean; termId?: string },
 ) {
   return {
     timetableId: arrangement.timetable?.id ?? timetableId,
-    name: arrangement.timetable?.name ?? timetableId,
+    name: arrangement.timetable?.name ?? name,
     // Only emit isActive/termId when we actually know them (i.e. after a
     // listMine lookup). Emitting isActive: false for an id we never resolved
     // would be affirmatively wrong for the user's active timetable.
@@ -86,7 +89,7 @@ export const getMyTimetableDetailTool: McpTool<typeof getMyTimetableDetailSchema
     "Get the full weekly arrangement of your timetable including class times, venues, and professors - use when a student asks 'show me my timetable' or 'what classes do I have?'",
   inputSchema: getMyTimetableDetailSchema,
   readOnly: true,
-  run: async ({ caller }, { timetableId, acadTermId }) => {
+  run: async ({ caller, user }, { timetableId, acadTermId }) => {
     try {
       let id = timetableId;
       // Populated only when a listMine lookup can tell us the truth about this
@@ -94,6 +97,7 @@ export const getMyTimetableDetailTool: McpTool<typeof getMyTimetableDetailSchema
       // undefined and isActive/termId are omitted from the response rather
       // than defaulted to false/absent-with-marker.
       let meta: { isActive: boolean; termId?: string } | undefined;
+      let resolvedName: string | undefined;
 
       if (!id) {
         if (!acadTermId) {
@@ -109,12 +113,14 @@ export const getMyTimetableDetailTool: McpTool<typeof getMyTimetableDetailSchema
           );
         }
         id = active.id;
+        resolvedName = active.name;
         meta = { isActive: active.isActive, termId: active.acadTermId };
       } else if (acadTermId) {
         // Enrich metadata (isActive/termId) from listMine when we can.
         const mine = await caller.timetable.listMine({ acadTermId });
         const match = mine.find((t) => t.id === id);
         if (match) {
+          resolvedName = match.name;
           meta = { isActive: match.isActive, termId: match.acadTermId };
         }
       }
@@ -122,7 +128,23 @@ export const getMyTimetableDetailTool: McpTool<typeof getMyTimetableDetailSchema
       const arrangement = (await caller.timetable.getArrangement({
         timetableId: id,
       })) as Arrangement;
-      return jsonText(toDetail(arrangement, id, meta));
+
+      // Main's getArrangement returns { slots, bids } (no timetable object).
+      // The tool contract requires the real timetable name, so resolve it when
+      // the arrangement doesn't include it and listMine didn't already provide it.
+      let name = resolvedName ?? arrangement.timetable?.name;
+      if (!name) {
+        const row = await db.userTimetable.findUnique({
+          where: { id },
+          select: { name: true, userId: true },
+        });
+        if (!row || row.userId !== user.id) {
+          return errText(`Timetable ${id} not found.`);
+        }
+        name = row.name;
+      }
+
+      return jsonText(toDetail(arrangement, id, name, meta));
     } catch (e) {
       return errText(errorMessage(e));
     }
