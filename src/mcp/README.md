@@ -2,51 +2,51 @@
 
 The afterclass.io Model Context Protocol (MCP) server, built on
 [mcp-use](https://mcp-use.com). It exposes the shared tool catalog
-(`src/server/mcp/tools`) — the same 42 tools the in-app assistant widget uses —
+(`src/server/mcp/tools`) - the same 42 tools the in-app assistant widget uses -
 as a remote, OAuth-protected MCP server with two MCP Apps widgets.
 
 - **Server entry:** `src/mcp/index.ts` (mcp-use `MCPServer` + `oauthSupabaseProvider`)
 - **Tool wiring:** `src/mcp/register.ts` (per-call auth via `src/mcp/user.ts`)
 - **Widgets:** `src/mcp/resources/{bid-recommendation,course-search}/widget.tsx`
-- **Local dev:** `bun run mcp:dev` → Inspector at `http://localhost:3001/inspector`
+- **Local dev:** `bun run mcp:dev` -> Inspector at `http://localhost:3001/inspector`
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────┐      ┌────────────────────────────────────────────┐
-│  Next.js app (Vercel)       │      │  mcp-use server (this repo: src/mcp/)      │
-│                             │      │                                            │
-│  · website                  │      │  · MCP transport (streamable HTTP)         │
-│  · Supabase identity        │      │  · 42 tools from the shared catalog        │
-│  · consent screen           │      │    (src/server/mcp/tools — single source   │
-│    /oauth/consent           │      │     of truth, shared with the assistant    │
-│                             │      │     widget)                                │
-└──────────────┬──────────────┘      │  · MCP Apps widgets                        │
-               │                     │    (resources/bid-recommendation,          │
-               │ redirects here      │     resources/course-search)               │
-               ▼                     └───────────────┬────────────────────────────┘
-┌─────────────────────────────────────┐              │ token verification
-│  Supabase Auth (hosted OAuth 2.1    │◄─────────────┘  (JWT), DCR metadata
-│  authorization server)              │                 proxy
-│  · issues MCP tokens                │
-│  · Dynamic Client Registration      │
-└─────────────────────────────────────┘
++-----------------------------+      +--------------------------------------------+
+|  Next.js app (Vercel)       |      |  mcp-use server (this repo: src/mcp/)      |
+|                             |      |                                            |
+|  - website                  |      |  - MCP transport (streamable HTTP)         |
+|  - Supabase identity        |      |  - 42 tools from the shared catalog        |
+|  - consent screen           |      |    (src/server/mcp/tools - single source   |
+|    /oauth/consent           |      |     of truth, shared with the assistant    |
+|                             |      |     widget)                                |
++--------------+--------------+      |  - MCP Apps widgets                        |
+               |                     |    (resources/bid-recommendation,          |
+               | redirects here      |     resources/course-search)               |
+               v                     +---------------+----------------------------+
++-------------------------------------+              | token verification
+|  Supabase Auth (hosted OAuth 2.1    |<-------------+  (JWT), DCR metadata
+|  authorization server)              |                 proxy
+|  - issues MCP tokens                |
+|  - Dynamic Client Registration      |
++-------------------------------------+
 ```
 
 Three moving parts:
 
-1. **Next.js app (Vercel)** — the website, Supabase-backed sign-in, and the
+1. **Next.js app (Vercel)** - the website, Supabase-backed sign-in, and the
    hosted consent screen at `/oauth/consent` (`src/app/oauth/consent/page.tsx`
    + `src/app/api/oauth/consent/route.ts`). The user approves or denies an
    authorization request from this screen.
-2. **mcp-use server (`src/mcp/`)** — the MCP transport. It hosts the 42 tools
+2. **mcp-use server (`src/mcp/`)** - the MCP transport. It hosts the 42 tools
    from the shared catalog and the two widgets, and it runs the
    `oauthSupabaseProvider()` so MCP clients authenticate against Supabase.
    It is deployed independently of the Next.js app (see
    [Deploy procedure](#deploy-procedure)).
-3. **Supabase Auth** — the hosted OAuth 2.1 authorization server. It issues the
+3. **Supabase Auth** - the hosted OAuth 2.1 authorization server. It issues the
    MCP access tokens, handles Dynamic Client Registration (DCR) for MCP
    clients, and redirects the user to the app&apos;s consent screen.
 
@@ -75,11 +75,11 @@ timetable-detail, and feasibility additions are:
 | `get-public-roadmap` | Get a public roadmap with ALL its course entries plus the owner and vote count. Use this to study a senior's full progression. |
 | `plan-semester` | Compound planning tool: given the user's progression, returns the target academic term, the user's position, and ranked course candidates that seniors in the same faculty took at that point. |
 | `get-my-timetable-detail` | Get the full weekly arrangement of one of the user's own timetables: class times, venues, and professors, flattened to one row per weekly meeting. Pass a `timetableId` from `my-timetables`, or omit it (with an `acadTermId`) to resolve the active timetable. Use when a student asks "show me my timetable" or "what classes do I have?". |
-| `check-roadmap-feasibility` | Check a roadmap for planning conflicts and return `{ issues, isFeasible }`: `PREREQ_MISSING` (a course's prerequisite isn't planned in an earlier term), `TERM_DUPLICATE` (the same course twice in one year/term), and `EXAM_CLASH` (two courses' exams overlap — checked when `termId` is passed; **skipped if no timetable exists for the requested term**, so the plan isn't fully verified on the clash dimension in that case). Use before committing to a plan or when a student asks "is my plan feasible?". |
+| `check-roadmap-feasibility` | Check a roadmap for planning conflicts and return `{ issues, isFeasible }`: `PREREQ_MISSING` (a course's prerequisite isn't planned in an earlier term), `TERM_DUPLICATE` (the same course twice in one year/term), and `EXAM_CLASH` (two courses' exams overlap - checked when `termId` is passed; **skipped if no timetable exists for the requested term**, so the plan isn't fully verified on the clash dimension in that case). Use before committing to a plan or when a student asks "is my plan feasible?". |
 
 `get-course` also includes each course's SIS prerequisite info when present:
 `enrolmentRequirements` (the raw prereq string, e.g. "Pre-Requisite: EITHER
-COR-IS1702 OR …") and `courseArea` (degree-area tags).
+COR-IS1702 OR ...") and `courseArea` (degree-area tags).
 
 Account-control tools (read-only):
 
@@ -94,7 +94,7 @@ Roadmap-settings and bid-status write tools (Task 5):
 | --- | --- |
 | `set-matric-term` | Set the matriculation term (the user's Y1T1 acad term id, from `list-acad-terms`) on a roadmap. **Required for accurate `plan-semester` seniority** and for `sync-roadmap-progress`. Pass `matricTermId: null` to clear. |
 | `set-active-roadmap` | Mark a roadmap as the user's single active roadmap (clears `isActive` on all the user's other roadmaps). Set this before `sync-roadmap-progress` / `plan-semester` so they target the intended roadmap. |
-| `sync-roadmap-progress` | Add the user's course history into a roadmap: for every acad term from the declared matriculation term up to the current term, courses from the user's active timetable for that term are added to the matching roadmap year/term. Add-only — never deletes or duplicates courses. Returns `{ synced, courseIds }`. |
+| `sync-roadmap-progress` | Add the user's course history into a roadmap: for every acad term from the declared matriculation term up to the current term, courses from the user's active timetable for that term are added to the matching roadmap year/term. Add-only - never deletes or duplicates courses. Returns `{ synced, courseIds }`. |
 | `copy-public-roadmap` | Copy a public roadmap (from `browse-public-roadmaps` / `get-public-roadmap`) into the user's own account as `<name> (copy)`. Returns `{ newRoadmapId, name }`. |
 | `set-bid-status` | Set a bid's outcome status: `PLANNED` / `SECURED` / `DROPPED` / `CANCELLED` / `PARTICIPATED`. |
 
@@ -107,8 +107,8 @@ Two companion surfaces are registered alongside the tools:
 
 ### Planning queries
 
-For multi-step planning questions — "plan my semester", "what should I take
-next term", "plan inspired by seniors" — call `plan-semester` in one call
+For multi-step planning questions - "plan my semester", "what should I take
+next term", "plan inspired by seniors" - call `plan-semester` in one call
 instead of chaining many lookups: it resolves the target term, the user's
 position, and ranked candidates in a single call. Use the individual tools for
 single lookups: `get-my-roadmap` / `get-public-roadmap` for full roadmap
@@ -122,7 +122,7 @@ entries, `search-courses` / `get-course` / `get-classes` for course detail, and
 > The deployed URL is read from `NEXT_PUBLIC_MCP_PUBLIC_URL` at runtime
 > (`src/modules/settings/agents/connect-links.ts` exports `MCP_PUBLIC_URL`
 > from it, falling back to the placeholder below). Set it on the host at
-> deploy time (Task 8 Step 1) — do not hardcode a slug in source.
+> deploy time (Task 8 Step 1) - do not hardcode a slug in source.
 
 The primary target is a Manufact Cloud deployment:
 
@@ -133,9 +133,9 @@ https://<slug>.run.mcp-use.com/mcp
 Clients (Claude, ChatGPT, Cursor, VS Code, or the mcp-use Inspector) connect to
 this URL. On first connect the client performs discovery:
 
-1. `GET /.well-known/oauth-protected-resource` (RFC 9728) — served locally by
+1. `GET /.well-known/oauth-protected-resource` (RFC 9728) - served locally by
    the mcp-use server, points at the resource metadata.
-2. `GET /.well-known/oauth-authorization-server` — proxied by the mcp-use
+2. `GET /.well-known/oauth-authorization-server` - proxied by the mcp-use
    server to Supabase&apos;s OAuth 2.1 authorization-server metadata.
 3. The client registers itself with Supabase (DCR, using the publishable key),
    redirects the user to the consent screen, and exchanges the resulting code
@@ -144,7 +144,7 @@ this URL. On first connect the client performs discovery:
    each tool resolves the caller from `ctx.auth.user` (see `src/mcp/user.ts`)
    and fails closed when unauthenticated.
 
-The mcp-use Inspector (`bun run mcp:dev` → `http://localhost:3001/inspector`)
+The mcp-use Inspector (`bun run mcp:dev` -> `http://localhost:3001/inspector`)
 is the easiest way to exercise this locally against a real Supabase project.
 
 ---
@@ -152,29 +152,29 @@ is the easiest way to exercise this locally against a real Supabase project.
 ## Environment variables
 
 `oauthSupabaseProvider()` reads these server env vars (set them in the Manufact
-dashboard / host — see [Deploy procedure](#deploy-procedure)):
+dashboard / host - see [Deploy procedure](#deploy-procedure)):
 
 | Variable | Purpose |
 | --- | --- |
 | `MCP_USE_OAUTH_SUPABASE_PROJECT_ID` | **Required.** Supabase project ref. `oauthSupabaseProvider()` derives the auth URL `https://<ref>.supabase.co` from it. |
-| `MCP_USE_OAUTH_SUPABASE_URL` | *Optional.* Full Supabase auth URL — only for **local / self-hosted** Supabase (e.g. `http://localhost:54321`). Overrides the URL derived from `MCP_USE_OAUTH_SUPABASE_PROJECT_ID`. |
+| `MCP_USE_OAUTH_SUPABASE_URL` | *Optional.* Full Supabase auth URL - only for **local / self-hosted** Supabase (e.g. `http://localhost:54321`). Overrides the URL derived from `MCP_USE_OAUTH_SUPABASE_PROJECT_ID`. |
 | `MCP_USE_OAUTH_SUPABASE_JWT_SECRET` | *Optional.* Only for **legacy HS256** Supabase JWT projects. Omit for the default RS256 (JWKS-verified) projects. |
-| `DATABASE_URL` | The same Postgres the Next.js app uses — tools read via the tRPC caller (Prisma). |
+| `DATABASE_URL` | The same Postgres the Next.js app uses - tools read via the tRPC caller (Prisma). |
 | `SKIP_ENV_VALIDATION` | **Do not set.** With the flag set, `@t3-oss/env-nextjs` skips the env schema transforms, so `NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS` stays a comma-string and `src/common/tools/zod/schemas.ts` crashes on `.join()` at boot. Provide the full app env set instead. |
 | Full Next.js app env | `env` validation runs on the mcp process (it imports `@/env` via tRPC), so the host needs the same server vars as the app: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `LLM_API_KEY`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, plus the `NEXT_PUBLIC_*` vars below. The repo `.env` already has these. |
 | `NEXT_PUBLIC_*` vars | Any client env var a tool path reads (e.g. `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS`). Add more as runtime errors surface during E2E. |
-| `NEXT_PUBLIC_MCP_PUBLIC_URL` | *Optional.* Public MCP URL used by the Settings → Agents connect page deep links (`src/modules/settings/agents/connect-links.ts` → `MCP_PUBLIC_URL`). Falls back to the placeholder until deployed. |
+| `NEXT_PUBLIC_MCP_PUBLIC_URL` | *Optional.* Public MCP URL used by the Settings -> Agents connect page deep links (`src/modules/settings/agents/connect-links.ts` -> `MCP_PUBLIC_URL`). Falls back to the placeholder until deployed. |
 
 > **`MCP_USE_OAUTH_SUPABASE_PUBLISHABLE_KEY` is NOT a server env var.** The
-> server never reads it — `oauthSupabaseProvider()` only reads
+> server never reads it - `oauthSupabaseProvider()` only reads
 > `MCP_USE_OAUTH_SUPABASE_PROJECT_ID`, `MCP_USE_OAUTH_SUPABASE_URL` and
-> `MCP_USE_OAUTH_SUPABASE_JWT_SECRET`. The publishable key (`sb_publishable_…`)
+> `MCP_USE_OAUTH_SUPABASE_JWT_SECRET`. The publishable key (`sb_publishable_...`)
 > is a **client-facing** Dynamic Client Registration (DCR) credential: MCP
 > clients obtain it from Supabase&apos;s OAuth authorization-server metadata,
 > which the mcp-use server proxies at `/.well-known/oauth-authorization-server`.
 > Setting it in the deployed server&apos;s env would be a no-op.
 
-`src/mcp/index.ts` does not validate env vars itself — validation happens when
+`src/mcp/index.ts` does not validate env vars itself - validation happens when
 the tool stack imports `@/env`, so a missing variable surfaces at boot or on
 the first tool call. Start with the table above and add vars as needed.
 
@@ -185,20 +185,20 @@ the first tool call. Start with the table above and add vars as needed.
 One-time configuration in the Supabase dashboard for the project used by
 `MCP_USE_OAUTH_SUPABASE_PROJECT_ID`:
 
-1. **Authentication → OAuth Server** (the Supabase OAuth 2.1 server, which
+1. **Authentication -> OAuth Server** (the Supabase OAuth 2.1 server, which
    powers MCP auth).
 2. Enable the **OAuth 2.1 server**.
 3. Enable **Allow Dynamic OAuth Apps** (needed so MCP clients can register
    themselves via DCR).
-4. Set the **Authorization Path** to `/oauth/consent` — Supabase redirects the
-   user here with `?authorization_id=…`; the app&apos;s consent screen
+4. Set the **Authorization Path** to `/oauth/consent` - Supabase redirects the
+   user here with `?authorization_id=...`; the app&apos;s consent screen
    (`src/app/oauth/consent/page.tsx`) approves/denies.
-5. Under **Authentication → URL Configuration**, set **Site URL** to
+5. Under **Authentication -> URL Configuration**, set **Site URL** to
    `https://afterclass.io` (prod) or `http://localhost:3000` (local dev) so the
    authorization path resolves against the right origin.
 6. Copy the **project ref** into the deployed server&apos;s env vars as
    `MCP_USE_OAUTH_SUPABASE_PROJECT_ID` (see table above). The **publishable
-   key** is client-facing — MCP clients obtain it from Supabase&apos;s OAuth
+   key** is client-facing - MCP clients obtain it from Supabase&apos;s OAuth
    metadata (which the server proxies), so no server env var is needed for it.
 
 The app&apos;s consent route requires a signed-in session whose Auth.js JWT
@@ -218,7 +218,7 @@ The end-to-end OAuth 2.1 authorization-code flow with Supabase-hosted consent:
 2. The client **registers itself** (DCR) with Supabase and redirects the user
    to Supabase&apos;s **authorize** endpoint.
 3. Supabase redirects the user to the app&apos;s **consent screen**
-   (`https://afterclass.io/oauth/consent?authorization_id=…`).
+   (`https://afterclass.io/oauth/consent?authorization_id=...`).
 4. The consent screen loads the authorization details via the consent API
    route (already-consented clients are redirected straight back).
 5. The user **approves or denies**; the screen calls
@@ -229,8 +229,8 @@ The end-to-end OAuth 2.1 authorization-code flow with Supabase-hosted consent:
    the resulting MCP access token for `tools/list` / `tools/call`.
 
 Under the hood: `src/server/supabase-consent.ts` (per-call Supabase client
-authenticated with the user&apos;s access token) → `approveConsent` /
-`denyConsent` / `getConsentDetails` → the consent route/page.
+authenticated with the user&apos;s access token) -> `approveConsent` /
+`denyConsent` / `getConsentDetails` -> the consent route/page.
 
 ---
 
@@ -260,7 +260,7 @@ Surface trim (Task 7):
 - **`publish-roadmap` / `unpublish-roadmap` removed.**
   `set-roadmap-visibility` is now the single visibility tool
   (PRIVATE/UNLISTED/PUBLIC); PUBLIC publishes (verified account required) and
-  PRIVATE unpublishes from the public gallery — the underlying
+  PRIVATE unpublishes from the public gallery - the underlying
   `sharing.setVisibility` already implements both paths.
 - **`set-bid-budget` capped at `MAX_BUDGET` (10000).** Balances above
   `MAX_BUDGET` are rejected with a clear error instead of letting an agent
@@ -275,11 +275,11 @@ Surface trim (Task 7):
 2. **~1h access-token expiry in consent.** The Supabase access token carried in
    the NextAuth session is captured at sign-in and expires after roughly one
    hour. A stale consent attempt surfaces a Supabase auth error on the consent
-   route (400) — the user should re-login. A refresh-token flow is tracked for
+   route (400) - the user should re-login. A refresh-token flow is tracked for
    later (documented in `src/server/supabase-consent.ts`).
 3. **Raw widget schemas in the CLI manifest (zod v3).** The mcp-use CLI bundles
-   zod v4, while the widget prop schemas here are zod v3 — the
-   v3→input-definition conversion falls back to `raw schema` in the manifest.
+   zod v4, while the widget prop schemas here are zod v3 - the
+   v3->input-definition conversion falls back to `raw schema` in the manifest.
    Cosmetic only: widget rendering is unaffected. Revisit on a zod v4 upgrade.
 
 ---
@@ -287,7 +287,7 @@ Surface trim (Task 7):
 ## Deploy procedure
 
 > **Prerequisite (prod):** enable the `pg_trgm` extension in Supabase
-> Dashboard → Database → Extensions. The fuzzy/typo-tolerant course search
+> Dashboard -> Database -> Extensions. The fuzzy/typo-tolerant course search
 > (`search-courses`) depends on it (migration
 > `20260804153348_add_pg_trgm_and_course_search_indexes`).
 
@@ -306,7 +306,7 @@ Surface trim (Task 7):
    Manufact dashboard for the deployed server.
 4. Record the public MCP URL (e.g. `https://<slug>.run.mcp-use.com/mcp`) and
    set it as `NEXT_PUBLIC_MCP_PUBLIC_URL` in the host's env (read by
-   `connect-links.ts` → `MCP_PUBLIC_URL`; see
+   `connect-links.ts` -> `MCP_PUBLIC_URL`; see
    [Public MCP URL](#public-mcp-url)).
 
 ### Fallback: any Node host
@@ -334,7 +334,7 @@ To be ticked by a human **after** deploy (Task 8 Step 1). Local equivalent:
 - [ ] Claude / ChatGPT (or the mcp-use Inspector) connects to
       `https://<slug>.run.mcp-use.com/mcp`
 - [ ] OAuth discovery succeeds against Supabase (client auto-configures)
-- [ ] User is redirected to `https://afterclass.io/oauth/consent?authorization_id=…`
+- [ ] User is redirected to `https://afterclass.io/oauth/consent?authorization_id=...`
 - [ ] User signs in (school email), sees client name + scopes, clicks **Approve**
 - [ ] User is redirected back with a code; the client exchanges it for a token
 - [ ] `tools/list` returns the **42 tools**
