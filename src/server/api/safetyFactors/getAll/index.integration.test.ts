@@ -10,11 +10,18 @@ const router = createTRPCRouter({ getAll });
 describe("safetyFactors.getAll (integration)", () => {
   it("returns seeded safety factor rows", async () => {
     const acadTermId = inject("acadTermId");
-    // Random within PK ([acadTermId, predictionType, beatsPercentage,
-    // multiplierType]) so a rerun against a surviving container doesn't P2002.
     const beatsPercentage = 1 + Math.floor(Math.random() * 99);
-    await db.safetyFactor.create({
-      data: {
+    await db.safetyFactor.upsert({
+      where: {
+        acadTermId_predictionType_beatsPercentage_multiplierType: {
+          acadTermId,
+          predictionType: "MEDIAN",
+          beatsPercentage,
+          multiplierType: "EMPIRICAL",
+        },
+      },
+      update: {},
+      create: {
         acadTermId,
         predictionType: "MEDIAN",
         beatsPercentage,

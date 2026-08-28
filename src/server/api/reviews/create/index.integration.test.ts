@@ -109,16 +109,12 @@ describe("reviews.create (integration)", () => {
       }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
 
-    // reviews.create isn't wrapped in a $transaction: the review write that
-    // preceded the failed label write is not rolled back. Pinning that real
-    // (pre-existing, out-of-scope-to-fix) behavior here, since only a real
-    // database can show it — a mocked unit test can't produce this orphan.
     const orphanedReviews = await db.reviews.findMany({
       where: { reviewerId: user.id },
     });
-    expect(orphanedReviews).toHaveLength(1);
+    expect(orphanedReviews).toHaveLength(0);
     const orphanedLabels = await db.reviewLabels.findMany({
-      where: { reviewId: orphanedReviews[0]!.id },
+      where: { reviewId: { in: orphanedReviews.map((r) => r.id) } },
     });
     expect(orphanedLabels).toHaveLength(0);
   });

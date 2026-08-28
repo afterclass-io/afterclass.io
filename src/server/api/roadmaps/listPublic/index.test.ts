@@ -176,7 +176,7 @@ describe("listPublic", () => {
       select: { id: true, name: true, acronym: true },
     });
 
-    expect(result.nextCursor).toBe("r3");
+    expect(result.nextCursor).toBe("r2");
     expect(result.items).toHaveLength(2);
     expect(result.items[0]).toMatchObject({
       ownerUsername: "alice",

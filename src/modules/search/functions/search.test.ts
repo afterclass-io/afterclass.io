@@ -52,11 +52,8 @@ describe("processSearchQuery", () => {
     expect(processSearchQuery("")).toBe("");
   });
 
-  it("emits a malformed clause for a doubled space (current behaviour, see ticket note)", () => {
-    // "a  b".split(" ") -> ["a", "", "b"] -> "a &  & b" (invalid tsquery).
-    // Asserted as-is; fixing search normalisation is out of scope for a
-    // coverage ticket.
-    expect(processSearchQuery("a  b")).toBe("a &  & b");
+  it("normalises repeated whitespace to a single AND operator", () => {
+    expect(processSearchQuery("a  b")).toBe("a & b");
   });
 });
 

@@ -26,11 +26,23 @@ function courseOnlyInput(labels?: string[]) {
 }
 
 function makeDbMock() {
-  return {
+  const mock = {
     courses: { findFirst: vi.fn() },
     reviews: { create: vi.fn() },
     reviewLabels: { createMany: vi.fn() },
+  } as unknown as {
+    courses: { findFirst: ReturnType<typeof vi.fn> };
+    reviews: { create: ReturnType<typeof vi.fn> };
+    reviewLabels: { createMany: ReturnType<typeof vi.fn> };
+    $transaction: ReturnType<typeof vi.fn>;
   };
+  mock.$transaction = vi.fn(async (cb: unknown) => {
+    if (typeof cb === "function") {
+      return (cb as (tx: typeof mock) => unknown)(mock);
+    }
+    return Promise.all(cb as Promise<unknown>[]);
+  });
+  return mock;
 }
 
 describe("reviews.create", () => {

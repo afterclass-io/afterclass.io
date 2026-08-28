@@ -131,15 +131,13 @@ describe("reviews.getByCourseCode (integration)", () => {
     });
   });
 
-  it("with no slugs, its unconditional professor relation filter drops course-only reviews", async () => {
+  it("with no slugs, returns course and professor reviews", async () => {
     const res = await asAnon().getByCourseCode({ ...list, code, limit: 10 });
     const ids = res.items.map((r) => r.id);
-    expect(ids).toEqual(expect.arrayContaining([profReviewId, profReview2Id]));
-    // `reviewedProfessor: { slug: { in: undefined } }` prunes to
-    // `{ reviewedProfessor: {} }`, i.e. "has a professor" — so the course-only
-    // review is excluded here but NOT in getByCourseCodeProtected (which guards
-    // the filter with `input.slugs && ...`). Pinning the divergence, not fixing.
-    expect(ids).not.toContain(courseReviewId);
+    expect(ids).toEqual(
+      expect.arrayContaining([courseReviewId, profReviewId, profReview2Id]),
+    );
+    expect(ids).toContain(courseReviewId);
   });
 });
 

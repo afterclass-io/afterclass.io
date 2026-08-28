@@ -49,11 +49,9 @@ describe("calculateRatingItems", () => {
     expect(calculateRatingItems([review("A")], [])).toEqual([]);
   });
 
-  it("yields 'NaN%' for an empty review list (current behaviour, see ticket note)", () => {
-    // 0 / 0 -> NaN -> Intl formats as "NaN%". Asserted as-is; guarding the
-    // divide-by-zero is a behaviour change, out of scope for a coverage ticket.
+  it("yields '0%' for an empty review list", () => {
     expect(calculateRatingItems([], [label("X")])).toEqual([
-      { label: "x", rating: "NaN%" },
+      { label: "x", rating: "0%" },
     ]);
   });
 });
