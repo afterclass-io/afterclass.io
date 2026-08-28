@@ -1,5 +1,4 @@
 pre-commit:
-  parallel: true
   jobs:
     - name: oxlint
       glob: "*.{js,ts,jsx,tsx}"

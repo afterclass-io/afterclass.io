@@ -1,0 +1,53 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "**.js"
+      - "**.jsx"
+      - "**.ts"
+      - "**.tsx"
+      - "**.mjs"
+      - "**.json"
+      - "**.css"
+      - "**.md"
+      - ".oxlintrc.json"
+      - ".oxfmtrc.json"
+      - "package.json"
+      - "bun.lock"
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - "**.js"
+      - "**.jsx"
+      - "**.ts"
+      - "**.tsx"
+      - "**.mjs"
+      - "**.json"
+      - "**.css"
+      - "**.md"
+      - ".oxlintrc.json"
+      - ".oxfmtrc.json"
+      - "package.json"
+      - "bun.lock"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
+
+      - run: bun install
+
+      - name: oxlint
+        run: bun run lint:check
+
+      - name: oxfmt
+        run: bun run format:check

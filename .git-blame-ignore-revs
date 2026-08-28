@@ -2,3 +2,5 @@
 f3076d0e7e375d8fd3a99339541ffef398e56532
 # refactor: clean up modules and rearrange components (#323)
 0e270ad33c688283b0b16c6f75e0eef70da586e8
+# chore(format): format files with oxfmt (#494)
+ee0e5596d8801c1907898622cfc133b72a3225cb

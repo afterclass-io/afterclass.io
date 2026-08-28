@@ -1,0 +1,249 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc",
+    "import",
+    "react",
+    "nextjs",
+    "vitest",
+    "jsx-a11y",
+    "promise",
+    "node"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error"
+  },
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "no-alert": "error",
+    "no-console": ["error", { "allow": ["warn", "error"] }],
+    "no-debugger": "error",
+    "eqeqeq": ["error", "always", { "null": "ignore" }],
+    "no-var": "error",
+    "prefer-const": "error",
+    "import/no-cycle": "error",
+    "react/react-in-jsx-scope": "off",
+    "import/no-named-export": "off",
+    "import/prefer-default-export": "off",
+    "import/exports-last": "off",
+    "sort-imports": "off",
+    "sort-keys": "off",
+    "func-style": "off",
+    "no-magic-numbers": "off",
+    "no-ternary": "off",
+    "vitest/no-importing-vitest-globals": "off",
+    "vitest/prefer-describe-function-title": "off",
+    "vitest/require-mock-type-parameters": "off",
+    "vitest/require-to-throw-message": "off",
+    "node/no-process-env": "error",
+    "unicorn/prefer-node-protocol": "off",
+    "import/namespace": "off",
+    "import/no-named-as-default": "off",
+    "import/no-named-as-default-member": "off",
+    "oxc/no-map-spread": "off",
+    "no-shadow": "off",
+    "react/preserve-manual-memoization": "off",
+    "react/purity": "off",
+    "react/refs": "off",
+    "react/static-components": "off",
+    "react/memo-dependencies": "off",
+    "react/set-state-in-effect": "off",
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": [
+      "error",
+      { "checksVoidReturn": { "attributes": false } }
+    ],
+    "typescript/require-await": "off",
+
+    "unicorn/no-null": "off",
+
+    "no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ],
+    "typescript/consistent-type-imports": [
+      "warn",
+      { "prefer": "type-imports", "fixStyle": "separate-type-imports" }
+    ],
+    "typescript/no-explicit-any": "error",
+
+    "typescript/no-unnecessary-condition": [
+      "warn",
+      { "allowConstantLoopConditions": true }
+    ],
+    "typescript/no-non-null-assertion": "warn",
+    "typescript/no-unsafe-type-assertion": "warn",
+    "react/no-array-index-key": "warn",
+    "react/no-unstable-nested-components": ["error", { "allowAsProps": true }],
+
+    "import/no-duplicates": "error",
+    "import/first": "error",
+    "import/extensions": "off",
+    "import/no-unassigned-import": [
+      "error",
+      { "allow": ["**/*.css", "**/*.scss", "server-only", "dotenv/config"] }
+    ],
+    "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+    "no-underscore-dangle": [
+      "error",
+      {
+        "allow": [
+          "__dirname",
+          "__appSentryInitialized__",
+          "_count",
+          "_sum",
+          "_avg",
+          "_min",
+          "_max",
+          "_all",
+          "_config",
+          "_class",
+          "_searchParams",
+          "_engine",
+          "_fetchAcadTerms"
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/**/*.test.{ts,tsx}",
+        "prisma/**/*.test.{ts,tsx}",
+        "cypress/**"
+      ],
+      "rules": {
+        "no-console": "off",
+        "typescript/no-unnecessary-condition": "off",
+        "typescript/no-unsafe-type-assertion": "off",
+        "typescript/no-non-null-assertion": "off",
+        "unicorn/consistent-function-scoping": "off",
+        "no-await-in-loop": "off"
+      }
+    },
+    {
+      "files": ["cypress/**"],
+      "rules": {
+        "promise/always-return": "off",
+        "promise/catch-or-return": "off",
+        "no-unused-expressions": "off",
+        "vitest/valid-expect": "off",
+        "import/no-unassigned-import": "off"
+      }
+    },
+    {
+      "files": [
+        "src/env.ts",
+        "next.config.js",
+        "*.config.{ts,js,mjs}",
+        "scripts/**",
+        "sentry.*.config.ts",
+        "src/instrumentation.ts",
+        "prisma/seed.ts",
+        "src/common/tools/trpc/react.tsx",
+        "src/server/api/trpc.ts",
+        "src/app/layout.tsx",
+        "src/modules/home/components/AppSidebar/AppSidebar.tsx",
+        "src/modules/timetable/functions/slot-math.ts"
+      ],
+      "rules": {
+        "node/no-process-env": "off"
+      }
+    },
+    {
+      "files": ["src/env.ts"],
+      "rules": {
+        "typescript/no-unnecessary-condition": "off"
+      }
+    },
+    {
+      "files": ["scripts/**", "prisma/seed.ts"],
+      "rules": {
+        "no-console": "off",
+        "typescript/no-explicit-any": "off"
+      }
+    },
+    {
+      "files": ["**/*.stories.{ts,tsx}", ".storybook/**"],
+      "rules": {
+        "typescript/no-unsafe-type-assertion": "off",
+        "typescript/no-misused-promises": "off",
+        "jsx-a11y/no-autofocus": "off",
+        "no-console": "off"
+      }
+    },
+    {
+      "files": [
+        "src/common/components/alert-dialog.tsx",
+        "src/common/components/avatar.tsx",
+        "src/common/components/breadcrumb.tsx",
+        "src/common/components/button.tsx",
+        "src/common/components/card.tsx",
+        "src/common/components/chart.tsx",
+        "src/common/components/checkbox.tsx",
+        "src/common/components/command.tsx",
+        "src/common/components/dialog.tsx",
+        "src/common/components/dropdown-menu.tsx",
+        "src/common/components/form.tsx",
+        "src/common/components/hover-card.tsx",
+        "src/common/components/input.tsx",
+        "src/common/components/label.tsx",
+        "src/common/components/popover.tsx",
+        "src/common/components/progress.tsx",
+        "src/common/components/radio-group.tsx",
+        "src/common/components/select.tsx",
+        "src/common/components/separator.tsx",
+        "src/common/components/sheet.tsx",
+        "src/common/components/sidebar.tsx",
+        "src/common/components/skeleton.tsx",
+        "src/common/components/sonner.tsx",
+        "src/common/components/stepper.tsx",
+        "src/common/components/textarea.tsx",
+        "src/common/components/toggle.tsx",
+        "src/common/components/toggle-group.tsx",
+        "src/common/components/tooltip.tsx"
+      ],
+      "rules": {
+        "no-shadow": "off",
+        "jsx-a11y/click-events-have-key-events": "off",
+        "jsx-a11y/no-noninteractive-element-interactions": "off",
+        "jsx-a11y/no-static-element-interactions": "off",
+        "jsx-a11y/no-noninteractive-element-to-interactive-role": "off",
+        "jsx-a11y/control-has-associated-label": "off",
+        "jsx-a11y/no-autofocus": "off",
+        "jsx-a11y/prefer-tag-over-role": "off",
+        "react/jsx-no-constructed-context-values": "off",
+        "react/no-array-index-key": "off",
+        "react/no-unstable-nested-components": "off",
+        "typescript/no-explicit-any": "off",
+        "typescript/no-unnecessary-condition": "off",
+        "typescript/no-unnecessary-type-assertion": "off",
+        "typescript/no-unnecessary-type-conversion": "off",
+        "typescript/no-unsafe-type-assertion": "off",
+        "typescript/restrict-template-expressions": "off",
+        "typescript/consistent-return": "off",
+        "typescript/no-non-null-assertion": "off"
+      }
+    }
+  ],
+  "env": {
+    "builtin": true,
+    "node": true,
+    "browser": true
+  },
+  "ignorePatterns": [
+    "node_modules/**",
+    ".next/**",
+    "storybook-static/**",
+    "coverage/**",
+    "src/generated/**",
+    "cypress/**/*.cy.js",
+    "next-env.d.ts"
+  ]
+}
