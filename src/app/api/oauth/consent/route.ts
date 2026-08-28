@@ -1,11 +1,10 @@
-import { auth } from "@/server/auth";
+import { getSupabaseAccessToken } from "@/server/auth/supabase-access-token";
 import { approveConsent, denyConsent, getConsentDetails } from "@/server/supabase-consent";
 
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
-  const session = await auth();
-  const token = session?.user?.supabaseAccessToken;
+  const token = await getSupabaseAccessToken();
   if (!token) return Response.json({ error: "no supabase session" }, { status: 401 });
   const authorizationId = new URL(req.url).searchParams.get("authorization_id");
   if (!authorizationId) return Response.json({ error: "missing authorization_id" }, { status: 400 });
@@ -38,8 +37,7 @@ export async function POST(req: Request) {
     }
   }
 
-  const session = await auth();
-  const token = session?.user?.supabaseAccessToken;
+  const token = await getSupabaseAccessToken();
   if (!token) return Response.json({ error: "no supabase session" }, { status: 401 });
   const body = (await req.json()) as { authorization_id?: string; decision?: string };
   if (!body.authorization_id || !body.decision)

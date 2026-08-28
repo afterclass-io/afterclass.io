@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/server/auth";
+import { getSupabaseAccessToken } from "@/server/auth/supabase-access-token";
 import { getAssistantStatus } from "@/server/assistant/status";
 import { ChatPage } from "@/modules/assistant/chat-page";
 
@@ -11,6 +12,6 @@ export default async function AssistantPage() {
   if (!session?.user) {
     redirect(`/account/auth/login?callbackUrl=${encodeURIComponent("/assistant")}`);
   }
-  const status = await getAssistantStatus(session.user.id, session.user.supabaseAccessToken);
+  const status = await getAssistantStatus(session.user.id, await getSupabaseAccessToken());
   return <ChatPage initialStatus={status} />;
 }

@@ -25,7 +25,7 @@ declare module "next-auth" {
    * Returned by `auth`, `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
    */
   interface Session {
-    user: SessionUser & { supabaseAccessToken?: string | null };
+    user: SessionUser;
   }
 
   /**
@@ -223,8 +223,11 @@ export const authConfig = {
         // Since we are using "JWT" strategy instead of "database",
         // we should be expecting `SessionUser`, not `AdapterUser`
         session.user = token.user as SessionUser;
-        // Carry the Supabase access token into the session for consent-time use.
-        session.user.supabaseAccessToken = token.supabaseAccessToken ?? null;
+        // NOTE: `token.supabaseAccessToken` stays in the JWT (httpOnly
+        // encrypted cookie) only. It is deliberately NOT copied onto the
+        // session - `/api/auth/session` serves this object to any browser JS,
+        // and a bearer token must never be client-readable. Server code reads
+        // it via `getSupabaseAccessToken()` in `./supabase-access-token`.
       }
       return session;
     },
