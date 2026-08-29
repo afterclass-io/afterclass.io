@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useWidget, type WidgetMetadata } from "mcp-use/react";
 import { z } from "zod";
 
@@ -29,6 +29,12 @@ const CalendarLinks: React.FC = () => {
   const dark = theme === "dark";
   const c = dark ? TOKENS.dark : TOKENS.light;
   const [copied, setCopied] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
   if (isPending) return <Skeleton dark={dark} />;
   return (
     <div
@@ -113,6 +119,7 @@ const CalendarLinks: React.FC = () => {
         <input
           value={props.feedUrl}
           readOnly
+          aria-label="Calendar feed URL"
           style={{
             flex: 1,
             padding: "6px 10px",
@@ -128,10 +135,18 @@ const CalendarLinks: React.FC = () => {
         />
         <button
           type="button"
+          aria-live="polite"
           onClick={() => {
-            void navigator.clipboard.writeText(props.feedUrl);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            navigator.clipboard
+              .writeText(props.feedUrl)
+              .then(() => {
+                setCopied(true);
+                if (timerRef.current) clearTimeout(timerRef.current);
+                timerRef.current = setTimeout(() => setCopied(false), 2000);
+              })
+              .catch(() => {
+                // clipboard unavailable (non-secure context) — non-fatal
+              });
           }}
           style={{
             padding: "6px 14px",

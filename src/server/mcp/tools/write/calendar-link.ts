@@ -30,7 +30,10 @@ export const getTimetableCalendarLinkTool: McpTool<typeof getTimetableCalendarLi
       } catch (e) {
         // PRIVATE timetables refuse to mint a token — flip to UNLISTED only
         // when the user explicitly opted in, then retry the mint.
+        // Narrow to the private-visibility error so random failures (network
+        // etc.) don't over-eagerly escalate visibility.
         if (!enableLinkSharing) throw e;
+        if (!errorMessage(e).includes("link-sharing")) throw e;
         await caller.sharing.setVisibility({ entity: "timetable", id: timetableId, visibility: "UNLISTED" });
         madeLinkShareable = true;
       }
