@@ -10,6 +10,7 @@ export const getById = publicProcedure
       where: {
         id: input.id,
         visibility: "PUBLIC",
+        publishedAt: { not: null },
       },
       // Intentionally omits shareToken — it's an access secret, not display data.
       select: {

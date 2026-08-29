@@ -92,9 +92,16 @@ export const setRoadmapVisibilityTool: McpTool<typeof setRoadmapVisibilitySchema
   inputSchema: setRoadmapVisibilitySchema,
   run: async ({ caller }, { roadmapId, visibility }) => {
     try {
-      return jsonText(
-        await caller.sharing.setVisibility({ entity: "roadmap", id: roadmapId, visibility }),
-      );
+      const res = (await caller.sharing.setVisibility({
+        entity: "roadmap",
+        id: roadmapId,
+        visibility,
+      })) as Record<string, unknown>;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- bearer token must not reach the LLM
+      const { shareToken: _s, ...rest } = res as Record<string, unknown> & {
+        shareToken?: unknown;
+      };
+      return jsonText(rest);
     } catch (e) {
       return errText(errorMessage(e));
     }

@@ -24,6 +24,8 @@ export async function getSupabaseAccessToken(): Promise<string | null> {
   const store = await cookies();
   const secure = store.get("__Secure-authjs.session-token")?.value;
   const plain = store.get("authjs.session-token")?.value;
+  // In production, refuse the non-__Secure- cookie.
+  if (process.env.NODE_ENV === "production" && !secure) return null;
   const raw = secure ?? plain;
   if (!raw) return null;
   const salt = secure ? "__Secure-authjs.session-token" : "authjs.session-token";

@@ -58,6 +58,18 @@ describe("get-my-roadmap", () => {
     const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
     expect(res.isError).toBe(true);
   });
+
+  it("strips shareToken bearer token from the roadmap", async () => {
+    const fn = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "My Plan", shareToken: "secret-tok" },
+      entries: [],
+    });
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsGetMine: fn }) };
+    const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
+    const parsed = JSON.parse(res.content[0]!.text) as { roadmap: Record<string, unknown> };
+    expect(parsed.roadmap.shareToken).toBeUndefined();
+    expect(parsed.roadmap.id).toBe("r1");
+  });
 });
 
 describe("get-public-roadmap", () => {

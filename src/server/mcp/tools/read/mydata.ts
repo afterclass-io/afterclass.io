@@ -11,7 +11,18 @@ export const myTimetablesTool: McpTool<typeof myTimetablesSchema> = {
   readOnly: true,
   run: async ({ caller }, { acadTermId }) => {
     try {
-      return jsonText(await caller.timetable.listMine({ acadTermId }));
+      const timetables = (await caller.timetable.listMine({ acadTermId })) as Array<
+        Record<string, unknown>
+      >;
+      const scrubbed = timetables.map((t) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- bearer tokens must not reach the LLM
+        const { shareToken: _s, icalToken: _i, ...rest } = t as Record<string, unknown> & {
+          shareToken?: unknown;
+          icalToken?: unknown;
+        };
+        return rest;
+      });
+      return jsonText(scrubbed);
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -68,7 +79,15 @@ export const myRoadmapsTool: McpTool<typeof myRoadmapsSchema> = {
   readOnly: true,
   run: async ({ caller }) => {
     try {
-      return jsonText(await caller.roadmaps.listMine());
+      const roadmaps = (await caller.roadmaps.listMine()) as Array<Record<string, unknown>>;
+      const scrubbed = roadmaps.map((r) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- shareToken is a bearer secret
+        const { shareToken: _s, ...rest } = r as Record<string, unknown> & {
+          shareToken?: unknown;
+        };
+        return rest;
+      });
+      return jsonText(scrubbed);
     } catch (e) {
       return errText(errorMessage(e));
     }

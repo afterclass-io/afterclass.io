@@ -48,7 +48,6 @@ const MOCK_CHAT_CONFIG = {
   maxInputTokens: 16000,
   maxOutputTokens: 1024,
   maxToolRounds: 6,
-  maxMessages: 12,
   priceInputPerM: 0.14,
   priceOutputPerM: 0.28,
 };

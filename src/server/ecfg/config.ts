@@ -24,7 +24,6 @@ export const chatConfigSchema = z
     maxInputTokens: z.number().int().positive(),
     maxOutputTokens: z.number().int().positive(),
     maxToolRounds: z.number().int().positive(),
-    maxMessages: z.number().int().positive(),
     priceInputPerM: z.number().nonnegative(),
     priceCachedInputPerM: z.number().nonnegative(),
     priceOutputPerM: z.number().nonnegative(),

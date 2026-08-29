@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 
 type Details = {
   status: "details";
-  client?: { name: string };
+  client?: { name: string; id?: string };
+  client_id?: string;
   scope?: string;
   redirect_uri?: string;
 };
@@ -110,6 +111,22 @@ function ConsentForm() {
       <p>
         <strong>{details.client?.name ?? "This app"}</strong> is requesting access to your
         account.
+      </p>
+      {(details.client_id ?? details.client?.id) && (
+        <p>
+          Client ID: <code>{details.client_id ?? details.client?.id}</code>
+        </p>
+      )}
+      {details.redirect_uri && (
+        <p>
+          Redirect URI: <code>{details.redirect_uri}</code>
+        </p>
+      )}
+      <p>
+        <em>
+          Warning: this is an unverified third-party application that will be able to read and
+          modify your timetables, bids, and roadmaps.
+        </em>
       </p>
       {details.scope && (
         <section>

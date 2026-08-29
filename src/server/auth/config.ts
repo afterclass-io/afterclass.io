@@ -281,9 +281,11 @@ export const authConfig = {
   },
   events: {
     signIn({ user }) {
-      // strip user object of unwanted sensitive fields before populating to Sentry
+      // strip sensitive fields before populating Sentry user scope
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { deprecatedPasswordDigest, ...unsensoredUser } = user as Users;
+      const { deprecatedPasswordDigest, supabaseAccessToken: _sat, ...unsensoredUser } = user as Users & {
+        supabaseAccessToken?: string | null;
+      };
       Sentry.getGlobalScope().setUser(unsensoredUser);
     },
     signOut() {

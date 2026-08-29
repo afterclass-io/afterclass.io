@@ -50,7 +50,7 @@ async function userClient(accessToken: string) {
  * - `"already_consented"` - the user already consented; redirect immediately.
  */
 export type ConsentDetailsResult =
-  | { status: "details"; client: { name: string }; scope?: string; redirect_uri: string }
+  | { status: "details"; client: { name: string; id?: string }; client_id?: string; scope?: string; redirect_uri: string }
   | { status: "already_consented"; redirectUrl: string };
 
 export async function approveConsent(authorizationId: string, accessToken: string) {
@@ -85,7 +85,8 @@ export async function getConsentDetails(
   }
   return {
     status: "details",
-    client: { name: data.client.name },
+    client: { name: data.client.name, id: (data.client as { id?: string }).id },
+    client_id: (data as { client_id?: string }).client_id,
     scope: data.scope,
     redirect_uri: data.redirect_uri,
   };

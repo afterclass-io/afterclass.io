@@ -124,4 +124,13 @@ describe("timetable write tools", () => {
     const result = await setTimetableVisibilityTool.run(ctx, { timetableId: "tt1", visibility: "UNLISTED" });
     expect(result.isError).toBe(true);
   });
+
+  it("set-timetable-visibility strips shareToken bearer token from the output", async () => {
+    const fn = vi.fn().mockResolvedValue({ visibility: "UNLISTED", shareToken: "secret-tok" });
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ sharingSetVisibility: fn }) };
+    const result = await setTimetableVisibilityTool.run(ctx, { timetableId: "tt1", visibility: "UNLISTED" });
+    const parsed = JSON.parse(result.content[0]!.text) as Record<string, unknown>;
+    expect(parsed.shareToken).toBeUndefined();
+    expect(parsed.visibility).toBe("UNLISTED");
+  });
 });

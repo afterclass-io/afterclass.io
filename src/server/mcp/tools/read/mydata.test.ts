@@ -46,6 +46,18 @@ describe("my-data read tools", () => {
     expect(fn).toHaveBeenCalledWith({ acadTermId: "t1" });
   });
 
+  it("my-timetables strips shareToken and icalToken bearer tokens from the output", async () => {
+    const fn = vi.fn().mockResolvedValue([
+      { id: "tt1", name: "A", shareToken: "tok", icalToken: "ical", visibility: "UNLISTED" },
+    ]);
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ timetableListMine: fn }) };
+    const result = await myTimetablesTool.run(ctx, { acadTermId: "t1" });
+    const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
+    expect(parsed[0]!.shareToken).toBeUndefined();
+    expect(parsed[0]!.icalToken).toBeUndefined();
+    expect(parsed[0]!.id).toBe("tt1");
+  });
+
   it("my-timetables returns errText when timetable.listMine rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ timetableListMine: fn }) };
@@ -115,6 +127,15 @@ describe("my-data read tools", () => {
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsListMine: fn }) };
     await myRoadmapsTool.run(ctx, {});
     expect(fn).toHaveBeenCalledWith();
+  });
+
+  it("my-roadmaps strips shareToken bearer token from the output", async () => {
+    const fn = vi.fn().mockResolvedValue([{ id: "r1", name: "A", shareToken: "tok", visibility: "PRIVATE" }]);
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsListMine: fn }) };
+    const result = await myRoadmapsTool.run(ctx, {});
+    const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
+    expect(parsed[0]!.shareToken).toBeUndefined();
+    expect(parsed[0]!.id).toBe("r1");
   });
 
   it("my-roadmaps returns errText when roadmaps.listMine rejects", async () => {
