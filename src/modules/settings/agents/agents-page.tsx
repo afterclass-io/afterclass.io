@@ -15,7 +15,7 @@ export async function AgentsPage() {
       <div>
         <h1>Connected agents</h1>
         <p>Sign in with your school email to connect an AI agent.</p>
-        <a href="/settings/agents/connect">Connect your agent</a>
+        <a href="/mcp">Connect your agent</a>
       </div>
     );
   }
@@ -29,8 +29,8 @@ export async function AgentsPage() {
       <div>
         <h1>Connected agents</h1>
         <p role="alert">
-          Could not load your connected agents ({message}). Please sign out and sign back in, then
-          try again.
+          Could not load your connected agents ({message}). Please sign out and
+          sign back in, then try again.
         </p>
       </div>
     );
@@ -40,8 +40,11 @@ export async function AgentsPage() {
     return (
       <div>
         <h1>Connected agents</h1>
-        <p>No agents connected yet. Connect your own AI agent (Claude, ChatGPT, Gemini) to use afterclass.io on your own AI credits.</p>
-        <a href="/settings/agents/connect">Connect your agent</a>
+        <p>
+          No agents connected yet. Connect your own AI agent (Claude, ChatGPT,
+          Gemini) to use afterclass.io on your own AI credits.
+        </p>
+        <a href="/mcp">Connect your agent</a>
       </div>
     );
   }
@@ -55,12 +58,17 @@ export async function AgentsPage() {
             <span>{g.client_name ?? g.client_id}</span>
             <form action={revokeAgent}>
               <input type="hidden" name="clientId" value={g.client_id} />
-              <button type="submit" aria-label={`Revoke ${g.client_name ?? g.client_id}`}>Revoke</button>
+              <button
+                type="submit"
+                aria-label={`Revoke ${g.client_name ?? g.client_id}`}
+              >
+                Revoke
+              </button>
             </form>
           </li>
         ))}
       </ul>
-      <a href="/settings/agents/connect">Connect another agent</a>
+      <a href="/mcp">Connect another agent</a>
     </div>
   );
 }

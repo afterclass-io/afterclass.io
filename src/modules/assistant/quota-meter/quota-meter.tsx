@@ -3,7 +3,10 @@
 import { cn } from "@/common/functions/index";
 import { getQuotaMeterState } from "./logic";
 
-const BAR_COLOR: Record<ReturnType<typeof getQuotaMeterState>["level"], string> = {
+const BAR_COLOR: Record<
+  ReturnType<typeof getQuotaMeterState>["level"],
+  string
+> = {
   ok: "bg-emerald-500",
   low: "bg-amber-500",
   critical: "bg-red-500",
@@ -41,10 +44,13 @@ export function QuotaMeter({
         </p>
         <span
           className={cn(
-            "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
-            level === "ok" && "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-            level === "low" && "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-            level === "critical" && "bg-red-500/15 text-red-600 dark:text-red-400",
+            "rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase",
+            level === "ok" &&
+              "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+            level === "low" &&
+              "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+            level === "critical" &&
+              "bg-red-500/15 text-red-600 dark:text-red-400",
           )}
         >
           {level}
@@ -56,22 +62,25 @@ export function QuotaMeter({
         aria-valuemin={0}
         aria-valuemax={quota}
         aria-label="Free messages remaining this month"
-        className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+        className="bg-muted h-1.5 w-full overflow-hidden rounded-full"
       >
         <div
-          className={cn("h-full rounded-full transition-all duration-300", BAR_COLOR[level])}
+          className={cn(
+            "h-full rounded-full transition-all duration-300",
+            BAR_COLOR[level],
+          )}
           style={{ width: `${pct}%` }}
         />
       </div>
       {hasConnectedAgent ? (
-        <p className="text-emerald-600 dark:text-emerald-400 text-[11px] font-medium">
+        <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
           Unlimited - your connected agent uses your own credits.
         </p>
       ) : (
         <a
-          href="/settings/agents/connect"
+          href="/mcp"
           data-umami-event="assistant-quota-connect-click"
-          className="text-primary hover:underline text-[11px] font-semibold"
+          className="text-primary text-[11px] font-semibold hover:underline"
         >
           Get unlimited - connect your own agent / the AfterClass MCP App
         </a>

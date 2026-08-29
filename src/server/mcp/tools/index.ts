@@ -1,6 +1,11 @@
 import type { McpTool } from "../types";
 
-import { getClassesTool, getCourseTool, getProfessorTool, searchCoursesTool } from "./read/courses";
+import {
+  getClassesTool,
+  getCourseTool,
+  getProfessorTool,
+  searchCoursesTool,
+} from "./read/courses";
 import {
   getBidPredictionTool,
   getBidResultsTool,
@@ -8,10 +13,8 @@ import {
   getCourseReviewsTool,
   listAcadTermsTool,
 } from "./read/catalog";
-import { getMeTool, getUsageTool } from "./read/account";
 import {
   browsePublicRoadmapsTool,
-  getSharedTimetableTool,
   myBidsTool,
   myBudgetTool,
   myRoadmapsTool,
@@ -69,9 +72,6 @@ export const allTools: McpTool[] = [
   getPublicRoadmapTool,
   planSemesterTool,
   checkRoadmapFeasibilityTool,
-  getSharedTimetableTool,
-  getMeTool,
-  getUsageTool,
   // write - timetables
   createTimetableTool,
   renameTimetableTool,

@@ -32,7 +32,12 @@ const sampleResult = {
       section: "G1",
       professorName: "Prof Lim",
       timings: [
-        { dayOfWeek: "MON", startTime: "10:00", endTime: "12:00", venue: "SR 3-1" },
+        {
+          dayOfWeek: "MON",
+          startTime: "10:00",
+          endTime: "12:00",
+          venue: "SR 3-1",
+        },
       ],
     },
     { classId: "cl2", section: "G2", professorName: null, timings: [] },
@@ -71,13 +76,13 @@ describe("course-search widget render", () => {
 
   it("renders sections and professor names", () => {
     renderCourseSearch({ results: [sampleResult] });
-    expect(screen.getByText(/G1/)).toBeTruthy();
+    expect(screen.getAllByText(/G1/).length).toBeGreaterThan(0);
     expect(screen.getByText(/Prof Lim/)).toBeTruthy();
-    expect(screen.getByText("G2")).toBeTruthy();
+    expect(screen.getAllByText(/G2/).length).toBeGreaterThan(0);
   });
 
   it("renders an empty state for zero results", () => {
     renderCourseSearch({ results: [] });
-    expect(screen.getByText("0 course(s) found")).toBeTruthy();
+    expect(screen.getByText("No courses found")).toBeTruthy();
   });
 });

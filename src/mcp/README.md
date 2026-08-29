@@ -2,7 +2,7 @@
 
 The afterclass.io Model Context Protocol (MCP) server, built on
 [mcp-use](https://mcp-use.com). It exposes the shared tool catalog
-(`src/server/mcp/tools`) - the same 42 tools the in-app assistant widget uses -
+(`src/server/mcp/tools`) - the same 39 tools the in-app assistant widget uses -
 as a remote, OAuth-protected MCP server with two MCP Apps widgets.
 
 - **Server entry:** `src/mcp/index.ts` (mcp-use `MCPServer` + `oauthSupabaseProvider`)
@@ -19,7 +19,7 @@ as a remote, OAuth-protected MCP server with two MCP Apps widgets.
 |  Next.js app (Vercel)       |      |  mcp-use server (this repo: src/mcp/)      |
 |                             |      |                                            |
 |  - website                  |      |  - MCP transport (streamable HTTP)         |
-|  - Supabase identity        |      |  - 42 tools from the shared catalog        |
+|  - Supabase identity        |      |  - 39 tools from the shared catalog        |
 |  - consent screen           |      |    (src/server/mcp/tools - single source   |
 |    /oauth/consent           |      |     of truth, shared with the assistant    |
 |                             |      |     widget)                                |
@@ -39,9 +39,9 @@ Three moving parts:
 
 1. **Next.js app (Vercel)** - the website, Supabase-backed sign-in, and the
    hosted consent screen at `/oauth/consent` (`src/app/oauth/consent/page.tsx`
-   + `src/app/api/oauth/consent/route.ts`). The user approves or denies an
-   authorization request from this screen.
-2. **mcp-use server (`src/mcp/`)** - the MCP transport. It hosts the 42 tools
+   - `src/app/api/oauth/consent/route.ts`). The user approves or denies an
+     authorization request from this screen.
+2. **mcp-use server (`src/mcp/`)** - the MCP transport. It hosts the 39 tools
    from the shared catalog and the two widgets, and it runs the
    `oauthSupabaseProvider()` so MCP clients authenticate against Supabase.
    It is deployed independently of the Next.js app (see
@@ -52,7 +52,7 @@ Three moving parts:
 
 ### Single source of truth for tools
 
-All 42 tools are defined in `src/server/mcp/tools` (e.g. `search-courses`,
+All 39 tools are defined in `src/server/mcp/tools` (e.g. `search-courses`,
 `my-timetables`, `recommend-bid-amount`). The same catalog powers:
 
 - the **in-app assistant widget** (via the tRPC caller), and
@@ -64,17 +64,17 @@ A tool only needs to be changed in one place.
 
 ---
 
-## Tool catalog (42 tools)
+## Tool catalog (39 tools)
 
-The shared catalog exposes 42 tools over MCP. The roadmap-detail, planning,
+The shared catalog exposes 39 tools over MCP. The roadmap-detail, planning,
 timetable-detail, and feasibility additions are:
 
-| Tool | Purpose |
-| --- | --- |
-| `get-my-roadmap` | Get one of the user's own roadmaps with ALL its course entries (year/term, course code/name/credit units). Use this to see your own progression before planning. |
-| `get-public-roadmap` | Get a public roadmap with ALL its course entries plus the owner and vote count. Use this to study a senior's full progression. |
-| `plan-semester` | Compound planning tool: given the user's progression, returns the target academic term, the user's position, and ranked course candidates that seniors in the same faculty took at that point. |
-| `get-my-timetable-detail` | Get the full weekly arrangement of one of the user's own timetables: class times, venues, and professors, flattened to one row per weekly meeting. Pass a `timetableId` from `my-timetables`, or omit it (with an `acadTermId`) to resolve the active timetable. Use when a student asks "show me my timetable" or "what classes do I have?". |
+| Tool                        | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `get-my-roadmap`            | Get one of the user's own roadmaps with ALL its course entries (year/term, course code/name/credit units). Use this to see your own progression before planning.                                                                                                                                                                                                                                                                                                                                                     |
+| `get-public-roadmap`        | Get a public roadmap with ALL its course entries plus the owner and vote count. Use this to study a senior's full progression.                                                                                                                                                                                                                                                                                                                                                                                       |
+| `plan-semester`             | Compound planning tool: given the user's progression, returns the target academic term, the user's position, and ranked course candidates that seniors in the same faculty took at that point.                                                                                                                                                                                                                                                                                                                       |
+| `get-my-timetable-detail`   | Get the full weekly arrangement of one of the user's own timetables: class times, venues, and professors, flattened to one row per weekly meeting. Pass a `timetableId` from `my-timetables`, or omit it (with an `acadTermId`) to resolve the active timetable. Use when a student asks "show me my timetable" or "what classes do I have?".                                                                                                                                                                        |
 | `check-roadmap-feasibility` | Check a roadmap for planning conflicts and return `{ issues, isFeasible }`: `PREREQ_MISSING` (a course's prerequisite isn't planned in an earlier term), `TERM_DUPLICATE` (the same course twice in one year/term), and `EXAM_CLASH` (two courses' exams overlap - checked when `termId` is passed; **skipped if no timetable exists for the requested term**, so the plan isn't fully verified on the clash dimension in that case). Use before committing to a plan or when a student asks "is my plan feasible?". |
 
 `get-course` also includes each course's SIS prerequisite info when present:
@@ -83,26 +83,26 @@ COR-IS1702 OR ...") and `courseArea` (degree-area tags).
 
 Account-control tools (read-only):
 
-| Tool | Purpose |
-| --- | --- |
-| `get-me` | Get the signed-in student's own account profile: id, display name, email, faculty (id + name), and account creation date. Use to confirm identity/faculty before personalizing advice. |
+| Tool        | Purpose                                                                                                                                                                                                                                                                                                                              |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `get-me`    | Get the signed-in student's own account profile: id, display name, email, faculty (id + name), and account creation date. Use to confirm identity/faculty before personalizing advice.                                                                                                                                               |
 | `get-usage` | Get the signed-in student's assistant quota state: messages used in the current period, the period limit, the critical floor (messages remaining at/below which usage is critical, 20% of the period limit), messages remaining, and whether usage is critical. Use to warn a student before they hit their monthly assistant limit. |
 
 Roadmap-settings and bid-status write tools (Task 5):
 
-| Tool | Purpose |
-| --- | --- |
-| `set-matric-term` | Set the matriculation term (the user's Y1T1 acad term id, from `list-acad-terms`) on a roadmap. **Required for accurate `plan-semester` seniority** and for `sync-roadmap-progress`. Pass `matricTermId: null` to clear. |
-| `set-active-roadmap` | Mark a roadmap as the user's single active roadmap (clears `isActive` on all the user's other roadmaps). Set this before `sync-roadmap-progress` / `plan-semester` so they target the intended roadmap. |
+| Tool                    | Purpose                                                                                                                                                                                                                                                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `set-matric-term`       | Set the matriculation term (the user's Y1T1 acad term id, from `list-acad-terms`) on a roadmap. **Required for accurate `plan-semester` seniority** and for `sync-roadmap-progress`. Pass `matricTermId: null` to clear.                                                                                            |
+| `set-active-roadmap`    | Mark a roadmap as the user's single active roadmap (clears `isActive` on all the user's other roadmaps). Set this before `sync-roadmap-progress` / `plan-semester` so they target the intended roadmap.                                                                                                             |
 | `sync-roadmap-progress` | Add the user's course history into a roadmap: for every acad term from the declared matriculation term up to the current term, courses from the user's active timetable for that term are added to the matching roadmap year/term. Add-only - never deletes or duplicates courses. Returns `{ synced, courseIds }`. |
-| `copy-public-roadmap` | Copy a public roadmap (from `browse-public-roadmaps` / `get-public-roadmap`) into the user's own account as `<name> (copy)`. Returns `{ newRoadmapId, name }`. |
-| `set-bid-status` | Set a bid's outcome status: `PLANNED` / `SECURED` / `DROPPED` / `CANCELLED` / `PARTICIPATED`. |
+| `copy-public-roadmap`   | Copy a public roadmap (from `browse-public-roadmaps` / `get-public-roadmap`) into the user's own account as `<name> (copy)`. Returns `{ newRoadmapId, name }`.                                                                                                                                                      |
+| `set-bid-status`        | Set a bid's outcome status: `PLANNED` / `SECURED` / `DROPPED` / `CANCELLED` / `PARTICIPATED`.                                                                                                                                                                                                                       |
 
 Two companion surfaces are registered alongside the tools:
 
-| Surface | Kind | Purpose |
-| --- | --- | --- |
-| `plan-semester` | Prompt | User-selectable template that steers the model toward the `plan-semester` workflow instead of a long tool chain. |
+| Surface                | Kind     | Purpose                                                                                                                 |
+| ---------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `plan-semester`        | Prompt   | User-selectable template that steers the model toward the `plan-semester` workflow instead of a long tool chain.        |
 | `catalog://acad-terms` | Resource | The academic terms the course catalog is offered in (`id` = `acadTermId` used by `search-courses` and `plan-semester`). |
 
 ### Planning queries
@@ -154,16 +154,16 @@ is the easiest way to exercise this locally against a real Supabase project.
 `oauthSupabaseProvider()` reads these server env vars (set them in the Manufact
 dashboard / host - see [Deploy procedure](#deploy-procedure)):
 
-| Variable | Purpose |
-| --- | --- |
-| `MCP_USE_OAUTH_SUPABASE_PROJECT_ID` | **Required.** Supabase project ref. `oauthSupabaseProvider()` derives the auth URL `https://<ref>.supabase.co` from it. |
-| `MCP_USE_OAUTH_SUPABASE_URL` | *Optional.* Full Supabase auth URL - only for **local / self-hosted** Supabase (e.g. `http://localhost:54321`). Overrides the URL derived from `MCP_USE_OAUTH_SUPABASE_PROJECT_ID`. |
-| `MCP_USE_OAUTH_SUPABASE_JWT_SECRET` | *Optional.* Only for **legacy HS256** Supabase JWT projects. Omit for the default RS256 (JWKS-verified) projects. |
-| `DATABASE_URL` | The same Postgres the Next.js app uses - tools read via the tRPC caller (Prisma). |
-| `SKIP_ENV_VALIDATION` | **Do not set.** With the flag set, `@t3-oss/env-nextjs` skips the env schema transforms, so `NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS` stays a comma-string and `src/common/tools/zod/schemas.ts` crashes on `.join()` at boot. Provide the full app env set instead. |
-| Full Next.js app env | `env` validation runs on the mcp process (it imports `@/env` via tRPC), so the host needs the same server vars as the app: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `LLM_API_KEY`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, plus the `NEXT_PUBLIC_*` vars below. The repo `.env` already has these. |
-| `NEXT_PUBLIC_*` vars | Any client env var a tool path reads (e.g. `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS`). Add more as runtime errors surface during E2E. |
-| `NEXT_PUBLIC_MCP_PUBLIC_URL` | *Optional.* Public MCP URL used by the Settings -> Agents connect page deep links (`src/modules/settings/agents/connect-links.ts` -> `MCP_PUBLIC_URL`). Falls back to the placeholder until deployed. |
+| Variable                            | Purpose                                                                                                                                                                                                                                                                                          |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `MCP_USE_OAUTH_SUPABASE_PROJECT_ID` | **Required.** Supabase project ref. `oauthSupabaseProvider()` derives the auth URL `https://<ref>.supabase.co` from it.                                                                                                                                                                          |
+| `MCP_USE_OAUTH_SUPABASE_URL`        | _Optional._ Full Supabase auth URL - only for **local / self-hosted** Supabase (e.g. `http://localhost:54321`). Overrides the URL derived from `MCP_USE_OAUTH_SUPABASE_PROJECT_ID`.                                                                                                              |
+| `MCP_USE_OAUTH_SUPABASE_JWT_SECRET` | _Optional._ Only for **legacy HS256** Supabase JWT projects. Omit for the default RS256 (JWKS-verified) projects.                                                                                                                                                                                |
+| `DATABASE_URL`                      | The same Postgres the Next.js app uses - tools read via the tRPC caller (Prisma).                                                                                                                                                                                                                |
+| `SKIP_ENV_VALIDATION`               | **Do not set.** With the flag set, `@t3-oss/env-nextjs` skips the env schema transforms, so `NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS` stays a comma-string and `src/common/tools/zod/schemas.ts` crashes on `.join()` at boot. Provide the full app env set instead.                                   |
+| Full Next.js app env                | `env` validation runs on the mcp process (it imports `@/env` via tRPC), so the host needs the same server vars as the app: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `LLM_API_KEY`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, plus the `NEXT_PUBLIC_*` vars below. The repo `.env` already has these. |
+| `NEXT_PUBLIC_*` vars                | Any client env var a tool path reads (e.g. `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS`). Add more as runtime errors surface during E2E.                                                                                                     |
+| `NEXT_PUBLIC_MCP_PUBLIC_URL`        | _Optional._ Public MCP URL used by the Settings -> Agents connect page deep links (`src/modules/settings/agents/connect-links.ts` -> `MCP_PUBLIC_URL`). Falls back to the placeholder until deployed.                                                                                            |
 
 > **`MCP_USE_OAUTH_SUPABASE_PUBLISHABLE_KEY` is NOT a server env var.** The
 > server never reads it - `oauthSupabaseProvider()` only reads
@@ -337,7 +337,7 @@ To be ticked by a human **after** deploy (Task 8 Step 1). Local equivalent:
 - [ ] User is redirected to `https://afterclass.io/oauth/consent?authorization_id=...`
 - [ ] User signs in (school email), sees client name + scopes, clicks **Approve**
 - [ ] User is redirected back with a code; the client exchanges it for a token
-- [ ] `tools/list` returns the **42 tools**
+- [ ] `tools/list` returns the **39 tools**
 - [ ] `tools/call` on `my-timetables` returns the user&apos;s own data (scoped correctly)
 - [ ] `tools/call` on `recommend-bid-amount` renders the bid-recommendation widget
 - [ ] `tools/call` on `search-courses` renders the course-search widget
@@ -347,10 +347,10 @@ To be ticked by a human **after** deploy (Task 8 Step 1). Local equivalent:
 
 ## Local commands
 
-| Command | What it does |
-| --- | --- |
-| `bun run mcp:dev` | Dev server + Inspector on `:3001` (`mcp-use dev --mcp-dir src/mcp --port 3001`) |
-| `bun run mcp:build` | Build the server + widgets (`mcp-use build --mcp-dir src/mcp`) |
-| `bun run mcp:start` | Start the production server (`mcp-use start --mcp-dir src/mcp`) |
+| Command             | What it does                                                                    |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `bun run mcp:dev`   | Dev server + Inspector on `:3001` (`mcp-use dev --mcp-dir src/mcp --port 3001`) |
+| `bun run mcp:build` | Build the server + widgets (`mcp-use build --mcp-dir src/mcp`)                  |
+| `bun run mcp:start` | Start the production server (`mcp-use start --mcp-dir src/mcp`)                 |
 
 Versions: `mcp-use@^1` (server) with `@mcp-use/cli@^3` (the v1-compatible CLI).

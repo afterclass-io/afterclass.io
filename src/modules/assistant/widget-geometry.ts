@@ -56,6 +56,29 @@ export function boxPositionFromLauncher(
   );
 }
 
+// Launcher offsets from viewport bottom-right (right = vw - x - LAUNCHER_SIZE, same for bottom)
+export type LauncherOffsets = { right: number; bottom: number };
+
+export function toOffsets(pos: Point, viewport: Size): LauncherOffsets {
+  return {
+    right: viewport.width - pos.x - LAUNCHER_SIZE,
+    bottom: viewport.height - pos.y - LAUNCHER_SIZE,
+  };
+}
+
+export function fromOffsets(offsets: LauncherOffsets, viewport: Size, launcherSize: Size = { width: LAUNCHER_SIZE, height: LAUNCHER_SIZE }): Point {
+  const raw: Point = {
+    x: viewport.width - offsets.right - LAUNCHER_SIZE,
+    y: viewport.height - offsets.bottom - LAUNCHER_SIZE,
+  };
+  return clampPosition(raw, launcherSize, viewport);
+}
+
+export function clampOffsets(offsets: LauncherOffsets, viewport: Size): LauncherOffsets {
+  const pos = fromOffsets(offsets, viewport);
+  return toOffsets(pos, viewport);
+}
+
 export function applyDrag(start: Point, delta: Point, size: Size, viewport: Size): Point {
   return clampPosition({ x: start.x + delta.x, y: start.y + delta.y }, size, viewport);
 }

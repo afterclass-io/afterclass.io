@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { configure, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+configure({ testIdAttribute: "data-test" });
 
 vi.mock("./idb", () => ({
   idbGetAll: vi.fn(async () => []),
@@ -142,44 +144,76 @@ describe("SessionList a11y - non-nested interactives + focus/touch-visible actio
   it("deletes a session through the store after confirm", async () => {
     renderList();
     fireEvent.click(screen.getByRole("button", { name: /^delete math homework$/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    // AlertDialog renders in a portal — data-test is the app's test id attr
+    const confirmBtn = await screen.findByTestId("assistant-session-delete-confirm");
+    fireEvent.click(confirmBtn);
     await waitFor(() => expect(deleteMock).toHaveBeenCalledWith("s1"));
   });
 });
 
-describe("SessionList delete - inline confirm (no native alert)", () => {
-  it("opens an inline confirm panel on trash click without calling window.confirm", () => {
+describe("SessionList delete - AlertDialog confirm (no native alert)", () => {
+  function getDialogEls() {
+    return document.body.querySelector('[role="alertdialog"]');
+  }
+
+  it("opens an AlertDialog on trash click without calling window.confirm", async () => {
     const confirmSpy = vi.fn();
     window.confirm = confirmSpy;
     renderList();
     fireEvent.click(screen.getByRole("button", { name: /^delete math homework$/i }));
     expect(confirmSpy).not.toHaveBeenCalled();
-    expect(screen.getByText(/delete math homework\?/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
+    // Title + description rendered in the portal dialog
+    const dialog = await screen.findByRole("alertdialog");
+    expect(within(dialog).getByText("Delete chat?")).toBeInTheDocument();
+    expect(within(dialog).getByText(/This will permanently delete/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Math homework/)).toBeInTheDocument();
+    expect(screen.getByTestId("assistant-session-delete-confirm")).toBeInTheDocument();
+    expect(getDialogEls()).not.toBeNull();
+    expect(getDialogEls()!.textContent!).toMatch(/Cancel/);
   });
 
-  it("removes the session when Delete is confirmed in the panel", async () => {
+  it("keeps the session row in its normal state while the dialog is open", async () => {
     renderList();
     fireEvent.click(screen.getByRole("button", { name: /^delete math homework$/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    await screen.findByRole("alertdialog");
+    // Radix hides background via aria-hidden — query with hidden:true to assert
+    // the row is still visually rendered (normal, non-editing state) while the
+    // modal is open. The old inline-confirm branch used to replace the row.
+    expect(screen.getByRole("button", { name: "Math homework", hidden: true })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /^rename math homework$/i, hidden: true }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /^delete math homework$/i, hidden: true }),
+    ).toBeInTheDocument();
+  });
+
+  it("removes the session when Delete is confirmed in the dialog", async () => {
+    renderList();
+    fireEvent.click(screen.getByRole("button", { name: /^delete math homework$/i }));
+    fireEvent.click(await screen.findByTestId("assistant-session-delete-confirm"));
     await waitFor(() => expect(deleteMock).toHaveBeenCalledWith("s1"));
-    expect(screen.queryByText(/delete math homework\?/i)).not.toBeInTheDocument();
   });
 
   it("closes without removing on Cancel", async () => {
     renderList();
     fireEvent.click(screen.getByRole("button", { name: /^delete math homework$/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    await waitFor(() => expect(deleteMock).not.toHaveBeenCalled());
-    expect(screen.queryByText(/delete math homework\?/i)).not.toBeInTheDocument();
+    await screen.findByRole("alertdialog");
+    const cancelBtn = Array.from(getDialogEls()!.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("Cancel"),
+    )!;
+    expect(cancelBtn).toBeTruthy();
+    fireEvent.click(cancelBtn);
+    await waitFor(() => expect(getDialogEls()).toBeNull());
+    expect(deleteMock).not.toHaveBeenCalled();
   });
 
-  it("cancels on Escape", async () => {
+  it("closes on Escape via AlertDialog", async () => {
     renderList();
     fireEvent.click(screen.getByRole("button", { name: /^delete math homework$/i }));
-    fireEvent.keyDown(screen.getByRole("alertdialog"), { key: "Escape" });
-    await waitFor(() => expect(deleteMock).not.toHaveBeenCalled());
-    expect(screen.queryByText(/delete math homework\?/i)).not.toBeInTheDocument();
+    const dialog = await screen.findByRole("alertdialog");
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    await waitFor(() => expect(getDialogEls()).toBeNull());
+    expect(deleteMock).not.toHaveBeenCalled();
   });
 });

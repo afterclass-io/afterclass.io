@@ -7,6 +7,18 @@ import { env } from "@/env";
 export const MCP_PUBLIC_URL =
   env.NEXT_PUBLIC_MCP_PUBLIC_URL ?? "https://<slug>.run.mcp-use.com/mcp";
 
+if (
+  typeof process !== "undefined" &&
+  process.env.NODE_ENV === "production" &&
+  MCP_PUBLIC_URL.includes("<slug>")
+) {
+  // Fail loudly in production if the deploy forgot the public URL — users
+  // would otherwise see and copy a literal "<slug>" placeholder that never works.
+  console.warn(
+    "[mcp] NEXT_PUBLIC_MCP_PUBLIC_URL is not set in production — MCP deep links will use a placeholder URL. Set it to the deployed mcp-use URL (e.g. https://afterclass.run.mcp-use.com/mcp).",
+  );
+}
+
 // NOTE: the query params on this deep link (modal / connectorName / connectorUrl)
 // are an UNOFFICIAL community convention used by MCP directory sites - they are
 // not documented by Anthropic and could break without notice. The manual-steps
@@ -20,16 +32,6 @@ export function buildClaudeDeepLink(mcpUrl: string = MCP_PUBLIC_URL): URL {
   return url;
 }
 
-export function buildCursorDeepLink(mcpUrl: string = MCP_PUBLIC_URL): URL {
-  const config = JSON.stringify({ url: mcpUrl });
-  return new URL(
-    `cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent("afterclass")}&config=${encodeURIComponent(config)}`,
-  );
-}
-
-export function buildVSCodeDeepLink(mcpUrl: string = MCP_PUBLIC_URL): URL {
-  const config = JSON.stringify({ url: mcpUrl });
-  return new URL(
-    `https://vscode.dev/redirect/mcp/install?name=${encodeURIComponent("afterclass")}&config=${encodeURIComponent(config)}`,
-  );
+export function isPlaceholderMcpUrl(url: string = MCP_PUBLIC_URL): boolean {
+  return url.includes("<slug>");
 }
