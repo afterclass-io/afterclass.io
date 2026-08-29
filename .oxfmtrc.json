@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [".dist/**", "node_modules/**", "bun.lock", "coverage/**"],
+  "tabWidth": 2,
+  "printWidth": 80,
+  "semi": true,
+  "singleQuote": false,
+  "trailingComma": "all",
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "endOfLine": "lf",
+  "jsxSingleQuote": false
+}

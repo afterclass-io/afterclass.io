@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/common/functions";
-import { GRID_START_MIN, GRID_END_MIN } from "@/modules/timetable/functions/slot-math";
+import {
+  GRID_START_MIN,
+  GRID_END_MIN,
+} from "@/modules/timetable/functions/slot-math";
 
 const GRID_RANGE_MIN = GRID_END_MIN - GRID_START_MIN;
 
@@ -12,8 +15,7 @@ const GRID_RANGE_MIN = GRID_END_MIN - GRID_START_MIN;
 function getSGTMinutes(): number {
   const now = new Date();
   // Convert to SGT by building a UTC timestamp and adding 8 hours
-  const utcMinutes =
-    now.getUTCHours() * 60 + now.getUTCMinutes();
+  const utcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
   return (utcMinutes + 8 * 60) % (24 * 60);
 }
 

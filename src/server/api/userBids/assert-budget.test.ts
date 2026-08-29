@@ -53,7 +53,12 @@ describe("spentForTerm", () => {
 
   it("excludes a bid id when provided", async () => {
     const aggregate = vi.fn().mockResolvedValue({ _sum: { bidAmount: 100 } });
-    await spentForTerm({ userBid: { aggregate } } as never, "u1", "term-a", "b9");
+    await spentForTerm(
+      { userBid: { aggregate } } as never,
+      "u1",
+      "term-a",
+      "b9",
+    );
     expect(aggregate).toHaveBeenCalledWith(
       expect.objectContaining({
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

@@ -60,8 +60,7 @@ describe("layoutDay — basic positioning", () => {
     expect(slot.colIndex).toBe(0);
     expect(slot.colCount).toBe(1);
 
-    const expectedTop =
-      ((540 - GRID_START_MIN) / gridRange) * 100; // 540 = 9*60
+    const expectedTop = ((540 - GRID_START_MIN) / gridRange) * 100; // 540 = 9*60
     const expectedHeight = ((660 - 540) / gridRange) * 100; // 120 min
     expect(slot.topPct).toBeCloseTo(expectedTop, 5);
     expect(slot.heightPct).toBeCloseTo(expectedHeight, 5);
@@ -406,10 +405,9 @@ describe("hasTimeConflict", () => {
 
   it("is false when every existing slot has no timings", () => {
     expect(
-      hasTimeConflict(
-        [{ classTimings: [] }],
-        { classTimings: [{ dayOfWeek: 1, startTime: 540, endTime: 660 }] },
-      ),
+      hasTimeConflict([{ classTimings: [] }], {
+        classTimings: [{ dayOfWeek: 1, startTime: 540, endTime: 660 }],
+      }),
     ).toBe(false);
   });
 });

@@ -3,7 +3,8 @@ import { BidPredictionCard } from "./BidPredictionCard";
 import type { BidPrediction } from "./BidPredictionCard";
 import type { MultiplierType } from "@/generated/prisma/client";
 
-type MiniSafetyFactor = { // re-declared as dates are not required
+type MiniSafetyFactor = {
+  // re-declared as dates are not required
   beatsPercentage: number;
   multiplier: number;
 };
@@ -12,7 +13,6 @@ type MiniBidPrediction = {
   safetyFactor: MiniSafetyFactor[];
   uncertainty: number;
 };
-
 
 const minPrediction: MiniBidPrediction = {
   value: 12000,
@@ -51,14 +51,14 @@ const medianPrediction: MiniBidPrediction = {
 const transformBidPrediction = (
   prediction: MiniBidPrediction,
   acadTermId: string,
-  predictionType: "MIN" | "MEDIAN"
+  predictionType: "MIN" | "MEDIAN",
 ): BidPrediction => {
-  const transformedSafetyFactors = prediction.safetyFactor.map(sf => ({
+  const transformedSafetyFactors = prediction.safetyFactor.map((sf) => ({
     ...sf,
     acadTermId,
     predictionType,
     // Cast the literal string to the required MultiplierType
-    multiplierType: "BID_SAFETY_FACTOR" as MultiplierType, 
+    multiplierType: "BID_SAFETY_FACTOR" as MultiplierType,
     createdAt: new Date(),
   }));
 
@@ -68,17 +68,16 @@ const transformBidPrediction = (
   };
 };
 
-
 // Transform the data before passing it to the component
 const transformedMinPrediction = transformBidPrediction(
   minPrediction,
   "AY2024/2025 Semester 1",
-  "MIN"
+  "MIN",
 );
 const transformedMedianPrediction = transformBidPrediction(
   medianPrediction,
   "AY2024/2025 Semester 1",
-  "MEDIAN"
+  "MEDIAN",
 );
 
 const meta: Meta<typeof BidPredictionCard> = {
@@ -103,7 +102,6 @@ const meta: Meta<typeof BidPredictionCard> = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
-
 
 export const Default: Story = {};
 

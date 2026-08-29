@@ -4,12 +4,10 @@ import { ReviewType } from "@/generated/prisma/client";
 import { auth } from "@/server/auth";
 import { toTitleCase, formatPercentage } from "@/common/functions";
 
-export default async function CourseRating(
-  props: {
-    params: Promise<{ code: string }>;
-    searchParams?: Promise<{ professor?: string | string[] }>;
-  }
-) {
+export default async function CourseRating(props: {
+  params: Promise<{ code: string }>;
+  searchParams?: Promise<{ professor?: string | string[] }>;
+}) {
   const searchParams = await props.searchParams;
   const params = await props.params;
   const session = await auth();

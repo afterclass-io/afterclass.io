@@ -24,7 +24,11 @@ describe("sharing.setVisibility", () => {
     const dbMock = {};
     const caller = makeCaller(dbMock);
     await expect(
-      caller.setVisibility({ entity: "timetable", id: "t1", visibility: "PUBLIC" }),
+      caller.setVisibility({
+        entity: "timetable",
+        id: "t1",
+        visibility: "PUBLIC",
+      }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 });

@@ -27,7 +27,11 @@ export const setVisibility = protectedProcedure
         });
       }
 
-      const timetable = await requireOwnedTimetable(ctx.db, id, ctx.session.user.id);
+      const timetable = await requireOwnedTimetable(
+        ctx.db,
+        id,
+        ctx.session.user.id,
+      );
 
       let shareToken: string | null = timetable.shareToken;
       let icalToken: string | null = timetable.icalToken;
@@ -48,11 +52,16 @@ export const setVisibility = protectedProcedure
       return { visibility, shareToken };
     } else {
       // roadmap — faculty is per-roadmap (set via roadmaps.setFaculty).
-      const roadmap = await requireOwnedRoadmap(ctx.db, id, ctx.session.user.id, {
-        shareToken: true,
-        facultyId: true,
-        publishedAt: true,
-      });
+      const roadmap = await requireOwnedRoadmap(
+        ctx.db,
+        id,
+        ctx.session.user.id,
+        {
+          shareToken: true,
+          facultyId: true,
+          publishedAt: true,
+        },
+      );
 
       if (visibility === "PUBLIC" && !ctx.session.user.isVerified) {
         throw new TRPCError({

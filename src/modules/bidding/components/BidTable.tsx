@@ -44,7 +44,15 @@ interface BidTableProps {
   bidResults: BidResultRow[];
 }
 
-type SortColumn = "term" | "section" | "professor" | "round" | "window" | "min" | "median" | "seats";
+type SortColumn =
+  | "term"
+  | "section"
+  | "professor"
+  | "round"
+  | "window"
+  | "min"
+  | "median"
+  | "seats";
 type SortDirection = "asc" | "desc";
 
 /** Flat display row with pre-computed values for sorting and rendering */
@@ -92,29 +100,31 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
 
   // Build flattened rows with all display values pre-computed
   const flatRows: FlatRow[] = useMemo(() => {
-    return chartData.map((row, _i) => {
-      const [acadTermId, round, window] = row.bidWindow.split("/");
-      if (!acadTermId) {
-        // Malformed bidWindow string — skip this row
-        return null;
-      }
-      const { displayYear, term } = inferAcadTerm(acadTermId);
-      const groupIdx = groupIndexMap.get(row.bidWindow) ?? 0;
-      return {
-        bidWindow: row.bidWindow,
-        acadTermId: acadTermId,
-        displayYear,
-        term,
-        section: sectionMap.get(row.bidWindow) ?? "—",
-        professor: profMap.get(row.bidWindow) ?? "—",
-        round: round ?? "",
-        window: window ?? "",
-        min: row.price[0],
-        median: row.price[1],
-        seats: row.size,
-        groupIdx,
-      };
-    }).filter((row): row is FlatRow => row !== null);
+    return chartData
+      .map((row, _i) => {
+        const [acadTermId, round, window] = row.bidWindow.split("/");
+        if (!acadTermId) {
+          // Malformed bidWindow string — skip this row
+          return null;
+        }
+        const { displayYear, term } = inferAcadTerm(acadTermId);
+        const groupIdx = groupIndexMap.get(row.bidWindow) ?? 0;
+        return {
+          bidWindow: row.bidWindow,
+          acadTermId: acadTermId,
+          displayYear,
+          term,
+          section: sectionMap.get(row.bidWindow) ?? "—",
+          professor: profMap.get(row.bidWindow) ?? "—",
+          round: round ?? "",
+          window: window ?? "",
+          min: row.price[0],
+          median: row.price[1],
+          seats: row.size,
+          groupIdx,
+        };
+      })
+      .filter((row): row is FlatRow => row !== null);
   }, [chartData, groupIndexMap, profMap, sectionMap]);
 
   const handleSort = useCallback(
@@ -162,7 +172,9 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
     });
   }, [flatRows, sortColumn, sortDirection]);
 
-  const visibleRows = showAll ? sortedRows : sortedRows.slice(0, DEFAULT_VISIBLE_ROWS);
+  const visibleRows = showAll
+    ? sortedRows
+    : sortedRows.slice(0, DEFAULT_VISIBLE_ROWS);
   const hiddenCount = chartData.length - DEFAULT_VISIBLE_ROWS;
 
   const sharedThClass =
@@ -242,11 +254,15 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
                     <TooltipTrigger asChild>
                       <span className="inline-flex items-center gap-1 cursor-help">
                         Seats Taken
-                        <Info size={12} className="text-muted-foreground shrink-0" />
+                        <Info
+                          size={12}
+                          className="text-muted-foreground shrink-0"
+                        />
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-xs text-xs">
-                      available seats before bidding minus available seats after bidding.
+                      available seats before bidding minus available seats after
+                      bidding.
                     </TooltipContent>
                   </Tooltip>
                   {sortColumn === "seats" ? (

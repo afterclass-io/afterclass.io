@@ -12,12 +12,20 @@ describe("incrementEngagement", () => {
     const updateMany = vi.fn().mockResolvedValue({ count: 1 });
     const db = {
       userRoadmap: {
-        findFirst: vi.fn().mockResolvedValue({ id: "r1", visibility: "PUBLIC", publishedAt: new Date() }),
+        findFirst: vi.fn().mockResolvedValue({
+          id: "r1",
+          visibility: "PUBLIC",
+          publishedAt: new Date(),
+        }),
         updateMany,
       },
     };
     const headers = new Headers({ "x-forwarded-for": "1.2.3.4" });
-    const ok = await incrementEngagement(db as never, { roadmapId: "r1", field: "viewCount" }, headers);
+    const ok = await incrementEngagement(
+      db as never,
+      { roadmapId: "r1", field: "viewCount" },
+      headers,
+    );
     expect(ok).toBe(true);
     expect(updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ data: { viewCount: { increment: 1 } } }),
@@ -28,15 +36,27 @@ describe("incrementEngagement", () => {
     const updateMany = vi.fn().mockResolvedValue({ count: 1 });
     const db = {
       userRoadmap: {
-        findFirst: vi.fn().mockResolvedValue({ id: "r1", visibility: "PUBLIC", publishedAt: new Date() }),
+        findFirst: vi.fn().mockResolvedValue({
+          id: "r1",
+          visibility: "PUBLIC",
+          publishedAt: new Date(),
+        }),
         updateMany,
       },
     };
     const headers = new Headers({ "x-forwarded-for": "1.2.3.4" });
     for (let i = 0; i < 5; i++) {
-      await incrementEngagement(db as never, { roadmapId: "r1", field: "viewCount" }, headers);
+      await incrementEngagement(
+        db as never,
+        { roadmapId: "r1", field: "viewCount" },
+        headers,
+      );
     }
-    const sixth = await incrementEngagement(db as never, { roadmapId: "r1", field: "viewCount" }, headers);
+    const sixth = await incrementEngagement(
+      db as never,
+      { roadmapId: "r1", field: "viewCount" },
+      headers,
+    );
     expect(sixth).toBe(false);
     expect(updateMany).toHaveBeenCalledTimes(5);
   });

@@ -187,10 +187,7 @@ export function detectConflicts(
   // ---- 4. Cross-term duplicate detection ----
   // A course may only be planned once: the same course cannot appear in a
   // different (yearNumber, term) than where it already exists.
-  const coursePlace = new Map<
-    string,
-    { yearNumber: number; term: string }
-  >();
+  const coursePlace = new Map<string, { yearNumber: number; term: string }>();
   for (const entry of entries) {
     const key = termKey(entry.yearNumber, entry.term);
     const existingPlace = coursePlace.get(entry.courseId);

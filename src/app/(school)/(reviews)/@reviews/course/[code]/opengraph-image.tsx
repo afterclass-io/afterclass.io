@@ -30,32 +30,30 @@ export default async function Image({ params }: { params: { code: string } }) {
   const profCount = await api.professors.countByCourseCode({ courseCode });
 
   return new ImageResponse(
-    (
-      <OgImage>
-        <OgImage.Header school="SMU" code={courseCode} />
-        <OgImage.Title
-          icon={
-            <BooksIcon
-              size="2.25rem"
-              style={{
-                color: "#7A7A85",
-              }}
-            />
-          }
-        >
-          {course?.name}
-        </OgImage.Title>
-        <OgImage.Content
-          rating={averageRating.toFixed(2)}
-          reviewCount={reviewCount}
-          profCount={profCount}
-          statItems={reviewLabels.map((label) => ({
-            label: toTitleCase(label.name),
-            value: formatPercentage(label.count && label.count / reviewCount),
-          }))}
-        />
-      </OgImage>
-    ),
+    <OgImage>
+      <OgImage.Header school="SMU" code={courseCode} />
+      <OgImage.Title
+        icon={
+          <BooksIcon
+            size="2.25rem"
+            style={{
+              color: "#7A7A85",
+            }}
+          />
+        }
+      >
+        {course?.name}
+      </OgImage.Title>
+      <OgImage.Content
+        rating={averageRating.toFixed(2)}
+        reviewCount={reviewCount}
+        profCount={profCount}
+        statItems={reviewLabels.map((label) => ({
+          label: toTitleCase(label.name),
+          value: formatPercentage(label.count && label.count / reviewCount),
+        }))}
+      />
+    </OgImage>,
     {
       ...size,
     },

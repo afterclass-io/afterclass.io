@@ -13,11 +13,7 @@
     "noUncheckedIndexedAccess": true,
     "checkJs": true,
     /* Bundled projects */
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "ES2023"
-    ],
+    "lib": ["dom", "dom.iterable", "ES2023"],
     "noEmit": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -30,9 +26,7 @@
     "incremental": true,
     /* Path Aliases */
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
@@ -45,9 +39,5 @@
     "postcss.config.mjs",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "cypress/**/*.cy.js",
-    "storybook-static"
-  ]
+  "exclude": ["node_modules", "cypress/**/*.cy.js", "storybook-static"]
 }

@@ -10,6 +10,8 @@ describe("formatDateSGT", () => {
 
   it("honours option overrides", () => {
     const d = new Date("2026-08-17T00:00:00+08:00");
-    expect(formatDateSGT(d, { day: "numeric", month: "long" })).toBe("17 August");
+    expect(formatDateSGT(d, { day: "numeric", month: "long" })).toBe(
+      "17 August",
+    );
   });
 });

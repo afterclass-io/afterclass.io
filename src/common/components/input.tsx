@@ -25,8 +25,9 @@ const InputContext = React.createContext<InputContextProps>({
 
 const useInputContext = () => React.useContext(InputContext);
 
-export interface InputProps
-  extends React.ComponentPropsWithoutRef<typeof Primitive.div> {
+export interface InputProps extends React.ComponentPropsWithoutRef<
+  typeof Primitive.div
+> {
   autoFocus?: boolean;
   disabled?: boolean;
 }
@@ -102,8 +103,7 @@ const InputControl = React.forwardRef<
 });
 InputControl.displayName = "InputControl";
 
-export interface InputAdornmentProps
-  extends React.ComponentPropsWithoutRef<"div"> {
+export interface InputAdornmentProps extends React.ComponentPropsWithoutRef<"div"> {
   asChild?: boolean;
   disablePointerEvents?: boolean;
 }

@@ -33,7 +33,9 @@ describe("timetable.create", () => {
     };
     const createMock = vi
       .fn()
-      .mockRejectedValueOnce(Object.assign(new Error("Unique"), { code: "P2002" }))
+      .mockRejectedValueOnce(
+        Object.assign(new Error("Unique"), { code: "P2002" }),
+      )
       .mockResolvedValueOnce(fallbackRow);
     const dbMock = {
       userTimetable: { count, create: createMock },
@@ -48,10 +50,20 @@ describe("timetable.create", () => {
     });
     expect(createMock).toHaveBeenCalledTimes(2);
     expect(createMock).toHaveBeenNthCalledWith(1, {
-      data: { userId: "u1", acadTermId: "term-a", name: "Plan A", isActive: true },
+      data: {
+        userId: "u1",
+        acadTermId: "term-a",
+        name: "Plan A",
+        isActive: true,
+      },
     });
     expect(createMock).toHaveBeenNthCalledWith(2, {
-      data: { userId: "u1", acadTermId: "term-a", name: "Plan A", isActive: false },
+      data: {
+        userId: "u1",
+        acadTermId: "term-a",
+        name: "Plan A",
+        isActive: false,
+      },
     });
   });
 
@@ -66,21 +78,36 @@ describe("timetable.create", () => {
     };
     const createMock = vi
       .fn()
-      .mockRejectedValueOnce(Object.assign(new Error("Unique"), { code: "P2002" }))
+      .mockRejectedValueOnce(
+        Object.assign(new Error("Unique"), { code: "P2002" }),
+      )
       .mockResolvedValueOnce(fallbackRow);
     const dbMock = {
       userTimetable: { count, create: createMock },
     };
     const caller = makeCaller(dbMock);
 
-    const result = await caller.create({ acadTermId: "term-a", name: "My Plan" });
+    const result = await caller.create({
+      acadTermId: "term-a",
+      name: "My Plan",
+    });
 
     expect(result).toEqual(fallbackRow);
     expect(createMock).toHaveBeenNthCalledWith(1, {
-      data: { userId: "u1", acadTermId: "term-a", name: "My Plan", isActive: false },
+      data: {
+        userId: "u1",
+        acadTermId: "term-a",
+        name: "My Plan",
+        isActive: false,
+      },
     });
     expect(createMock).toHaveBeenNthCalledWith(2, {
-      data: { userId: "u1", acadTermId: "term-a", name: "My Plan", isActive: false },
+      data: {
+        userId: "u1",
+        acadTermId: "term-a",
+        name: "My Plan",
+        isActive: false,
+      },
     });
   });
 
@@ -94,7 +121,9 @@ describe("timetable.create", () => {
     };
     const caller = makeCaller(dbMock);
 
-    await expect(caller.create({ acadTermId: "term-a" })).rejects.toThrow("boom");
+    await expect(caller.create({ acadTermId: "term-a" })).rejects.toThrow(
+      "boom",
+    );
     expect(createMock).toHaveBeenCalledTimes(1);
   });
 
@@ -106,7 +135,9 @@ describe("timetable.create", () => {
     };
     const caller = makeCaller(dbMock);
 
-    await expect(caller.create({ acadTermId: "term-a" })).rejects.toThrow("generic boom");
+    await expect(caller.create({ acadTermId: "term-a" })).rejects.toThrow(
+      "generic boom",
+    );
     expect(createMock).toHaveBeenCalledTimes(1);
   });
 });

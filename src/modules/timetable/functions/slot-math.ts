@@ -124,7 +124,8 @@ export function toTimingLikes(
     const start = parseTimePartsSafe(t.startTime);
     const end = parseTimePartsSafe(t.endTime);
     if (dayOfWeek == null || !start || !end) {
-      if (process.env.NODE_ENV !== "production") console.warn("[slot-math] dropped timing", t);
+      if (process.env.NODE_ENV !== "production")
+        console.warn("[slot-math] dropped timing", t);
       continue;
     }
     out.push({
@@ -262,8 +263,7 @@ export function layoutDay(timings: ClassTimingLike[]): PositionedSlot[] {
         timing: slot.timing,
         rawIndex: slot.rawIndex,
         topPct: minutesToPct(clampedStart),
-        heightPct:
-          ((clampedEnd - clampedStart) / GRID_RANGE_MIN) * 100,
+        heightPct: ((clampedEnd - clampedStart) / GRID_RANGE_MIN) * 100,
         colIndex: laneAssignment[i]!,
         colCount,
       });

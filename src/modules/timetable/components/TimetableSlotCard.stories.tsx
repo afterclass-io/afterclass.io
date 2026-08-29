@@ -167,23 +167,23 @@ export const AllBidStatuses: Story = {
       className="relative flex flex-col gap-2 p-2"
       style={{ height: 560, border: "1px solid #e5e7eb" }}
     >
-      {(["PLANNED", "SECURED", "PARTICIPATED", "DROPPED", "CANCELLED"] as const).map(
-        (status, i) => (
-          <div key={status} className="relative flex-1 border border-dashed">
-            <TimetableSlotCard
-              courseCode={`CS10${i + 1}`}
-              courseName={`Status: ${status}`}
-              section="G1"
-              venue="SOE-SR2-1"
-              slot={{ ...baseSlot, topPct: 0, heightPct: 100 }}
-              bidInfo={{ amount: 50, round: "1", status }}
-            />
-            <span className="absolute top-1 right-1 bg-background/80 rounded px-1 text-[10px] font-mono">
-              {status}
-            </span>
-          </div>
-        ),
-      )}
+      {(
+        ["PLANNED", "SECURED", "PARTICIPATED", "DROPPED", "CANCELLED"] as const
+      ).map((status, i) => (
+        <div key={status} className="relative flex-1 border border-dashed">
+          <TimetableSlotCard
+            courseCode={`CS10${i + 1}`}
+            courseName={`Status: ${status}`}
+            section="G1"
+            venue="SOE-SR2-1"
+            slot={{ ...baseSlot, topPct: 0, heightPct: 100 }}
+            bidInfo={{ amount: 50, round: "1", status }}
+          />
+          <span className="absolute top-1 right-1 bg-background/80 rounded px-1 text-[10px] font-mono">
+            {status}
+          </span>
+        </div>
+      ))}
     </div>
   ),
 };

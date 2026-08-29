@@ -52,8 +52,9 @@ context("Timetable: Build", function () {
 
     // After auto-creation, the variant switcher should be visible
     // and a default timetable name (e.g. "My Timetable") should appear
-    cy.get("[data-test=timetable-variant-switcher]", { timeout: 10000 })
-      .should("be.visible");
+    cy.get("[data-test=timetable-variant-switcher]", { timeout: 10000 }).should(
+      "be.visible",
+    );
 
     // The search panel should now be enabled (no longer showing "Pick a term to start searching")
     cy.get("[data-test=timetable-search-input]").should("not.be.disabled");
@@ -67,8 +68,9 @@ context("Timetable: Build", function () {
     cy.get("[data-test=timetable-term-AY202425T2]").click();
 
     // Wait for the search input to be enabled
-    cy.get("[data-test=timetable-search-input]", { timeout: 10000 })
-      .should("not.be.disabled");
+    cy.get("[data-test=timetable-search-input]", { timeout: 10000 }).should(
+      "not.be.disabled",
+    );
 
     // Type a search query (use a partial course code that should match
     // something in the seed data, e.g. "COR-" or "ACCT")
@@ -115,7 +117,9 @@ context("Timetable: Build", function () {
 
     cy.contains("Sections", { timeout: 10000 }).should("be.visible");
     cy.intercept("POST", "**/api/trpc/*timetable.addSlot*").as("addSlotT4");
-    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as("setSlotT4");
+    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as(
+      "setSlotT4",
+    );
     cy.get("[data-test^=timetable-section-action-]").first().click();
     // Accept either addSlot (new course) or setSlotSection (already present) or time-conflict toast
     cy.wait(1500);
@@ -123,11 +127,15 @@ context("Timetable: Build", function () {
       const hasTimeConflict = $body.text().includes("Time conflict");
       if (hasTimeConflict) {
         // Retry with second section
-        cy.get("[data-test^=timetable-section-action-]").eq(1).click({ force: true });
+        cy.get("[data-test^=timetable-section-action-]")
+          .eq(1)
+          .click({ force: true });
         cy.wait(2000);
       }
     });
-    cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should("exist");
+    cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
+      "exist",
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -151,17 +159,23 @@ context("Timetable: Build", function () {
 
     cy.contains("Sections", { timeout: 10000 }).should("be.visible");
     cy.intercept("POST", "**/api/trpc/*timetable.addSlot*").as("addSlotT5");
-    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as("setSlotT5");
+    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as(
+      "setSlotT5",
+    );
     cy.get("[data-test^=timetable-section-action-]").first().click();
     cy.wait(1500);
     cy.get("body").then(($body) => {
       const hasTimeConflict = $body.text().includes("Time conflict");
       if (hasTimeConflict) {
-        cy.get("[data-test^=timetable-section-action-]").eq(1).click({ force: true });
+        cy.get("[data-test^=timetable-section-action-]")
+          .eq(1)
+          .click({ force: true });
         cy.wait(2000);
       }
     });
-    cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should("exist");
+    cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
+      "exist",
+    );
 
     // ---- Reload ----
     cy.reload();
@@ -187,13 +201,16 @@ context("Timetable: Build", function () {
     cy.get("[data-test=timetable-term-AY202425T2]").click();
 
     // Wait for variant switcher to appear
-    cy.get("[data-test=timetable-variant-switcher]", { timeout: 10000 })
-      .should("be.visible");
+    cy.get("[data-test=timetable-variant-switcher]", { timeout: 10000 }).should(
+      "be.visible",
+    );
 
     // ---- Add a course to the first (default) variant ----
     // Use IS215 which is not used by other specs' COR-/ACCT searches
     cy.intercept("POST", "**/api/trpc/*timetable.addSlot*").as("addSlotT6");
-    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as("setSlotT6");
+    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as(
+      "setSlotT6",
+    );
     cy.get("[data-test=timetable-search-input]", { timeout: 10000 })
       .should("not.be.disabled")
       .clear()
@@ -212,7 +229,9 @@ context("Timetable: Build", function () {
     cy.get("body").then(($body) => {
       const hasTimeConflict = $body.text().includes("Time conflict");
       if (hasTimeConflict) {
-        cy.get("[data-test^=timetable-section-action-]").eq(1).click({ force: true });
+        cy.get("[data-test^=timetable-section-action-]")
+          .eq(1)
+          .click({ force: true });
         cy.wait(1500);
       }
     });
@@ -233,8 +252,9 @@ context("Timetable: Build", function () {
     cy.wait("@createVariant", { timeout: 15000 });
 
     // Wait for the new variant to be created (the switcher value should change)
-    cy.get("[data-test=timetable-variant-switcher]", { timeout: 10000 })
-      .should("be.visible");
+    cy.get("[data-test=timetable-variant-switcher]", { timeout: 10000 }).should(
+      "be.visible",
+    );
 
     // ---- Verify the second variant is empty ----
     // The grid should show the empty state ("No classes added yet")
@@ -266,17 +286,11 @@ context("Timetable: Build", function () {
   function addAcctG2Bid() {
     cy.intercept("POST", "**/api/trpc/*userBids.upsert*").as("upsertBid");
     cy.contains("button", "Add bid").click();
-    cy.get("[data-test=bid-dialog]", { timeout: 10000 }).should(
-      "be.visible",
-    );
+    cy.get("[data-test=bid-dialog]", { timeout: 10000 }).should("be.visible");
 
     // Course search (term-scoped) → pick ACCT102.
     cy.get('[aria-label="Search courses"]').type("ACCT");
-    cy.contains(
-      "[data-test=bid-dialog] button",
-      "ACCT102",
-      { timeout: 15000 },
-    )
+    cy.contains("[data-test=bid-dialog] button", "ACCT102", { timeout: 15000 })
       .first()
       .click();
 
@@ -290,9 +304,7 @@ context("Timetable: Build", function () {
     cy.wait("@upsertBid", { timeout: 15000 });
     // Wait for the dialog to fully unmount (incl. its exit animation) so the
     // modal overlay can't cover later interactions.
-    cy.get("[data-test=bid-dialog]", { timeout: 15000 }).should(
-      "not.exist",
-    );
+    cy.get("[data-test=bid-dialog]", { timeout: 15000 }).should("not.exist");
   }
 
   /**
@@ -312,7 +324,9 @@ context("Timetable: Build", function () {
       .then((text) => {
         if (text.includes("Secured")) {
           cy.get('[aria-label^="Change status for ACCT102 G2 bid"]').click();
-          cy.get('[role="menuitem"]').contains("Planned").click({ force: true });
+          cy.get('[role="menuitem"]')
+            .contains("Planned")
+            .click({ force: true });
           cy.wait("@setStatusBid", { timeout: 15000 });
         }
         cy.get('[aria-label^="Change status for ACCT102 G2 bid"]').click();
@@ -435,7 +449,9 @@ context("Timetable: Build", function () {
 
     // ---- Mutation 1: add a section (or swap if ACCT already present from prior spec) ----
     cy.intercept("POST", "**/api/trpc/*timetable.addSlot*").as("addSlotRemove");
-    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as("setSlotRemove");
+    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as(
+      "setSlotRemove",
+    );
     // ACCT102 G1 has no class timings so card never renders — pick G2
     cy.get("[data-test^=timetable-section-action-]").eq(1).click();
     cy.wait(1500);
@@ -443,17 +459,23 @@ context("Timetable: Build", function () {
       const hasTimeConflict = $body.text().includes("Time conflict");
       if (hasTimeConflict) {
         // Time conflict with COR-* slot; try the other ACCT section
-        cy.get("[data-test^=timetable-section-action-]").first().click({ force: true });
+        cy.get("[data-test^=timetable-section-action-]")
+          .first()
+          .click({ force: true });
         cy.wait(1500);
       }
     });
 
     // The slot card appears on the grid — count how many (may include COR- from prior specs)
-    cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should("exist");
+    cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
+      "exist",
+    );
     cy.get("[data-test=timetable-slot-card]").then(($before) => {
       const countBefore = $before.length;
       // ---- Mutation 2: remove the ACCT slot via the × affordance ----
-      cy.intercept("POST", "**/api/trpc/*timetable.removeSlot*").as("removeSlot");
+      cy.intercept("POST", "**/api/trpc/*timetable.removeSlot*").as(
+        "removeSlot",
+      );
       cy.intercept("GET", "**/api/trpc/*timetable.getArrangement*").as(
         "getArrangementAfterRemove",
       );
@@ -464,7 +486,10 @@ context("Timetable: Build", function () {
       cy.wait("@removeSlot", { timeout: 15000 });
       cy.wait("@getArrangementAfterRemove", { timeout: 15000 });
       // WITHOUT a reload: count must have decreased by 1 (the ACCT card removed)
-      cy.get("[data-test=timetable-slot-card]").should("have.length", countBefore - 1);
+      cy.get("[data-test=timetable-slot-card]").should(
+        "have.length",
+        countBefore - 1,
+      );
     });
   });
 
@@ -479,7 +504,9 @@ context("Timetable: Build", function () {
     cy.get("[data-test=timetable-term-picker]").click();
     cy.get("[data-test=timetable-term-AY202425T2]").click();
 
-    cy.intercept("POST", "**/api/trpc/*userBids.upsert*").as("upsertBidUnified");
+    cy.intercept("POST", "**/api/trpc/*userBids.upsert*").as(
+      "upsertBidUnified",
+    );
 
     // Open "+ Add bid".
     cy.contains("button", "Add bid").click();
@@ -491,11 +518,7 @@ context("Timetable: Build", function () {
 
     // Pick ACCT102 + G1.
     cy.get('[aria-label="Search courses"]').type("ACCT");
-    cy.contains(
-      "[data-test=bid-dialog] button",
-      "ACCT102",
-      { timeout: 15000 },
-    )
+    cy.contains("[data-test=bid-dialog] button", "ACCT102", { timeout: 15000 })
       .first()
       .click();
     cy.get('[aria-label="Select section"]').click();

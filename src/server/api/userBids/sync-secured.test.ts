@@ -1,14 +1,16 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import {
+  demoteSiblingBids,
+  syncSecuredBidToActiveTimetable,
+} from "./sync-secured";
+import { createTRPCRouter } from "@/server/api/trpc";
+import { setStatus } from "./setStatus";
 
 vi.mock("@/server/db", () => ({ db: {} }));
 vi.mock("@/server/auth", () => ({ auth: () => null }));
 vi.mock("@sentry/nextjs", () => ({
   trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
 }));
-
-import { demoteSiblingBids, syncSecuredBidToActiveTimetable } from "./sync-secured";
-import { createTRPCRouter } from "@/server/api/trpc";
-import { setStatus } from "./setStatus";
 
 const router = createTRPCRouter({ setStatus });
 
@@ -31,9 +33,12 @@ function makeSetStatusDb() {
 
   const dbMock = {
     userBid: {
-      findUnique: vi
-        .fn()
-        .mockResolvedValue({ id: "b1", userId: "u1", classId: "c1", bidAmount: 50 }),
+      findUnique: vi.fn().mockResolvedValue({
+        id: "b1",
+        userId: "u1",
+        classId: "c1",
+        bidAmount: 50,
+      }),
       findFirst: vi.fn().mockResolvedValue(null),
       aggregate: vi.fn().mockResolvedValue({ _sum: { bidAmount: null } }),
     },
@@ -61,7 +66,15 @@ function makeSetStatusDb() {
       }),
     ),
   };
-  return { dbMock, userBidUpdate, userBidUpdateMany, slotCreateMany, timetableFindFirst, timetableCount, timetableCreate };
+  return {
+    dbMock,
+    userBidUpdate,
+    userBidUpdateMany,
+    slotCreateMany,
+    timetableFindFirst,
+    timetableCount,
+    timetableCreate,
+  };
 }
 
 describe("demoteSiblingBids", () => {
@@ -132,7 +145,12 @@ describe("syncSecuredBidToActiveTimetable", () => {
       "c1",
     );
     expect(create).toHaveBeenCalledWith({
-      data: { userId: "u1", acadTermId: "term-a", name: "Plan A", isActive: true },
+      data: {
+        userId: "u1",
+        acadTermId: "term-a",
+        name: "Plan A",
+        isActive: true,
+      },
     });
     expect(createMany).toHaveBeenCalledWith({
       data: [{ timetableId: "t1", classId: "c1" }],
@@ -145,8 +163,13 @@ describe("userBids.setStatus — active-timetable sync", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("marking SECURED adds the class to the user's active timetable for the term", async () => {
-    const { dbMock, userBidUpdate, userBidUpdateMany, slotCreateMany, timetableFindFirst } =
-      makeSetStatusDb();
+    const {
+      dbMock,
+      userBidUpdate,
+      userBidUpdateMany,
+      slotCreateMany,
+      timetableFindFirst,
+    } = makeSetStatusDb();
     timetableFindFirst.mockResolvedValue({
       id: "t1",
       acadTermId: "term-a",
@@ -163,10 +186,10 @@ describe("userBids.setStatus — active-timetable sync", () => {
     // Siblings demoted to PARTICIPATED…
     expect(userBidUpdateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ classId: "c1", id: { not: "b1" } }) as Record<
-          string,
-          unknown
-        >,
+        where: expect.objectContaining({
+          classId: "c1",
+          id: { not: "b1" },
+        }) as Record<string, unknown>,
         data: { status: "PARTICIPATED" },
       }),
     );
@@ -197,7 +220,12 @@ describe("userBids.setStatus — active-timetable sync", () => {
     await caller.setStatus({ id: "b1", status: "SECURED" });
 
     expect(timetableCreate).toHaveBeenCalledWith({
-      data: { userId: "u1", acadTermId: "term-a", name: "Plan A", isActive: true },
+      data: {
+        userId: "u1",
+        acadTermId: "term-a",
+        name: "Plan A",
+        isActive: true,
+      },
     });
     expect(slotCreateMany).toHaveBeenCalledWith({
       data: [{ timetableId: "t1", classId: "c1" }],
@@ -233,9 +261,12 @@ describe("userBids.setStatus — active-timetable sync", () => {
   it("allows PARTICIPATED via the dropdown (same-window siblings default to participated)", async () => {
     const { dbMock, userBidUpdate } = makeSetStatusDb();
     const caller = makeCaller(dbMock);
-    await caller.setStatus({ id: "b1", status: "PARTICIPATED" as never });
+    await caller.setStatus({ id: "b1", status: "PARTICIPATED" });
     expect(userBidUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: "b1" }, data: { status: "PARTICIPATED" } }),
+      expect.objectContaining({
+        where: { id: "b1" },
+        data: { status: "PARTICIPATED" },
+      }),
     );
   });
 
@@ -263,7 +294,9 @@ describe("userBids.setStatus — active-timetable sync", () => {
   it("enforces at most one SECURED per course per term (duplicate SECURED guarded)", async () => {
     const { dbMock } = makeSetStatusDb();
     // Simulate an existing SECURED bid for same course+term but different section/class
-    (dbMock.userBid.findFirst as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+    (
+      dbMock.userBid.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValueOnce({
       id: "other-secured",
     });
     const caller = makeCaller(dbMock);
@@ -286,9 +319,11 @@ describe("demoteSiblingBids — scope", () => {
     // demoteSiblingBids filters only by classId/userId/id — bidWindowId is never
     // part of the where clause, so siblings across different bid windows are
     // still demoted.
-    const updateMany = vi.fn(async (_args: { where: Record<string, unknown> }) => ({
-      count: 2,
-    }));
+    const updateMany = vi.fn(
+      async (_args: { where: Record<string, unknown> }) => ({
+        count: 2,
+      }),
+    );
     await demoteSiblingBids(
       { userBid: { updateMany } } as never,
       "u1",

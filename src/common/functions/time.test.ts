@@ -41,11 +41,11 @@ describe("parseTimePartsSafe", () => {
     expect(parseTimePartsSafe("23:59")).toEqual([23, 59]);
   });
 
-  it("returns null for non-numeric input (\"abc\")", () => {
+  it('returns null for non-numeric input ("abc")', () => {
     expect(parseTimePartsSafe("abc")).toBeNull();
   });
 
-  it("returns null for hours >= 24 (\"24:00\")", () => {
+  it('returns null for hours >= 24 ("24:00")', () => {
     expect(parseTimePartsSafe("24:00")).toBeNull();
   });
 

@@ -5,7 +5,11 @@ import { Pencil } from "lucide-react";
 import { pushHistoryAtom } from "@/modules/timetable/atoms/history";
 import { Button } from "@/common/components/button";
 import { Textarea } from "@/common/components/textarea";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/common/components/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/common/components/tooltip";
 
 interface InlineNotesEditorProps {
   initialNotes: string | null;
@@ -61,7 +65,9 @@ export function InlineNotesEditor({
         {initialNotes ? (
           <p className="text-sm whitespace-pre-line flex-1">{initialNotes}</p>
         ) : (
-          <p className="text-sm text-muted-foreground italic flex-1">No notes</p>
+          <p className="text-sm text-muted-foreground italic flex-1">
+            No notes
+          </p>
         )}
         {!disabled && (
           <Tooltip>

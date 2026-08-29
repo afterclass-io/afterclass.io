@@ -107,10 +107,13 @@ async function main() {
     data: bidResult,
   });
 
-    const safetyFactor = require("./data/22_safety_factors.json");
-  await prisma.safetyFactor.createMany({ data: safetyFactor, skipDuplicates: true });
+  const safetyFactor = require("./data/22_safety_factors.json");
+  await prisma.safetyFactor.createMany({
+    data: safetyFactor,
+    skipDuplicates: true,
+  });
 
-const bidPrediction = require("./data/21_bid_predictions.json");
+  const bidPrediction = require("./data/21_bid_predictions.json");
   await prisma.bidPrediction.createMany({
     data: bidPrediction,
     skipDuplicates: true,
@@ -121,7 +124,7 @@ const bidPrediction = require("./data/21_bid_predictions.json");
     data: hackSubmission,
   });
 
-// === Planning integration seed data ===
+  // === Planning integration seed data ===
 
   const userTimetables = require("./data/23_user_timetables.json");
   await prisma.userTimetable.createMany({
@@ -162,7 +165,8 @@ const bidPrediction = require("./data/21_bid_predictions.json");
       where: { abbrv: "SMU" },
     });
     if (smu) {
-      const hash = "$2b$10$zk1rgDGgCcuZj096Z8sIcurZhBJEE6wkcdJ2BqMiW35cGyuFLb10G";
+      const hash =
+        "$2b$10$zk1rgDGgCcuZj096Z8sIcurZhBJEE6wkcdJ2BqMiW35cGyuFLb10G";
       await prisma.users.upsert({
         where: { email: "cypress_test@smu.edu.sg" },
         update: { deprecatedPasswordDigest: hash },

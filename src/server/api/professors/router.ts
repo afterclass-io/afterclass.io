@@ -11,5 +11,5 @@ export const professorsRouter = createTRPCRouter({
   getAllByUniAbbrv,
   getByCourseCode,
   getBySlug,
-  getProfessorsByClassId
+  getProfessorsByClassId,
 });

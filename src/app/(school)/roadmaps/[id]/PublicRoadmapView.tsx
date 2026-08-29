@@ -157,7 +157,9 @@ export function PublicRoadmapView({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">{safeName}</PageTitle>
+          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">
+            {safeName}
+          </PageTitle>
           {/* Author line: who made this roadmap, their faculty, and when it
               was published */}
           <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">

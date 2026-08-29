@@ -80,10 +80,19 @@ describe("buildIcal", () => {
 
   it("reproduces the reported bug fixture: AY202627T1 skips recess Monday Oct 5 2026", () => {
     const result = buildIcal({
-      classes: [makeClass({
-        courseCode: "COMM662",
-        timings: [{ dayOfWeek: "Mon", startTime: "08:15", endTime: "11:30", venue: "SOE/SCIS2 Seminar Room 2-1" }],
-      })],
+      classes: [
+        makeClass({
+          courseCode: "COMM662",
+          timings: [
+            {
+              dayOfWeek: "Mon",
+              startTime: "08:15",
+              endTime: "11:30",
+              venue: "SOE/SCIS2 Seminar Room 2-1",
+            },
+          ],
+        }),
+      ],
       termStart: new Date("2026-08-17T00:00:00+08:00"),
       termEnd: new Date("2026-12-04T00:00:00+08:00"),
       timetableName: "Test",
@@ -136,8 +145,18 @@ describe("buildIcal", () => {
     const termEnd = new Date("2025-04-30T23:59:59+08:00");
     const cls = makeClass({
       timings: [
-        { dayOfWeek: "Monday", startTime: "08:15", endTime: "11:45", venue: "SOE/SR3-1" },
-        { dayOfWeek: "Wednesday", startTime: "12:00", endTime: "14:00", venue: "SCIS/SR2-1" },
+        {
+          dayOfWeek: "Monday",
+          startTime: "08:15",
+          endTime: "11:45",
+          venue: "SOE/SR3-1",
+        },
+        {
+          dayOfWeek: "Wednesday",
+          startTime: "12:00",
+          endTime: "14:00",
+          venue: "SCIS/SR2-1",
+        },
       ],
     });
     const result = buildIcal({
@@ -228,7 +247,12 @@ describe("buildIcal", () => {
       courseCode: "CS101",
       section: "G1",
       timings: [
-        { dayOfWeek: "Monday", startTime: "08:15", endTime: "11:45", venue: "SOE/SR3-1" },
+        {
+          dayOfWeek: "Monday",
+          startTime: "08:15",
+          endTime: "11:45",
+          venue: "SOE/SR3-1",
+        },
       ],
     });
 
@@ -237,8 +261,18 @@ describe("buildIcal", () => {
       courseCode: "MATH241",
       section: "G2",
       timings: [
-        { dayOfWeek: "Tuesday", startTime: "10:00", endTime: "12:00", venue: "SCIS/TR1" },
-        { dayOfWeek: "Thursday", startTime: "14:00", endTime: "16:00", venue: "SCIS/TR1" },
+        {
+          dayOfWeek: "Tuesday",
+          startTime: "10:00",
+          endTime: "12:00",
+          venue: "SCIS/TR1",
+        },
+        {
+          dayOfWeek: "Thursday",
+          startTime: "14:00",
+          endTime: "16:00",
+          venue: "SCIS/TR1",
+        },
       ],
       examTimings: [
         {
@@ -278,7 +312,12 @@ describe("buildIcal", () => {
       courseCode: "CS101",
       section: "G1",
       timings: [
-        { dayOfWeek: "Monday", startTime: "08:15", endTime: "11:45", venue: "SOE/SR3-1" },
+        {
+          dayOfWeek: "Monday",
+          startTime: "08:15",
+          endTime: "11:45",
+          venue: "SOE/SR3-1",
+        },
       ],
     });
 
@@ -287,7 +326,12 @@ describe("buildIcal", () => {
       courseCode: "MATH241",
       section: "G2",
       timings: [
-        { dayOfWeek: "Monday", startTime: "12:00", endTime: "14:00", venue: "SCIS/TR1" },
+        {
+          dayOfWeek: "Monday",
+          startTime: "12:00",
+          endTime: "14:00",
+          venue: "SCIS/TR1",
+        },
       ],
     });
 
@@ -361,7 +405,12 @@ describe("buildIcal", () => {
       const cls = makeClass({
         courseCode: name.toUpperCase(),
         timings: [
-          { dayOfWeek: name, startTime: "08:00", endTime: "09:00", venue: "TBD" },
+          {
+            dayOfWeek: name,
+            startTime: "08:00",
+            endTime: "09:00",
+            venue: "TBD",
+          },
         ],
       });
       const result = buildIcal({

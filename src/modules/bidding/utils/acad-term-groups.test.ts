@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  computeAcadTermGroups,
-  buildGroupIndexMap,
-} from "./acad-term-groups";
+import { computeAcadTermGroups, buildGroupIndexMap } from "./acad-term-groups";
 
 // ---------------------------------------------------------------------------
 // Helpers

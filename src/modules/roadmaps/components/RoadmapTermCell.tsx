@@ -35,6 +35,10 @@ const TERM_LABELS: Record<string, string> = {
   T3B: "Term 3B",
 };
 
+function entryKey(e: Entry): string {
+  return `${e.courseId}::${e.yearNumber}::${e.term}`;
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -57,12 +61,9 @@ export function RoadmapTermCell({
     disabled: readOnly,
   });
 
-  /** Build a key for looking up the stable sortable ID. */
-  function entryKey(e: Entry): string {
-    return `${e.courseId}::${e.yearNumber}::${e.term}`;
-  }
-
-  const sortableItems = entries.map((e) => sortableIds?.get(entryKey(e)) ?? e.courseId);
+  const sortableItems = entries.map(
+    (e) => sortableIds?.get(entryKey(e)) ?? e.courseId,
+  );
 
   return (
     <div
@@ -106,7 +107,9 @@ export function RoadmapTermCell({
               draggable={!readOnly}
               sortableId={sortableIds?.get(entryKey(entry))}
               onClick={onCourseClick ? () => onCourseClick(entry) : undefined}
-              onRemove={onRemove && !readOnly ? () => onRemove(entry) : undefined}
+              onRemove={
+                onRemove && !readOnly ? () => onRemove(entry) : undefined
+              }
             />
           ))}
         </div>

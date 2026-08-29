@@ -60,7 +60,9 @@ export function RoadmapsExplorer({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">Roadmaps</PageTitle>
+          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">
+            Roadmaps
+          </PageTitle>
           <p className="text-muted-foreground text-sm">
             Plan your degree and explore roadmaps shared by the SMU community.
           </p>

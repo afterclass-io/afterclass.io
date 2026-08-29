@@ -15,8 +15,18 @@ function makeClass(overrides: Partial<ArrangedClass> = {}): ArrangedClass {
     professorName: "Dr. Jane Doe",
     creditUnits: 1,
     timings: [
-      { dayOfWeek: "MON", startTime: "10:00", endTime: "12:00", venue: "SOE-SR2-1" },
-      { dayOfWeek: "WED", startTime: "10:00", endTime: "12:00", venue: "SOE-SR2-1" },
+      {
+        dayOfWeek: "MON",
+        startTime: "10:00",
+        endTime: "12:00",
+        venue: "SOE-SR2-1",
+      },
+      {
+        dayOfWeek: "WED",
+        startTime: "10:00",
+        endTime: "12:00",
+        venue: "SOE-SR2-1",
+      },
     ],
     examTimings: [],
     ...overrides,
@@ -32,7 +42,12 @@ const defaultClasses: ArrangedClass[] = [
     section: "G2",
     professorName: "Prof. John Smith",
     timings: [
-      { dayOfWeek: "TUE", startTime: "14:00", endTime: "17:00", venue: "SCIS-SR1" },
+      {
+        dayOfWeek: "TUE",
+        startTime: "14:00",
+        endTime: "17:00",
+        venue: "SCIS-SR1",
+      },
     ],
   }),
   makeClass({
@@ -42,8 +57,18 @@ const defaultClasses: ArrangedClass[] = [
     section: "G3",
     professorName: null,
     timings: [
-      { dayOfWeek: "THU", startTime: "08:30", endTime: "11:30", venue: "LKCSB-TR1" },
-      { dayOfWeek: "FRI", startTime: "15:30", endTime: "18:30", venue: "LKCSB-TR2" },
+      {
+        dayOfWeek: "THU",
+        startTime: "08:30",
+        endTime: "11:30",
+        venue: "LKCSB-TR1",
+      },
+      {
+        dayOfWeek: "FRI",
+        startTime: "15:30",
+        endTime: "18:30",
+        venue: "LKCSB-TR2",
+      },
     ],
   }),
 ];
@@ -53,21 +78,36 @@ const overlappingClasses: ArrangedClass[] = [
     classId: "class-001",
     courseCode: "CS101",
     timings: [
-      { dayOfWeek: "MON", startTime: "10:00", endTime: "14:00", venue: "SOE-SR2-1" },
+      {
+        dayOfWeek: "MON",
+        startTime: "10:00",
+        endTime: "14:00",
+        venue: "SOE-SR2-1",
+      },
     ],
   }),
   makeClass({
     classId: "class-002",
     courseCode: "IS201",
     timings: [
-      { dayOfWeek: "MON", startTime: "12:00", endTime: "16:00", venue: "SCIS-SR1" },
+      {
+        dayOfWeek: "MON",
+        startTime: "12:00",
+        endTime: "16:00",
+        venue: "SCIS-SR1",
+      },
     ],
   }),
   makeClass({
     classId: "class-003",
     courseCode: "MGMT101",
     timings: [
-      { dayOfWeek: "MON", startTime: "11:00", endTime: "13:00", venue: "LKCSB-TR1" },
+      {
+        dayOfWeek: "MON",
+        startTime: "11:00",
+        endTime: "13:00",
+        venue: "LKCSB-TR1",
+      },
     ],
   }),
 ];
@@ -82,7 +122,12 @@ const edgeColumnClasses: ArrangedClass[] = [
     courseName: "Monday Edge Slot",
     section: "G1",
     timings: [
-      { dayOfWeek: "MON", startTime: "09:00", endTime: "11:00", venue: "SOE-SR2-1" },
+      {
+        dayOfWeek: "MON",
+        startTime: "09:00",
+        endTime: "11:00",
+        venue: "SOE-SR2-1",
+      },
     ],
   }),
   makeClass({
@@ -91,7 +136,12 @@ const edgeColumnClasses: ArrangedClass[] = [
     courseName: "Friday Edge Slot",
     section: "G2",
     timings: [
-      { dayOfWeek: "FRI", startTime: "14:00", endTime: "16:00", venue: "LKCSB-TR1" },
+      {
+        dayOfWeek: "FRI",
+        startTime: "14:00",
+        endTime: "16:00",
+        venue: "LKCSB-TR1",
+      },
     ],
   }),
 ];
@@ -105,7 +155,12 @@ const periodAlignedClasses: ArrangedClass[] = [
     courseName: "Accounting",
     section: "G1",
     timings: [
-      { dayOfWeek: "MON", startTime: "08:15", endTime: "11:30", venue: "SOE-SR2-1" },
+      {
+        dayOfWeek: "MON",
+        startTime: "08:15",
+        endTime: "11:30",
+        venue: "SOE-SR2-1",
+      },
     ],
   }),
   makeClass({
@@ -114,7 +169,12 @@ const periodAlignedClasses: ArrangedClass[] = [
     courseName: "Finance",
     section: "G2",
     timings: [
-      { dayOfWeek: "TUE", startTime: "12:00", endTime: "15:15", venue: "SCIS-SR1" },
+      {
+        dayOfWeek: "TUE",
+        startTime: "12:00",
+        endTime: "15:15",
+        venue: "SCIS-SR1",
+      },
     ],
   }),
 ];

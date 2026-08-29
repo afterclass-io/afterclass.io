@@ -16,9 +16,7 @@ const mkEntry = (overrides: Partial<Entry> = {}): Entry => ({
   ...overrides,
 });
 
-const mkExam = (
-  overrides: Partial<ExamTiming> = {},
-): ExamTiming => ({
+const mkExam = (overrides: Partial<ExamTiming> = {}): ExamTiming => ({
   courseId: "course-1",
   date: new Date("2026-08-15"),
   startTime: "09:00",
@@ -34,8 +32,20 @@ describe("detectConflicts", () => {
   // ---- No conflicts ----
   it("returns an empty array when there are no conflicts", () => {
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1", creditUnits: 1.0 }),
-      mkEntry({ courseId: "course-2", courseCode: "ECON102", yearNumber: 1, term: "T2", creditUnits: 1.0 }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+        creditUnits: 1.0,
+      }),
+      mkEntry({
+        courseId: "course-2",
+        courseCode: "ECON102",
+        yearNumber: 1,
+        term: "T2",
+        creditUnits: 1.0,
+      }),
     ];
     expect(detectConflicts(entries)).toEqual([]);
   });
@@ -57,8 +67,18 @@ describe("detectConflicts", () => {
 
   it("detects duplicate when the same course appears twice in the same term", () => {
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1" }),
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1" }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+      }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+      }),
     ];
 
     const result = detectConflicts(entries);
@@ -73,8 +93,18 @@ describe("detectConflicts", () => {
 
   it("detects duplicate when the same course appears in a different term", () => {
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1" }),
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T2" }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+      }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T2",
+      }),
     ];
 
     const result = detectConflicts(entries);
@@ -90,8 +120,18 @@ describe("detectConflicts", () => {
   it("does NOT flag duplicate for the same course in the same term only once", () => {
     // A course appearing once in its term and never elsewhere is clean.
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1" }),
-      mkEntry({ courseId: "course-2", courseCode: "ECON102", yearNumber: 1, term: "T2" }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+      }),
+      mkEntry({
+        courseId: "course-2",
+        courseCode: "ECON102",
+        yearNumber: 1,
+        term: "T2",
+      }),
     ];
 
     const result = detectConflicts(entries);
@@ -105,8 +145,18 @@ describe("detectConflicts", () => {
 
   it("findEntryByCourse returns the entry for an existing course", () => {
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1" }),
-      mkEntry({ courseId: "course-2", courseCode: "ECON102", yearNumber: 1, term: "T2" }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+      }),
+      mkEntry({
+        courseId: "course-2",
+        courseCode: "ECON102",
+        yearNumber: 1,
+        term: "T2",
+      }),
     ];
 
     const found = findEntryByCourse(entries, "course-2");
@@ -115,7 +165,12 @@ describe("detectConflicts", () => {
 
   it("findEntryByCourse returns undefined for a course not in the roadmap", () => {
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1" }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+      }),
     ];
 
     expect(findEntryByCourse(entries, "course-999")).toBeUndefined();
@@ -127,14 +182,34 @@ describe("detectConflicts", () => {
 
   it("detects exam clash when two courses have overlapping exam times in the same term", () => {
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1" }),
-      mkEntry({ courseId: "course-2", courseCode: "ECON102", yearNumber: 1, term: "T1" }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+      }),
+      mkEntry({
+        courseId: "course-2",
+        courseCode: "ECON102",
+        yearNumber: 1,
+        term: "T1",
+      }),
     ];
 
     const examTimingsByTerm = new Map<string, ExamTiming[]>();
     examTimingsByTerm.set("1-T1", [
-      mkExam({ courseId: "course-1", date: new Date("2026-08-15"), startTime: "09:00", endTime: "11:00" }),
-      mkExam({ courseId: "course-2", date: new Date("2026-08-15"), startTime: "10:00", endTime: "12:00" }),
+      mkExam({
+        courseId: "course-1",
+        date: new Date("2026-08-15"),
+        startTime: "09:00",
+        endTime: "11:00",
+      }),
+      mkExam({
+        courseId: "course-2",
+        date: new Date("2026-08-15"),
+        startTime: "10:00",
+        endTime: "12:00",
+      }),
     ]);
 
     const result = detectConflicts(entries, examTimingsByTerm);
@@ -151,14 +226,34 @@ describe("detectConflicts", () => {
 
   it("does NOT flag exam clash when exams do not overlap", () => {
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1" }),
-      mkEntry({ courseId: "course-2", courseCode: "ECON102", yearNumber: 1, term: "T1" }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+      }),
+      mkEntry({
+        courseId: "course-2",
+        courseCode: "ECON102",
+        yearNumber: 1,
+        term: "T1",
+      }),
     ];
 
     const examTimingsByTerm = new Map<string, ExamTiming[]>();
     examTimingsByTerm.set("1-T1", [
-      mkExam({ courseId: "course-1", date: new Date("2026-08-15"), startTime: "09:00", endTime: "11:00" }),
-      mkExam({ courseId: "course-2", date: new Date("2026-08-15"), startTime: "13:00", endTime: "15:00" }),
+      mkExam({
+        courseId: "course-1",
+        date: new Date("2026-08-15"),
+        startTime: "09:00",
+        endTime: "11:00",
+      }),
+      mkExam({
+        courseId: "course-2",
+        date: new Date("2026-08-15"),
+        startTime: "13:00",
+        endTime: "15:00",
+      }),
     ]);
 
     const result = detectConflicts(entries, examTimingsByTerm);
@@ -169,8 +264,18 @@ describe("detectConflicts", () => {
 
   it("does NOT flag exam clash when examTimingsByTerm is not provided", () => {
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1" }),
-      mkEntry({ courseId: "course-2", courseCode: "ECON102", yearNumber: 1, term: "T1" }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+      }),
+      mkEntry({
+        courseId: "course-2",
+        courseCode: "ECON102",
+        yearNumber: 1,
+        term: "T1",
+      }),
     ];
 
     // No examTimingsByTerm provided
@@ -182,16 +287,36 @@ describe("detectConflicts", () => {
 
   it("does NOT flag exam clash when courses are in different terms", () => {
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1" }),
-      mkEntry({ courseId: "course-2", courseCode: "ECON102", yearNumber: 1, term: "T2" }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+      }),
+      mkEntry({
+        courseId: "course-2",
+        courseCode: "ECON102",
+        yearNumber: 1,
+        term: "T2",
+      }),
     ];
 
     const examTimingsByTerm = new Map<string, ExamTiming[]>();
     examTimingsByTerm.set("1-T1", [
-      mkExam({ courseId: "course-1", date: new Date("2026-08-15"), startTime: "09:00", endTime: "11:00" }),
+      mkExam({
+        courseId: "course-1",
+        date: new Date("2026-08-15"),
+        startTime: "09:00",
+        endTime: "11:00",
+      }),
     ]);
     examTimingsByTerm.set("1-T2", [
-      mkExam({ courseId: "course-2", date: new Date("2026-08-15"), startTime: "09:00", endTime: "11:00" }),
+      mkExam({
+        courseId: "course-2",
+        date: new Date("2026-08-15"),
+        startTime: "09:00",
+        endTime: "11:00",
+      }),
     ]);
 
     const result = detectConflicts(entries, examTimingsByTerm);
@@ -202,14 +327,34 @@ describe("detectConflicts", () => {
 
   it("detects exam clash when one exam starts exactly when another ends (boundary)", () => {
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1" }),
-      mkEntry({ courseId: "course-2", courseCode: "ECON102", yearNumber: 1, term: "T1" }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+      }),
+      mkEntry({
+        courseId: "course-2",
+        courseCode: "ECON102",
+        yearNumber: 1,
+        term: "T1",
+      }),
     ];
 
     const examTimingsByTerm = new Map<string, ExamTiming[]>();
     examTimingsByTerm.set("1-T1", [
-      mkExam({ courseId: "course-1", date: new Date("2026-08-15"), startTime: "09:00", endTime: "11:00" }),
-      mkExam({ courseId: "course-2", date: new Date("2026-08-15"), startTime: "11:00", endTime: "13:00" }),
+      mkExam({
+        courseId: "course-1",
+        date: new Date("2026-08-15"),
+        startTime: "09:00",
+        endTime: "11:00",
+      }),
+      mkExam({
+        courseId: "course-2",
+        date: new Date("2026-08-15"),
+        startTime: "11:00",
+        endTime: "13:00",
+      }),
     ]);
 
     const result = detectConflicts(entries, examTimingsByTerm);
@@ -226,8 +371,20 @@ describe("detectConflicts", () => {
 
   it("detects credit overload when sum of creditUnits in a term > 5.5", () => {
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1", creditUnits: 3.0 }),
-      mkEntry({ courseId: "course-2", courseCode: "ECON102", yearNumber: 1, term: "T1", creditUnits: 3.0 }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+        creditUnits: 3.0,
+      }),
+      mkEntry({
+        courseId: "course-2",
+        courseCode: "ECON102",
+        yearNumber: 1,
+        term: "T1",
+        creditUnits: 3.0,
+      }),
     ];
 
     const result = detectConflicts(entries);
@@ -244,8 +401,20 @@ describe("detectConflicts", () => {
 
   it("does NOT flag overload when sum ≤ 5.5 CU", () => {
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1", creditUnits: 3.0 }),
-      mkEntry({ courseId: "course-2", courseCode: "ECON102", yearNumber: 1, term: "T1", creditUnits: 2.5 }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+        creditUnits: 3.0,
+      }),
+      mkEntry({
+        courseId: "course-2",
+        courseCode: "ECON102",
+        yearNumber: 1,
+        term: "T1",
+        creditUnits: 2.5,
+      }),
     ];
 
     const result = detectConflicts(entries);
@@ -256,8 +425,20 @@ describe("detectConflicts", () => {
 
   it("detects overload at exactly 5.5 CU as NOT an overload", () => {
     const entries: Entry[] = [
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1", creditUnits: 3.0 }),
-      mkEntry({ courseId: "course-2", courseCode: "ECON102", yearNumber: 1, term: "T1", creditUnits: 2.5 }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+        creditUnits: 3.0,
+      }),
+      mkEntry({
+        courseId: "course-2",
+        courseCode: "ECON102",
+        yearNumber: 1,
+        term: "T1",
+        creditUnits: 2.5,
+      }),
     ];
 
     const result = detectConflicts(entries);
@@ -273,17 +454,51 @@ describe("detectConflicts", () => {
   it("detects multiple conflict types across different terms", () => {
     const entries: Entry[] = [
       // Year 1 T1: duplicate + overload (3+3 = 6 > 5.5)
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1", creditUnits: 3.0 }),
-      mkEntry({ courseId: "course-1", courseCode: "ACCT101", yearNumber: 1, term: "T1", creditUnits: 3.0 }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+        creditUnits: 3.0,
+      }),
+      mkEntry({
+        courseId: "course-1",
+        courseCode: "ACCT101",
+        yearNumber: 1,
+        term: "T1",
+        creditUnits: 3.0,
+      }),
       // Year 1 T2: exam clash
-      mkEntry({ courseId: "course-2", courseCode: "ECON102", yearNumber: 1, term: "T2", creditUnits: 1.0 }),
-      mkEntry({ courseId: "course-3", courseCode: "MATH103", yearNumber: 1, term: "T2", creditUnits: 1.0 }),
+      mkEntry({
+        courseId: "course-2",
+        courseCode: "ECON102",
+        yearNumber: 1,
+        term: "T2",
+        creditUnits: 1.0,
+      }),
+      mkEntry({
+        courseId: "course-3",
+        courseCode: "MATH103",
+        yearNumber: 1,
+        term: "T2",
+        creditUnits: 1.0,
+      }),
     ];
 
     const examTimingsByTerm = new Map<string, ExamTiming[]>();
     examTimingsByTerm.set("1-T2", [
-      mkExam({ courseId: "course-2", date: new Date("2026-08-15"), startTime: "09:00", endTime: "11:00" }),
-      mkExam({ courseId: "course-3", date: new Date("2026-08-15"), startTime: "10:00", endTime: "12:00" }),
+      mkExam({
+        courseId: "course-2",
+        date: new Date("2026-08-15"),
+        startTime: "09:00",
+        endTime: "11:00",
+      }),
+      mkExam({
+        courseId: "course-3",
+        date: new Date("2026-08-15"),
+        startTime: "10:00",
+        endTime: "12:00",
+      }),
     ]);
 
     const result = detectConflicts(entries, examTimingsByTerm);

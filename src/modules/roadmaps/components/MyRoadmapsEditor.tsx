@@ -20,8 +20,10 @@ import {
 } from "@/modules/roadmaps/functions/save-with-retry";
 import { findEntryByCourse } from "@/modules/roadmaps/functions/conflicts";
 import { extractAcadTermCode } from "@/modules/roadmaps/functions/term-mapping";
-import { roadmapPanelWidthsAtom } from "@/modules/roadmaps/atoms/roadmap";
-import { hasSeenRoadmapsTourAtom } from "@/modules/roadmaps/atoms/roadmap";
+import {
+  roadmapPanelWidthsAtom,
+  hasSeenRoadmapsTourAtom,
+} from "@/modules/roadmaps/atoms/roadmap";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
 import { RoadmapList } from "@/modules/roadmaps/components/RoadmapList";
 import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
@@ -205,7 +207,7 @@ export function MyRoadmapsEditor() {
   // Matriculation terms in chronological order (oldest first).
   const matricTermOptions = useMemo(
     () =>
-      [...(acadTermsData ?? [])].sort(
+      [...(acadTermsData ?? [])].toSorted(
         (a, b) => a.startDt.getTime() - b.startDt.getTime(),
       ),
     [acadTermsData],
@@ -404,9 +406,7 @@ export function MyRoadmapsEditor() {
       getSnapshot: () => utils.roadmaps.listMine.getData(),
       applyOptimistic: ({ roadmapId, facultyId }) =>
         utils.roadmaps.listMine.setData(undefined, (old) =>
-          old?.map((r) =>
-            r.id === roadmapId ? { ...r, facultyId } : r,
-          ),
+          old?.map((r) => (r.id === roadmapId ? { ...r, facultyId } : r)),
         ),
       restoreSnapshot: (prev) =>
         utils.roadmaps.listMine.setData(undefined, prev),

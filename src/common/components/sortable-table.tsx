@@ -16,12 +16,13 @@ interface SortableTableProps<T> {
 
 // Refine the generic constraint for T.
 // T must be a record with string or number values for the sortable keys.
-export function SortableTable<T extends Record<string, string | number | null | undefined>>({
-  data,
-  columns,
-}: SortableTableProps<T>) {
+export function SortableTable<
+  T extends Record<string, string | number | null | undefined>,
+>({ data, columns }: SortableTableProps<T>) {
   const [sortColumn, setSortColumn] = React.useState<keyof T | null>(null);
-  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("asc");
+  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(
+    "asc",
+  );
 
   const handleSort = (key: keyof T) => {
     if (sortColumn === key) {
@@ -47,7 +48,9 @@ export function SortableTable<T extends Record<string, string | number | null | 
 
       // The key is now guaranteed to have string or number values.
       if (typeof aValue === "string" && typeof bValue === "string") {
-        return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        return sortDirection === "asc"
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
       }
 
       if (typeof aValue === "number" && typeof bValue === "number") {
@@ -80,9 +83,12 @@ export function SortableTable<T extends Record<string, string | number | null | 
               >
                 <div className="flex items-center gap-1">
                   {column.title}
-                  {sortColumn === column.key && (
-                    sortDirection === "asc" ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-                  )}
+                  {sortColumn === column.key &&
+                    (sortDirection === "asc" ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    ))}
                 </div>
               </th>
             ))}
@@ -99,7 +105,9 @@ export function SortableTable<T extends Record<string, string | number | null | 
               {columns.map((column) => (
                 <td
                   key={column.key as string}
-                  className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0")}
+                  className={cn(
+                    "p-4 align-middle [&:has([role=checkbox])]:pr-0",
+                  )}
                 >
                   {column.render ? column.render(row) : String(row[column.key])}
                 </td>

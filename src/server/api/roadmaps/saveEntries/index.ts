@@ -63,7 +63,10 @@ export const saveEntries = protectedProcedure
           where: { roadmapId: input.roadmapId },
         });
         await tx.userRoadmapEntry.createMany({
-          data: input.entries.map((e) => ({ ...e, roadmapId: input.roadmapId })),
+          data: input.entries.map((e) => ({
+            ...e,
+            roadmapId: input.roadmapId,
+          })),
         });
         // Bump updatedAt so concurrent editors' version checks fail fast, and
         // return it so the client can keep its version token in sync.
