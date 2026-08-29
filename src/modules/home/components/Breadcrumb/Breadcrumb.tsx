@@ -155,6 +155,18 @@ export const HomeBreadcrumb = (
       break;
     }
 
+    case "assistant": {
+      elements.push({ label: "Assistant" });
+      isSuccess = true;
+      break;
+    }
+
+    case "mcp": {
+      elements.push({ label: "MCP" });
+      isSuccess = true;
+      break;
+    }
+
     case "bidding": {
       switch (pathSegments[1]) {
         case "history": {

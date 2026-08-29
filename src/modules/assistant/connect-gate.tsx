@@ -12,7 +12,7 @@ export function ConnectGate({ reason }: { reason: "quota" | "spend" }) {
         Connect your own AI agent (Claude, ChatGPT, or Gemini) to keep using
         afterclass.io on your own AI credits - unlimited and always available.
       </p>
-      <a href="/settings/agents/connect">Connect your agent</a>
+      <a href="/mcp">Connect your agent</a>
     </div>
   );
 }

@@ -6,6 +6,16 @@ import { MessageSquareIcon, PencilIcon, PlusIcon, TrashIcon } from "lucide-react
 import { useChatStore } from "./chat-store";
 import { cn } from "@/common/functions/index";
 import { Button } from "@/common/components/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/common/components/alert-dialog";
 
 export function SessionList({
   activeSessionId,
@@ -45,6 +55,8 @@ export function SessionList({
     await remove(id);
     setConfirmingId(null);
   };
+
+  const confirmingSession = sessions?.find((s) => s.id === confirmingId) ?? null;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2" data-test="session-list">
@@ -97,32 +109,6 @@ export function SessionList({
                   className="min-w-0 flex-1 rounded border bg-background px-1.5 py-0.5 text-sm outline-none"
                 />
               </span>
-            ) : confirmingId === s.id ? (
-              <div
-                role="alertdialog"
-                aria-label={`Delete ${s.title}?`}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") cancelDelete();
-                }}
-                className="flex min-w-0 flex-1 items-center gap-1.5 rounded bg-destructive/10 px-2 py-1 text-left"
-              >
-                <span className="min-w-0 flex-1 truncate text-xs">Delete {s.title}?</span>
-                <button
-                  type="button"
-                  autoFocus
-                  onClick={() => void confirmDelete(s.id)}
-                  className="shrink-0 rounded bg-destructive px-2 py-0.5 text-xs font-semibold text-white hover:opacity-90"
-                >
-                  Delete
-                </button>
-                <button
-                  type="button"
-                  onClick={cancelDelete}
-                  className="shrink-0 rounded px-2 py-0.5 text-xs hover:bg-muted"
-                >
-                  Cancel
-                </button>
-              </div>
             ) : (
               <button
                 type="button"
@@ -134,7 +120,7 @@ export function SessionList({
                 <span className="min-w-0 flex-1 truncate">{s.title}</span>
               </button>
             )}
-            {editingId === s.id || confirmingId === s.id ? null : (
+            {editingId === s.id ? null : (
               <>
                 <button
                   type="button"
@@ -164,6 +150,33 @@ export function SessionList({
       <p className="text-muted-foreground border-t pt-2 text-[11px]">
         Chat history is saved on this device only.
       </p>
+
+      <AlertDialog
+        open={confirmingId !== null}
+        onOpenChange={(open) => {
+          if (!open) cancelDelete();
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete chat?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete &quot;{confirmingSession?.title}&quot;. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmingId) void confirmDelete(confirmingId);
+              }}
+              data-test="assistant-session-delete-confirm"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

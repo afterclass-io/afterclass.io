@@ -47,14 +47,20 @@ export function QuotaAlertBar({
     <div
       role="status"
       className={cn(
-        "flex items-center justify-between gap-2 px-3 py-1.5 text-xs animate-in fade-in slide-in-from-bottom-1 duration-150",
+        "animate-in fade-in slide-in-from-bottom-1 flex items-center justify-between gap-2 px-3 py-1.5 text-xs duration-150",
         alert.level === "critical" ? "bg-red-500/10" : "bg-amber-500/10",
       )}
     >
-      <p className={cn(alert.level === "critical" ? "text-red-700 dark:text-red-400" : "text-amber-700 dark:text-amber-400")}>
+      <p
+        className={cn(
+          alert.level === "critical"
+            ? "text-red-700 dark:text-red-400"
+            : "text-amber-700 dark:text-amber-400",
+        )}
+      >
         {message}{" "}
         <a
-          href="/settings/agents/connect"
+          href="/mcp"
           className="font-semibold underline underline-offset-2"
           data-umami-event="assistant-quota-alert-connect"
         >
@@ -67,7 +73,9 @@ export function QuotaAlertBar({
         onClick={dismiss}
         className={cn(
           "rounded p-0.5",
-          alert.level === "critical" ? "hover:bg-red-500/20" : "hover:bg-amber-500/20",
+          alert.level === "critical"
+            ? "hover:bg-red-500/20"
+            : "hover:bg-amber-500/20",
         )}
       >
         <XIcon className="size-3.5" />

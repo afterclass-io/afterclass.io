@@ -2,7 +2,7 @@
 
 export function TypingIndicator() {
   return (
-    <div className="flex items-center gap-1 px-1 py-1" role="status" aria-label="Assistant is typing">
+    <div className="flex items-center gap-1 px-6 py-1" role="status" aria-label="Assistant is typing">
       {[0, 1, 2].map((i) => (
         <span
           key={i}

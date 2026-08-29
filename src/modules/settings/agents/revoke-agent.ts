@@ -24,4 +24,5 @@ export async function revokeAgent(formData: FormData): Promise<void> {
 
   await revokeUserGrant(parsed.data.clientId, token);
   revalidatePath("/settings/agents");
+  revalidatePath("/mcp");
 }
