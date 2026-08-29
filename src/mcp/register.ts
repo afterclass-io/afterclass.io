@@ -66,9 +66,9 @@ export function makeHandler(
     }
     try {
       const result = await run(ctx, args);
-      if (tool.widgetName && tool.toWidgetProps && !result.isError) {
+      if (tool.widgetName && (result.widgetProps ?? tool.toWidgetProps) && !result.isError) {
         return widget({
-          props: tool.toWidgetProps(result),
+          props: result.widgetProps ?? tool.toWidgetProps!(result),
           output: toMcpUseResponse(result),
         });
       }

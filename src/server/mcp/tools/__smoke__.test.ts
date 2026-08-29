@@ -29,12 +29,12 @@ describe("tool schema & types smoke", () => {
     expect((j.content[0] as { text: string }).text).toContain("1");
   });
 
-  it("catalog keeps the documented 39 tools (personal account/shared-token tools removed): 20 readOnly + 19 write", () => {
-    expect(allTools).toHaveLength(39);
+  it("catalog keeps the documented 40 tools (personal account/shared-token tools removed): 20 readOnly + 20 write", () => {
+    expect(allTools).toHaveLength(40);
     // Every tool except `recommend-bid-amount` (a read-only recommendation
     // that lives under write/ for historical reasons) is non-readOnly.
     const writeTools = allTools.filter((t) => !t.readOnly);
-    expect(writeTools).toHaveLength(19);
+    expect(writeTools).toHaveLength(20);
     expect(writeTools.some((t) => t.name === "recommend-bid-amount")).toBe(
       false,
     );
