@@ -20,6 +20,7 @@ import {
   myRoadmapsTool,
   myTimetablesTool,
 } from "./read/mydata";
+import { myBidPlanTool } from "./read/bid-plan";
 import { getMyTimetableDetailTool } from "./read/timetable-detail";
 import { getMyRoadmapTool, getPublicRoadmapTool } from "./read/roadmap-detail";
 import { planSemesterTool } from "./read/plan-semester";
@@ -66,6 +67,7 @@ export const allTools: McpTool[] = [
   myTimetablesTool,
   getMyTimetableDetailTool,
   myBidsTool,
+  myBidPlanTool,
   myBudgetTool,
   myRoadmapsTool,
   browsePublicRoadmapsTool,

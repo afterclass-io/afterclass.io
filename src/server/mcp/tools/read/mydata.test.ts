@@ -108,6 +108,28 @@ describe("my-data read tools", () => {
     expect(result.isError).toBe(true);
   });
 
+  it("my-bids filters by acadTermId when provided", async () => {
+    const fn = vi.fn().mockResolvedValue([
+      { id: "b1", bidAmount: 25, status: "PLANNED", bidWindow: { acadTermId: "t1" }, courseCode: "ACC101" },
+      { id: "b2", bidAmount: 30, status: "SECURED", bidWindow: { acadTermId: "t2" }, courseCode: "FIN201" },
+    ]);
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
+    const result = await myBidsTool.run(ctx, { acadTermId: "t1" });
+    const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0]!.id).toBe("b1");
+  });
+
+  it("my-bids without acadTermId returns everything (unchanged behavior)", async () => {
+    const fn = vi.fn().mockResolvedValue([
+      { id: "b1", bidWindow: { acadTermId: "t1" } },
+      { id: "b2", bidWindow: { acadTermId: "t2" } },
+    ]);
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
+    const result = await myBidsTool.run(ctx, {});
+    expect(JSON.parse(result.content[0]!.text)).toHaveLength(2);
+  });
+
   it("my-bid-budget calls userBids.getBudget", async () => {
     const fn = vi.fn().mockResolvedValue(null);
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getBudget: fn }) };

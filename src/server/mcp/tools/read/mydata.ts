@@ -29,14 +29,16 @@ export const myTimetablesTool: McpTool<typeof myTimetablesSchema> = {
   },
 };
 
-const myBidsSchema = z.object({});
+const myBidsSchema = z.object({
+  acadTermId: z.string().optional().describe("Filter to one academic term; omit for all terms"),
+});
 
 export const myBidsTool: McpTool<typeof myBidsSchema> = {
   name: "my-bids",
   description: "List the user's own saved bids.",
   inputSchema: myBidsSchema,
   readOnly: true,
-  run: async ({ caller }) => {
+  run: async ({ caller }, { acadTermId }) => {
     try {
       const bids = await caller.userBids.listMine();
       // my-bids is exposed over MCP: strip the free-text `notes` field (user
@@ -47,7 +49,12 @@ export const myBidsTool: McpTool<typeof myBidsSchema> = {
         const { notes: _notes, ...rest } = bid;
         return rest;
       });
-      return jsonText(scrubbed);
+      const filtered = acadTermId
+        ? scrubbed.filter(
+            (b) => (b as { bidWindow?: { acadTermId?: string } }).bidWindow?.acadTermId === acadTermId,
+          )
+        : scrubbed;
+      return jsonText(filtered);
     } catch (e) {
       return errText(errorMessage(e));
     }
