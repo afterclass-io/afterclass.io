@@ -70,6 +70,48 @@ describe("get-my-roadmap", () => {
     expect(parsed.roadmap.shareToken).toBeUndefined();
     expect(parsed.roadmap.id).toBe("r1");
   });
+
+  it("exposes a roadmap-view widget whose props normalize the { roadmap, entries } output", async () => {
+    // Shape mirrors caller.roadmaps.getMine: entries carry a nested `course`
+    // with { code, name, creditUnits, description }.
+    const fn = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "My Plan", matricTermId: "t1" },
+      entries: [
+        {
+          id: "e1",
+          courseId: "c1",
+          yearNumber: 1,
+          term: "T1",
+          course: {
+            code: "COR-STAT1202",
+            name: "Stats",
+            creditUnits: 1,
+            description: "desc",
+          },
+        },
+      ],
+    });
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsGetMine: fn }) };
+    const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
+    expect(getMyRoadmapTool.widgetName).toBe("roadmap-view");
+    const props = getMyRoadmapTool.toWidgetProps?.(res);
+    expect(props).toEqual({
+      roadmapId: "r1",
+      name: "My Plan",
+      isPublic: false,
+      owner: null,
+      voteCount: null,
+      entries: [
+        {
+          yearNumber: 1,
+          term: "T1",
+          courseCode: "COR-STAT1202",
+          courseName: "Stats",
+          creditUnits: 1,
+        },
+      ],
+    });
+  });
 });
 
 describe("get-public-roadmap", () => {
@@ -102,5 +144,56 @@ describe("get-public-roadmap", () => {
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsGetById: fn }) };
     const res = await getPublicRoadmapTool.run(ctx, { roadmapId: "nope" });
     expect(res.isError).toBe(true);
+  });
+
+  it("exposes a roadmap-view widget whose props normalize owner + voteCount", async () => {
+    // Shape mirrors caller.roadmaps.getById: { roadmap, entries, ownerUsername,
+    // ownerFaculty, voteCount, viewerHasVoted }; entries nest `course`.
+    const fn = vi.fn().mockResolvedValue({
+      roadmap: {
+        id: "r9",
+        name: "Senior CS",
+        user: { username: "senior123" },
+      },
+      entries: [
+        {
+          id: "e1",
+          courseId: "c9",
+          yearNumber: 2,
+          term: "T1",
+          sortOrder: 0,
+          course: {
+            code: "CS201",
+            name: "Data Structures",
+            creditUnits: 1,
+            description: "desc",
+          },
+        },
+      ],
+      ownerUsername: "senior123",
+      ownerFaculty: { name: "School of Computing", acronym: "SCIS" },
+      voteCount: 42,
+      viewerHasVoted: false,
+    });
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsGetById: fn }) };
+    const res = await getPublicRoadmapTool.run(ctx, { roadmapId: "r9" });
+    expect(getPublicRoadmapTool.widgetName).toBe("roadmap-view");
+    const props = getPublicRoadmapTool.toWidgetProps?.(res);
+    expect(props).toEqual({
+      roadmapId: "r9",
+      name: "Senior CS",
+      isPublic: true,
+      owner: "senior123",
+      voteCount: 42,
+      entries: [
+        {
+          yearNumber: 2,
+          term: "T1",
+          courseCode: "CS201",
+          courseName: "Data Structures",
+          creditUnits: 1,
+        },
+      ],
+    });
   });
 });
