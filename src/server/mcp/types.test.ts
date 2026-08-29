@@ -29,4 +29,9 @@ describe("mcp result helpers", () => {
     expect(errorMessage("raw")).toBe("raw");
     expect(errorMessage({})).toContain("[object Object]");
   });
+
+  it("ToolResult supports optional widgetProps alongside text content", () => {
+    const r: import("./types").ToolResult = { content: [{ type: "text", text: "shown in widget" }], widgetProps: { feedUrl: "https://x/api/ical/tok" } };
+    expect(r.widgetProps?.feedUrl).toContain("/api/ical/");
+  });
 });

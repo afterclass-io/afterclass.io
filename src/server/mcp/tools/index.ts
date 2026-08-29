@@ -48,6 +48,7 @@ import {
 } from "./write/roadmap-settings";
 import { setBidStatusTool } from "./write/bid-status";
 import { recommendBidAmountTool } from "./write/recommend";
+import { getTimetableCalendarLinkTool } from "./write/calendar-link";
 
 export const allTools: McpTool[] = [
   // read - courses / classes / professors
@@ -79,6 +80,7 @@ export const allTools: McpTool[] = [
   addClassToTimetableTool,
   removeClassFromTimetableTool,
   setTimetableVisibilityTool,
+  getTimetableCalendarLinkTool,
   // write - bids
   upsertBidTool,
   removeBidTool,

@@ -15,6 +15,10 @@ export interface ToolContext {
 export interface ToolResult {
   content: Array<{ type: "text"; text: string }>;
   isError?: boolean;
+  /** Widget-only props channel. When present, register.ts passes these to the
+   *  widget INSTEAD of toWidgetProps(result), so bearer secrets (e.g. iCal
+   *  URLs) never enter model-visible text. */
+  widgetProps?: Record<string, unknown>;
 }
 
 /** A single AI-visible skill. `run` must never throw; return errText instead. */
