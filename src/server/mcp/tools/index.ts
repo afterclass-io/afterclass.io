@@ -13,6 +13,7 @@ import {
   getCourseReviewsTool,
   listAcadTermsTool,
 } from "./read/catalog";
+import { getContributeInfoTool } from "./read/contribute";
 import {
   browsePublicRoadmapsTool,
   myBidsTool,
@@ -63,6 +64,7 @@ export const allTools: McpTool[] = [
   getBidResultsTool,
   listAcadTermsTool,
   getBidWindowsTool,
+  getContributeInfoTool,
   // read - own data
   myTimetablesTool,
   getMyTimetableDetailTool,
