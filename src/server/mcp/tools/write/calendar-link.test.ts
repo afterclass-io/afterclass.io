@@ -53,4 +53,20 @@ describe("get-timetable-calendar-link", () => {
     const result = await getTimetableCalendarLinkTool.run(ctx, { timetableId: "tt1", enableLinkSharing: false });
     expect(result.isError).toBe(true);
   });
+
+  it("does NOT flip visibility when probe fails with a non-private error even if enableLinkSharing=true", async () => {
+    const tokenFn = vi.fn().mockRejectedValue(new Error("boom"));
+    const visFn = vi.fn().mockResolvedValue({});
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getOrCreateIcalToken: tokenFn, setVisibility: visFn }),
+    };
+    const result = await getTimetableCalendarLinkTool.run(ctx, {
+      timetableId: "tt1",
+      enableLinkSharing: true,
+    });
+    expect(visFn).not.toHaveBeenCalled();
+    expect(result.isError).toBe(true);
+    expect(result.content[0]!.text).toContain("boom");
+  });
 });
