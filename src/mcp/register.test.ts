@@ -6,27 +6,18 @@ const { fakeRunA, fakeRunB } = vi.hoisted(() => ({
   fakeRunB: vi.fn() as Mock,
 }));
 
-// register.ts holds ONE module-scoped write rate limiter shared by all write
-// tools (created once at import time). To keep tests isolated we replace the
-// factory with one that returns a controllable limiter; beforeEach resets it
-// so no test inherits another test's consumed write budget.
-const { createWriteRateLimiterMock, writeRateLimiterMock } = vi.hoisted(() => {
-  const writeRateLimiterMock = {
-    check: vi.fn(() => ({ ok: true, remaining: 10, retryAfterMs: 0 })),
-    reset: vi.fn(),
-  };
-  return {
-    writeRateLimiterMock,
-    createWriteRateLimiterMock: vi.fn(() => writeRateLimiterMock),
-  };
-});
+const { checkAndIncrementMock, getChatConfigMock } = vi.hoisted(() => ({
+  checkAndIncrementMock: vi.fn() as Mock,
+  getChatConfigMock: vi.fn() as Mock,
+}));
 
-// Keep the real withWriteRateLimit wrapping logic; only swap the limiter
-// factory so the instance is reachable and resettable from the test.
-vi.mock("@/server/mcp/rate-limit", async (importOriginal) => {
-  const mod = await importOriginal<typeof import("@/server/mcp/rate-limit")>();
-  return { ...mod, createWriteRateLimiter: createWriteRateLimiterMock };
-});
+vi.mock("@/server/assistant/ratelimit", () => ({
+  checkAndIncrement: checkAndIncrementMock,
+}));
+vi.mock("@/server/ecfg/chat", () => ({
+  getChatConfig: getChatConfigMock,
+  getRateLimitWindowMinutes: () => 1,
+}));
 
 vi.mock("@/server/mcp/tools", () => ({
   allTools: [
@@ -39,7 +30,6 @@ vi.mock("@/server/mcp/types", () => ({
   errText: (text: string) => ({ content: [{ type: "text", text }], isError: true }),
   errorMessage: (e: unknown) => (e instanceof Error ? e.message : String(e)),
 }));
-// register.ts now imports ./user → @/server/mcp/caller → server-only chain.
 vi.mock("server-only", () => ({}));
 const { buildToolContextMock } = vi.hoisted(() => ({ buildToolContextMock: vi.fn() as Mock }));
 vi.mock("./user", () => ({
@@ -52,8 +42,6 @@ import { errText, okText } from "@/server/mcp/types";
 describe("toMcpUseResponse", () => {
   it("maps an ok result to a text response", () => {
     const r = toMcpUseResponse(okText("hello"));
-    // mcp-use v1.34 text() also adds _meta: { mimeType: "text/plain" }, so
-    // assert on content rather than exact shape.
     expect(r).toMatchObject({ content: [{ type: "text", text: "hello" }] });
   });
   it("maps an isError result to an error response", () => {
@@ -64,13 +52,12 @@ describe("toMcpUseResponse", () => {
 });
 
 describe("registerMcpUseTools", () => {
-  const ctx = { user: "u" as never, caller: {} as never };
+  const ctx = { user: { id: "u1" } as never, caller: {} as never };
 
   beforeEach(() => {
-    // Isolation: the limiter is module-scoped in register.ts, so clear its
-    // state before every test (fresh bucket, no cross-test leakage).
-    writeRateLimiterMock.check.mockClear();
-    writeRateLimiterMock.reset.mockClear();
+    vi.clearAllMocks();
+    getChatConfigMock.mockResolvedValue({ mcpRateLimitPerMinute: 60 });
+    checkAndIncrementMock.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
   });
 
   it("registers every tool with its name, description and schema", () => {

@@ -14,7 +14,15 @@ export const getMyRoadmapTool: McpTool<typeof getMyRoadmapSchema> = {
   readOnly: true,
   run: async ({ caller }, { roadmapId }) => {
     try {
-      return jsonText(await caller.roadmaps.getMine({ roadmapId }));
+      const data = (await caller.roadmaps.getMine({ roadmapId })) as {
+        roadmap: Record<string, unknown>;
+        entries: unknown;
+      };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- shareToken must not reach the LLM
+      const { shareToken: _s, ...roadmapRest } = data.roadmap as Record<string, unknown> & {
+        shareToken?: unknown;
+      };
+      return jsonText({ roadmap: roadmapRest, entries: data.entries });
     } catch (e) {
       return errText(errorMessage(e));
     }

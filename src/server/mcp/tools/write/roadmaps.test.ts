@@ -110,4 +110,13 @@ describe("roadmap write tools", () => {
     const result = await setRoadmapVisibilityTool.run(ctx, { roadmapId: "r1", visibility: "PUBLIC" });
     expect(result.isError).toBe(true);
   });
+
+  it("set-roadmap-visibility strips shareToken bearer token from the output", async () => {
+    const fn = vi.fn().mockResolvedValue({ visibility: "PUBLIC", shareToken: "secret-tok" });
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ sharingSetVisibility: fn }) };
+    const result = await setRoadmapVisibilityTool.run(ctx, { roadmapId: "r1", visibility: "PUBLIC" });
+    const parsed = JSON.parse(result.content[0]!.text) as Record<string, unknown>;
+    expect(parsed.shareToken).toBeUndefined();
+    expect(parsed.visibility).toBe("PUBLIC");
+  });
 });

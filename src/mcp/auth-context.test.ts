@@ -5,6 +5,13 @@ const { buildToolContext } = vi.hoisted(() => ({ buildToolContext: vi.fn() as Mo
 vi.mock("./user", () => ({ buildToolContext }));
 
 vi.mock("@/server/mcp/tools", () => ({ allTools: [] }));
+vi.mock("@/server/assistant/ratelimit", () => ({
+  checkAndIncrement: vi.fn().mockResolvedValue({ ok: true, retryAfterSeconds: 0 }),
+}));
+vi.mock("@/server/ecfg/chat", () => ({
+  getChatConfig: vi.fn().mockResolvedValue({ mcpRateLimitPerMinute: 60 }),
+  getRateLimitWindowMinutes: () => 1,
+}));
 
 import { makeHandler } from "./register";
 
