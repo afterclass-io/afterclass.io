@@ -22,7 +22,7 @@ describe("buildCalendarLinks", () => {
     const links = buildCalendarLinks("https://afterclass.io", "tok123");
     expect(links.googleSubscribeUrl).toBe(
       "https://calendar.google.com/calendar/r?cid=" +
-        encodeURIComponent("webcal://afterclass.io/api/ical/tok123"),
+        encodeURIComponent("https://afterclass.io/api/ical/tok123"),
     );
     expect(links.appleSubscribeUrl).toBe(
       "webcal://afterclass.io/api/ical/tok123",
