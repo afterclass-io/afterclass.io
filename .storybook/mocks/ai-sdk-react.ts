@@ -72,7 +72,9 @@ export const useChat = <UI_MESSAGE extends UIMessage = UIMessage>(
 
   return {
     id: "mock-chat",
-    messages: (chatState.messages ?? []) as UI_MESSAGE[],
+    messages: (Array.isArray(chatState.messages)
+      ? chatState.messages
+      : []) as UI_MESSAGE[],
     setMessages: () => undefined,
     error: chatState.error,
     sendMessage: async () => undefined,

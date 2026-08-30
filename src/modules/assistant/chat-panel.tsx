@@ -20,8 +20,16 @@ export type ChatPanelProps = {
   onGate: (gate: ChatGate) => void;
 };
 
-export function ChatPanel({ quota, remaining, hasConnectedAgent, onGate }: ChatPanelProps) {
-  const transport = useMemo(() => new DefaultChatTransport({ api: "/api/chat" }), []);
+export function ChatPanel({
+  quota,
+  remaining,
+  hasConnectedAgent,
+  onGate,
+}: ChatPanelProps) {
+  const transport = useMemo(
+    () => new DefaultChatTransport({ api: "/api/chat" }),
+    [],
+  );
 
   const hydrate = useChatStore((s) => s.hydrate);
 
@@ -44,9 +52,13 @@ export function ChatPanel({ quota, remaining, hasConnectedAgent, onGate }: ChatP
   // activeSessionId, so a /assistant thread can never be silently overwritten
   // after client-side navigation (clobber fix). A page reload yields a new
   // session; ChatPage resumes the shared active session on next visit.
-  usePersistSession({ status: chat.status, messages: chat.messages, keepOwnSession: true });
+  usePersistSession({
+    status: chat.status,
+    messages: chat.messages,
+    keepOwnSession: true,
+  });
 
-  const hasMessages = chat.messages.length > 0;
+  const hasMessages = Array.isArray(chat.messages) && chat.messages.length > 0;
 
   // chat.error is a single global state that only reflects the LAST request;
   // a new send clears it, so the bubble naturally maps to the current failed
@@ -55,9 +67,12 @@ export function ChatPanel({ quota, remaining, hasConnectedAgent, onGate }: ChatP
   const showError = shouldShowChatError(chat.error);
 
   const retry = useCallback(() => {
-    const lastUser = [...chat.messages].reverse().find((m) => m.role === "user");
+    if (!Array.isArray(chat.messages)) return;
+    const lastUser = [...chat.messages]
+      .reverse()
+      .find((m) => m.role === "user");
     if (!lastUser) return;
-    const text = lastUser.parts
+    const text = (Array.isArray(lastUser.parts) ? lastUser.parts : [])
       .filter((p) => p.type === "text")
       .map((p) => ("text" in p ? p.text : ""))
       .join("");
@@ -71,13 +86,19 @@ export function ChatPanel({ quota, remaining, hasConnectedAgent, onGate }: ChatP
       <div className="min-h-0 flex-1 overflow-y-auto">
         {!hasMessages ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-4">
-            <h1 className="text-2xl font-semibold">How can I help you today?</h1>
-            <WelcomeSuggestions onPick={(prompt) => chat.sendMessage({ text: prompt })} />
+            <h1 className="text-2xl font-semibold">
+              How can I help you today?
+            </h1>
+            <WelcomeSuggestions
+              onPick={(prompt) => chat.sendMessage({ text: prompt })}
+            />
           </div>
         ) : (
           <MessageList messages={chat.messages} />
         )}
-        {showError && <AssistantErrorMessage error={chat.error} onRetry={retry} />}
+        {showError && (
+          <AssistantErrorMessage error={chat.error} onRetry={retry} />
+        )}
         {chat.status === "submitted" && <TypingIndicator />}
       </div>
       <FollowUpSuggestions
@@ -86,8 +107,16 @@ export function ChatPanel({ quota, remaining, hasConnectedAgent, onGate }: ChatP
         isRunning={chat.status === "streaming" || chat.status === "submitted"}
         lastTurnFailed={showError}
       />
-      <QuotaAlertBar remaining={remaining} quota={quota} hasConnectedAgent={hasConnectedAgent} />
-      <Composer sendMessage={chat.sendMessage} status={chat.status} stop={chat.stop} />
+      <QuotaAlertBar
+        remaining={remaining}
+        quota={quota}
+        hasConnectedAgent={hasConnectedAgent}
+      />
+      <Composer
+        sendMessage={chat.sendMessage}
+        status={chat.status}
+        stop={chat.stop}
+      />
     </div>
   );
 }

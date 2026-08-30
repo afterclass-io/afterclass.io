@@ -33,12 +33,16 @@ export function usePersistSession({
   const ownSessionId = useRef<string | null>(null);
 
   useEffect(() => {
-    const wasRunning = prevStatus.current === "streaming" || prevStatus.current === "submitted";
+    const wasRunning =
+      prevStatus.current === "streaming" || prevStatus.current === "submitted";
     const running = status === "streaming" || status === "submitted";
     prevStatus.current = status;
     if (!wasRunning || running) return;
+    if (!Array.isArray(messages)) return;
 
-    const snapshot = messages.filter((m) => m.parts.length > 0);
+    const snapshot = messages.filter(
+      (m) => Array.isArray(m.parts) && m.parts.length > 0,
+    );
     if (snapshot.length === 0) return;
 
     void (async () => {
