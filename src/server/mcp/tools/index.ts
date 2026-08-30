@@ -52,6 +52,7 @@ import {
 import { setBidStatusTool } from "./write/bid-status";
 import { recommendBidAmountTool } from "./write/recommend";
 import { getTimetableCalendarLinkTool } from "./write/calendar-link";
+import { exploreBidOptionsTool } from "./read/explore-bid-options";
 
 export const allTools: McpTool[] = [
   // read - courses / classes / professors
@@ -104,4 +105,5 @@ export const allTools: McpTool[] = [
   copyPublicRoadmapTool,
   // read-only recommendation
   recommendBidAmountTool,
+  exploreBidOptionsTool,
 ];
