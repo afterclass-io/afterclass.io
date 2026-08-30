@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import BidExplorer, { widgetMetadata } from "./widget";
@@ -19,6 +19,37 @@ function setMcpParams(toolOutput: unknown, toolInput: unknown = {}) {
 function renderBidExplorer(toolOutput: unknown) {
   setMcpParams(toolOutput);
   return render(<BidExplorer />);
+}
+
+/**
+ * Capture `callTool` invocations: in the jsdom harness `window.parent ===
+ * window`, and mcp-use's bridge delivers tool calls as JSON-RPC `tools/call`
+ * requests via `window.parent.postMessage`. We record each request's params
+ * and immediately post back a result so the bridge promise resolves (no
+ * dangling request timeouts).
+ */
+function captureToolCalls() {
+  const calls: Array<{ name: string; arguments: Record<string, unknown> }> = [];
+  const listener = (event: MessageEvent) => {
+    const msg = event.data as {
+      jsonrpc?: string;
+      id?: number;
+      method?: string;
+      params?: { name: string; arguments: Record<string, unknown> };
+    };
+    if (msg?.jsonrpc === "2.0" && msg.method === "tools/call" && msg.params) {
+      calls.push(msg.params);
+      window.postMessage(
+        { jsonrpc: "2.0", id: msg.id, result: { content: [] } },
+        "*",
+      );
+    }
+  };
+  window.addEventListener("message", listener);
+  return {
+    calls,
+    stop: () => window.removeEventListener("message", listener),
+  };
 }
 
 const history = [
@@ -114,5 +145,20 @@ describe("bid-explorer widget render", () => {
     expect(
       screen.getByRole("button", { name: "Set bid to $34.5" }),
     ).toBeTruthy();
+  });
+
+  it("CTA calls upsert-bid with classId, bidAmount AND bidWindowId", async () => {
+    const { calls, stop } = captureToolCalls();
+    try {
+      renderBidExplorer(fullProps);
+      fireEvent.click(screen.getByRole("button", { name: "Set bid to $31.5" }));
+      await waitFor(() => expect(calls).toHaveLength(1));
+      expect(calls[0]).toEqual({
+        name: "upsert-bid",
+        arguments: { classId: "cl1", bidAmount: 31.5, bidWindowId: 53 },
+      });
+    } finally {
+      stop();
+    }
   });
 });

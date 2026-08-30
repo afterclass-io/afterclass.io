@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import BidRecommendation, { widgetMetadata } from "./widget";
@@ -19,6 +19,37 @@ function setMcpParams(toolOutput: unknown, toolInput: unknown = {}) {
 function renderBidRecommendation(toolOutput: unknown) {
   setMcpParams(toolOutput);
   return render(<BidRecommendation />);
+}
+
+/**
+ * Capture `callTool` invocations: in the jsdom harness `window.parent ===
+ * window`, and mcp-use's bridge delivers tool calls as JSON-RPC `tools/call`
+ * requests via `window.parent.postMessage`. We record each request's params
+ * and immediately post back a result so the bridge promise resolves (no
+ * dangling request timeouts).
+ */
+function captureToolCalls() {
+  const calls: Array<{ name: string; arguments: Record<string, unknown> }> = [];
+  const listener = (event: MessageEvent) => {
+    const msg = event.data as {
+      jsonrpc?: string;
+      id?: number;
+      method?: string;
+      params?: { name: string; arguments: Record<string, unknown> };
+    };
+    if (msg?.jsonrpc === "2.0" && msg.method === "tools/call" && msg.params) {
+      calls.push(msg.params);
+      window.postMessage(
+        { jsonrpc: "2.0", id: msg.id, result: { content: [] } },
+        "*",
+      );
+    }
+  };
+  window.addEventListener("message", listener);
+  return {
+    calls,
+    stop: () => window.removeEventListener("message", listener),
+  };
 }
 
 const fullProps = {
@@ -80,5 +111,29 @@ describe("bid-recommendation widget render", () => {
     });
     expect(screen.queryByText(/Predicted median/)).toBeNull();
     expect(screen.queryByText(/Safety multiplier/)).toBeNull();
+  });
+
+  it("renders no CTA when bidWindow is absent (upsert-bid needs bidWindowId)", () => {
+    renderBidRecommendation({
+      classId: "cl2",
+      acadTermId: "t1",
+      suggestedBidAmount: 20,
+    });
+    expect(screen.queryByRole("button", { name: /Set bid to/ })).toBeNull();
+  });
+
+  it("CTA calls upsert-bid with classId, bidAmount AND bidWindowId", async () => {
+    const { calls, stop } = captureToolCalls();
+    try {
+      renderBidRecommendation(fullProps);
+      fireEvent.click(screen.getByRole("button", { name: "Set bid to $26.25" }));
+      await waitFor(() => expect(calls).toHaveLength(1));
+      expect(calls[0]).toEqual({
+        name: "upsert-bid",
+        arguments: { classId: "cl1", bidAmount: 26.25, bidWindowId: 53 },
+      });
+    } finally {
+      stop();
+    }
   });
 });

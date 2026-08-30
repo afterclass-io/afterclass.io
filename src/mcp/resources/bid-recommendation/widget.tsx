@@ -214,13 +214,15 @@ const BidRecommendation: React.FC = () => {
           {props.rationale}
         </p>
       )}
-      {callTool && (
+      {/* CTA requires a bidWindow: upsert-bid's schema needs bidWindowId. */}
+      {callTool && props.bidWindow && (
         <button
           type="button"
           onClick={() =>
             void callTool("upsert-bid", {
               classId: props.classId,
               bidAmount: props.suggestedBidAmount,
+              bidWindowId: props.bidWindow!.id,
             })
           }
           style={{
