@@ -8,10 +8,22 @@ export type Suggestion = { label: string; prompt: string };
 // response server-side (see src/server/assistant/canned.ts), so it never
 // burns quota.
 export const WELCOME_SUGGESTIONS: readonly Suggestion[] = [
-  { label: "What can you do?", prompt: "What are your capabilities? What can you help me with?" },
-  { label: "Find a course", prompt: "Help me find a course that satisfies my academic requirements." },
-  { label: "Recommend a bid", prompt: "Recommend a bid amount for a module I want to take." },
-  { label: "Plan my timetable", prompt: "Help me plan my timetable for next term." },
+  {
+    label: "What can you do?",
+    prompt: "What are your capabilities? What can you help me with?",
+  },
+  {
+    label: "Find a course",
+    prompt: "Help me find a course that satisfies my academic requirements.",
+  },
+  {
+    label: "Recommend a bid",
+    prompt: "Recommend a bid amount for a module I want to take.",
+  },
+  {
+    label: "Plan my timetable",
+    prompt: "Help me plan my timetable for next term.",
+  },
 ];
 
 export const FOLLOW_UP_SUGGESTIONS: readonly Suggestion[] = [
@@ -20,19 +32,29 @@ export const FOLLOW_UP_SUGGESTIONS: readonly Suggestion[] = [
   { label: "What's next?", prompt: "What should I do next?" },
 ];
 
-function SuggestionButton({ suggestion, onPick }: { suggestion: Suggestion; onPick: (prompt: string) => void }) {
+function SuggestionButton({
+  suggestion,
+  onPick,
+}: {
+  suggestion: Suggestion;
+  onPick: (prompt: string) => void;
+}) {
   return (
     <button
       type="button"
       onClick={() => onPick(suggestion.prompt)}
-      className="rounded-full border px-3.5 py-1.5 text-sm transition-colors hover:bg-muted"
+      className="hover:bg-muted rounded-full border px-3.5 py-1.5 text-sm transition-colors"
     >
       {suggestion.label}
     </button>
   );
 }
 
-export function WelcomeSuggestions({ onPick }: { onPick: (prompt: string) => void }) {
+export function WelcomeSuggestions({
+  onPick,
+}: {
+  onPick: (prompt: string) => void;
+}) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-2 px-4 pb-2">
       {WELCOME_SUGGESTIONS.map((s) => (
@@ -55,7 +77,7 @@ export function shouldShowFollowUps(
   isRunning: boolean,
   lastTurnFailed: boolean,
 ): boolean {
-  if (isRunning || lastTurnFailed) return false;
+  if (!Array.isArray(messages) || isRunning || lastTurnFailed) return false;
   return messages[messages.length - 1]?.role === "assistant";
 }
 

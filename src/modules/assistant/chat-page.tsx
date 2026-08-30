@@ -6,9 +6,15 @@ import { DefaultChatTransport } from "ai";
 
 import type { AssistantStatus } from "@/server/assistant/status";
 import { MessageList } from "@/modules/assistant/message-list";
-import { AssistantErrorMessage, shouldShowChatError } from "@/modules/assistant/error-message";
+import {
+  AssistantErrorMessage,
+  shouldShowChatError,
+} from "@/modules/assistant/error-message";
 import { Composer } from "@/modules/assistant/composer";
-import { WelcomeSuggestions, FollowUpSuggestions } from "@/modules/assistant/suggestions";
+import {
+  WelcomeSuggestions,
+  FollowUpSuggestions,
+} from "@/modules/assistant/suggestions";
 import { ConnectGate } from "@/modules/assistant/connect-gate";
 import { usePersistSession } from "@/modules/assistant/use-persist-session";
 import { useRefreshAfterTools } from "@/modules/assistant/use-refresh-after-tools";
@@ -19,7 +25,11 @@ import { QuotaAlertBar } from "@/modules/assistant/quota-alert-bar";
 import { McpRecommendation } from "@/modules/assistant/mcp-recommendation";
 import { parseGateError, type ChatGate } from "@/modules/assistant/gate";
 
-export function ChatPage({ initialStatus }: { initialStatus: AssistantStatus }) {
+export function ChatPage({
+  initialStatus,
+}: {
+  initialStatus: AssistantStatus;
+}) {
   const [status] = useState(initialStatus);
   const [gate, setGate] = useState<ChatGate | null>(null);
   const activeSessionId = useChatStore((s) => s.activeSessionId);
@@ -30,7 +40,10 @@ export function ChatPage({ initialStatus }: { initialStatus: AssistantStatus }) 
     void hydrate();
   }, [hydrate]);
 
-  const transport = useMemo(() => new DefaultChatTransport({ api: "/api/chat" }), []);
+  const transport = useMemo(
+    () => new DefaultChatTransport({ api: "/api/chat" }),
+    [],
+  );
 
   const chat = useChat({
     transport,
@@ -53,8 +66,14 @@ export function ChatPage({ initialStatus }: { initialStatus: AssistantStatus }) 
     if (!hydrated) return;
     const { activeSessionId, sessions } = useChatStore.getState();
     if (!activeSessionId) return;
+    if (!Array.isArray(chat.messages)) return;
     const session = sessions.find((s) => s.id === activeSessionId);
-    if (session && session.messages.length > 0 && chat.messages.length === 0) {
+    if (
+      session &&
+      Array.isArray(session.messages) &&
+      session.messages.length > 0 &&
+      chat.messages.length === 0
+    ) {
       chat.setMessages(session.messages);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,7 +96,7 @@ export function ChatPage({ initialStatus }: { initialStatus: AssistantStatus }) 
     setGate(null);
   }, [chat]);
 
-  const hasMessages = chat.messages.length > 0;
+  const hasMessages = Array.isArray(chat.messages) && chat.messages.length > 0;
   const isRunning = chat.status === "streaming" || chat.status === "submitted";
 
   // chat.error is a single global state that only reflects the LAST request;
@@ -86,9 +105,12 @@ export function ChatPage({ initialStatus }: { initialStatus: AssistantStatus }) 
   const showError = shouldShowChatError(chat.error);
 
   const retry = useCallback(() => {
-    const lastUser = [...chat.messages].reverse().find((m) => m.role === "user");
+    if (!Array.isArray(chat.messages)) return;
+    const lastUser = [...chat.messages]
+      .reverse()
+      .find((m) => m.role === "user");
     if (!lastUser) return;
-    const text = lastUser.parts
+    const text = (Array.isArray(lastUser.parts) ? lastUser.parts : [])
       .filter((p) => p.type === "text")
       .map((p) => ("text" in p ? p.text : ""))
       .join("");
@@ -103,14 +125,21 @@ export function ChatPage({ initialStatus }: { initialStatus: AssistantStatus }) 
     // above the fold at 100% zoom. Update if the header/layout heights change.
     <div className="mx-auto flex h-[calc(100dvh-5.5rem)] max-w-6xl gap-4 md:h-[calc(100dvh-7rem)]">
       <aside className="border-border/60 dark:border-muted-foreground/15 flex w-72 shrink-0 flex-col gap-3 rounded-xl border p-3">
-        <McpRecommendation hasConnectedAgent={status.hasConnectedAgent} onDismiss={() => undefined} />
+        <McpRecommendation
+          hasConnectedAgent={status.hasConnectedAgent}
+          onDismiss={() => undefined}
+        />
         <QuotaMeter
           remaining={status.remaining}
           quota={status.quota}
           nudgeAt={status.nudgeAt}
           hasConnectedAgent={status.hasConnectedAgent}
         />
-        <SessionList activeSessionId={activeSessionId} onSelect={openSession} onNew={newChat} />
+        <SessionList
+          activeSessionId={activeSessionId}
+          onSelect={openSession}
+          onNew={newChat}
+        />
       </aside>
       <main className="border-border/60 dark:border-muted-foreground/15 flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border">
         {gate ? (
@@ -122,13 +151,19 @@ export function ChatPage({ initialStatus }: { initialStatus: AssistantStatus }) 
             <div className="min-h-0 flex-1 overflow-y-auto">
               {!hasMessages ? (
                 <div className="flex h-full flex-col items-center justify-center gap-4 px-4">
-                  <h1 className="text-2xl font-semibold">How can I help you today?</h1>
-                  <WelcomeSuggestions onPick={(prompt) => chat.sendMessage({ text: prompt })} />
+                  <h1 className="text-2xl font-semibold">
+                    How can I help you today?
+                  </h1>
+                  <WelcomeSuggestions
+                    onPick={(prompt) => chat.sendMessage({ text: prompt })}
+                  />
                 </div>
               ) : (
                 <MessageList messages={chat.messages} />
               )}
-              {showError && <AssistantErrorMessage error={chat.error} onRetry={retry} />}
+              {showError && (
+                <AssistantErrorMessage error={chat.error} onRetry={retry} />
+              )}
             </div>
             <FollowUpSuggestions
               onPick={(prompt) => chat.sendMessage({ text: prompt })}
@@ -141,7 +176,11 @@ export function ChatPage({ initialStatus }: { initialStatus: AssistantStatus }) 
               quota={status.quota}
               hasConnectedAgent={status.hasConnectedAgent}
             />
-            <Composer sendMessage={chat.sendMessage} status={chat.status} stop={chat.stop} />
+            <Composer
+              sendMessage={chat.sendMessage}
+              status={chat.status}
+              stop={chat.stop}
+            />
           </>
         )}
       </main>
