@@ -60,7 +60,7 @@ const RangeRow: React.FC<{
   median: number;
   max: number;
   dashed?: boolean;
-  c: (typeof TOKENS)["light"];
+  c: (typeof TOKENS)[keyof typeof TOKENS];
 }> = ({ label, min, median, max, dashed, c }) => {
   const pct = (v: number) => Math.min(100, (v / max) * 100);
   const left = pct(min);
