@@ -24,8 +24,11 @@ interface ReviewCard {
  * professorName, createdAt as epoch ms); a bare array of raw prisma-shaped
  * rows (reviewLabels[{label.name}], countVotes, reviewedCourse,
  * reviewedProfessor) is also accepted for robustness.
+ * The tool's `run` embeds `context` (course code / professor slug) alongside
+ * the procedure payload so the widget header stays populated even on empty
+ * results; this helper reads that `context` directly.
  */
-function reviewCardsProps(text: string, context: string): Record<string, unknown> {
+function reviewCardsProps(text: string): Record<string, unknown> {
   try {
     const data = JSON.parse(text) as unknown;
     const rawItems: unknown[] = Array.isArray(data)
@@ -33,6 +36,13 @@ function reviewCardsProps(text: string, context: string): Record<string, unknown
       : Array.isArray((data as { items?: unknown[] } | null)?.items)
         ? (data as { items: unknown[] }).items
         : [];
+    const context =
+      !Array.isArray(data) &&
+      data !== null &&
+      typeof data === "object" &&
+      typeof (data as Record<string, unknown>).context === "string"
+        ? ((data as Record<string, unknown>).context as string)
+        : "";
     const reviews: ReviewCard[] = rawItems.map((item) => {
       const r = item as Record<string, unknown>;
       const labels = Array.isArray(r.reviewLabels)
@@ -84,38 +94,10 @@ function reviewCardsProps(text: string, context: string): Record<string, unknown
   }
 }
 
-/**
- * Shared toWidgetProps factory. toWidgetProps only receives the tool result
- * (not the original input), so the widget context — course code or professor
- * slug — is recovered from the first review row in the JSON text output.
- * Empty results render with an empty context badge.
- */
-const reviewCardsWidgetProps =
-  (contextField: "courseCode" | "professorSlug") =>
-  (result: ToolResult): Record<string, unknown> => {
-    const text = result.content.find((c) => c.type === "text")?.text ?? "";
-    let context = "";
-    try {
-      const data = JSON.parse(text) as unknown;
-      const items: unknown[] = Array.isArray(data)
-        ? data
-        : ((data as { items?: unknown[] } | null)?.items ?? []);
-      const first = items[0] as Record<string, unknown> | undefined;
-      context =
-        contextField === "courseCode"
-          ? ((first?.courseCode as string | undefined) ??
-            (first?.reviewedCourse as { code?: string } | null | undefined)
-              ?.code ??
-            "")
-          : ((first?.professorSlug as string | undefined) ??
-            (first?.reviewedProfessor as { slug?: string } | null | undefined)
-              ?.slug ??
-            "");
-    } catch {
-      /* fall through to reviewCardsProps' raw passthrough */
-    }
-    return reviewCardsProps(text, context);
-  };
+const reviewCardsToWidgetProps = (result: ToolResult): Record<string, unknown> => {
+  const text = result.content.find((c) => c.type === "text")?.text ?? "";
+  return reviewCardsProps(text);
+};
 
 const getCourseReviewsSchema = z.object({
   code: z.string().describe("Exact course code"),
@@ -129,17 +111,19 @@ export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
   inputSchema: getCourseReviewsSchema,
   readOnly: true,
   widgetName: "review-cards",
-  toWidgetProps: reviewCardsWidgetProps("courseCode"),
+  toWidgetProps: reviewCardsToWidgetProps,
   run: async ({ caller }, { code, limit }) => {
     try {
-      return jsonText(
-        await caller.reviews.getByCourseCodeProtected({
-          code,
-          limit,
-          filterFor: ReviewsFilterFor.ALL,
-          sortBy: ReviewsSortBy.LATEST,
-        }),
-      );
+      const data = await caller.reviews.getByCourseCodeProtected({
+        code,
+        limit,
+        filterFor: ReviewsFilterFor.ALL,
+        sortBy: ReviewsSortBy.LATEST,
+      });
+      const payload = Array.isArray(data)
+        ? { context: code, items: data }
+        : { context: code, ...(data as Record<string, unknown>) };
+      return jsonText(payload);
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -158,17 +142,19 @@ export const getProfessorReviewsTool: McpTool<typeof getProfessorReviewsSchema> 
   inputSchema: getProfessorReviewsSchema,
   readOnly: true,
   widgetName: "review-cards",
-  toWidgetProps: reviewCardsWidgetProps("professorSlug"),
+  toWidgetProps: reviewCardsToWidgetProps,
   run: async ({ caller }, { slug, limit }) => {
     try {
-      return jsonText(
-        await caller.reviews.getByProfSlugProtected({
-          slug,
-          limit,
-          filterFor: ReviewsFilterFor.ALL,
-          sortBy: ReviewsSortBy.LATEST,
-        }),
-      );
+      const data = await caller.reviews.getByProfSlugProtected({
+        slug,
+        limit,
+        filterFor: ReviewsFilterFor.ALL,
+        sortBy: ReviewsSortBy.LATEST,
+      });
+      const payload = Array.isArray(data)
+        ? { context: slug, items: data }
+        : { context: slug, ...(data as Record<string, unknown>) };
+      return jsonText(payload);
     } catch (e) {
       return errText(errorMessage(e));
     }
