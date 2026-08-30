@@ -182,6 +182,29 @@ describe("catalog read tools", () => {
     });
   });
 
+  it("toWidgetProps keeps context on empty results", async () => {
+    const courseFn = vi.fn().mockResolvedValue({ items: [], nextCursor: undefined });
+    const profFn = vi.fn().mockResolvedValue({ items: [], nextCursor: undefined });
+    const courseCtx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getByCourseCodeProtected: courseFn }),
+    };
+    const profCtx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getByProfSlugProtected: profFn }),
+    };
+    const courseResult = await getCourseReviewsTool.run(courseCtx, { code: "CS101", limit: 20 });
+    expect(getCourseReviewsTool.toWidgetProps?.(courseResult)).toEqual({
+      context: "CS101",
+      reviews: [],
+    });
+    const profResult = await getProfessorReviewsTool.run(profCtx, { slug: "prof-x", limit: 20 });
+    expect(getProfessorReviewsTool.toWidgetProps?.(profResult)).toEqual({
+      context: "prof-x",
+      reviews: [],
+    });
+  });
+
   it("review tools return errText when the procedure rejects", async () => {
     const courseFn = vi.fn().mockRejectedValue(new Error("db down"));
     const profFn = vi.fn().mockRejectedValue(new Error("db down"));
