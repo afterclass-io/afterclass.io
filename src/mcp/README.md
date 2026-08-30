@@ -2,12 +2,12 @@
 
 The afterclass.io Model Context Protocol (MCP) server, built on
 [mcp-use](https://mcp-use.com). It exposes the shared tool catalog
-(`src/server/mcp/tools`) - the same 39 tools the in-app assistant widget uses -
-as a remote, OAuth-protected MCP server with two MCP Apps widgets.
+(`src/server/mcp/tools`) - the same 44 tools the in-app assistant widget uses -
+as a remote, OAuth-protected MCP server with seven MCP Apps widgets.
 
 - **Server entry:** `src/mcp/index.ts` (mcp-use `MCPServer` + `oauthSupabaseProvider`)
 - **Tool wiring:** `src/mcp/register.ts` (per-call auth via `src/mcp/user.ts`)
-- **Widgets:** `src/mcp/resources/{bid-recommendation,course-search}/widget.tsx`
+- **Widgets:** `src/mcp/resources/{bid-recommendation,course-search,calendar-links,bid-plan,roadmap-view,review-cards,bid-explorer}/widget.tsx` (7 widgets; shared tokens in `src/mcp/resources/shared/tokens.tsx`)
 - **Local dev:** `bun run mcp:dev` -> Inspector at `http://localhost:3001/inspector`
 
 ---
@@ -19,20 +19,22 @@ as a remote, OAuth-protected MCP server with two MCP Apps widgets.
 |  Next.js app (Vercel)       |      |  mcp-use server (this repo: src/mcp/)      |
 |                             |      |                                            |
 |  - website                  |      |  - MCP transport (streamable HTTP)         |
-|  - Supabase identity        |      |  - 39 tools from the shared catalog        |
+|  - Supabase identity        |      |  - 44 tools from the shared catalog        |
 |  - consent screen           |      |    (src/server/mcp/tools - single source   |
 |    /oauth/consent           |      |     of truth, shared with the assistant    |
 |                             |      |     widget)                                |
-+--------------+--------------+      |  - MCP Apps widgets                        |
++--------------+--------------+      |  - MCP Apps widgets (7)                  |
                |                     |    (resources/bid-recommendation,          |
-               | redirects here      |     resources/course-search)               |
-               v                     +---------------+----------------------------+
+               | redirects here      |     resources/course-search,               |
+               v                     |     resources/calendar-links,              |
++-------------------------------------+     resources/bid-plan,                  |
+|  Supabase Auth (hosted OAuth 2.1    |     resources/roadmap-view,              |
+|  authorization server)              |     resources/review-cards,              |
+|  - issues MCP tokens                |     resources/bid-explorer)              |
+|  - Dynamic Client Registration      |               +----------------------------+
 +-------------------------------------+              | token verification
-|  Supabase Auth (hosted OAuth 2.1    |<-------------+  (JWT), DCR metadata
-|  authorization server)              |                 proxy
-|  - issues MCP tokens                |
-|  - Dynamic Client Registration      |
-+-------------------------------------+
+                                                     |  (JWT), DCR metadata
+                                                     |  proxy
 ```
 
 Three moving parts:
@@ -41,8 +43,8 @@ Three moving parts:
    hosted consent screen at `/oauth/consent` (`src/app/oauth/consent/page.tsx`
    - `src/app/api/oauth/consent/route.ts`). The user approves or denies an
      authorization request from this screen.
-2. **mcp-use server (`src/mcp/`)** - the MCP transport. It hosts the 39 tools
-   from the shared catalog and the two widgets, and it runs the
+2. **mcp-use server (`src/mcp/`)** - the MCP transport. It hosts the 44 tools
+   from the shared catalog and the seven widgets, and it runs the
    `oauthSupabaseProvider()` so MCP clients authenticate against Supabase.
    It is deployed independently of the Next.js app (see
    [Deploy procedure](#deploy-procedure)).
@@ -52,7 +54,7 @@ Three moving parts:
 
 ### Single source of truth for tools
 
-All 39 tools are defined in `src/server/mcp/tools` (e.g. `search-courses`,
+All 44 tools are defined in `src/server/mcp/tools` (e.g. `search-courses`,
 `my-timetables`, `recommend-bid-amount`). The same catalog powers:
 
 - the **in-app assistant widget** (via the tRPC caller), and
@@ -62,11 +64,38 @@ All 39 tools are defined in `src/server/mcp/tools` (e.g. `search-courses`,
 
 A tool only needs to be changed in one place.
 
+### Widget props plumbing
+
+Two paths deliver props to a widget:
+
+- **`toWidgetProps` (default):** the tool's `toWidgetProps(result)` parses the
+  tool's JSON `text` output into widget props. Used by `bid-plan`,
+  `roadmap-view`, `review-cards`, `bid-explorer`, `course-search`, and
+  `bid-recommendation` — the widget props are a normalized view of the
+  model-visible JSON.
+- **`ToolResult.widgetProps` (secret channel):** `src/server/mcp/types.ts`
+  defines an optional `widgetProps?: Record<string, unknown>` on `ToolResult`.
+  When present, `src/mcp/register.ts` prefers it over `toWidgetProps` via
+  `widget({ props: result.widgetProps ?? tool.toWidgetProps!(result), output })`.
+  The `output` (plain text) is what the model sees; `props` becomes
+  `structuredContent` (widget-only). This keeps bearer secrets out of model
+  context.
+
+`get-timetable-calendar-link` uses `widgetProps` so iCal URLs (bearer tokens)
+never enter model-visible text — the model only sees
+"Calendar subscribe links are shown in the widget...". All other widgets keep
+the `toWidgetProps`-parses-text pattern.
+
+Shared widget styling lives in `src/mcp/resources/shared/tokens.tsx`
+(`TOKENS` light/dark palettes + `Skeleton` pending component), imported by the
+new widgets. The pre-existing `course-search` and `bid-recommendation` widgets
+keep their inline token copies for historical reasons.
+
 ---
 
-## Tool catalog (39 tools)
+## Tool catalog (44 tools)
 
-The shared catalog exposes 39 tools over MCP. The roadmap-detail, planning,
+The shared catalog exposes 44 tools over MCP (24 readOnly + 20 write). The roadmap-detail, planning,
 timetable-detail, and feasibility additions are:
 
 | Tool                        | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -98,12 +127,40 @@ Roadmap-settings and bid-status write tools (Task 5):
 | `copy-public-roadmap`   | Copy a public roadmap (from `browse-public-roadmaps` / `get-public-roadmap`) into the user's own account as `<name> (copy)`. Returns `{ newRoadmapId, name }`.                                                                                                                                                      |
 | `set-bid-status`        | Set a bid's outcome status: `PLANNED` / `SECURED` / `DROPPED` / `CANCELLED` / `PARTICIPATED`.                                                                                                                                                                                                                       |
 
+Timetable calendar, bid plan, contribute, reviews & explorer (Tasks 1-6 → 44-tool catalog):
+
+| Tool                             | readOnly | Widget            | Purpose                                                                                                                                                                                                                                |
+| -------------------------------- | -------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `get-timetable-calendar-link`     | write    | `calendar-links`  | Get calendar subscribe links (Google / Apple / Outlook + ICS feed) for one of the user's timetables. If the timetable is PRIVATE, requires `enableLinkSharing: true` (user consent) to flip it to UNLISTED before minting the `icalToken`. Uses `ToolResult.widgetProps` so bearer iCal URLs never enter model text. |
+| `my-bid-plan`                    | read     | `bid-plan`        | Show the user's bidding plan for one `acadTermId`: every saved bid (course, section, professor, amount, status, round/window) plus `budget.balance`. Backed by `userBids.listMine()` + `getBudget()`, filtered to the requested term. |
+| `get-contribute-info`            | read     | —                 | Get afterclass.io contribution links: GitHub repo, helpdesk, Telegram channel, write-a-review (`/submit`), and statistics (`/statistics`). No widget — returns JSON only.                                                              |
+| `get-course-reviews`             | read     | `review-cards`    | Read student reviews for a course (`{ code, limit }`), including full `body`/`tips`. Uses the PROTECTED `reviews.getByCourseCodeProtected` procedure and embeds `context` (course code) in the JSON payload so the widget header stays populated even on empty results. |
+| `get-professor-reviews`          | read     | `review-cards`    | Read student reviews for a professor (`{ slug, limit }`), including full `body`/`tips`. Uses the PROTECTED `reviews.getByProfSlugProtected` procedure; mirrors the course path's `context` + `reviewCardsProps` normalization. Both review tools render the `review-cards` widget. |
+| `explore-bid-options`            | read     | `bid-explorer`    | Explore bid prices for `classId` XOR `courseCode` + `professorSlug` (slug resolved via `professors.getBySlug`): historical clearing ranges per term/round (`history`), latest `prediction`, and `safetyFactors` (what multiplier beats X%). Dependency-free design tokens; slider + `upsert-bid` CTA includes `bidWindowId`. |
+| `my-bids` (updated)              | read     | —                 | Now takes an optional `acadTermId` filter — pass it to scope to one term; omit for all terms (unchanged). Still scrubs `notes`.                                                                                                      |
+
+Widget CTAs that write: `bid-explorer` → `upsert-bid` `{ classId, bidWindowId, bidAmount }` (requires `bidWindowId` from the prediction) and `roadmap-view` → `copy-public-roadmap` `{ roadmapId }` when `isPublic`. Both use `callTool` from `useWidget()`.
+
 Two companion surfaces are registered alongside the tools:
 
 | Surface                | Kind     | Purpose                                                                                                                 |
 | ---------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `plan-semester`        | Prompt   | User-selectable template that steers the model toward the `plan-semester` workflow instead of a long tool chain.        |
 | `catalog://acad-terms` | Resource | The academic terms the course catalog is offered in (`id` = `acadTermId` used by `search-courses` and `plan-semester`). |
+
+### MCP Apps widgets (7)
+
+| Widget               | Tool(s)                                    | Component                                              | Props shape (zod)                                                                 | CTA |
+| -------------------- | ------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------- | --- |
+| `course-search`      | `search-courses`                           | `src/mcp/resources/course-search/widget.tsx`           | `{ results: { code, name, creditUnits?, sections: { classId?, section, professorName, timings[] }[] }[] }` | — |
+| `bid-recommendation` | `recommend-bid-amount`                     | `src/mcp/resources/bid-recommendation/widget.tsx`      | `{ classId, acadTermId, bidWindow?, predictedMedian, suggestedBidAmount, multiplierUsed?, rationale? }` | — |
+| `calendar-links`     | `get-timetable-calendar-link`              | `src/mcp/resources/calendar-links/widget.tsx`          | `{ feedUrl, subscribeUrl, googleSubscribeUrl, appleSubscribeUrl, outlookSubscribeUrl, madeLinkShareable? }` via `widgetProps` | External subscribe links |
+| `bid-plan`           | `my-bid-plan`                              | `src/mcp/resources/bid-plan/widget.tsx`                | `{ acadTermId, budget: { balance } | null, bids: { id, bidAmount, status, courseCode, courseName, section, professorName, round, window }[] }` | — |
+| `roadmap-view`       | `get-my-roadmap`, `get-public-roadmap`     | `src/mcp/resources/roadmap-view/widget.tsx`            | `{ roadmapId, name, isPublic, owner, voteCount, entries: { yearNumber, term, courseCode, courseName, creditUnits }[] }` | `copy-public-roadmap` when `isPublic` |
+| `review-cards`       | `get-course-reviews`, `get-professor-reviews` | `src/mcp/resources/review-cards/widget.tsx`         | `{ context, reviews: { id, body, tips, rating, labels, voteCount, createdAt, courseCode, professorName }[] }` | — |
+| `bid-explorer`       | `explore-bid-options`                      | `src/mcp/resources/bid-explorer/widget.tsx`            | `{ classId | null, history: { acadTermId, round, window, min, median, vacancy }[], prediction: { medianPredicted, minPredicted, bidWindow: { id, round, window } } | null, safetyFactors: { beatsPercentage, multiplier }[] }` | `upsert-bid` with `bidWindowId` + slider |
+
+All seven widgets share `src/mcp/resources/shared/tokens.tsx` (`TOKENS` + `Skeleton`) except the two pre-existing ones which keep inline tokens. Every widget shows a skeleton pending state (`toolOutput: null` → `Skeleton` with `aria-label="Loading"`).
 
 ### Planning queries
 
@@ -250,6 +307,10 @@ Write-path hardening (Task 6):
   via `checkAndIncrement` keyed `mcp-write:<userId>`. When the budget is
   exhausted, the tool returns a friendly error instead of running. Read tools are
   unaffected.
+- **`get-timetable-calendar-link` keeps iCal tokens out of model context.**
+  Bearer iCal URLs are delivered via `ToolResult.widgetProps` (widget-only
+  `structuredContent`); the model-visible text contains no token. Likewise
+  `my-timetables` / `my-roadmaps` scrub `shareToken`/`icalToken`.
 
 Surface trim (Task 7):
 
@@ -337,10 +398,15 @@ To be ticked by a human **after** deploy (Task 8 Step 1). Local equivalent:
 - [ ] User is redirected to `https://afterclass.io/oauth/consent?authorization_id=...`
 - [ ] User signs in (school email), sees client name + scopes, clicks **Approve**
 - [ ] User is redirected back with a code; the client exchanges it for a token
-- [ ] `tools/list` returns the **39 tools**
+- [ ] `tools/list` returns the **44 tools** (24 readOnly + 20 write)
 - [ ] `tools/call` on `my-timetables` returns the user&apos;s own data (scoped correctly)
 - [ ] `tools/call` on `recommend-bid-amount` renders the bid-recommendation widget
 - [ ] `tools/call` on `search-courses` renders the course-search widget
+- [ ] `tools/call` on `get-timetable-calendar-link` renders the calendar-links widget (private → consent → UNLISTED → subscribe links; iCal URLs only in widget props, not model text)
+- [ ] `tools/call` on `my-bid-plan` renders the bid-plan widget for the current term
+- [ ] `tools/call` on `get-public-roadmap` / `get-my-roadmap` renders the roadmap-view widget (Copy CTA on public roadmaps uses `callTool("copy-public-roadmap")`)
+- [ ] `tools/call` on `get-course-reviews` and `get-professor-reviews` renders the review-cards widget with full `body`/`tips` visible
+- [ ] `tools/call` on `explore-bid-options` renders the bid-explorer widget (slider updates suggested amount; CTA calls `callTool("upsert-bid", { classId, bidWindowId, bidAmount })`)
 - [ ] An unauthenticated call returns an error (fails closed)
 
 ---
