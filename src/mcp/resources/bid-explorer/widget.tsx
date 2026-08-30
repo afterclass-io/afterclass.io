@@ -277,6 +277,7 @@ const BidExplorer: React.FC = () => {
             void callTool("upsert-bid", {
               classId: props.classId,
               bidAmount: suggested,
+              bidWindowId: prediction.bidWindow.id,
             })
           }
           style={{
