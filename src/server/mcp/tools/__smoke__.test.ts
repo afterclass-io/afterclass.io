@@ -1,6 +1,6 @@
 // Tool schema & type smoke test - verifies the shared tool infrastructure
 // (types.ts + local ToolResult) is self-consistent without the MCP SDK, and
-// that the catalog keeps the documented 42-tool shape.
+// that the catalog keeps the documented 43-tool shape.
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { okText, errText, jsonText } from "@/server/mcp/types";
@@ -29,8 +29,8 @@ describe("tool schema & types smoke", () => {
     expect((j.content[0] as { text: string }).text).toContain("1");
   });
 
-  it("catalog keeps the documented 42 tools (personal account/shared-token tools removed): 22 readOnly + 20 write", () => {
-    expect(allTools).toHaveLength(42);
+  it("catalog keeps the documented 43 tools (personal account/shared-token tools removed): 23 readOnly + 20 write", () => {
+    expect(allTools).toHaveLength(43);
     // Every tool except `recommend-bid-amount` (a read-only recommendation
     // that lives under write/ for historical reasons) is non-readOnly.
     const writeTools = allTools.filter((t) => !t.readOnly);

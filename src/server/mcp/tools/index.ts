@@ -11,6 +11,7 @@ import {
   getBidResultsTool,
   getBidWindowsTool,
   getCourseReviewsTool,
+  getProfessorReviewsTool,
   listAcadTermsTool,
 } from "./read/catalog";
 import { getContributeInfoTool } from "./read/contribute";
@@ -60,6 +61,7 @@ export const allTools: McpTool[] = [
   getProfessorTool,
   // read - catalog
   getCourseReviewsTool,
+  getProfessorReviewsTool,
   getBidPredictionTool,
   getBidResultsTool,
   listAcadTermsTool,
