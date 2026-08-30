@@ -161,4 +161,37 @@ describe("bid-explorer widget render", () => {
       stop();
     }
   });
+
+  it("slider lands on the 70% factor when props arrive AFTER mount (no remount)", () => {
+    // Real mcp-apps hosts deliver props asynchronously after ui/initialize
+    // without remounting. The URL-params fallback re-reads
+    // window.location.search on each render, so replaceState + rerender
+    // simulates that arrival on the SAME mounted component.
+    const { rerender } = renderBidExplorer(null);
+    expect(screen.getByText("Loading...")).toBeTruthy();
+    setMcpParams(fullProps);
+    rerender(<BidExplorer />);
+    const slider = screen.getByRole("slider", { name: "Safety multiplier" });
+    expect(slider.getAttribute("value")).toBe("1"); // index of the 70% factor
+    expect(screen.getByText("$31.5")).toBeTruthy();
+  });
+
+  it("prediction without safety factors falls back to multiplier 1.0 (CTA still shows)", async () => {
+    const noFactors = { ...fullProps, safetyFactors: [] };
+    const { calls, stop } = captureToolCalls();
+    try {
+      renderBidExplorer(noFactors);
+      // no slider without factors, but the CTA offers the bare median
+      expect(screen.queryByRole("slider")).toBeNull();
+      const cta = screen.getByRole("button", { name: "Set bid to $30" });
+      fireEvent.click(cta);
+      await waitFor(() => expect(calls).toHaveLength(1));
+      expect(calls[0]).toEqual({
+        name: "upsert-bid",
+        arguments: { classId: "cl1", bidAmount: 30, bidWindowId: 53 },
+      });
+    } finally {
+      stop();
+    }
+  });
 });
