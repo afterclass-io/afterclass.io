@@ -134,14 +134,11 @@ const BidExplorer: React.FC = () => {
     theme: string;
     callTool?: (name: string, input: Record<string, unknown>) => Promise<unknown>;
   };
-  // Hook order: useState must run before the isPending early return; props
-  // can be undefined while pending, so tolerate that here.
-  const defaultIdx = (p: Props | undefined) => {
-    const factors = p?.safetyFactors ?? [];
-    const i = factors.findIndex((f) => f.beatsPercentage === 70);
-    return i >= 0 ? i : Math.floor(Math.max(0, factors.length - 1) / 2);
-  };
-  const [factorIdx, setFactorIdx] = useState(() => defaultIdx(props));
+  // The slider's selected factor starts unset: props arrive asynchronously in
+  // the real mcp-apps host (after ui/initialize) WITHOUT a remount, so an
+  // initializer reading `props` would freeze the wrong default. The default
+  // (70% factor, else middle) is resolved at render time instead.
+  const [factorIdx, setFactorIdx] = useState<number | null>(null);
 
   const dark = theme === "dark";
   const c = dark ? TOKENS.dark : TOKENS.light;
@@ -166,10 +163,21 @@ const BidExplorer: React.FC = () => {
     );
   }
 
-  const idx = Math.min(factorIdx, Math.max(0, safetyFactors.length - 1));
+  const defaultIdx = () => {
+    const i = safetyFactors.findIndex((f) => f.beatsPercentage === 70);
+    return i >= 0 ? i : Math.floor(Math.max(0, safetyFactors.length - 1) / 2);
+  };
+  const idx = Math.min(
+    factorIdx ?? defaultIdx(),
+    Math.max(0, safetyFactors.length - 1),
+  );
   const factor = safetyFactors[idx];
-  const suggested =
-    prediction && factor ? round2(prediction.medianPredicted * factor.multiplier) : null;
+  // No safety factors for this term -> multiplier 1.0, like recommend.ts
+  // (`factor?.multiplier ?? 1`); the CTA must still be offered.
+  const multiplier = factor?.multiplier ?? 1;
+  const suggested = prediction
+    ? round2(prediction.medianPredicted * multiplier)
+    : null;
 
   const max = Math.max(
     1,
