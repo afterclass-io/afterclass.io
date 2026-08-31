@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Labels } from "@prisma/client";
+import type { Labels } from "@/generated/prisma/client";
 import type { Review } from "@/modules/reviews/types";
 import calculateRatingItems from "./calculateRatingItems";
 

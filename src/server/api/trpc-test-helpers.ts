@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@/generated/prisma/client";
 import { vi } from "vitest";
 
 // Every server/api unit test builds a router caller against a mocked db.

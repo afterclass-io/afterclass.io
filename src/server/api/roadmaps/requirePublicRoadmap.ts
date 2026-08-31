@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { Visibility } from "@/generated/prisma/client";
+import { Visibility } from "@/generated/prisma/enums";
 import type { PrismaClient } from "@/generated/prisma/client";
 
 /**

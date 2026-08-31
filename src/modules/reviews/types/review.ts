@@ -1,8 +1,8 @@
+import type { Labels } from "@/generated/prisma/client";
 import type {
   ReviewType,
-  Labels,
   UniversityAbbreviation,
-} from "@/generated/prisma/client";
+} from "@/generated/prisma/enums";
 
 export type Review = {
   id: string;

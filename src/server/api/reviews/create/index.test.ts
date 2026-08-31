@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { makeCaller } from "@/server/api/trpc-test-helpers";

@@ -1,11 +1,14 @@
 import { randomUUID } from "node:crypto";
-import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@/generated/prisma/client";
 import { afterAll, inject } from "vitest";
 
 // One Prisma client per integration test file, pointed at the Testcontainers
 // Postgres started in vitest.integration.setup.ts. Vitest isolates module state
 // per file, so this module (and the afterAll below) evaluates once per file.
-export const idb = new PrismaClient({ datasourceUrl: inject("dbUrl") });
+export const idb = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: inject("dbUrl") }),
+});
 afterAll(() => idb.$disconnect());
 
 // `bossId` is a plain unique int with no FK — a random one keeps parallel test

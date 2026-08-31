@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { BidPredictionCard } from "./BidPredictionCard";
 import type { BidPrediction } from "./BidPredictionCard";
-import type { MultiplierType } from "@/generated/prisma/client";
+import type { MultiplierType } from "@/generated/prisma/enums";
 
 type MiniSafetyFactor = { // re-declared as dates are not required
   beatsPercentage: number;
