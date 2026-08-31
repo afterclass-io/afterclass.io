@@ -14,6 +14,9 @@ on:
       - "package.json"
       - "bun.lock"
       - "knip.json"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   knip:
