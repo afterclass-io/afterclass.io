@@ -1,3 +1,4 @@
+import "zod/compile";
 import "@/common/styles/globals.css";
 
 import type { Metadata, Viewport } from "next";

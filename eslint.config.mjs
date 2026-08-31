@@ -22,6 +22,7 @@ const config = [
       "storybook-static",
       "src/generated",
       "cypress/**/*.cy.js",
+      "cypress/**/*.cy.ts",
     ],
   },
   ...nextCoreWebVitals,

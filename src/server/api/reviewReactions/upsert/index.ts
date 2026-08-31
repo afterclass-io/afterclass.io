@@ -7,7 +7,7 @@ export const upsert = protectedProcedure
   .input(
     z.object({
       reviewId: z.string(),
-      reaction: z.nativeEnum(ReviewReactionType).optional(),
+      reaction: z.enum(ReviewReactionType).optional(),
     }),
   )
   .mutation(async ({ input, ctx }) => {

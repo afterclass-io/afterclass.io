@@ -7,7 +7,7 @@ export const getByRoadmapId = publicProcedure
   .input(
     z.object({
       roadmapId: z.string(),
-      eventType: z.nativeEnum(ReviewReactionType).optional(),
+      eventType: z.enum(ReviewReactionType).optional(),
     }),
   )
   .query(async ({ ctx, input }) => {

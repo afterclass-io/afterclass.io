@@ -20,8 +20,8 @@ export const getAll = publicProcedure
       universityId: z.number().optional(),
       courseId: z.string().optional(),
       profId: z.string().optional(),
-      filterFor: z.nativeEnum(ReviewsFilterFor),
-      sortBy: z.nativeEnum(ReviewsSortBy),
+      filterFor: z.enum(ReviewsFilterFor),
+      sortBy: z.enum(ReviewsSortBy),
     }),
   )
   .query(async ({ ctx, input }) => {

@@ -175,12 +175,12 @@ function CourseSectionPicker({
             />
             {debouncedQuery.length > 0 && (
               <div className="border-border max-h-40 overflow-y-auto rounded-md border">
-                {searchQuery.isLoading && (
+                {searchQuery.isPending && (
                   <p className="text-muted-foreground p-2 text-xs">
                     Searching…
                   </p>
                 )}
-                {!searchQuery.isLoading && courses.length === 0 && (
+                {!searchQuery.isPending && courses.length === 0 && (
                   <p className="text-muted-foreground p-2 text-xs">
                     No courses match this term.
                   </p>
@@ -832,7 +832,7 @@ export function BidDialog({
                 {/* Round + window (single dropdown) */}
                 <div className="space-y-1.5">
                   <Label>Round &amp; window</Label>
-                  {bidWindowsQuery.isLoading && (
+                  {bidWindowsQuery.isPending && (
                     <Skeleton className="h-9 w-full" />
                   )}
                   {bidWindowsQuery.isError && (
@@ -862,7 +862,7 @@ export function BidDialog({
                       </SelectContent>
                     </Select>
                   )}
-                  {!bidWindowsQuery.isLoading &&
+                  {!bidWindowsQuery.isPending &&
                     !bidWindowsQuery.isError &&
                     bidWindows.length === 0 && (
                       <p className="text-muted-foreground text-sm">

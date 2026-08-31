@@ -3,7 +3,7 @@
  * for Docker builds.
  */
 import { fileURLToPath } from "node:url";
-import createJiti from "jiti";
+import { createJiti } from "jiti";
 const jiti = createJiti(fileURLToPath(import.meta.url));
 // Import env here to validate during build. Using jiti we can import .ts files :)
 jiti("./src/env");
@@ -14,9 +14,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 const config = withSentryConfig(
   {
     reactStrictMode: true,
-    turbopack: {
-      root: fileURLToPath(new URL(".", import.meta.url)),
-    },
+    turbopack: {},
 
     /**
      * If you have `experimental: { appDir: true }` set, then you must comment the below `i18n` config
@@ -105,22 +103,14 @@ const config = withSentryConfig(
     // side errors will fail.
     tunnelRoute: "/monitoring",
 
-    webpack: {
-      // Automatically annotate React components to show their full name in breadcrumbs and session replay
-      reactComponentAnnotation: {
+    bundleSizeOptimizations: {
+      excludeDebugStatements: true,
+    },
+
+    _experimental: {
+      turbopackReactComponentAnnotation: {
         enabled: true,
       },
-
-      // Automatically tree-shake Sentry logger statements to reduce bundle size
-      treeshake: {
-        removeDebugLogging: true,
-      },
-
-      // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-      // See the following for more information:
-      // https://docs.sentry.io/product/crons/
-      // https://vercel.com/docs/cron-jobs
-      automaticVercelMonitors: true,
     },
   },
 );

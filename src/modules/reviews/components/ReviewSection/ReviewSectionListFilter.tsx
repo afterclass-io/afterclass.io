@@ -17,7 +17,7 @@ export const ReviewSectionListFilter = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   // prettier-ignore
-  const defaultFilterFor = z.nativeEnum(ReviewsFilterFor)
+  const defaultFilterFor = z.enum(ReviewsFilterFor)
                             .safeParse(searchParams?.get("filter"))
                             ?.data 
                           ?? ReviewsFilterFor.ALL;

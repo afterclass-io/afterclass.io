@@ -19,8 +19,8 @@ export const getByCourseCodeProtected = protectedProcedure
       skip: z.number().default(0),
       code: z.string(),
       slugs: z.string().array().optional(),
-      filterFor: z.nativeEnum(ReviewsFilterFor),
-      sortBy: z.nativeEnum(ReviewsSortBy),
+      filterFor: z.enum(ReviewsFilterFor),
+      sortBy: z.enum(ReviewsSortBy),
     }),
   )
   .query(async ({ ctx, input }) => {

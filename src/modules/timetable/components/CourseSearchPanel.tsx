@@ -122,7 +122,7 @@ export function CourseSearchPanel({
         )}
 
         {/* Loading skeleton */}
-        {searchQuery.isLoading && (
+        {searchQuery.isPending && (
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-16 w-full rounded-md" />
@@ -181,7 +181,7 @@ export function CourseSearchPanel({
         )}
 
         {/* No results */}
-        {debouncedQuery && !searchQuery.isLoading && results.length === 0 && (
+        {debouncedQuery && !searchQuery.isPending && results.length === 0 && (
           <p className="text-muted-foreground py-8 text-center text-sm">
             No courses found for &quot;{debouncedQuery}&quot;.
           </p>

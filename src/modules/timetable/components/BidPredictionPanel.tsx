@@ -98,7 +98,7 @@ export function BidPredictionPanel({
         )}
       </CardHeader>
       <CardContent>
-        {predictionQuery.isLoading && (
+        {predictionQuery.isPending && (
           <div className="space-y-1.5">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-4 w-40" />
@@ -167,7 +167,7 @@ export function BidPredictionPanel({
             </div>
           </>
         )}
-        {!predictionQuery.isLoading &&
+        {!predictionQuery.isPending &&
           !predictionQuery.isError &&
           !prediction && (
             <p className="text-muted-foreground text-sm">

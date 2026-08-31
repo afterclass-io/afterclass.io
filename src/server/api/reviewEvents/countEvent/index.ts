@@ -7,7 +7,7 @@ export const countEvent = protectedProcedure
   .input(
     z.object({
       reviewId: z.string(),
-      eventType: z.nativeEnum(ReviewEventType),
+      eventType: z.enum(ReviewEventType),
     }),
   )
   .query(
