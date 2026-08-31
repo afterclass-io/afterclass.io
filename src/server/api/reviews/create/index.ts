@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { reviewFormSchema } from "@/common/tools/zod/schemas";

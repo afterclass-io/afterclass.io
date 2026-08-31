@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { RoadmapTimeline } from "./RoadmapTimeline";
 import type { Entry } from "../functions/conflicts";

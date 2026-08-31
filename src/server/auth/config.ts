@@ -4,7 +4,7 @@ import { z } from "zod";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
 import * as Sentry from "@sentry/nextjs";
-import { type Users } from "@prisma/client";
+import { type Users } from "@/generated/prisma/client";
 
 import { env } from "@/env";
 import { signInWithEmail } from "../supabase";

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { SearchResult } from "./SearchResult";
 import { type SearchCourseResult } from "@/modules/search/functions/searchCourse";

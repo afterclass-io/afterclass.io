@@ -1,5 +1,5 @@
 "use client";
-import { type ReviewReactionType as DbReviewReactionType } from "@prisma/client";
+import { type ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/client";
 
 import { api } from "@/common/tools/trpc/react";
 import { ReviewReactionType } from "@/modules/reviews/types";

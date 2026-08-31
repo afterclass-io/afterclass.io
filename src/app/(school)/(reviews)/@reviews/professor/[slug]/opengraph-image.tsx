@@ -16,8 +16,12 @@ export const size = {
 
 export const contentType = "image/png";
 
-export default async function Image({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function Image({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
   const prof = await api.professors.getBySlug({ slug });
   if (!prof) return null;

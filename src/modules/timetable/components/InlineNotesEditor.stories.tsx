@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { InlineNotesEditor } from "./InlineNotesEditor";
 
 const meta: Meta<typeof InlineNotesEditor> = {

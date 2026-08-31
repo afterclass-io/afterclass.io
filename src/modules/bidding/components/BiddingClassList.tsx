@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { ClassCard } from "@/modules/bidding/components/ClassCard";
-import type { Courses, ClassTiming, ClassExamTiming, Professors } from "@prisma/client";
+import type { Courses, ClassTiming, ClassExamTiming, Professors } from "@/generated/prisma/client";
 
 interface ClassItem {
   id: string;

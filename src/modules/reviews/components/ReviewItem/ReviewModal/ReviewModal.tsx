@@ -1,5 +1,5 @@
 "use client";
-import { ReviewEventType, ReviewType } from "@prisma/client";
+import { ReviewEventType, ReviewType } from "@/generated/prisma/enums";
 
 import { api } from "@/common/tools/trpc/react";
 

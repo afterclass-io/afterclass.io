@@ -1,4 +1,4 @@
-import { ReviewType } from "@prisma/client";
+import { ReviewType } from "@/generated/prisma/client";
 
 import { auth } from "@/server/auth";
 import { RatingSection } from "@/modules/reviews/components/RatingSection";

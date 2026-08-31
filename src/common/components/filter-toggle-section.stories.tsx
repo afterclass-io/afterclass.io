@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useState } from "react";
-import { ReviewType } from "@prisma/client";
+import { ReviewType } from "@/generated/prisma/enums";
 
 import { FilterToggleSection } from "./FilterToggleSection";
 import { type FilterItem } from "./FilterToggleSection/FilterToggleSectionItem";

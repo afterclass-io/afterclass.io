@@ -1,4 +1,4 @@
-import type { Universities, Courses } from "@prisma/client";
+import type { Universities, Courses } from "@/generated/prisma/client";
 import { db } from "@/server/db";
 import { api } from "@/common/tools/trpc/server";
 import { auth } from "@/server/auth";

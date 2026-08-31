@@ -9,7 +9,7 @@ import {
   type ClassExamTiming,
   type ClassTiming,
   type Professors,
-} from "@prisma/client";
+} from "@/generated/prisma/client";
 import { Tag } from "@/common/components/tag";
 import React from "react";
 import { Heading } from "@/common/components/heading";

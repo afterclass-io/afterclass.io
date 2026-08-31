@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,7 +30,7 @@ type Story = StoryObj<typeof meta>;
 
 const formSchema = z.object({
   type: z.enum(["all", "mentions", "none"], {
-    required_error: "You need to select a notification type.",
+    error: "You need to select a notification type.",
   }),
 });
 type FormInputsSchema = z.infer<typeof formSchema>;
