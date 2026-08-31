@@ -81,9 +81,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
     switch (props.variant) {
       case "course": {
         const { code, slugs } = props;
-        const apiFn = session
-          ? api.reviews.getByCourseCodeProtected
-          : api.reviews.getByCourseCode;
+        const apiFn = session ? api.reviews.getByCourseCodeProtected : api.reviews.getByCourseCode;
         return apiFn.useSuspenseInfiniteQuery(
           { code, slugs, filterFor, sortBy },
           {
@@ -93,9 +91,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
       }
       case "professor": {
         const { slug, courseCodes } = props;
-        const apiFn = session
-          ? api.reviews.getByProfSlugProtected
-          : api.reviews.getByProfSlug;
+        const apiFn = session ? api.reviews.getByProfSlugProtected : api.reviews.getByProfSlug;
         return apiFn.useSuspenseInfiniteQuery(
           { slug, courseCodes, filterFor, sortBy },
           {
@@ -104,9 +100,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
         );
       }
       default: {
-        const apiFn = session
-          ? api.reviews.getAllProtected
-          : api.reviews.getAll;
+        const apiFn = session ? api.reviews.getAllProtected : api.reviews.getAll;
         return apiFn.useSuspenseInfiniteQuery(
           { filterFor, sortBy },
           {
@@ -185,7 +179,6 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
             data-test="review-load-more"
             className="sr-only"
             onClick={() => fetchNextPage()}
-            aria-hidden
           >
             Load more
           </button>

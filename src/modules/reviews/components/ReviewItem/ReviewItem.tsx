@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useSession } from "next-auth/react";
 
 import { LockedOverlay } from "@/common/components/locked-overlay";
-import { type Review } from "@/modules/reviews/types";
+import type { Review } from "@/modules/reviews/types";
 
 import { ReviewerGroup } from "./ReviewerGroup";
 import { RevieweeGroup } from "./RevieweeGroup";

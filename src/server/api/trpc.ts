@@ -51,8 +51,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
       ...shape,
       data: {
         ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? z.flattenError(error.cause) : null,
+        zodError: error.cause instanceof ZodError ? z.flattenError(error.cause) : null,
       },
     };
   },
@@ -104,7 +103,7 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 
   const end = Date.now();
   if (process.env.NODE_ENV === "development") {
-    console.debug(`[TRPC] ${path} took ${end - start}ms to execute`);
+    console.warn(`[TRPC] ${path} took ${end - start}ms to execute`);
   }
 
   return result;
@@ -117,9 +116,7 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
-export const publicProcedure = t.procedure
-  .use(sentryMiddleware)
-  .use(timingMiddleware);
+export const publicProcedure = t.procedure.use(sentryMiddleware).use(timingMiddleware);
 
 /**
  * Protected (authenticated) procedure

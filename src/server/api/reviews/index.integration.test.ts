@@ -105,8 +105,7 @@ beforeAll(async () => {
   });
 });
 
-const asReviewer = () =>
-  makeCaller(router.createCaller, db, { user: { id: reviewerId } });
+const asReviewer = () => makeCaller(router.createCaller, db, { user: { id: reviewerId } });
 const asAnon = () => makeCaller(router.createCaller, db, null);
 
 describe("reviews.getByCourseCode (integration)", () => {
@@ -117,9 +116,7 @@ describe("reviews.getByCourseCode (integration)", () => {
       slugs: [slug],
       limit: 10,
     });
-    expect(res.items.map((r) => r.id).sort()).toEqual(
-      [profReviewId, profReview2Id].sort(),
-    );
+    expect(res.items.map((r) => r.id).toSorted()).toEqual([profReviewId, profReview2Id].toSorted());
     expect(res.items[0]).toMatchObject({
       courseCode: code,
       university: "SMU",
@@ -134,9 +131,7 @@ describe("reviews.getByCourseCode (integration)", () => {
   it("with no slugs, returns course and professor reviews", async () => {
     const res = await asAnon().getByCourseCode({ ...list, code, limit: 10 });
     const ids = res.items.map((r) => r.id);
-    expect(ids).toEqual(
-      expect.arrayContaining([courseReviewId, profReviewId, profReview2Id]),
-    );
+    expect(ids).toEqual(expect.arrayContaining([courseReviewId, profReviewId, profReview2Id]));
     expect(ids).toContain(courseReviewId);
   });
 });
@@ -148,8 +143,8 @@ describe("reviews.getByCourseCodeProtected (integration)", () => {
       code,
       limit: 10,
     });
-    expect(res.items.map((r) => r.id).sort()).toEqual(
-      [courseReviewId, profReviewId, profReview2Id].sort(),
+    expect(res.items.map((r) => r.id).toSorted()).toEqual(
+      [courseReviewId, profReviewId, profReview2Id].toSorted(),
     );
     const profReview = res.items.find((r) => r.id === profReviewId);
     expect(profReview).toMatchObject({ rating: 2, tips: "" }); // tips null -> ""
@@ -169,9 +164,7 @@ describe("reviews.getByCourseCodeProtected (integration)", () => {
 describe("reviews.getByProfSlug (integration)", () => {
   it("returns only that professor's reviews with private fields blanked", async () => {
     const res = await asAnon().getByProfSlug({ ...list, slug, limit: 10 });
-    expect(res.items.map((r) => r.id).sort()).toEqual(
-      [profReviewId, profReview2Id].sort(),
-    );
+    expect(res.items.map((r) => r.id).toSorted()).toEqual([profReviewId, profReview2Id].toSorted());
     expect(res.items[0]).toMatchObject({
       professorSlug: slug,
       reviewFor: ReviewType.PROFESSOR,
@@ -188,9 +181,7 @@ describe("reviews.getByProfSlugProtected (integration)", () => {
       slug,
       limit: 10,
     });
-    expect(all.items.map((r) => r.id).sort()).toEqual(
-      [profReviewId, profReview2Id].sort(),
-    );
+    expect(all.items.map((r) => r.id).toSorted()).toEqual([profReviewId, profReview2Id].toSorted());
     expect(all.items.find((r) => r.id === profReview2Id)).toMatchObject({
       rating: 3,
       tips: "more tips",
@@ -284,8 +275,6 @@ describe("reviews.getMetadataForProf (integration)", () => {
     const res = await asAnon().getMetadataForProf({ slug });
     expect(res.reviewCount).toBe(2);
     expect(res.averageRating).toBeCloseTo(2.5); // (2 + 3) / 2
-    expect(res.reviewLabels.filter((l) => l.count > 0)).toEqual([
-      { name: "Engaging", count: 1 },
-    ]);
+    expect(res.reviewLabels.filter((l) => l.count > 0)).toEqual([{ name: "Engaging", count: 1 }]);
   });
 });

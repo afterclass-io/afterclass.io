@@ -23,6 +23,7 @@ export default async function setup(project: TestProject) {
   const dbUrl = container.getConnectionUri();
 
   execSync("bunx prisma migrate deploy", {
+    // eslint-disable-next-line node/no-process-env
     env: { ...process.env, DATABASE_URL: dbUrl, DIRECT_URL: dbUrl },
     stdio: "inherit",
   });

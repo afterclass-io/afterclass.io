@@ -23,21 +23,19 @@ export interface TimelineProps extends React.ComponentPropsWithoutRef<"ol"> {
 }
 
 export const Timeline = React.forwardRef<React.ElementRef<"ol">, TimelineProps>(
-  ({ className, orientation = "vertical", ...props }, ref) => (
-    <TimelineContext.Provider value={{ orientation }}>
-      <ol
-        ref={ref}
-        role="list"
-        data-orientation={orientation}
-        className={cn(
-          "flex",
-          orientation === "vertical" && "flex-col",
-          className,
-        )}
-        {...props}
-      />
-    </TimelineContext.Provider>
-  ),
+  ({ className, orientation = "vertical", ...props }, ref) => {
+    const contextValue = React.useMemo(() => ({ orientation }), [orientation]);
+    return (
+      <TimelineContext.Provider value={contextValue}>
+        <ol
+          ref={ref}
+          data-orientation={orientation}
+          className={cn("flex", orientation === "vertical" && "flex-col", className)}
+          {...props}
+        />
+      </TimelineContext.Provider>
+    );
+  },
 );
 Timeline.displayName = "Timeline";
 
@@ -51,11 +49,7 @@ export const TimelineItem = React.forwardRef<
     <li
       ref={ref}
       data-orientation={orientation}
-      className={cn(
-        "flex gap-4",
-        orientation === "horizontal" && "flex-col",
-        className,
-      )}
+      className={cn("flex gap-4", orientation === "horizontal" && "flex-col", className)}
       {...props}
     />
   );
@@ -72,43 +66,37 @@ export const TimelineSeparator = React.forwardRef<
     <div
       ref={ref}
       data-orientation={orientation}
-      className={cn(
-        "flex items-center",
-        orientation === "vertical" && "flex-col",
-        className,
-      )}
+      className={cn("flex items-center", orientation === "vertical" && "flex-col", className)}
       {...props}
     />
   );
 });
 TimelineSeparator.displayName = "TimelineSeparator";
 
-export interface TimelineDotProps
-  extends React.ComponentPropsWithoutRef<"div"> {
+export interface TimelineDotProps extends React.ComponentPropsWithoutRef<"div"> {
   variant?: "default" | "outline";
 }
 
-export const TimelineDot = React.forwardRef<
-  React.ElementRef<"div">,
-  TimelineDotProps
->(({ variant = "default", className, ...props }, ref) => {
-  const { orientation } = useTimeline();
+export const TimelineDot = React.forwardRef<React.ElementRef<"div">, TimelineDotProps>(
+  ({ variant = "default", className, ...props }, ref) => {
+    const { orientation } = useTimeline();
 
-  return (
-    <div
-      ref={ref}
-      data-orientation={orientation}
-      className={cn(
-        "flex size-4 items-center justify-center empty:after:block empty:after:rounded-full empty:after:outline-current [&_svg]:size-4",
-        orientation === "vertical" && "mt-1",
-        variant === "default" && "empty:after:size-2.5 empty:after:bg-current",
-        variant === "outline" && "empty:after:size-2 empty:after:outline",
-        className,
-      )}
-      {...props}
-    />
-  );
-});
+    return (
+      <div
+        ref={ref}
+        data-orientation={orientation}
+        className={cn(
+          "flex size-4 items-center justify-center empty:after:block empty:after:rounded-full empty:after:outline-current [&_svg]:size-4",
+          orientation === "vertical" && "mt-1",
+          variant === "default" && "empty:after:size-2.5 empty:after:bg-current",
+          variant === "outline" && "empty:after:size-2 empty:after:outline",
+          className,
+        )}
+        {...props}
+      />
+    );
+  },
+);
 TimelineDot.displayName = "TimelineDot";
 
 export const TimelineConnector = React.forwardRef<

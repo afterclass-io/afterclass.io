@@ -27,10 +27,7 @@ interface ScaleFormatOptions extends Intl.NumberFormatOptions {
  *
  * @returns A formatted string with the appropriate scale suffix
  */
-export function formatNumberShortScale(
-  amount: number,
-  options: ScaleFormatOptions | undefined = undefined,
-) {
+export function formatNumberShortScale(amount: number, options?: ScaleFormatOptions) {
   const decimals = options?.decimals ?? 1;
 
   return new Intl.NumberFormat("en-US", {

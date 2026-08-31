@@ -1,9 +1,7 @@
 "use server";
 import { db } from "@/server/db";
-import {
-  ForgotPwdFormActionReturnType,
-  type ForgotPwdFormInputs,
-} from "../types";
+import { ForgotPwdFormActionReturnType } from "../types";
+import type { ForgotPwdFormInputs } from "../types";
 
 export async function getUserPlatform({ email }: ForgotPwdFormInputs) {
   const user = await db.users.findUnique({

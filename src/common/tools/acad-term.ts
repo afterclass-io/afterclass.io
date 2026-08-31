@@ -23,9 +23,7 @@ type AcadTermRow = {
 
 /** Minimal Prisma delegate shape needed for term queries */
 type AcadTermDelegate = {
-  findMany: (args?: {
-    orderBy?: { startDt: "asc" | "desc" };
-  }) => Promise<AcadTermRow[]>;
+  findMany: (args?: { orderBy?: { startDt: "asc" | "desc" } }) => Promise<AcadTermRow[]>;
 };
 
 // ============================================================
@@ -65,16 +63,11 @@ export function toAcadTermSummary(row: AcadTermRow): AcadTermSummary {
  * 3. Latest past term (endDt < now, most recent end).
  * 4. `null` if the list is empty.
  */
-export function resolveCurrentTerm(
-  terms: AcadTermSummary[],
-  now: Date,
-): AcadTermSummary | null {
+export function resolveCurrentTerm(terms: AcadTermSummary[], now: Date): AcadTermSummary | null {
   if (terms.length === 0) return null;
 
   // Sort by startDt descending for consistent iteration
-  const sorted = [...terms].sort(
-    (a, b) => b.startDt.getTime() - a.startDt.getTime(),
-  );
+  const sorted = [...terms].toSorted((a, b) => b.startDt.getTime() - a.startDt.getTime());
 
   // 1. Term containing now (inclusive bounds)
   const containing = sorted.find((t) => t.startDt <= now && t.endDt >= now);
@@ -83,13 +76,13 @@ export function resolveCurrentTerm(
   // 2. Nearest upcoming term (startDt > now, closest start)
   const upcoming = sorted
     .filter((t) => t.startDt > now)
-    .sort((a, b) => a.startDt.getTime() - b.startDt.getTime());
+    .toSorted((a, b) => a.startDt.getTime() - b.startDt.getTime());
   if (upcoming[0]) return upcoming[0];
 
   // 3. Latest past term (endDt < now, most recent end)
   const past = sorted
     .filter((t) => t.endDt < now)
-    .sort((a, b) => b.endDt.getTime() - a.endDt.getTime());
+    .toSorted((a, b) => b.endDt.getTime() - a.endDt.getTime());
   if (past[0]) return past[0];
 
   return null;

@@ -37,7 +37,7 @@ export function SortableTable<T extends Record<string, string | number | null | 
       return data;
     }
 
-    const sorted = [...data].sort((a, b) => {
+    const sorted = [...data].toSorted((a, b) => {
       const aValue = a[sortColumn];
       const bValue = b[sortColumn];
 
@@ -47,7 +47,9 @@ export function SortableTable<T extends Record<string, string | number | null | 
 
       // The key is now guaranteed to have string or number values.
       if (typeof aValue === "string" && typeof bValue === "string") {
-        return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        return sortDirection === "asc"
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
       }
 
       if (typeof aValue === "number" && typeof bValue === "number") {
@@ -80,9 +82,8 @@ export function SortableTable<T extends Record<string, string | number | null | 
               >
                 <div className="flex items-center gap-1">
                   {column.title}
-                  {sortColumn === column.key && (
-                    sortDirection === "asc" ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-                  )}
+                  {sortColumn === column.key &&
+                    (sortDirection === "asc" ? <ChevronUp size={16} /> : <ChevronDown size={16} />)}
                 </div>
               </th>
             ))}

@@ -36,14 +36,13 @@ export async function fetchEdgeConfig(
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Failed to fetch Edge Config:", errorText);
-      process.exit(1);
+      throw new Error(`Failed to fetch Edge Config: ${errorText}`);
     }
 
     const responseData = await response.json();
     return edgeConfigResponseSchema.parse(responseData);
   } catch (error) {
     console.error("An error occurred:", error);
-    process.exit(1);
+    throw error instanceof Error ? error : new Error(String(error));
   }
 }

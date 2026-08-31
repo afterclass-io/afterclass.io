@@ -1,14 +1,9 @@
-import { CustomIcon, type CustomIconProps } from "./custom-icon";
+import { CustomIcon } from "./custom-icon";
+import type { CustomIconProps } from "./custom-icon";
 
 export const GithubIcon = (props: CustomIconProps) => {
   return (
-    <CustomIcon
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      {...props}
-    >
+    <CustomIcon width="16" height="16" viewBox="0 0 24 24" fill="none" {...props}>
       <g
         fill="none"
         stroke="currentColor"

@@ -2,9 +2,11 @@
 
 import { startTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "sonner";
 
 import { Button } from "@/common/components/button";
 import {
@@ -13,12 +15,7 @@ import {
   PasswordInputAdornmentToggle,
   PasswordInput,
 } from "@/common/components/input-password";
-import {
-  InputRoot,
-  InputAdornment,
-  InputControl,
-  Input,
-} from "@/common/components/input";
+import { InputRoot, InputAdornment, InputControl, Input } from "@/common/components/input";
 import {
   Form,
   FormControl,
@@ -36,12 +33,8 @@ import { ProgressLink } from "@/common/components/progress-link";
 const signupFormInputsSchema = z
   .object({
     email: emailValidationSchema,
-    password: z
-      .string()
-      .min(8, { error: "Passwords must be at least 8 characters long" }),
-    confirmPassword: z
-      .string()
-      .min(8, { error: "Passwords must be at least 8 characters long" }),
+    password: z.string().min(8, { error: "Passwords must be at least 8 characters long" }),
+    confirmPassword: z.string().min(8, { error: "Passwords must be at least 8 characters long" }),
   })
   .superRefine(({ password, confirmPassword }, ctx) => {
     if (confirmPassword === password) return;
@@ -78,22 +71,17 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
           progress.done();
         });
       } else {
-        throw new Error(
-          "trying to create user that already has email verified",
-        );
+        throw new Error("trying to create user that already has email verified");
       }
       form.reset();
     } catch (err) {
-      alert(err);
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     }
   };
 
   return (
     <Form {...form}>
-      <form
-        className="flex w-full flex-col gap-6"
-        onSubmit={form.handleSubmit(onSubmit)}
-      >
+      <form className="flex w-full flex-col gap-6" onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
           name="email"
@@ -111,7 +99,6 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
                       disabled={form.formState.isSubmitting}
                       placeholder="john.doe.2023@smu.edu.sg"
                       autoComplete="on"
-                      tabIndex={1}
                       data-test="email"
                     />
                   </InputControl>
@@ -137,7 +124,6 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
                     disabled={form.formState.isSubmitting}
                     placeholder="Enter password"
                     autoComplete="on"
-                    tabIndex={2}
                     data-test="password"
                   />
                   <PasswordInputAdornmentToggle />
@@ -163,7 +149,6 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
                     disabled={form.formState.isSubmitting}
                     placeholder="Confirm password"
                     autoComplete="on"
-                    tabIndex={3}
                     data-test="confirm-password"
                   />
                   <PasswordInputAdornmentToggle />
@@ -173,24 +158,14 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
             </FormItem>
           )}
         />
-        <Button
-          type="submit"
-          disabled={form.formState.isSubmitting}
-          tabIndex={4}
-          data-test="submit"
-        >
+        <Button type="submit" disabled={form.formState.isSubmitting} data-test="submit">
           {form.formState.isSubmitting ? "Creating an account..." : "Sign up"}
         </Button>
         <div className="flex items-center gap-1 self-stretch md:text-base">
           <span className="text-muted-foreground text-center font-semibold">
             Already have an account?
           </span>
-          <ProgressLink
-            href="/account/auth/login"
-            type="button"
-            variant="link"
-            tabIndex={7}
-          >
+          <ProgressLink href="/account/auth/login" type="button" variant="link">
             Login
           </ProgressLink>
         </div>

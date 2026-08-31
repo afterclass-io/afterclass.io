@@ -11,11 +11,7 @@ import {
 import { Button } from "@/common/components/button";
 import { ArrowDown, ArrowUp, ArrowUpDown, Info } from "lucide-react";
 import { Th, SortableTh } from "@/common/components/table-primitives";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/common/components/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/common/components/tooltip";
 
 interface BidResultRow {
   bidWindow: {
@@ -44,7 +40,15 @@ interface BidTableProps {
   bidResults: BidResultRow[];
 }
 
-type SortColumn = "term" | "section" | "professor" | "round" | "window" | "min" | "median" | "seats";
+type SortColumn =
+  | "term"
+  | "section"
+  | "professor"
+  | "round"
+  | "window"
+  | "min"
+  | "median"
+  | "seats";
 type SortDirection = "asc" | "desc";
 
 /** Flat display row with pre-computed values for sorting and rendering */
@@ -92,29 +96,31 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
 
   // Build flattened rows with all display values pre-computed
   const flatRows: FlatRow[] = useMemo(() => {
-    return chartData.map((row, _i) => {
-      const [acadTermId, round, window] = row.bidWindow.split("/");
-      if (!acadTermId) {
-        // Malformed bidWindow string — skip this row
-        return null;
-      }
-      const { displayYear, term } = inferAcadTerm(acadTermId);
-      const groupIdx = groupIndexMap.get(row.bidWindow) ?? 0;
-      return {
-        bidWindow: row.bidWindow,
-        acadTermId: acadTermId,
-        displayYear,
-        term,
-        section: sectionMap.get(row.bidWindow) ?? "—",
-        professor: profMap.get(row.bidWindow) ?? "—",
-        round: round ?? "",
-        window: window ?? "",
-        min: row.price[0],
-        median: row.price[1],
-        seats: row.size,
-        groupIdx,
-      };
-    }).filter((row): row is FlatRow => row !== null);
+    return chartData
+      .map((row, _i) => {
+        const [acadTermId, round, window] = row.bidWindow.split("/");
+        if (!acadTermId) {
+          // Malformed bidWindow string — skip this row
+          return null;
+        }
+        const { displayYear, term } = inferAcadTerm(acadTermId);
+        const groupIdx = groupIndexMap.get(row.bidWindow) ?? 0;
+        return {
+          bidWindow: row.bidWindow,
+          acadTermId: acadTermId,
+          displayYear,
+          term,
+          section: sectionMap.get(row.bidWindow) ?? "—",
+          professor: profMap.get(row.bidWindow) ?? "—",
+          round: round ?? "",
+          window: window ?? "",
+          min: row.price[0],
+          median: row.price[1],
+          seats: row.size,
+          groupIdx,
+        };
+      })
+      .filter((row): row is FlatRow => row !== null);
   }, [chartData, groupIndexMap, profMap, sectionMap]);
 
   const handleSort = useCallback(
@@ -133,9 +139,9 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
   const sortedRows = useMemo(() => {
     if (!sortColumn) {
       // Default: newest first (reverse of chronological chartData order)
-      return [...flatRows].reverse();
+      return [...flatRows].toReversed();
     }
-    return [...flatRows].sort((a, b) => {
+    return [...flatRows].toSorted((a, b) => {
       let cmp: number;
       if (sortColumn === "term") {
         // Use acadTermId for correct academic term ordering
@@ -283,9 +289,7 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
                   <td className="px-3 py-2 text-right font-mono tabular-nums">
                     {formatBidCurrency(row.median)}
                   </td>
-                  <td className="px-3 py-2 text-right font-mono tabular-nums">
-                    {row.seats}
-                  </td>
+                  <td className="px-3 py-2 text-right font-mono tabular-nums">{row.seats}</td>
                 </tr>
               );
             })}

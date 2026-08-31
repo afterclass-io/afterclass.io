@@ -1,4 +1,4 @@
-import { type Prisma } from "@/generated/prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 import { ReviewType } from "@/generated/prisma/enums";
 import { z } from "zod";
 
@@ -43,17 +43,15 @@ export const getMetadataForCourse = publicProcedure
             )
             GROUP BY l.name
       */
-    const reviewLabelsMetadataForThisCourse = await ctx.db.reviewLabels.groupBy(
-      {
-        by: ["labelId"],
-        _count: {
-          labelId: true,
-        },
-        where: {
-          review: reviewWhereInput,
-        },
+    const reviewLabelsMetadataForThisCourse = await ctx.db.reviewLabels.groupBy({
+      by: ["labelId"],
+      _count: {
+        labelId: true,
       },
-    );
+      where: {
+        review: reviewWhereInput,
+      },
+    });
 
     const courseReviewLabels = await ctx.db.labels.findMany({
       where: {
@@ -64,12 +62,13 @@ export const getMetadataForCourse = publicProcedure
     return {
       averageRating: reviewsMetadataForThisCourse._avg.rating ?? 0,
       reviewCount: reviewsMetadataForThisCourse._count._all,
-      reviewLabels: courseReviewLabels.sort().map((label) => ({
-        name: toTitleCase(label.name.replaceAll("_", " ")),
-        count:
-          reviewLabelsMetadataForThisCourse.find(
-            (rl) => rl.labelId === label.id,
-          )?._count.labelId ?? 0,
-      })),
+      reviewLabels: courseReviewLabels
+        .toSorted((a, b) => a.name.localeCompare(b.name))
+        .map((label) => ({
+          name: toTitleCase(label.name.replaceAll("_", " ")),
+          count:
+            reviewLabelsMetadataForThisCourse.find((rl) => rl.labelId === label.id)?._count
+              .labelId ?? 0,
+        })),
     };
   });

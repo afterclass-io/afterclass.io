@@ -10,21 +10,17 @@ import {
   ReferenceLine,
   XAxis,
   YAxis,
+  Label,
 } from "recharts";
 
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/common/components/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/common/components/chart";
+import type { ChartConfig } from "@/common/components/chart";
 import { inferAcadTerm } from "@/common/functions";
 import { formatBidCurrencyCompact } from "@/common/functions/format-bid-currency";
-import { Label } from "recharts";
-import {
-  clampLabelCenterX,
-  estimateLabelWidth,
-} from "@/modules/bidding/utils/chart-label-layout";
+import { clampLabelCenterX, estimateLabelWidth } from "@/modules/bidding/utils/chart-label-layout";
+import { compareRounds } from "@/modules/bidding/utils/round-order";
+import { parseBidWindowKey } from "@/modules/bidding/utils/bid-window-key";
+import { computeAcadTermGroups } from "@/modules/bidding/utils/acad-term-groups";
 
 const chartConfig = {
   median: {
@@ -36,12 +32,6 @@ const chartConfig = {
     color: "#d97706",
   },
 } satisfies ChartConfig;
-
-import { compareRounds } from "@/modules/bidding/utils/round-order";
-import { parseBidWindowKey } from "@/modules/bidding/utils/bid-window-key";
-import {
-  computeAcadTermGroups,
-} from "@/modules/bidding/utils/acad-term-groups";
 
 export function sortChartData(
   data: (
@@ -61,7 +51,7 @@ export function sortChartData(
         size: d.size,
       };
     })
-    .sort((a, b) => {
+    .toSorted((a, b) => {
       const aKey = parseBidWindowKey(a.bidWindow);
       const bKey = parseBidWindowKey(b.bidWindow);
       // Sort by acadTerm first (asc / chronological), then round order, then window number
@@ -92,10 +82,7 @@ interface BidChartProps {
   currentWindowBidWindow?: string;
 }
 
-export const BidChart = ({
-  chartData,
-  currentWindowBidWindow,
-}: BidChartProps) => {
+export const BidChart = ({ chartData, currentWindowBidWindow }: BidChartProps) => {
   const sorted = sortChartData(chartData);
   const manyPoints = sorted.length >= 15;
 
@@ -114,7 +101,7 @@ export const BidChart = ({
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
+    if (!el) return undefined;
     const measure = () => setContainerWidth(el.clientWidth);
     measure();
     const ro = new ResizeObserver(measure);
@@ -138,15 +125,8 @@ export const BidChart = ({
 
   return (
     <ChartContainer ref={containerRef} config={chartConfig}>
-      <LineChart
-        data={sorted}
-        margin={CHART_MARGIN}
-      >
-        <CartesianGrid
-          strokeDasharray="3 3"
-          vertical={false}
-          stroke="var(--border)"
-        />
+      <LineChart data={sorted} margin={CHART_MARGIN}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
 
         {/* Alternating academic year background shading */}
         {ayGroups.map((group, i) => (
@@ -177,12 +157,9 @@ export const BidChart = ({
             // Plot bounds: left = YAxis width (Y_AXIS_WIDTH) + margin.left;
             // right = measured container width - margin.right.
             const plotLeft = PLOT_LEFT;
-            const plotRight =
-              containerWidth > 0 ? containerWidth - CHART_MARGIN.right : 0;
+            const plotRight = containerWidth > 0 ? containerWidth - CHART_MARGIN.right : 0;
             const centerX =
-              plotRight > plotLeft
-                ? clampLabelCenterX(x, plotLeft, plotRight, labelWidth)
-                : x;
+              plotRight > plotLeft ? clampLabelCenterX(x, plotLeft, plotRight, labelWidth) : x;
 
             return (
               <text
@@ -210,23 +187,14 @@ export const BidChart = ({
         {/* Current window highlight */}
         {currentPoint && (
           <>
-            <ReferenceArea
-              x1={currentPoint.bidWindow}
-              fill="#2563eb"
-              fillOpacity={0.06}
-            />
+            <ReferenceArea x1={currentPoint.bidWindow} fill="#2563eb" fillOpacity={0.06} />
             <ReferenceLine
               x={currentPoint.bidWindow}
               stroke="#64748b"
               strokeWidth={1.5}
               strokeDasharray="4 4"
             >
-              <Label
-                value="now"
-                position="insideTopRight"
-                fill="#64748b"
-                fontSize={11}
-              />
+              <Label value="now" position="insideTopRight" fill="#64748b" fontSize={11} />
             </ReferenceLine>
           </>
         )}
@@ -240,9 +208,19 @@ export const BidChart = ({
           dot={
             manyPoints
               ? false
-              : { r: 4, fill: "white", stroke: "var(--color-median)", strokeWidth: 2 }
+              : {
+                  r: 4,
+                  fill: "white",
+                  stroke: "var(--color-median)",
+                  strokeWidth: 2,
+                }
           }
-          activeDot={{ r: 6, fill: "var(--color-median)", stroke: "white", strokeWidth: 2 }}
+          activeDot={{
+            r: 6,
+            fill: "var(--color-median)",
+            stroke: "white",
+            strokeWidth: 2,
+          }}
         />
 
         {/* Min line — amber dashed */}
@@ -255,15 +233,26 @@ export const BidChart = ({
           dot={
             manyPoints
               ? false
-              : { r: 3, fill: "white", stroke: "var(--color-min)", strokeWidth: 2 }
+              : {
+                  r: 3,
+                  fill: "white",
+                  stroke: "var(--color-min)",
+                  strokeWidth: 2,
+                }
           }
-          activeDot={{ r: 5, fill: "var(--color-min)", stroke: "white", strokeWidth: 2 }}
+          activeDot={{
+            r: 5,
+            fill: "var(--color-min)",
+            stroke: "white",
+            strokeWidth: 2,
+          }}
         />
 
         <ChartTooltip
           content={
             <ChartTooltipContent
               labelFormatter={(value) => {
+                // oxlint-disable-next-line typescript/no-base-to-string -- recharts label is our string bidWindow key
                 const [acadTerm, round, window] = String(value).split("/");
                 const { term, displayYear } = inferAcadTerm(acadTerm!);
                 return (
@@ -278,10 +267,7 @@ export const BidChart = ({
                 );
               }}
               formatter={(value, name) => {
-                const item = sorted.find(
-                  (d) =>
-                    (name === "median" ? d.median : d.min) === value,
-                );
+                const item = sorted.find((d) => (name === "median" ? d.median : d.min) === value);
                 return (
                   <div className="flex w-full items-center justify-between gap-8">
                     <div className="flex items-center gap-1.5">
@@ -289,19 +275,13 @@ export const BidChart = ({
                         className="inline-block size-2.5 rounded-full"
                         style={{
                           backgroundColor:
-                            name === "median"
-                              ? chartConfig.median.color
-                              : chartConfig.min.color,
+                            name === "median" ? chartConfig.median.color : chartConfig.min.color,
                         }}
                       />
-                      <span className="text-muted-foreground capitalize">
-                        {name}
-                      </span>
+                      <span className="text-muted-foreground capitalize">{name}</span>
                     </div>
                     <div className="flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                      <span className="text-muted-foreground font-normal text-xs">
-                        e$
-                      </span>
+                      <span className="text-muted-foreground font-normal text-xs">e$</span>
                       {value as number}
                     </div>
                     {item && (
@@ -317,11 +297,7 @@ export const BidChart = ({
           cursor={false}
         />
 
-        <Legend
-          align="right"
-          verticalAlign="top"
-          wrapperStyle={{ paddingBottom: 8 }}
-        />
+        <Legend align="right" verticalAlign="top" wrapperStyle={{ paddingBottom: 8 }} />
       </LineChart>
     </ChartContainer>
   );

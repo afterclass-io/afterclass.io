@@ -1,6 +1,7 @@
 import ical, { ICalCalendarMethod, ICalWeekday } from "ical-generator";
 import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
 import { dayOfWeekToIcalCode } from "@/common/functions/day-of-week";
+import { parseTimePartsSafe } from "@/common/functions/time";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -47,7 +48,7 @@ const ICAL_DAY_TO_JS: Record<string, number> = {
 function sgtDateTime(
   year: number,
   month: number, // 1-based
-  day: number,   // 1-based
+  day: number, // 1-based
   hours: number,
   minutes: number,
 ): Date {
@@ -88,17 +89,13 @@ function firstOccurrence(icalDay: ICalWeekday, after: Date): Date {
 function teachingWeekNumbers(termStart: Date, termEnd: Date): number[] {
   const [sy, sm, sd] = sgtYMD(termStart);
   const [ey, em, ed] = sgtYMD(termEnd);
-  const spanDays = Math.round(
-    (Date.UTC(ey, em - 1, ed) - Date.UTC(sy, sm - 1, sd)) / 86_400_000,
-  );
+  const spanDays = Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(sy, sm - 1, sd)) / 86_400_000);
   const LONG_TERM_MIN_DAYS = 13 * 7; // 91 days separates T1/T2 from T3A/T3B
   if (spanDays >= LONG_TERM_MIN_DAYS) {
     return [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14];
   }
   return [1, 2, 3, 4, 5];
 }
-
-import { parseTimePartsSafe } from "@/common/functions/time";
 
 // ---------------------------------------------------------------------------
 // Main export
@@ -152,10 +149,18 @@ export function buildIcal(input: ICalInput): string {
         const d = new Date(occurrence);
 
         const start = sgtDateTime(
-          d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), startH, startM,
+          d.getUTCFullYear(),
+          d.getUTCMonth() + 1,
+          d.getUTCDate(),
+          startH,
+          startM,
         );
         const end = sgtDateTime(
-          d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), endH, endM,
+          d.getUTCFullYear(),
+          d.getUTCMonth() + 1,
+          d.getUTCDate(),
+          endH,
+          endM,
         );
 
         cal.createEvent({
@@ -170,8 +175,7 @@ export function buildIcal(input: ICalInput): string {
 
     // --- Exam timings → one-off VEVENTs ---
     for (const exam of cls.examTimings) {
-      const examDate =
-        typeof exam.date === "string" ? new Date(exam.date) : exam.date;
+      const examDate = typeof exam.date === "string" ? new Date(exam.date) : exam.date;
       const startParts = parseTimePartsSafe(exam.startTime);
       const endParts = parseTimePartsSafe(exam.endTime);
       if (!startParts || !endParts) continue;

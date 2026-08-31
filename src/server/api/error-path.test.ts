@@ -1,15 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { TRPCError } from "@trpc/server";
 import { z, ZodError } from "zod";
+import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { saveEntries } from "./roadmaps/saveEntries";
 
 vi.mock("@/server/db", () => ({ db: {} }));
 vi.mock("@/server/auth", () => ({ auth: () => null }));
 vi.mock("@sentry/nextjs", () => ({
   trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
 }));
-
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { saveEntries } from "./roadmaps/saveEntries";
 
 const testRouter = createTRPCRouter({
   saveEntries,
@@ -44,19 +43,18 @@ describe("tRPC Error Path & Zod Error Formatting (Seam A)", () => {
   it("rejects invalid input with BAD_REQUEST and ZodError cause", async () => {
     const caller = makeCaller();
 
-    try {
-      await caller.validateSample({
+    const err = await caller
+      .validateSample({
         title: "",
         rating: 10,
         contactEmail: "not-an-email",
-      } as never);
-      expect.unreachable("Procedure should have thrown");
-    } catch (err) {
-      expect(err).toBeInstanceOf(TRPCError);
-      const trpcError = err as TRPCError;
-      expect(trpcError.code).toBe("BAD_REQUEST");
-      expect(trpcError.cause).toBeInstanceOf(ZodError);
-    }
+      })
+      .catch((e: unknown) => e);
+
+    expect(err).toBeInstanceOf(TRPCError);
+    const trpcError = err as TRPCError;
+    expect(trpcError.code).toBe("BAD_REQUEST");
+    expect(trpcError.cause).toBeInstanceOf(ZodError);
   });
 
   it("formats ZodError into client-facing zodError payload matching external contract", () => {
@@ -67,52 +65,51 @@ describe("tRPC Error Path & Zod Error Formatting (Seam A)", () => {
 
     const parseResult = schema.safeParse({ name: "", score: 150 });
     expect(parseResult.success).toBe(false);
-
-    if (!parseResult.success) {
-      const trpcError = new TRPCError({
-        code: "BAD_REQUEST",
-        cause: parseResult.error,
-      });
-
-      const shape = {
-        message: trpcError.message,
-        code: -32600,
-        data: {
-          code: trpcError.code,
-          httpStatus: 400,
-          path: "validateSample",
-        },
-      };
-
-      const formatted = testRouter._def._config.errorFormatter({
-        shape,
-        error: trpcError,
-        type: "mutation",
-        path: "validateSample",
-        input: {},
-        ctx: undefined,
-      } as never);
-
-      expect(formatted.data).toBeDefined();
-      expect(formatted.data.zodError).toBeDefined();
-
-      const zodError = formatted.data.zodError as {
-        formErrors: string[];
-        fieldErrors: Record<string, string[]>;
-      } | null;
-      // External contract: { formErrors: string[], fieldErrors: Record<string, string[]> }
-      expect(Array.isArray(zodError?.formErrors)).toBe(true);
-      expect(zodError?.fieldErrors).toBeTypeOf("object");
-      expect(Array.isArray(zodError?.fieldErrors.score)).toBe(true);
-      expect(zodError?.fieldErrors.score?.length).toBeGreaterThan(0);
+    if (parseResult.success) {
+      throw new Error("Expected parseResult.success to be false");
     }
+
+    const trpcError = new TRPCError({
+      code: "BAD_REQUEST",
+      cause: parseResult.error,
+    });
+
+    const shape = {
+      message: trpcError.message,
+      code: -32600,
+      data: {
+        code: trpcError.code,
+        httpStatus: 400,
+        path: "validateSample",
+      },
+    };
+
+    // eslint-disable-next-line no-underscore-dangle
+    const formatted = testRouter._def._config.errorFormatter({
+      shape,
+      error: trpcError,
+      type: "mutation",
+      path: "validateSample",
+      input: {},
+      ctx: undefined,
+    } as never);
+
+    expect(formatted.data).toBeDefined();
+    expect(formatted.data.zodError).toBeDefined();
+
+    const zodError = formatted.data.zodError;
+    // External contract: { formErrors: string[], fieldErrors: Record<string, string[]> }
+    expect(Array.isArray(zodError?.formErrors)).toBe(true);
+    expect(zodError?.fieldErrors).toBeTypeOf("object");
+    expect(Array.isArray(zodError?.fieldErrors.score)).toBe(true);
+    expect(zodError?.fieldErrors.score?.length).toBeGreaterThan(0);
   });
 
   it("rejects roadmaps.saveEntries on invalid enum term value", async () => {
     const caller = makeCaller({ id: "u1" });
 
-    try {
-      await caller.saveEntries({
+    const err = await caller
+      .saveEntries({
         roadmapId: "r1",
         entries: [
           {
@@ -122,13 +119,12 @@ describe("tRPC Error Path & Zod Error Formatting (Seam A)", () => {
             sortOrder: 0,
           },
         ],
-      });
-      expect.unreachable("saveEntries should have thrown on invalid term");
-    } catch (err) {
-      expect(err).toBeInstanceOf(TRPCError);
-      const trpcError = err as TRPCError;
-      expect(trpcError.code).toBe("BAD_REQUEST");
-      expect(trpcError.cause).toBeInstanceOf(ZodError);
-    }
+      })
+      .catch((e: unknown) => e);
+
+    expect(err).toBeInstanceOf(TRPCError);
+    const trpcError = err as TRPCError;
+    expect(trpcError.code).toBe("BAD_REQUEST");
+    expect(trpcError.cause).toBeInstanceOf(ZodError);
   });
 });

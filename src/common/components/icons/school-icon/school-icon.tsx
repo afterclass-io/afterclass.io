@@ -1,14 +1,11 @@
 "use client";
-import { CustomIcon, type CustomIconProps } from "../custom-icon";
+import { CustomIcon } from "../custom-icon";
+import type { CustomIconProps } from "../custom-icon";
 import { NTUIcon } from "./icon-ntu";
 import { NUSIcon } from "./icon-nus";
 import { SMUIcon } from "./icon-smu";
-import { type UniversityAbbreviation } from "@/generated/prisma/enums";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/common/components/tooltip";
+import type { UniversityAbbreviation } from "@/generated/prisma/enums";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/common/components/tooltip";
 
 export interface SchoolIconProps extends CustomIconProps {
   school: UniversityAbbreviation;

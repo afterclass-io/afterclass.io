@@ -21,7 +21,7 @@ export function useAutoStartTour(
   const { hasSeen, onDone } = opts;
 
   useEffect(() => {
-    if (hasSeen) return;
+    if (hasSeen) return undefined;
     const timeoutId = setTimeout(() => {
       void startTour(steps, { onDestroyed: onDone });
     }, AUTO_START_DELAY_MS);

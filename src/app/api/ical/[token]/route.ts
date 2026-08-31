@@ -1,4 +1,4 @@
-import { type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { getFeedData } from "@/server/api/timetable/getFeedData";
 import { buildIcal } from "@/modules/timetable/functions/build-ical";
 

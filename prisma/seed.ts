@@ -112,10 +112,10 @@ async function main() {
     data: bidResult,
   });
 
-    const safetyFactor = require("./data/22_safety_factors.json");
+  const safetyFactor = require("./data/22_safety_factors.json");
   await prisma.safetyFactor.createMany({ data: safetyFactor, skipDuplicates: true });
 
-const bidPrediction = require("./data/21_bid_predictions.json");
+  const bidPrediction = require("./data/21_bid_predictions.json");
   await prisma.bidPrediction.createMany({
     data: bidPrediction,
     skipDuplicates: true,
@@ -126,7 +126,7 @@ const bidPrediction = require("./data/21_bid_predictions.json");
     data: hackSubmission,
   });
 
-// === Planning integration seed data ===
+  // === Planning integration seed data ===
 
   const userTimetables = require("./data/23_user_timetables.json");
   await prisma.userTimetable.createMany({
@@ -189,6 +189,7 @@ const bidPrediction = require("./data/21_bid_predictions.json");
 main()
   .then(async () => {
     await prisma.$disconnect();
+    return;
   })
   .catch(async (e) => {
     console.error(e);

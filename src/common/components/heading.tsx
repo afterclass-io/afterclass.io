@@ -1,13 +1,12 @@
-import { type ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 
 import { cn } from "@/common/functions";
 
 type HeadingElementType = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 
-export type HeadingProps<Element extends HeadingElementType> =
-  ComponentPropsWithoutRef<Element> & {
-    as?: Element;
-  };
+export type HeadingProps<Element extends HeadingElementType> = ComponentPropsWithoutRef<Element> & {
+  as?: Element;
+};
 
 export const Heading = ({
   children,
@@ -21,10 +20,7 @@ export const Heading = ({
   return (
     <Component
       {...props}
-      className={cn(
-        "text-accent-foreground font-sans font-semibold tracking-tighter",
-        className,
-      )}
+      className={cn("text-accent-foreground font-sans font-semibold tracking-tighter", className)}
     >
       {children}
     </Component>

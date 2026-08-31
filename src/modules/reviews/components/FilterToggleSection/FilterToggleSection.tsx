@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { type ReviewType } from "@/generated/prisma/enums";
+import type { ReviewType } from "@/generated/prisma/enums";
 
 import { FilterToggleSection as Filter } from "@/common/components/FilterToggleSection";
-import { type FilterItem } from "@/common/components/FilterToggleSection/FilterToggleSectionItem";
+import type { FilterItem } from "@/common/components/FilterToggleSection/FilterToggleSectionItem";
 import { Button } from "@/common/components/button";
 import { cn } from "@/common/functions";
 
@@ -29,8 +29,7 @@ export const FilterToggleSection = (props: FilterToggleSectionProps) => {
 
   const params = new URLSearchParams(searchParams ?? undefined);
   const selected = params.getAll(props.searchParamsName ?? "");
-  const [selectedItems, setSelectedItems] =
-    useState<FilterItem["value"][]>(selected);
+  const [selectedItems, setSelectedItems] = useState<FilterItem["value"][]>(selected);
   const [isFilterItemsExpanded, setIsFilterItemsExpanded] = useState(false);
 
   if (props.isLocked)
@@ -75,9 +74,7 @@ export const FilterToggleSection = (props: FilterToggleSectionProps) => {
         className={cn(
           // tailwind classes should not be computed dynamically
           // see https://tailwindcss.com/docs/content-configuration#dynamic-class-names
-          isFilterItemsExpanded
-            ? "[&>*:nth-child(n+4)]:flex"
-            : "[&>*:nth-child(n+4)]:hidden",
+          isFilterItemsExpanded ? "[&>*:nth-child(n+4)]:flex" : "[&>*:nth-child(n+4)]:hidden",
           "md:[&>*:nth-child(n+4)]:flex",
         )}
       >

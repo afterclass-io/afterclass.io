@@ -49,8 +49,9 @@ technologies:
 
 ### Dev Tools
 
-- [ESLint](https://eslint.org/) - Linting utility for TypeScript and TSX
-- [Prettier](https://prettier.io/) - Code formatter
+- [oxlint](https://oxc.rs/docs/guide/usage/linter) - Fast Rust-based linter for
+  TypeScript and TSX
+- [oxfmt](https://oxc.rs/) - Fast Rust-based code formatter
 - [Storybook](https://storybook.js.org/) - UI component explorer
 - [Docker](https://www.docker.com/) - Containerized development environment
 

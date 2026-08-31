@@ -1,7 +1,8 @@
 "use client";
 
-import { type EdgeConfig } from "@/server/ecfg/config";
-import { createContext, type ReactNode } from "react";
+import type { EdgeConfig } from "@/server/ecfg/config";
+import { createContext } from "react";
+import type { ReactNode } from "react";
 
 export const EdgeConfigContext = createContext<EdgeConfig>({} as EdgeConfig);
 
@@ -11,9 +12,5 @@ type Props = {
 };
 
 export function EdgeConfigContextProvider({ edgeConfig, children }: Props) {
-  return (
-    <EdgeConfigContext.Provider value={edgeConfig}>
-      {children}
-    </EdgeConfigContext.Provider>
-  );
+  return <EdgeConfigContext.Provider value={edgeConfig}>{children}</EdgeConfigContext.Provider>;
 }

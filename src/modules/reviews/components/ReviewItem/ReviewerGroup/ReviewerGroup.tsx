@@ -1,4 +1,4 @@
-import { type Review } from "@/modules/reviews/types";
+import type { Review } from "@/modules/reviews/types";
 import { Profile } from "@/common/components/profile";
 import { Avatar, AvatarFallback } from "@/common/components/avatar";
 

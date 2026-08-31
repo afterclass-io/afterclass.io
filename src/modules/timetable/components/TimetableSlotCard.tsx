@@ -3,19 +3,12 @@
 import { X } from "lucide-react";
 import { cn } from "@/common/functions";
 import { Tag } from "@/common/components/tag";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/common/components/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/common/components/tooltip";
 import { abbreviateVenue } from "@/modules/timetable/functions/abbreviate-venue";
 import { courseColor } from "@/modules/timetable/functions/course-color";
 import { formatBidAmount } from "@/modules/timetable/functions/format";
-import {
-  bidChipVariant,
-  slotCardVariant,
-  type UserBidStatus,
-} from "@/modules/timetable/functions/bid-status";
+import { bidChipVariant, slotCardVariant } from "@/modules/timetable/functions/bid-status";
+import type { UserBidStatus } from "@/modules/timetable/functions/bid-status";
 import type { PositionedSlot } from "@/modules/timetable/functions/slot-math";
 
 export type BidInfo = {
@@ -118,21 +111,11 @@ export function TimetableSlotCard({
         </span>
         <span className="block truncate opacity-75">{courseName}</span>
         {isExam && (
-          <Tag
-            variant="soft"
-            color="error"
-            size="xs"
-            deletable={false}
-            className="mt-0.5"
-          >
+          <Tag variant="soft" color="error" size="xs" deletable={false} className="mt-0.5">
             EXAM
           </Tag>
         )}
-        {venue && (
-          <span className="block truncate opacity-75">
-            {abbreviateVenue(venue)}
-          </span>
-        )}
+        {venue && <span className="block truncate opacity-75">{abbreviateVenue(venue)}</span>}
         {showChip && (
           <span
             className={cn(
@@ -140,8 +123,7 @@ export function TimetableSlotCard({
               bidChipVariant(bidInfo.status as UserBidStatus),
             )}
           >
-            {formatBidAmount(bidInfo.amount)}{" "}
-            · R{bidInfo.round}
+            {formatBidAmount(bidInfo.amount)} · R{bidInfo.round}
           </span>
         )}
       </button>

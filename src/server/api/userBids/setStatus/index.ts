@@ -9,17 +9,17 @@ import {
   syncSecuredBidToActiveTimetable,
 } from "@/server/api/userBids/sync-secured";
 
+const isP2002 = (err: unknown) =>
+  typeof err === "object" &&
+  err !== null &&
+  "code" in err &&
+  (err as { code?: string }).code === "P2002";
+
 export const setStatus = protectedProcedure
   .input(
     z.object({
       id: z.string(),
-      status: z.enum([
-        "PLANNED",
-        "SECURED",
-        "PARTICIPATED",
-        "DROPPED",
-        "CANCELLED",
-      ]),
+      status: z.enum(["PLANNED", "SECURED", "PARTICIPATED", "DROPPED", "CANCELLED"]),
     }),
   )
   .mutation(async ({ ctx, input }) => {
@@ -68,12 +68,6 @@ export const setStatus = protectedProcedure
     // All-or-nothing: update the status, demote sibling bids to PARTICIPATED
     // (one active row per class) and, when securing, mirror the class onto
     // the user's active timetable for the term.
-    const isP2002 = (err: unknown) =>
-      typeof err === "object" &&
-      err !== null &&
-      "code" in err &&
-      (err as { code?: string }).code === "P2002";
-
     const runTx = () =>
       ctx.db.$transaction(async (tx) => {
         const updatedBid = await tx.userBid.update({

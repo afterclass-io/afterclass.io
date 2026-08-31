@@ -2,19 +2,12 @@
 
 import { X } from "lucide-react";
 import { cn } from "@/common/functions";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/common/components/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/common/components/tooltip";
 import { courseColor } from "@/modules/timetable/functions/course-color";
 import { abbreviateVenue } from "@/modules/timetable/functions/abbreviate-venue";
 import { formatBidAmount } from "@/modules/timetable/functions/format";
-import {
-  bidChipVariant,
-  slotCardVariant,
-  type UserBidStatus,
-} from "@/modules/timetable/functions/bid-status";
+import { bidChipVariant, slotCardVariant } from "@/modules/timetable/functions/bid-status";
+import type { UserBidStatus } from "@/modules/timetable/functions/bid-status";
 import type { BidInfo } from "./TimetableSlotCard";
 import type { DaySlot } from "./TimetableDayColumn";
 
@@ -52,19 +45,16 @@ export function TimetableAgenda({
   const dayNumbers = Object.keys(days)
     .map(Number)
     .filter((d) => (days[d]?.length ?? 0) > 0)
-    .sort((a, b) => a - b);
+    .toSorted((a, b) => a - b);
 
   return (
     <div className="flex flex-col gap-3" data-test="timetable-agenda">
       {dayNumbers.map((dayNum) => {
-        const slots = [...(days[dayNum] ?? [])].sort((a, b) =>
+        const slots = [...(days[dayNum] ?? [])].toSorted((a, b) =>
           a.timing.startTime.localeCompare(b.timing.startTime),
         );
         return (
-          <div
-            key={dayNum}
-            className="border-border bg-card overflow-hidden rounded-lg border"
-          >
+          <div key={dayNum} className="border-border bg-card overflow-hidden rounded-lg border">
             <div className="bg-muted/50 border-border text-muted-foreground border-b px-3 py-1.5 text-xs font-semibold tracking-wide uppercase">
               {dayLabels[dayNum] ?? String(dayNum)}
             </div>
@@ -135,9 +125,7 @@ function AgendaRow({
         <span className="block truncate font-semibold">
           {slot.courseCode}
           <span className="ml-1 font-normal opacity-75">{slot.section}</span>
-          {slot.isExam && (
-            <span className="ml-1 font-normal opacity-75">· Exam</span>
-          )}
+          {slot.isExam && <span className="ml-1 font-normal opacity-75">· Exam</span>}
         </span>
         {(venue ?? slot.professorName) && (
           <span className="block truncate opacity-75">
@@ -151,8 +139,7 @@ function AgendaRow({
               bidChipVariant(bidInfo.status as UserBidStatus),
             )}
           >
-            {formatBidAmount(bidInfo.amount)}{" "}
-            · R{bidInfo.round}
+            {formatBidAmount(bidInfo.amount)} · R{bidInfo.round}
           </span>
         )}
       </button>

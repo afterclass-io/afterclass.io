@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  buildProgressSyncPlan,
-  pickNewCourseIds,
-  roadmapTermForAcadTerm,
-  type SyncTermRow,
-} from "./progress-sync";
+import { buildProgressSyncPlan, pickNewCourseIds, roadmapTermForAcadTerm } from "./progress-sync";
+import type { SyncTermRow } from "./progress-sync";
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -109,7 +105,7 @@ describe("buildProgressSyncPlan", () => {
   });
 
   it("is independent of input row ordering", () => {
-    const shuffled = [...TERMS].reverse();
+    const shuffled = [...TERMS].toReversed();
     expect(buildProgressSyncPlan(shuffled, "2026-T1", "2026-T2")).toEqual(
       buildProgressSyncPlan(TERMS, "2026-T1", "2026-T2"),
     );
@@ -144,10 +140,7 @@ describe("buildProgressSyncPlan", () => {
 
 describe("pickNewCourseIds", () => {
   it("keeps only courses not already on the roadmap", () => {
-    expect(pickNewCourseIds(new Set(["a", "b"]), ["b", "c", "d"])).toEqual([
-      "c",
-      "d",
-    ]);
+    expect(pickNewCourseIds(new Set(["a", "b"]), ["b", "c", "d"])).toEqual(["c", "d"]);
   });
 
   it("dedupes candidates within a single sync run", () => {

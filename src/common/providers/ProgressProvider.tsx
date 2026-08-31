@@ -1,11 +1,10 @@
 "use client";
-import { type ReactNode, createContext, useContext } from "react";
+import { createContext, useContext } from "react";
+import type { ReactNode } from "react";
 
 import { useTransitionMount } from "@/common/hooks/use-transition-mount";
 
-const ProgressBarContext = createContext<ReturnType<
-  typeof useTransitionMount
-> | null>(null);
+const ProgressBarContext = createContext<ReturnType<typeof useTransitionMount> | null>(null);
 
 export function useProgress() {
   const progress = useContext(ProgressBarContext);
@@ -17,16 +16,8 @@ export function useProgress() {
   return progress;
 }
 
-export default function ProgressProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function ProgressProvider({ children }: { children: ReactNode }) {
   const progress = useTransitionMount();
 
-  return (
-    <ProgressBarContext.Provider value={progress}>
-      {children}
-    </ProgressBarContext.Provider>
-  );
+  return <ProgressBarContext.Provider value={progress}>{children}</ProgressBarContext.Provider>;
 }

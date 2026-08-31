@@ -1,4 +1,4 @@
-import { type PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 
 export default async function SchoolLayout({ children }: PropsWithChildren) {
   // Full-width shell: pages that need the classic 954px centered column

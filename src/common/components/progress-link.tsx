@@ -1,12 +1,13 @@
 "use client";
-import { type ComponentProps, startTransition } from "react";
+import { startTransition } from "react";
+import type { ComponentProps } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { useProgress } from "@/common/providers/ProgressProvider";
 import { buttonVariants } from "@/common/components/button";
 
-import { type VariantProps } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import { cn } from "@/common/functions";
 
 /**
@@ -51,7 +52,11 @@ export function ProgressLink({
         progress.start();
 
         startTransition(() => {
-          router.push(props.href.toString());
+          const hrefString =
+            typeof props.href === "string"
+              ? props.href
+              : `${props.href.pathname ?? ""}${props.href.search ?? ""}${props.href.hash ?? ""}`;
+          router.push(hrefString);
           progress.done();
         });
       }}

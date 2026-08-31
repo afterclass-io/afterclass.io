@@ -37,9 +37,7 @@ const BreadcrumbTrail = ({
                 {element.label}
               </BreadcrumbLink>
             ) : (
-              <BreadcrumbPage className="max-w-80 truncate">
-                {element.label}
-              </BreadcrumbPage>
+              <BreadcrumbPage className="max-w-80 truncate">{element.label}</BreadcrumbPage>
             )}
           </BreadcrumbItem>
           {index < elements.length - 1 && <BreadcrumbSeparator />}
@@ -64,10 +62,7 @@ const RoadmapsBreadcrumb = ({
     { enabled: !!id && !isMine, retry: false },
   );
 
-  const elements: BreadcrumbElement[] = [
-    HOME_BREADCRUMB,
-    { label: "Roadmaps", href: "/roadmaps" },
-  ];
+  const elements: BreadcrumbElement[] = [HOME_BREADCRUMB, { label: "Roadmaps", href: "/roadmaps" }];
   if (isMine) {
     elements.push({ label: "Personal" });
   } else if (id) {
@@ -77,9 +72,7 @@ const RoadmapsBreadcrumb = ({
   return <BreadcrumbTrail elements={elements} {...props} />;
 };
 
-export const HomeBreadcrumb = (
-  props: React.ComponentProps<typeof Breadcrumb>,
-) => {
+export const HomeBreadcrumb = (props: React.ComponentProps<typeof Breadcrumb>) => {
   const path = usePathname();
   const pathSegments = (path ?? "").split("/").filter(Boolean);
 
@@ -103,10 +96,7 @@ export const HomeBreadcrumb = (
     return (
       <React.Suspense
         fallback={
-          <BreadcrumbTrail
-            elements={[HOME_BREADCRUMB, { label: "Roadmaps" }]}
-            {...props}
-          />
+          <BreadcrumbTrail elements={[HOME_BREADCRUMB, { label: "Roadmaps" }]} {...props} />
         }
       >
         <RoadmapsBreadcrumb id={pathSegments[1]} {...props} />
@@ -182,11 +172,8 @@ export const HomeBreadcrumb = (
       <Breadcrumb {...props}>
         <BreadcrumbList>
           <BreadcrumbItem>
-            {path != "/" && (
-              <BreadcrumbLink
-                href={HOME_BREADCRUMB.href}
-                className="max-w-80 truncate"
-              >
+            {path !== "/" && (
+              <BreadcrumbLink href={HOME_BREADCRUMB.href} className="max-w-80 truncate">
                 {HOME_BREADCRUMB.label}
               </BreadcrumbLink>
             )}

@@ -1,5 +1,6 @@
 import { useEdgeConfigs } from "@/common/hooks";
-import { api, type RouterInputs } from "@/common/tools/trpc/react";
+import { api } from "@/common/tools/trpc/react";
+import type { RouterInputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { ReviewEventType } from "@/generated/prisma/enums";
 import { useSession } from "next-auth/react";
@@ -16,10 +17,7 @@ export function useOptimisticReaction() {
   const { mutate: track } = api.reviewEvents.track.useMutation();
 
   const mutation = api.reviewReactions.upsert.useMutation({
-    ...createOptimisticMutationCallbacks<
-      RouterInputs["reviewReactions"]["upsert"],
-      unknown
-    >({
+    ...createOptimisticMutationCallbacks<RouterInputs["reviewReactions"]["upsert"], unknown>({
       cancel: async () => {
         if (lastInputRef.current) {
           await utils.reviewReactions.getByReviewId.cancel(lastInputRef.current);
@@ -60,39 +58,34 @@ export function useOptimisticReaction() {
     (variables: Parameters<typeof mutate>[0]) => {
       const { reviewId, reaction } = variables;
 
-      utils.reviewReactions.getByReviewId.setData(
-        { reviewId },
-        (oldQueryData) => {
-          const reactingUserId = session?.user.id ?? "";
+      utils.reviewReactions.getByReviewId.setData({ reviewId }, (oldQueryData) => {
+        const reactingUserId = session?.user.id ?? "";
 
-          // when user undo their reaction
-          if (!reaction) {
-            return oldQueryData?.filter(
-              (reaction) => reaction.reactingUserId !== reactingUserId,
-            );
-          }
+        // when user undo their reaction
+        if (!reaction) {
+          return oldQueryData?.filter((reaction) => reaction.reactingUserId !== reactingUserId);
+        }
 
-          // when user has new reaction
-          const now = new Date();
-          const newReaction = {
-            reaction: reaction,
-            reactingUserId,
-            reviewId,
-            createdAt: now,
-            updatedAt: now,
-          };
+        // when user has new reaction
+        const now = new Date();
+        const newReaction = {
+          reaction: reaction,
+          reactingUserId,
+          reviewId,
+          createdAt: now,
+          updatedAt: now,
+        };
 
-          // when there are no other reactions on this review
-          if (!oldQueryData) return [newReaction];
+        // when there are no other reactions on this review
+        if (!oldQueryData) return [newReaction];
 
-          // remove the other reaction by the same user if it exists
-          const updatedReactions = oldQueryData.filter(
-            (reaction) => reaction.reactingUserId !== reactingUserId,
-          );
+        // remove the other reaction by the same user if it exists
+        const updatedReactions = oldQueryData.filter(
+          (reaction) => reaction.reactingUserId !== reactingUserId,
+        );
 
-          return [...updatedReactions, newReaction];
-        },
-      );
+        return [...updatedReactions, newReaction];
+      });
     },
     [session?.user.id, utils.reviewReactions.getByReviewId],
   );

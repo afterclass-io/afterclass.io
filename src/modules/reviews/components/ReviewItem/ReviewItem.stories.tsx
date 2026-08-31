@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { ReviewItem } from "./ReviewItem";
 import { ReviewType, UniversityAbbreviation } from "@/generated/prisma/enums";
-import { type Review } from "@/modules/reviews/types";
+import type { Review } from "@/modules/reviews/types";
 
 const review = {
   id: "1",

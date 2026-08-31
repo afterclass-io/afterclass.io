@@ -1,4 +1,5 @@
-import { CustomIcon, type CustomIconProps } from "./custom-icon";
+import { CustomIcon } from "./custom-icon";
+import type { CustomIconProps } from "./custom-icon";
 
 export const SmileyIcon = (props: CustomIconProps) => {
   return (

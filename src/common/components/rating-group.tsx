@@ -1,4 +1,5 @@
 "use client";
+/* oxlint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/prefer-tag-over-role -- TODO: interactive rating should use radiogroup semantics; sr-only text alternative is present */
 import * as React from "react";
 
 import { cn } from "@/common/functions";
@@ -86,8 +87,7 @@ export const RatingGroup = ({
 
   const getStyle = React.useCallback(
     (index: number) => {
-      const ratingToUse =
-        !readOnly && hoverRating !== null ? hoverRating : value;
+      const ratingToUse = !readOnly && hoverRating !== null ? hoverRating : value;
       return {
         color: ratingToUse > index ? color : "gray",
         fill: ratingToUse > index ? color : "transparent",

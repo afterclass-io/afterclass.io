@@ -6,6 +6,13 @@ import { useIntersectionObserver } from "@/common/hooks/use-intersection-observe
 
 const SCROLL_TO_TOP_ID = "scroll-to-top";
 
+const handleScrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+};
+
 export function ScrollToTopButton() {
   const [isVisible] = useIntersectionObserver(
     {
@@ -15,13 +22,6 @@ export function ScrollToTopButton() {
     } satisfies IntersectionObserverInit,
     SCROLL_TO_TOP_ID,
   );
-
-  const handleScrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
 
   if (isVisible) return null;
 

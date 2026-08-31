@@ -26,6 +26,8 @@
  * Select candidate with lowest score. Ties broken by section label proximity
  * to the reference section.
  */
+import { dayOfWeekToNumber } from "@/common/functions/day-of-week";
+import { parseTimeParts } from "@/common/functions/time";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -48,8 +50,6 @@ interface SelectableBidResult {
   };
 }
 
-import { dayOfWeekToNumber } from "@/common/functions/day-of-week";
-
 // ─── Day-of-week helpers ─────────────────────────────────────────────────────
 
 /**
@@ -63,8 +63,6 @@ function dayDistance(a: string, b: string): number {
   // shared util is 1-indexed (Mon=1..Fri=5); absolute differences are identical
   return Math.abs(ai - bi);
 }
-
-import { parseTimeParts } from "@/common/functions/time";
 
 /** Compute minutes since midnight from "HH:MM" or "HH:MM:SS". */
 function minutesSinceMidnight(time: string): number {
@@ -185,15 +183,12 @@ export function selectOneClassPerTerm<T extends SelectableBidResult>(
         // Tiebreak: prefer section label closer to reference section
         if (referenceSection) {
           const aDist = Math.abs(
-            parseInt(a.section.replace(/\D/g, "")) -
-              parseInt(referenceSection.replace(/\D/g, "")),
+            parseInt(a.section.replace(/\D/g, "")) - parseInt(referenceSection.replace(/\D/g, "")),
           );
           const bDist = Math.abs(
-            parseInt(b.section.replace(/\D/g, "")) -
-              parseInt(referenceSection.replace(/\D/g, "")),
+            parseInt(b.section.replace(/\D/g, "")) - parseInt(referenceSection.replace(/\D/g, "")),
           );
-          if (!isNaN(aDist) && !isNaN(bDist) && aDist !== bDist)
-            return aDist - bDist;
+          if (!isNaN(aDist) && !isNaN(bDist) && aDist !== bDist) return aDist - bDist;
         }
         return a.section.localeCompare(b.section);
       });

@@ -1,28 +1,20 @@
 "use client";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/common/components/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/common/components/avatar";
 import { ExitIcon } from "@radix-ui/react-icons";
 import { signOut } from "next-auth/react";
 import type { SessionUser } from "@/server/auth/config";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/common/components/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/common/components/popover";
 import { Button } from "@/common/components/button";
 
 interface Props {
   user: SessionUser;
 }
 
-export const UserProfile = ({ user }: Props) => {
-  const handleLogout = async () => {
-    await signOut();
-  };
+const handleLogout = async () => {
+  await signOut();
+};
 
+export const UserProfile = ({ user }: Props) => {
   return (
     <Popover>
       <PopoverTrigger className="hidden items-center gap-2 md:flex">

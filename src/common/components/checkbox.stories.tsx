@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs";
-import { Checkbox, type CheckedState } from "./checkbox";
+import { Checkbox } from "./checkbox";
+import type { CheckedState } from "./checkbox";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -70,11 +71,7 @@ export const VariantsOfDefaultCheckbox: Story = {
           </div>
         </div>
         <div className="items-top flex space-x-2">
-          <Checkbox
-            id="terms1"
-            checked={checkedDisabled}
-            onCheckedChange={setCheckedDisabled}
-          />
+          <Checkbox id="terms1" checked={checkedDisabled} onCheckedChange={setCheckedDisabled} />
           <div className="grid gap-1.5 leading-none">
             <label
               htmlFor="terms1"

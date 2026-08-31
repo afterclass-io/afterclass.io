@@ -1,7 +1,4 @@
-export function formatPercentage(
-  amount: number,
-  options: Intl.NumberFormatOptions | undefined = undefined,
-) {
+export function formatPercentage(amount: number, options?: Intl.NumberFormatOptions) {
   return new Intl.NumberFormat("en-US", {
     style: "percent",
     minimumFractionDigits: 0,

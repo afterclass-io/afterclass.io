@@ -45,7 +45,7 @@ describe("useIsMobile", () => {
     const { result } = renderHook(() => useIsMobile());
     expect(result.current).toBe(false);
 
-    void act(() => {
+    act(() => {
       window.innerWidth = 500;
       listeners.forEach((cb) => cb());
     });

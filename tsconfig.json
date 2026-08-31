@@ -3,7 +3,7 @@
     /* Base Options: */
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "target": "es2022",
+    "target": "es2023",
     "allowJs": true,
     "resolveJsonModule": true,
     "moduleDetection": "force",
@@ -13,11 +13,7 @@
     "noUncheckedIndexedAccess": true,
     "checkJs": true,
     /* Bundled projects */
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "ES2022"
-    ],
+    "lib": ["dom", "dom.iterable", "ES2023"],
     "noEmit": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -30,9 +26,7 @@
     "incremental": true,
     /* Path Aliases */
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
@@ -42,14 +36,9 @@
     "**/*.cjs",
     "**/*.js",
     ".next/types/**/*.ts",
-    "eslint.config.mjs",
     "postcss.config.mjs",
     ".next/dev/types/**/*.ts",
     ".storybook/**/*"
   ],
-  "exclude": [
-    "node_modules",
-    "cypress/**/*.cy.js",
-    "storybook-static"
-  ]
+  "exclude": ["node_modules", "cypress/**/*.cy.js", "storybook-static"]
 }

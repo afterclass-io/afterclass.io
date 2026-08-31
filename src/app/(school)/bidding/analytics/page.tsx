@@ -9,7 +9,8 @@ import {
 import { Separator } from "@/common/components/separator";
 import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
 import { notFound } from "next/navigation";
-import { PredictionType, type UniversityAbbreviation } from "@/generated/prisma/enums";
+import { PredictionType } from "@/generated/prisma/enums";
+import type { UniversityAbbreviation } from "@/generated/prisma/enums";
 import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
 import { BidAnalyticsClient } from "@/modules/bidding/components/BidAnalyticsClient";
 import { AddToTimetableButton } from "@/modules/bidding/components/AddToTimetableButton";
@@ -56,9 +57,7 @@ export default async function BiddingHistoryPage({
     // Bidirectional scoping (mirrors /bidding): a selected course scopes the
     // professor list, a selected professor scopes the course list.
     const filteredProfessors = courseCode
-      ? professors.filter((p) =>
-          classes.some((c) => c.professor?.slug === p.slug),
-        )
+      ? professors.filter((p) => classes.some((c) => c.professor?.slug === p.slug))
       : professors;
     const filteredCourses = profSlug
       ? courses.filter((co) => classes.some((c) => c.course.code === co.code))
@@ -152,10 +151,7 @@ export default async function BiddingHistoryPage({
   if (allBidResults.length === 0 && !bidPrediction) {
     return (
       <div className="flex w-full max-w-5xl flex-col gap-6 pt-2">
-        <EmptyState
-          title="No data available"
-          description="Try a different course or section."
-        />
+        <EmptyState title="No data available" description="Try a different course or section." />
       </div>
     );
   }
@@ -176,9 +172,7 @@ export default async function BiddingHistoryPage({
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">Professor</span>
-                <p className="font-medium">
-                  {classInfo.professor?.name ?? "TBA"}
-                </p>
+                <p className="font-medium">{classInfo.professor?.name ?? "TBA"}</p>
               </div>
               <div>
                 <span className="text-muted-foreground">Section</span>
@@ -205,28 +199,20 @@ export default async function BiddingHistoryPage({
                     </thead>
                     <tbody>
                       {classInfo.classTimings.map((t, i) => (
-                        <tr
-                          key={`class-${i}`}
-                          className="border-border/50 border-b"
-                        >
+                        <tr key={`class-${i}`} className="border-border/50 border-b">
                           <td className="py-1.5 font-medium">Class</td>
                           <td className="py-1.5">{t.dayOfWeek}</td>
                           <td className="py-1.5 font-mono tabular-nums">
                             {t.startTime}-{t.endTime}
                           </td>
                           {/* SPEC-5: Venue uses text-foreground for readability */}
-                          <td className="text-foreground py-1.5">
-                            {t.venue ?? "—"}
-                          </td>
+                          <td className="text-foreground py-1.5">{t.venue ?? "—"}</td>
                         </tr>
                       ))}
                       {classInfo.classExamTimings
                         .filter((t) => t.date)
                         .map((t, i) => (
-                          <tr
-                            key={`exam-${i}`}
-                            className="border-border/50 border-b"
-                          >
+                          <tr key={`exam-${i}`} className="border-border/50 border-b">
                             <td className="py-1.5 font-medium">Exam</td>
                             <td className="py-1.5">
                               {t.date
@@ -242,9 +228,7 @@ export default async function BiddingHistoryPage({
                             <td className="py-1.5 font-mono tabular-nums">
                               {t.startTime}-{t.endTime}
                             </td>
-                            <td className="text-foreground py-1.5">
-                              {t.venue ?? "—"}
-                            </td>
+                            <td className="text-foreground py-1.5">{t.venue ?? "—"}</td>
                           </tr>
                         ))}
                     </tbody>

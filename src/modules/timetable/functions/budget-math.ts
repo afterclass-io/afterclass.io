@@ -11,6 +11,7 @@
  * (1, 1A, 1B, 1C, 1F, 2, 2A, …). Unknown rounds sort alphabetically after
  * all known rounds.
  */
+import { compareRounds } from "@/modules/bidding/utils/round-order";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,8 +43,6 @@ export type BudgetSummary = {
 // BOSS canonical round ordering
 // ---------------------------------------------------------------------------
 
-import { compareRounds } from "@/modules/bidding/utils/round-order";
-
 /**
  * Compare two round labels in canonical BOSS order.
  *
@@ -70,10 +69,7 @@ export { compareRounds as compareRound };
  * @param balance The user's e$ balance for the academic term.
  * @returns       A structured summary suitable for rendering a budget panel.
  */
-export function summarizeBidsByRound(
-  bids: BidSummary[],
-  balance: number,
-): BudgetSummary {
+export function summarizeBidsByRound(bids: BidSummary[], balance: number): BudgetSummary {
   // --- Group bids by round, then by window ---
   const byRound = new Map<string, Map<number, number>>();
 
@@ -87,7 +83,7 @@ export function summarizeBidsByRound(
   }
 
   // --- Sort rounds canonically ---
-  const sortedRounds = [...byRound.keys()].sort(compareRounds);
+  const sortedRounds = [...byRound.keys()].toSorted(compareRounds);
 
   // --- Build RoundTotal[] ---
   let grandTotal = 0;
@@ -98,9 +94,7 @@ export function summarizeBidsByRound(
     const windows: { window: number; amount: number }[] = [];
     let roundSum = 0;
 
-    for (const [window, amount] of [...windowMap.entries()].sort(
-      (a, b) => a[0] - b[0],
-    )) {
+    for (const [window, amount] of [...windowMap.entries()].toSorted((a, b) => a[0] - b[0])) {
       windows.push({ window, amount });
       roundSum += amount;
     }

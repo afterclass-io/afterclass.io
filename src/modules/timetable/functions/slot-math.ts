@@ -7,6 +7,8 @@
  *
  * All functions are pure — no side effects, no dependencies beyond stdlib.
  */
+import { timeToMinutes, parseTimePartsSafe } from "@/common/functions/time";
+import { dayOfWeekToNumber } from "@/common/functions/day-of-week";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -70,8 +72,6 @@ export type PositionedSlot = {
 // timeToMinutes (re-exported from shared util)
 // ---------------------------------------------------------------------------
 
-import { timeToMinutes, parseTimePartsSafe } from "@/common/functions/time";
-import { dayOfWeekToNumber } from "@/common/functions/day-of-week";
 export { timeToMinutes };
 
 // ---------------------------------------------------------------------------
@@ -87,11 +87,7 @@ export type TimingLike = {
 
 /** True when two same-day timings overlap (adjacent end==start does not). */
 export function timingsOverlap(a: TimingLike, b: TimingLike): boolean {
-  return (
-    a.dayOfWeek === b.dayOfWeek &&
-    a.startTime < b.endTime &&
-    b.startTime < a.endTime
-  );
+  return a.dayOfWeek === b.dayOfWeek && a.startTime < b.endTime && b.startTime < a.endTime;
 }
 
 /**
@@ -104,9 +100,7 @@ export function hasTimeConflict(
   candidate: { classTimings: readonly TimingLike[] },
 ): boolean {
   return existing.some((slot) =>
-    slot.classTimings.some((t) =>
-      candidate.classTimings.some((c) => timingsOverlap(t, c)),
-    ),
+    slot.classTimings.some((t) => candidate.classTimings.some((c) => timingsOverlap(t, c))),
   );
 }
 
@@ -115,9 +109,7 @@ export function hasTimeConflict(
  * minutes-since-midnight `TimingLike` rows. Rows with an unparseable day or
  * time are dropped — they can never conflict.
  */
-export function toTimingLikes(
-  timings: readonly ClassTimingLike[],
-): TimingLike[] {
+export function toTimingLikes(timings: readonly ClassTimingLike[]): TimingLike[] {
   const out: TimingLike[] = [];
   for (const t of timings) {
     const dayOfWeek = dayOfWeekToNumber(t.dayOfWeek);
@@ -262,8 +254,7 @@ export function layoutDay(timings: ClassTimingLike[]): PositionedSlot[] {
         timing: slot.timing,
         rawIndex: slot.rawIndex,
         topPct: minutesToPct(clampedStart),
-        heightPct:
-          ((clampedEnd - clampedStart) / GRID_RANGE_MIN) * 100,
+        heightPct: ((clampedEnd - clampedStart) / GRID_RANGE_MIN) * 100,
         colIndex: laneAssignment[i]!,
         colCount,
       });

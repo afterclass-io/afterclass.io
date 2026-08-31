@@ -1,14 +1,9 @@
-import { CustomIcon, type CustomIconProps } from "./custom-icon";
+import { CustomIcon } from "./custom-icon";
+import type { CustomIconProps } from "./custom-icon";
 
 export const SunIcon = (props: CustomIconProps) => {
   return (
-    <CustomIcon
-      width="32"
-      height="32"
-      viewBox="0 0 32 32"
-      fill="none"
-      {...props}
-    >
+    <CustomIcon width="32" height="32" viewBox="0 0 32 32" fill="none" {...props}>
       <path
         fillRule="evenodd"
         clipRule="evenodd"

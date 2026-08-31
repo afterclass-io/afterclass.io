@@ -1,4 +1,5 @@
-import { type ComponentPropsWithoutRef } from "react";
+/* oxlint-disable jsx-a11y/prefer-tag-over-role -- an inline <svg> icon cannot be replaced by <img> */
+import type { ComponentPropsWithoutRef } from "react";
 
 export interface CustomIconProps extends ComponentPropsWithoutRef<"svg"> {
   size?: number | string; // width and height will both be set as the same value
@@ -18,7 +19,7 @@ export const CustomIcon = ({
     <svg
       aria-labelledby={name}
       height={size ?? height}
-      role="presentation"
+      role="img"
       viewBox={viewBox}
       width={size ?? width}
       xmlns="http://www.w3.org/2000/svg"

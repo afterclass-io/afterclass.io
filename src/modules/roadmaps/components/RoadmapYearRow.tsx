@@ -1,4 +1,5 @@
 "use client";
+/* oxlint-disable jsx-a11y/prefer-tag-over-role -- roadmap grid uses ARIA grid roles on CSS-grid divs, not a <table> */
 
 import type { Entry } from "../functions/conflicts";
 import { RoadmapTermCell } from "./RoadmapTermCell";
@@ -53,9 +54,7 @@ export function RoadmapYearRow({
     >
       {/* Year label */}
       <div className="flex items-center justify-center">
-        <span className="text-muted-foreground text-sm font-bold tabular-nums">
-          Y{yearNumber}
-        </span>
+        <span className="text-muted-foreground text-sm font-bold tabular-nums">Y{yearNumber}</span>
       </div>
 
       {/* Term cells */}

@@ -1,5 +1,6 @@
 import fs from "fs";
-import { type EdgeConfigItems, fetchEdgeConfig } from "./utils";
+import { fetchEdgeConfig } from "./utils";
+import type { EdgeConfigItems } from "./utils";
 
 /**
  * Normalizes the Edge Config response into the desired format.
@@ -41,4 +42,4 @@ if (!vercelApiToken || !edgeConfigId || !jsonFilePath) {
 }
 
 // Fetch and normalize the Edge Config
-main(vercelApiToken, edgeConfigId, jsonFilePath);
+void main(vercelApiToken, edgeConfigId, jsonFilePath);

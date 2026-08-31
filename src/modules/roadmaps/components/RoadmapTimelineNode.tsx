@@ -4,7 +4,8 @@
 "use client";
 
 import { memo } from "react";
-import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import type { NodeProps } from "@xyflow/react";
 import { courseColor } from "@/modules/timetable/functions/course-color";
 import { cn } from "@/common/functions";
 
@@ -25,9 +26,7 @@ export type TimelineNodeData = {
 // Component
 // ---------------------------------------------------------------------------
 
-function RoadmapTimelineNodeInner({
-  data,
-}: NodeProps & { data: TimelineNodeData }) {
+function RoadmapTimelineNodeInner({ data }: NodeProps & { data: TimelineNodeData }) {
   const { courseCode, courseName, creditUnits } = data;
   const { className: colorClasses } = courseColor(courseCode);
 
@@ -46,9 +45,7 @@ function RoadmapTimelineNodeInner({
       >
         {/* Top row: course code + CU badge */}
         <div className="flex w-full items-center justify-between gap-2">
-          <span className="truncate text-sm leading-tight font-bold">
-            {courseCode}
-          </span>
+          <span className="truncate text-sm leading-tight font-bold">{courseCode}</span>
           {creditUnits > 0 && (
             <span className="bg-background/60 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-bold">
               {creditUnits} CU
@@ -57,9 +54,7 @@ function RoadmapTimelineNodeInner({
         </div>
 
         {/* Course name */}
-        <span className="line-clamp-2 text-[11px] leading-tight opacity-80">
-          {courseName}
-        </span>
+        <span className="line-clamp-2 text-[11px] leading-tight opacity-80">{courseName}</span>
 
         {/* ReactFlow handle — invisible; term node connects in from above */}
         <Handle

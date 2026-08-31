@@ -4,6 +4,10 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import type { AcadTermSummary } from "@/common/tools/acad-term";
 import { cn } from "@/common/functions";
+import {
+  mapRoadmapTermToAcadCode,
+  extractAcadTermCode,
+} from "@/modules/roadmaps/functions/term-mapping";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -16,20 +20,11 @@ export type TermTimetableLinkProps = {
   className?: string;
 };
 
-import {
-  mapRoadmapTermToAcadCode,
-  extractAcadTermCode,
-} from "@/modules/roadmaps/functions/term-mapping";
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function TermTimetableLink({
-  term,
-  acadTerms,
-  className,
-}: TermTimetableLinkProps) {
+export function TermTimetableLink({ term, acadTerms, className }: TermTimetableLinkProps) {
   const targetTermCode = mapRoadmapTermToAcadCode(term);
 
   // Find AcadTerms whose label term matches our target

@@ -25,9 +25,7 @@ function makeSetStatusDb() {
       aggregate: vi.fn().mockResolvedValue({ _sum: { bidAmount: null } }),
     },
     classes: {
-      findUnique: vi
-        .fn()
-        .mockResolvedValue({ acadTermId: "term-a", courseId: "course-1" }),
+      findUnique: vi.fn().mockResolvedValue({ acadTermId: "term-a", courseId: "course-1" }),
     },
     userBidBudget: { findUnique: vi.fn().mockResolvedValue(null) },
     userTimetable: {
@@ -48,7 +46,15 @@ function makeSetStatusDb() {
       }),
     ),
   };
-  return { dbMock, userBidUpdate, userBidUpdateMany, slotCreateMany, timetableFindFirst, timetableCount, timetableCreate };
+  return {
+    dbMock,
+    userBidUpdate,
+    userBidUpdateMany,
+    slotCreateMany,
+    timetableFindFirst,
+    timetableCount,
+    timetableCreate,
+  };
 }
 
 describe("demoteSiblingBids", () => {
@@ -56,12 +62,7 @@ describe("demoteSiblingBids", () => {
 
   it("flips sibling bids for the same class to PARTICIPATED, keeping the current bid", async () => {
     const updateMany = vi.fn().mockResolvedValue({ count: 1 });
-    await demoteSiblingBids(
-      { userBid: { updateMany } } as never,
-      "u1",
-      "c1",
-      "b1",
-    );
+    await demoteSiblingBids({ userBid: { updateMany } } as never, "u1", "c1", "b1");
     expect(updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
@@ -80,9 +81,7 @@ describe("syncSecuredBidToActiveTimetable", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("inserts the class into the existing active plan (skipDuplicates, no duplicate rows)", async () => {
-    const findFirst = vi
-      .fn()
-      .mockResolvedValue({ id: "t1", acadTermId: "term-a", isActive: true });
+    const findFirst = vi.fn().mockResolvedValue({ id: "t1", acadTermId: "term-a", isActive: true });
     const createMany = vi.fn().mockResolvedValue({ count: 1 });
     await syncSecuredBidToActiveTimetable(
       {
@@ -105,9 +104,7 @@ describe("syncSecuredBidToActiveTimetable", () => {
   it("creates a default active timetable (auto-named) when none exists", async () => {
     const findFirst = vi.fn().mockResolvedValue(null);
     const count = vi.fn().mockResolvedValue(0);
-    const create = vi
-      .fn()
-      .mockResolvedValue({ id: "t1", acadTermId: "term-a", isActive: true });
+    const create = vi.fn().mockResolvedValue({ id: "t1", acadTermId: "term-a", isActive: true });
     const createMany = vi.fn().mockResolvedValue({ count: 1 });
     await syncSecuredBidToActiveTimetable(
       {
@@ -165,13 +162,8 @@ describe("userBids.setStatus — active-timetable sync", () => {
   });
 
   it("marking SECURED creates a default active timetable when none exists", async () => {
-    const {
-      dbMock,
-      slotCreateMany,
-      timetableFindFirst,
-      timetableCount,
-      timetableCreate,
-    } = makeSetStatusDb();
+    const { dbMock, slotCreateMany, timetableFindFirst, timetableCount, timetableCreate } =
+      makeSetStatusDb();
     timetableFindFirst.mockResolvedValue(null);
     timetableCount.mockResolvedValue(0);
     timetableCreate.mockResolvedValue({
@@ -193,8 +185,7 @@ describe("userBids.setStatus — active-timetable sync", () => {
   });
 
   it("marking DROPPED flips siblings to PARTICIPATED but touches no timetable", async () => {
-    const { dbMock, userBidUpdate, userBidUpdateMany, slotCreateMany } =
-      makeSetStatusDb();
+    const { dbMock, userBidUpdate, userBidUpdateMany, slotCreateMany } = makeSetStatusDb();
 
     const caller = makeCaller(router.createCaller, dbMock);
     await caller.setStatus({ id: "b1", status: "DROPPED" });
@@ -220,7 +211,7 @@ describe("userBids.setStatus — active-timetable sync", () => {
   it("allows PARTICIPATED via the dropdown (same-window siblings default to participated)", async () => {
     const { dbMock, userBidUpdate } = makeSetStatusDb();
     const caller = makeCaller(router.createCaller, dbMock);
-    await caller.setStatus({ id: "b1", status: "PARTICIPATED" as never });
+    await caller.setStatus({ id: "b1", status: "PARTICIPATED" });
     expect(userBidUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: "b1" }, data: { status: "PARTICIPATED" } }),
     );
@@ -254,17 +245,17 @@ describe("userBids.setStatus — active-timetable sync", () => {
       id: "other-secured",
     });
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(
-      caller.setStatus({ id: "b1", status: "SECURED" }),
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(caller.setStatus({ id: "b1", status: "SECURED" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
   });
 
   it("rejects an invalid status with a zod validation error", async () => {
     const { dbMock } = makeSetStatusDb();
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(
-      caller.setStatus({ id: "b1", status: "INVALID" as never }),
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(caller.setStatus({ id: "b1", status: "INVALID" as never })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
   });
 });
 
@@ -273,41 +264,37 @@ describe("userBids.setStatus — guards and P2002 retry", () => {
 
   it("throws FORBIDDEN when the bid is not owned by the caller", async () => {
     const { dbMock, userBidUpdate } = makeSetStatusDb();
-    (dbMock.userBid.findUnique as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
-      null,
-    );
+    (dbMock.userBid.findUnique as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null);
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(
-      caller.setStatus({ id: "b1", status: "DROPPED" }),
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(caller.setStatus({ id: "b1", status: "DROPPED" })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
     expect(userBidUpdate).not.toHaveBeenCalled();
   });
 
   it("throws BAD_REQUEST when the bid's class no longer exists", async () => {
     const { dbMock, userBidUpdate } = makeSetStatusDb();
-    (dbMock.classes.findUnique as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
-      null,
-    );
+    (dbMock.classes.findUnique as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null);
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(
-      caller.setStatus({ id: "b1", status: "DROPPED" }),
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(caller.setStatus({ id: "b1", status: "DROPPED" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
     expect(userBidUpdate).not.toHaveBeenCalled();
   });
 
   it("throws BAD_REQUEST before any write when securing would exceed the term budget", async () => {
     const { dbMock, userBidUpdate } = makeSetStatusDb();
-    (
-      dbMock.userBidBudget.findUnique as ReturnType<typeof vi.fn>
-    ).mockResolvedValueOnce({ balance: 100 });
+    (dbMock.userBidBudget.findUnique as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      balance: 100,
+    });
     (dbMock.userBid.aggregate as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       _sum: { bidAmount: 90 },
     });
     const caller = makeCaller(router.createCaller, dbMock);
     // bid.bidAmount is 50 (see makeSetStatusDb); 90 spent + 50 > 100 budget.
-    await expect(
-      caller.setStatus({ id: "b1", status: "SECURED" }),
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(caller.setStatus({ id: "b1", status: "SECURED" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
     expect(userBidUpdate).not.toHaveBeenCalled();
   });
 
@@ -332,9 +319,7 @@ describe("userBids.setStatus — guards and P2002 retry", () => {
     dbMock.$transaction.mockRejectedValue(new Error("boom"));
 
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(
-      caller.setStatus({ id: "b1", status: "SECURED" }),
-    ).rejects.toThrow("boom");
+    await expect(caller.setStatus({ id: "b1", status: "SECURED" })).rejects.toThrow("boom");
     expect(dbMock.$transaction).toHaveBeenCalledTimes(1);
   });
 });
@@ -347,12 +332,7 @@ describe("demoteSiblingBids — scope", () => {
     const updateMany = vi.fn(async (_args: { where: Record<string, unknown> }) => ({
       count: 2,
     }));
-    await demoteSiblingBids(
-      { userBid: { updateMany } } as never,
-      "u1",
-      "c1",
-      "b1",
-    );
+    await demoteSiblingBids({ userBid: { updateMany } } as never, "u1", "c1", "b1");
     const where = updateMany.mock.calls[0]![0].where;
     expect(where).not.toHaveProperty("bidWindowId");
     expect(where).toEqual(

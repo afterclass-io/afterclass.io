@@ -1,4 +1,4 @@
-import { type Review } from "@/modules/reviews/types";
+import type { Review } from "@/modules/reviews/types";
 
 import { ReviewRatingGroup } from "../ReviewRatingGroup";
 import { ReviewLabelGroup } from "../ReviewLabelGroup";

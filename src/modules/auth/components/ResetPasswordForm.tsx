@@ -1,10 +1,12 @@
 "use client";
 
 import { startTransition, useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "sonner";
 
 import { supabase } from "@/server/supabase";
 
@@ -27,9 +29,7 @@ import { LockIcon } from "@/common/components/icons";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
 const resetPwdFormInputsSchema = z.object({
-  password: z
-    .string()
-    .min(8, { error: "Passwords must be at least 8 characters long" }),
+  password: z.string().min(8, { error: "Passwords must be at least 8 characters long" }),
 });
 type ResetPwdFormInputs = z.infer<typeof resetPwdFormInputsSchema>;
 
@@ -47,7 +47,7 @@ export const ResetPasswordForm = () => {
   const onSubmit: SubmitHandler<ResetPwdFormInputs> = async ({ password }) => {
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
-      alert(error.message);
+      toast.error(error.message);
       form.reset();
       return;
     }
@@ -62,10 +62,7 @@ export const ResetPasswordForm = () => {
 
   return (
     <Form {...form}>
-      <form
-        className="flex w-full flex-col gap-6"
-        onSubmit={form.handleSubmit(onSubmit)}
-      >
+      <form className="flex w-full flex-col gap-6" onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
           name="password"
@@ -82,7 +79,6 @@ export const ResetPasswordForm = () => {
                     disabled={form.formState.isSubmitting}
                     placeholder="Enter password"
                     autoComplete="on"
-                    tabIndex={1}
                   />
                   <PasswordInputAdornmentToggle />
                 </PasswordInputRoot>
@@ -91,17 +87,11 @@ export const ResetPasswordForm = () => {
             </FormItem>
           )}
         />
-        <Button
-          type="submit"
-          disabled={form.formState.isSubmitting}
-          tabIndex={2}
-        >
+        <Button type="submit" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? "Signing in..." : "Reset Password"}
         </Button>
         {isSubmitSuccessful && (
-          <div className="text-green-500">
-            Your password has been updated successfully.
-          </div>
+          <div className="text-green-500">Your password has been updated successfully.</div>
         )}
       </form>
     </Form>

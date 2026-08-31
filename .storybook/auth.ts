@@ -1,5 +1,4 @@
 import type { Session } from "next-auth";
-import { type SessionUser } from "@/server/auth/config";
 
 type AuthState = {
   session: {
@@ -38,8 +37,7 @@ export const mockAuthStates: MockAuthStates = {
           lastName: "adminLast",
           email: "admin@example.org",
           telegramId: null,
-          photoUrl:
-            "https://afterclass-user-profile-pics.s3.amazonaws.com/Asset+2%402x.png",
+          photoUrl: "https://afterclass-user-profile-pics.s3.amazonaws.com/Asset+2%402x.png",
           isVerified: true,
           universityId: 1,
           facultyId: null,
@@ -61,8 +59,7 @@ export const mockAuthStates: MockAuthStates = {
           lastName: "userLast",
           email: "user@example.org",
           telegramId: null,
-          photoUrl:
-            "https://afterclass-user-profile-pics.s3.amazonaws.com/Asset+2%402x.png",
+          photoUrl: "https://afterclass-user-profile-pics.s3.amazonaws.com/Asset+2%402x.png",
           isVerified: true,
           universityId: 1,
           facultyId: null,

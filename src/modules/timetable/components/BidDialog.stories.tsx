@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
+import type { ReactNode } from "react";
 
-import {
-  api,
-  type RouterOutputs,
-} from "@/common/tools/trpc/react";
-import { BidDialog, type UserBidRow } from "./BidDialog";
+import { api } from "@/common/tools/trpc/react";
+import type { RouterOutputs } from "@/common/tools/trpc/react";
+import { BidDialog } from "./BidDialog";
+import type { UserBidRow } from "./BidDialog";
 
 // ---------------------------------------------------------------------------
 // Sample data
@@ -148,26 +148,14 @@ function SeedBidDialogData({ children }: { children: ReactNode }) {
     // Keep the seeded queries fresh so Storybook never refetches against a
     // real /api/trpc endpoint while a story is open.
     const updatedAt = Date.now() + 60 * 60 * 1000;
-    utils.timetable.getBidWindows.setData(
-      { acadTermId: ACAD_TERM_ID },
-      WINDOWS,
-      { updatedAt },
-    );
+    utils.timetable.getBidWindows.setData({ acadTermId: ACAD_TERM_ID }, WINDOWS, { updatedAt });
     utils.timetable.searchCourses.setData(
       { acadTermId: ACAD_TERM_ID, query: "ACCT102" },
       [ACCT102_COURSE],
       { updatedAt },
     );
-    utils.userBids.getByClassIds.setData(
-      { classIds: ["class-g1"] },
-      CLASS_BIDS,
-      { updatedAt },
-    );
-    utils.bidPredictions.getBy.setData(
-      { classId: "class-g1" },
-      SAMPLE_PREDICTION,
-      { updatedAt },
-    );
+    utils.userBids.getByClassIds.setData({ classIds: ["class-g1"] }, CLASS_BIDS, { updatedAt });
+    utils.bidPredictions.getBy.setData({ classId: "class-g1" }, SAMPLE_PREDICTION, { updatedAt });
     utils.bidPredictions.getBy.setData({ classId: "class-g2" }, null, {
       updatedAt,
     });

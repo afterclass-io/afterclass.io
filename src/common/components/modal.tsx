@@ -1,15 +1,8 @@
+import { createContext, useContext } from "react";
+import type { PropsWithChildren, JSX, ComponentPropsWithoutRef } from "react";
 import {
-  createContext,
-  useContext,
-  type PropsWithChildren,
-  type JSX,
-  type ComponentPropsWithoutRef,
-} from "react";
-import {
-  type DialogProps,
   Root,
   Portal,
-  type DialogContentProps,
   Content,
   Close as ModalClose,
   Overlay,
@@ -17,6 +10,7 @@ import {
   Description as ModalDescription,
   Trigger as ModalTrigger,
 } from "@radix-ui/react-dialog";
+import type { DialogProps, DialogContentProps } from "@radix-ui/react-dialog";
 
 import { XCloseIcon } from "@/common/components/icons";
 import { cn } from "@/common/functions";
@@ -25,9 +19,7 @@ type ModalProviderProps = ModalProps;
 
 type ModalProviderContext = ReturnType<typeof useModalValues>;
 
-const ModalContext = createContext<Partial<ModalProviderContext> | undefined>(
-  undefined,
-);
+const ModalContext = createContext<Partial<ModalProviderContext> | undefined>(undefined);
 
 // For inferring return type
 const useModalValues = (props: ModalProviderProps) => {
@@ -39,9 +31,7 @@ const ModalProvider = ({
   ...props
 }: PropsWithChildren<ModalProviderProps>): JSX.Element => {
   const values = useModalValues(props);
-  return (
-    <ModalContext.Provider value={values}>{children}</ModalContext.Provider>
-  );
+  return <ModalContext.Provider value={values}>{children}</ModalContext.Provider>;
 };
 
 const useModal = () => {
@@ -84,11 +74,7 @@ interface ModalContentProps extends DialogContentProps {
   className?: string;
 }
 
-const ModalContent = ({
-  children,
-  className,
-  ...props
-}: PropsWithChildren<ModalContentProps>) => {
+const ModalContent = ({ children, className, ...props }: PropsWithChildren<ModalContentProps>) => {
   const { hasCloseButton, preventClickOutsideToClose } = useModal();
 
   const preventClickOutsideToCloseProps = preventClickOutsideToClose && {
@@ -120,11 +106,4 @@ const ModalContent = ({
   );
 };
 
-export {
-  Modal,
-  ModalContent,
-  ModalTitle,
-  ModalDescription,
-  ModalTrigger,
-  ModalClose,
-};
+export { Modal, ModalContent, ModalTitle, ModalDescription, ModalTrigger, ModalClose };

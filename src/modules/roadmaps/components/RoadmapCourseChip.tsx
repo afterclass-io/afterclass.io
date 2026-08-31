@@ -1,4 +1,5 @@
 "use client";
+/* oxlint-disable jsx-a11y/prefer-tag-over-role, jsx-a11y/no-static-element-interactions -- dnd-kit draggable: role + Enter/Space handling implemented manually */
 
 import { useSortable } from "@dnd-kit/sortable";
 import { GripVertical, X } from "lucide-react";
@@ -50,9 +51,7 @@ function CourseChipInner({
         className,
       )}
     >
-      {draggable && (
-        <GripVertical className="size-3.5 shrink-0 opacity-50" aria-hidden />
-      )}
+      {draggable && <GripVertical className="size-3.5 shrink-0 opacity-50" aria-hidden />}
       <span className="truncate font-semibold">{courseCode}</span>
       {creditUnits > 0 && (
         <span className="bg-background/60 ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-bold">
@@ -91,14 +90,7 @@ export function RoadmapCourseChip(props: RoadmapCourseChipProps) {
   const dndId = sortableId ?? courseId;
 
   // Always call hooks unconditionally (rules of hooks)
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: dndId,
     disabled: !draggable,
   });
@@ -122,9 +114,7 @@ export function RoadmapCourseChip(props: RoadmapCourseChipProps) {
   }
 
   const style: React.CSSProperties = {
-    transform: transform
-      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-      : undefined,
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     transition,
     opacity: isDragging ? 0.5 : undefined,
     zIndex: isDragging ? 50 : undefined,

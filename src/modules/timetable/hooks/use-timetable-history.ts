@@ -4,12 +4,8 @@ import { useCallback, useEffect } from "react";
 import { useAtom } from "jotai";
 import { toast } from "sonner";
 import { api } from "@/common/tools/trpc/react";
-import {
-  invertAction,
-  redoStackAtom,
-  undoStackAtom,
-  type TimetableAction,
-} from "@/modules/timetable/atoms/history";
+import { invertAction, redoStackAtom, undoStackAtom } from "@/modules/timetable/atoms/history";
+import type { TimetableAction } from "@/modules/timetable/atoms/history";
 import {
   useAddSlotMutation,
   useRemoveSlotMutation,
@@ -48,10 +44,16 @@ export function useTimetableHistory() {
     (action: TimetableAction) => {
       switch (action.type) {
         case "addSlot":
-          addSlot.mutate({ timetableId: action.timetableId, classId: action.classId });
+          addSlot.mutate({
+            timetableId: action.timetableId,
+            classId: action.classId,
+          });
           break;
         case "removeSlot":
-          removeSlot.mutate({ timetableId: action.timetableId, classId: action.classId });
+          removeSlot.mutate({
+            timetableId: action.timetableId,
+            classId: action.classId,
+          });
           break;
         case "setSlotSection":
           setSlotSection.mutate({
@@ -98,10 +100,7 @@ export function useTimetableHistory() {
       if (e.key.toLowerCase() === "z" && !e.shiftKey) {
         e.preventDefault();
         undo();
-      } else if (
-        (e.key.toLowerCase() === "z" && e.shiftKey) ||
-        e.key.toLowerCase() === "y"
-      ) {
+      } else if ((e.key.toLowerCase() === "z" && e.shiftKey) || e.key.toLowerCase() === "y") {
         e.preventDefault();
         redo();
       }

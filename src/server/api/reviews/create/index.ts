@@ -26,29 +26,30 @@ export const create = protectedProcedure
     }
     try {
       await ctx.db.$transaction(async (tx) => {
-        for (const r of reviewsToCreate) {
-          const review = await tx.reviews.create({
-            data: {
-              body: r.body,
-              tips: r.tips,
-              rating: r.rating,
-              reviewedCourseId: input.course.value,
-              reviewedFacultyId: course.belongToFacultyId,
-              reviewedProfessorId:
-                r.value === profReview?.value ? r.value : undefined,
-              reviewedUniversityId: course.belongToUniversityId,
-              reviewerId: ctx.session.user.id,
-            },
-          });
-          if (r.labels) {
-            await tx.reviewLabels.createMany({
-              data: r.labels.map((label) => ({
-                reviewId: review.id,
-                labelId: parseInt(label),
-              })),
+        await Promise.all(
+          reviewsToCreate.map(async (r) => {
+            const review = await tx.reviews.create({
+              data: {
+                body: r.body,
+                tips: r.tips,
+                rating: r.rating,
+                reviewedCourseId: input.course.value,
+                reviewedFacultyId: course.belongToFacultyId,
+                reviewedProfessorId: r.value === profReview?.value ? r.value : undefined,
+                reviewedUniversityId: course.belongToUniversityId,
+                reviewerId: ctx.session.user.id,
+              },
             });
-          }
-        }
+            if (r.labels) {
+              await tx.reviewLabels.createMany({
+                data: r.labels.map((label) => ({
+                  reviewId: review.id,
+                  labelId: parseInt(label),
+                })),
+              });
+            }
+          }),
+        );
       });
       return;
     } catch (error) {

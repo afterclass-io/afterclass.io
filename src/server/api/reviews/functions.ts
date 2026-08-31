@@ -1,4 +1,4 @@
-import { type Prisma } from "@/generated/prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 
 import { ReviewsSortBy } from "@/modules/reviews/types";
 import { TRPCError } from "@trpc/server";
@@ -6,9 +6,7 @@ import { TRPCError } from "@trpc/server";
 export const getOrderBy = (sortBy: ReviewsSortBy) => {
   const DESC = "desc" as Prisma.SortOrder;
 
-  let orderBy:
-    | Prisma.ReviewsOrderByWithRelationInput
-    | Prisma.ReviewsOrderByWithRelationInput[];
+  let orderBy: Prisma.ReviewsOrderByWithRelationInput | Prisma.ReviewsOrderByWithRelationInput[];
 
   switch (sortBy) {
     case ReviewsSortBy.LATEST:

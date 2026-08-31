@@ -1,10 +1,5 @@
-import {
-  type ReactNode,
-  type ReactElement,
-  type ComponentProps,
-  isValidElement,
-  cloneElement,
-} from "react";
+import { isValidElement, cloneElement } from "react";
+import type { ReactNode, ReactElement, ComponentProps } from "react";
 
 import { ProgressLink } from "@/common/components/progress-link";
 import { cn } from "@/common/functions";
@@ -16,6 +11,16 @@ export type CtaButtonProps = ComponentProps<typeof ProgressLink> & {
   iconRight?: ReactNode;
 };
 
+const renderIcon = (iconElement: ReactNode) => {
+  if (!isValidElement(iconElement)) {
+    return null;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return cloneElement(iconElement as ReactElement<any>, {
+    className: "size-6",
+  });
+};
+
 export const CtaButton = ({
   ctaText,
   subtext,
@@ -24,16 +29,6 @@ export const CtaButton = ({
   className,
   ...props
 }: CtaButtonProps) => {
-  const renderIcon = (iconElement: ReactNode) => {
-    if (!isValidElement(iconElement)) {
-      return null;
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return cloneElement(iconElement as ReactElement<any>, {
-      className: "size-6",
-    });
-  };
-
   return (
     <ProgressLink
       className={cn(
@@ -46,9 +41,7 @@ export const CtaButton = ({
         {renderIcon(iconLeft)}
         <div className="flex flex-col">
           <span className="text-lg font-semibold">{ctaText}</span>
-          {subtext && (
-            <span className="text-muted-foreground text-sm">{subtext}</span>
-          )}
+          {subtext && <span className="text-muted-foreground text-sm">{subtext}</span>}
         </div>
       </div>
       {renderIcon(iconRight)}

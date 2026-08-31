@@ -1,10 +1,11 @@
-import { type NextAuthConfig } from "next-auth";
+import type { NextAuthConfig } from "next-auth";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
+import GoogleProvider from "next-auth/providers/google";
+import type { GoogleProfile } from "next-auth/providers/google";
 import * as Sentry from "@sentry/nextjs";
-import { type Users } from "@/generated/prisma/client";
+import type { Users } from "@/generated/prisma/client";
 
 import { env } from "@/env";
 import { signInWithEmail } from "../supabase";
@@ -61,10 +62,7 @@ export const authConfig = {
 
         const passwordDigest = user?.deprecatedPasswordDigest;
 
-        if (
-          passwordDigest &&
-          (await bcrypt.compare(c.data.password, passwordDigest))
-        ) {
+        if (passwordDigest && (await bcrypt.compare(c.data.password, passwordDigest))) {
           Sentry.addBreadcrumb({
             category: "auth",
             message: `User ${user.id} logged in with v1 credentials.`,
@@ -73,10 +71,7 @@ export const authConfig = {
           return user;
         }
 
-        const { data, error } = await signInWithEmail(
-          c.data.email,
-          c.data.password,
-        );
+        const { data, error } = await signInWithEmail(c.data.email, c.data.password);
         if (error) {
           Sentry.addBreadcrumb({
             category: "auth",

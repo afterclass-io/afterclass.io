@@ -1,14 +1,9 @@
-import { CustomIcon, type CustomIconProps } from "./custom-icon";
+import { CustomIcon } from "./custom-icon";
+import type { CustomIconProps } from "./custom-icon";
 
 export const PenIcon = (props: CustomIconProps) => {
   return (
-    <CustomIcon
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      {...props}
-    >
+    <CustomIcon width="16" height="16" viewBox="0 0 24 24" fill="none" {...props}>
       <path
         d="M23.4813 22.3987C23.05 20.998 22.3447 18.3593 21.9313 17.3547C21.5973 16.544 21.2853 15.7293 20.902 15.3453C20.5187 14.962 19.8667 14.992 19.4733 15.384C19.4733 15.384 17.8273 16.5007 17.2373 17.2393C16.4987 17.8273 15.3807 19.4773 15.3807 19.4773C14.9873 19.8707 14.9573 20.522 15.3407 20.906C15.7247 21.2893 16.5393 21.6013 17.3507 21.9353C18.3547 22.3487 20.994 23.0527 22.3947 23.4853C22.634 23.5587 23.5547 22.638 23.4813 22.3987Z"
         fill="#D99E82"

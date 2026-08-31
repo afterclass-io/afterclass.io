@@ -1,4 +1,4 @@
-import { type Prisma } from "@/generated/prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 import { UniversityAbbreviation } from "@/generated/prisma/enums";
 import { z } from "zod";
 

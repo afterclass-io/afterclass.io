@@ -2,7 +2,7 @@ import { cache } from "react";
 import { api } from "@/common/tools/trpc/server";
 import { notFound } from "next/navigation";
 import { TRPCError } from "@trpc/server";
-import { type Metadata } from "next";
+import type { Metadata } from "next";
 import { PublicRoadmapView } from "./PublicRoadmapView";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
 
@@ -36,9 +36,7 @@ export async function generateMetadata(props: {
 // Page
 // ---------------------------------------------------------------------------
 
-export default async function PublicRoadmapPage(props: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function PublicRoadmapPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   if (!id) notFound();
 

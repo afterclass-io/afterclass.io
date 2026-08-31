@@ -1,4 +1,4 @@
-import { type Review } from "@/modules/reviews/types";
+import type { Review } from "@/modules/reviews/types";
 import { SchoolIcon } from "@/common/components/icons";
 import { ProgressLink } from "@/common/components/progress-link";
 
@@ -10,8 +10,7 @@ export type RevieweeGroupProps = {
 };
 
 export const RevieweeGroup = ({ review, variant }: RevieweeGroupProps) => {
-  const isShowProf =
-    review.professorName && (variant === "home" || variant === "course");
+  const isShowProf = review.professorName && (variant === "home" || variant === "course");
 
   const isShowCourse = variant === "home" && isShowProf;
 
@@ -30,16 +29,10 @@ export const RevieweeGroup = ({ review, variant }: RevieweeGroupProps) => {
             {review.professorName}
           </ProgressLink>
         ) : (
-          <RevieweeCourse
-            courseCode={review.courseCode}
-            courseName={review.courseName}
-          />
+          <RevieweeCourse courseCode={review.courseCode} courseName={review.courseName} />
         )}
         {isShowCourse && (
-          <RevieweeCourse
-            courseCode={review.courseCode}
-            courseName={review.courseName}
-          />
+          <RevieweeCourse courseCode={review.courseCode} courseName={review.courseName} />
         )}
       </div>
     </div>

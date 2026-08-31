@@ -1,14 +1,9 @@
-import { CustomIcon, type CustomIconProps } from "./custom-icon";
+import { CustomIcon } from "./custom-icon";
+import type { CustomIconProps } from "./custom-icon";
 
 export const GraduationCapColoredIcon = (props: CustomIconProps) => {
   return (
-    <CustomIcon
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      {...props}
-    >
+    <CustomIcon width="20" height="20" viewBox="0 0 20 20" fill="none" {...props}>
       <path
         d="M13.3331 7.77783H6.66645C6.66645 7.77783 3.88867 11.1112 3.88867 13.3334C3.88867 15.5556 9.99978 19.4445 9.99978 19.4445C9.99978 19.4445 16.1109 15.5556 16.1109 13.3334C16.1109 11.1112 13.3331 7.77783 13.3331 7.77783Z"
         fill="#5039D4"

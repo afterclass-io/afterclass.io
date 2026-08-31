@@ -1,6 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
+import { createTRPCRouter } from "@/server/api/trpc";
 import { makeCaller } from "@/server/api/trpc-test-helpers";
+import { getCurrentWindowLogic } from "@/server/api/bidWindows/getCurrentWindow/helpers";
+import { getCurrentAcadTerm } from "@/common/tools/acad-term";
+import { syncProgress } from "./index";
 
 vi.mock("@/server/api/bidWindows/getCurrentWindow/helpers", () => ({
   getCurrentWindowLogic: vi.fn(),
@@ -8,11 +12,6 @@ vi.mock("@/server/api/bidWindows/getCurrentWindow/helpers", () => ({
 vi.mock("@/common/tools/acad-term", () => ({
   getCurrentAcadTerm: vi.fn(),
 }));
-
-import { createTRPCRouter } from "@/server/api/trpc";
-import { syncProgress } from "./index";
-import { getCurrentWindowLogic } from "@/server/api/bidWindows/getCurrentWindow/helpers";
-import { getCurrentAcadTerm } from "@/common/tools/acad-term";
 
 const router = createTRPCRouter({ syncProgress });
 
@@ -39,9 +38,9 @@ describe("roadmaps.syncProgress", () => {
       },
     };
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(
-      caller.syncProgress({ roadmapId: "r1" }),
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(caller.syncProgress({ roadmapId: "r1" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
   });
 
   it("rejects syncing before a matriculation term is declared", async () => {
@@ -51,9 +50,9 @@ describe("roadmaps.syncProgress", () => {
       },
     };
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(
-      caller.syncProgress({ roadmapId: "r1" }),
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(caller.syncProgress({ roadmapId: "r1" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
   });
 
   it("no-ops when no current term can be resolved (no bid window, no calendar term)", async () => {
@@ -67,7 +66,7 @@ describe("roadmaps.syncProgress", () => {
   });
 
   it("no-ops when the sync plan is empty (no terms between matriculation and now)", async () => {
-    vi.mocked(getCurrentWindowLogic).mockResolvedValue({ acadTermId: "t1" } as never);
+    vi.mocked(getCurrentWindowLogic).mockResolvedValue({ acadTermId: "t1" });
     const dbMock = {
       userRoadmap: { findUnique: vi.fn().mockResolvedValue(ownedRoadmap()) },
       userRoadmapEntry: { findMany: vi.fn().mockResolvedValue([]) },
@@ -107,7 +106,7 @@ describe("roadmaps.syncProgress", () => {
   it("syncs courses atomically via transaction — createMany and updatedAt bump use tx", async () => {
     vi.mocked(getCurrentWindowLogic).mockResolvedValue({
       acadTermId: "t1",
-    } as never);
+    });
     const createMany = vi.fn().mockResolvedValue({ count: 1 });
     const update = vi.fn().mockResolvedValue({ id: "r1" });
     const tx = {
@@ -158,7 +157,7 @@ describe("roadmaps.syncProgress", () => {
   });
 
   it("swallows P2002 from concurrent syncs — transaction boundary catch", async () => {
-    vi.mocked(getCurrentWindowLogic).mockResolvedValue({ acadTermId: "t1" } as never);
+    vi.mocked(getCurrentWindowLogic).mockResolvedValue({ acadTermId: "t1" });
     const dbMock = {
       userRoadmap: {
         findUnique: vi.fn().mockResolvedValue({
@@ -179,9 +178,9 @@ describe("roadmaps.syncProgress", () => {
         ]),
       },
       userTimetable: {
-        findMany: vi.fn().mockResolvedValue([
-          { acadTermId: "t0", slots: [{ class: { courseId: "c-new" } }] },
-        ]),
+        findMany: vi
+          .fn()
+          .mockResolvedValue([{ acadTermId: "t0", slots: [{ class: { courseId: "c-new" } }] }]),
       },
       bidWindow: { findMany: vi.fn().mockResolvedValue([]) },
       $transaction: vi.fn(async () => {
@@ -194,7 +193,7 @@ describe("roadmaps.syncProgress", () => {
   });
 
   it("propagates non-P2002 failure — updatedAt bump/slot copy failure rejects (no half-commit)", async () => {
-    vi.mocked(getCurrentWindowLogic).mockResolvedValue({ acadTermId: "t1" } as never);
+    vi.mocked(getCurrentWindowLogic).mockResolvedValue({ acadTermId: "t1" });
     const createMany = vi.fn().mockRejectedValue(new Error("createMany boom"));
     const update = vi.fn();
     const tx = {
@@ -221,9 +220,9 @@ describe("roadmaps.syncProgress", () => {
         ]),
       },
       userTimetable: {
-        findMany: vi.fn().mockResolvedValue([
-          { acadTermId: "t0", slots: [{ class: { courseId: "c-new" } }] },
-        ]),
+        findMany: vi
+          .fn()
+          .mockResolvedValue([{ acadTermId: "t0", slots: [{ class: { courseId: "c-new" } }] }]),
       },
       bidWindow: { findMany: vi.fn().mockResolvedValue([]) },
       $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),

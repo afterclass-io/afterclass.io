@@ -8,17 +8,12 @@ import { Button } from "@/common/components/button";
 import { RatingGroup } from "@/common/components/rating-group";
 import { TagToggleGroup } from "@/common/components/tag-toggle-group";
 import { Textarea } from "@/common/components/textarea";
-import { type ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
-import { ReviewableEnum, type ReviewableType } from "@/modules/submit/types";
+import type { ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
+import { ReviewableEnum } from "@/modules/submit/types";
+import type { ReviewableType } from "@/modules/submit/types";
 import { texts } from "@/modules/submit/constants";
 
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/common/components/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/common/components/form";
 import { Separator } from "@/common/components/separator";
 
 export type ReviewFormSectionProps = {

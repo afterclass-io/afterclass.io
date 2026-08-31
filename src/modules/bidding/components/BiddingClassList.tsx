@@ -28,9 +28,9 @@ export const BiddingClassList = ({ initialClasses }: { initialClasses: ClassItem
 
   // IntersectionObserver for infinite scroll
   useEffect(() => {
-    if (!hasMore) return;
+    if (!hasMore) return undefined;
     const sentinel = sentinelRef.current;
-    if (!sentinel) return;
+    if (!sentinel) return undefined;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -70,13 +70,8 @@ export const BiddingClassList = ({ initialClasses }: { initialClasses: ClassItem
       </div>
       {/* Sentinel element for IntersectionObserver — triggers load on scroll */}
       {hasMore && (
-        <div
-          ref={sentinelRef}
-          className="flex justify-center py-4"
-        >
-          <span className="text-muted-foreground text-xs">
-            Loading more...
-          </span>
+        <div ref={sentinelRef} className="flex justify-center py-4">
+          <span className="text-muted-foreground text-xs">Loading more...</span>
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { ConstrainedContainer } from "@/common/components/constrained-container";
 import { CtaButton } from "@/common/components/cta-button";

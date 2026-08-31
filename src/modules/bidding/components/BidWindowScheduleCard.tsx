@@ -20,9 +20,8 @@ import {
   TimelineSeparator,
   TimelineTitle,
 } from "@/common/components/timeline";
-import { cn } from "@/common/functions";
+import { cn, inferAcadTerm } from "@/common/functions";
 import { api } from "@/common/tools/trpc/server";
-import { inferAcadTerm } from "@/common/functions";
 import { getCurrentWindowOrNull } from "@/server/api/bidWindows/getCurrentWindow/safe";
 import { ProgressLink } from "@/common/components/progress-link";
 import { Button } from "@/common/components/button";
@@ -69,9 +68,7 @@ function formatSgt(date: Date, formatStr: string): string {
     // Convert 12-hour to 1-12 without leading zero
     if (hour === 0) hour = 12;
 
-    const timeStr = minute === "00"
-      ? `${hour}${dayPeriod}`
-      : `${hour}:${minute}${dayPeriod}`;
+    const timeStr = minute === "00" ? `${hour}${dayPeriod}` : `${hour}:${minute}${dayPeriod}`;
 
     return `${day} ${month} ${year}, ${weekday} ${timeStr}`;
   }
@@ -121,13 +118,7 @@ function buildTimelineItems(bw: {
   return items.filter((item): item is TimelineItemData => item !== null);
 }
 
-const TimelineWithIcon = ({
-  items,
-  now,
-}: {
-  items: TimelineItemData[];
-  now: Date;
-}) => {
+const TimelineWithIcon = ({ items, now }: { items: TimelineItemData[]; now: Date }) => {
   if (items.length === 0) {
     return (
       <div className="text-muted-foreground text-sm py-4 text-center">
@@ -147,12 +138,9 @@ const TimelineWithIcon = ({
         let tagLabel: string | null = null;
 
         if (item.date > now && timeUntil <= msIn2Hours) {
-          if (item.title.toLowerCase().includes("opens"))
-            tagLabel = "Opening Soon";
-          else if (item.title.toLowerCase().includes("closes"))
-            tagLabel = "Closing Soon";
-          else if (item.title.toLowerCase().includes("released"))
-            tagLabel = "Releasing Soon";
+          if (item.title.toLowerCase().includes("opens")) tagLabel = "Opening Soon";
+          else if (item.title.toLowerCase().includes("closes")) tagLabel = "Closing Soon";
+          else if (item.title.toLowerCase().includes("released")) tagLabel = "Releasing Soon";
         }
 
         if (
@@ -169,9 +157,7 @@ const TimelineWithIcon = ({
             <TimelineSeparator>
               <TimelineDot>{item.icon}</TimelineDot>
               {index < items.length - 1 && (
-                <TimelineConnector
-                  className={cn(isPast && "bg-accent-foreground")}
-                />
+                <TimelineConnector className={cn(isPast && "bg-accent-foreground")} />
               )}
             </TimelineSeparator>
             <TimelineContent>
@@ -180,11 +166,7 @@ const TimelineWithIcon = ({
                 {tagLabel && (
                   <Tag
                     variant="soft"
-                    color={
-                      tagLabel.toLowerCase() === "ongoing"
-                        ? "success"
-                        : "warning"
-                    }
+                    color={tagLabel.toLowerCase() === "ongoing" ? "success" : "warning"}
                     size="xs"
                     deletable={false}
                   >
@@ -207,9 +189,7 @@ export const BidWindowScheduleCard = async () => {
   await connection();
   const now = new TZDate(Date.now(), "Asia/Singapore");
 
-  const currentWindow = await getCurrentWindowOrNull(() =>
-    api.bidWindows.getCurrentWindow(),
-  );
+  const currentWindow = await getCurrentWindowOrNull(() => api.bidWindows.getCurrentWindow());
 
   if (!currentWindow) {
     return (
@@ -229,7 +209,9 @@ export const BidWindowScheduleCard = async () => {
   return (
     <Card className="w-full max-w-[321px]">
       <CardHeader className="gap-2">
-        <CardTitle>BOSS {displayYear} Term {term}</CardTitle>
+        <CardTitle>
+          BOSS {displayYear} Term {term}
+        </CardTitle>
         <CardDescription>
           Round {titleRound} Window {currentWindow.window}
         </CardDescription>

@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
+import type { ReactNode } from "react";
 import { Visibility } from "@/generated/prisma/enums";
 
-import { api, type RouterOutputs } from "@/common/tools/trpc/react";
+import { api } from "@/common/tools/trpc/react";
+import type { RouterOutputs } from "@/common/tools/trpc/react";
 import { PublicRoadmapsGallery } from "./PublicRoadmapsGallery";
 
 type ListPublicPage = RouterOutputs["roadmaps"]["listPublic"];
@@ -132,8 +134,7 @@ const SAMPLE_PAGE: ListPublicPage = {
     sampleItem({
       id: "rm-law",
       name: "Law & Business Joint Track",
-      description:
-        "An integrated law and business plan for the YPHSL joint degree programme.",
+      description: "An integrated law and business plan for the YPHSL joint degree programme.",
       slug: "law-business-joint-track",
       facultyId: SOL.id,
       publishedAt: new Date("2026-05-28T00:00:00.000Z"),

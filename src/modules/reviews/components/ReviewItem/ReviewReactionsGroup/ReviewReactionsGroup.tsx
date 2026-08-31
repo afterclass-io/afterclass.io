@@ -1,6 +1,6 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { type ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/enums";
+import type { ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/enums";
 
 import { api } from "@/common/tools/trpc/react";
 import { ReviewReactionType } from "@/modules/reviews/types";
@@ -17,7 +17,7 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
   const { mutate: upsertReaction } = useOptimisticReaction();
 
   if (!reviewReactionsQuery.data || !session) {
-    return;
+    return null;
   }
 
   const reactionsMetadataMap = reviewReactionsQuery.data.reduce(
@@ -31,8 +31,7 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
 
       acc[reaction].count += 1;
       acc[reaction].hasThisUserReacted =
-        acc[reaction].hasThisUserReacted ||
-        reviewReaction.reactingUserId === session.user.id;
+        acc[reaction].hasThisUserReacted || reviewReaction.reactingUserId === session.user.id;
 
       return acc;
     },
@@ -54,24 +53,22 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
 
   return (
     <div className="flex gap-2 overflow-auto">
-      {Object.entries(reactionsMetadataMap).map(
-        ([reaction, { count, hasThisUserReacted }]) => (
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleReactionChange(reaction as DbReviewReactionType);
-            }}
-            key={reaction}
-            variant={hasThisUserReacted ? "default" : "outline"}
-            className="flex min-w-fit cursor-pointer gap-1 rounded-full border px-2 py-0 select-none"
-          >
-            <span className="text-lg">
-              {ReviewReactionType[reaction as keyof typeof ReviewReactionType]}
-            </span>
-            <span className="font-mono">{count}</span>
-          </Button>
-        ),
-      )}
+      {Object.entries(reactionsMetadataMap).map(([reaction, { count, hasThisUserReacted }]) => (
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleReactionChange(reaction as DbReviewReactionType);
+          }}
+          key={reaction}
+          variant={hasThisUserReacted ? "default" : "outline"}
+          className="flex min-w-fit cursor-pointer gap-1 rounded-full border px-2 py-0 select-none"
+        >
+          <span className="text-lg">
+            {ReviewReactionType[reaction as keyof typeof ReviewReactionType]}
+          </span>
+          <span className="font-mono">{count}</span>
+        </Button>
+      ))}
     </div>
   );
 };

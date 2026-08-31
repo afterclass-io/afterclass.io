@@ -136,7 +136,7 @@ describe("timetable.getArrangement (integration)", () => {
     });
     const res = await caller.getArrangement({ timetableId });
 
-    expect(res.slots.map((s) => s.section).sort()).toEqual(["G1", "G2"]);
+    expect(res.slots.map((s) => s.section).toSorted()).toEqual(["G1", "G2"]);
     const withProf = res.slots.find((s) => s.classId === classAId);
     expect(withProf).toMatchObject({
       courseCode,
@@ -167,9 +167,9 @@ describe("timetable.getArrangement (integration)", () => {
     const caller = makeCaller(router.createCaller, db, {
       user: { id: ownerId },
     });
-    await expect(
-      caller.getArrangement({ timetableId: randomUUID() }),
-    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(caller.getArrangement({ timetableId: randomUUID() })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
   });
 });
 

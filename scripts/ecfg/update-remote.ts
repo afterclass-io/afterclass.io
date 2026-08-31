@@ -1,10 +1,7 @@
 import readJson from "../utils/readJson";
 import { fetchEdgeConfig } from "./utils";
 
-async function convertExistingConfigToDeleteItems(
-  vercelApiToken: string,
-  edgeConfigId: string,
-) {
+async function convertExistingConfigToDeleteItems(vercelApiToken: string, edgeConfigId: string) {
   const items = await fetchEdgeConfig(vercelApiToken, edgeConfigId);
   const deleteItems = items.map((item) => ({
     operation: "delete",
@@ -45,26 +42,20 @@ async function updateEdgeConfig(
     const updatedItems = convertJsonToUpsertItems(json);
 
     // prepare delete operations for all existing items
-    const deleteItems = await convertExistingConfigToDeleteItems(
-      vercelApiToken,
-      edgeConfigId,
-    );
+    const deleteItems = await convertExistingConfigToDeleteItems(vercelApiToken, edgeConfigId);
 
     const items = [...deleteItems, ...updatedItems];
     console.log("Items:", items);
 
     // Make the PATCH request to Vercel Edge Config API
-    const response = await fetch(
-      `https://api.vercel.com/v1/edge-config/${edgeConfigId}/items`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${vercelApiToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ items }),
+    const response = await fetch(`https://api.vercel.com/v1/edge-config/${edgeConfigId}/items`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${vercelApiToken}`,
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({ items }),
+    });
 
     const result = await response.json();
 
@@ -84,11 +75,9 @@ async function updateEdgeConfig(
 const [vercelApiToken, edgeConfigId, jsonFilePath] = process.argv.slice(2);
 
 if (!vercelApiToken || !edgeConfigId || !jsonFilePath) {
-  console.error(
-    "Usage: update-edge-config.ts <vercelApiToken> <edgeConfigId> <jsonFilePath>",
-  );
+  console.error("Usage: update-edge-config.ts <vercelApiToken> <edgeConfigId> <jsonFilePath>");
   process.exit(1);
 }
 
 // Update the Edge Config
-updateEdgeConfig(vercelApiToken, edgeConfigId, jsonFilePath);
+void updateEdgeConfig(vercelApiToken, edgeConfigId, jsonFilePath);

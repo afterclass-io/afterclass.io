@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { ComponentType } from "react";
 import { Copy, Globe, Link2, Loader2, Lock, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -35,10 +36,7 @@ export type ShareDialogProps = {
   visibility: ShareVisibility;
   shareToken: string | null;
   /** Called after visibility is saved so parents can refresh their data. */
-  onChanged?: (result: {
-    visibility: ShareVisibility;
-    shareToken: string | null;
-  }) => void;
+  onChanged?: (result: { visibility: ShareVisibility; shareToken: string | null }) => void;
 };
 
 type VisibilityOption = {
@@ -71,10 +69,7 @@ const ALL_VISIBILITY_OPTIONS: VisibilityOption[] = [
 
 // Timetables have no public gallery — keep the component reusable but hide
 // the PUBLIC option when entity === "timetable" (server also rejects it).
-const VISIBILITY_OPTIONS_BY_ENTITY: Record<
-  ShareEntity,
-  VisibilityOption[]
-> = {
+const VISIBILITY_OPTIONS_BY_ENTITY: Record<ShareEntity, VisibilityOption[]> = {
   timetable: ALL_VISIBILITY_OPTIONS.filter((o) => o.value !== "PUBLIC"),
   roadmap: ALL_VISIBILITY_OPTIONS,
 };
@@ -184,9 +179,7 @@ export function ShareDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
-            Choose who can see this {entity}.
-          </DialogDescription>
+          <DialogDescription>Choose who can see this {entity}.</DialogDescription>
         </DialogHeader>
 
         <RadioGroup
@@ -213,9 +206,7 @@ export function ShareDialog({
                   <option.icon className="text-muted-foreground size-4" />
                   {option.label}
                 </span>
-                <span className="text-muted-foreground text-xs">
-                  {option.description}
-                </span>
+                <span className="text-muted-foreground text-xs">{option.description}</span>
               </div>
             </Label>
           ))}
@@ -244,9 +235,7 @@ export function ShareDialog({
                 </Button>
               </div>
             ) : (
-              <p className="text-muted-foreground text-xs">
-                Save to generate a shareable link.
-              </p>
+              <p className="text-muted-foreground text-xs">Save to generate a shareable link.</p>
             )}
             {draft === "PUBLIC" && (
               <p className="text-muted-foreground text-xs">
@@ -269,15 +258,11 @@ export function ShareDialog({
           </Button>
           <Button
             size="sm"
-            onClick={() =>
-              saveMutation.mutate({ entity, id: entityId, visibility: draft })
-            }
+            onClick={() => saveMutation.mutate({ entity, id: entityId, visibility: draft })}
             disabled={saveMutation.isPending}
             data-test="share-save"
           >
-            {saveMutation.isPending && (
-              <Loader2 className="size-4 animate-spin" />
-            )}
+            {saveMutation.isPending && <Loader2 className="size-4 animate-spin" />}
             Save
           </Button>
         </DialogFooter>

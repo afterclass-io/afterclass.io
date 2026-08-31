@@ -1,12 +1,20 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/common/components/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/common/components/card";
 import { BidChart, sortChartData } from "@/modules/bidding/components/BidChart";
 import { BidTable } from "@/modules/bidding/components/BidTable";
 import { TagToggleGroup } from "@/common/components/tag-toggle-group";
 import { DisclosureDisclaimer } from "@/modules/bidding/components/DisclosureDisclaimer";
 import { compareRounds } from "@/modules/bidding/utils/round-order";
+
+const EMPTY_ARRAY: never[] = [];
 
 interface BidResultRow {
   bidWindow: {
@@ -51,10 +59,8 @@ function deriveAvailableFromData(results: BidResultRow[]) {
   }
 
   return {
-    dataRounds: Array.from(rounds).sort(compareRounds),
-    dataWindows: Array.from(windows).sort(
-      (a, b) => parseInt(a) - parseInt(b),
-    ),
+    dataRounds: Array.from(rounds).toSorted(compareRounds),
+    dataWindows: Array.from(windows).toSorted((a, b) => parseInt(a) - parseInt(b)),
   };
 }
 
@@ -63,26 +69,23 @@ export const BidAnalyticsClient = ({
   courseCode,
   section,
   currentWindowBidWindow,
-  initialRounds = [],
-  initialWindows = [],
+  initialRounds = EMPTY_ARRAY,
+  initialWindows = EMPTY_ARRAY,
 }: BidAnalyticsClientProps) => {
   const [selectedRounds, setSelectedRounds] = useState<string[]>(initialRounds);
   const [selectedWindows, setSelectedWindows] = useState<string[]>(initialWindows);
 
   // Sync filter state to URL via replaceState (shareable, no page reload)
-  const syncUrl = useCallback(
-    (rounds: string[], windows: string[]) => {
-      const params = new URLSearchParams(window.location.search);
-      // Preserve existing query params (course, section, classId)
-      params.delete("rounds");
-      params.delete("windows");
-      for (const r of rounds) params.append("rounds", r);
-      for (const w of windows) params.append("windows", w);
-      const newUrl = `${window.location.pathname}?${params.toString()}`;
-      window.history.replaceState(null, "", newUrl);
-    },
-    [],
-  );
+  const syncUrl = useCallback((rounds: string[], windows: string[]) => {
+    const params = new URLSearchParams(window.location.search);
+    // Preserve existing query params (course, section, classId)
+    params.delete("rounds");
+    params.delete("windows");
+    for (const r of rounds) params.append("rounds", r);
+    for (const w of windows) params.append("windows", w);
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, "", newUrl);
+  }, []);
 
   // Filter to results with valid bid data
   const bidResultsWithBids = useMemo(
@@ -202,9 +205,7 @@ export const BidAnalyticsClient = ({
         const windows = roundWindows.get(r);
         if (windows) windows.forEach((w) => validWindows.add(w));
       }
-      const newWindows = selectedWindows.filter((w) =>
-        validWindows.has(parseInt(w)),
-      );
+      const newWindows = selectedWindows.filter((w) => validWindows.has(parseInt(w)));
 
       setSelectedRounds(values);
       setSelectedWindows(newWindows);
@@ -238,18 +239,14 @@ export const BidAnalyticsClient = ({
           <CardTitle className="pt-2 text-2xl">Historical Bidding Trend</CardTitle>
           <CardDescription className="flex flex-col gap-2">
             <div>
-              {courseCode} {section} — historical bids across academic terms and
-              rounds
+              {courseCode} {section} — historical bids across academic terms and rounds
             </div>
             <DisclosureDisclaimer />
           </CardDescription>
         </CardHeader>
         {chartData.length > 0 ? (
           <CardContent className="flex flex-col gap-4">
-            <BidChart
-              chartData={chartData}
-              currentWindowBidWindow={currentWindowBidWindow}
-            />
+            <BidChart chartData={chartData} currentWindowBidWindow={currentWindowBidWindow} />
             {/* Filter controls — always visible with all data-driven options */}
             {dataRounds.length > 0 && (
               <div className="flex flex-col gap-1.5">
@@ -259,7 +256,7 @@ export const BidAnalyticsClient = ({
                 <TagToggleGroup
                   items={availableRounds.map((r) => ({ label: r, value: r }))}
                   value={selectedRounds}
-                  onChange={(values) => handleRoundsChange(values as string[] ?? [])}
+                  onChange={(values) => handleRoundsChange((values as string[]) ?? [])}
                 />
               </div>
             )}
@@ -271,15 +268,12 @@ export const BidAnalyticsClient = ({
                 <TagToggleGroup
                   items={availableWindows.map((w) => ({ label: w, value: w }))}
                   value={selectedWindows}
-                  onChange={(values) => handleWindowsChange(values as string[] ?? [])}
+                  onChange={(values) => handleWindowsChange((values as string[]) ?? [])}
                 />
               </div>
             )}
             {/* Table integrated into the card */}
-            <BidTable
-              chartData={chartData}
-              bidResults={filteredResults}
-            />
+            <BidTable chartData={chartData} bidResults={filteredResults} />
           </CardContent>
         ) : (
           <CardContent className="text-muted-foreground text-center">

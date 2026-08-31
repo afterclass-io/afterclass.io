@@ -1,17 +1,14 @@
 "use client";
 import { startTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
 import { supabase } from "@/server/supabase";
 
-import {
-  InputRoot,
-  InputAdornment,
-  InputControl,
-  Input,
-} from "@/common/components/input";
+import { InputRoot, InputAdornment, InputControl, Input } from "@/common/components/input";
 import { Button } from "@/common/components/button";
 import {
   Form,
@@ -26,11 +23,8 @@ import { EnvelopeIcon } from "@/common/components/icons";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
 import { getUserPlatform } from "../functions";
-import {
-  ForgotPwdFormActionReturnType,
-  type ForgotPwdFormInputs,
-  forgotPwdFormInputsSchema,
-} from "../types";
+import { ForgotPwdFormActionReturnType, forgotPwdFormInputsSchema } from "../types";
+import type { ForgotPwdFormInputs } from "../types";
 import { ProgressLink } from "@/common/components/progress-link";
 
 export const ForgotPwdForm = () => {
@@ -70,7 +64,7 @@ export const ForgotPwdForm = () => {
       redirectTo: `${env.NEXT_PUBLIC_SITE_URL}/account/auth/reset-password`,
     });
     if (error) {
-      alert(error.message);
+      toast.error(error.message);
       form.reset();
       return;
     }
@@ -85,10 +79,7 @@ export const ForgotPwdForm = () => {
 
   return (
     <Form {...form}>
-      <form
-        className="flex w-full flex-col gap-6"
-        onSubmit={form.handleSubmit(onSubmit)}
-      >
+      <form className="flex w-full flex-col gap-6" onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
           name="email"
@@ -106,7 +97,6 @@ export const ForgotPwdForm = () => {
                       disabled={form.formState.isSubmitting}
                       placeholder="john.doe.2023@smu.edu.sg"
                       autoComplete="on"
-                      tabIndex={1}
                       data-test="email"
                     />
                   </InputControl>
@@ -116,15 +106,8 @@ export const ForgotPwdForm = () => {
             </FormItem>
           )}
         />
-        <Button
-          type="submit"
-          disabled={form.formState.isSubmitting}
-          tabIndex={2}
-          data-test="submit"
-        >
-          {form.formState.isSubmitting
-            ? "Confirming your email..."
-            : "Reset my password"}
+        <Button type="submit" disabled={form.formState.isSubmitting} data-test="submit">
+          {form.formState.isSubmitting ? "Confirming your email..." : "Reset my password"}
         </Button>
         <div className="flex items-center gap-1 self-stretch md:text-base">
           <span className="text-muted-foreground text-center font-semibold">
@@ -134,7 +117,6 @@ export const ForgotPwdForm = () => {
             href="/account/auth/signup"
             type="button"
             variant="link"
-            tabIndex={3}
             data-test="register"
           >
             Create an account

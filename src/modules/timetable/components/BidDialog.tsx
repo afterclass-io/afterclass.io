@@ -5,11 +5,8 @@ import { useAtomValue } from "jotai";
 import { toast } from "sonner";
 import { Loader2, Trash2, X } from "lucide-react";
 import Link from "next/link";
-import {
-  api,
-  type RouterInputs,
-  type RouterOutputs,
-} from "@/common/tools/trpc/react";
+import { api } from "@/common/tools/trpc/react";
+import type { RouterInputs, RouterOutputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { cn } from "@/common/functions";
 import {
@@ -20,12 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/common/components/dialog";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/common/components/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/common/components/card";
 import { Button } from "@/common/components/button";
 import { Label } from "@/common/components/label";
 import { Input } from "@/common/components/input";
@@ -38,29 +30,23 @@ import {
   SelectValue,
 } from "@/common/components/select";
 import { Skeleton } from "@/common/components/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/common/components/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/common/components/tooltip";
 import { useDebouncedValue } from "@/common/hooks/useDebouncedValue";
 import { activeTimetableIdAtom } from "@/modules/timetable/atoms/timetable";
 import { pickCurrentBidWindow } from "@/modules/timetable/functions/current-window";
 import { formatBidAmount } from "@/modules/timetable/functions/format";
-import {
-  BID_STATUS_OPTIONS,
-  type UserBidStatus,
-} from "@/modules/timetable/functions/bid-status";
+import { BID_STATUS_OPTIONS } from "@/modules/timetable/functions/bid-status";
+import type { UserBidStatus } from "@/modules/timetable/functions/bid-status";
 import { resolveBidDialogNotes } from "@/modules/timetable/functions/bid-dialog-notes";
 import { z } from "zod";
+import { ClassInfoCard } from "./ClassInfoCard";
+import { BidPredictionPanel } from "./BidPredictionPanel";
+import { InlineNotesEditor } from "./InlineNotesEditor";
 
 const bidAmountSchema = z
   .number({ error: "Enter a valid bid amount" })
   .positive("Bid must be greater than 0")
   .max(99999, "Bid cannot exceed e$99,999");
-import { ClassInfoCard } from "./ClassInfoCard";
-import { BidPredictionPanel } from "./BidPredictionPanel";
-import { InlineNotesEditor } from "./InlineNotesEditor";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -98,8 +84,7 @@ function parseBidAmount(raw: string): { value: number } | { error: string } {
   const parsed = Number(trimmed);
   if (Number.isNaN(parsed)) return { error: "Enter a valid number" };
   const result = bidAmountSchema.safeParse(parsed);
-  if (!result.success)
-    return { error: result.error.issues[0]?.message ?? "Invalid amount" };
+  if (!result.success) return { error: result.error.issues[0]?.message ?? "Invalid amount" };
   return { value: result.data };
 }
 
@@ -176,14 +161,10 @@ function CourseSectionPicker({
             {debouncedQuery.length > 0 && (
               <div className="border-border max-h-40 overflow-y-auto rounded-md border">
                 {searchQuery.isPending && (
-                  <p className="text-muted-foreground p-2 text-xs">
-                    Searching…
-                  </p>
+                  <p className="text-muted-foreground p-2 text-xs">Searching…</p>
                 )}
                 {!searchQuery.isPending && courses.length === 0 && (
-                  <p className="text-muted-foreground p-2 text-xs">
-                    No courses match this term.
-                  </p>
+                  <p className="text-muted-foreground p-2 text-xs">No courses match this term.</p>
                 )}
                 {courses.map((c) => (
                   <button
@@ -208,15 +189,9 @@ function CourseSectionPicker({
       {/* Section picker */}
       <div className="space-y-1.5">
         <Label>Section</Label>
-        <Select
-          value={classId ?? undefined}
-          onValueChange={onClassChange}
-          disabled={!course}
-        >
+        <Select value={classId ?? undefined} onValueChange={onClassChange} disabled={!course}>
           <SelectTrigger size="sm" aria-label="Select section">
-            <SelectValue
-              placeholder={course ? "Select section…" : "Pick a course first"}
-            />
+            <SelectValue placeholder={course ? "Select section…" : "Pick a course first"} />
           </SelectTrigger>
           <SelectContent>
             {(course?.sections ?? []).map((s) => (
@@ -313,42 +288,35 @@ export function BidDialog({
   // ---- Course/section known at mount ----
   // add mode can open with a preselected course+section (e.g. stories);
   // edit/class modes always know the class up front.
-  const initialCourseCode =
-    mode === "edit" ? (bid?.courseCode ?? null) : (courseCode ?? null);
-  const initialClassId =
-    mode === "edit" ? (bid?.classId ?? null) : (classId ?? null);
+  const initialCourseCode = mode === "edit" ? (bid?.courseCode ?? null) : (courseCode ?? null);
+  const initialClassId = mode === "edit" ? (bid?.classId ?? null) : (classId ?? null);
 
-  const [selectedCourse, setSelectedCourse] = useState<SearchCourse | null>(
-    () =>
-      initialCourseCode
-        ? {
-            // Placeholder carrying just the known section; the full course
-            // (name, credit units, timings) is swapped in once the term-scoped
-            // search by course code resolves.
-            id: "",
-            code: initialCourseCode,
-            name: mode === "edit" ? (bid?.courseName ?? "") : initialCourseCode,
-            creditUnits: 0,
-            sections:
-              initialClassId != null
-                ? [
-                    {
-                      classId: initialClassId,
-                      section:
-                        mode === "edit" ? (bid?.section ?? "") : (section ?? ""),
-                      professorName:
-                        mode === "edit" ? (bid?.professorName ?? null) : null,
-                      timings: [],
-                      examTimings: [],
-                    },
-                  ]
-                : [],
-          }
-        : null,
+  const [selectedCourse, setSelectedCourse] = useState<SearchCourse | null>(() =>
+    initialCourseCode
+      ? {
+          // Placeholder carrying just the known section; the full course
+          // (name, credit units, timings) is swapped in once the term-scoped
+          // search by course code resolves.
+          id: "",
+          code: initialCourseCode,
+          name: mode === "edit" ? (bid?.courseName ?? "") : initialCourseCode,
+          creditUnits: 0,
+          sections:
+            initialClassId != null
+              ? [
+                  {
+                    classId: initialClassId,
+                    section: mode === "edit" ? (bid?.section ?? "") : (section ?? ""),
+                    professorName: mode === "edit" ? (bid?.professorName ?? null) : null,
+                    timings: [],
+                    examTimings: [],
+                  },
+                ]
+              : [],
+        }
+      : null,
   );
-  const [selectedClassId, setSelectedClassId] = useState<string | null>(
-    initialClassId,
-  );
+  const [selectedClassId, setSelectedClassId] = useState<string | null>(initialClassId);
 
   // Resolve the full course (name, credit units, section timings) for the
   // known course code — the bid/slot only carries code + section.
@@ -359,11 +327,8 @@ export function BidDialog({
 
   useEffect(() => {
     // Only replace the placeholder (id === ""), never a user choice.
-    if (!initialCourseCode || !selectedCourse || selectedCourse.id !== "")
-      return;
-    const match = resolveCourseQuery.data?.find(
-      (c) => c.code === initialCourseCode,
-    );
+    if (!initialCourseCode || !selectedCourse || selectedCourse.id !== "") return;
+    const match = resolveCourseQuery.data?.find((c) => c.code === initialCourseCode);
     if (match) setSelectedCourse(match);
   }, [resolveCourseQuery.data, selectedCourse, initialCourseCode]);
 
@@ -371,26 +336,19 @@ export function BidDialog({
   // resolved full course (falling back to the placeholder).
   const activeCourse = useMemo(() => {
     if (mode === "add" && !initialCourseCode) return selectedCourse;
-    return (
-      resolveCourseQuery.data?.find((c) => c.code === initialCourseCode) ??
-      selectedCourse
-    );
+    return resolveCourseQuery.data?.find((c) => c.code === initialCourseCode) ?? selectedCourse;
   }, [mode, initialCourseCode, resolveCourseQuery.data, selectedCourse]);
 
   const activeSection = useMemo(
-    () =>
-      activeCourse?.sections.find((s) => s.classId === selectedClassId) ?? null,
+    () => activeCourse?.sections.find((s) => s.classId === selectedClassId) ?? null,
     [activeCourse, selectedClassId],
   );
 
   // ---- Derived display values ----
   const courseCodeLabel = activeCourse?.code ?? initialCourseCode ?? "";
   const courseNameLabel =
-    activeCourse?.name ??
-    (mode === "edit" ? bid?.courseName : courseCodeLabel) ??
-    "";
-  const sectionLabel =
-    activeSection?.section ?? (mode === "edit" ? bid?.section : section) ?? "";
+    activeCourse?.name ?? (mode === "edit" ? bid?.courseName : courseCodeLabel) ?? "";
+  const sectionLabel = activeSection?.section ?? (mode === "edit" ? bid?.section : section) ?? "";
   const professorName =
     activeSection?.professorName ?? (mode === "edit" ? bid?.professorName : null);
   const creditUnits = activeCourse?.creditUnits ?? 0;
@@ -416,14 +374,11 @@ export function BidDialog({
     { enabled: isOpen, staleTime: 60_000 },
   );
 
-  const bidWindows = useMemo(
-    () => bidWindowsQuery.data ?? [],
-    [bidWindowsQuery.data],
-  );
+  const bidWindows = useMemo(() => bidWindowsQuery.data ?? [], [bidWindowsQuery.data]);
 
-  const [selectedBidWindowId, setSelectedBidWindowId] = useState<
-    string | undefined
-  >(mode === "edit" && bid ? String(bid.bidWindowId) : undefined);
+  const [selectedBidWindowId, setSelectedBidWindowId] = useState<string | undefined>(
+    mode === "edit" && bid ? String(bid.bidWindowId) : undefined,
+  );
 
   // Add/class mode: default to the current/upcoming window once windows load.
   useEffect(() => {
@@ -431,9 +386,7 @@ export function BidDialog({
     const current = pickCurrentBidWindow(bidWindows);
     const fallback =
       current ??
-      (defaultWindowId != null
-        ? bidWindows.find((w) => w.id === defaultWindowId)
-        : undefined) ??
+      (defaultWindowId != null ? bidWindows.find((w) => w.id === defaultWindowId) : undefined) ??
       bidWindows[0];
     if (fallback) setSelectedBidWindowId(String(fallback.id));
   }, [mode, selectedBidWindowId, bidWindows, defaultWindowId]);
@@ -448,19 +401,14 @@ export function BidDialog({
     mode === "edit" && bid ? String(bid.bidAmount) : "",
   );
   const [amountError, setAmountError] = useState<string | null>(null);
-  const [notes, setNotes] = useState(
-    mode === "edit" && bid ? (bid.notes ?? "") : "",
-  );
+  const [notes, setNotes] = useState(mode === "edit" && bid ? (bid.notes ?? "") : "");
 
   // ---- Existing bids for the selected class (notes + class-mode list) ----
   const classBidsQuery = api.userBids.getByClassIds.useQuery(
     { classIds: selectedClassId ? [selectedClassId] : [] },
     { enabled: isOpen && !!selectedClassId, staleTime: 30_000 },
   );
-  const classBids = useMemo(
-    () => classBidsQuery.data ?? [],
-    [classBidsQuery.data],
-  );
+  const classBids = useMemo(() => classBidsQuery.data ?? [], [classBidsQuery.data]);
 
   // Notes are per (class, bid window): when the selection changes, load that
   // window's saved notes into the textarea (empty when no bid exists there).
@@ -469,8 +417,7 @@ export function BidDialog({
   // getByClassIds cache (which would wipe pre-filled notes in edit mode), and
   // in edit mode the notes pre-filled from `bid` are never overwritten.
   const [loadedNotesKey, setLoadedNotesKey] = useState<string | null>(null);
-  const classBidsSettled =
-    classBidsQuery.isFetched || classBidsQuery.isSuccess;
+  const classBidsSettled = classBidsQuery.isFetched || classBidsQuery.isSuccess;
   useEffect(() => {
     const result = resolveBidDialogNotes({
       mode,
@@ -482,8 +429,7 @@ export function BidDialog({
       classBidsSettled,
     });
     if (result.notes !== undefined) setNotes(result.notes);
-    if (result.loadedNotesKey !== undefined)
-      setLoadedNotesKey(result.loadedNotesKey);
+    if (result.loadedNotesKey !== undefined) setLoadedNotesKey(result.loadedNotesKey);
   }, [
     mode,
     bid,
@@ -506,10 +452,7 @@ export function BidDialog({
   }, [utils, activeTimetableId]);
 
   const upsertMutation = api.userBids.upsert.useMutation({
-    ...createOptimisticMutationCallbacks<
-      RouterInputs["userBids"]["upsert"],
-      unknown
-    >({
+    ...createOptimisticMutationCallbacks<RouterInputs["userBids"]["upsert"], unknown>({
       cancel: () =>
         utils.userBids.getByClassIds.cancel({
           classIds: [selectedClassId ?? ""],
@@ -522,10 +465,7 @@ export function BidDialog({
       // via the invalidate refetch.
       applyOptimistic: () => undefined,
       restoreSnapshot: (prev) => {
-        utils.userBids.getByClassIds.setData(
-          { classIds: [selectedClassId ?? ""] },
-          prev as never,
-        );
+        utils.userBids.getByClassIds.setData({ classIds: [selectedClassId ?? ""] }, prev as never);
       },
       invalidate: invalidateBidQueries,
       onError: (message) => toast.error(`Failed to save bid: ${message}`),
@@ -537,10 +477,7 @@ export function BidDialog({
   });
 
   const updateMutation = api.userBids.update.useMutation({
-    ...createOptimisticMutationCallbacks<
-      RouterInputs["userBids"]["update"],
-      unknown
-    >({
+    ...createOptimisticMutationCallbacks<RouterInputs["userBids"]["update"], unknown>({
       cancel: () =>
         utils.userBids.getByClassIds.cancel({
           classIds: [selectedClassId ?? ""],
@@ -553,10 +490,7 @@ export function BidDialog({
       // appear via the invalidate refetch.
       applyOptimistic: () => undefined,
       restoreSnapshot: (prev) => {
-        utils.userBids.getByClassIds.setData(
-          { classIds: [selectedClassId ?? ""] },
-          prev as never,
-        );
+        utils.userBids.getByClassIds.setData({ classIds: [selectedClassId ?? ""] }, prev as never);
       },
       invalidate: invalidateBidQueries,
       onError: (message) => toast.error(`Failed to update bid: ${message}`),
@@ -570,9 +504,7 @@ export function BidDialog({
   // ---- Class-mode only: remove slot + existing-bids status/notes ----
   const removeSlotMutation = api.timetable.removeSlot.useMutation({
     onSuccess: () => {
-      toast.success(
-        `Removed ${courseCodeLabel} ${sectionLabel} from timetable`,
-      );
+      toast.success(`Removed ${courseCodeLabel} ${sectionLabel} from timetable`);
       if (activeTimetableId) {
         void utils.timetable.getArrangement.invalidate({
           timetableId: activeTimetableId,
@@ -588,10 +520,7 @@ export function BidDialog({
   // Filter classes for invalidation: only siblings sharing classId can
   // change via demoteSiblingBids (same-window siblings become PARTICIPATED).
   const setStatusMutation = api.userBids.setStatus.useMutation({
-    ...createOptimisticMutationCallbacks<
-      RouterInputs["userBids"]["setStatus"],
-      unknown
-    >({
+    ...createOptimisticMutationCallbacks<RouterInputs["userBids"]["setStatus"], unknown>({
       cancel: () =>
         utils.userBids.getByClassIds.cancel({
           classIds: [selectedClassId ?? ""],
@@ -604,22 +533,16 @@ export function BidDialog({
       // set the chosen bid to `status`, and any sibling on the same class
       // to PARTICIPATED. The invalidation below reconciles races.
       applyOptimistic: ({ id, status }) => {
-        utils.userBids.getByClassIds.setData(
-          { classIds: [selectedClassId ?? ""] },
-          (old) =>
-            old?.map((bid) => {
-              if (bid.id === id) return { ...bid, status } as typeof bid;
-              if (bid.classId === selectedClassId)
-                return { ...bid, status: "PARTICIPATED" } as typeof bid;
-              return bid;
-            }),
+        utils.userBids.getByClassIds.setData({ classIds: [selectedClassId ?? ""] }, (old) =>
+          old?.map((bid) => {
+            if (bid.id === id) return { ...bid, status };
+            if (bid.classId === selectedClassId) return { ...bid, status: "PARTICIPATED" };
+            return bid;
+          }),
         );
       },
       restoreSnapshot: (prev) => {
-        utils.userBids.getByClassIds.setData(
-          { classIds: [selectedClassId ?? ""] },
-          prev as never,
-        );
+        utils.userBids.getByClassIds.setData({ classIds: [selectedClassId ?? ""] }, prev as never);
       },
       invalidate: async () => {
         await utils.userBids.getByClassIds.invalidate();
@@ -649,23 +572,20 @@ export function BidDialog({
   });
 
   // ---- Handlers ----
-  const handleAmountChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const raw = e.target.value;
-      setBidAmountRaw(raw);
-      if (raw.trim() === "") {
-        setAmountError(null);
-        return;
-      }
-      const parsed = parseBidAmount(raw);
-      if ("error" in parsed) {
-        setAmountError(parsed.error);
-      } else {
-        setAmountError(null);
-      }
-    },
-    [],
-  );
+  const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setBidAmountRaw(raw);
+    if (raw.trim() === "") {
+      setAmountError(null);
+      return;
+    }
+    const parsed = parseBidAmount(raw);
+    if ("error" in parsed) {
+      setAmountError(parsed.error);
+    } else {
+      setAmountError(null);
+    }
+  }, []);
 
   const handleSave = useCallback(() => {
     if (!selectedClassId) {
@@ -732,10 +652,7 @@ export function BidDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent
-        data-test="bid-dialog"
-        className="max-h-[85vh] overflow-y-auto sm:max-w-xl"
-      >
+      <DialogContent data-test="bid-dialog" className="max-h-[85vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="text-base">
             {mode === "add"
@@ -814,16 +731,10 @@ export function BidDialog({
                     onChange={handleAmountChange}
                     disabled={isSaving}
                     aria-invalid={!!amountError}
-                    aria-describedby={
-                      amountError ? "bid-amount-error" : undefined
-                    }
+                    aria-describedby={amountError ? "bid-amount-error" : undefined}
                   />
                   {amountError && (
-                    <p
-                      id="bid-amount-error"
-                      className="text-destructive text-xs"
-                      role="alert"
-                    >
+                    <p id="bid-amount-error" className="text-destructive text-xs" role="alert">
                       {amountError}
                     </p>
                   )}
@@ -832,13 +743,9 @@ export function BidDialog({
                 {/* Round + window (single dropdown) */}
                 <div className="space-y-1.5">
                   <Label>Round &amp; window</Label>
-                  {bidWindowsQuery.isPending && (
-                    <Skeleton className="h-9 w-full" />
-                  )}
+                  {bidWindowsQuery.isPending && <Skeleton className="h-9 w-full" />}
                   {bidWindowsQuery.isError && (
-                    <p className="text-muted-foreground text-sm">
-                      Unable to load bid windows.
-                    </p>
+                    <p className="text-muted-foreground text-sm">Unable to load bid windows.</p>
                   )}
                   {bidWindows.length > 0 && (
                     <Select
@@ -894,8 +801,7 @@ export function BidDialog({
                 </p>
                 {classBids.map((bid) => {
                   const resultsOut =
-                    !!bid.bidWindow.resultsAt &&
-                    new Date(bid.bidWindow.resultsAt) <= new Date();
+                    !!bid.bidWindow.resultsAt && new Date(bid.bidWindow.resultsAt) <= new Date();
                   const statusOptions = BID_STATUS_OPTIONS;
 
                   return (
@@ -938,9 +844,7 @@ export function BidDialog({
                                   status: value as UserBidStatus,
                                 });
                               }}
-                              disabled={
-                                !resultsOut || setStatusMutation.isPending
-                              }
+                              disabled={!resultsOut || setStatusMutation.isPending}
                             >
                               <SelectTrigger
                                 size="sm"
@@ -960,9 +864,7 @@ export function BidDialog({
                           </span>
                         </TooltipTrigger>
                         {!resultsOut && (
-                          <TooltipContent side="left">
-                            Results not out yet.
-                          </TooltipContent>
+                          <TooltipContent side="left">Results not out yet.</TooltipContent>
                         )}
                       </Tooltip>
                     </div>

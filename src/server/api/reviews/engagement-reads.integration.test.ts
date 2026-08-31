@@ -43,11 +43,7 @@ beforeAll(async () => {
 
   const course = await seedCourse(db, { code, name: "Engagement Course" });
   const professor = await seedProfessor(db, { slug, name: "Engagement Prof" });
-  const [reviewer, other, stranger] = await Promise.all([
-    seedUser(db),
-    seedUser(db),
-    seedUser(db),
-  ]);
+  const [reviewer, other, stranger] = await Promise.all([seedUser(db), seedUser(db), seedUser(db)]);
   reviewerId = reviewer.id;
   otherId = other.id;
   strangerId = stranger.id;
@@ -104,8 +100,7 @@ beforeAll(async () => {
   });
 });
 
-const asReviewer = () =>
-  makeCaller(router.createCaller, db, { user: { id: reviewerId } });
+const asReviewer = () => makeCaller(router.createCaller, db, { user: { id: reviewerId } });
 
 describe("reviewLabels.getAllByType (integration)", () => {
   it("returns only labels of the requested review type", async () => {
@@ -120,11 +115,7 @@ describe("reviewLabels.getAllByType (integration)", () => {
 
 describe("reviewLabels.getByProfSlug (integration)", () => {
   it("returns label rows for the professor's reviews only", async () => {
-    const res = await makeCaller(
-      router.createCaller,
-      db,
-      null,
-    ).labelsByProfSlug({
+    const res = await makeCaller(router.createCaller, db, null).labelsByProfSlug({
       slug,
     });
     expect(res.map((rl) => rl.reviewId)).toEqual([profReview1Id]);
@@ -134,13 +125,11 @@ describe("reviewLabels.getByProfSlug (integration)", () => {
 
 describe("reviewLabels.countByCourseCode (integration)", () => {
   it("returns every label row attached to a review of the course", async () => {
-    const res = await makeCaller(
-      router.createCaller,
-      db,
-      null,
-    ).labelsCountByCourseCode({ courseCode: code });
-    expect(res.map((rl) => rl.reviewId).sort()).toEqual(
-      [courseReviewId, profReview1Id].sort(),
+    const res = await makeCaller(router.createCaller, db, null).labelsCountByCourseCode({
+      courseCode: code,
+    });
+    expect(res.map((rl) => rl.reviewId).toSorted()).toEqual(
+      [courseReviewId, profReview1Id].toSorted(),
     );
   });
 });

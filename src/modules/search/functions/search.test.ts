@@ -1,4 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { processSearchQuery } from "./processSearchQuery";
+import { searchCourse } from "./searchCourse";
+import { searchProf } from "./searchProf";
 
 // searchCourse/searchProf pull the module-scope `db`, `auth`, and the RSC `api`
 // caller (which starts with `import "server-only"`). Factory-form mocks so the
@@ -22,10 +25,6 @@ vi.mock("@/common/tools/trpc/server", () => ({
   },
 }));
 
-import { processSearchQuery } from "./processSearchQuery";
-import { searchCourse } from "./searchCourse";
-import { searchProf } from "./searchProf";
-
 /** The interpolated value handed to `to_tsquery` — the 2nd arg of the tagged template. */
 const tsQueryArg = () => (m.queryRaw.mock.calls[0] as unknown[])[1];
 /** The `LIMIT` value — the 3rd arg of the tagged template. */
@@ -43,9 +42,7 @@ describe("processSearchQuery", () => {
   });
 
   it("joins multi-word queries with the tsquery AND operator", () => {
-    expect(processSearchQuery("intro to computing")).toBe(
-      "intro & to & computing",
-    );
+    expect(processSearchQuery("intro to computing")).toBe("intro & to & computing");
   });
 
   it("returns an empty string for an empty query", () => {

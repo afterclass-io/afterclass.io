@@ -39,6 +39,11 @@ const TERM_LABELS: Record<string, string> = {
 // Component
 // ---------------------------------------------------------------------------
 
+/** Build a key for looking up the stable sortable ID. */
+function entryKey(e: Entry): string {
+  return `${e.courseId}::${e.yearNumber}::${e.term}`;
+}
+
 export function RoadmapTermCell({
   yearNumber,
   term,
@@ -57,11 +62,6 @@ export function RoadmapTermCell({
     disabled: readOnly,
   });
 
-  /** Build a key for looking up the stable sortable ID. */
-  function entryKey(e: Entry): string {
-    return `${e.courseId}::${e.yearNumber}::${e.term}`;
-  }
-
   const sortableItems = entries.map((e) => sortableIds?.get(entryKey(e)) ?? e.courseId);
 
   return (
@@ -69,9 +69,7 @@ export function RoadmapTermCell({
       ref={setNodeRef}
       className={cn(
         "flex min-h-[120px] flex-col gap-1 rounded-lg border-2 border-dashed p-2 transition-colors",
-        isOver && !readOnly
-          ? "border-primary/50 bg-primary/5"
-          : "border-muted-foreground/20",
+        isOver && !readOnly ? "border-primary/50 bg-primary/5" : "border-muted-foreground/20",
         readOnly && "cursor-default",
         "motion-safe:transition-all motion-safe:duration-150",
         className,

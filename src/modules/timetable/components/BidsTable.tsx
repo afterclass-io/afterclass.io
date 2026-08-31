@@ -34,23 +34,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/common/components/alert-dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/common/components/tooltip";
-import {
-  selectedTermIdAtom,
-  activeTimetableIdAtom,
-} from "@/modules/timetable/atoms/timetable";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/common/components/tooltip";
+import { selectedTermIdAtom, activeTimetableIdAtom } from "@/modules/timetable/atoms/timetable";
 import { pickCurrentBidWindow } from "@/modules/timetable/functions/current-window";
 import { formatBidAmount } from "@/modules/timetable/functions/format";
 import {
   BID_STATUS_LABELS,
   BID_STATUS_OPTIONS,
   bidChipVariant,
-  type UserBidStatus,
 } from "@/modules/timetable/functions/bid-status";
+import type { UserBidStatus } from "@/modules/timetable/functions/bid-status";
 import { BidsDashboard } from "./BidsDashboard";
 import { InlineNotesEditor } from "./InlineNotesEditor";
 import { BidDialog } from "./BidDialog";
@@ -176,15 +169,13 @@ export function BidsTable() {
           const target = old.find((b) => b.id === id);
           const classId = target?.classId;
           return old.map((b) => {
-            if (b.id === id) return { ...b, status } as typeof b;
-            if (classId && b.classId === classId)
-              return { ...b, status: "PARTICIPATED" } as typeof b;
+            if (b.id === id) return { ...b, status };
+            if (classId && b.classId === classId) return { ...b, status: "PARTICIPATED" };
             return b;
           });
         });
       },
-      restoreSnapshot: (prev) =>
-        utils.userBids.listMine.setData(undefined, prev),
+      restoreSnapshot: (prev) => utils.userBids.listMine.setData(undefined, prev),
       // Single settle-time refresh of both bid queries; onSuccess only
       // handles the timetable-side invalidations.
       invalidate: async () => {
@@ -222,53 +213,34 @@ export function BidsTable() {
   const [editingBid, setEditingBid] = useState<BidRow | null>(null);
 
   // ---- Derived rows ----
-  const roundOptions = useMemo(
-    () => [...new Set(windows.map((w) => w.round))],
-    [windows],
-  );
+  const roundOptions = useMemo(() => [...new Set(windows.map((w) => w.round))], [windows]);
   const windowOptions = useMemo(
-    () => [...new Set(windows.map((w) => w.window))].sort((a, b) => a - b),
+    () => [...new Set(windows.map((w) => w.window))].toSorted((a, b) => a - b),
     [windows],
   );
 
   const filteredBids = useMemo(() => {
     const rows = (bidsQuery.data ?? []).filter((bid) => {
-      if (effectiveTermId && bid.bidWindow.acadTermId !== effectiveTermId)
-        return false;
-      if (roundFilter !== "all" && bid.bidWindow.round !== roundFilter)
-        return false;
-      if (
-        windowFilter !== "all" &&
-        bid.bidWindow.window !== Number(windowFilter)
-      )
-        return false;
+      if (effectiveTermId && bid.bidWindow.acadTermId !== effectiveTermId) return false;
+      if (roundFilter !== "all" && bid.bidWindow.round !== roundFilter) return false;
+      if (windowFilter !== "all" && bid.bidWindow.window !== Number(windowFilter)) return false;
       return true;
     });
 
     const dir = sortDir === "asc" ? 1 : -1;
-    return [...rows].sort((a, b) => {
+    return [...rows].toSorted((a, b) => {
       if (sortKey === "bidAmount") return (a.bidAmount - b.bidAmount) * dir;
       const at = new Date(a.createdAt).getTime();
       const bt = new Date(b.createdAt).getTime();
       return (at - bt) * dir;
     });
-  }, [
-    bidsQuery.data,
-    effectiveTermId,
-    roundFilter,
-    windowFilter,
-    sortKey,
-    sortDir,
-  ]);
+  }, [bidsQuery.data, effectiveTermId, roundFilter, windowFilter, sortKey, sortDir]);
 
   // Bids in the filtered term feed the dashboard summary.
   const termBids = useMemo(
     () =>
       (bidsQuery.data ?? [])
-        .filter(
-          (bid) =>
-            !effectiveTermId || bid.bidWindow.acadTermId === effectiveTermId,
-        )
+        .filter((bid) => !effectiveTermId || bid.bidWindow.acadTermId === effectiveTermId)
         .map((bid) => ({
           bidAmount: bid.bidAmount,
           status: bid.status,
@@ -283,9 +255,7 @@ export function BidsTable() {
   // Add this row's class to the active timetable for the current term.
   const addSlotMutation = api.timetable.addSlot.useMutation({
     onSuccess: (data, variables) => {
-      const bid = (bidsQuery.data ?? []).find(
-        (b) => b.classId === variables.classId,
-      );
+      const bid = (bidsQuery.data ?? []).find((b) => b.classId === variables.classId);
       const label = bid ? `${bid.courseCode} ${bid.section}` : "Class";
       if (data.created) {
         toast.success(`Added ${label} to timetable`);
@@ -322,28 +292,20 @@ export function BidsTable() {
   }
 
   const isBusy =
-    updateNotesMutation.isPending ||
-    removeMutation.isPending ||
-    setStatusMutation.isPending;
+    updateNotesMutation.isPending || removeMutation.isPending || setStatusMutation.isPending;
 
   // Term context for the shared bid dialog: the bid's own term when editing,
   // the filtered term when adding.
   const bidDialogAcadTermId =
-    editingBid?.bidWindow.acadTermId ??
-    (showAddDialog ? effectiveTermId : null);
+    editingBid?.bidWindow.acadTermId ?? (showAddDialog ? effectiveTermId : null);
 
   return (
     <div className="flex flex-col gap-4" data-test="bids-view">
-      {effectiveTermId && (
-        <BidsDashboard acadTermId={effectiveTermId} bids={termBids} />
-      )}
+      {effectiveTermId && <BidsDashboard acadTermId={effectiveTermId} bids={termBids} />}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        <Select
-          value={effectiveTermId ?? undefined}
-          onValueChange={(v) => setTermFilter(v)}
-        >
+        <Select value={effectiveTermId ?? undefined} onValueChange={(v) => setTermFilter(v)}>
           <SelectTrigger size="sm" className="w-44" aria-label="Filter by term">
             <SelectValue placeholder="Term" />
           </SelectTrigger>
@@ -357,11 +319,7 @@ export function BidsTable() {
         </Select>
 
         <Select value={roundFilter} onValueChange={setRoundFilter}>
-          <SelectTrigger
-            size="sm"
-            className="w-32"
-            aria-label="Filter by round"
-          >
+          <SelectTrigger size="sm" className="w-32" aria-label="Filter by round">
             <SelectValue placeholder="Round" />
           </SelectTrigger>
           <SelectContent>
@@ -375,11 +333,7 @@ export function BidsTable() {
         </Select>
 
         <Select value={windowFilter} onValueChange={setWindowFilter}>
-          <SelectTrigger
-            size="sm"
-            className="w-32"
-            aria-label="Filter by window"
-          >
+          <SelectTrigger size="sm" className="w-32" aria-label="Filter by window">
             <SelectValue placeholder="Window" />
           </SelectTrigger>
           <SelectContent>
@@ -430,10 +384,7 @@ export function BidsTable() {
           <tbody>
             {filteredBids.length === 0 && (
               <tr>
-                <td
-                  colSpan={8}
-                  className="text-muted-foreground p-6 text-center"
-                >
+                <td colSpan={8} className="text-muted-foreground p-6 text-center">
                   No bids match the current filters.
                 </td>
               </tr>
@@ -445,11 +396,8 @@ export function BidsTable() {
                 isBusy={isBusy}
                 pendingAddClassId={
                   addSlotMutation.isPending
-                    ? ((
-                        addSlotMutation.variables as
-                          | { classId: string }
-                          | undefined
-                      )?.classId ?? null)
+                    ? ((addSlotMutation.variables as { classId: string } | undefined)?.classId ??
+                      null)
                     : null
                 }
                 hasActiveTimetable={!!activeTimetableId}
@@ -462,9 +410,7 @@ export function BidsTable() {
                 onShowClassInfo={() => setClassInfoBid(bid)}
                 onEdit={() => setEditingBid(bid)}
                 onAddToTimetable={() => handleAddToTimetable(bid.classId)}
-                onSetStatus={(status) =>
-                  setStatusMutation.mutate({ id: bid.id, status })
-                }
+                onSetStatus={(status) => setStatusMutation.mutate({ id: bid.id, status })}
                 onDelete={() => removeMutation.mutate({ id: bid.id })}
               />
             ))}
@@ -490,10 +436,7 @@ export function BidsTable() {
 
       {/* Class-info modal (same dialog the calendar opens on slot click) */}
       {classInfoBid && (
-        <BidClassInfoPanel
-          bid={classInfoBid}
-          onClose={() => setClassInfoBid(null)}
-        />
+        <BidClassInfoPanel bid={classInfoBid} onClose={() => setClassInfoBid(null)} />
       )}
     </div>
   );
@@ -533,32 +476,22 @@ function BidTableRow({
         R{bid.bidWindow.round} W{bid.bidWindow.window}
       </Td>
       <Td className="font-medium whitespace-nowrap">
-        <ClassInfoButton onClick={onShowClassInfo}>
-          {bid.courseCode}
-        </ClassInfoButton>
+        <ClassInfoButton onClick={onShowClassInfo}>{bid.courseCode}</ClassInfoButton>
       </Td>
       <Td className="max-w-44 break-words whitespace-normal">
-        <ClassInfoButton onClick={onShowClassInfo}>
-          {bid.courseName}
-        </ClassInfoButton>
+        <ClassInfoButton onClick={onShowClassInfo}>{bid.courseName}</ClassInfoButton>
       </Td>
       <Td>
-        <ClassInfoButton onClick={onShowClassInfo}>
-          {bid.section}
-        </ClassInfoButton>
+        <ClassInfoButton onClick={onShowClassInfo}>{bid.section}</ClassInfoButton>
       </Td>
       <Td className="max-w-36 truncate" title={bid.professorName ?? undefined}>
         {bid.professorName ? (
-          <ClassInfoButton onClick={onShowClassInfo}>
-            {bid.professorName}
-          </ClassInfoButton>
+          <ClassInfoButton onClick={onShowClassInfo}>{bid.professorName}</ClassInfoButton>
         ) : (
           "TBA"
         )}
       </Td>
-      <Td className="text-right font-mono tabular-nums">
-        {formatBidAmount(bid.bidAmount)}
-      </Td>
+      <Td className="text-right font-mono tabular-nums">{formatBidAmount(bid.bidAmount)}</Td>
       <Td className="min-w-40">
         <InlineNotesEditor
           key={`${bid.id}:${bid.notes ?? ""}`}
@@ -588,9 +521,7 @@ function BidTableRow({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {hasActiveTimetable
-                ? "Add to timetable"
-                : "No active timetable for this term"}
+              {hasActiveTimetable ? "Add to timetable" : "No active timetable for this term"}
             </TooltipContent>
           </Tooltip>
           <Button
@@ -607,10 +538,7 @@ function BidTableRow({
               <Button
                 variant="ghost"
                 size="sm"
-                className={cn(
-                  "h-7 px-2 text-xs",
-                  bidChipVariant(bid.status as UserBidStatus),
-                )}
+                className={cn("h-7 px-2 text-xs", bidChipVariant(bid.status))}
                 disabled={isBusy}
                 aria-label={`Change status for ${bid.courseCode} ${bid.section} bid`}
               >
@@ -653,9 +581,9 @@ function BidTableRow({
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete this bid?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This removes your {formatBidAmount(bid.bidAmount)} bid for{" "}
-                  {bid.courseCode} {bid.section} (R{bid.bidWindow.round} W
-                  {bid.bidWindow.window}). This action cannot be undone.
+                  This removes your {formatBidAmount(bid.bidAmount)} bid for {bid.courseCode}{" "}
+                  {bid.section} (R{bid.bidWindow.round} W{bid.bidWindow.window}). This action cannot
+                  be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -679,13 +607,7 @@ function BidTableRow({
  * resolves the full course details (credit units, timings, professor) itself
  * from the term-scoped course search.
  */
-function BidClassInfoPanel({
-  bid,
-  onClose,
-}: {
-  bid: BidRow;
-  onClose: () => void;
-}) {
+function BidClassInfoPanel({ bid, onClose }: { bid: BidRow; onClose: () => void }) {
   return (
     <BidDialog
       mode="class"

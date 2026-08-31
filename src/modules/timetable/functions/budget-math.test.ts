@@ -85,9 +85,7 @@ describe("summarizeBidsByRound", () => {
 
   // ---- Balance > total → overshoot 0 ----
   it("reports zero overshoot when balance exceeds grand total", () => {
-    const bids: BidSummary[] = [
-      { amount: 10, round: "1", window: 1 },
-    ];
+    const bids: BidSummary[] = [{ amount: 10, round: "1", window: 1 }];
     const result = summarizeBidsByRound(bids, 500);
 
     expect(result.overshoot).toBe(0);
@@ -149,9 +147,7 @@ describe("summarizeBidsByRound", () => {
 
   // ---- Balance of 0 ----
   it("handles zero balance correctly (everything overshoots)", () => {
-    const bids: BidSummary[] = [
-      { amount: 10, round: "1", window: 1 },
-    ];
+    const bids: BidSummary[] = [{ amount: 10, round: "1", window: 1 }];
     const result = summarizeBidsByRound(bids, 0);
 
     expect(result.overshoot).toBe(10);
@@ -212,13 +208,13 @@ describe("summarizeBidsByRound", () => {
 describe("compareRound", () => {
   it("matches the canonical BOSS round order (1, 1A, 1B, 1C, 1F, 2, 2A)", () => {
     const rounds = ["2A", "1", "1C", "1F", "1B", "2", "1A"];
-    const sorted = [...rounds].sort(compareRound);
+    const sorted = [...rounds].toSorted(compareRound);
     expect(sorted).toEqual(["1", "1A", "1B", "1C", "1F", "2", "2A"]);
   });
 
   it("sorts unknown rounds alphabetically after all known rounds", () => {
     const rounds = ["3", "1", "2B", "2A", "99", "Z", "1A"];
-    const sorted = [...rounds].sort(compareRound);
+    const sorted = [...rounds].toSorted(compareRound);
     // Known rounds first in order, then unknown alphabetically
     expect(sorted).toEqual(["1", "1A", "2A", "2B", "3", "99", "Z"]);
   });

@@ -1,15 +1,5 @@
-import {
-  ClockIcon,
-  GraduationCapColoredIcon,
-  MemoIcon,
-  PinIcon,
-} from "@/common/components/icons";
-import {
-  type Courses,
-  type ClassExamTiming,
-  type ClassTiming,
-  type Professors,
-} from "@/generated/prisma/client";
+import { ClockIcon, GraduationCapColoredIcon, MemoIcon, PinIcon } from "@/common/components/icons";
+import type { Courses, ClassExamTiming, ClassTiming, Professors } from "@/generated/prisma/client";
 import { Tag } from "@/common/components/tag";
 import React from "react";
 import { Heading } from "@/common/components/heading";
@@ -27,18 +17,14 @@ export const ClassCard = ({
   course: Partial<Courses>;
   section: string;
   classId: string;
-  classTiming: Pick<
-    ClassTiming,
-    "dayOfWeek" | "startTime" | "endTime" | "venue"
-  >[];
+  classTiming: Pick<ClassTiming, "dayOfWeek" | "startTime" | "endTime" | "venue">[];
   examTiming: Partial<ClassExamTiming>[];
   professor: Partial<Professors> | null;
 }) => {
   const hasFullExamTiming =
     examTiming.length > 0 &&
     examTiming.every(
-      (timing) =>
-        timing.date && timing.dayOfWeek && timing.startTime && timing.endTime,
+      (timing) => timing.date && timing.dayOfWeek && timing.startTime && timing.endTime,
     );
   return (
     <ProgressLink
@@ -51,9 +37,7 @@ export const ClassCard = ({
     >
       <div className="flex w-full flex-col items-start gap-1">
         <div className="flex items-center gap-2">
-          <Heading className="text-primary text-xl tracking-tight ">
-            {course.code}
-          </Heading>
+          <Heading className="text-primary text-xl tracking-tight ">{course.code}</Heading>
           <Tag variant="soft" color="primary" size="sm" deletable={false}>
             {section}
           </Tag>
@@ -77,9 +61,7 @@ export const ClassCard = ({
               <div key={index}>
                 <div className="flex items-center gap-1">
                   <ClockIcon size={16} className="mr-1" />
-                  <span className="max-w-16 text-sm">
-                    {timing.dayOfWeek}
-                  </span>
+                  <span className="max-w-16 text-sm">{timing.dayOfWeek}</span>
                   <span className="text-sm">
                     {timing.startTime}-{timing.endTime}
                   </span>
@@ -87,16 +69,15 @@ export const ClassCard = ({
                 {timing.venue && timing.venue !== "TBA" && (
                   <div className="flex items-center gap-1">
                     <PinIcon size={16} className="mr-1" />
-                    <span className="text-muted-foreground text-xs">
-                      {timing.venue}
-                    </span>
+                    <span className="text-muted-foreground text-xs">{timing.venue}</span>
                   </div>
                 )}
               </div>
             ))}
             {classTiming.length > 1 && (
               <span className="text-muted-foreground text-xs pl-6">
-                +{classTiming.length - 1} more session{classTiming.length - 1 > 1 ? "s" : ""}
+                +{classTiming.length - 1} more session
+                {classTiming.length - 1 > 1 ? "s" : ""}
               </span>
             )}
           </>
@@ -117,10 +98,10 @@ export const ClassCard = ({
                 <span className="text-sm ">
                   {timing.date
                     ? formatDateSGT(timing.date, {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })
                     : ""}
                   <br></br>
                   {timing.dayOfWeek}&nbsp;
@@ -130,9 +111,7 @@ export const ClassCard = ({
               {timing.venue && timing.venue !== "TBA" && (
                 <div className="flex items-center gap-1">
                   <PinIcon size={16} className="mr-1" />
-                  <span className="text-muted-foreground text-xs">
-                    {timing.venue}
-                  </span>
+                  <span className="text-muted-foreground text-xs">{timing.venue}</span>
                 </div>
               )}
             </div>

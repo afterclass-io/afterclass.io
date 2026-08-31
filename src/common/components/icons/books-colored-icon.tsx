@@ -1,14 +1,9 @@
-import { CustomIcon, type CustomIconProps } from "./custom-icon";
+import { CustomIcon } from "./custom-icon";
+import type { CustomIconProps } from "./custom-icon";
 
 export const BooksColoredIcon = (props: CustomIconProps) => {
   return (
-    <CustomIcon
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      {...props}
-    >
+    <CustomIcon width="20" height="20" viewBox="0 0 20 20" fill="none" {...props}>
       <path
         d="M19.4446 14.4444C19.4446 15.0338 19.2104 15.599 18.7937 16.0158C18.3769 16.4325 17.8117 16.6667 17.2223 16.6667H2.77789C2.18852 16.6667 1.62329 16.4325 1.20654 16.0158C0.78979 15.599 0.555664 15.0338 0.555664 14.4444V3.50722C0.555664 2.28 3.77289 0 5.00011 0H16.4584C18.1773 0 19.4446 1.28444 19.4446 2.98611V14.4444Z"
         fill="#5039D4"

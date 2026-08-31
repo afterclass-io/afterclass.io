@@ -2,13 +2,13 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import {
-  type ChartConfig,
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "./chart";
+import type { ChartConfig } from "./chart";
 
 import {
   Card,
@@ -74,25 +74,13 @@ export const Default: Story = {
               />
               <ChartTooltip content={<ChartTooltipContent hideLabel />} />
               <ChartLegend content={<ChartLegendContent />} />
-              <Bar
-                dataKey="desktop"
-                stackId="a"
-                fill="hsl(173 58% 39%)"
-                radius={[0, 0, 4, 4]}
-              />
-              <Bar
-                dataKey="mobile"
-                stackId="a"
-                fill="hsl(12 76% 61%)"
-                radius={[4, 4, 0, 0]}
-              />
+              <Bar dataKey="desktop" stackId="a" fill="hsl(173 58% 39%)" radius={[0, 0, 4, 4]} />
+              <Bar dataKey="mobile" stackId="a" fill="hsl(12 76% 61%)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ChartContainer>
         </CardContent>
         <CardFooter className="flex-col items-start gap-2 text-sm">
-          <div className="flex gap-2 leading-none font-medium">
-            Trending up by 5.2% this month
-          </div>
+          <div className="flex gap-2 leading-none font-medium">Trending up by 5.2% this month</div>
           <div className="text-muted-foreground leading-none">
             Showing total visitors for the last 6 months
           </div>

@@ -3,13 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAtom } from "jotai";
 import { toast } from "sonner";
-import {
-  GitBranch,
-  GraduationCap,
-  LayoutGrid,
-  RefreshCw,
-  Star,
-} from "lucide-react";
+import { GitBranch, GraduationCap, LayoutGrid, RefreshCw, Star } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
@@ -20,8 +14,7 @@ import {
 } from "@/modules/roadmaps/functions/save-with-retry";
 import { findEntryByCourse } from "@/modules/roadmaps/functions/conflicts";
 import { extractAcadTermCode } from "@/modules/roadmaps/functions/term-mapping";
-import { roadmapPanelWidthsAtom } from "@/modules/roadmaps/atoms/roadmap";
-import { hasSeenRoadmapsTourAtom } from "@/modules/roadmaps/atoms/roadmap";
+import { hasSeenRoadmapsTourAtom, roadmapPanelWidthsAtom } from "@/modules/roadmaps/atoms/roadmap";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
 import { RoadmapList } from "@/modules/roadmaps/components/RoadmapList";
 import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
@@ -38,11 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/common/components/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/common/components/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/common/components/tooltip";
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
 import { EmptyState } from "@/common/components/empty-state";
 import { TourReplayButton } from "@/common/tour/TourReplayButton";
@@ -104,9 +93,7 @@ function acadYearLabelFromTermId(termId: string): string | null {
  * Module-level (no hook) so it can sit below the editor's early returns.
  */
 function focusRoadmapCreateInput() {
-  document
-    .querySelector<HTMLButtonElement>('button[aria-label="Create new roadmap"]')
-    ?.click();
+  document.querySelector<HTMLButtonElement>('button[aria-label="Create new roadmap"]')?.click();
 }
 
 // =============================================================================
@@ -145,10 +132,7 @@ export function MyRoadmapsEditor() {
     (deltaX: number) => {
       setPanelWidths((w) => {
         const containerW = layoutRef.current?.clientWidth ?? Infinity;
-        const max = Math.min(
-          LIST_MAX_WIDTH,
-          containerW - w.sidebar - MAIN_MIN_WIDTH,
-        );
+        const max = Math.min(LIST_MAX_WIDTH, containerW - w.sidebar - MAIN_MIN_WIDTH);
         return { ...w, list: clampWidth(w.list + deltaX, LIST_MIN_WIDTH, max) };
       });
     },
@@ -159,10 +143,7 @@ export function MyRoadmapsEditor() {
     (deltaX: number) => {
       setPanelWidths((w) => {
         const containerW = layoutRef.current?.clientWidth ?? Infinity;
-        const max = Math.min(
-          SIDEBAR_MAX_WIDTH,
-          containerW - w.list - MAIN_MIN_WIDTH,
-        );
+        const max = Math.min(SIDEBAR_MAX_WIDTH, containerW - w.list - MAIN_MIN_WIDTH);
         // The handle sits left of the sidebar: dragging left widens it.
         return {
           ...w,
@@ -204,10 +185,7 @@ export function MyRoadmapsEditor() {
 
   // Matriculation terms in chronological order (oldest first).
   const matricTermOptions = useMemo(
-    () =>
-      [...(acadTermsData ?? [])].sort(
-        (a, b) => a.startDt.getTime() - b.startDt.getTime(),
-      ),
+    () => (acadTermsData ?? []).toSorted((a, b) => a.startDt.getTime() - b.startDt.getTime()),
     [acadTermsData],
   );
 
@@ -228,10 +206,7 @@ export function MyRoadmapsEditor() {
     // derive its AY from the raw id so the Select still renders the stored
     // value instead of blanking out.
     const persistedTermId = selectedRoadmap?.matricTermId;
-    if (
-      persistedTermId &&
-      !matricTermOptions.some((t) => t.id === persistedTermId)
-    ) {
+    if (persistedTermId && !matricTermOptions.some((t) => t.id === persistedTermId)) {
       const ay = acadYearLabelFromTermId(persistedTermId);
       if (ay) termIdByAy.set(ay, persistedTermId);
     }
@@ -239,9 +214,7 @@ export function MyRoadmapsEditor() {
   }, [matricTermOptions, selectedRoadmap?.matricTermId]);
 
   const selectedMatricAy = useMemo(() => {
-    const term = matricTermOptions.find(
-      (t) => t.id === selectedRoadmap?.matricTermId,
-    );
+    const term = matricTermOptions.find((t) => t.id === selectedRoadmap?.matricTermId);
     if (term) return acadYearLabel(term.label);
     // Fallback: the persisted term isn't in the (24h-cached) options — derive
     // the AY label from the raw id so the Select never blanks out a stored
@@ -361,14 +334,12 @@ export function MyRoadmapsEditor() {
         utils.roadmaps.listMine.setData(undefined, (old) =>
           old?.map((r) => (r.id === roadmapId ? { ...r, matricTermId } : r)),
         ),
-      restoreSnapshot: (prev) =>
-        utils.roadmaps.listMine.setData(undefined, prev),
+      restoreSnapshot: (prev) => utils.roadmaps.listMine.setData(undefined, prev),
       invalidate: async () => {
         await utils.roadmaps.listMine.invalidate();
         await utils.roadmaps.getMine.invalidate();
       },
-      onError: (message) =>
-        toast.error(`Failed to save matriculation year: ${message}`),
+      onError: (message) => toast.error(`Failed to save matriculation year: ${message}`),
     }),
     onSuccess: () =>
       toast.success("Matriculation year saved", {
@@ -380,9 +351,7 @@ export function MyRoadmapsEditor() {
   const syncProgressMutation = api.roadmaps.syncProgress.useMutation({
     onSuccess: async (result) => {
       if (result.synced > 0) {
-        toast.success(
-          `${result.synced} course${result.synced === 1 ? "" : "s"} synced`,
-        );
+        toast.success(`${result.synced} course${result.synced === 1 ? "" : "s"} synced`);
         await utils.roadmaps.getMine.invalidate({ roadmapId: selectedId! });
         await utils.roadmaps.listMine.invalidate();
       }
@@ -404,12 +373,9 @@ export function MyRoadmapsEditor() {
       getSnapshot: () => utils.roadmaps.listMine.getData(),
       applyOptimistic: ({ roadmapId, facultyId }) =>
         utils.roadmaps.listMine.setData(undefined, (old) =>
-          old?.map((r) =>
-            r.id === roadmapId ? { ...r, facultyId } : r,
-          ),
+          old?.map((r) => (r.id === roadmapId ? { ...r, facultyId } : r)),
         ),
-      restoreSnapshot: (prev) =>
-        utils.roadmaps.listMine.setData(undefined, prev),
+      restoreSnapshot: (prev) => utils.roadmaps.listMine.setData(undefined, prev),
       invalidate: async () => {
         await utils.roadmaps.listMine.invalidate();
         await utils.roadmaps.getMine.invalidate();
@@ -493,9 +459,7 @@ export function MyRoadmapsEditor() {
         await saveEntriesWithConflictRetry(
           {
             roadmapId: selectedId,
-            updatedAt: utils.roadmaps.getMine
-              .getData(key)
-              ?.roadmap.updatedAt?.toISOString(),
+            updatedAt: utils.roadmaps.getMine.getData(key)?.roadmap.updatedAt?.toISOString(),
             entries: newEntries.map((e, i) => ({
               courseId: e.courseId,
               yearNumber: e.yearNumber,
@@ -514,9 +478,7 @@ export function MyRoadmapsEditor() {
         // The retry also conflicted — a genuine cross-device edit. (Other
         // failures are already toasted by the mutation's onError.)
         if (isConflictError(error)) {
-          toast.error(
-            "This roadmap was updated elsewhere. Refresh and try again.",
-          );
+          toast.error("This roadmap was updated elsewhere. Refresh and try again.");
         }
         // Rethrow so RoadmapGrid keeps its dirty flag and retries on the
         // next edit / unmount flush.
@@ -527,12 +489,7 @@ export function MyRoadmapsEditor() {
   );
 
   const handleAddCourse = useCallback(
-    (course: {
-      id: string;
-      code: string;
-      name: string;
-      creditUnits: number;
-    }) => {
+    (course: { id: string; code: string; name: string; creditUnits: number }) => {
       // A course may only be planned once — block adds that would duplicate
       // a course already placed elsewhere in the roadmap.
       if (findEntryByCourse(entries, course.id)) {
@@ -558,13 +515,7 @@ export function MyRoadmapsEditor() {
   const termFooter = useCallback(
     (yearNumber: number, term: string) => {
       if (!acadTermsData) return null;
-      return (
-        <TermTimetableLink
-          yearNumber={yearNumber}
-          term={term}
-          acadTerms={acadTermsData}
-        />
-      );
+      return <TermTimetableLink yearNumber={yearNumber} term={term} acadTerms={acadTermsData} />;
     },
     [acadTermsData],
   );
@@ -586,8 +537,7 @@ export function MyRoadmapsEditor() {
         <p className="text-muted-foreground text-sm">
           {roadmapsErrorObj?.data?.code === "UNAUTHORIZED"
             ? "You must be logged in to view your roadmaps."
-            : (roadmapsErrorObj?.message ??
-              "Failed to load roadmaps. Please try again.")}
+            : (roadmapsErrorObj?.message ?? "Failed to load roadmaps. Please try again.")}
         </p>
       </div>
     );
@@ -598,10 +548,7 @@ export function MyRoadmapsEditor() {
 
   // ---- Render ----
   return (
-    <div
-      ref={layoutRef}
-      className="flex flex-col gap-0 rounded-lg border lg:flex-row"
-    >
+    <div ref={layoutRef} className="flex flex-col gap-0 rounded-lg border lg:flex-row">
       {/* Left sidebar: roadmap list (stacks on top on mobile) */}
       <RoadmapList
         roadmaps={roadmaps}
@@ -622,11 +569,7 @@ export function MyRoadmapsEditor() {
       {/* Divider line sits on the handle's right edge (the list no longer
           draws its own border-r) so it meets the editor header's bottom
           border with no gap. */}
-      <ResizeHandle
-        label="Resize roadmap list"
-        onDelta={handleListResize}
-        className="border-r"
-      />
+      <ResizeHandle label="Resize roadmap list" onDelta={handleListResize} className="border-r" />
 
       {/* Main area — flex column so the grid section fills the height below
           the header (the separator then spans the full column and meets the
@@ -638,11 +581,7 @@ export function MyRoadmapsEditor() {
             icon={<GitBranch />}
             title="No roadmaps yet"
             description="Create your first roadmap to start planning your degree."
-            action={
-              <Button onClick={focusRoadmapCreateInput}>
-                Create your first roadmap
-              </Button>
-            }
+            action={<Button onClick={focusRoadmapCreateInput}>Create your first roadmap</Button>}
           />
         )}
 
@@ -651,9 +590,7 @@ export function MyRoadmapsEditor() {
           <div className="border-b">
             <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2">
               <div className="flex min-w-0 items-center gap-2">
-                <h2 className="min-w-0 truncate text-sm font-semibold">
-                  {selectedRoadmap.name}
-                </h2>
+                <h2 className="min-w-0 truncate text-sm font-semibold">{selectedRoadmap.name}</h2>
                 {/* Active roadmap toggle (one active roadmap per user) */}
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -664,14 +601,9 @@ export function MyRoadmapsEditor() {
                         variant="ghost"
                         size="sm"
                         aria-label={
-                          selectedRoadmap.isActive
-                            ? "Active roadmap"
-                            : "Mark as active roadmap"
+                          selectedRoadmap.isActive ? "Active roadmap" : "Mark as active roadmap"
                         }
-                        disabled={
-                          selectedRoadmap.isActive ||
-                          setActiveMutation.isPending
-                        }
+                        disabled={selectedRoadmap.isActive || setActiveMutation.isPending}
                         onClick={() =>
                           setActiveMutation.mutate({
                             roadmapId: selectedRoadmap.id,
@@ -697,9 +629,7 @@ export function MyRoadmapsEditor() {
                   </TooltipContent>
                 </Tooltip>
                 <span className="text-muted-foreground text-xs whitespace-nowrap">
-                  {selectedRoadmap.isActive
-                    ? "Active — syncs timetable"
-                    : "Set active"}
+                  {selectedRoadmap.isActive ? "Active — syncs timetable" : "Set active"}
                 </span>
               </div>
 
@@ -719,9 +649,7 @@ export function MyRoadmapsEditor() {
                           });
                           return;
                         }
-                        const option = matricYearOptions.find(
-                          (o) => o.ay === ay,
-                        );
+                        const option = matricYearOptions.find((o) => o.ay === ay);
                         if (!option) return;
                         setMatricTermMutation.mutate({
                           roadmapId: selectedRoadmap.id,
@@ -743,10 +671,7 @@ export function MyRoadmapsEditor() {
                             {o.ay}
                           </SelectItem>
                         ))}
-                        <SelectItem
-                          value={CLEAR_MATRIC_VALUE}
-                          data-test="matric-term-clear"
-                        >
+                        <SelectItem value={CLEAR_MATRIC_VALUE} data-test="matric-term-clear">
                           Clear
                         </SelectItem>
                       </SelectContent>
@@ -756,10 +681,7 @@ export function MyRoadmapsEditor() {
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={
-                        !selectedRoadmap.matricTermId ||
-                        syncProgressMutation.isPending
-                      }
+                      disabled={!selectedRoadmap.matricTermId || syncProgressMutation.isPending}
                       onClick={() =>
                         syncProgressMutation.mutate({
                           roadmapId: selectedRoadmap.id,
@@ -768,10 +690,7 @@ export function MyRoadmapsEditor() {
                       data-test="sync-progress-button"
                     >
                       <RefreshCw
-                        className={cn(
-                          "size-4",
-                          syncProgressMutation.isPending && "animate-spin",
-                        )}
+                        className={cn("size-4", syncProgressMutation.isPending && "animate-spin")}
                       />
                       <span className="hidden sm:inline">Sync progress</span>
                     </Button>

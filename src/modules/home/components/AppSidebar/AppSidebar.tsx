@@ -78,8 +78,6 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       isActiveWithoutExact: true,
       isNew: true,
     },
-    // Development-only links
-    ...(process.env.NODE_ENV === "development" ? [] : []),
   ],
   contribute: [
     {
@@ -122,11 +120,9 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
   ],
 };
 
-const { main: SIDEBAR_MAIN_ITEMS, ...SIDEBAR_OTHER_ITEMS } =
-  SIDEBAR_CATEGORY_ITEMS;
+const { main: SIDEBAR_MAIN_ITEMS, ...SIDEBAR_OTHER_ITEMS } = SIDEBAR_CATEGORY_ITEMS;
 
-const sidebarItemName = (label: string) =>
-  label.replace(/\s/g, "-").toLowerCase();
+const sidebarItemName = (label: string) => label.replace(/\s/g, "-").toLowerCase();
 
 export const AppSidebar = () => {
   const pathname = usePathname();
@@ -174,12 +170,7 @@ export const AppSidebar = () => {
                       {item.icon}
                       {item.label}
                       {item.isNew && (
-                        <Tag
-                          variant="outline"
-                          color="success"
-                          size="xs"
-                          deletable={false}
-                        >
+                        <Tag variant="outline" color="success" size="xs" deletable={false}>
                           beta
                         </Tag>
                       )}
@@ -198,21 +189,13 @@ export const AppSidebar = () => {
               <SidebarGroupContent>
                 <SidebarMenu>
                   {items.map((item) =>
-                    item.devOnly &&
-                    process.env.NODE_ENV !== "development" ? null : (
+                    item.devOnly && process.env.NODE_ENV !== "development" ? null : (
                       <SidebarMenuItem key={item.label}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={pathname === item.href}
-                        >
+                        <SidebarMenuButton asChild isActive={pathname === item.href}>
                           <ProgressLink
                             variant="ghost"
                             href={item.href}
-                            target={
-                              item.external
-                                ? (item.target ?? "_blank")
-                                : undefined
-                            }
+                            target={item.external ? (item.target ?? "_blank") : undefined}
                             className="text-muted-foreground hover:bg-border-elevated hover:text-accent-foreground flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
                             data-umami-event={`sidebar-${sidebarItemName(item.label)}`}
                             data-test={`sidebar-${sidebarItemName(item.label)}`}
@@ -220,12 +203,7 @@ export const AppSidebar = () => {
                             {item.icon}
                             {item.label}
                             {item.isNew && (
-                              <Tag
-                                variant="outline"
-                                color="success"
-                                size="xs"
-                                deletable={false}
-                              >
+                              <Tag variant="outline" color="success" size="xs" deletable={false}>
                                 new
                               </Tag>
                             )}

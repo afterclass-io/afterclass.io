@@ -1,13 +1,6 @@
 // @vitest-environment jsdom
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-  type Mock,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Mock } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import useUmami from "./use-umami";
 
@@ -27,7 +20,7 @@ describe("useUmami", () => {
   it("warns and no-ops when window.umami is absent", () => {
     const { result } = renderHook(() => useUmami());
 
-    void act(() => {
+    act(() => {
       result.current.pageView();
       result.current.event("click");
       result.current.identify({ userId: 1 });
@@ -41,7 +34,7 @@ describe("useUmami", () => {
     const { result } = renderHook(() => useUmami());
 
     let echoed: unknown;
-    void act(() => {
+    act(() => {
       echoed = result.current.event("signup", { plan: "pro" });
     });
 
@@ -53,7 +46,7 @@ describe("useUmami", () => {
     w.umami = umamiSpy();
     const { result } = renderHook(() => useUmami());
 
-    void act(() => result.current.pageView({ title: "Home" }));
+    act(() => result.current.pageView({ title: "Home" }));
 
     const updater = w.umami.track.mock.calls[0]![0] as (p: object) => object;
     expect(updater({ title: "old", url: "/" })).toEqual({
@@ -66,7 +59,7 @@ describe("useUmami", () => {
     w.umami = umamiSpy();
     const { result } = renderHook(() => useUmami());
 
-    void act(() => result.current.identify({ userId: 42 }));
+    act(() => result.current.identify({ userId: 42 }));
 
     expect(w.umami.identify).toHaveBeenCalledWith({ userId: 42 });
   });

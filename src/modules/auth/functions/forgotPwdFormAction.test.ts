@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getUserPlatform } from "./forgotPwdFormAction";
+import { ForgotPwdFormActionReturnType } from "../types";
 
 const { findUnique } = vi.hoisted(() => ({ findUnique: vi.fn() }));
 vi.mock("@/server/db", () => ({ db: { users: { findUnique } } }));
-
-import { getUserPlatform } from "./forgotPwdFormAction";
-import { ForgotPwdFormActionReturnType } from "../types";
 
 beforeEach(() => vi.clearAllMocks());
 

@@ -1,4 +1,4 @@
-import { type ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 
 import { cn } from "@/common/functions";
 
@@ -9,11 +9,6 @@ export type ConstrainedContainerProps = ComponentPropsWithoutRef<"div">;
  * the (school) layout. Used by routes that should stay narrow (reviews,
  * bidding, search, submit) now that the (school) layout is full-width.
  */
-export const ConstrainedContainer = ({
-  className,
-  ...props
-}: ConstrainedContainerProps) => {
-  return (
-    <div className={cn("mx-auto w-full max-w-[954px]", className)} {...props} />
-  );
+export const ConstrainedContainer = ({ className, ...props }: ConstrainedContainerProps) => {
+  return <div className={cn("mx-auto w-full max-w-[954px]", className)} {...props} />;
 };

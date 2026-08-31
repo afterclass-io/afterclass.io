@@ -1,12 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
+import { getFeedData } from "./index";
 
 // Not a createCaller test: getFeedData is a plain exported function that takes
 // `db` as an argument, so it doesn't use the shared trpc-test-helpers caller.
 // It imports "server-only" (throws outside Next) and @/server/db, both stubbed.
 vi.mock("server-only", () => ({}));
 vi.mock("@/server/db", () => ({ db: {} }));
-
-import { getFeedData } from "./index";
 
 describe("getFeedData", () => {
   it("returns null for a PRIVATE timetable even with a valid token", async () => {
@@ -79,9 +78,7 @@ describe("getFeedData", () => {
           section: "G1",
           professorName: null, // omitProfessorName — no PII in the iCal feed
           creditUnits: 1,
-          timings: [
-            { dayOfWeek: "MON", startTime: "0800", endTime: "1200", venue: "SR1" },
-          ],
+          timings: [{ dayOfWeek: "MON", startTime: "0800", endTime: "1200", venue: "SR1" }],
           examTimings: [],
         },
       ],
