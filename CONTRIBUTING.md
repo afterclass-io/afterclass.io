@@ -126,7 +126,8 @@ Request.
   integration suite via Testcontainers and needs a running Docker daemon.
 - No need to worry about code style as long as you have installed the dev
   dependencies and recommended dev setup. Modified files are automatically
-  formatted with Prettier on save.
+  formatted with `oxfmt` on save (via the OXC VS Code extension) and on commit
+  (via `lefthook`). You can also run `bun run format:check` and `bun run lint:check`.
 - PR title MUST follow the [commit message
   convention](./.github/commit-convention.md) so that changelogs can be
   automatically generated.
