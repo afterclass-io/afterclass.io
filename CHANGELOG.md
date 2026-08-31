@@ -14,6 +14,8 @@
 - Roadmap editor divider continuity: resize-separator lines now span full height and meet the header/outer borders (stray sidebar `border-r` removed); bids table drops the redundant Term column (term filter remains) and narrows so all columns fit.
 - Auth: signing in with a faculty subdomain email (e.g. `@scis.smu.edu.sg`) now resolves to the same account as `@smu.edu.sg` (fixes #344 — `users.email` backfilled to normalized form).
 - Roadmaps: faculty is now per-degree-plan instead of per-profile — declare it in the editor (syncs to `UserRoadmap.facultyId` via `roadmaps.setFaculty`) and the public gallery pill reflects the roadmap, not the owner's global profile.
+### Changed
+- Dependencies & tooling hygiene (#513): manifest cleanup (jackspeak resolution, node floor), Storybook/Next/env configuration cleanup, async password comparison, and standardisation of runtime enum imports.
 
 <a id="v1.4.0"></a>
 # [v1.4.0](https://github.com/afterclass-io/afterclass.io/releases/tag/v1.4.0) - 2025-03-01

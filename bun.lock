@@ -127,14 +127,11 @@
         "style-loader": "4.0.0",
         "tailwindcss": "^4.3.3",
         "tailwindcss-animate": "1.0.7",
-        "typescript": "6",
+        "typescript": "~6.0.3",
         "vitest": "^4.1.11",
         "webpack": "5.109.2",
       },
     },
-  },
-  "overrides": {
-    "jackspeak": "4.0.1",
   },
   "packages": {
     "@adobe/css-tools": ["@adobe/css-tools@4.5.0", "", {}, "sha512-6OzddxPio9UiWTCemp4N8cYLV2ZN1ncRnV1cVGtve7dhPOtRkleRyx32GQCYSwDYgaHU3USMm84tNsvKzRCa1Q=="],

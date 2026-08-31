@@ -1,6 +1,6 @@
 import { connection } from "next/server";
 import { TZDate } from "@date-fns/tz";
-import { Edit, Lock, ScreenShare } from "lucide-react";
+import { Lock, ScreenShare, SquarePen } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -35,7 +35,7 @@ interface TimelineItemData {
 }
 
 const EVENT_ICONS = {
-  opens: <Edit />,
+  opens: <SquarePen />,
   closes: <Lock />,
   results: <ScreenShare />,
 } as const;
