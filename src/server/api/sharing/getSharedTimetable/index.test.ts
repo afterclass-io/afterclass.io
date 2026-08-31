@@ -13,7 +13,12 @@ const slotFixture = {
     course: { code: "IS101", name: "Intro", creditUnits: 1 },
     professor: { name: "Prof X" },
     classTimings: [
-      { dayOfWeek: "MON", startTime: "08:15", endTime: "11:30", venue: "SR 2-1" },
+      {
+        dayOfWeek: "MON",
+        startTime: "08:15",
+        endTime: "11:30",
+        venue: "SR 2-1",
+      },
     ],
     classExamTimings: [],
   },

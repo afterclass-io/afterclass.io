@@ -31,7 +31,10 @@ export const GoogleSignInButton = ({
       if (onLoading) {
         onLoading(true);
       }
-      const signinResp = (await signIn("google", googleSignInOptions)) as unknown as SignInResponse;
+      const signinResp = (await signIn(
+        "google",
+        googleSignInOptions,
+      )) as unknown as SignInResponse;
 
       if (onResponse) {
         onResponse(signinResp);

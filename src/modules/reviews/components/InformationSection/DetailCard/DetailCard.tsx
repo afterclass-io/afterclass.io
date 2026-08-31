@@ -56,7 +56,9 @@ export const DetailCard = async ({ course }: Props) => {
           <>
             <hr className="border-border" />
             <div className="flex flex-col gap-1">
-              <p className="text-muted-foreground text-sm font-medium">Bidding</p>
+              <p className="text-muted-foreground text-sm font-medium">
+                Bidding
+              </p>
               <Button asChild variant="link" className="size-fit h-auto p-0">
                 <Link
                   href={`/bidding?course=${course.code}`}

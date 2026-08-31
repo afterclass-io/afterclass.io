@@ -3,7 +3,11 @@ import { z } from "zod";
 import { useState } from "react";
 import type { SearchCourseResult } from "@/modules/search/functions/searchCourse";
 import type { SearchProfResult } from "@/modules/search/functions/searchProf";
-import { BooksIcon, GraduationCapIcon, PencilIcon } from "@/common/components/icons";
+import {
+  BooksIcon,
+  GraduationCapIcon,
+  PencilIcon,
+} from "@/common/components/icons";
 import { SearchResultList } from "../SearchResultList";
 import { SearchResultItem } from "../SearchResultItem";
 import { SearchResultFilter } from "../SearchResultFilter";
@@ -52,8 +56,12 @@ export const SearchResultContent = ({
     }
   };
 
-  const schoolFilteredCourse = searchedCourse.filter((c) => isSchoolSelected(c.uniAbbrv));
-  const schoolFilteredProf = searchedProf.filter((p) => isSchoolSelected(p.uniAbbrv));
+  const schoolFilteredCourse = searchedCourse.filter((c) =>
+    isSchoolSelected(c.uniAbbrv),
+  );
+  const schoolFilteredProf = searchedProf.filter((p) =>
+    isSchoolSelected(p.uniAbbrv),
+  );
 
   return (
     <div className="flex h-full gap-12">

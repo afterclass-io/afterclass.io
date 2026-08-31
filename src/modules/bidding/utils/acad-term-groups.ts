@@ -67,7 +67,10 @@ export function computeAcadTermGroups(sorted: HasBidWindow[]): AYGroup[] {
  * @param sorted  The same sorted array passed to {@link computeAcadTermGroups}.
  * @param groups  The groups returned by {@link computeAcadTermGroups}.
  */
-export function buildGroupIndexMap(sorted: HasBidWindow[], groups: AYGroup[]): Map<string, number> {
+export function buildGroupIndexMap(
+  sorted: HasBidWindow[],
+  groups: AYGroup[],
+): Map<string, number> {
   const map = new Map<string, number>();
   let groupIdx = 0;
 

@@ -28,10 +28,14 @@ export const getByCourseProfessor = publicProcedure
 
     const acadYearCutoff = await getAcadYearCutoff(ctx.db);
 
-    return findBidResults(ctx.db, {
-      class: {
-        courseId: course.id,
-        professorId: input.professorId,
+    return findBidResults(
+      ctx.db,
+      {
+        class: {
+          courseId: course.id,
+          professorId: input.professorId,
+        },
       },
-    }, acadYearCutoff);
+      acadYearCutoff,
+    );
   });

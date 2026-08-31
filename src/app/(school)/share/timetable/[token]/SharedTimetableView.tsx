@@ -30,17 +30,11 @@ export function SharedTimetableView({
         <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">
           Shared Timetable: {timetableName}
         </PageTitle>
-        <p className="text-sm text-muted-foreground">
-          by {ownerUsername}
-        </p>
+        <p className="text-sm text-muted-foreground">by {ownerUsername}</p>
       </div>
 
       {/* Grid */}
-      <TimetableGrid
-        classes={slots}
-        view="classes"
-        readOnly
-      />
+      <TimetableGrid classes={slots} view="classes" readOnly />
     </div>
   );
 }

@@ -104,7 +104,10 @@ describe("listPublic", () => {
   });
 
   it.each([
-    ["most-viewed", [{ viewCount: "desc" }, { publishedAt: "desc" }, { id: "desc" }]],
+    [
+      "most-viewed",
+      [{ viewCount: "desc" }, { publishedAt: "desc" }, { id: "desc" }],
+    ],
     ["newest", [{ publishedAt: "desc" }, { id: "desc" }]],
   ])("orders %s via DB orderBy", async (sort, orderBy) => {
     const findMany = vi.fn().mockResolvedValue([]);
@@ -142,7 +145,9 @@ describe("listPublic", () => {
     ]);
     const facultiesFindMany = vi
       .fn()
-      .mockResolvedValue([{ id: 10, name: "School of Economics", acronym: "SOE" }]);
+      .mockResolvedValue([
+        { id: 10, name: "School of Economics", acronym: "SOE" },
+      ]);
     const dbMock = {
       userRoadmap: { findMany },
       faculties: { findMany: facultiesFindMany },

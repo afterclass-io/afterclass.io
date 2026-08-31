@@ -25,7 +25,12 @@ function makeRoadmapRow(overrides: Record<string, unknown> = {}) {
         yearNumber: 1,
         term: "T1",
         sortOrder: 0,
-        course: { code: "CS101", name: "Intro", creditUnits: 1, description: "d" },
+        course: {
+          code: "CS101",
+          name: "Intro",
+          creditUnits: 1,
+          description: "d",
+        },
       },
     ],
     _count: { votes: 7 },
@@ -33,7 +38,10 @@ function makeRoadmapRow(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function makeDb(row: unknown, opts: { vote?: unknown; faculty?: unknown } = {}) {
+function makeDb(
+  row: unknown,
+  opts: { vote?: unknown; faculty?: unknown } = {},
+) {
   return {
     userRoadmap: { findUnique: vi.fn().mockResolvedValue(row) },
     roadmapVote: {

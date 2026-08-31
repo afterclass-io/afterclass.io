@@ -62,14 +62,18 @@ export function RoadmapTermCell({
     disabled: readOnly,
   });
 
-  const sortableItems = entries.map((e) => sortableIds?.get(entryKey(e)) ?? e.courseId);
+  const sortableItems = entries.map(
+    (e) => sortableIds?.get(entryKey(e)) ?? e.courseId,
+  );
 
   return (
     <div
       ref={setNodeRef}
       className={cn(
         "flex min-h-[120px] flex-col gap-1 rounded-lg border-2 border-dashed p-2 transition-colors",
-        isOver && !readOnly ? "border-primary/50 bg-primary/5" : "border-muted-foreground/20",
+        isOver && !readOnly
+          ? "border-primary/50 bg-primary/5"
+          : "border-muted-foreground/20",
         readOnly && "cursor-default",
         "motion-safe:transition-all motion-safe:duration-150",
         className,
@@ -104,7 +108,9 @@ export function RoadmapTermCell({
               draggable={!readOnly}
               sortableId={sortableIds?.get(entryKey(entry))}
               onClick={onCourseClick ? () => onCourseClick(entry) : undefined}
-              onRemove={onRemove && !readOnly ? () => onRemove(entry) : undefined}
+              onRemove={
+                onRemove && !readOnly ? () => onRemove(entry) : undefined
+              }
             />
           ))}
         </div>

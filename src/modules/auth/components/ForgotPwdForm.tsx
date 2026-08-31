@@ -8,7 +8,12 @@ import { toast } from "sonner";
 
 import { supabase } from "@/server/supabase";
 
-import { InputRoot, InputAdornment, InputControl, Input } from "@/common/components/input";
+import {
+  InputRoot,
+  InputAdornment,
+  InputControl,
+  Input,
+} from "@/common/components/input";
 import { Button } from "@/common/components/button";
 import {
   Form,
@@ -23,7 +28,10 @@ import { EnvelopeIcon } from "@/common/components/icons";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
 import { getUserPlatform } from "../functions";
-import { ForgotPwdFormActionReturnType, forgotPwdFormInputsSchema } from "../types";
+import {
+  ForgotPwdFormActionReturnType,
+  forgotPwdFormInputsSchema,
+} from "../types";
 import type { ForgotPwdFormInputs } from "../types";
 import { ProgressLink } from "@/common/components/progress-link";
 
@@ -79,7 +87,10 @@ export const ForgotPwdForm = () => {
 
   return (
     <Form {...form}>
-      <form className="flex w-full flex-col gap-6" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="flex w-full flex-col gap-6"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
         <FormField
           control={form.control}
           name="email"
@@ -106,8 +117,14 @@ export const ForgotPwdForm = () => {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={form.formState.isSubmitting} data-test="submit">
-          {form.formState.isSubmitting ? "Confirming your email..." : "Reset my password"}
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          data-test="submit"
+        >
+          {form.formState.isSubmitting
+            ? "Confirming your email..."
+            : "Reset my password"}
         </Button>
         <div className="flex items-center gap-1 self-stretch md:text-base">
           <span className="text-muted-foreground text-center font-semibold">

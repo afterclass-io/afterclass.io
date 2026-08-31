@@ -10,7 +10,9 @@ describe("roadmapVotes.getByUser", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("rejects calls without roadmapId", async () => {
-    const caller = makeCaller(router.createCaller, { roadmapVote: { findFirst: vi.fn() } });
+    const caller = makeCaller(router.createCaller, {
+      roadmapVote: { findFirst: vi.fn() },
+    });
     await expect(caller.getByUser({} as never)).rejects.toMatchObject({
       code: "BAD_REQUEST",
     });
@@ -18,7 +20,9 @@ describe("roadmapVotes.getByUser", () => {
 
   it("queries by (roadmapId, session user) hitting the unique index", async () => {
     const findFirst = vi.fn().mockResolvedValue({ weight: 1 });
-    const caller = makeCaller(router.createCaller, { roadmapVote: { findFirst } });
+    const caller = makeCaller(router.createCaller, {
+      roadmapVote: { findFirst },
+    });
 
     const result = await caller.getByUser({ roadmapId: "r1" });
 

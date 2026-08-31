@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useCallback, useRef, useState, Suspense } from "react";
+import {
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+  useState,
+  Suspense,
+} from "react";
 import type { CSSProperties } from "react";
 import type { SetStateAction, WritableAtom } from "jotai";
 import {
@@ -98,20 +105,33 @@ const WATCHED_MUTATION_KEY_PREFIXES = ["timetable", "userBids"] as const;
 function isPrefixMatch(filter: unknown, key: unknown): boolean {
   if (filter === key) return true;
   if (typeof filter !== typeof key) return false;
-  if (filter !== null && key !== null && typeof filter === "object" && typeof key === "object") {
+  if (
+    filter !== null &&
+    key !== null &&
+    typeof filter === "object" &&
+    typeof key === "object"
+  ) {
     return Object.keys(filter).every((k) =>
-      isPrefixMatch((filter as Record<string, unknown>)[k], (key as Record<string, unknown>)[k]),
+      isPrefixMatch(
+        (filter as Record<string, unknown>)[k],
+        (key as Record<string, unknown>)[k],
+      ),
     );
   }
   return false;
 }
 function isWatchedMutationKey(key: unknown): boolean {
-  return WATCHED_MUTATION_KEY_PREFIXES.some((prefix) => isPrefixMatch([[prefix]], key));
+  return WATCHED_MUTATION_KEY_PREFIXES.some((prefix) =>
+    isPrefixMatch([[prefix]], key),
+  );
 }
 function clearFailedMutations(queryClient: QueryClient): void {
   const mutationCache = queryClient.getMutationCache();
   for (const mutation of mutationCache.getAll()) {
-    if (mutation.state.status === "error" && isWatchedMutationKey(mutation.options.mutationKey)) {
+    if (
+      mutation.state.status === "error" &&
+      isWatchedMutationKey(mutation.options.mutationKey)
+    ) {
       mutationCache.remove(mutation);
     }
   }
@@ -163,7 +183,8 @@ function SaveStatusIndicator({ onRetry }: { onRetry: () => void }) {
     useMutationState({
       filters: { mutationKey: [["userBids"]], status: "error" },
     }).length;
-  const status: SaveStatus = saving > 0 ? "saving" : failed > 0 ? "failed" : "saved";
+  const status: SaveStatus =
+    saving > 0 ? "saving" : failed > 0 ? "failed" : "saved";
   useEffect(() => {
     const mutationCache = queryClient.getMutationCache();
     return mutationCache.subscribe((event) => {
@@ -200,7 +221,9 @@ function SaveStatusIndicator({ onRetry }: { onRetry: () => void }) {
 
 export default function TimetablePage() {
   const selectedTermId = useAtomValue(selectedTermIdAtom);
-  const [activeTimetableId, setActiveTimetableId] = useAtom(activeTimetableIdAtom);
+  const [activeTimetableId, setActiveTimetableId] = useAtom(
+    activeTimetableIdAtom,
+  );
   const [view, setView] = useAtom(timetableViewAtom);
   const { data: session, status: sessionStatus } = useSession();
   const isLoggedIn = !!session;
@@ -280,10 +303,11 @@ export default function TimetablePage() {
     },
   });
 
-  const { data: timetables, isLoading: timetablesLoading } = api.timetable.listMine.useQuery(
-    { acadTermId: selectedTermId ?? "" },
-    { enabled: !!selectedTermId && isLoggedIn },
-  );
+  const { data: timetables, isLoading: timetablesLoading } =
+    api.timetable.listMine.useQuery(
+      { acadTermId: selectedTermId ?? "" },
+      { enabled: !!selectedTermId && isLoggedIn },
+    );
 
   // Auto-create default timetable if none exist for the term
   useEffect(() => {
@@ -334,9 +358,15 @@ export default function TimetablePage() {
   );
 
   /** The plan starred active for this term (what bids sync to), if any. */
-  const activePlan = useMemo(() => timetables?.find((t) => t.isActive) ?? null, [timetables]);
+  const activePlan = useMemo(
+    () => timetables?.find((t) => t.isActive) ?? null,
+    [timetables],
+  );
 
-  const classes: ArrangedClass[] = useMemo(() => arrangement?.slots ?? [], [arrangement]);
+  const classes: ArrangedClass[] = useMemo(
+    () => arrangement?.slots ?? [],
+    [arrangement],
+  );
 
   // `getArrangement` co-locates bids with slots in the SAME round-trip so
   // bid-status colours land with the grid (no second-query waterfall that
@@ -404,7 +434,9 @@ export default function TimetablePage() {
 
   // Empty-state CTA: bring the course search input to the user.
   const focusCourseSearch = useCallback(() => {
-    const input = document.querySelector<HTMLInputElement>('[data-test="timetable-search-input"]');
+    const input = document.querySelector<HTMLInputElement>(
+      '[data-test="timetable-search-input"]',
+    );
     if (!input) return;
     input.scrollIntoView({ behavior: "smooth", block: "center" });
     input.focus({ preventScroll: true });
@@ -516,8 +548,9 @@ export default function TimetablePage() {
           <div className="mb-3">
             <h2 className="text-lg font-semibold">Class timetable</h2>
             <p className="text-muted-foreground text-sm">
-              Showing the active plan for the selected term. Use the plan switcher above to compare
-              variants; the star marks your active plan.
+              Showing the active plan for the selected term. Use the plan
+              switcher above to compare variants; the star marks your active
+              plan.
             </p>
           </div>
 
@@ -550,7 +583,9 @@ export default function TimetablePage() {
               description="Browse courses in the search panel, or log in to save timetables, track bids and share your schedule."
               action={
                 <Button asChild>
-                  <Link href="/account/auth/login?callbackUrl=%2Ftimetable">Log in</Link>
+                  <Link href="/account/auth/login?callbackUrl=%2Ftimetable">
+                    Log in
+                  </Link>
                 </Button>
               }
             />
@@ -568,7 +603,11 @@ export default function TimetablePage() {
                 icon={<Search />}
                 title="No classes added yet"
                 description="Search for courses in the panel on the right to start building your timetable."
-                action={<Button onClick={focusCourseSearch}>Add your first course</Button>}
+                action={
+                  <Button onClick={focusCourseSearch}>
+                    Add your first course
+                  </Button>
+                }
               />
             )}
 
@@ -596,8 +635,8 @@ export default function TimetablePage() {
               <div>
                 <h2 className="text-lg font-semibold">Your bids</h2>
                 <p className="text-muted-foreground text-sm">
-                  Bids are tracked per academic term, not per plan — they apply to every timetable
-                  variant in this term.
+                  Bids are tracked per academic term, not per plan — they apply
+                  to every timetable variant in this term.
                 </p>
                 <p className="text-muted-foreground mt-1 text-xs">
                   {activePlan

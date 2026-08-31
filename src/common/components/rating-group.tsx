@@ -87,7 +87,8 @@ export const RatingGroup = ({
 
   const getStyle = React.useCallback(
     (index: number) => {
-      const ratingToUse = !readOnly && hoverRating !== null ? hoverRating : value;
+      const ratingToUse =
+        !readOnly && hoverRating !== null ? hoverRating : value;
       return {
         color: ratingToUse > index ? color : "gray",
         fill: ratingToUse > index ? color : "transparent",

@@ -25,12 +25,7 @@ describe("calculateRatingItems", () => {
   });
 
   it("computes each label independently", () => {
-    const reviews = [
-      review("A", "B"),
-      review("A"),
-      review("A"),
-      review(),
-    ];
+    const reviews = [review("A", "B"), review("A"), review("A"), review()];
     expect(calculateRatingItems(reviews, [label("A"), label("B")])).toEqual([
       { label: "a", rating: "75%" },
       { label: "b", rating: "25%" },
@@ -39,9 +34,10 @@ describe("calculateRatingItems", () => {
 
   it("humanises the label name (underscores to spaces, lower-cased)", () => {
     expect(
-      calculateRatingItems([review("VERY_GOOD_COURSE")], [
-        label("VERY_GOOD_COURSE"),
-      ]),
+      calculateRatingItems(
+        [review("VERY_GOOD_COURSE")],
+        [label("VERY_GOOD_COURSE")],
+      ),
     ).toEqual([{ label: "very good course", rating: "100%" }]);
   });
 

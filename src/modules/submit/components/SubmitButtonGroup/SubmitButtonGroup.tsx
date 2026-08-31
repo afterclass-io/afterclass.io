@@ -28,7 +28,9 @@ export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
   }, [submitAs, setValue]);
 
   const submitAsBtnText =
-    submitAs === ReviewerEnum.ANONYMOUS ? "Anonymously" : `as ${session?.user.email}`;
+    submitAs === ReviewerEnum.ANONYMOUS
+      ? "Anonymously"
+      : `as ${session?.user.email}`;
 
   return (
     <div className="border-primary/80 bg-primary inline-flex h-10 shrink-0 items-center justify-center rounded-3xl border">
@@ -57,7 +59,11 @@ export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
           data-size="icon"
           className="border-primary/80 flex h-full w-auto content-center items-center gap-4 self-stretch rounded-none rounded-r-3xl border py-3"
         >
-          <Button data-test="review-submit-select-trigger" className="h-full" size="icon">
+          <Button
+            data-test="review-submit-select-trigger"
+            className="h-full"
+            size="icon"
+          >
             <ChevronDownIcon className="size-5" />
           </Button>
         </SelectTrigger>

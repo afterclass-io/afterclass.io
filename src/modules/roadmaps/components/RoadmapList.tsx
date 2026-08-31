@@ -1,10 +1,24 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, Check, X, Globe, Share2, Star } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Loader2,
+  Check,
+  X,
+  Globe,
+  Share2,
+  Star,
+} from "lucide-react";
 import { Button } from "@/common/components/button";
 import { Input } from "@/common/components/input";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/common/components/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/common/components/tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -67,7 +81,9 @@ export function RoadmapList({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
 
-  const [deleteTarget, setDeleteTarget] = useState<RoadmapListItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<RoadmapListItem | null>(
+    null,
+  );
 
   // ---- Handlers ----
   const handleCreate = useCallback(() => {
@@ -212,18 +228,25 @@ export function RoadmapList({
               key={item.id}
               className={cn(
                 "group flex items-center gap-2 px-3 py-2 transition-colors",
-                selectedId === item.id ? "bg-accent text-accent-foreground" : "hover:bg-muted/50",
+                selectedId === item.id
+                  ? "bg-accent text-accent-foreground"
+                  : "hover:bg-muted/50",
               )}
             >
               {/* Active roadmap indicator */}
               {item.isActive && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="inline-flex shrink-0" aria-label="Active roadmap">
+                    <span
+                      className="inline-flex shrink-0"
+                      aria-label="Active roadmap"
+                    >
                       <Star className="fill-primary text-primary size-3 shrink-0" />
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent>Active roadmap — syncs with your timetables</TooltipContent>
+                  <TooltipContent>
+                    Active roadmap — syncs with your timetables
+                  </TooltipContent>
                 </Tooltip>
               )}
 
@@ -231,21 +254,31 @@ export function RoadmapList({
               {isPublic && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="inline-flex shrink-0" aria-label="Public roadmap">
+                    <span
+                      className="inline-flex shrink-0"
+                      aria-label="Public roadmap"
+                    >
                       <Globe className="text-success size-3 shrink-0" />
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent>Public — visible in the community gallery</TooltipContent>
+                  <TooltipContent>
+                    Public — visible in the community gallery
+                  </TooltipContent>
                 </Tooltip>
               )}
               {isUnlisted && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="inline-flex shrink-0" aria-label="Unlisted roadmap">
+                    <span
+                      className="inline-flex shrink-0"
+                      aria-label="Unlisted roadmap"
+                    >
                       <Share2 className="text-warning size-3 shrink-0" />
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent>Unlisted — anyone with the link can view</TooltipContent>
+                  <TooltipContent>
+                    Unlisted — anyone with the link can view
+                  </TooltipContent>
                 </Tooltip>
               )}
 
@@ -330,8 +363,8 @@ export function RoadmapList({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete roadmap?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete &quot;{deleteTarget?.name}&quot; and all its entries.
-              This action cannot be undone.
+              This will permanently delete &quot;{deleteTarget?.name}&quot; and
+              all its entries. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -346,7 +379,9 @@ export function RoadmapList({
               }}
               data-test="roadmap-delete-confirm"
             >
-              {isMutating && <Loader2 className="mr-1.5 size-3.5 animate-spin" />}
+              {isMutating && (
+                <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+              )}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

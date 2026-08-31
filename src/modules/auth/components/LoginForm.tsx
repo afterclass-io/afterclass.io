@@ -23,7 +23,12 @@ import {
   PasswordInputAdornmentToggle,
   PasswordInput,
 } from "@/common/components/input-password";
-import { InputRoot, InputAdornment, InputControl, Input } from "@/common/components/input";
+import {
+  InputRoot,
+  InputAdornment,
+  InputControl,
+  Input,
+} from "@/common/components/input";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import { useProgress } from "@/common/providers/ProgressProvider";
 import { ProgressLink } from "@/common/components/progress-link";
@@ -33,7 +38,9 @@ import { env } from "@/env";
 
 const loginFormInputsSchema = z.object({
   email: emailValidationSchema,
-  password: z.string().min(8, { error: "Passwords must be at least 8 characters long" }),
+  password: z
+    .string()
+    .min(8, { error: "Passwords must be at least 8 characters long" }),
 });
 type LoginFormInputs = z.infer<typeof loginFormInputsSchema>;
 
@@ -58,13 +65,17 @@ export const LoginForm = () => {
         id: authJsError,
         description: (
           <>
-            <span>Please try again with an email from the supported domains:</span>
+            <span>
+              Please try again with an email from the supported domains:
+            </span>
             <span className="mt-1 flex flex-wrap gap-1">
               {env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.map((domain, i) => (
                 <Fragment key={i}>
                   {i > 0 && <span className="mr-1">,</span>}
                   <span className="before:bg-border-primary/15 relative inline-block before:absolute before:-inset-[2px] before:my-[5px]">
-                    <pre className="text-secondary-foreground inline">{domain}</pre>
+                    <pre className="text-secondary-foreground inline">
+                      {domain}
+                    </pre>
                   </span>
                 </Fragment>
               ))}
@@ -96,7 +107,10 @@ export const LoginForm = () => {
     // see https://github.com/vercel/next.js/discussions/49465
   }, [searchParams, form]);
 
-  const onSubmit: SubmitHandler<LoginFormInputs> = async ({ email, password }) => {
+  const onSubmit: SubmitHandler<LoginFormInputs> = async ({
+    email,
+    password,
+  }) => {
     const callbackUrl = searchParams?.get("callbackUrl") ?? "/";
     const signinResp = await signIn("credentials", {
       email,
@@ -128,7 +142,10 @@ export const LoginForm = () => {
 
   return (
     <Form {...form}>
-      <form className="flex w-full flex-col gap-4 md:gap-6" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="flex w-full flex-col gap-4 md:gap-6"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
         <FormField
           control={form.control}
           name="email"
@@ -230,7 +247,9 @@ export const LoginForm = () => {
           </GoogleSignInButton>
 
           <div className="flex items-center gap-1 self-stretch md:text-base">
-            <span className="text-muted-foreground text-center">{"Don't have an account?"}</span>
+            <span className="text-muted-foreground text-center">
+              {"Don't have an account?"}
+            </span>
             <ProgressLink
               href="/account/auth/signup"
               type="button"

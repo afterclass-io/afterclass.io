@@ -19,7 +19,13 @@ export const setStatus = protectedProcedure
   .input(
     z.object({
       id: z.string(),
-      status: z.enum(["PLANNED", "SECURED", "PARTICIPATED", "DROPPED", "CANCELLED"]),
+      status: z.enum([
+        "PLANNED",
+        "SECURED",
+        "PARTICIPATED",
+        "DROPPED",
+        "CANCELLED",
+      ]),
     }),
   )
   .mutation(async ({ ctx, input }) => {

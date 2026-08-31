@@ -33,8 +33,14 @@ export const SearchResultItem = ({
       <div className="flex flex-[1_0_0%] flex-col items-start justify-center space-y-2 md:space-y-4">
         <FullWidthEnforcer className="mb-0" />
         <div className="flex items-center gap-4 self-stretch">
-          <SchoolIcon className="mt-[2px] size-4 flex-none md:size-6" school={school} />
-          <Heading as="h1" className="text-accent-foreground text-left tracking-tight md:text-lg">
+          <SchoolIcon
+            className="mt-[2px] size-4 flex-none md:size-6"
+            school={school}
+          />
+          <Heading
+            as="h1"
+            className="text-accent-foreground text-left tracking-tight md:text-lg"
+          >
             {title}
           </Heading>
           {subtitle && (
@@ -47,10 +53,16 @@ export const SearchResultItem = ({
           )}
         </div>
         <div className="text-muted-foreground flex items-center gap-2 md:gap-4">
-          {session && filterStats?.map((stat, index) => <FilterItemStats key={index} {...stat} />)}
+          {session &&
+            filterStats?.map((stat, index) => (
+              <FilterItemStats key={index} {...stat} />
+            ))}
         </div>
       </div>
-      <ChevronRightIcon size={24} className="text-muted-foreground size-4 flex-none md:size-6" />
+      <ChevronRightIcon
+        size={24}
+        className="text-muted-foreground size-4 flex-none md:size-6"
+      />
     </ProgressLink>
   );
 };

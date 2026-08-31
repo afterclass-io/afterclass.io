@@ -5,7 +5,14 @@
 
 import { useMemo, useState, memo } from "react";
 import { useTheme } from "next-themes";
-import { ReactFlow, Background, Controls, Handle, Position, useNodesState } from "@xyflow/react";
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  Handle,
+  Position,
+  useNodesState,
+} from "@xyflow/react";
 import type { Edge, Node, NodeProps } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { RoadmapTimelineNode } from "./RoadmapTimelineNode";
@@ -45,9 +52,24 @@ const TimelineTermNode = memo(function TimelineTermNode({
       {data.label}
 
       {/* Spine in/out (left/right) + course fan-out (bottom) */}
-      <Handle type="target" position={Position.Left} id="l-target" style={INVISIBLE_HANDLE_STYLE} />
-      <Handle type="source" position={Position.Right} id="r-src" style={INVISIBLE_HANDLE_STYLE} />
-      <Handle type="source" position={Position.Bottom} id="b-src" style={INVISIBLE_HANDLE_STYLE} />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="l-target"
+        style={INVISIBLE_HANDLE_STYLE}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="r-src"
+        style={INVISIBLE_HANDLE_STYLE}
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="b-src"
+        style={INVISIBLE_HANDLE_STYLE}
+      />
     </div>
   );
 });
@@ -126,18 +148,28 @@ function toFlowElements(entries: Entry[]): {
 // Component
 // ---------------------------------------------------------------------------
 
-export function RoadmapTimeline({ entries, readOnly = false, className }: RoadmapTimelineProps) {
+export function RoadmapTimeline({
+  entries,
+  readOnly = false,
+  className,
+}: RoadmapTimelineProps) {
   const { resolvedTheme } = useTheme();
-  const [selectedCourse, setSelectedCourse] = useState<RoadmapCourseInfo | null>(null);
+  const [selectedCourse, setSelectedCourse] =
+    useState<RoadmapCourseInfo | null>(null);
 
-  const { nodes: initialNodes, edges } = useMemo(() => toFlowElements(entries), [entries]);
+  const { nodes: initialNodes, edges } = useMemo(
+    () => toFlowElements(entries),
+    [entries],
+  );
 
   const [, , onNodesChange] = useNodesState(initialNodes);
 
   // Compute max Y for dynamic height
   const maxY = useMemo(() => {
     if (initialNodes.length === 0) return COURSE_START_Y + COURSE_GAP_Y;
-    return Math.max(...initialNodes.map((n) => n.position.y)) + COURSE_GAP_Y + 40;
+    return (
+      Math.max(...initialNodes.map((n) => n.position.y)) + COURSE_GAP_Y + 40
+    );
   }, [initialNodes]);
 
   // Empty state
@@ -187,10 +219,16 @@ export function RoadmapTimeline({ entries, readOnly = false, className }: Roadma
         className="bg-background"
       >
         <Background gap={20} size={1} color="var(--border)" />
-        <Controls showInteractive={!readOnly} className="rounded-lg border shadow-sm" />
+        <Controls
+          showInteractive={!readOnly}
+          className="rounded-lg border shadow-sm"
+        />
       </ReactFlow>
 
-      <RoadmapCourseDialog course={selectedCourse} onClose={() => setSelectedCourse(null)} />
+      <RoadmapCourseDialog
+        course={selectedCourse}
+        onClose={() => setSelectedCourse(null)}
+      />
     </div>
   );
 }

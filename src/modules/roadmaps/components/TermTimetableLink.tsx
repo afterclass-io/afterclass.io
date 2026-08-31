@@ -24,7 +24,11 @@ export type TermTimetableLinkProps = {
 // Component
 // ---------------------------------------------------------------------------
 
-export function TermTimetableLink({ term, acadTerms, className }: TermTimetableLinkProps) {
+export function TermTimetableLink({
+  term,
+  acadTerms,
+  className,
+}: TermTimetableLinkProps) {
   const targetTermCode = mapRoadmapTermToAcadCode(term);
 
   // Find AcadTerms whose label term matches our target

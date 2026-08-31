@@ -14,7 +14,11 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/common/components/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/common/components/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/common/components/popover";
 import { cn } from "@/common/functions/cn";
 
 export type ComboboxProps = {
@@ -25,8 +29,14 @@ export type ComboboxProps = {
   selectedValue?: string;
 };
 
-export const Combobox = forwardRef<ComponentRef<typeof CommandItem>, ComboboxProps>(
-  ({ items, placeholder, triggerLabel, queryStringKey, selectedValue }, ref) => {
+export const Combobox = forwardRef<
+  ComponentRef<typeof CommandItem>,
+  ComboboxProps
+>(
+  (
+    { items, placeholder, triggerLabel, queryStringKey, selectedValue },
+    ref,
+  ) => {
     const [value, setValue] = useState(selectedValue ?? "");
     const [open, setOpen] = useState(false);
     const searchParams = useSearchParams();
@@ -60,7 +70,9 @@ export const Combobox = forwardRef<ComponentRef<typeof CommandItem>, ComboboxPro
           >
             <SearchIcon />
             <span className="truncate">
-              {value ? items.find((el) => el.value === value)?.label : triggerLabel}
+              {value
+                ? items.find((el) => el.value === value)?.label
+                : triggerLabel}
             </span>
           </Button>
         </PopoverTrigger>
@@ -68,13 +80,18 @@ export const Combobox = forwardRef<ComponentRef<typeof CommandItem>, ComboboxPro
           <Command
             value={value}
             filter={(_, search, keywords) => {
-              if (keywords?.join("").toLowerCase().includes(search.toLowerCase())) {
+              if (
+                keywords?.join("").toLowerCase().includes(search.toLowerCase())
+              ) {
                 return 1;
               }
               return 0;
             }}
           >
-            <CommandInput placeholder={placeholder} data-test="combobox-input" />
+            <CommandInput
+              placeholder={placeholder}
+              data-test="combobox-input"
+            />
             <CommandSeparator />
             <CommandEmpty>Nothing found.</CommandEmpty>
             <CommandList>
@@ -86,10 +103,15 @@ export const Combobox = forwardRef<ComponentRef<typeof CommandItem>, ComboboxPro
                     value={el.value}
                     keywords={[el.label]}
                     onSelect={(selectedValue) => {
-                      const newValue = selectedValue === value ? "" : selectedValue;
+                      const newValue =
+                        selectedValue === value ? "" : selectedValue;
                       setValue(newValue);
                       setOpen(false);
-                      router.push(pathname + "?" + createQueryString(queryStringKey, newValue));
+                      router.push(
+                        pathname +
+                          "?" +
+                          createQueryString(queryStringKey, newValue),
+                      );
                     }}
                     aria-selected={isMatched(el.value)}
                     data-selected={isMatched(el.value) ? "" : undefined}
@@ -97,7 +119,10 @@ export const Combobox = forwardRef<ComponentRef<typeof CommandItem>, ComboboxPro
                     data-test={`combobox-item-${el.value}`}
                   >
                     <CheckIcon
-                      className={cn("text-primary", isMatched(el.value) ? "visible" : "invisible")}
+                      className={cn(
+                        "text-primary",
+                        isMatched(el.value) ? "visible" : "invisible",
+                      )}
                     />
                     {el.label}
                   </CommandItem>

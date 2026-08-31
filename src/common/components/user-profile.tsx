@@ -1,9 +1,17 @@
 "use client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/common/components/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/common/components/avatar";
 import { ExitIcon } from "@radix-ui/react-icons";
 import { signOut } from "next-auth/react";
 import type { SessionUser } from "@/server/auth/config";
-import { Popover, PopoverContent, PopoverTrigger } from "@/common/components/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/common/components/popover";
 import { Button } from "@/common/components/button";
 
 interface Props {

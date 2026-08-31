@@ -35,7 +35,8 @@ export const create = protectedProcedure
                 rating: r.rating,
                 reviewedCourseId: input.course.value,
                 reviewedFacultyId: course.belongToFacultyId,
-                reviewedProfessorId: r.value === profReview?.value ? r.value : undefined,
+                reviewedProfessorId:
+                  r.value === profReview?.value ? r.value : undefined,
                 reviewedUniversityId: course.belongToUniversityId,
                 reviewerId: ctx.session.user.id,
               },

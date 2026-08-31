@@ -2,20 +2,32 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { ClassCard } from "@/modules/bidding/components/ClassCard";
-import type { Courses, ClassTiming, ClassExamTiming, Professors } from "@/generated/prisma/client";
+import type {
+  Courses,
+  ClassTiming,
+  ClassExamTiming,
+  Professors,
+} from "@/generated/prisma/client";
 
 interface ClassItem {
   id: string;
   section: string;
   course: Partial<Courses>;
-  classTimings: Pick<ClassTiming, "dayOfWeek" | "startTime" | "endTime" | "venue">[];
+  classTimings: Pick<
+    ClassTiming,
+    "dayOfWeek" | "startTime" | "endTime" | "venue"
+  >[];
   classExamTimings: Partial<ClassExamTiming>[];
   professor: Partial<Professors> | null;
 }
 
 const PAGE_SIZE = 30;
 
-export const BiddingClassList = ({ initialClasses }: { initialClasses: ClassItem[] }) => {
+export const BiddingClassList = ({
+  initialClasses,
+}: {
+  initialClasses: ClassItem[];
+}) => {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const hasMore = visibleCount < initialClasses.length;
@@ -23,7 +35,9 @@ export const BiddingClassList = ({ initialClasses }: { initialClasses: ClassItem
   const visibleClasses = initialClasses.slice(0, visibleCount);
 
   const loadMore = useCallback(() => {
-    setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, initialClasses.length));
+    setVisibleCount((prev) =>
+      Math.min(prev + PAGE_SIZE, initialClasses.length),
+    );
   }, [initialClasses.length]);
 
   // IntersectionObserver for infinite scroll

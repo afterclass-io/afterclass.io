@@ -11,7 +11,9 @@ describe("userBids.upsert", () => {
 
   it("uses a single native upsert keyed by (userId, classId, bidWindowId)", async () => {
     const upsertMock = vi.fn().mockResolvedValue({ id: "b1" });
-    const caller = makeCaller(router.createCaller, { userBid: { upsert: upsertMock } });
+    const caller = makeCaller(router.createCaller, {
+      userBid: { upsert: upsertMock },
+    });
 
     const result = await caller.upsert({
       classId: "c1",
@@ -43,7 +45,9 @@ describe("userBids.upsert", () => {
 
   it("does not touch status when updating an existing bid", async () => {
     const upsertMock = vi.fn().mockResolvedValue({ id: "b1" });
-    const caller = makeCaller(router.createCaller, { userBid: { upsert: upsertMock } });
+    const caller = makeCaller(router.createCaller, {
+      userBid: { upsert: upsertMock },
+    });
 
     await caller.upsert({ classId: "c1", bidWindowId: 2, bidAmount: 50 });
 

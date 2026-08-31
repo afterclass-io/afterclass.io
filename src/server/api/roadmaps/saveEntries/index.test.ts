@@ -84,7 +84,10 @@ describe("roadmaps.saveEntries", () => {
 
   it.each([
     ["the roadmap does not exist", null],
-    ["the roadmap belongs to another user", { id: "r1", userId: "u2", updatedAt: new Date() }],
+    [
+      "the roadmap belongs to another user",
+      { id: "r1", userId: "u2", updatedAt: new Date() },
+    ],
   ])("forbids saving when %s", async (_label, row) => {
     const dbMock = {
       userRoadmap: { findUnique: vi.fn().mockResolvedValue(row) },
@@ -100,7 +103,10 @@ describe("roadmaps.saveEntries", () => {
     const deleteMany = vi.fn().mockResolvedValue({ count: 3 });
     const createMany = vi.fn().mockResolvedValue({ count: 2 });
     const update = vi.fn().mockResolvedValue({ updatedAt: bumped });
-    const tx = { userRoadmapEntry: { deleteMany, createMany }, userRoadmap: { update } };
+    const tx = {
+      userRoadmapEntry: { deleteMany, createMany },
+      userRoadmap: { update },
+    };
     const dbMock = {
       userRoadmap: {
         findUnique: vi.fn().mockResolvedValue({
@@ -109,7 +115,9 @@ describe("roadmaps.saveEntries", () => {
           updatedAt: new Date("2026-08-01T00:00:00Z"),
         }),
       },
-      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
+      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn(tx),
+      ),
     };
     const caller = makeCaller(router.createCaller, dbMock);
 
@@ -136,24 +144,29 @@ describe("roadmaps.saveEntries", () => {
   it.each([
     ["P2002", "CONFLICT"],
     ["P2003", "BAD_REQUEST"],
-  ])("maps Prisma %s from the transaction to %s", async (prismaCode, trpcCode) => {
-    const dbMock = {
-      userRoadmap: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: "r1",
-          userId: "u1",
-          updatedAt: new Date("2026-08-01T00:00:00Z"),
-        }),
-      },
-      $transaction: vi.fn().mockRejectedValue(
-        Object.assign(new Error("prisma boom"), { code: prismaCode }),
-      ),
-    };
-    const caller = makeCaller(router.createCaller, dbMock);
-    await expect(
-      caller.saveEntries({ roadmapId: "r1", entries: [entry] }),
-    ).rejects.toMatchObject({ code: trpcCode });
-  });
+  ])(
+    "maps Prisma %s from the transaction to %s",
+    async (prismaCode, trpcCode) => {
+      const dbMock = {
+        userRoadmap: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "r1",
+            userId: "u1",
+            updatedAt: new Date("2026-08-01T00:00:00Z"),
+          }),
+        },
+        $transaction: vi
+          .fn()
+          .mockRejectedValue(
+            Object.assign(new Error("prisma boom"), { code: prismaCode }),
+          ),
+      };
+      const caller = makeCaller(router.createCaller, dbMock);
+      await expect(
+        caller.saveEntries({ roadmapId: "r1", entries: [entry] }),
+      ).rejects.toMatchObject({ code: trpcCode });
+    },
+  );
 
   it("rethrows a non-Prisma transaction failure unchanged", async () => {
     const dbMock = {

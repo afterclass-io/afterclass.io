@@ -31,7 +31,9 @@ export default async function BiddingHistoryPage({
   // teaching that course. When a professor is selected, only show courses
   // taught by that professor. Both derived from the existing `classes` query.
   const filteredProfessors = courseCode
-    ? professors.filter((p) => classes.some((c) => c.professor?.slug === p.slug))
+    ? professors.filter((p) =>
+        classes.some((c) => c.professor?.slug === p.slug),
+      )
     : professors;
 
   const filteredCourses = profSlug

@@ -56,7 +56,8 @@ function formatSgt(date: Date, formatStr: string): string {
       timeZone: "Asia/Singapore",
     }).formatToParts(date);
 
-    const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+    const get = (type: string) =>
+      parts.find((p) => p.type === type)?.value ?? "";
     const month = get("month");
     const day = get("day");
     const year = get("year");
@@ -68,7 +69,8 @@ function formatSgt(date: Date, formatStr: string): string {
     // Convert 12-hour to 1-12 without leading zero
     if (hour === 0) hour = 12;
 
-    const timeStr = minute === "00" ? `${hour}${dayPeriod}` : `${hour}:${minute}${dayPeriod}`;
+    const timeStr =
+      minute === "00" ? `${hour}${dayPeriod}` : `${hour}:${minute}${dayPeriod}`;
 
     return `${day} ${month} ${year}, ${weekday} ${timeStr}`;
   }
@@ -118,7 +120,13 @@ function buildTimelineItems(bw: {
   return items.filter((item): item is TimelineItemData => item !== null);
 }
 
-const TimelineWithIcon = ({ items, now }: { items: TimelineItemData[]; now: Date }) => {
+const TimelineWithIcon = ({
+  items,
+  now,
+}: {
+  items: TimelineItemData[];
+  now: Date;
+}) => {
   if (items.length === 0) {
     return (
       <div className="text-muted-foreground text-sm py-4 text-center">
@@ -138,9 +146,12 @@ const TimelineWithIcon = ({ items, now }: { items: TimelineItemData[]; now: Date
         let tagLabel: string | null = null;
 
         if (item.date > now && timeUntil <= msIn2Hours) {
-          if (item.title.toLowerCase().includes("opens")) tagLabel = "Opening Soon";
-          else if (item.title.toLowerCase().includes("closes")) tagLabel = "Closing Soon";
-          else if (item.title.toLowerCase().includes("released")) tagLabel = "Releasing Soon";
+          if (item.title.toLowerCase().includes("opens"))
+            tagLabel = "Opening Soon";
+          else if (item.title.toLowerCase().includes("closes"))
+            tagLabel = "Closing Soon";
+          else if (item.title.toLowerCase().includes("released"))
+            tagLabel = "Releasing Soon";
         }
 
         if (
@@ -157,7 +168,9 @@ const TimelineWithIcon = ({ items, now }: { items: TimelineItemData[]; now: Date
             <TimelineSeparator>
               <TimelineDot>{item.icon}</TimelineDot>
               {index < items.length - 1 && (
-                <TimelineConnector className={cn(isPast && "bg-accent-foreground")} />
+                <TimelineConnector
+                  className={cn(isPast && "bg-accent-foreground")}
+                />
               )}
             </TimelineSeparator>
             <TimelineContent>
@@ -166,7 +179,11 @@ const TimelineWithIcon = ({ items, now }: { items: TimelineItemData[]; now: Date
                 {tagLabel && (
                   <Tag
                     variant="soft"
-                    color={tagLabel.toLowerCase() === "ongoing" ? "success" : "warning"}
+                    color={
+                      tagLabel.toLowerCase() === "ongoing"
+                        ? "success"
+                        : "warning"
+                    }
                     size="xs"
                     deletable={false}
                   >
@@ -189,7 +206,9 @@ export const BidWindowScheduleCard = async () => {
   await connection();
   const now = new TZDate(Date.now(), "Asia/Singapore");
 
-  const currentWindow = await getCurrentWindowOrNull(() => api.bidWindows.getCurrentWindow());
+  const currentWindow = await getCurrentWindowOrNull(() =>
+    api.bidWindows.getCurrentWindow(),
+  );
 
   if (!currentWindow) {
     return (

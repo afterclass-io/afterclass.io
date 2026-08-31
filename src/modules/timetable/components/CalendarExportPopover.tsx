@@ -98,7 +98,9 @@ export function CalendarExportPopoverView({
     if (!links) return;
     try {
       await navigator.clipboard.writeText(links.feedUrl);
-      toast.success("Feed URL copied — paste it into your calendar's \"Add from URL\"");
+      toast.success(
+        'Feed URL copied — paste it into your calendar\'s "Add from URL"',
+      );
     } catch {
       toast.error("Failed to copy link");
     }
@@ -221,7 +223,11 @@ export function CalendarExportPopoverView({
                 </a>
               </Button>
               <Button variant="outline" size="sm" asChild>
-                <a href={links.feedUrl} download data-test="calendar-download-ics">
+                <a
+                  href={links.feedUrl}
+                  download
+                  data-test="calendar-download-ics"
+                >
                   <Download className="size-4" />
                   Download .ics
                 </a>
@@ -230,8 +236,8 @@ export function CalendarExportPopoverView({
               {isLocalhost && (
                 <p className="text-muted-foreground text-xs">
                   You&apos;re on localhost — external calendar services (like
-                  Google Calendar) can&apos;t reach this URL. Subscribe from
-                  the deployed site instead.
+                  Google Calendar) can&apos;t reach this URL. Subscribe from the
+                  deployed site instead.
                 </p>
               )}
 
@@ -300,8 +306,7 @@ export function CalendarExportPopover({
       setToken(null);
       toast.success("Calendar link revoked");
     },
-    onError: (error) =>
-      toast.error(`Failed to revoke: ${error.message}`),
+    onError: (error) => toast.error(`Failed to revoke: ${error.message}`),
   });
 
   const setVisibilityMutation = api.sharing.setVisibility.useMutation({

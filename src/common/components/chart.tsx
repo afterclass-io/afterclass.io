@@ -262,7 +262,10 @@ function ChartLegendContent({
   verticalAlign = "bottom",
   nameKey,
 }: React.ComponentProps<"div"> &
-  Pick<RechartsPrimitive.DefaultLegendContentProps, "payload" | "verticalAlign"> & {
+  Pick<
+    RechartsPrimitive.DefaultLegendContentProps,
+    "payload" | "verticalAlign"
+  > & {
     hideIcon?: boolean;
     nameKey?: string;
   }) {
@@ -340,9 +343,7 @@ function getPayloadConfigFromPayload(
     key in payloadPayload &&
     typeof payloadPayload[key as keyof typeof payloadPayload] === "string"
   ) {
-    configLabelKey = payloadPayload[
-      key as keyof typeof payloadPayload
-    ];
+    configLabelKey = payloadPayload[key as keyof typeof payloadPayload];
   }
 
   return configLabelKey in config ? config[configLabelKey] : config[key];

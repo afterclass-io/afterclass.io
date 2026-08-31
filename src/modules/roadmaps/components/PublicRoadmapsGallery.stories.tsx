@@ -134,7 +134,8 @@ const SAMPLE_PAGE: ListPublicPage = {
     sampleItem({
       id: "rm-law",
       name: "Law & Business Joint Track",
-      description: "An integrated law and business plan for the YPHSL joint degree programme.",
+      description:
+        "An integrated law and business plan for the YPHSL joint degree programme.",
       slug: "law-business-joint-track",
       facultyId: SOL.id,
       publishedAt: new Date("2026-05-28T00:00:00.000Z"),

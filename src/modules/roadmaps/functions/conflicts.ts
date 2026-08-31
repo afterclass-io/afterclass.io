@@ -56,7 +56,10 @@ function termKey(yearNumber: number, term: string): string {
  * course that already exists elsewhere in the roadmap (a course may only be
  * planned once — the same course cannot appear in another term).
  */
-export function findEntryByCourse(entries: Entry[], courseId: string): Entry | undefined {
+export function findEntryByCourse(
+  entries: Entry[],
+  courseId: string,
+): Entry | undefined {
   return entries.find((e) => e.courseId === courseId);
 }
 
@@ -152,7 +155,9 @@ export function detectConflicts(
       if (timings && timings.length >= 2) {
         // Only consider courses that are actually in this term's entries
         const courseIdsInTerm = new Set(group.map((e) => e.courseId));
-        const relevantTimings = timings.filter((t) => courseIdsInTerm.has(t.courseId));
+        const relevantTimings = timings.filter((t) =>
+          courseIdsInTerm.has(t.courseId),
+        );
 
         // Compare all pairs
         for (let i = 0; i < relevantTimings.length; i++) {
@@ -160,8 +165,12 @@ export function detectConflicts(
             const a = relevantTimings[i]!;
             const b = relevantTimings[j]!;
             if (examsOverlap(a, b)) {
-              const codeA = group.find((e) => e.courseId === a.courseId)?.courseCode ?? a.courseId;
-              const codeB = group.find((e) => e.courseId === b.courseId)?.courseCode ?? b.courseId;
+              const codeA =
+                group.find((e) => e.courseId === a.courseId)?.courseCode ??
+                a.courseId;
+              const codeB =
+                group.find((e) => e.courseId === b.courseId)?.courseCode ??
+                b.courseId;
               conflicts.push({
                 kind: "exam-clash",
                 term: { yearNumber: term.yearNumber, term: term.term },

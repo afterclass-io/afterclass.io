@@ -4,7 +4,15 @@ import { compareRounds } from "./round-order";
 describe("compareRounds", () => {
   it("orders the seven known BOSS rounds canonically regardless of input order", () => {
     const shuffled = ["2A", "1", "1C", "1A", "2", "1B", "1F"];
-    expect(shuffled.toSorted(compareRounds)).toEqual(["1", "1A", "1B", "1C", "1F", "2", "2A"]);
+    expect(shuffled.toSorted(compareRounds)).toEqual([
+      "1",
+      "1A",
+      "1B",
+      "1C",
+      "1F",
+      "2",
+      "2A",
+    ]);
   });
 
   it("sorts unknown rounds after every known round", () => {

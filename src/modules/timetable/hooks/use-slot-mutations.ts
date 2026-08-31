@@ -118,12 +118,15 @@ export function useRemoveSlotMutation() {
           : undefined,
       applyOptimistic: ({ timetableId, classId }) =>
         utils.timetable.getArrangement.setData({ timetableId }, (old) =>
-          old ? { ...old, slots: old.slots.filter((s) => s.classId !== classId) } : old,
+          old
+            ? { ...old, slots: old.slots.filter((s) => s.classId !== classId) }
+            : old,
         ),
       restoreSnapshot: (slots) => {
         if (slots && activeTimetableId) {
-          utils.timetable.getArrangement.setData({ timetableId: activeTimetableId }, (old) =>
-            old ? { ...old, slots } : old,
+          utils.timetable.getArrangement.setData(
+            { timetableId: activeTimetableId },
+            (old) => (old ? { ...old, slots } : old),
           );
         }
       },
@@ -179,8 +182,9 @@ export function useAddSlotMutation({
       },
       restoreSnapshot: (slots) => {
         if (slots && activeTimetableId) {
-          utils.timetable.getArrangement.setData({ timetableId: activeTimetableId }, (old) =>
-            old ? { ...old, slots } : old,
+          utils.timetable.getArrangement.setData(
+            { timetableId: activeTimetableId },
+            (old) => (old ? { ...old, slots } : old),
           );
         }
       },
@@ -197,7 +201,11 @@ export function useAddSlotMutation({
     }),
     onSuccess: (data) => {
       if (data.created) {
-        toast.success(courseCode ? `Added ${courseCode} to timetable` : "Added class to timetable");
+        toast.success(
+          courseCode
+            ? `Added ${courseCode} to timetable`
+            : "Added class to timetable",
+        );
       } else {
         toast.info(
           courseCode
@@ -247,7 +255,9 @@ export function useSetSlotSectionMutation({
                 slots: [
                   // The server deletes every slot of the course, then
                   // creates the picked section — mirror that here.
-                  ...old.slots.filter((s) => s.courseCode !== picked.courseCode),
+                  ...old.slots.filter(
+                    (s) => s.courseCode !== picked.courseCode,
+                  ),
                   toArrangedClass(toSlotWithClass(picked)),
                 ],
               }
@@ -256,8 +266,9 @@ export function useSetSlotSectionMutation({
       },
       restoreSnapshot: (slots) => {
         if (slots && activeTimetableId) {
-          utils.timetable.getArrangement.setData({ timetableId: activeTimetableId }, (old) =>
-            old ? { ...old, slots } : old,
+          utils.timetable.getArrangement.setData(
+            { timetableId: activeTimetableId },
+            (old) => (old ? { ...old, slots } : old),
           );
         }
       },
@@ -268,7 +279,9 @@ export function useSetSlotSectionMutation({
       onError: () => toast.error("Failed to swap section. Please try again."),
     }),
     onSuccess: () => {
-      toast.success(courseCode ? `Swapped section for ${courseCode}` : "Swapped section");
+      toast.success(
+        courseCode ? `Swapped section for ${courseCode}` : "Swapped section",
+      );
       onDone?.();
     },
   });

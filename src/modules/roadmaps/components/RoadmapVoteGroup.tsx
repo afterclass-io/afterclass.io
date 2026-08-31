@@ -19,14 +19,20 @@ export const RoadmapVoteGroup = ({
   const { data: session } = useSession();
 
   const utils = api.useUtils();
-  const roadmapVotesCountQuery = api.roadmapVotes.count.useQuery({ roadmapId }, { enabled: true });
+  const roadmapVotesCountQuery = api.roadmapVotes.count.useQuery(
+    { roadmapId },
+    { enabled: true },
+  );
   const getUserVoteQuery = api.roadmapVotes.getByUser.useQuery(
     { roadmapId },
     { enabled: !!session },
   );
 
   const mutation = api.roadmapVotes.voteOrUnvote.useMutation({
-    ...createOptimisticMutationCallbacks<RouterInputs["roadmapVotes"]["voteOrUnvote"], unknown>({
+    ...createOptimisticMutationCallbacks<
+      RouterInputs["roadmapVotes"]["voteOrUnvote"],
+      unknown
+    >({
       cancel: async () => {
         await utils.roadmapVotes.count.cancel({ roadmapId });
         await utils.roadmapVotes.getByUser.cancel({ roadmapId });
@@ -47,8 +53,14 @@ export const RoadmapVoteGroup = ({
             }
           | undefined;
         if (snapshot) {
-          utils.roadmapVotes.count.setData({ roadmapId }, snapshot.previousCount);
-          utils.roadmapVotes.getByUser.setData({ roadmapId }, snapshot.previousUserVote as never);
+          utils.roadmapVotes.count.setData(
+            { roadmapId },
+            snapshot.previousCount,
+          );
+          utils.roadmapVotes.getByUser.setData(
+            { roadmapId },
+            snapshot.previousUserVote as never,
+          );
         }
       },
       invalidate: async () => {
@@ -76,14 +88,17 @@ export const RoadmapVoteGroup = ({
       //   gainUpvote: new weight is 1 but prev wasn't 1 → +1
       //   loseUpvote: prev weight was 1 but new weight isn't 1 → −1
       //   otherwise: no change (downvotes don't affect the count at all)
-      utils.roadmapVotes.count.setData({ roadmapId }, (oldQueryData: number | undefined) => {
-        const prevVoteCount = oldQueryData ?? 0;
-        const prevWeight = previousUserVote?.weight ?? 0;
+      utils.roadmapVotes.count.setData(
+        { roadmapId },
+        (oldQueryData: number | undefined) => {
+          const prevVoteCount = oldQueryData ?? 0;
+          const prevWeight = previousUserVote?.weight ?? 0;
 
-        const gainUpvote = weight === 1 && prevWeight !== 1 ? 1 : 0;
-        const loseUpvote = prevWeight === 1 && weight !== 1 ? -1 : 0;
-        return prevVoteCount + gainUpvote + loseUpvote;
-      });
+          const gainUpvote = weight === 1 && prevWeight !== 1 ? 1 : 0;
+          const loseUpvote = prevWeight === 1 && weight !== 1 ? -1 : 0;
+          return prevVoteCount + gainUpvote + loseUpvote;
+        },
+      );
 
       // Optimistically update user weight
       utils.roadmapVotes.getByUser.setData({ roadmapId }, (oldQueryData) => {

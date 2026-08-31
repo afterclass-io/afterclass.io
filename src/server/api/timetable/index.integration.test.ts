@@ -167,7 +167,9 @@ describe("timetable.getArrangement (integration)", () => {
     const caller = makeCaller(router.createCaller, db, {
       user: { id: ownerId },
     });
-    await expect(caller.getArrangement({ timetableId: randomUUID() })).rejects.toMatchObject({
+    await expect(
+      caller.getArrangement({ timetableId: randomUUID() }),
+    ).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
   });

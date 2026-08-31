@@ -19,7 +19,10 @@ import { Button } from "@/common/components/button";
 import { cn } from "@/common/functions";
 import { formatDateSGT } from "@/common/functions/format-date-sgt";
 import { abbreviateVenue } from "@/modules/timetable/functions/abbreviate-venue";
-import { hasTimeConflict, toTimingLikes } from "@/modules/timetable/functions/slot-math";
+import {
+  hasTimeConflict,
+  toTimingLikes,
+} from "@/modules/timetable/functions/slot-math";
 import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
 
 const EMPTY_ARRAY: never[] = [];
@@ -112,7 +115,14 @@ export function SectionPicker({
         classId,
       });
     },
-    [activeTimetableId, addSlotMutation, sections, existingSlots, courseCode, pushHistory],
+    [
+      activeTimetableId,
+      addSlotMutation,
+      sections,
+      existingSlots,
+      courseCode,
+      pushHistory,
+    ],
   );
 
   const handleSwap = useCallback(
@@ -126,7 +136,9 @@ export function SectionPicker({
       // Record the swap for undo/redo: from the section currently on the
       // grid to the newly picked one. `existingSlots` is the active
       // timetable's grid, so the current classId is authoritative.
-      const currentClassId = existingSlots.find((s) => s.courseCode === courseCode)?.classId;
+      const currentClassId = existingSlots.find(
+        (s) => s.courseCode === courseCode,
+      )?.classId;
       if (currentClassId) {
         pushHistory({
           type: "setSlotSection",
@@ -137,12 +149,24 @@ export function SectionPicker({
         });
       }
     },
-    [activeTimetableId, courseId, setSlotSectionMutation, existingSlots, courseCode, pushHistory],
+    [
+      activeTimetableId,
+      courseId,
+      setSlotSectionMutation,
+      existingSlots,
+      courseCode,
+      pushHistory,
+    ],
   );
 
   if (sections.length === 0) {
     return (
-      <p className={cn("text-muted-foreground py-4 text-center text-sm", className)}>
+      <p
+        className={cn(
+          "text-muted-foreground py-4 text-center text-sm",
+          className,
+        )}
+      >
         No sections available for this course.
       </p>
     );
@@ -161,14 +185,20 @@ export function SectionPicker({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-baseline gap-x-2">
               <span className="text-sm font-medium">Section {sec.section}</span>
-              <span className="text-muted-foreground text-xs">👤 {sec.professorName ?? "TBA"}</span>
+              <span className="text-muted-foreground text-xs">
+                👤 {sec.professorName ?? "TBA"}
+              </span>
             </div>
             {sec.timings && sec.timings.length > 0 && (
               <div className="mt-0.5 space-y-0.5">
                 {sec.timings.map((t, i) => (
                   <div key={i}>
                     <p className={lineClasses}>{formatTimingLine(t)}</p>
-                    {t.venue && <p className={lineClasses}>📍 {abbreviateVenue(t.venue)}</p>}
+                    {t.venue && (
+                      <p className={lineClasses}>
+                        📍 {abbreviateVenue(t.venue)}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -176,7 +206,9 @@ export function SectionPicker({
             {sec.examTimings?.map((t, i) => (
               <div key={i}>
                 <p className={lineClasses}>{formatExamLine(t)}</p>
-                {t.venue && <p className={lineClasses}>📍 {abbreviateVenue(t.venue)}</p>}
+                {t.venue && (
+                  <p className={lineClasses}>📍 {abbreviateVenue(t.venue)}</p>
+                )}
               </div>
             ))}
           </div>
@@ -184,9 +216,15 @@ export function SectionPicker({
             variant={alreadyInTimetable ? "outline" : "default"}
             size="sm"
             className="shrink-0"
-            disabled={addSlotMutation.isPending || setSlotSectionMutation.isPending}
+            disabled={
+              addSlotMutation.isPending || setSlotSectionMutation.isPending
+            }
             data-test={`timetable-section-action-${sec.classId}`}
-            onClick={() => (alreadyInTimetable ? handleSwap(sec.classId) : handleAdd(sec.classId))}
+            onClick={() =>
+              alreadyInTimetable
+                ? handleSwap(sec.classId)
+                : handleAdd(sec.classId)
+            }
           >
             {alreadyInTimetable ? (
               <>

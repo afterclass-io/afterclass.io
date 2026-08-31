@@ -27,15 +27,28 @@ import {
   InputRoot,
 } from "@/common/components/input";
 
-const hasShownCmdkTooltipAtom = atomWithStorage("hasShownCmdkTooltip", false, undefined, {
-  getOnInit: true,
-});
+const hasShownCmdkTooltipAtom = atomWithStorage(
+  "hasShownCmdkTooltip",
+  false,
+  undefined,
+  {
+    getOnInit: true,
+  },
+);
 
-export const SearchCmdk = ({ asChild, children }: { asChild?: boolean; children?: ReactNode }) => {
+export const SearchCmdk = ({
+  asChild,
+  children,
+}: {
+  asChild?: boolean;
+  children?: ReactNode;
+}) => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
-  const [hasShownTooltip, setHasShownTooltip] = useAtom(hasShownCmdkTooltipAtom);
+  const [hasShownTooltip, setHasShownTooltip] = useAtom(
+    hasShownCmdkTooltipAtom,
+  );
   const router = useRouter();
   const progress = useProgress();
   const edgeConfig = useEdgeConfigs();
@@ -86,7 +99,12 @@ export const SearchCmdk = ({ asChild, children }: { asChild?: boolean; children?
   };
 
   return (
-    <Modal open={open} onOpenChange={setOpen} hasCloseButton={false} className="w-[45rem]">
+    <Modal
+      open={open}
+      onOpenChange={setOpen}
+      hasCloseButton={false}
+      className="w-[45rem]"
+    >
       <ModalTrigger asChild={asChild}>
         {asChild ? (
           children

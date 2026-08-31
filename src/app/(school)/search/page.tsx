@@ -5,7 +5,9 @@ import type { SearchCourseResult } from "@/modules/search/functions/searchCourse
 import { searchProf } from "@/modules/search/functions/searchProf";
 import type { SearchProfResult } from "@/modules/search/functions/searchProf";
 
-export default async function Search(props: { searchParams: Promise<{ q: string }> }) {
+export default async function Search(props: {
+  searchParams: Promise<{ q: string }>;
+}) {
   const searchParams = await props.searchParams;
   const query = searchParams?.q ?? "";
 
@@ -13,7 +15,10 @@ export default async function Search(props: { searchParams: Promise<{ q: string 
   let searchedProf: SearchProfResult[] = [];
   if (query) {
     try {
-      [searchedCourse, searchedProf] = await Promise.all([searchCourse(query), searchProf(query)]);
+      [searchedCourse, searchedProf] = await Promise.all([
+        searchCourse(query),
+        searchProf(query),
+      ]);
     } catch (e) {
       console.error(e);
     }
@@ -23,7 +28,10 @@ export default async function Search(props: { searchParams: Promise<{ q: string 
     <ConstrainedContainer>
       <SearchResult>
         <SearchResult.Title searchTerm={query} />
-        <SearchResult.Content searchedCourse={searchedCourse} searchedProf={searchedProf} />
+        <SearchResult.Content
+          searchedCourse={searchedCourse}
+          searchedProf={searchedProf}
+        />
       </SearchResult>
     </ConstrainedContainer>
   );

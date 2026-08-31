@@ -22,7 +22,12 @@ const callArgs = (fn: ReturnType<typeof upsertMock>) =>
   fn.mock.calls[0]![0] as {
     where: { id: string };
     update: Record<string, unknown>;
-    create: { id: string; eventType: string; reviewId: string; triggeringUserId: string };
+    create: {
+      id: string;
+      eventType: string;
+      reviewId: string;
+      triggeringUserId: string;
+    };
   };
 
 describe("reviewEvents.track", () => {
@@ -36,7 +41,9 @@ describe("reviewEvents.track", () => {
 
   it("upserts on a crypto-derived idempotency key (where.id === create.id)", async () => {
     const upsert = upsertMock();
-    const caller = makeCaller(router.createCaller, { reviewEvents: { upsert } });
+    const caller = makeCaller(router.createCaller, {
+      reviewEvents: { upsert },
+    });
 
     await caller.track({ reviewId: "rev1", eventType: ReviewEventType.SHARE });
 
@@ -52,7 +59,9 @@ describe("reviewEvents.track", () => {
 
   it("derives the same key for a repeat event in the same hour (dedup)", async () => {
     const upsert = upsertMock();
-    const caller = makeCaller(router.createCaller, { reviewEvents: { upsert } });
+    const caller = makeCaller(router.createCaller, {
+      reviewEvents: { upsert },
+    });
 
     await caller.track({ reviewId: "rev1", eventType: ReviewEventType.SHARE });
     vi.setSystemTime(new Date("2026-08-27T12:59:00Z")); // still the same hour

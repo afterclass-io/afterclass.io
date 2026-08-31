@@ -18,7 +18,11 @@ import { RoadmapConflictBadge } from "./RoadmapConflictBadge";
 import { RoadmapCourseDialog } from "./RoadmapCourseDialog";
 import type { RoadmapCourseInfo } from "./RoadmapCourseDialog";
 import { Button } from "@/common/components/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/common/components/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/common/components/tooltip";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { cn } from "@/common/functions";
@@ -92,7 +96,8 @@ export function RoadmapGrid({
   const [dirty, setDirty] = useState(false);
   /** Years manually appended beyond the highest year used by entries. */
   const [addedYears, setAddedYears] = useState(0);
-  const [selectedCourse, setSelectedCourse] = useState<RoadmapCourseInfo | null>(null);
+  const [selectedCourse, setSelectedCourse] =
+    useState<RoadmapCourseInfo | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [saving, setSaving] = useState(false);
@@ -142,7 +147,9 @@ export function RoadmapGrid({
         debounceRef.current = null;
       }
       if (dirtyRef.current && onSaveRef.current) {
-        void Promise.resolve(onSaveRef.current(localEntriesRef.current)).catch(() => undefined);
+        void Promise.resolve(onSaveRef.current(localEntriesRef.current)).catch(
+          () => undefined,
+        );
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -161,7 +168,9 @@ export function RoadmapGrid({
   // ---- Derived ----
   const maxYearNumber = useMemo(() => {
     const highestEntryYear =
-      localEntries.length === 0 ? 1 : Math.max(...localEntries.map((e) => e.yearNumber), 1);
+      localEntries.length === 0
+        ? 1
+        : Math.max(...localEntries.map((e) => e.yearNumber), 1);
     return Math.min(highestEntryYear + addedYears, MAX_YEARS);
   }, [localEntries, addedYears]);
 
@@ -174,9 +183,15 @@ export function RoadmapGrid({
   }, [maxYearNumber]);
 
   // Detect conflicts
-  const conflicts = useMemo(() => detectConflicts(localEntries), [localEntries]);
+  const conflicts = useMemo(
+    () => detectConflicts(localEntries),
+    [localEntries],
+  );
 
-  const conflictsByTerm = useMemo(() => groupConflictsByTerm(conflicts), [conflicts]);
+  const conflictsByTerm = useMemo(
+    () => groupConflictsByTerm(conflicts),
+    [conflicts],
+  );
 
   const entryIndexById = useMemo(() => {
     const map = new Map<string, number>();
@@ -198,7 +213,11 @@ export function RoadmapGrid({
       // zone — cancelling a sidebar-originated drag is a no-op (don't add the
       // course anywhere). Grid-originated drops outside are also no-ops.
       if (!over) return;
-      if ((over.data.current as { type?: string } | undefined)?.type === "sidebar-cancel") return;
+      if (
+        (over.data.current as { type?: string } | undefined)?.type ===
+        "sidebar-cancel"
+      )
+        return;
 
       const activeIdStr = String(active.id);
       const overIdStr = String(over.id);
@@ -338,7 +357,10 @@ export function RoadmapGrid({
 
   // ---- Render ----
   return (
-    <div className={cn("space-y-4 h-full", className)} aria-busy={saving || undefined}>
+    <div
+      className={cn("space-y-4 h-full", className)}
+      aria-busy={saving || undefined}
+    >
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -427,13 +449,20 @@ export function RoadmapGrid({
                           tooltip anchors to this wrapper instead. */}
                       {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- focusable tooltip anchor for the disabled button */}
                       <span className="mt-2 block w-full" tabIndex={0}>
-                        <Button variant="outline" size="sm" disabled className="w-full">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          className="w-full"
+                        >
                           <Plus className="size-4" />
                           Add Year
                         </Button>
                       </span>
                     </TooltipTrigger>
-                    <TooltipContent>Maximum candidature is 5 years</TooltipContent>
+                    <TooltipContent>
+                      Maximum candidature is 5 years
+                    </TooltipContent>
                   </Tooltip>
                 ))}
             </div>
@@ -446,7 +475,10 @@ export function RoadmapGrid({
         </div>
       </DndContext>
 
-      <RoadmapCourseDialog course={selectedCourse} onClose={() => setSelectedCourse(null)} />
+      <RoadmapCourseDialog
+        course={selectedCourse}
+        onClose={() => setSelectedCourse(null)}
+      />
     </div>
   );
 }

@@ -19,7 +19,12 @@ const roadmapFixture = {
       yearNumber: 1,
       term: "T1",
       sortOrder: 0,
-      course: { code: "IS101", name: "Intro", creditUnits: 1, description: "d" },
+      course: {
+        code: "IS101",
+        name: "Intro",
+        creditUnits: 1,
+        description: "d",
+      },
     },
   ],
 };

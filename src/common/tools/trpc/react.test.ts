@@ -19,10 +19,7 @@ describe("trpc react cache no-store", () => {
   });
 
   it("react.tsx actually contains cache:no-store fetch wrapper", () => {
-    const reactPath = path.resolve(
-      import.meta.dirname,
-      "./react.tsx",
-    );
+    const reactPath = path.resolve(import.meta.dirname, "./react.tsx");
     const src = fs.readFileSync(reactPath, "utf-8");
     expect(src).toContain('cache: "no-store"');
     expect(src).toContain("httpBatchStreamLink");

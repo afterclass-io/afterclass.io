@@ -8,7 +8,11 @@ import { cn } from "@/common/functions";
 import { Button } from "@/common/components/button";
 import { Input } from "@/common/components/input";
 import { Skeleton } from "@/common/components/skeleton";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/common/components/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/common/components/tooltip";
 import { summarizeSessionBids } from "@/modules/timetable/functions/bids-summary";
 import type { SessionBid } from "@/modules/timetable/functions/bids-summary";
 import { formatBidAmount } from "@/modules/timetable/functions/format";
@@ -39,10 +43,17 @@ export type BidsDashboardProps = {
  * user's e$ budget (settable inline via `userBids.upsertBudget`), and the
  * remaining e$ credits computed from it.
  */
-export function BidsDashboard({ acadTermId, bids, className }: BidsDashboardProps) {
+export function BidsDashboard({
+  acadTermId,
+  bids,
+  className,
+}: BidsDashboardProps) {
   const utils = api.useUtils();
 
-  const budgetQuery = api.userBids.getBudget.useQuery({ acadTermId }, { staleTime: 30_000 });
+  const budgetQuery = api.userBids.getBudget.useQuery(
+    { acadTermId },
+    { staleTime: 30_000 },
+  );
 
   const upsertBudgetMutation = api.userBids.upsertBudget.useMutation({
     onSuccess: (data) => {
@@ -86,7 +97,10 @@ export function BidsDashboard({ acadTermId, bids, className }: BidsDashboardProp
 
   return (
     <div
-      className={cn("grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5", className)}
+      className={cn(
+        "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5",
+        className,
+      )}
       data-test="bids-dashboard"
     >
       <StatBlock label="Secured (term)" value={String(summary.securedCount)} />
@@ -94,10 +108,14 @@ export function BidsDashboard({ acadTermId, bids, className }: BidsDashboardProp
 
       {/* Budget — the number the user sets (pencil + inline input) */}
       <div className="border-border bg-card rounded-lg border px-3 py-2">
-        <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Budget</p>
+        <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+          Budget
+        </p>
         {hasBudget && !isEditingBudget ? (
           <div className="flex items-center gap-1.5">
-            <p className="font-mono text-lg font-bold tabular-nums">{formatBidAmount(balance)}</p>
+            <p className="font-mono text-lg font-bold tabular-nums">
+              {formatBidAmount(balance)}
+            </p>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -134,7 +152,9 @@ export function BidsDashboard({ acadTermId, bids, className }: BidsDashboardProp
               onClick={handleSaveBudget}
               disabled={upsertBudgetMutation.isPending}
             >
-              {upsertBudgetMutation.isPending && <Loader2 className="mr-1 size-3 animate-spin" />}
+              {upsertBudgetMutation.isPending && (
+                <Loader2 className="mr-1 size-3 animate-spin" />
+              )}
               Save
             </Button>
           </div>
@@ -161,7 +181,9 @@ export function BidsDashboard({ acadTermId, bids, className }: BidsDashboardProp
             <p className="text-muted-foreground text-xs">budget − spent</p>
           </>
         ) : (
-          <p className="text-muted-foreground font-mono text-lg font-bold tabular-nums">—</p>
+          <p className="text-muted-foreground font-mono text-lg font-bold tabular-nums">
+            —
+          </p>
         )}
       </div>
     </div>

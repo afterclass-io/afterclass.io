@@ -214,8 +214,8 @@ expectation is to review the code from solely implementation tech point of view:
   opportunities of optimisations. Ensure there are unit tests for both possible
   and impossible state of the application.
 - Effective use of language constructs and best practices. Most of the best
-  practices are summarised in some of the popular books such as *Effective Java,
-  Code Complete, Pragmatic Programmer, Java Concurrency in Practice* *etc*.
+  practices are summarised in some of the popular books such as _Effective Java,
+  Code Complete, Pragmatic Programmer, Java Concurrency in Practice_ _etc_.
 - Effective use of language ecosystem such as standard libraries (data
   structures etc), unit test frameworks etc. We should encourage reuse of battle
   tested code as much as possible.

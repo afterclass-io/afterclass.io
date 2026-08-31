@@ -58,8 +58,10 @@ describe("roadmaps.remove", () => {
     };
     const caller = makeCaller(router.createCaller, dbMock);
 
-    await expect(caller.remove({ roadmapId: "missing" })).rejects.toMatchObject({
-      code: "FORBIDDEN",
-    });
+    await expect(caller.remove({ roadmapId: "missing" })).rejects.toMatchObject(
+      {
+        code: "FORBIDDEN",
+      },
+    );
   });
 });

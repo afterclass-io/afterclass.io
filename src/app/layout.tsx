@@ -39,7 +39,9 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : env.NEXTAUTH_URL,
+    process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : env.NEXTAUTH_URL,
   ),
   title: appName,
   description: appDesc,
@@ -52,9 +54,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={`${inter.variable} ${poppins.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} ${poppins.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <UmamiProvider
           src="/statistics/script.js"

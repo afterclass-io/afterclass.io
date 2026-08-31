@@ -8,7 +8,10 @@ import { Pencil, Trash2, Plus, Star } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
 import type { RouterInputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
-import { selectedTermIdAtom, activeTimetableIdAtom } from "@/modules/timetable/atoms/timetable";
+import {
+  selectedTermIdAtom,
+  activeTimetableIdAtom,
+} from "@/modules/timetable/atoms/timetable";
 import {
   Select,
   SelectContent,
@@ -33,7 +36,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/common/components/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/common/components/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/common/components/tooltip";
 import { cn } from "@/common/functions";
 
 export type VariantSwitcherProps = {
@@ -51,7 +58,9 @@ export type VariantSwitcherProps = {
  */
 export function VariantSwitcher({ className }: VariantSwitcherProps) {
   const selectedTermId = useAtomValue(selectedTermIdAtom);
-  const [activeTimetableId, setActiveTimetableId] = useAtom(activeTimetableIdAtom);
+  const [activeTimetableId, setActiveTimetableId] = useAtom(
+    activeTimetableIdAtom,
+  );
 
   const utils = api.useUtils();
 
@@ -105,7 +114,9 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
       toast.success("Deleted");
       // If deleting the active variant, clear selection
       if (activeTimetableId) {
-        const nextActive = (timetables ?? []).find((t) => t.id !== activeTimetableId);
+        const nextActive = (timetables ?? []).find(
+          (t) => t.id !== activeTimetableId,
+        );
         setActiveTimetableId(nextActive?.id ?? null);
       }
     },
@@ -114,7 +125,10 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
 
   // ---- Set active (star) — one active plan per term, enforced server-side ----
   const setActiveMutation = api.timetable.setActive.useMutation({
-    ...createOptimisticMutationCallbacks<RouterInputs["timetable"]["setActive"], unknown>({
+    ...createOptimisticMutationCallbacks<
+      RouterInputs["timetable"]["setActive"],
+      unknown
+    >({
       cancel: async () => {
         if (!selectedTermId) return;
         await utils.timetable.listMine.cancel({ acadTermId: selectedTermId });
@@ -126,13 +140,17 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
       // Pattern B: the caller does NOT apply optimistically.
       applyOptimistic: ({ timetableId }) => {
         if (!selectedTermId) return;
-        utils.timetable.listMine.setData({ acadTermId: selectedTermId }, (old) =>
-          old?.map((t) => ({ ...t, isActive: t.id === timetableId })),
+        utils.timetable.listMine.setData(
+          { acadTermId: selectedTermId },
+          (old) => old?.map((t) => ({ ...t, isActive: t.id === timetableId })),
         );
       },
       restoreSnapshot: (prev) => {
         if (!selectedTermId) return;
-        utils.timetable.listMine.setData({ acadTermId: selectedTermId }, prev as never);
+        utils.timetable.listMine.setData(
+          { acadTermId: selectedTermId },
+          prev as never,
+        );
       },
       invalidate: async () => {
         if (!selectedTermId) return;
@@ -158,7 +176,9 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
   // ---- No term selected ----
   if (!selectedTermId) {
     return (
-      <span className={cn("text-sm text-muted-foreground", className)}>Select a term first</span>
+      <span className={cn("text-sm text-muted-foreground", className)}>
+        Select a term first
+      </span>
     );
   }
 
@@ -172,15 +192,28 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
       {/* Variant selector — switches which plan is viewed, not which is active */}
-      <Select value={activeTimetableId ?? undefined} onValueChange={handleSwitch}>
-        <SelectTrigger className="w-44" size="sm" data-test="timetable-variant-switcher">
+      <Select
+        value={activeTimetableId ?? undefined}
+        onValueChange={handleSwitch}
+      >
+        <SelectTrigger
+          className="w-44"
+          size="sm"
+          data-test="timetable-variant-switcher"
+        >
           <SelectValue placeholder="No timetable" />
         </SelectTrigger>
         <SelectContent>
           {timetables.map((t) => (
-            <SelectItem key={t.id} value={t.id} data-test={`timetable-variant-${t.id}`}>
+            <SelectItem
+              key={t.id}
+              value={t.id}
+              data-test={`timetable-variant-${t.id}`}
+            >
               {t.name}
-              <span className="ml-2 text-xs text-muted-foreground">({t._count.slots})</span>
+              <span className="ml-2 text-xs text-muted-foreground">
+                ({t._count.slots})
+              </span>
             </SelectItem>
           ))}
         </SelectContent>
@@ -194,15 +227,21 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
             <Button
               variant="ghost"
               size="icon"
-              aria-label={active.isActive ? "Active plan" : "Mark as active plan"}
+              aria-label={
+                active.isActive ? "Active plan" : "Mark as active plan"
+              }
               disabled={active.isActive || setActiveMutation.isPending}
-              onClick={() => setActiveMutation.mutate({ timetableId: active.id })}
+              onClick={() =>
+                setActiveMutation.mutate({ timetableId: active.id })
+              }
               data-test="timetable-variant-active-toggle"
             >
               <Star
                 className={cn(
                   "size-4",
-                  active.isActive ? "fill-primary text-primary" : "text-muted-foreground",
+                  active.isActive
+                    ? "fill-primary text-primary"
+                    : "text-muted-foreground",
                 )}
               />
             </Button>
@@ -238,7 +277,11 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Rename or delete timetable">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Rename or delete timetable"
+                >
                   <Pencil className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -274,7 +317,9 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Rename timetable</DialogTitle>
-              <DialogDescription>Enter a new name for &quot;{active.name}&quot;.</DialogDescription>
+              <DialogDescription>
+                Enter a new name for &quot;{active.name}&quot;.
+              </DialogDescription>
             </DialogHeader>
             <Input
               // oxlint-disable-next-line jsx-a11y/no-autofocus -- focus the rename field on open

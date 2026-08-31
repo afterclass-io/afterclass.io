@@ -158,7 +158,9 @@ export function CourseSearchPanel({
                     </span>
                   </div>
                   {/* Wraps to multiple lines — no truncation */}
-                  <p className="text-muted-foreground text-xs break-words">{course.name}</p>
+                  <p className="text-muted-foreground text-xs break-words">
+                    {course.name}
+                  </p>
                   <p className="text-muted-foreground mt-0.5 text-xs">
                     {course.sections.length} section
                     {course.sections.length !== 1 ? "s" : ""}

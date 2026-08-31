@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/common/functions";
-import { GRID_START_MIN, GRID_END_MIN } from "@/modules/timetable/functions/slot-math";
+import {
+  GRID_START_MIN,
+  GRID_END_MIN,
+} from "@/modules/timetable/functions/slot-math";
 
 const GRID_RANGE_MIN = GRID_END_MIN - GRID_START_MIN;
 
@@ -43,7 +46,9 @@ export type CurrentTimeIndicatorProps = {
  * Updates every 60 seconds.  Only renders when `highlightNow` is true and
  * the current SGT time is within 08:00–22:15.
  */
-export function CurrentTimeIndicator({ highlightNow = false }: CurrentTimeIndicatorProps) {
+export function CurrentTimeIndicator({
+  highlightNow = false,
+}: CurrentTimeIndicatorProps) {
   const [, setTick] = useState(0);
 
   // Re-render every 60 s so the line moves with real time
@@ -70,7 +75,11 @@ export function CurrentTimeIndicator({ highlightNow = false }: CurrentTimeIndica
       style={{ top: `${topPct}%` }}
     >
       {/* Dot on the left side */}
-      <div className={cn("absolute -left-1.5 size-3 rounded-full bg-primary shadow-md")} />
+      <div
+        className={cn(
+          "absolute -left-1.5 size-3 rounded-full bg-primary shadow-md",
+        )}
+      />
       {/* Horizontal line */}
       <div className="h-px w-full bg-primary" />
     </div>

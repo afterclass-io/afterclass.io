@@ -10,7 +10,10 @@ describe("users.updateFaculty", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("requires an authenticated caller", async () => {
-    const dbMock = { faculties: { findUnique: vi.fn() }, users: { update: vi.fn() } };
+    const dbMock = {
+      faculties: { findUnique: vi.fn() },
+      users: { update: vi.fn() },
+    };
     const caller = makeCaller(router.createCaller, dbMock, null);
     await expect(caller.updateFaculty({ facultyId: 1 })).rejects.toMatchObject({
       code: "UNAUTHORIZED",
@@ -29,7 +32,9 @@ describe("users.updateFaculty", () => {
     const result = await caller.updateFaculty({ facultyId: 1 });
 
     expect(result).toEqual({ id: "u1", facultyId: 1 });
-    expect(dbMock.faculties.findUnique).toHaveBeenCalledWith({ where: { id: 1 } });
+    expect(dbMock.faculties.findUnique).toHaveBeenCalledWith({
+      where: { id: 1 },
+    });
     expect(dbMock.users.update).toHaveBeenCalledWith({
       where: { id: "u1" },
       data: { facultyId: 1 },
@@ -43,7 +48,9 @@ describe("users.updateFaculty", () => {
     };
     const caller = makeCaller(router.createCaller, dbMock);
 
-    await expect(caller.updateFaculty({ facultyId: 999 })).rejects.toMatchObject({
+    await expect(
+      caller.updateFaculty({ facultyId: 999 }),
+    ).rejects.toMatchObject({
       code: "BAD_REQUEST",
     });
     expect(dbMock.users.update).not.toHaveBeenCalled();
@@ -56,7 +63,9 @@ describe("users.updateFaculty", () => {
     };
     const caller = makeCaller(router.createCaller, dbMock);
 
-    await expect(caller.updateFaculty({ facultyId: 1.5 })).rejects.toMatchObject({
+    await expect(
+      caller.updateFaculty({ facultyId: 1.5 }),
+    ).rejects.toMatchObject({
       code: "BAD_REQUEST",
     });
     expect(dbMock.faculties.findUnique).not.toHaveBeenCalled();

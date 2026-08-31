@@ -14,9 +14,11 @@ describe("incrementEngagement", () => {
     const updateMany = vi.fn().mockResolvedValue({ count: 1 });
     const db = {
       userRoadmap: {
-        findFirst: vi
-          .fn()
-          .mockResolvedValue({ id: "r1", visibility: "PUBLIC", publishedAt: new Date() }),
+        findFirst: vi.fn().mockResolvedValue({
+          id: "r1",
+          visibility: "PUBLIC",
+          publishedAt: new Date(),
+        }),
         updateMany,
       },
     };
@@ -36,15 +38,21 @@ describe("incrementEngagement", () => {
     const updateMany = vi.fn().mockResolvedValue({ count: 1 });
     const db = {
       userRoadmap: {
-        findFirst: vi
-          .fn()
-          .mockResolvedValue({ id: "r1", visibility: "PUBLIC", publishedAt: new Date() }),
+        findFirst: vi.fn().mockResolvedValue({
+          id: "r1",
+          visibility: "PUBLIC",
+          publishedAt: new Date(),
+        }),
         updateMany,
       },
     };
     const headers = new Headers({ "x-forwarded-for": "1.2.3.4" });
     for (let i = 0; i < 5; i++) {
-      await incrementEngagement(db as never, { roadmapId: "r1", field: "viewCount" }, headers);
+      await incrementEngagement(
+        db as never,
+        { roadmapId: "r1", field: "viewCount" },
+        headers,
+      );
     }
     const sixth = await incrementEngagement(
       db as never,

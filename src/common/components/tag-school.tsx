@@ -3,7 +3,11 @@ import type { SchoolIconProps } from "@/common/components/icons";
 import { Heading } from "@/common/components/heading";
 import { Tag } from "@/common/components/tag";
 
-export const SchoolTag = ({ school }: { school: SchoolIconProps["school"] }) => {
+export const SchoolTag = ({
+  school,
+}: {
+  school: SchoolIconProps["school"];
+}) => {
   return (
     <Tag
       avatar={<SchoolIcon school={school} />}

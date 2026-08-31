@@ -93,7 +93,10 @@ Cypress.Commands.add("checkOgImage", () => {
   cy.get('head meta[property="og:image"]', { timeout: 10000 })
     .should("have.attr", "content")
     .then((url: unknown) => {
-      const ogUrl = new URL(String(url), Cypress.config("baseUrl") as string).toString();
+      const ogUrl = new URL(
+        String(url),
+        Cypress.config("baseUrl") as string,
+      ).toString();
       cy.request(ogUrl).its("status").should("eq", 200);
     });
 });

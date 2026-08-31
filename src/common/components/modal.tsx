@@ -19,7 +19,9 @@ type ModalProviderProps = ModalProps;
 
 type ModalProviderContext = ReturnType<typeof useModalValues>;
 
-const ModalContext = createContext<Partial<ModalProviderContext> | undefined>(undefined);
+const ModalContext = createContext<Partial<ModalProviderContext> | undefined>(
+  undefined,
+);
 
 // For inferring return type
 const useModalValues = (props: ModalProviderProps) => {
@@ -31,7 +33,9 @@ const ModalProvider = ({
   ...props
 }: PropsWithChildren<ModalProviderProps>): JSX.Element => {
   const values = useModalValues(props);
-  return <ModalContext.Provider value={values}>{children}</ModalContext.Provider>;
+  return (
+    <ModalContext.Provider value={values}>{children}</ModalContext.Provider>
+  );
 };
 
 const useModal = () => {
@@ -74,7 +78,11 @@ interface ModalContentProps extends DialogContentProps {
   className?: string;
 }
 
-const ModalContent = ({ children, className, ...props }: PropsWithChildren<ModalContentProps>) => {
+const ModalContent = ({
+  children,
+  className,
+  ...props
+}: PropsWithChildren<ModalContentProps>) => {
   const { hasCloseButton, preventClickOutsideToClose } = useModal();
 
   const preventClickOutsideToCloseProps = preventClickOutsideToClose && {
@@ -106,4 +114,11 @@ const ModalContent = ({ children, className, ...props }: PropsWithChildren<Modal
   );
 };
 
-export { Modal, ModalContent, ModalTitle, ModalDescription, ModalTrigger, ModalClose };
+export {
+  Modal,
+  ModalContent,
+  ModalTitle,
+  ModalDescription,
+  ModalTrigger,
+  ModalClose,
+};

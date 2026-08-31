@@ -6,7 +6,10 @@ import { SchoolTag } from "@/common/components/tag-school";
 import { PageTitle } from "@/common/components/page-title";
 import { api } from "@/common/tools/trpc/server";
 import { toTitleCase } from "@/common/functions/toTitleCase";
-import { ReviewForm, ReviewFormSection } from "@/modules/submit/components/ReviewForm";
+import {
+  ReviewForm,
+  ReviewFormSection,
+} from "@/modules/submit/components/ReviewForm";
 import { auth, signIn } from "@/server/auth";
 
 export default async function SubmitReviewPage() {
@@ -26,7 +29,9 @@ export default async function SubmitReviewPage() {
 
   return (
     <ConstrainedContainer className="flex flex-col space-y-5 md:space-y-8">
-      <PageTitle contentRight={<SchoolTag school={school} />}>Write a Review</PageTitle>
+      <PageTitle contentRight={<SchoolTag school={school} />}>
+        Write a Review
+      </PageTitle>
       <ReviewForm>
         <ReviewFormSection
           comboboxItems={courses.map((course) => ({

@@ -10,11 +10,14 @@ describe("roadmaps.setActive", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("requires an authenticated caller", async () => {
-    const dbMock = { userRoadmap: { findUnique: vi.fn() }, $transaction: vi.fn() };
+    const dbMock = {
+      userRoadmap: { findUnique: vi.fn() },
+      $transaction: vi.fn(),
+    };
     const caller = makeCaller(router.createCaller, dbMock, null);
-    await expect(
-      caller.setActive({ roadmapId: "r1" }),
-    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    await expect(caller.setActive({ roadmapId: "r1" })).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
   });
 
   it("clears isActive on the user's other roadmaps and sets it on the target, atomically", async () => {
@@ -54,9 +57,9 @@ describe("roadmaps.setActive", () => {
       $transaction: vi.fn(),
     };
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(
-      caller.setActive({ roadmapId: "r1" }),
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(caller.setActive({ roadmapId: "r1" })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
     expect(dbMock.$transaction).not.toHaveBeenCalled();
   });
 

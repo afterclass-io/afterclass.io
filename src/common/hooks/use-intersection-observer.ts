@@ -1,7 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 
-export function useIntersectionObserver(options: IntersectionObserverInit, elementId: string) {
+export function useIntersectionObserver(
+  options: IntersectionObserverInit,
+  elementId: string,
+) {
   const [isVisible, setIsVisible] = useState<boolean>(true);
 
   useEffect(() => {

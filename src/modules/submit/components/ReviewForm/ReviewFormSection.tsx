@@ -13,7 +13,13 @@ import { ReviewableEnum } from "@/modules/submit/types";
 import type { ReviewableType } from "@/modules/submit/types";
 import { texts } from "@/modules/submit/constants";
 
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/common/components/form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/common/components/form";
 import { Separator } from "@/common/components/separator";
 
 export type ReviewFormSectionProps = {

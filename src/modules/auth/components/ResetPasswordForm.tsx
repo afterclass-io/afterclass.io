@@ -29,7 +29,9 @@ import { LockIcon } from "@/common/components/icons";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
 const resetPwdFormInputsSchema = z.object({
-  password: z.string().min(8, { error: "Passwords must be at least 8 characters long" }),
+  password: z
+    .string()
+    .min(8, { error: "Passwords must be at least 8 characters long" }),
 });
 type ResetPwdFormInputs = z.infer<typeof resetPwdFormInputsSchema>;
 
@@ -62,7 +64,10 @@ export const ResetPasswordForm = () => {
 
   return (
     <Form {...form}>
-      <form className="flex w-full flex-col gap-6" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="flex w-full flex-col gap-6"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
         <FormField
           control={form.control}
           name="password"
@@ -91,7 +96,9 @@ export const ResetPasswordForm = () => {
           {form.formState.isSubmitting ? "Signing in..." : "Reset Password"}
         </Button>
         {isSubmitSuccessful && (
-          <div className="text-green-500">Your password has been updated successfully.</div>
+          <div className="text-green-500">
+            Your password has been updated successfully.
+          </div>
         )}
       </form>
     </Form>

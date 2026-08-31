@@ -60,7 +60,9 @@ function deriveAvailableFromData(results: BidResultRow[]) {
 
   return {
     dataRounds: Array.from(rounds).toSorted(compareRounds),
-    dataWindows: Array.from(windows).toSorted((a, b) => parseInt(a) - parseInt(b)),
+    dataWindows: Array.from(windows).toSorted(
+      (a, b) => parseInt(a) - parseInt(b),
+    ),
   };
 }
 
@@ -73,7 +75,8 @@ export const BidAnalyticsClient = ({
   initialWindows = EMPTY_ARRAY,
 }: BidAnalyticsClientProps) => {
   const [selectedRounds, setSelectedRounds] = useState<string[]>(initialRounds);
-  const [selectedWindows, setSelectedWindows] = useState<string[]>(initialWindows);
+  const [selectedWindows, setSelectedWindows] =
+    useState<string[]>(initialWindows);
 
   // Sync filter state to URL via replaceState (shareable, no page reload)
   const syncUrl = useCallback((rounds: string[], windows: string[]) => {
@@ -151,7 +154,14 @@ export const BidAnalyticsClient = ({
     }
 
     return { availableRounds: availRounds, availableWindows: availWindows };
-  }, [selectedRounds, selectedWindows, dataRounds, dataWindows, roundWindows, windowRounds]);
+  }, [
+    selectedRounds,
+    selectedWindows,
+    dataRounds,
+    dataWindows,
+    roundWindows,
+    windowRounds,
+  ]);
 
   // Filter bid results based on selection
   const filteredResults = useMemo(() => {
@@ -161,7 +171,8 @@ export const BidAnalyticsClient = ({
         match = match && selectedRounds.includes(br.bidWindow.round);
       }
       if (selectedWindows.length > 0) {
-        match = match && selectedWindows.includes(br.bidWindow.window.toString());
+        match =
+          match && selectedWindows.includes(br.bidWindow.window.toString());
       }
       return match;
     });
@@ -171,7 +182,10 @@ export const BidAnalyticsClient = ({
     // Group by bidWindow to deduplicate merged section + cross-professor results
     // that map to the same bidWindow string. Conservative aggregation: take the
     // lowest min and median across duplicate entries.
-    const grouped = new Map<string, { min: number; median: number; size: number }>();
+    const grouped = new Map<
+      string,
+      { min: number; median: number; size: number }
+    >();
     for (const br of filteredResults) {
       const key = `${br.bidWindow.acadTermId}/${br.bidWindow.round}/${br.bidWindow.window}`;
       const existing = grouped.get(key);
@@ -205,7 +219,9 @@ export const BidAnalyticsClient = ({
         const windows = roundWindows.get(r);
         if (windows) windows.forEach((w) => validWindows.add(w));
       }
-      const newWindows = selectedWindows.filter((w) => validWindows.has(parseInt(w)));
+      const newWindows = selectedWindows.filter((w) =>
+        validWindows.has(parseInt(w)),
+      );
 
       setSelectedRounds(values);
       setSelectedWindows(newWindows);
@@ -236,17 +252,23 @@ export const BidAnalyticsClient = ({
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="pt-2 text-2xl">Historical Bidding Trend</CardTitle>
+          <CardTitle className="pt-2 text-2xl">
+            Historical Bidding Trend
+          </CardTitle>
           <CardDescription className="flex flex-col gap-2">
             <div>
-              {courseCode} {section} — historical bids across academic terms and rounds
+              {courseCode} {section} — historical bids across academic terms and
+              rounds
             </div>
             <DisclosureDisclaimer />
           </CardDescription>
         </CardHeader>
         {chartData.length > 0 ? (
           <CardContent className="flex flex-col gap-4">
-            <BidChart chartData={chartData} currentWindowBidWindow={currentWindowBidWindow} />
+            <BidChart
+              chartData={chartData}
+              currentWindowBidWindow={currentWindowBidWindow}
+            />
             {/* Filter controls — always visible with all data-driven options */}
             {dataRounds.length > 0 && (
               <div className="flex flex-col gap-1.5">
@@ -256,7 +278,9 @@ export const BidAnalyticsClient = ({
                 <TagToggleGroup
                   items={availableRounds.map((r) => ({ label: r, value: r }))}
                   value={selectedRounds}
-                  onChange={(values) => handleRoundsChange((values as string[]) ?? [])}
+                  onChange={(values) =>
+                    handleRoundsChange((values as string[]) ?? [])
+                  }
                 />
               </div>
             )}
@@ -268,7 +292,9 @@ export const BidAnalyticsClient = ({
                 <TagToggleGroup
                   items={availableWindows.map((w) => ({ label: w, value: w }))}
                   value={selectedWindows}
-                  onChange={(values) => handleWindowsChange((values as string[]) ?? [])}
+                  onChange={(values) =>
+                    handleWindowsChange((values as string[]) ?? [])
+                  }
                 />
               </div>
             )}

@@ -3,7 +3,13 @@ import type { CustomIconProps } from "./custom-icon";
 
 export const MemoIcon = (props: CustomIconProps) => {
   return (
-    <CustomIcon width="36" height="36" viewBox="0 0 36 36" fill="none" {...props}>
+    <CustomIcon
+      width="36"
+      height="36"
+      viewBox="0 0 36 36"
+      fill="none"
+      {...props}
+    >
       <path
         fill="#ccd6dd"
         d="M31 32a4 4 0 0 1-4 4H5a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4h22a4 4 0 0 1 4 4z"
@@ -32,7 +38,10 @@ export const MemoIcon = (props: CustomIconProps) => {
         fill="#292f33"
         d="M11.298 26.742s-2.06 1.133-2.616.576c-.557-.558.581-2.611.581-2.611s1.951.036 2.035 2.035"
       ></path>
-      <path fill="#ccd6dd" d="m23.728 5.935l3.96-3.96l6.336 6.337l-3.96 3.96z"></path>
+      <path
+        fill="#ccd6dd"
+        d="m23.728 5.935l3.96-3.96l6.336 6.337l-3.96 3.96z"
+      ></path>
       <path
         fill="#99aab5"
         d="m26.103 3.558l.792-.792l6.336 6.335l-.792.792zM24.52 5.142l.791-.791l6.336 6.335l-.792.792z"

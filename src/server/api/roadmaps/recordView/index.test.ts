@@ -11,9 +11,11 @@ const router = createTRPCRouter({ recordView });
 function makeDb() {
   return {
     userRoadmap: {
-      findFirst: vi
-        .fn()
-        .mockResolvedValue({ id: "r1", visibility: "PUBLIC", publishedAt: new Date() }),
+      findFirst: vi.fn().mockResolvedValue({
+        id: "r1",
+        visibility: "PUBLIC",
+        publishedAt: new Date(),
+      }),
       updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
   };

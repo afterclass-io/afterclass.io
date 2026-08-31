@@ -60,7 +60,10 @@ export const ReviewModal = ({
       }}
     >
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
-      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} data-test="review-modal">
+      <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        data-test="review-modal"
+      >
         <DialogHeader className="text-left">
           <DialogTitle>
             <RevieweeGroup review={review} variant={variant} />
@@ -77,7 +80,9 @@ export const ReviewModal = ({
             </div>
           </DialogDescription>
         </DialogHeader>
-        <DialogBody className="wrap-anywhere whitespace-pre-wrap">{review.body}</DialogBody>
+        <DialogBody className="wrap-anywhere whitespace-pre-wrap">
+          {review.body}
+        </DialogBody>
         <DialogFooter className="flex-col sm:flex-col">
           <ReviewFooter review={review} />
           {/* seeMore link only shown when user is from default reviews page, hidden when in professor/course pages */}

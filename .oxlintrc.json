@@ -56,17 +56,26 @@
     "react/set-state-in-effect": "off",
     "typescript/no-floating-promises": "error",
     "typescript/no-explicit-any": "error",
-    "typescript/no-misused-promises": ["error", { "checksVoidReturn": { "attributes": false } }],
+    "typescript/no-misused-promises": [
+      "error",
+      { "checksVoidReturn": { "attributes": false } }
+    ],
     "typescript/require-await": "off",
 
     "unicorn/no-null": "off",
 
-    "no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ],
     "typescript/consistent-type-imports": [
       "warn",
       { "prefer": "type-imports", "fixStyle": "separate-type-imports" }
     ],
-    "typescript/no-unnecessary-condition": ["warn", { "allowConstantLoopConditions": true }],
+    "typescript/no-unnecessary-condition": [
+      "warn",
+      { "allowConstantLoopConditions": true }
+    ],
     "typescript/no-non-null-assertion": "warn",
     "typescript/no-unsafe-type-assertion": "warn",
     "react/no-array-index-key": "warn",
@@ -103,7 +112,11 @@
   },
   "overrides": [
     {
-      "files": ["src/**/*.test.{ts,tsx}", "prisma/**/*.test.{ts,tsx}", "cypress/**"],
+      "files": [
+        "src/**/*.test.{ts,tsx}",
+        "prisma/**/*.test.{ts,tsx}",
+        "cypress/**"
+      ],
       "rules": {
         "no-console": "off",
         "typescript/no-unnecessary-condition": "off",

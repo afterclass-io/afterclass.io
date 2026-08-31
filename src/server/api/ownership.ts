@@ -21,9 +21,7 @@ export async function requireOwnedRoadmap(
   roadmapId: string,
   userId: string,
 ): Promise<
-  NonNullable<
-    Awaited<ReturnType<PrismaClient["userRoadmap"]["findUnique"]>>
-  >
+  NonNullable<Awaited<ReturnType<PrismaClient["userRoadmap"]["findUnique"]>>>
 >;
 export async function requireOwnedRoadmap<
   Select extends Prisma.UserRoadmapSelect,
@@ -65,9 +63,7 @@ export async function requireOwnedTimetable(
   timetableId: string,
   userId: string,
 ): Promise<
-  NonNullable<
-    Awaited<ReturnType<PrismaClient["userTimetable"]["findUnique"]>>
-  >
+  NonNullable<Awaited<ReturnType<PrismaClient["userTimetable"]["findUnique"]>>>
 >;
 export async function requireOwnedTimetable<
   Select extends Prisma.UserTimetableSelect,

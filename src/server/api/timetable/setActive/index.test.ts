@@ -12,7 +12,9 @@ describe("timetable.setActive", () => {
   it("inserts slots for every SECURED-bid class of the term into the newly active plan", async () => {
     const updateMany = vi.fn().mockResolvedValue({ count: 1 });
     const update = vi.fn().mockResolvedValue({ id: "t2", isActive: true });
-    const findMany = vi.fn().mockResolvedValue([{ classId: "c1" }, { classId: "c2" }]);
+    const findMany = vi
+      .fn()
+      .mockResolvedValue([{ classId: "c1" }, { classId: "c2" }]);
     const createMany = vi.fn().mockResolvedValue({ count: 2 });
     const tx = {
       userTimetable: { updateMany, update },
@@ -25,7 +27,9 @@ describe("timetable.setActive", () => {
           .fn()
           .mockResolvedValue({ id: "t2", userId: "u1", acadTermId: "term-a" }),
       },
-      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
+      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn(tx),
+      ),
     };
     const caller = makeCaller(router.createCaller, dbMock);
     await caller.setActive({ timetableId: "t2" });
@@ -39,7 +43,11 @@ describe("timetable.setActive", () => {
       data: { isActive: true },
     });
     expect(findMany).toHaveBeenCalledWith({
-      where: { userId: "u1", status: "SECURED", class: { acadTermId: "term-a" } },
+      where: {
+        userId: "u1",
+        status: "SECURED",
+        class: { acadTermId: "term-a" },
+      },
       select: { classId: true },
     });
     expect(createMany).toHaveBeenCalledWith({
@@ -67,7 +75,9 @@ describe("timetable.setActive", () => {
           .fn()
           .mockResolvedValue({ id: "t2", userId: "u1", acadTermId: "term-a" }),
       },
-      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
+      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn(tx),
+      ),
     };
     const caller = makeCaller(router.createCaller, dbMock);
     await caller.setActive({ timetableId: "t2" });
@@ -96,7 +106,9 @@ describe("timetable.setActive", () => {
           .fn()
           .mockResolvedValue({ id: "t2", userId: "u1", acadTermId: "term-a" }),
       },
-      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
+      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn(tx),
+      ),
     };
     const caller = makeCaller(router.createCaller, dbMock);
     await caller.setActive({ timetableId: "t2" });
@@ -108,9 +120,11 @@ describe("timetable.setActive", () => {
       userTimetable: { findUnique: vi.fn().mockResolvedValue(null) },
     };
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(caller.setActive({ timetableId: "t2" })).rejects.toMatchObject({
-      code: "NOT_FOUND",
-    });
+    await expect(caller.setActive({ timetableId: "t2" })).rejects.toMatchObject(
+      {
+        code: "NOT_FOUND",
+      },
+    );
   });
 
   it("propagates slot-copy failure — transaction rolls back (no half-commit)", async () => {
@@ -129,10 +143,14 @@ describe("timetable.setActive", () => {
           .fn()
           .mockResolvedValue({ id: "t2", userId: "u1", acadTermId: "term-a" }),
       },
-      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
+      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn(tx),
+      ),
     };
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(caller.setActive({ timetableId: "t2" })).rejects.toThrow("slot boom");
+    await expect(caller.setActive({ timetableId: "t2" })).rejects.toThrow(
+      "slot boom",
+    );
     expect(createMany).toHaveBeenCalled();
     expect(dbMock.$transaction).toHaveBeenCalledTimes(1);
   });

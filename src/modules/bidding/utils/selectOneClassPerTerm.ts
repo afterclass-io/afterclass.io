@@ -183,12 +183,15 @@ export function selectOneClassPerTerm<T extends SelectableBidResult>(
         // Tiebreak: prefer section label closer to reference section
         if (referenceSection) {
           const aDist = Math.abs(
-            parseInt(a.section.replace(/\D/g, "")) - parseInt(referenceSection.replace(/\D/g, "")),
+            parseInt(a.section.replace(/\D/g, "")) -
+              parseInt(referenceSection.replace(/\D/g, "")),
           );
           const bDist = Math.abs(
-            parseInt(b.section.replace(/\D/g, "")) - parseInt(referenceSection.replace(/\D/g, "")),
+            parseInt(b.section.replace(/\D/g, "")) -
+              parseInt(referenceSection.replace(/\D/g, "")),
           );
-          if (!isNaN(aDist) && !isNaN(bDist) && aDist !== bDist) return aDist - bDist;
+          if (!isNaN(aDist) && !isNaN(bDist) && aDist !== bDist)
+            return aDist - bDist;
         }
         return a.section.localeCompare(b.section);
       });

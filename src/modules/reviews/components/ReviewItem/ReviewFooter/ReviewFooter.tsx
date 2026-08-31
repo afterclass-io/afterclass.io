@@ -18,18 +18,24 @@ export const ReviewFooter = ({ review }: ReviewFooterProps) => {
 
   return (
     <div className="space-y-2">
-      {shouldShowReviewReactions && <ReviewReactionsGroup reviewId={review.id} />}
+      {shouldShowReviewReactions && (
+        <ReviewReactionsGroup reviewId={review.id} />
+      )}
 
       <div className="flex gap-4">
         <ReviewVoteGroup reviewId={review.id} />
 
-        {shouldShowReviewReactions && <ReviewReactionButton reviewId={review.id} />}
+        {shouldShowReviewReactions && (
+          <ReviewReactionButton reviewId={review.id} />
+        )}
 
         <ReviewShareButton reviewId={review.id} />
 
         <div className="flex items-center gap-1.5 px-2">
           <EyeIcon className="size-4" />
-          <span className="font-mono">{formatNumberShortScale(review.countEventViews)}</span>
+          <span className="font-mono">
+            {formatNumberShortScale(review.countEventViews)}
+          </span>
         </div>
       </div>
     </div>

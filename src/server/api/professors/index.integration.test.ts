@@ -121,7 +121,9 @@ describe("professors.getBySlug (integration)", () => {
 describe("professors.getByCourseCode (integration)", () => {
   it("returns every professor teaching the course with distinct-course and scoped-review counts", async () => {
     const res = await call().getByCourseCode({ code: courseCode });
-    expect(res.map((p) => p.slug).toSorted()).toEqual([slug1, slug2].toSorted());
+    expect(res.map((p) => p.slug).toSorted()).toEqual(
+      [slug1, slug2].toSorted(),
+    );
 
     const p1 = res.find((p) => p.slug === slug1)!;
     const p2 = res.find((p) => p.slug === slug2)!;

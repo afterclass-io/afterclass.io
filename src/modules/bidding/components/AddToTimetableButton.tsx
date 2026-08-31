@@ -58,8 +58,7 @@ export function AddToTimetableButton({
         timetableName = created.name;
         void utils.timetable.listMine.invalidate({ acadTermId });
       } else {
-        const active =
-          timetables.find((t) => t.isActive) ?? timetables[0]!;
+        const active = timetables.find((t) => t.isActive) ?? timetables[0]!;
         timetableId = active.id;
         timetableName = active.name;
       }

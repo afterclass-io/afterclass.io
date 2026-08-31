@@ -1,6 +1,12 @@
 import type { ReactNode } from "react";
 
-export const OgImageTitle = ({ icon, children }: { icon: ReactNode; children: ReactNode }) => (
+export const OgImageTitle = ({
+  icon,
+  children,
+}: {
+  icon: ReactNode;
+  children: ReactNode;
+}) => (
   <div
     style={{
       display: "flex",

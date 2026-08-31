@@ -89,7 +89,9 @@ function firstOccurrence(icalDay: ICalWeekday, after: Date): Date {
 function teachingWeekNumbers(termStart: Date, termEnd: Date): number[] {
   const [sy, sm, sd] = sgtYMD(termStart);
   const [ey, em, ed] = sgtYMD(termEnd);
-  const spanDays = Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(sy, sm - 1, sd)) / 86_400_000);
+  const spanDays = Math.round(
+    (Date.UTC(ey, em - 1, ed) - Date.UTC(sy, sm - 1, sd)) / 86_400_000,
+  );
   const LONG_TERM_MIN_DAYS = 13 * 7; // 91 days separates T1/T2 from T3A/T3B
   if (spanDays >= LONG_TERM_MIN_DAYS) {
     return [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14];
@@ -175,7 +177,8 @@ export function buildIcal(input: ICalInput): string {
 
     // --- Exam timings → one-off VEVENTs ---
     for (const exam of cls.examTimings) {
-      const examDate = typeof exam.date === "string" ? new Date(exam.date) : exam.date;
+      const examDate =
+        typeof exam.date === "string" ? new Date(exam.date) : exam.date;
       const startParts = parseTimePartsSafe(exam.startTime);
       const endParts = parseTimePartsSafe(exam.endTime);
       if (!startParts || !endParts) continue;

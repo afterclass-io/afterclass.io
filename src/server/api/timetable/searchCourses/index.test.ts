@@ -19,7 +19,12 @@ function makeCourseRow() {
         section: "G1",
         professor: { name: "Dr X" },
         classTimings: [
-          { dayOfWeek: "Mon", startTime: "12:00", endTime: "14:00", venue: "SR1" },
+          {
+            dayOfWeek: "Mon",
+            startTime: "12:00",
+            endTime: "14:00",
+            venue: "SR1",
+          },
         ],
         classExamTimings: [
           {

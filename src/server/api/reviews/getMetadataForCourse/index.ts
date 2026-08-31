@@ -43,15 +43,17 @@ export const getMetadataForCourse = publicProcedure
             )
             GROUP BY l.name
       */
-    const reviewLabelsMetadataForThisCourse = await ctx.db.reviewLabels.groupBy({
-      by: ["labelId"],
-      _count: {
-        labelId: true,
+    const reviewLabelsMetadataForThisCourse = await ctx.db.reviewLabels.groupBy(
+      {
+        by: ["labelId"],
+        _count: {
+          labelId: true,
+        },
+        where: {
+          review: reviewWhereInput,
+        },
       },
-      where: {
-        review: reviewWhereInput,
-      },
-    });
+    );
 
     const courseReviewLabels = await ctx.db.labels.findMany({
       where: {
@@ -67,8 +69,9 @@ export const getMetadataForCourse = publicProcedure
         .map((label) => ({
           name: toTitleCase(label.name.replaceAll("_", " ")),
           count:
-            reviewLabelsMetadataForThisCourse.find((rl) => rl.labelId === label.id)?._count
-              .labelId ?? 0,
+            reviewLabelsMetadataForThisCourse.find(
+              (rl) => rl.labelId === label.id,
+            )?._count.labelId ?? 0,
         })),
     };
   });

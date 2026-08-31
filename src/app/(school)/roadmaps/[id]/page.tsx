@@ -36,7 +36,9 @@ export async function generateMetadata(props: {
 // Page
 // ---------------------------------------------------------------------------
 
-export default async function PublicRoadmapPage(props: { params: Promise<{ id: string }> }) {
+export default async function PublicRoadmapPage(props: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await props.params;
   if (!id) notFound();
 

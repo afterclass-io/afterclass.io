@@ -37,12 +37,14 @@ const tagVariants = cva(
       {
         variant: "outline",
         color: "primary",
-        className: "text-primary border-primary border data-[clickable=true]:hover:bg-primary/5",
+        className:
+          "text-primary border-primary border data-[clickable=true]:hover:bg-primary/5",
       },
       {
         variant: "soft",
         color: "primary",
-        className: "text-primary bg-primary/15 data-[clickable=true]:hover:bg-primary/35",
+        className:
+          "text-primary bg-primary/15 data-[clickable=true]:hover:bg-primary/35",
       },
       // Secondary color
       {
@@ -59,7 +61,8 @@ const tagVariants = cva(
       {
         variant: "soft",
         color: "secondary",
-        className: "text-secondary bg-secondary/15 data-[clickable=true]:hover:bg-secondary/35",
+        className:
+          "text-secondary bg-secondary/15 data-[clickable=true]:hover:bg-secondary/35",
       },
       // Info color
       {
@@ -70,60 +73,71 @@ const tagVariants = cva(
       {
         variant: "outline",
         color: "info",
-        className: "text-info border-info border data-[clickable=true]:hover:bg-info/5",
+        className:
+          "text-info border-info border data-[clickable=true]:hover:bg-info/5",
       },
       {
         variant: "soft",
         color: "info",
-        className: "text-info bg-info/15 data-[clickable=true]:hover:bg-info/35",
+        className:
+          "text-info bg-info/15 data-[clickable=true]:hover:bg-info/35",
       },
       // Success color
       {
         variant: "filled",
         color: "success",
-        className: "text-white bg-success data-[clickable=true]:hover:bg-success/90",
+        className:
+          "text-white bg-success data-[clickable=true]:hover:bg-success/90",
       },
       {
         variant: "outline",
         color: "success",
-        className: "text-success border-success border data-[clickable=true]:hover:bg-success/5",
+        className:
+          "text-success border-success border data-[clickable=true]:hover:bg-success/5",
       },
       {
         variant: "soft",
         color: "success",
-        className: "text-success bg-success/15 data-[clickable=true]:hover:bg-success/35",
+        className:
+          "text-success bg-success/15 data-[clickable=true]:hover:bg-success/35",
       },
       // Warning color
       {
         variant: "filled",
         color: "warning",
-        className: "text-white bg-warning data-[clickable=true]:hover:bg-warning/90",
+        className:
+          "text-white bg-warning data-[clickable=true]:hover:bg-warning/90",
       },
       {
         variant: "outline",
         color: "warning",
-        className: "text-warning border-warning border data-[clickable=true]:hover:bg-warning/5",
+        className:
+          "text-warning border-warning border data-[clickable=true]:hover:bg-warning/5",
       },
       {
         variant: "soft",
         color: "warning",
-        className: "text-warning bg-warning/15 data-[clickable=true]:hover:bg-warning/35",
+        className:
+          "text-warning bg-warning/15 data-[clickable=true]:hover:bg-warning/35",
       },
       // Error color
       {
         variant: "filled",
         color: "error",
-        className: "text-white bg-error data-[clickable=true]:hover:bg-error/90",
+        className:
+          "text-white bg-error data-[clickable=true]:hover:bg-error/90",
       },
       {
         variant: "outline",
         color: "error",
-        className: "text-error border-error border data-[clickable=true]:hover:bg-error/5",
+        className:
+          "text-error border-error border data-[clickable=true]:hover:bg-error/5",
       },
       {
         variant: "soft",
         color: "error",
-        className: "text-error bg-error/15 data-[clickable=true]:hover:bg-error/35",
+        className:
+          "text-error bg-error/15 data-[clickable=true]:hover:bg-error/35",
       },
     ],
     variants: {
@@ -160,18 +174,23 @@ const deletableVariants = cva(
   {
     variants: {
       variant: {
-        filled: "data-[variant=filled]:bg-white/45 data-[variant=filled]:hover:bg-white/80",
+        filled:
+          "data-[variant=filled]:bg-white/45 data-[variant=filled]:hover:bg-white/80",
         outline: "text-accent",
         soft: "text-accent",
       },
       color: {
         default:
           "data-[variant=filled]:bg-accent/80 data-[variant=filled]:hover:bg-accent data-[variant=filled]:text-foreground bg-foreground/65 hover:bg-foreground",
-        primary: "data-[variant=filled]:text-primary bg-primary/65 hover:bg-primary",
-        secondary: "data-[variant=filled]:text-secondary bg-secondary/65 hover:bg-secondary",
+        primary:
+          "data-[variant=filled]:text-primary bg-primary/65 hover:bg-primary",
+        secondary:
+          "data-[variant=filled]:text-secondary bg-secondary/65 hover:bg-secondary",
         info: "data-[variant=filled]:text-info bg-info/65 hover:bg-info",
-        success: "data-[variant=filled]:text-success bg-success/65 hover:bg-success",
-        warning: "data-[variant=filled]:text-warning bg-warning/65 hover:bg-warning",
+        success:
+          "data-[variant=filled]:text-success bg-success/65 hover:bg-success",
+        warning:
+          "data-[variant=filled]:text-warning bg-warning/65 hover:bg-warning",
         error: "data-[variant=filled]:text-error bg-error/65 hover:bg-error",
       },
     },
@@ -183,7 +202,9 @@ const deletableVariants = cva(
 );
 
 export interface TagProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "color">, VariantProps<typeof tagVariants> {
+  extends
+    Omit<React.HTMLAttributes<HTMLDivElement>, "color">,
+    VariantProps<typeof tagVariants> {
   size?: "xs" | "sm" | "md";
   deletable?: boolean;
   avatar?: React.JSX.Element;

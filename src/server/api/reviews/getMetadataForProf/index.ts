@@ -66,8 +66,9 @@ export const getMetadataForProf = publicProcedure
         .map((label) => ({
           name: toTitleCase(label.name.replaceAll("_", " ")),
           count:
-            reviewLabelsMetadataForThisProf.find((rl) => rl.labelId === label.id)?._count.labelId ??
-            0,
+            reviewLabelsMetadataForThisProf.find(
+              (rl) => rl.labelId === label.id,
+            )?._count.labelId ?? 0,
         })),
     };
   });

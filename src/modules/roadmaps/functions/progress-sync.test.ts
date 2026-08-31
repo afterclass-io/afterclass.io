@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { buildProgressSyncPlan, pickNewCourseIds, roadmapTermForAcadTerm } from "./progress-sync";
+import {
+  buildProgressSyncPlan,
+  pickNewCourseIds,
+  roadmapTermForAcadTerm,
+} from "./progress-sync";
 import type { SyncTermRow } from "./progress-sync";
 
 // ---------------------------------------------------------------------------
@@ -140,7 +144,10 @@ describe("buildProgressSyncPlan", () => {
 
 describe("pickNewCourseIds", () => {
   it("keeps only courses not already on the roadmap", () => {
-    expect(pickNewCourseIds(new Set(["a", "b"]), ["b", "c", "d"])).toEqual(["c", "d"]);
+    expect(pickNewCourseIds(new Set(["a", "b"]), ["b", "c", "d"])).toEqual([
+      "c",
+      "d",
+    ]);
   });
 
   it("dedupes candidates within a single sync run", () => {

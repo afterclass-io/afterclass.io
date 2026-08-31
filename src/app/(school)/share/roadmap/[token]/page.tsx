@@ -17,7 +17,9 @@ export const metadata: Metadata = {
 // Page
 // ---------------------------------------------------------------------------
 
-export default async function SharedRoadmapPage(props: { params: Promise<{ token: string }> }) {
+export default async function SharedRoadmapPage(props: {
+  params: Promise<{ token: string }>;
+}) {
   const { token } = await props.params;
 
   let data: Awaited<ReturnType<typeof api.sharing.getSharedRoadmap>>;

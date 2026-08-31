@@ -27,7 +27,8 @@ const defineStepper = <const Steps extends readonly Stepperize.Step[]>(
     ...rest
   } = Stepperize.defineStepper(steps);
 
-  const getIndex = (id: Stepperize.Get.Id<Steps>) => steps.findIndex((step) => step.id === id);
+  const getIndex = (id: Stepperize.Get.Id<Steps>) =>
+    steps.findIndex((step) => step.id === id);
   const getLast = () => steps[steps.length - 1]!;
   const getNext = (id: Stepperize.Get.Id<Steps>) => steps[getIndex(id) + 1];
   const getPrev = (id: Stepperize.Get.Id<Steps>) => steps[getIndex(id) - 1];
@@ -44,7 +45,11 @@ const defineStepper = <const Steps extends readonly Stepperize.Step[]>(
     const methods = useStepper();
 
     return (
-      <div date-component="stepper" className={cn("w-full", className)} {...props}>
+      <div
+        date-component="stepper"
+        className={cn("w-full", className)}
+        {...props}
+      >
         {typeof children === "function" ? children({ methods }) : children}
       </div>
     );
@@ -63,17 +68,30 @@ const defineStepper = <const Steps extends readonly Stepperize.Step[]>(
         ...props
       }) => {
         return (
-          <StepperContext.Provider value={{ variant, labelOrientation, tracking }}>
+          <StepperContext.Provider
+            value={{ variant, labelOrientation, tracking }}
+          >
             <ScopedProvider {...props}>
-              <StepperContainer className={className}>{children}</StepperContainer>
+              <StepperContainer className={className}>
+                {children}
+              </StepperContainer>
             </ScopedProvider>
           </StepperContext.Provider>
         );
       },
-      Navigation: ({ children, "aria-label": ariaLabel = "Stepper Navigation", ...props }) => {
+      Navigation: ({
+        children,
+        "aria-label": ariaLabel = "Stepper Navigation",
+        ...props
+      }) => {
         const { variant } = useStepperProvider();
         return (
-          <nav date-component="stepper-navigation" aria-label={ariaLabel} role="tablist" {...props}>
+          <nav
+            date-component="stepper-navigation"
+            aria-label={ariaLabel}
+            role="tablist"
+            {...props}
+          >
             <ol
               date-component="stepper-navigation-list"
               className={classForNavigationList({ variant: variant })}
@@ -110,7 +128,10 @@ const defineStepper = <const Steps extends readonly Stepperize.Step[]>(
                 className,
               )}
             >
-              <CircleStepIndicator currentStep={stepIndex + 1} totalSteps={steps.length} />
+              <CircleStepIndicator
+                currentStep={stepIndex + 1}
+                totalSteps={steps.length}
+              />
               <div
                 date-component="stepper-step-content"
                 className="flex flex-col items-start gap-1"
@@ -152,7 +173,9 @@ const defineStepper = <const Steps extends readonly Stepperize.Step[]>(
                 aria-posinset={stepIndex + 1}
                 aria-setsize={steps.length}
                 aria-selected={isActive}
-                onKeyDown={(e) => onStepKeyDown(e, getNext(props.of), getPrev(props.of))}
+                onKeyDown={(e) =>
+                  onStepKeyDown(e, getNext(props.of), getPrev(props.of))
+                }
                 {...props}
               >
                 {icon ?? stepIndex + 1}
@@ -166,7 +189,10 @@ const defineStepper = <const Steps extends readonly Stepperize.Step[]>(
                   disabled={props.disabled}
                 />
               )}
-              <div date-component="stepper-step-content" className="flex flex-col items-start">
+              <div
+                date-component="stepper-step-content"
+                className="flex flex-col items-start"
+              >
                 {title}
                 {description}
               </div>
@@ -372,13 +398,17 @@ const classForSeparator = cva(
         vertical: "h-full w-0.5",
       },
       labelOrientation: {
-        vertical: "absolute left-[calc(50%+30px)] right-[calc(-50%+20px)] top-5 block shrink-0",
+        vertical:
+          "absolute left-[calc(50%+30px)] right-[calc(-50%+20px)] top-5 block shrink-0",
       },
     },
   },
 );
 
-function scrollIntoStepperPanel(node: HTMLDivElement | null, tracking?: boolean) {
+function scrollIntoStepperPanel(
+  node: HTMLDivElement | null,
+  tracking?: boolean,
+) {
   if (tracking) {
     node?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
@@ -431,7 +461,8 @@ const onStepKeyDown = (
       return;
     }
 
-    const isActive = stepElement.parentElement?.getAttribute("data-state") !== "inactive";
+    const isActive =
+      stepElement.parentElement?.getAttribute("data-state") !== "inactive";
     if (isActive || direction === "prev") {
       stepElement.focus();
     }
@@ -470,7 +501,9 @@ namespace Stepper {
           Stepper.ConfigProps & {
             children:
               | React.ReactNode
-              | ((props: { methods: Stepperize.Stepper<Steps> }) => React.ReactNode);
+              | ((props: {
+                  methods: Stepperize.Stepper<Steps>;
+                }) => React.ReactNode);
           },
       ) => React.ReactElement;
       Navigation: (props: React.ComponentProps<"nav">) => React.ReactElement;

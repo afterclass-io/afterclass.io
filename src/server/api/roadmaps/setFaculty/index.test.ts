@@ -18,12 +18,16 @@ describe("roadmaps.setFaculty", () => {
         update: vi.fn().mockResolvedValue({ id: "r1", facultyId: 2 }),
       },
       faculties: {
-        findUnique: vi.fn().mockResolvedValue({ id: 2, name: "SCIS", acronym: "SCIS" }),
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ id: 2, name: "SCIS", acronym: "SCIS" }),
       },
     };
     const caller = makeCaller(router.createCaller, dbMock);
     await caller.setFaculty({ roadmapId: "r1", facultyId: 2 });
-    expect(dbMock.faculties.findUnique).toHaveBeenCalledWith({ where: { id: 2 } });
+    expect(dbMock.faculties.findUnique).toHaveBeenCalledWith({
+      where: { id: 2 },
+    });
     expect(dbMock.userRoadmap.update).toHaveBeenCalledWith({
       where: { id: "r1" },
       data: { facultyId: 2 },
@@ -60,7 +64,9 @@ describe("roadmaps.setFaculty", () => {
       },
     };
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(caller.setFaculty({ roadmapId: "r1", facultyId: 2 })).rejects.toMatchObject({
+    await expect(
+      caller.setFaculty({ roadmapId: "r1", facultyId: 2 }),
+    ).rejects.toMatchObject({
       code: "FORBIDDEN",
     });
     expect(dbMock.userRoadmap.update).not.toHaveBeenCalled();
@@ -77,7 +83,9 @@ describe("roadmaps.setFaculty", () => {
       },
     };
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(caller.setFaculty({ roadmapId: "r1", facultyId: 999 })).rejects.toMatchObject({
+    await expect(
+      caller.setFaculty({ roadmapId: "r1", facultyId: 999 }),
+    ).rejects.toMatchObject({
       code: "BAD_REQUEST",
     });
     expect(dbMock.userRoadmap.update).not.toHaveBeenCalled();

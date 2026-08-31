@@ -87,7 +87,11 @@ export type TimingLike = {
 
 /** True when two same-day timings overlap (adjacent end==start does not). */
 export function timingsOverlap(a: TimingLike, b: TimingLike): boolean {
-  return a.dayOfWeek === b.dayOfWeek && a.startTime < b.endTime && b.startTime < a.endTime;
+  return (
+    a.dayOfWeek === b.dayOfWeek &&
+    a.startTime < b.endTime &&
+    b.startTime < a.endTime
+  );
 }
 
 /**
@@ -100,7 +104,9 @@ export function hasTimeConflict(
   candidate: { classTimings: readonly TimingLike[] },
 ): boolean {
   return existing.some((slot) =>
-    slot.classTimings.some((t) => candidate.classTimings.some((c) => timingsOverlap(t, c))),
+    slot.classTimings.some((t) =>
+      candidate.classTimings.some((c) => timingsOverlap(t, c)),
+    ),
   );
 }
 
@@ -109,14 +115,17 @@ export function hasTimeConflict(
  * minutes-since-midnight `TimingLike` rows. Rows with an unparseable day or
  * time are dropped — they can never conflict.
  */
-export function toTimingLikes(timings: readonly ClassTimingLike[]): TimingLike[] {
+export function toTimingLikes(
+  timings: readonly ClassTimingLike[],
+): TimingLike[] {
   const out: TimingLike[] = [];
   for (const t of timings) {
     const dayOfWeek = dayOfWeekToNumber(t.dayOfWeek);
     const start = parseTimePartsSafe(t.startTime);
     const end = parseTimePartsSafe(t.endTime);
     if (dayOfWeek == null || !start || !end) {
-      if (process.env.NODE_ENV !== "production") console.warn("[slot-math] dropped timing", t);
+      if (process.env.NODE_ENV !== "production")
+        console.warn("[slot-math] dropped timing", t);
       continue;
     }
     out.push({

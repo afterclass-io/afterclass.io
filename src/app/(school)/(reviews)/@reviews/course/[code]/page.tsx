@@ -8,12 +8,10 @@ import {
 import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader";
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
 
-export default async function Course(
-  props: {
-    params: Promise<{ code: string }>;
-    searchParams?: Promise<{ professor?: string | string[] }>;
-  }
-) {
+export default async function Course(props: {
+  params: Promise<{ code: string }>;
+  searchParams?: Promise<{ professor?: string | string[] }>;
+}) {
   const searchParams = await props.searchParams;
   const params = await props.params;
   // assuming all course codes are uppercase

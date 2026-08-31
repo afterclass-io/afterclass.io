@@ -10,10 +10,15 @@ export function useOptimisticReaction() {
   const lastInputRef = useRef<{ roadmapId: string } | null>(null);
 
   const mutation = api.roadmapReactions.upsert.useMutation({
-    ...createOptimisticMutationCallbacks<RouterInputs["roadmapReactions"]["upsert"], unknown>({
+    ...createOptimisticMutationCallbacks<
+      RouterInputs["roadmapReactions"]["upsert"],
+      unknown
+    >({
       cancel: async () => {
         if (lastInputRef.current) {
-          await utils.roadmapReactions.getByRoadmapId.cancel(lastInputRef.current);
+          await utils.roadmapReactions.getByRoadmapId.cancel(
+            lastInputRef.current,
+          );
         }
       },
       getSnapshot: () =>
@@ -27,12 +32,17 @@ export function useOptimisticReaction() {
       },
       restoreSnapshot: (prev) => {
         if (lastInputRef.current) {
-          utils.roadmapReactions.getByRoadmapId.setData(lastInputRef.current, prev as never);
+          utils.roadmapReactions.getByRoadmapId.setData(
+            lastInputRef.current,
+            prev as never,
+          );
         }
       },
       invalidate: async () => {
         if (lastInputRef.current) {
-          await utils.roadmapReactions.getByRoadmapId.invalidate(lastInputRef.current);
+          await utils.roadmapReactions.getByRoadmapId.invalidate(
+            lastInputRef.current,
+          );
         }
       },
     }),
@@ -43,27 +53,34 @@ export function useOptimisticReaction() {
     (variables: Parameters<typeof mutate>[0]) => {
       const { roadmapId, reaction } = variables;
 
-      utils.roadmapReactions.getByRoadmapId.setData({ roadmapId }, (oldQueryData) => {
-        const counts = oldQueryData?.counts ?? [];
-        const prevViewer = oldQueryData?.viewerReaction ?? null;
+      utils.roadmapReactions.getByRoadmapId.setData(
+        { roadmapId },
+        (oldQueryData) => {
+          const counts = oldQueryData?.counts ?? [];
+          const prevViewer = oldQueryData?.viewerReaction ?? null;
 
-        // when user undoes their reaction
-        if (!reaction) {
-          return {
-            counts: decrement(counts, prevViewer),
-            viewerReaction: null,
-          };
-        }
+          // when user undoes their reaction
+          if (!reaction) {
+            return {
+              counts: decrement(counts, prevViewer),
+              viewerReaction: null,
+            };
+          }
 
-        // when user reacts (or switches to a new reaction)
-        const afterRemove = prevViewer ? decrement(counts, prevViewer) : counts;
-        const existing = afterRemove.find((c) => c.reaction === reaction);
-        const nextCounts = existing
-          ? afterRemove.map((c) => (c.reaction === reaction ? { ...c, count: c.count + 1 } : c))
-          : [...afterRemove, { reaction, count: 1 }];
+          // when user reacts (or switches to a new reaction)
+          const afterRemove = prevViewer
+            ? decrement(counts, prevViewer)
+            : counts;
+          const existing = afterRemove.find((c) => c.reaction === reaction);
+          const nextCounts = existing
+            ? afterRemove.map((c) =>
+                c.reaction === reaction ? { ...c, count: c.count + 1 } : c,
+              )
+            : [...afterRemove, { reaction, count: 1 }];
 
-        return { counts: nextCounts, viewerReaction: reaction };
-      });
+          return { counts: nextCounts, viewerReaction: reaction };
+        },
+      );
     },
     [utils.roadmapReactions.getByRoadmapId],
   );

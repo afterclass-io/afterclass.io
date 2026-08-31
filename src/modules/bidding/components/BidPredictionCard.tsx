@@ -72,7 +72,9 @@ export const BidPredictionCard = ({
                   {formatBidCurrencyCompact(recommendedMin)}
                 </span>
               </span>
-              <span className="text-muted-foreground text-xl font-normal">-</span>
+              <span className="text-muted-foreground text-xl font-normal">
+                -
+              </span>
               <span className="text-primary font-mono text-3xl font-bold tracking-tighter tabular-nums">
                 {formatBidCurrencyCompact(recommendedMedian)}
               </span>
@@ -88,7 +90,8 @@ export const BidPredictionCard = ({
           </div>
           <div className="flex items-center gap-2 pl-1 italic">
             <Info size={16} className="inline" />
-            Note: AfterClass is not liable for any unsuccessful bids. Use at your own risk!
+            Note: AfterClass is not liable for any unsuccessful bids. Use at
+            your own risk!
           </div>
         </CardDescription>
       </CardHeader>
@@ -150,7 +153,10 @@ export const BidPredictionCard = ({
           <div>Min</div>
           <BidPredictionFormula
             predicted={minPrediction.value}
-            multiplier={multiplierAt(minPrediction.safetyFactor, beatsPercentage)}
+            multiplier={multiplierAt(
+              minPrediction.safetyFactor,
+              beatsPercentage,
+            )}
             uncertainty={minPrediction.uncertainty}
             onRecommendedChange={(value) => setRecommendedMin(value)}
           />
@@ -159,7 +165,10 @@ export const BidPredictionCard = ({
           <div>Median</div>
           <BidPredictionFormula
             predicted={medianPrediction.value}
-            multiplier={multiplierAt(medianPrediction.safetyFactor, beatsPercentage)}
+            multiplier={multiplierAt(
+              medianPrediction.safetyFactor,
+              beatsPercentage,
+            )}
             uncertainty={medianPrediction.uncertainty}
             onRecommendedChange={(value) => setRecommendedMedian(value)}
           />

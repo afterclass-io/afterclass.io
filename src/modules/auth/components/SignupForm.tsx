@@ -15,7 +15,12 @@ import {
   PasswordInputAdornmentToggle,
   PasswordInput,
 } from "@/common/components/input-password";
-import { InputRoot, InputAdornment, InputControl, Input } from "@/common/components/input";
+import {
+  InputRoot,
+  InputAdornment,
+  InputControl,
+  Input,
+} from "@/common/components/input";
 import {
   Form,
   FormControl,
@@ -33,8 +38,12 @@ import { ProgressLink } from "@/common/components/progress-link";
 const signupFormInputsSchema = z
   .object({
     email: emailValidationSchema,
-    password: z.string().min(8, { error: "Passwords must be at least 8 characters long" }),
-    confirmPassword: z.string().min(8, { error: "Passwords must be at least 8 characters long" }),
+    password: z
+      .string()
+      .min(8, { error: "Passwords must be at least 8 characters long" }),
+    confirmPassword: z
+      .string()
+      .min(8, { error: "Passwords must be at least 8 characters long" }),
   })
   .superRefine(({ password, confirmPassword }, ctx) => {
     if (confirmPassword === password) return;
@@ -71,7 +80,9 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
           progress.done();
         });
       } else {
-        throw new Error("trying to create user that already has email verified");
+        throw new Error(
+          "trying to create user that already has email verified",
+        );
       }
       form.reset();
     } catch (err) {
@@ -81,7 +92,10 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
 
   return (
     <Form {...form}>
-      <form className="flex w-full flex-col gap-6" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="flex w-full flex-col gap-6"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
         <FormField
           control={form.control}
           name="email"
@@ -158,7 +172,11 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={form.formState.isSubmitting} data-test="submit">
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          data-test="submit"
+        >
           {form.formState.isSubmitting ? "Creating an account..." : "Sign up"}
         </Button>
         <div className="flex items-center gap-1 self-stretch md:text-base">

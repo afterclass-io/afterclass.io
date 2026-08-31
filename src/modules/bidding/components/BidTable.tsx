@@ -11,7 +11,11 @@ import {
 import { Button } from "@/common/components/button";
 import { ArrowDown, ArrowUp, ArrowUpDown, Info } from "lucide-react";
 import { Th, SortableTh } from "@/common/components/table-primitives";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/common/components/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/common/components/tooltip";
 
 interface BidResultRow {
   bidWindow: {
@@ -168,7 +172,9 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
     });
   }, [flatRows, sortColumn, sortDirection]);
 
-  const visibleRows = showAll ? sortedRows : sortedRows.slice(0, DEFAULT_VISIBLE_ROWS);
+  const visibleRows = showAll
+    ? sortedRows
+    : sortedRows.slice(0, DEFAULT_VISIBLE_ROWS);
   const hiddenCount = chartData.length - DEFAULT_VISIBLE_ROWS;
 
   const sharedThClass =
@@ -248,11 +254,15 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
                     <TooltipTrigger asChild>
                       <span className="inline-flex items-center gap-1 cursor-help">
                         Seats Taken
-                        <Info size={12} className="text-muted-foreground shrink-0" />
+                        <Info
+                          size={12}
+                          className="text-muted-foreground shrink-0"
+                        />
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-xs text-xs">
-                      available seats before bidding minus available seats after bidding.
+                      available seats before bidding minus available seats after
+                      bidding.
                     </TooltipContent>
                   </Tooltip>
                   {sortColumn === "seats" ? (
@@ -289,7 +299,9 @@ export const BidTable = ({ chartData, bidResults }: BidTableProps) => {
                   <td className="px-3 py-2 text-right font-mono tabular-nums">
                     {formatBidCurrency(row.median)}
                   </td>
-                  <td className="px-3 py-2 text-right font-mono tabular-nums">{row.seats}</td>
+                  <td className="px-3 py-2 text-right font-mono tabular-nums">
+                    {row.seats}
+                  </td>
                 </tr>
               );
             })}

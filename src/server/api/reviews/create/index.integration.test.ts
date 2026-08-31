@@ -31,7 +31,8 @@ async function seedFixture() {
 
 describe("reviews.create (integration)", () => {
   it("writes a course review and a professor review with labels to the real database", async () => {
-    const { course, professor, user, courseLabel, professorLabel } = await seedFixture();
+    const { course, professor, user, courseLabel, professorLabel } =
+      await seedFixture();
     const caller = makeCaller(router.createCaller, db, {
       user: { id: user.id },
     });
@@ -62,7 +63,9 @@ describe("reviews.create (integration)", () => {
     expect(reviews).toHaveLength(2);
 
     const courseReview = reviews.find((r) => r.reviewedProfessorId === null);
-    const professorReview = reviews.find((r) => r.reviewedProfessorId === professor.id);
+    const professorReview = reviews.find(
+      (r) => r.reviewedProfessorId === professor.id,
+    );
     expect(courseReview).toMatchObject({
       reviewedCourseId: course.id,
       rating: 4,
@@ -79,7 +82,10 @@ describe("reviews.create (integration)", () => {
       where: { reviewId: { in: reviews.map((r) => r.id) } },
       include: { label: true },
     });
-    expect(labels.map((l) => l.label.name).toSorted()).toEqual(["ENGAGING", "INTERESTING"]);
+    expect(labels.map((l) => l.label.name).toSorted()).toEqual([
+      "ENGAGING",
+      "INTERESTING",
+    ]);
   });
 
   it("throws BAD_REQUEST when a label id violates a real foreign key constraint", async () => {

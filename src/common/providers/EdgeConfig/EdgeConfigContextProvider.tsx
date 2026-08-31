@@ -12,5 +12,9 @@ type Props = {
 };
 
 export function EdgeConfigContextProvider({ edgeConfig, children }: Props) {
-  return <EdgeConfigContext.Provider value={edgeConfig}>{children}</EdgeConfigContext.Provider>;
+  return (
+    <EdgeConfigContext.Provider value={edgeConfig}>
+      {children}
+    </EdgeConfigContext.Provider>
+  );
 }

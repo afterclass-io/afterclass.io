@@ -69,7 +69,10 @@ export { compareRounds as compareRound };
  * @param balance The user's e$ balance for the academic term.
  * @returns       A structured summary suitable for rendering a budget panel.
  */
-export function summarizeBidsByRound(bids: BidSummary[], balance: number): BudgetSummary {
+export function summarizeBidsByRound(
+  bids: BidSummary[],
+  balance: number,
+): BudgetSummary {
   // --- Group bids by round, then by window ---
   const byRound = new Map<string, Map<number, number>>();
 
@@ -94,7 +97,9 @@ export function summarizeBidsByRound(bids: BidSummary[], balance: number): Budge
     const windows: { window: number; amount: number }[] = [];
     let roundSum = 0;
 
-    for (const [window, amount] of [...windowMap.entries()].toSorted((a, b) => a[0] - b[0])) {
+    for (const [window, amount] of [...windowMap.entries()].toSorted(
+      (a, b) => a[0] - b[0],
+    )) {
       windows.push({ window, amount });
       roundSum += amount;
     }

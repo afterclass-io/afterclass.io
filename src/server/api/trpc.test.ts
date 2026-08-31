@@ -41,8 +41,13 @@ describe("errorFormatter", () => {
   // (verified in @trpc/server's router source), so there is no caller-level
   // seam — call the formatter off the built router's config directly.
   const formatter = // eslint-disable-next-line no-underscore-dangle
-  (router._def as { _config: { errorFormatter: (o: unknown) => { data: { zodError: unknown } } } })
-    ._config.errorFormatter;
+  (
+    router._def as {
+      _config: {
+        errorFormatter: (o: unknown) => { data: { zodError: unknown } };
+      };
+    }
+  )._config.errorFormatter;
 
   const shape = { message: "err", code: -32600, data: { code: "BAD_REQUEST" } };
 

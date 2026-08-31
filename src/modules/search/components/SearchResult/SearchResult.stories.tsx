@@ -3,7 +3,11 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import { SearchResult } from "./SearchResult";
 import type { SearchCourseResult } from "@/modules/search/functions/searchCourse";
 import type { SearchProfResult } from "@/modules/search/functions/searchProf";
-import { BooksIcon, GraduationCapIcon, PencilIcon } from "@/common/components/icons";
+import {
+  BooksIcon,
+  GraduationCapIcon,
+  PencilIcon,
+} from "@/common/components/icons";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -88,7 +92,10 @@ export const Default: Story = {
       <div className="w-full">
         <SearchResult>
           <SearchResult.Title searchTerm="test" />
-          <SearchResult.Content searchedCourse={searchedCourse} searchedProf={searchedProf} />
+          <SearchResult.Content
+            searchedCourse={searchedCourse}
+            searchedProf={searchedProf}
+          />
         </SearchResult>
       </div>
     );
@@ -102,7 +109,9 @@ export const WithoutFilter: Story = {
         <SearchResult>
           <SearchResult.Title searchTerm="test" />
           <SearchResult.List>
-            <SearchResult.Empty show={searchedCourse.length + searchedProf.length === 0} />
+            <SearchResult.Empty
+              show={searchedCourse.length + searchedProf.length === 0}
+            />
             {searchedCourse.map((c) => (
               <SearchResult.Item
                 key={c.courseCode}

@@ -39,7 +39,10 @@ export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
       },
       restoreSnapshot: (prev) => {
         utils.reviewVotes.count.setData({ reviewId }, prev?.previousCount);
-        utils.reviewVotes.getByUser.setData({ reviewId }, prev?.previousUserVote as never);
+        utils.reviewVotes.getByUser.setData(
+          { reviewId },
+          prev?.previousUserVote as never,
+        );
       },
       invalidate: async () => {
         await utils.reviewVotes.count.invalidate({ reviewId });
@@ -48,7 +51,8 @@ export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
     }),
     onSuccess: (_, { weight }) => {
       if (ecfg.enableReviewEventsTracking) {
-        const eventType = weight > 0 ? ReviewEventType.UPVOTE : ReviewEventType.DOWNVOTE;
+        const eventType =
+          weight > 0 ? ReviewEventType.UPVOTE : ReviewEventType.DOWNVOTE;
 
         track({ reviewId, eventType });
       }
@@ -74,20 +78,23 @@ export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
       });
 
       // Optimistically update vote count
-      utils.reviewVotes.count.setData({ reviewId }, (oldQueryData: number | undefined) => {
-        const prevVoteCount = oldQueryData ?? 0;
+      utils.reviewVotes.count.setData(
+        { reviewId },
+        (oldQueryData: number | undefined) => {
+          const prevVoteCount = oldQueryData ?? 0;
 
-        if (previousUserVote?.weight) {
-          if (weight === 0) {
-            // user undid their vote
-            return prevVoteCount - previousUserVote.weight;
+          if (previousUserVote?.weight) {
+            if (weight === 0) {
+              // user undid their vote
+              return prevVoteCount - previousUserVote.weight;
+            }
+            // user changed their vote
+            return prevVoteCount + weight * 2;
           }
-          // user changed their vote
-          return prevVoteCount + weight * 2;
-        }
-        // user voted for the first time
-        return prevVoteCount + weight;
-      });
+          // user voted for the first time
+          return prevVoteCount + weight;
+        },
+      );
 
       // Optimistically update user weight
       utils.reviewVotes.getByUser.setData({ reviewId }, (oldQueryData) => {

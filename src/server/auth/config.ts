@@ -62,7 +62,10 @@ export const authConfig = {
 
         const passwordDigest = user?.deprecatedPasswordDigest;
 
-        if (passwordDigest && (await bcrypt.compare(c.data.password, passwordDigest))) {
+        if (
+          passwordDigest &&
+          (await bcrypt.compare(c.data.password, passwordDigest))
+        ) {
           Sentry.addBreadcrumb({
             category: "auth",
             message: `User ${user.id} logged in with v1 credentials.`,
@@ -71,7 +74,10 @@ export const authConfig = {
           return user;
         }
 
-        const { data, error } = await signInWithEmail(c.data.email, c.data.password);
+        const { data, error } = await signInWithEmail(
+          c.data.email,
+          c.data.password,
+        );
         if (error) {
           Sentry.addBreadcrumb({
             category: "auth",

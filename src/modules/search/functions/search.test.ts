@@ -42,7 +42,9 @@ describe("processSearchQuery", () => {
   });
 
   it("joins multi-word queries with the tsquery AND operator", () => {
-    expect(processSearchQuery("intro to computing")).toBe("intro & to & computing");
+    expect(processSearchQuery("intro to computing")).toBe(
+      "intro & to & computing",
+    );
   });
 
   it("returns an empty string for an empty query", () => {

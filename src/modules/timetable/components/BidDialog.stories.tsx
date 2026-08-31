@@ -148,14 +148,26 @@ function SeedBidDialogData({ children }: { children: ReactNode }) {
     // Keep the seeded queries fresh so Storybook never refetches against a
     // real /api/trpc endpoint while a story is open.
     const updatedAt = Date.now() + 60 * 60 * 1000;
-    utils.timetable.getBidWindows.setData({ acadTermId: ACAD_TERM_ID }, WINDOWS, { updatedAt });
+    utils.timetable.getBidWindows.setData(
+      { acadTermId: ACAD_TERM_ID },
+      WINDOWS,
+      { updatedAt },
+    );
     utils.timetable.searchCourses.setData(
       { acadTermId: ACAD_TERM_ID, query: "ACCT102" },
       [ACCT102_COURSE],
       { updatedAt },
     );
-    utils.userBids.getByClassIds.setData({ classIds: ["class-g1"] }, CLASS_BIDS, { updatedAt });
-    utils.bidPredictions.getBy.setData({ classId: "class-g1" }, SAMPLE_PREDICTION, { updatedAt });
+    utils.userBids.getByClassIds.setData(
+      { classIds: ["class-g1"] },
+      CLASS_BIDS,
+      { updatedAt },
+    );
+    utils.bidPredictions.getBy.setData(
+      { classId: "class-g1" },
+      SAMPLE_PREDICTION,
+      { updatedAt },
+    );
     utils.bidPredictions.getBy.setData({ classId: "class-g2" }, null, {
       updatedAt,
     });

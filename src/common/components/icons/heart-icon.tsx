@@ -5,7 +5,10 @@ interface RatingHeartProps extends CustomIconProps {
   fillPercentage?: number; // 0 to 1
 }
 
-export const HeartIcon = ({ fillPercentage = 1, ...props }: RatingHeartProps) => {
+export const HeartIcon = ({
+  fillPercentage = 1,
+  ...props
+}: RatingHeartProps) => {
   const clipPathId = `heart-clip-${Math.random().toString(36).substr(2, 9)}`;
   return (
     <CustomIcon viewBox="0 0 24 24" fill="none" {...props}>

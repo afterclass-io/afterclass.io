@@ -22,9 +22,7 @@ describe("roadmaps.publish", () => {
   it("publishes an owned roadmap: PUBLIC, snapshots facultyId, stamps publishedAt", async () => {
     const dbMock = {
       userRoadmap: {
-        findUnique: vi
-          .fn()
-          .mockResolvedValue({ userId: "u1", facultyId: 3 }),
+        findUnique: vi.fn().mockResolvedValue({ userId: "u1", facultyId: 3 }),
         update: vi.fn().mockResolvedValue({}),
       },
     };
@@ -84,9 +82,9 @@ describe("roadmaps.publish", () => {
     };
     const caller = makeCaller(router.createCaller, dbMock, verified);
 
-    await expect(caller.publish({ roadmapId: "missing" })).rejects.toMatchObject(
-      { code: "FORBIDDEN" },
-    );
+    await expect(
+      caller.publish({ roadmapId: "missing" }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
     expect(dbMock.userRoadmap.update).not.toHaveBeenCalled();
   });
 });

@@ -12,9 +12,9 @@ describe("timetable.remove", () => {
   it("requires an authenticated caller", async () => {
     const dbMock = { userTimetable: { findUnique: vi.fn(), delete: vi.fn() } };
     const caller = makeCaller(router.createCaller, dbMock, null);
-    await expect(
-      caller.remove({ timetableId: "t1" }),
-    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    await expect(caller.remove({ timetableId: "t1" })).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
   });
 
   it("deletes an owned timetable", async () => {
@@ -46,9 +46,9 @@ describe("timetable.remove", () => {
       },
     };
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(
-      caller.remove({ timetableId: "t1" }),
-    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(caller.remove({ timetableId: "t1" })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
     expect(del).not.toHaveBeenCalled();
   });
 });

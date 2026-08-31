@@ -25,16 +25,14 @@ export default async function ConfirmSignUp(props: {
   searchParams: Promise<{ confirmation_url: string | string[] | undefined }>;
 }) {
   const searchParams = await props.searchParams;
-  const confirmationUrlSchema = z
-    .url()
-    .refine((url) => {
-      try {
-        const urlObject = new URL(url);
-        return urlObject.searchParams?.has("type");
-      } catch {
-        return false;
-      }
-    });
+  const confirmationUrlSchema = z.url().refine((url) => {
+    try {
+      const urlObject = new URL(url);
+      return urlObject.searchParams?.has("type");
+    } catch {
+      return false;
+    }
+  });
 
   const confirmationUrl = searchParams?.confirmation_url;
   const parseResult = confirmationUrlSchema.safeParse(confirmationUrl);

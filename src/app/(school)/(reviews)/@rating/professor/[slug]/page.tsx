@@ -5,14 +5,12 @@ import { RatingSection } from "@/modules/reviews/components/RatingSection";
 import { api } from "@/common/tools/trpc/server";
 import { toTitleCase, formatPercentage } from "@/common/functions";
 
-export default async function ProfessorRating(
-  props: {
-    params: Promise<{ slug: string }>;
-    searchParams?: Promise<{
-      course?: string | string[];
-    }>;
-  }
-) {
+export default async function ProfessorRating(props: {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{
+    course?: string | string[];
+  }>;
+}) {
   const searchParams = await props.searchParams;
   const params = await props.params;
   const session = await auth();

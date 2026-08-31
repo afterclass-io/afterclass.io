@@ -41,7 +41,9 @@ export const CtaButton = ({
         {renderIcon(iconLeft)}
         <div className="flex flex-col">
           <span className="text-lg font-semibold">{ctaText}</span>
-          {subtext && <span className="text-muted-foreground text-sm">{subtext}</span>}
+          {subtext && (
+            <span className="text-muted-foreground text-sm">{subtext}</span>
+          )}
         </div>
       </div>
       {renderIcon(iconRight)}

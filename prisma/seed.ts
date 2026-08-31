@@ -113,7 +113,10 @@ async function main() {
   });
 
   const safetyFactor = require("./data/22_safety_factors.json");
-  await prisma.safetyFactor.createMany({ data: safetyFactor, skipDuplicates: true });
+  await prisma.safetyFactor.createMany({
+    data: safetyFactor,
+    skipDuplicates: true,
+  });
 
   const bidPrediction = require("./data/21_bid_predictions.json");
   await prisma.bidPrediction.createMany({
@@ -167,7 +170,8 @@ async function main() {
       where: { abbrv: "SMU" },
     });
     if (smu) {
-      const hash = "$2b$10$zk1rgDGgCcuZj096Z8sIcurZhBJEE6wkcdJ2BqMiW35cGyuFLb10G";
+      const hash =
+        "$2b$10$zk1rgDGgCcuZj096Z8sIcurZhBJEE6wkcdJ2BqMiW35cGyuFLb10G";
       await prisma.users.upsert({
         where: { email: "cypress_test@smu.edu.sg" },
         update: { deprecatedPasswordDigest: hash },

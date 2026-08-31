@@ -5,6 +5,7 @@ This project includes code ported from the following open-source projects:
 ## MIT Licensed Attributions
 
 ### codie-codes/smu-mods
+
 Portions of this software (timetable grid and utilities) are derived from
 [smu-mods](https://github.com/codie-codes/smu-mods), licensed under the MIT License.
 
@@ -29,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ### Qingyu255/SMU-BidWise
+
 Portions of this software (ReactFlow node components) are derived from
 [SMU-BidWise](https://github.com/Qingyu255/SMU-BidWise), licensed under the MIT License.
 

@@ -13,8 +13,8 @@ export const SearchResultEmpty = ({ show }: { show: boolean }) => {
       <div className="text-xl">No results found.</div>
       <Separator />
       <div className="text-muted-foreground w-full">
-        <strong className="text-muted-foreground">💡 Tip!</strong> You can search for a course’s
-        name, course code, or professor’s name.
+        <strong className="text-muted-foreground">💡 Tip!</strong> You can
+        search for a course’s name, course code, or professor’s name.
         <br />
         <br />
         (e.g.)
@@ -26,7 +26,9 @@ export const SearchResultEmpty = ({ show }: { show: boolean }) => {
         <strong className="text-muted-foreground">COR-COMM1202</strong>
         <br />
         <em>Professor - </em>
-        <strong className="text-muted-foreground">Chiraphol New Chiyachantana</strong>
+        <strong className="text-muted-foreground">
+          Chiraphol New Chiyachantana
+        </strong>
       </div>
     </div>
   );

@@ -71,7 +71,11 @@ export const VariantsOfDefaultCheckbox: Story = {
           </div>
         </div>
         <div className="items-top flex space-x-2">
-          <Checkbox id="terms1" checked={checkedDisabled} onCheckedChange={setCheckedDisabled} />
+          <Checkbox
+            id="terms1"
+            checked={checkedDisabled}
+            onCheckedChange={setCheckedDisabled}
+          />
           <div className="grid gap-1.5 leading-none">
             <label
               htmlFor="terms1"

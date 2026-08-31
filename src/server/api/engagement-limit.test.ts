@@ -1,5 +1,10 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { checkAndIncrement, clientKey, resetLimits, getBucketCount } from "./engagement-limit";
+import {
+  checkAndIncrement,
+  clientKey,
+  resetLimits,
+  getBucketCount,
+} from "./engagement-limit";
 
 describe("checkAndIncrement", () => {
   afterEach(() => resetLimits());

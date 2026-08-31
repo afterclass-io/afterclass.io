@@ -13,11 +13,18 @@ import {
   Label,
 } from "recharts";
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/common/components/chart";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/common/components/chart";
 import type { ChartConfig } from "@/common/components/chart";
 import { inferAcadTerm } from "@/common/functions";
 import { formatBidCurrencyCompact } from "@/common/functions/format-bid-currency";
-import { clampLabelCenterX, estimateLabelWidth } from "@/modules/bidding/utils/chart-label-layout";
+import {
+  clampLabelCenterX,
+  estimateLabelWidth,
+} from "@/modules/bidding/utils/chart-label-layout";
 import { compareRounds } from "@/modules/bidding/utils/round-order";
 import { parseBidWindowKey } from "@/modules/bidding/utils/bid-window-key";
 import { computeAcadTermGroups } from "@/modules/bidding/utils/acad-term-groups";
@@ -59,7 +66,9 @@ export function sortChartData(
         return aKey.acadTermId.localeCompare(bKey.acadTermId);
       const roundCmp = compareRounds(aKey.round, bKey.round);
       if (roundCmp !== 0) return roundCmp;
-      return (parseInt(aKey.window, 10) || 0) - (parseInt(bKey.window, 10) || 0);
+      return (
+        (parseInt(aKey.window, 10) || 0) - (parseInt(bKey.window, 10) || 0)
+      );
     });
 }
 
@@ -82,7 +91,10 @@ interface BidChartProps {
   currentWindowBidWindow?: string;
 }
 
-export const BidChart = ({ chartData, currentWindowBidWindow }: BidChartProps) => {
+export const BidChart = ({
+  chartData,
+  currentWindowBidWindow,
+}: BidChartProps) => {
   const sorted = sortChartData(chartData);
   const manyPoints = sorted.length >= 15;
 
@@ -114,9 +126,14 @@ export const BidChart = ({ chartData, currentWindowBidWindow }: BidChartProps) =
   const groupMidTicks = useMemo(() => {
     const map = new Map<string, string>();
     for (const group of ayGroups) {
-      const firstIdx = sorted.findIndex((d) => d.bidWindow === group.firstBidWindow);
-      const lastIdx = sorted.findIndex((d) => d.bidWindow === group.lastBidWindow);
-      const midIdx = firstIdx + Math.max(0, Math.floor((lastIdx - firstIdx) / 2));
+      const firstIdx = sorted.findIndex(
+        (d) => d.bidWindow === group.firstBidWindow,
+      );
+      const lastIdx = sorted.findIndex(
+        (d) => d.bidWindow === group.lastBidWindow,
+      );
+      const midIdx =
+        firstIdx + Math.max(0, Math.floor((lastIdx - firstIdx) / 2));
       const midWindow = sorted[midIdx]?.bidWindow;
       if (midWindow) map.set(midWindow, group.shortLabel);
     }
@@ -126,7 +143,11 @@ export const BidChart = ({ chartData, currentWindowBidWindow }: BidChartProps) =
   return (
     <ChartContainer ref={containerRef} config={chartConfig}>
       <LineChart data={sorted} margin={CHART_MARGIN}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+        <CartesianGrid
+          strokeDasharray="3 3"
+          vertical={false}
+          stroke="var(--border)"
+        />
 
         {/* Alternating academic year background shading */}
         {ayGroups.map((group, i) => (
@@ -157,9 +178,12 @@ export const BidChart = ({ chartData, currentWindowBidWindow }: BidChartProps) =
             // Plot bounds: left = YAxis width (Y_AXIS_WIDTH) + margin.left;
             // right = measured container width - margin.right.
             const plotLeft = PLOT_LEFT;
-            const plotRight = containerWidth > 0 ? containerWidth - CHART_MARGIN.right : 0;
+            const plotRight =
+              containerWidth > 0 ? containerWidth - CHART_MARGIN.right : 0;
             const centerX =
-              plotRight > plotLeft ? clampLabelCenterX(x, plotLeft, plotRight, labelWidth) : x;
+              plotRight > plotLeft
+                ? clampLabelCenterX(x, plotLeft, plotRight, labelWidth)
+                : x;
 
             return (
               <text
@@ -187,14 +211,23 @@ export const BidChart = ({ chartData, currentWindowBidWindow }: BidChartProps) =
         {/* Current window highlight */}
         {currentPoint && (
           <>
-            <ReferenceArea x1={currentPoint.bidWindow} fill="#2563eb" fillOpacity={0.06} />
+            <ReferenceArea
+              x1={currentPoint.bidWindow}
+              fill="#2563eb"
+              fillOpacity={0.06}
+            />
             <ReferenceLine
               x={currentPoint.bidWindow}
               stroke="#64748b"
               strokeWidth={1.5}
               strokeDasharray="4 4"
             >
-              <Label value="now" position="insideTopRight" fill="#64748b" fontSize={11} />
+              <Label
+                value="now"
+                position="insideTopRight"
+                fill="#64748b"
+                fontSize={11}
+              />
             </ReferenceLine>
           </>
         )}
@@ -267,7 +300,9 @@ export const BidChart = ({ chartData, currentWindowBidWindow }: BidChartProps) =
                 );
               }}
               formatter={(value, name) => {
-                const item = sorted.find((d) => (name === "median" ? d.median : d.min) === value);
+                const item = sorted.find(
+                  (d) => (name === "median" ? d.median : d.min) === value,
+                );
                 return (
                   <div className="flex w-full items-center justify-between gap-8">
                     <div className="flex items-center gap-1.5">
@@ -275,13 +310,19 @@ export const BidChart = ({ chartData, currentWindowBidWindow }: BidChartProps) =
                         className="inline-block size-2.5 rounded-full"
                         style={{
                           backgroundColor:
-                            name === "median" ? chartConfig.median.color : chartConfig.min.color,
+                            name === "median"
+                              ? chartConfig.median.color
+                              : chartConfig.min.color,
                         }}
                       />
-                      <span className="text-muted-foreground capitalize">{name}</span>
+                      <span className="text-muted-foreground capitalize">
+                        {name}
+                      </span>
                     </div>
                     <div className="flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                      <span className="text-muted-foreground font-normal text-xs">e$</span>
+                      <span className="text-muted-foreground font-normal text-xs">
+                        e$
+                      </span>
                       {value as number}
                     </div>
                     {item && (
@@ -297,7 +338,11 @@ export const BidChart = ({ chartData, currentWindowBidWindow }: BidChartProps) =
           cursor={false}
         />
 
-        <Legend align="right" verticalAlign="top" wrapperStyle={{ paddingBottom: 8 }} />
+        <Legend
+          align="right"
+          verticalAlign="top"
+          wrapperStyle={{ paddingBottom: 8 }}
+        />
       </LineChart>
     </ChartContainer>
   );

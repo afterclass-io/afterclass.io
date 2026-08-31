@@ -19,8 +19,13 @@ export const env = createEnv({
    */
   server: {
     DATABASE_URL: z.url(),
-    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-    NEXTAUTH_SECRET: process.env.NODE_ENV === "production" ? z.string() : z.string().optional(),
+    NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
+    NEXTAUTH_SECRET:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
     // VERCEL_URL is automatically set by Vercel
     // as system environment variable. doesn't include `https`
     // https://vercel.com/docs/projects/environment-variables/system-environment-variables
@@ -89,7 +94,8 @@ export const env = createEnv({
     NEXT_PUBLIC_OLD_SITE_URL: process.env.NEXT_PUBLIC_OLD_SITE_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS: process.env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS,
+    NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS:
+      process.env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS,
     NEXT_PUBLIC_AC_CHANNEL_LINK: process.env.NEXT_PUBLIC_AC_CHANNEL_LINK,
     NEXT_PUBLIC_AC_HELPDESK_LINK: process.env.NEXT_PUBLIC_AC_HELPDESK_LINK,
     NEXT_PUBLIC_AC_GITHUB_LINK: process.env.NEXT_PUBLIC_AC_GITHUB_LINK,

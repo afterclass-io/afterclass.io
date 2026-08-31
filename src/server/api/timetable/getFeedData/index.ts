@@ -51,8 +51,23 @@ export async function getFeedData(
               id: true,
               section: true,
               course: { select: { code: true, name: true, creditUnits: true } },
-              classTimings: { select: { dayOfWeek: true, startTime: true, endTime: true, venue: true } },
-              classExamTimings: { select: { date: true, dayOfWeek: true, startTime: true, endTime: true, venue: true } },
+              classTimings: {
+                select: {
+                  dayOfWeek: true,
+                  startTime: true,
+                  endTime: true,
+                  venue: true,
+                },
+              },
+              classExamTimings: {
+                select: {
+                  date: true,
+                  dayOfWeek: true,
+                  startTime: true,
+                  endTime: true,
+                  venue: true,
+                },
+              },
             },
           },
         },

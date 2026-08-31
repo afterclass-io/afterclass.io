@@ -35,11 +35,9 @@ export const getAll = publicProcedure
 
     const sessionFilters = [];
 
-
     if (input.day) {
-
       sessionFilters.push({
-        dayOfWeek: input.day, 
+        dayOfWeek: input.day,
       });
     }
 
@@ -60,7 +58,8 @@ export const getAll = publicProcedure
     }
 
     // Combine all session filters into a single AND condition forthe 'some' clause
-    const sessionsWhereClause = sessionFilters.length > 0 ? { AND: sessionFilters } : undefined;
+    const sessionsWhereClause =
+      sessionFilters.length > 0 ? { AND: sessionFilters } : undefined;
 
     const classes = await ctx.db.classes.findMany({
       select: PUBLIC_CLASS_FIELDS,
@@ -79,10 +78,11 @@ export const getAll = publicProcedure
           code: input.courseCode,
         },
         // --- ensure at least one ClassTiming satisfies the filters ---
-        classTimings: sessionsWhereClause ? {
-          some: sessionsWhereClause,
-        } : undefined,
-
+        classTimings: sessionsWhereClause
+          ? {
+              some: sessionsWhereClause,
+            }
+          : undefined,
       },
       orderBy: [
         {

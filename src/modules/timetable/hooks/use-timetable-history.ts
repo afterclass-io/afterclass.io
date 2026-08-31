@@ -4,7 +4,11 @@ import { useCallback, useEffect } from "react";
 import { useAtom } from "jotai";
 import { toast } from "sonner";
 import { api } from "@/common/tools/trpc/react";
-import { invertAction, redoStackAtom, undoStackAtom } from "@/modules/timetable/atoms/history";
+import {
+  invertAction,
+  redoStackAtom,
+  undoStackAtom,
+} from "@/modules/timetable/atoms/history";
 import type { TimetableAction } from "@/modules/timetable/atoms/history";
 import {
   useAddSlotMutation,
@@ -100,7 +104,10 @@ export function useTimetableHistory() {
       if (e.key.toLowerCase() === "z" && !e.shiftKey) {
         e.preventDefault();
         undo();
-      } else if ((e.key.toLowerCase() === "z" && e.shiftKey) || e.key.toLowerCase() === "y") {
+      } else if (
+        (e.key.toLowerCase() === "z" && e.shiftKey) ||
+        e.key.toLowerCase() === "y"
+      ) {
         e.preventDefault();
         redo();
       }

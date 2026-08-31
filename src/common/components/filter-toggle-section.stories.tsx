@@ -4,7 +4,11 @@ import { ReviewType } from "@/generated/prisma/enums";
 
 import { FilterToggleSection } from "./FilterToggleSection";
 import type { FilterItem } from "./FilterToggleSection/FilterToggleSectionItem";
-import { BooksIcon, GraduationCapIcon, PencilIcon } from "@/common/components/icons";
+import {
+  BooksIcon,
+  GraduationCapIcon,
+  PencilIcon,
+} from "@/common/components/icons";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -22,7 +26,9 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => {
-    const [selectedItems, setSelectedItems] = useState<FilterItem["value"][]>([]);
+    const [selectedItems, setSelectedItems] = useState<FilterItem["value"][]>(
+      [],
+    );
     return (
       <FilterToggleSection>
         <FilterToggleSection.Header type={ReviewType.PROFESSOR} />
@@ -58,7 +64,9 @@ export const Default: Story = {
               {...item}
               onClick={() => {
                 if (selectedItems.includes(item.value)) {
-                  setSelectedItems(selectedItems.filter((v) => v !== item.value));
+                  setSelectedItems(
+                    selectedItems.filter((v) => v !== item.value),
+                  );
                 } else {
                   setSelectedItems([...selectedItems, item.value]);
                 }
@@ -74,7 +82,9 @@ export const Default: Story = {
 
 export const WithSubHeader: Story = {
   render: () => {
-    const [selectedItems, setSelectedItems] = useState<FilterItem["value"][]>([]);
+    const [selectedItems, setSelectedItems] = useState<FilterItem["value"][]>(
+      [],
+    );
     return (
       <FilterToggleSection>
         <FilterToggleSection.Header type={ReviewType.COURSE} />
@@ -113,7 +123,9 @@ export const WithSubHeader: Story = {
               {...item}
               onClick={() => {
                 if (selectedItems.includes(item.value)) {
-                  setSelectedItems(selectedItems.filter((v) => v !== item.value));
+                  setSelectedItems(
+                    selectedItems.filter((v) => v !== item.value),
+                  );
                 } else {
                   setSelectedItems([...selectedItems, item.value]);
                 }

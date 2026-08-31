@@ -13,7 +13,8 @@ const PasswordInputContext = React.createContext<PasswordInputContextProps>({
   onVisibleChange: () => {},
 });
 
-export const usePasswordInputContext = () => React.useContext(PasswordInputContext);
+export const usePasswordInputContext = () =>
+  React.useContext(PasswordInputContext);
 
 export interface PasswordInputProps {
   visible?: boolean;
@@ -40,7 +41,9 @@ const PasswordInput = ({
   );
 
   return (
-    <PasswordInputContext.Provider value={contextValue}>{children}</PasswordInputContext.Provider>
+    <PasswordInputContext.Provider value={contextValue}>
+      {children}
+    </PasswordInputContext.Provider>
   );
 };
 PasswordInput.displayName = "PasswordInput";
@@ -51,7 +54,13 @@ const PasswordInputInput = React.forwardRef<
 >((props, ref) => {
   const { visible } = usePasswordInputContext();
 
-  return <Primitive.input ref={ref} type={visible ? "text" : "password"} {...props} />;
+  return (
+    <Primitive.input
+      ref={ref}
+      type={visible ? "text" : "password"}
+      {...props}
+    />
+  );
 });
 PasswordInputInput.displayName = "PasswordInputInput";
 

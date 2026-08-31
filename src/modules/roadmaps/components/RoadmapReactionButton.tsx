@@ -3,9 +3,17 @@ import type { ReviewReactionType as DbReviewReactionType } from "@/generated/pri
 
 import { toTitleCase } from "@/common/functions";
 import { Button } from "@/common/components/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/common/components/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/common/components/tooltip";
 import { SmileyIcon } from "@/common/components/icons";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/common/components/hover-card";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/common/components/hover-card";
 import { ReviewReactionType } from "@/modules/reviews/types";
 import { useOptimisticReaction } from "@/modules/roadmaps/hooks/useOptimisticReaction";
 
@@ -38,7 +46,10 @@ export const RoadmapReactionButton = ({ roadmapId }: { roadmapId: string }) => {
           <SmileyIcon />
         </Button>
       </HoverCardTrigger>
-      <HoverCardContent className="flex h-10 w-fit items-end p-2" onClick={handleClick}>
+      <HoverCardContent
+        className="flex h-10 w-fit items-end p-2"
+        onClick={handleClick}
+      >
         {Object.entries(ReviewReactionType).map(([label, emoji]) => (
           <Tooltip key={label}>
             <TooltipTrigger asChild>

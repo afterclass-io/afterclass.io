@@ -7,7 +7,13 @@ import {
 } from "./bid-status";
 import type { UserBidStatus } from "./bid-status";
 
-const ALL: UserBidStatus[] = ["PLANNED", "SECURED", "DROPPED", "CANCELLED", "PARTICIPATED"];
+const ALL: UserBidStatus[] = [
+  "PLANNED",
+  "SECURED",
+  "DROPPED",
+  "CANCELLED",
+  "PARTICIPATED",
+];
 
 describe("bidChipVariant", () => {
   it("returns the muted variant when status is undefined", () => {
@@ -19,11 +25,15 @@ describe("bidChipVariant", () => {
     expect(bidChipVariant("PLANNED")).toBe("bg-info/15 text-info");
     expect(bidChipVariant("DROPPED")).toBe("bg-error/15 text-error");
     expect(bidChipVariant("CANCELLED")).toBe("bg-error/15 text-error");
-    expect(bidChipVariant("PARTICIPATED")).toBe("bg-muted text-muted-foreground");
+    expect(bidChipVariant("PARTICIPATED")).toBe(
+      "bg-muted text-muted-foreground",
+    );
   });
 
   it("falls back to the muted variant for an unknown status (impossible state)", () => {
-    expect(bidChipVariant("FOO" as UserBidStatus)).toBe("bg-muted/15 text-muted-foreground");
+    expect(bidChipVariant("FOO" as UserBidStatus)).toBe(
+      "bg-muted/15 text-muted-foreground",
+    );
   });
 });
 
@@ -34,7 +44,9 @@ describe("slotCardVariant", () => {
 
   it("returns a non-null card variant for every known status", () => {
     for (const s of ALL) expect(slotCardVariant(s)).not.toBeNull();
-    expect(slotCardVariant("DROPPED")).toBe("bg-error/15 border-error/30 text-foreground");
+    expect(slotCardVariant("DROPPED")).toBe(
+      "bg-error/15 border-error/30 text-foreground",
+    );
   });
 
   it("returns null for an unknown status (impossible state)", () => {

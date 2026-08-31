@@ -12,9 +12,7 @@ export const DisclosureDisclaimer = () => (
     <TooltipTrigger asChild>
       <span className="inline-flex items-center gap-1.5 text-muted-foreground cursor-help hover:text-foreground transition-colors">
         <Info size={14} className="shrink-0" />
-        <span className="text-sm">
-          Data might be incomplete or inaccurate.
-        </span>
+        <span className="text-sm">Data might be incomplete or inaccurate.</span>
       </span>
     </TooltipTrigger>
     <TooltipContent
@@ -24,9 +22,7 @@ export const DisclosureDisclaimer = () => (
     >
       <div className="flex flex-col gap-3">
         <div>
-          <p className="font-semibold mb-1">
-            Best-effort matching
-          </p>
+          <p className="font-semibold mb-1">Best-effort matching</p>
           <p className="text-muted-foreground">
             This trend is matched by course + professor. When a professor taught
             multiple sections of the same course in a term, the section with the

@@ -36,7 +36,10 @@ export type ShareDialogProps = {
   visibility: ShareVisibility;
   shareToken: string | null;
   /** Called after visibility is saved so parents can refresh their data. */
-  onChanged?: (result: { visibility: ShareVisibility; shareToken: string | null }) => void;
+  onChanged?: (result: {
+    visibility: ShareVisibility;
+    shareToken: string | null;
+  }) => void;
 };
 
 type VisibilityOption = {
@@ -179,7 +182,9 @@ export function ShareDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>Choose who can see this {entity}.</DialogDescription>
+          <DialogDescription>
+            Choose who can see this {entity}.
+          </DialogDescription>
         </DialogHeader>
 
         <RadioGroup
@@ -206,7 +211,9 @@ export function ShareDialog({
                   <option.icon className="text-muted-foreground size-4" />
                   {option.label}
                 </span>
-                <span className="text-muted-foreground text-xs">{option.description}</span>
+                <span className="text-muted-foreground text-xs">
+                  {option.description}
+                </span>
               </div>
             </Label>
           ))}
@@ -235,7 +242,9 @@ export function ShareDialog({
                 </Button>
               </div>
             ) : (
-              <p className="text-muted-foreground text-xs">Save to generate a shareable link.</p>
+              <p className="text-muted-foreground text-xs">
+                Save to generate a shareable link.
+              </p>
             )}
             {draft === "PUBLIC" && (
               <p className="text-muted-foreground text-xs">
@@ -258,11 +267,15 @@ export function ShareDialog({
           </Button>
           <Button
             size="sm"
-            onClick={() => saveMutation.mutate({ entity, id: entityId, visibility: draft })}
+            onClick={() =>
+              saveMutation.mutate({ entity, id: entityId, visibility: draft })
+            }
             disabled={saveMutation.isPending}
             data-test="share-save"
           >
-            {saveMutation.isPending && <Loader2 className="size-4 animate-spin" />}
+            {saveMutation.isPending && (
+              <Loader2 className="size-4 animate-spin" />
+            )}
             Save
           </Button>
         </DialogFooter>

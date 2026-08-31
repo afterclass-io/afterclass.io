@@ -38,18 +38,21 @@ function DraggableSearchChip({
   course: SearchCourseResult;
   onAddCourse?: (course: SearchCourseResult) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: `sidebar-${course.id}`,
-    data: {
-      type: "sidebar-course",
-      course,
-    },
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: `sidebar-${course.id}`,
+      data: {
+        type: "sidebar-course",
+        course,
+      },
+    });
 
   const { className: colorClasses } = courseColor(course.code);
 
   const style: React.CSSProperties = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    transform: transform
+      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+      : undefined,
     opacity: isDragging ? 0.5 : undefined,
     zIndex: isDragging ? 50 : undefined,
   };
@@ -76,7 +79,10 @@ function DraggableSearchChip({
         }
       }}
     >
-      <GripVertical className="mt-0.5 size-3.5 shrink-0 opacity-50" aria-hidden />
+      <GripVertical
+        className="mt-0.5 size-3.5 shrink-0 opacity-50"
+        aria-hidden
+      />
       {/* Full code + name wrap to new lines (no ellipsis truncation) */}
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-1.5">
@@ -87,7 +93,9 @@ function DraggableSearchChip({
             </span>
           )}
         </div>
-        <span className="block text-xs break-words opacity-75">{course.name}</span>
+        <span className="block text-xs break-words opacity-75">
+          {course.name}
+        </span>
       </div>
     </div>
   );
@@ -97,7 +105,10 @@ function DraggableSearchChip({
 // Component
 // ---------------------------------------------------------------------------
 
-export function CourseSearchSidebar({ onAddCourse, className }: CourseSearchSidebarProps) {
+export function CourseSearchSidebar({
+  onAddCourse,
+  className,
+}: CourseSearchSidebarProps) {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 300);
 
@@ -135,7 +146,9 @@ export function CourseSearchSidebar({ onAddCourse, className }: CourseSearchSide
       {/* Header */}
       <div className="w-full border-b px-3 py-2">
         <h3 className="text-sm font-semibold">Courses</h3>
-        <p className="text-muted-foreground text-xs">Drag courses into the roadmap grid</p>
+        <p className="text-muted-foreground text-xs">
+          Drag courses into the roadmap grid
+        </p>
       </div>
 
       {/* Search input */}
@@ -172,7 +185,11 @@ export function CourseSearchSidebar({ onAddCourse, className }: CourseSearchSide
         {!isLoading && results.length > 0 && (
           <div className="space-y-1.5">
             {results.map((course) => (
-              <DraggableSearchChip key={course.id} course={course} onAddCourse={onAddCourse} />
+              <DraggableSearchChip
+                key={course.id}
+                course={course}
+                onAddCourse={onAddCourse}
+              />
             ))}
           </div>
         )}

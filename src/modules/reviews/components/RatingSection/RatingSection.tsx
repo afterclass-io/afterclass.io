@@ -9,7 +9,11 @@ export type RatingSectionProps = {
   isLocked?: boolean;
 };
 
-export const RatingSection = ({ headingRatingItem, ratingItems, isLocked }: RatingSectionProps) => {
+export const RatingSection = ({
+  headingRatingItem,
+  ratingItems,
+  isLocked,
+}: RatingSectionProps) => {
   return (
     <div
       className="bg-card relative flex w-full flex-col items-start gap-5 rounded-2xl p-6"
@@ -19,12 +23,18 @@ export const RatingSection = ({ headingRatingItem, ratingItems, isLocked }: Rati
       <div className="flex w-full items-center gap-10 rounded-none">
         <div className="flex items-center gap-3 rounded-none">
           <HeartIcon className="size-6" />
-          <StatItem {...headingRatingItem} layout="horizontal" isLocked={isLocked} />
+          <StatItem
+            {...headingRatingItem}
+            layout="horizontal"
+            isLocked={isLocked}
+          />
         </div>
       </div>
       <div className="flex w-full flex-wrap items-start justify-between gap-5 rounded-none px-1 py-0 capitalize md:justify-start md:gap-14">
         {ratingItems.length > 0 ? (
-          ratingItems.map((item, i) => <StatItem {...item} key={i} isLocked={isLocked} />)
+          ratingItems.map((item, i) => (
+            <StatItem {...item} key={i} isLocked={isLocked} />
+          ))
         ) : (
           <p className="w-full py-6 text-center">No Ratings</p>
         )}

@@ -18,7 +18,10 @@ export const PageTitle = ({
   ...props
 }: PageTitleProps) => {
   return (
-    <div {...wrapperProps} className="inline-flex items-center gap-3 pb-2 md:gap-6">
+    <div
+      {...wrapperProps}
+      className="inline-flex items-center gap-3 pb-2 md:gap-6"
+    >
       {contentLeft}
       <Heading
         className={cn("text-center text-lg md:text-3xl", className)}

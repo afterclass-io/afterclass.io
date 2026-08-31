@@ -8,7 +8,11 @@ import { ReviewModal } from "../ReviewItem/ReviewModal";
 import { api } from "@/common/tools/trpc/react";
 import { toast } from "sonner";
 
-export const ReviewModalFocused = ({ variant }: { variant: "home" | "professor" | "course" }) => {
+export const ReviewModalFocused = ({
+  variant,
+}: {
+  variant: "home" | "professor" | "course";
+}) => {
   const searchParams = useSearchParams();
   const reviewId = searchParams?.get("review_id");
   const router = useRouter();
@@ -32,5 +36,7 @@ export const ReviewModalFocused = ({ variant }: { variant: "home" | "professor" 
     return null;
   }
 
-  return <ReviewModal variant={variant} review={reviewQuery.data} defaultOpen />;
+  return (
+    <ReviewModal variant={variant} review={reviewQuery.data} defaultOpen />
+  );
 };

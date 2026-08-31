@@ -29,7 +29,8 @@ export const FilterToggleSection = (props: FilterToggleSectionProps) => {
 
   const params = new URLSearchParams(searchParams ?? undefined);
   const selected = params.getAll(props.searchParamsName ?? "");
-  const [selectedItems, setSelectedItems] = useState<FilterItem["value"][]>(selected);
+  const [selectedItems, setSelectedItems] =
+    useState<FilterItem["value"][]>(selected);
   const [isFilterItemsExpanded, setIsFilterItemsExpanded] = useState(false);
 
   if (props.isLocked)
@@ -74,7 +75,9 @@ export const FilterToggleSection = (props: FilterToggleSectionProps) => {
         className={cn(
           // tailwind classes should not be computed dynamically
           // see https://tailwindcss.com/docs/content-configuration#dynamic-class-names
-          isFilterItemsExpanded ? "[&>*:nth-child(n+4)]:flex" : "[&>*:nth-child(n+4)]:hidden",
+          isFilterItemsExpanded
+            ? "[&>*:nth-child(n+4)]:flex"
+            : "[&>*:nth-child(n+4)]:hidden",
           "md:[&>*:nth-child(n+4)]:flex",
         )}
       >

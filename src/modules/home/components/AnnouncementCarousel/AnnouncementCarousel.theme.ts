@@ -4,7 +4,12 @@ import type { VariantProps } from "tailwind-variants";
 export const announcementsCarouselTheme = tv({
   slots: {
     wrapper: ["flex", "flex-col", "items-start", "gap-4"],
-    announcements: ["flex", "items-start", "gap-6", "self-stretch overflow-x-auto"],
+    announcements: [
+      "flex",
+      "items-start",
+      "gap-6",
+      "self-stretch overflow-x-auto",
+    ],
     heading: ["text-sm", "font-semibold", "text-accent-foreground"],
     divider: ["my-4"],
     card: [
@@ -37,4 +42,6 @@ export const announcementsCarouselTheme = tv({
   },
 });
 
-export type AnnouncementCarouselVariants = VariantProps<typeof announcementsCarouselTheme>;
+export type AnnouncementCarouselVariants = VariantProps<
+  typeof announcementsCarouselTheme
+>;
