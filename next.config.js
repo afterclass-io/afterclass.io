@@ -3,12 +3,12 @@
  * for Docker builds.
  */
 import { fileURLToPath } from "node:url";
+import { withSentryConfig } from "@sentry/nextjs";
 import { createJiti } from "jiti";
 const jiti = createJiti(fileURLToPath(import.meta.url));
 // Import env here to validate during build. Using jiti we can import .ts files :)
-jiti("./src/env");
+await jiti.import("./src/env");
 
-/** @type {import("next").NextConfig} */
 const config = withSentryConfig(
   {
     reactStrictMode: true,

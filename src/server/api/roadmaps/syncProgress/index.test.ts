@@ -74,7 +74,9 @@ describe("roadmaps.syncProgress", () => {
   });
 
   it("no-ops when the sync plan is empty (no terms between matriculation and now)", async () => {
-    vi.mocked(getCurrentWindowLogic).mockResolvedValue({ acadTermId: "t1" });
+    vi.mocked(getCurrentWindowLogic).mockResolvedValue({
+      acadTermId: "t1",
+    } as never);
     const dbMock = {
       userRoadmap: { findUnique: vi.fn().mockResolvedValue(ownedRoadmap()) },
       userRoadmapEntry: { findMany: vi.fn().mockResolvedValue([]) },
@@ -114,7 +116,7 @@ describe("roadmaps.syncProgress", () => {
   it("syncs courses atomically via transaction — createMany and updatedAt bump use tx", async () => {
     vi.mocked(getCurrentWindowLogic).mockResolvedValue({
       acadTermId: "t1",
-    });
+    } as never);
     const createMany = vi.fn().mockResolvedValue({ count: 1 });
     const update = vi.fn().mockResolvedValue({ id: "r1" });
     const tx = {
@@ -179,7 +181,9 @@ describe("roadmaps.syncProgress", () => {
   });
 
   it("swallows P2002 from concurrent syncs — transaction boundary catch", async () => {
-    vi.mocked(getCurrentWindowLogic).mockResolvedValue({ acadTermId: "t1" });
+    vi.mocked(getCurrentWindowLogic).mockResolvedValue({
+      acadTermId: "t1",
+    } as never);
     const dbMock = {
       userRoadmap: {
         findUnique: vi.fn().mockResolvedValue({
@@ -229,7 +233,9 @@ describe("roadmaps.syncProgress", () => {
   });
 
   it("propagates non-P2002 failure — updatedAt bump/slot copy failure rejects (no half-commit)", async () => {
-    vi.mocked(getCurrentWindowLogic).mockResolvedValue({ acadTermId: "t1" });
+    vi.mocked(getCurrentWindowLogic).mockResolvedValue({
+      acadTermId: "t1",
+    } as never);
     const createMany = vi.fn().mockRejectedValue(new Error("createMany boom"));
     const update = vi.fn();
     const tx = {

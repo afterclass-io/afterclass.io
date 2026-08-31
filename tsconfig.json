@@ -40,5 +40,10 @@
     ".next/dev/types/**/*.ts",
     ".storybook/**/*"
   ],
-  "exclude": ["node_modules", "cypress/**/*.cy.js", "storybook-static"]
+  "exclude": [
+    "node_modules",
+    "cypress/**/*.cy.js",
+    "storybook-static",
+    "coverage"
+  ]
 }

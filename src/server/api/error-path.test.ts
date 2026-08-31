@@ -98,11 +98,14 @@ describe("tRPC Error Path & Zod Error Formatting (Seam A)", () => {
     expect(formatted.data.zodError).toBeDefined();
 
     const zodError = formatted.data.zodError;
+    const fieldErrors = zodError?.fieldErrors as
+      | Record<string, string[]>
+      | undefined;
     // External contract: { formErrors: string[], fieldErrors: Record<string, string[]> }
     expect(Array.isArray(zodError?.formErrors)).toBe(true);
     expect(zodError?.fieldErrors).toBeTypeOf("object");
-    expect(Array.isArray(zodError?.fieldErrors.score)).toBe(true);
-    expect(zodError?.fieldErrors.score?.length).toBeGreaterThan(0);
+    expect(Array.isArray(fieldErrors?.score)).toBe(true);
+    expect(fieldErrors?.score?.length).toBeGreaterThan(0);
   });
 
   it("rejects roadmaps.saveEntries on invalid enum term value", async () => {

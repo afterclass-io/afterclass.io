@@ -1,9 +1,20 @@
 import { api } from "@/common/tools/trpc/react";
 import type { RouterInputs } from "@/common/tools/trpc/react";
+import type { ReviewReactionType } from "@/generated/prisma/enums";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { useCallback, useMemo, useRef } from "react";
 
 import { debounce } from "@/common/functions/debounce";
+
+const decrement = (
+  list: { reaction: ReviewReactionType; count: number }[],
+  r: ReviewReactionType | null,
+) =>
+  list
+    .map((c) =>
+      c.reaction === r ? { ...c, count: Math.max(0, c.count - 1) } : c,
+    )
+    .filter((c) => c.count > 0);
 
 export function useOptimisticReaction() {
   const utils = api.useUtils();
