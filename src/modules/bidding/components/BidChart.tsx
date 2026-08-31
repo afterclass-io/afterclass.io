@@ -139,7 +139,6 @@ export const BidChart = ({
   return (
     <ChartContainer ref={containerRef} config={chartConfig}>
       <LineChart
-        accessibilityLayer
         data={sorted}
         margin={CHART_MARGIN}
       >

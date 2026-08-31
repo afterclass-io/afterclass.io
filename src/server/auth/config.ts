@@ -18,7 +18,7 @@ export type SessionUser = Omit<Users, "deprecatedPasswordDigest">;
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
  *
- * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
+ * @see https://authjs.dev/getting-started/typescript#module-augmentation
  */
 declare module "next-auth" {
   /**
@@ -32,7 +32,7 @@ declare module "next-auth" {
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
  *
- * @see https://next-auth.js.org/configuration/options
+ * @see https://authjs.dev/reference/core#authconfig
  */
 export const authConfig = {
   secret: env.NEXTAUTH_SECRET,
@@ -63,7 +63,7 @@ export const authConfig = {
 
         if (
           passwordDigest &&
-          bcrypt.compareSync(c.data.password, passwordDigest)
+          (await bcrypt.compare(c.data.password, passwordDigest))
         ) {
           Sentry.addBreadcrumb({
             category: "auth",
