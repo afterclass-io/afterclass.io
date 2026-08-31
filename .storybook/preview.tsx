@@ -1,6 +1,6 @@
-import type { Preview } from "@storybook/react";
+import type { Preview } from "@storybook/nextjs";
 import { withThemeByClassName } from "@storybook/addon-themes";
-import "../src/common/styles/globals.scss";
+import "../src/common/styles/globals.css";
 import { inter, poppins } from "../src/common/fonts";
 import AuthProvider from "../src/common/providers/AuthProvider";
 import { TRPCReactProvider } from "../src/common/tools/trpc/react";

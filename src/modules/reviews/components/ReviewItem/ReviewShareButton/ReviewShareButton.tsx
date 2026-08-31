@@ -1,6 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { ReviewEventType } from "@prisma/client";
+import { ReviewEventType } from "@/generated/prisma/enums";
 
 import { env } from "@/env";
 import { api } from "@/common/tools/trpc/react";

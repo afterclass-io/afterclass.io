@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { GitBranch, LayoutGrid } from "lucide-react";
 
 import { ToggleGroup, ToggleGroupItem } from "./toggle-group";

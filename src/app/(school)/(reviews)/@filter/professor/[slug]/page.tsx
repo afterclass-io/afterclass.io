@@ -1,4 +1,4 @@
-import { ReviewType } from "@prisma/client";
+import { ReviewType } from "@/generated/prisma/client";
 import { auth } from "@/server/auth";
 import { FilterToggleSection } from "@/modules/reviews/components/FilterToggleSection";
 import { GraduationCapIcon, PencilIcon } from "@/common/components/icons";

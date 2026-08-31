@@ -1,9 +1,11 @@
 import { randomUUID } from "crypto";
-import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@/generated/prisma/client";
 
 import { assertStrictTimeFormats } from "./validate-seed-data";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const universities = require("./data/1_universities.json");

@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
-import { Visibility } from "@prisma/client";
-import type { PrismaClient } from "@prisma/client";
+import { Visibility } from "@/generated/prisma/client";
+import type { PrismaClient } from "@/generated/prisma/client";
 
 /**
  * Load a roadmap that is PUBLIC and published, or throw NOT_FOUND.

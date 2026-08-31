@@ -1,6 +1,6 @@
 // This file configures the initialization of Sentry on the client.
-// The config you add here will be used whenever a users loads a page in their browser.
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/
+// The config you add here will be used whenever a user loads a page in their browser.
+// https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
 import * as Sentry from "@sentry/nextjs";
 
@@ -34,3 +34,5 @@ Sentry.init({
   // result in 25% of transactions being profiled (0.5*0.5=0.25)
   profilesSampleRate: 1.0,
 });
+
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

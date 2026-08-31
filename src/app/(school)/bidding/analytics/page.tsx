@@ -9,8 +9,8 @@ import {
 import { Separator } from "@/common/components/separator";
 import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
 import { notFound } from "next/navigation";
-import { PredictionType } from "@prisma/client";
-import type { UniversityAbbreviation } from "@prisma/client";
+import { PredictionType } from "@/generated/prisma/client";
+import type { UniversityAbbreviation } from "@/generated/prisma/client";
 import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
 import { BidAnalyticsClient } from "@/modules/bidding/components/BidAnalyticsClient";
 import { AddToTimetableButton } from "@/modules/bidding/components/AddToTimetableButton";

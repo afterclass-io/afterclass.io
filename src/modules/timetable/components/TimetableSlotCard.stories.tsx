@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { TimetableSlotCard } from "./TimetableSlotCard";
 import type { PositionedSlot } from "@/modules/timetable/functions/slot-math";
 

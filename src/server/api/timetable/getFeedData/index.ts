@@ -1,7 +1,7 @@
 import "server-only";
 
 import { db as defaultDb } from "@/server/db";
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@/generated/prisma/client";
 import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
 import { toArrangedClass } from "@/modules/timetable/functions/arranged-class";
 

@@ -1,8 +1,9 @@
 import { api, type RouterInputs } from "@/common/tools/trpc/react";
-import type { ReviewReactionType } from "@prisma/client";
+import type { ReviewReactionType } from "@/generated/prisma/client";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
-import { debounce } from "lodash";
 import { useCallback, useMemo, useRef } from "react";
+
+import { debounce } from "@/common/functions/debounce";
 
 export function useOptimisticReaction() {
   const utils = api.useUtils();

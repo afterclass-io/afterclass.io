@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+@import "./components.css";
+@import "./radix-dialog.css";
+@import "./shadcn.css";

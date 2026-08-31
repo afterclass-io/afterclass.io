@@ -2,7 +2,7 @@ import type {
   ReviewType,
   Labels,
   UniversityAbbreviation,
-} from "@prisma/client";
+} from "@/generated/prisma/client";
 
 export type Review = {
   id: string;
