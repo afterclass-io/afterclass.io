@@ -6,7 +6,7 @@ import { publicProcedure } from "@/server/api/trpc";
 export const getAllByUniAbbrv = publicProcedure
   .input(
     z.object({
-      universityAbbrv: z.nativeEnum(UniversityAbbreviation),
+      universityAbbrv: z.enum(UniversityAbbreviation),
     }),
   )
   .query(async ({ ctx, input }) => {

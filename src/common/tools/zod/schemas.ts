@@ -12,9 +12,9 @@ import { ReviewableEnum, ReviewerEnum } from "@/modules/submit/types";
 export const emailValidationSchema = z
   .string()
   .min(1, {
-    message: "Email is required",
+    error: "Email is required",
   })
-  .email("Please enter a valid email address")
+  .pipe(z.email({ error: "Please enter a valid email address" }))
   .refine(
     (email) =>
       env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.some((domain) =>
@@ -67,13 +67,13 @@ export const reviewFormSchema = z.discriminatedUnion("type", [
     [ReviewableEnum.COURSE]: courseReviewFormSchema,
     [ReviewableEnum.PROFESSOR]: professorReviewFormSchema,
     type: z.literal(ReviewableEnum.PROFESSOR),
-    submitAs: z.nativeEnum(ReviewerEnum),
+    submitAs: z.enum(ReviewerEnum),
   }),
   z.object({
     [ReviewableEnum.COURSE]: courseReviewFormSchema,
     [ReviewableEnum.PROFESSOR]: professorReviewFormSchema.partial(),
     type: z.literal(ReviewableEnum.COURSE),
-    submitAs: z.nativeEnum(ReviewerEnum),
+    submitAs: z.enum(ReviewerEnum),
   }),
 ]);
 export type ReviewFormInputsSchema = z.infer<typeof reviewFormSchema>;

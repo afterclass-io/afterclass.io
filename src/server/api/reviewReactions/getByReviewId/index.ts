@@ -7,7 +7,7 @@ export const getByReviewId = protectedProcedure
   .input(
     z.object({
       reviewId: z.string(),
-      eventType: z.nativeEnum(ReviewReactionType).optional(),
+      eventType: z.enum(ReviewReactionType).optional(),
     }),
   )
   .query(

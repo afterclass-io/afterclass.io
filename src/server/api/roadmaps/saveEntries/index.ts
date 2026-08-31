@@ -7,7 +7,7 @@ export const saveEntries = protectedProcedure
   .input(
     z.object({
       roadmapId: z.string(),
-      updatedAt: z.string().datetime().optional(),
+      updatedAt: z.iso.datetime().optional(),
       entries: z
         .array(
           z.object({

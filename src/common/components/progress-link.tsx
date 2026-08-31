@@ -1,9 +1,7 @@
 "use client";
 import { type ComponentProps, startTransition } from "react";
 import Link from "next/link";
-import Router from "next/router";
 import { useRouter } from "next/navigation";
-import { resolveHref } from "next/dist/client/resolve-href";
 
 import { useProgress } from "@/common/providers/ProgressProvider";
 import { buttonVariants } from "@/common/components/button";
@@ -53,8 +51,7 @@ export function ProgressLink({
         progress.start();
 
         startTransition(() => {
-          // see https://github.com/vercel/next.js/discussions/22025
-          router.push(resolveHref(Router, props.href));
+          router.push(props.href.toString());
           progress.done();
         });
       }}

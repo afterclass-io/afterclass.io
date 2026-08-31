@@ -9,7 +9,7 @@ export const track = protectedProcedure
   .input(
     z.object({
       reviewId: z.string(),
-      eventType: z.nativeEnum(ReviewEventType),
+      eventType: z.enum(ReviewEventType),
     }),
   )
   .mutation(async ({ input, ctx }) => {

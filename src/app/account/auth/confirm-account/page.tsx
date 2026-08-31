@@ -26,7 +26,6 @@ export default async function ConfirmSignUp(props: {
 }) {
   const searchParams = await props.searchParams;
   const confirmationUrlSchema = z
-    .string()
     .url()
     .refine((url) => {
       try {

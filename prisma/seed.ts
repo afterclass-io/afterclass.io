@@ -4,7 +4,12 @@ import { PrismaClient } from "@/generated/prisma/client";
 
 import { assertStrictTimeFormats } from "./validate-seed-data";
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+  max: 2,
+  connectionTimeoutMillis: 5000,
+  idleTimeoutMillis: 30000,
+});
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
