@@ -1,4 +1,4 @@
-import { ReviewType } from "@prisma/client";
+import { ReviewType } from "@/generated/prisma/enums";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { makeCaller } from "@/server/api/trpc-test-helpers";

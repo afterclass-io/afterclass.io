@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
-import { ReviewReactionType } from "@prisma/client";
+import { ReviewReactionType } from "@/generated/prisma/enums";
 import { upsert } from "./index";
 
 const router = createTRPCRouter({ upsert });

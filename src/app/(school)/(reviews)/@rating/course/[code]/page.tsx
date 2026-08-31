@@ -1,6 +1,6 @@
 import { api } from "@/common/tools/trpc/server";
 import { RatingSection } from "@/modules/reviews/components/RatingSection";
-import { ReviewType } from "@/generated/prisma/client";
+import { ReviewType } from "@/generated/prisma/enums";
 import { auth } from "@/server/auth";
 import { toTitleCase, formatPercentage } from "@/common/functions";
 

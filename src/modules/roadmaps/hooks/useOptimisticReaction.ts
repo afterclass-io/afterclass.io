@@ -1,5 +1,5 @@
 import { api, type RouterInputs } from "@/common/tools/trpc/react";
-import type { ReviewReactionType } from "@/generated/prisma/client";
+import type { ReviewReactionType } from "@/generated/prisma/enums";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { useCallback, useMemo, useRef } from "react";
 

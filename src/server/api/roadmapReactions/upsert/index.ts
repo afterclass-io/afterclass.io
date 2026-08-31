@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { protectedProcedure } from "@/server/api/trpc";
-import { ReviewReactionType } from "@/generated/prisma/client";
+import { ReviewReactionType } from "@/generated/prisma/enums";
 
 export const upsert = protectedProcedure
   .input(

@@ -1,7 +1,8 @@
 import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
-import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@/generated/prisma/client";
 import type { TestProject } from "vitest/node";
 
 declare module "vitest" {
@@ -26,7 +27,9 @@ export default async function setup(project: TestProject) {
     stdio: "inherit",
   });
 
-  const db = new PrismaClient({ datasourceUrl: dbUrl });
+  const db = new PrismaClient({
+    adapter: new PrismaPg({ connectionString: dbUrl }),
+  });
   const suffix = randomUUID();
   const university = await db.universities.create({
     data: {

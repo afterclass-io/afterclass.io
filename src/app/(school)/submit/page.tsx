@@ -1,4 +1,4 @@
-import { ReviewType, type UniversityAbbreviation } from "@/generated/prisma/client";
+import { ReviewType, type UniversityAbbreviation } from "@/generated/prisma/enums";
 
 import { ConstrainedContainer } from "@/common/components/constrained-container";
 import { SchoolTag } from "@/common/components/tag-school";

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { ReviewEventType } from "@prisma/client";
+import { ReviewEventType } from "@/generated/prisma/enums";
 
 import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";

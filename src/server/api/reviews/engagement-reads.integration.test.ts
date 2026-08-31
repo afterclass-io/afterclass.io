@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { ReviewType } from "@prisma/client";
+import { ReviewType } from "@/generated/prisma/enums";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import {
