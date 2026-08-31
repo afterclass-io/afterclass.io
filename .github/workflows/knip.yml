@@ -2,8 +2,6 @@ name: Knip
 
 on:
   push:
-    branches:
-      - "main"
     paths:
       - "src/**"
       - "package.json"
