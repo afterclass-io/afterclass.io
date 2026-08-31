@@ -17,10 +17,10 @@ export const emailValidationSchema = z
   .pipe(z.email({ error: "Please enter a valid email address" }))
   .refine(
     (email) =>
-      env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.some((domain) =>
+      env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS?.some((domain) =>
         email.endsWith(domain),
-      ),
-    `Unsupported email domain, please choose from: ${env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.join(", ")}`,
+      ) ?? true,
+    `Unsupported email domain, please choose from: ${env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS?.join(", ") ?? ""}`,
   );
 
 /**

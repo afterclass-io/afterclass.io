@@ -1,5 +1,6 @@
 import { createRequire } from "node:module";
 import type { StorybookConfig } from "@storybook/nextjs";
+import webpack from "webpack";
 
 const require = createRequire(import.meta.url);
 
@@ -29,6 +30,12 @@ const config: StorybookConfig = {
       ...webpackConfig.resolve.alias,
       obscenity$: require.resolve("obscenity"),
     };
+    webpackConfig.plugins = [
+      ...(webpackConfig.plugins ?? []),
+      new webpack.DefinePlugin({
+        "process.env.SKIP_ENV_VALIDATION": JSON.stringify("true"),
+      }),
+    ];
     return webpackConfig;
   },
 };

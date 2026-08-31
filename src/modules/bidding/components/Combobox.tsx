@@ -80,12 +80,8 @@ export const Combobox = forwardRef<
           <Command
             value={value}
             filter={(_, search, keywords) => {
-              if (
-                keywords?.join("").toLowerCase().includes(search.toLowerCase())
-              ) {
-                return 1;
-              }
-              return 0;
+              const target = (keywords?.join("") ?? value ?? "").toLowerCase();
+              return target.includes(search.toLowerCase()) ? 1 : 0;
             }}
           >
             <CommandInput
