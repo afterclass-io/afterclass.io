@@ -105,7 +105,8 @@
           "_class",
           "_searchParams",
           "_engine",
-          "_fetchAcadTerms"
+          "_fetchAcadTerms",
+          "_def"
         ]
       }
     ]

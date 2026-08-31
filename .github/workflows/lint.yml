@@ -1,0 +1,34 @@
+name: Lint
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+      - name: copy .env file
+        run: cp .env.example .env
+
+      - run: bun install --frozen-lockfile
+
+      - name: Lint checks
+        run: bun run lint:check
+      - name: Formatting checks
+        run: bun run format:check
+      - name: Type checks
+        run: bun run type:check

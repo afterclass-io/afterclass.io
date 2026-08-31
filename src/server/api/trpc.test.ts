@@ -40,8 +40,7 @@ describe("errorFormatter", () => {
   // createCallerFactory rethrows the raw cause without running errorFormatter
   // (verified in @trpc/server's router source), so there is no caller-level
   // seam — call the formatter off the built router's config directly.
-  const formatter = // eslint-disable-next-line no-underscore-dangle
-  (
+  const formatter = (
     router._def as {
       _config: {
         errorFormatter: (o: unknown) => { data: { zodError: unknown } };
