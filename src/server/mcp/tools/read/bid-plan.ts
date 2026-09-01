@@ -1,9 +1,13 @@
 import { z } from "zod";
 
+import { resolveTermIdOrError } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const myBidPlanSchema = z.object({
-  acadTermId: z.string().describe("Academic term id, e.g. from list-acad-terms"),
+  acadTermId: z
+    .string()
+    .optional()
+    .describe("Academic term id, e.g. from list-acad-terms"),
 });
 
 export const myBidPlanTool: McpTool<typeof myBidPlanSchema> = {
@@ -23,12 +27,18 @@ export const myBidPlanTool: McpTool<typeof myBidPlanSchema> = {
   },
   run: async ({ caller }, { acadTermId }) => {
     try {
+      let termId = acadTermId?.trim() ?? "";
+      if (!termId) {
+        const resolved = await resolveTermIdOrError(caller);
+        if (!resolved.ok) return errText(resolved.errText);
+        termId = resolved.value;
+      }
       const [bids, budget] = await Promise.all([
         caller.userBids.listMine(),
-        caller.userBids.getBudget({ acadTermId }),
+        caller.userBids.getBudget({ acadTermId: termId }),
       ]);
       const plan = bids
-        .filter((b) => b.bidWindow?.acadTermId === acadTermId)
+        .filter((b) => b.bidWindow?.acadTermId === termId)
         .map((b) => ({
           id: b.id,
           bidAmount: b.bidAmount,
@@ -40,7 +50,7 @@ export const myBidPlanTool: McpTool<typeof myBidPlanSchema> = {
           round: b.bidWindow.round,
           window: b.bidWindow.window,
         }));
-      return jsonText({ acadTermId, budget, bids: plan });
+      return jsonText({ acadTermId: termId, budget, bids: plan });
     } catch (e) {
       return errText(errorMessage(e));
     }

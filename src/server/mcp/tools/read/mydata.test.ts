@@ -35,6 +35,7 @@ function makeCaller(procs: Record<string, unknown>) {
     userBids: { listMine: procs.userBidsListMine, getBudget: procs.getBudget },
     roadmaps: { listMine: procs.roadmapsListMine, listPublic: procs.listPublic },
     sharing: { getSharedTimetable: procs.getSharedTimetable },
+    acadTerms: { current: procs.acadTermsGetCurrent },
   } as unknown as ToolContext["caller"];
 }
 
@@ -65,9 +66,41 @@ describe("my-data read tools", () => {
     expect(result.isError).toBe(true);
   });
 
+  it("my-timetables defaults acadTermId to the current term when omitted", async () => {
+    const fn = vi.fn().mockResolvedValue([]);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        timetableListMine: fn,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
+      }),
+    };
+    await myTimetablesTool.run(ctx, {});
+    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1" });
+  });
+
+  it("my-timetables treats an empty-string acadTermId as omitted (defaults to current term)", async () => {
+    const fn = vi.fn().mockResolvedValue([]);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        timetableListMine: fn,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
+      }),
+    };
+    await myTimetablesTool.run(ctx, { acadTermId: "" });
+    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1" });
+  });
+
   it("my-bids calls userBids.listMine()", async () => {
     const fn = vi.fn().mockResolvedValue([]);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        userBidsListMine: fn,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
+      }),
+    };
     await myBidsTool.run(ctx, {});
     expect(fn).toHaveBeenCalledWith();
   });
@@ -82,7 +115,7 @@ describe("my-data read tools", () => {
         notes: "private bidding strategy",
         status: "PLANNED",
         createdAt: new Date().toISOString(),
-        bidWindow: { id: 53, round: 1 },
+        bidWindow: { id: 53, round: 1, acadTermId: "t1" },
         courseCode: "ACC101",
         courseName: "Financial Accounting",
         section: "G1",
@@ -90,7 +123,13 @@ describe("my-data read tools", () => {
         bidResult: null,
       },
     ]);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        userBidsListMine: fn,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
+      }),
+    };
     const result = await myBidsTool.run(ctx, {});
     expect(result.isError).toBeUndefined();
     const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
@@ -120,14 +159,39 @@ describe("my-data read tools", () => {
     expect(parsed[0]!.id).toBe("b1");
   });
 
-  it("my-bids without acadTermId returns everything (unchanged behavior)", async () => {
+  it("my-bids without acadTermId defaults to the current term (includes all windows in it)", async () => {
     const fn = vi.fn().mockResolvedValue([
-      { id: "b1", bidWindow: { acadTermId: "t1" } },
-      { id: "b2", bidWindow: { acadTermId: "t2" } },
+      { id: "b1", bidWindow: { acadTermId: "t1", round: "1" } },
+      { id: "b2", bidWindow: { acadTermId: "t1", round: "2" } },
+      { id: "b3", bidWindow: { acadTermId: "t2" } },
     ]);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        userBidsListMine: fn,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
+      }),
+    };
     const result = await myBidsTool.run(ctx, {});
-    expect(JSON.parse(result.content[0]!.text)).toHaveLength(2);
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
+    // Both windows within the current term are kept; the other term's bid is not.
+    expect(parsed).toHaveLength(2);
+    expect(parsed.map((b) => b.id)).toEqual(["b1", "b2"]);
+  });
+
+  it("my-bids returns a friendly error when acadTermId is omitted and there is no current term", async () => {
+    const fn = vi.fn().mockResolvedValue([]);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        userBidsListMine: fn,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
+      }),
+    };
+    const result = await myBidsTool.run(ctx, {});
+    expect(result.isError).toBe(true);
+    expect(result.content[0]!.text).toMatch(/current academic term/i);
   });
 
   it("my-bid-budget calls userBids.getBudget", async () => {
@@ -142,6 +206,33 @@ describe("my-data read tools", () => {
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getBudget: fn }) };
     const result = await myBudgetTool.run(ctx, { acadTermId: "t1" });
     expect(result.isError).toBe(true);
+  });
+
+  it("my-bid-budget defaults acadTermId to the current term when omitted", async () => {
+    const fn = vi.fn().mockResolvedValue(null);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        getBudget: fn,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
+      }),
+    };
+    await myBudgetTool.run(ctx, {});
+    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1" });
+  });
+
+  it("my-bid-budget returns a friendly error when acadTermId is omitted and there is no current term", async () => {
+    const fn = vi.fn();
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        getBudget: fn,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
+      }),
+    };
+    const result = await myBudgetTool.run(ctx, {});
+    expect(result.isError).toBe(true);
+    expect(fn).not.toHaveBeenCalled();
   });
 
   it("my-roadmaps calls roadmaps.listMine()", async () => {

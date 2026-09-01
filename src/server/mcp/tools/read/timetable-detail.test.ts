@@ -42,6 +42,7 @@ function makeCaller(procs: Record<string, unknown>) {
       listMine: procs.timetableListMine,
       getArrangement: procs.timetableGetArrangement,
     },
+    acadTerms: { current: procs.acadTermsGetCurrent },
   } as unknown as ToolContext["caller"];
 }
 
@@ -260,10 +261,38 @@ describe("get-my-timetable-detail read tool", () => {
     expect(textOf(result)).toContain("timetable");
   });
 
-  it("returns errText when neither timetableId nor acadTermId is provided", async () => {
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({}) };
+  it("defaults acadTermId to the current term when neither timetableId nor acadTermId is provided", async () => {
+    const listMine = vi.fn().mockResolvedValue([
+      { id: "tt1", name: "Current", isActive: true, acadTermId: "t1" },
+    ]);
+    const getArr = vi
+      .fn()
+      .mockResolvedValue({ timetable: { id: "tt1", name: "Current" }, slots: [] });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        timetableListMine: listMine,
+        timetableGetArrangement: getArr,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
+      }),
+    };
+    const result = await getMyTimetableDetailTool.run(ctx, {});
+    expect(result.isError).toBeUndefined();
+    expect(listMine).toHaveBeenCalledWith({ acadTermId: "t1" });
+    expect(getArr).toHaveBeenCalledWith({ timetableId: "tt1" });
+    const parsed = JSON.parse(textOf(result)) as ParsedDetail;
+    expect(parsed.timetableId).toBe("tt1");
+    expect(parsed.termId).toBe("t1");
+  });
+
+  it("returns errText when both timetableId and acadTermId are omitted and there is no current term", async () => {
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ acadTermsGetCurrent: vi.fn().mockResolvedValue(null) }),
+    };
     const result = await getMyTimetableDetailTool.run(ctx, {});
     expect(result.isError).toBe(true);
+    expect(result.content[0]!.text).toMatch(/current academic term/i);
   });
 
   it("returns errText when timetable.getArrangement rejects", async () => {

@@ -1,10 +1,11 @@
 import { z } from "zod";
 
+import { resolveOpenWindowIdOrError, resolveTermIdOrError } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const upsertBidSchema = z.object({
   classId: z.string(),
-  bidWindowId: z.number().int().positive(),
+  bidWindowId: z.number().int().positive().optional(),
   bidAmount: z.number().positive().max(99999),
   notes: z.string().max(500).optional(),
 });
@@ -16,7 +17,23 @@ export const upsertBidTool: McpTool<typeof upsertBidSchema> = {
   inputSchema: upsertBidSchema,
   run: async ({ caller }, input) => {
     try {
-      return jsonText(await caller.userBids.upsert(input));
+      // Omitted bidWindowId defaults to the current OPEN window ONLY. If no
+      // window is open, ask the user for the round + window rather than
+      // silently bidding in an upcoming/past window.
+      let bidWindowId = input.bidWindowId;
+      if (bidWindowId === undefined) {
+        const resolved = await resolveOpenWindowIdOrError(caller);
+        if (!resolved.ok) return errText(resolved.errText);
+        bidWindowId = resolved.value;
+      }
+      return jsonText(
+        await caller.userBids.upsert({
+          classId: input.classId,
+          bidWindowId,
+          bidAmount: input.bidAmount,
+          notes: input.notes,
+        }),
+      );
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -41,7 +58,7 @@ export const removeBidTool: McpTool<typeof removeBidSchema> = {
 export const MAX_BUDGET = 10000;
 
 const setBidBudgetSchema = z.object({
-  acadTermId: z.string(),
+  acadTermId: z.string().optional(),
   balance: z.number().min(0).max(MAX_BUDGET),
 });
 
@@ -56,7 +73,13 @@ export const setBidBudgetTool: McpTool<typeof setBidBudgetSchema> = {
       );
     }
     try {
-      return jsonText(await caller.userBids.upsertBudget(input));
+      let acadTermId = input.acadTermId?.trim() ?? "";
+      if (!acadTermId) {
+        const resolved = await resolveTermIdOrError(caller);
+        if (!resolved.ok) return errText(resolved.errText);
+        acadTermId = resolved.value;
+      }
+      return jsonText(await caller.userBids.upsertBudget({ ...input, acadTermId }));
     } catch (e) {
       return errText(errorMessage(e));
     }

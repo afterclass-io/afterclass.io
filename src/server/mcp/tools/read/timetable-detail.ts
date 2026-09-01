@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { db } from "@/server/db";
 
+import { resolveTermIdOrError } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const getMyTimetableDetailSchema = z.object({
@@ -15,7 +16,7 @@ const getMyTimetableDetailSchema = z.object({
     .string()
     .optional()
     .describe(
-      "Required when timetableId is omitted: the academic term id (from list-acad-terms) to look up the user's active timetable in.",
+      "Optional: the academic term id (from list-acad-terms) to look up the user's active timetable in. Omit to use the current academic term.",
     ),
 });
 
@@ -100,24 +101,28 @@ export const getMyTimetableDetailTool: McpTool<typeof getMyTimetableDetailSchema
       let resolvedName: string | undefined;
 
       if (!id) {
-        if (!acadTermId) {
-          return errText(
-            "Provide a timetableId (from my-timetables) or an acadTermId so I can resolve your active timetable.",
-          );
+        // Omitted/empty acadTermId (with no timetableId) defaults to the
+        // current academic term. A provided timetableId already pins the term,
+        // so it never triggers a term default.
+        let termId = acadTermId?.trim() ?? "";
+        if (!termId) {
+          const resolved = await resolveTermIdOrError(caller);
+          if (!resolved.ok) return errText(resolved.errText);
+          termId = resolved.value;
         }
-        const mine = await caller.timetable.listMine({ acadTermId });
+        const mine = await caller.timetable.listMine({ acadTermId: termId });
         const active = mine.find((t) => t.isActive) ?? mine[0];
         if (!active) {
           return errText(
-            `You don't have any timetables for academic term ${acadTermId}. Create one first, then ask again.`,
+            `You don't have any timetables for academic term ${termId}. Create one first, then ask again.`,
           );
         }
         id = active.id;
         resolvedName = active.name;
         meta = { isActive: active.isActive, termId: active.acadTermId };
-      } else if (acadTermId) {
+      } else if (acadTermId?.trim()) {
         // Enrich metadata (isActive/termId) from listMine when we can.
-        const mine = await caller.timetable.listMine({ acadTermId });
+        const mine = await caller.timetable.listMine({ acadTermId: acadTermId.trim() });
         const match = mine.find((t) => t.id === id);
         if (match) {
           resolvedName = match.name;

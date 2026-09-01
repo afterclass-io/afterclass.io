@@ -21,6 +21,7 @@ const fakeUser: SessionUser = {
 function makeCaller(procs: Record<string, unknown>) {
   return {
     userBids: { listMine: procs.listMine, getBudget: procs.getBudget },
+    acadTerms: { current: procs.acadTermsGetCurrent },
   } as unknown as ToolContext["caller"];
 }
 
@@ -142,5 +143,49 @@ describe("my-bid-plan", () => {
 
     const result = await myBidPlanTool.run(ctx, { acadTermId: "AY2026/27-T1" });
     expect(result.isError).toBe(true);
+  });
+
+  it("defaults acadTermId to the current term when omitted", async () => {
+    const listMine = vi.fn().mockResolvedValue([
+      mkBid({ id: "b1", bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 } }),
+      mkBid({ id: "b2", bidWindow: { acadTermId: "AY2026/27-T2", round: "1", window: 1 } }),
+    ]);
+    const getBudget = vi.fn().mockResolvedValue({ balance: 200 });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        listMine,
+        getBudget,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "AY2026/27-T1" }),
+      }),
+    };
+
+    const result = await myBidPlanTool.run(ctx, {});
+    expect(result.isError).toBeUndefined();
+    expect(getBudget).toHaveBeenCalledWith({ acadTermId: "AY2026/27-T1" });
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      acadTermId: string;
+      bids: Array<Record<string, unknown>>;
+    };
+    expect(parsed.acadTermId).toBe("AY2026/27-T1");
+    expect(parsed.bids).toHaveLength(1);
+    expect(parsed.bids[0]!.id).toBe("b1");
+  });
+
+  it("returns a friendly error when acadTermId is omitted and there is no current term", async () => {
+    const listMine = vi.fn().mockResolvedValue([]);
+    const getBudget = vi.fn();
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        listMine,
+        getBudget,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
+      }),
+    };
+
+    const result = await myBidPlanTool.run(ctx, {});
+    expect(result.isError).toBe(true);
+    expect(getBudget).not.toHaveBeenCalled();
   });
 });
