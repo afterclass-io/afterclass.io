@@ -24,7 +24,7 @@
     "seed": "bun run prisma/seed.ts"
   },
   "dependencies": {
-    "@ai-sdk/openai-compatible": "^3.0.20",
+    "@ai-sdk/openai-compatible": "^3.0.41",
     "@ai-sdk/react": "^4",
     "@ctrl/tinycolor": "4.1.0",
     "@date-fns/tz": "^1.2.0",
