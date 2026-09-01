@@ -1,9 +1,13 @@
 import { z } from "zod";
 
+import { resolveTermIdOrError } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const searchCoursesSchema = z.object({
-  acadTermId: z.string().describe("Academic term id; obtain via list-acad-terms"),
+  acadTermId: z
+    .string()
+    .optional()
+    .describe("Academic term id; obtain via list-acad-terms"),
   query: z.string().min(1).describe("Search text: course code, course name, or professor name"),
 });
 
@@ -26,7 +30,15 @@ export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
   },
   run: async ({ caller }, { acadTermId, query }) => {
     try {
-      return jsonText(await caller.timetable.searchCourses({ acadTermId, query }));
+      // Omitted or empty-string acadTermId defaults to the current term.
+      // An empty string must never reach SQL (it returns `[]` for every query).
+      let termId = acadTermId?.trim() ?? "";
+      if (!termId) {
+        const resolved = await resolveTermIdOrError(caller);
+        if (!resolved.ok) return errText(resolved.errText);
+        termId = resolved.value;
+      }
+      return jsonText(await caller.timetable.searchCourses({ acadTermId: termId, query }));
     } catch (e) {
       return errText(errorMessage(e));
     }

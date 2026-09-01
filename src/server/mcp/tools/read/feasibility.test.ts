@@ -28,6 +28,7 @@ function makeCaller(procs: Record<string, unknown>) {
     roadmaps: { getMine: procs.roadmapsGetMine, listMine: procs.roadmapsListMine },
     courses: { getByCourseCode: procs.coursesGetByCourseCode },
     timetable: { listMine: procs.timetableListMine, getArrangement: procs.timetableGetArrangement },
+    acadTerms: { current: procs.acadTermsGetCurrent },
   } as unknown as ToolContext["caller"];
 }
 
@@ -421,6 +422,65 @@ describe("check-roadmap-feasibility", () => {
       }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1", termId: "t2" });
+    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    expect(parsed.issues.some((i) => i.type === "EXAM_CLASH")).toBe(false);
+    expect(parsed.isFeasible).toBe(true);
+  });
+
+  it("defaults termId to the current term for EXAM_CLASH when termId is omitted", async () => {
+    const arrangement = {
+      timetable: { id: "tt1", name: "Term 2" },
+      slots: [
+        {
+          classId: "cl1",
+          courseCode: "FIN202",
+          courseName: "Finance",
+          section: "G1",
+          professorName: null,
+          creditUnits: 1,
+          timings: [],
+          examTimings: [{ id: "x1", date: "2026-04-12", dayOfWeek: "Sun", startTime: "09:00", endTime: "12:00", venue: null }],
+        },
+        {
+          classId: "cl2",
+          courseCode: "MGMT1302",
+          courseName: "Management",
+          section: "G1",
+          professorName: null,
+          creditUnits: 1,
+          timings: [],
+          examTimings: [{ id: "x2", date: "2026-04-12", dayOfWeek: "Sun", startTime: "10:00", endTime: "13:00", venue: null }],
+        },
+      ],
+    };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        roadmapsGetMine: vi.fn().mockResolvedValue(emptyRoadmap()),
+        coursesGetByCourseCode: vi.fn().mockResolvedValue(null),
+        timetableListMine: vi
+          .fn()
+          .mockResolvedValue([{ id: "tt1", name: "Term 2", isActive: true, acadTermId: "t2" }]),
+        timetableGetArrangement: vi.fn().mockResolvedValue(arrangement),
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t2" }),
+      }),
+    };
+    const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
+    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    expect(parsed.isFeasible).toBe(false);
+    expect(parsed.issues.some((i) => i.type === "EXAM_CLASH")).toBe(true);
+  });
+
+  it("keeps skipping EXAM_CLASH when termId is omitted and there is no current term", async () => {
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        roadmapsGetMine: vi.fn().mockResolvedValue(emptyRoadmap()),
+        coursesGetByCourseCode: vi.fn().mockResolvedValue(null),
+        acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
+      }),
+    };
+    const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
     const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
     expect(parsed.issues.some((i) => i.type === "EXAM_CLASH")).toBe(false);
     expect(parsed.isFeasible).toBe(true);

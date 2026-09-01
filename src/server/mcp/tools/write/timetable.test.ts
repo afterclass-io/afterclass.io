@@ -37,6 +37,7 @@ function makeCaller(procs: Record<string, unknown>) {
       removeSlot: procs.timetableRemoveSlot,
     },
     sharing: { setVisibility: procs.sharingSetVisibility },
+    acadTerms: { current: procs.acadTermsGetCurrent },
   } as unknown as ToolContext["caller"];
 }
 
@@ -53,6 +54,33 @@ describe("timetable write tools", () => {
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ timetableCreate: fn }) };
     const result = await createTimetableTool.run(ctx, { acadTermId: "t1", name: "Plan A" });
     expect(result.isError).toBe(true);
+  });
+
+  it("create-timetable defaults acadTermId to the current term when omitted", async () => {
+    const fn = vi.fn().mockResolvedValue({ id: "tt1" });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        timetableCreate: fn,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
+      }),
+    };
+    await createTimetableTool.run(ctx, { name: "Plan A" });
+    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", name: "Plan A" });
+  });
+
+  it("create-timetable returns a friendly error when acadTermId is omitted and there is no current term", async () => {
+    const fn = vi.fn();
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        timetableCreate: fn,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
+      }),
+    };
+    const result = await createTimetableTool.run(ctx, { name: "Plan A" });
+    expect(result.isError).toBe(true);
+    expect(fn).not.toHaveBeenCalled();
   });
 
   it("add-class-to-timetable calls timetable.addSlot", async () => {

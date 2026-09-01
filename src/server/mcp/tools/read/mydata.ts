@@ -1,8 +1,9 @@
 import { z } from "zod";
 
+import { resolveTermIdOrError } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
-const myTimetablesSchema = z.object({ acadTermId: z.string() });
+const myTimetablesSchema = z.object({ acadTermId: z.string().optional() });
 
 export const myTimetablesTool: McpTool<typeof myTimetablesSchema> = {
   name: "my-timetables",
@@ -11,7 +12,13 @@ export const myTimetablesTool: McpTool<typeof myTimetablesSchema> = {
   readOnly: true,
   run: async ({ caller }, { acadTermId }) => {
     try {
-      const timetables = (await caller.timetable.listMine({ acadTermId })) as Array<
+      let termId = acadTermId?.trim() ?? "";
+      if (!termId) {
+        const resolved = await resolveTermIdOrError(caller);
+        if (!resolved.ok) return errText(resolved.errText);
+        termId = resolved.value;
+      }
+      const timetables = (await caller.timetable.listMine({ acadTermId: termId })) as Array<
         Record<string, unknown>
       >;
       const scrubbed = timetables.map((t) => {
@@ -30,7 +37,10 @@ export const myTimetablesTool: McpTool<typeof myTimetablesSchema> = {
 };
 
 const myBidsSchema = z.object({
-  acadTermId: z.string().optional().describe("Filter to one academic term; omit for all terms"),
+  acadTermId: z
+    .string()
+    .optional()
+    .describe("Filter to one academic term; omit to use the current academic term — includes all bid windows"),
 });
 
 export const myBidsTool: McpTool<typeof myBidsSchema> = {
@@ -40,6 +50,14 @@ export const myBidsTool: McpTool<typeof myBidsSchema> = {
   readOnly: true,
   run: async ({ caller }, { acadTermId }) => {
     try {
+      // Omitted/empty acadTermId defaults to the current term (all bid windows
+      // within that term are kept via the bidWindow.acadTermId filter below).
+      let termId = acadTermId?.trim() ?? "";
+      if (!termId) {
+        const resolved = await resolveTermIdOrError(caller);
+        if (!resolved.ok) return errText(resolved.errText);
+        termId = resolved.value;
+      }
       const bids = await caller.userBids.listMine();
       // my-bids is exposed over MCP: strip the free-text `notes` field (user
       // PII / private bidding strategy) from the AI-visible output. All other
@@ -49,11 +67,9 @@ export const myBidsTool: McpTool<typeof myBidsSchema> = {
         const { notes: _notes, ...rest } = bid;
         return rest;
       });
-      const filtered = acadTermId
-        ? scrubbed.filter(
-            (b) => (b as { bidWindow?: { acadTermId?: string } }).bidWindow?.acadTermId === acadTermId,
-          )
-        : scrubbed;
+      const filtered = scrubbed.filter(
+        (b) => (b as { bidWindow?: { acadTermId?: string } }).bidWindow?.acadTermId === termId,
+      );
       return jsonText(filtered);
     } catch (e) {
       return errText(errorMessage(e));
@@ -61,7 +77,7 @@ export const myBidsTool: McpTool<typeof myBidsSchema> = {
   },
 };
 
-const myBudgetSchema = z.object({ acadTermId: z.string() });
+const myBudgetSchema = z.object({ acadTermId: z.string().optional() });
 
 export const myBudgetTool: McpTool<typeof myBudgetSchema> = {
   name: "my-bid-budget",
@@ -70,7 +86,13 @@ export const myBudgetTool: McpTool<typeof myBudgetSchema> = {
   readOnly: true,
   run: async ({ caller }, { acadTermId }) => {
     try {
-      return jsonText(await caller.userBids.getBudget({ acadTermId }));
+      let termId = acadTermId?.trim() ?? "";
+      if (!termId) {
+        const resolved = await resolveTermIdOrError(caller);
+        if (!resolved.ok) return errText(resolved.errText);
+        termId = resolved.value;
+      }
+      return jsonText(await caller.userBids.getBudget({ acadTermId: termId }));
     } catch (e) {
       return errText(errorMessage(e));
     }

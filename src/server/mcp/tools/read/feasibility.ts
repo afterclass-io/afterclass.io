@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { resolveTermIdOrError } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const checkRoadmapFeasibilitySchema = z.object({
@@ -111,7 +112,7 @@ type RoadmapEntry = {
 export const checkRoadmapFeasibilityTool: McpTool<typeof checkRoadmapFeasibilitySchema> = {
   name: "check-roadmap-feasibility",
   description:
-    "Check a study roadmap for planning conflicts and return { issues, isFeasible }. Issue types: PREREQ_MISSING (a course's prerequisite isn't planned in an earlier term), TERM_DUPLICATE (the same course appears twice in one year/term), and EXAM_CLASH (two courses' exams overlap in the user's timetable - only checked when termId is provided). CAVEAT: if termId is provided but no timetable exists for that term, exam-clash checking is SKIPPED - the plan is not fully verified on the clash dimension, and isFeasible may be true even though exams were not checked. Use this before advising a student to commit to a plan, or when they ask 'is my plan feasible?'.",
+    "Check a study roadmap for planning conflicts and return { issues, isFeasible }. Issue types: PREREQ_MISSING (a course's prerequisite isn't planned in an earlier term), TERM_DUPLICATE (the same course appears twice in one year/term), and EXAM_CLASH (two courses' exams overlap in the user's timetable - checked against the current term by default, or a term you specify). CAVEAT: if no timetable exists for the term, exam-clash checking is SKIPPED - the plan is not fully verified on the clash dimension, and isFeasible may be true even though exams were not checked. Use this before advising a student to commit to a plan, or when they ask 'is my plan feasible?'.",
   inputSchema: checkRoadmapFeasibilitySchema,
   readOnly: true,
   run: async ({ caller }, { roadmapId, termId }) => {
@@ -214,8 +215,16 @@ export const checkRoadmapFeasibilityTool: McpTool<typeof checkRoadmapFeasibility
       }
 
       // ---- 4. EXAM_CLASH: overlapping exams in the term's timetable ----
-      if (termId) {
-        const mine = await caller.timetable.listMine({ acadTermId: termId });
+      // Omitted termId defaults to the current term (for consistency with the
+      // other tools). If there is no current term either, EXAM_CLASH is simply
+      // skipped - the roadmap-only checks still run.
+      let clashTermId = termId?.trim() ?? "";
+      if (!clashTermId) {
+        const resolved = await resolveTermIdOrError(caller);
+        if (resolved.ok) clashTermId = resolved.value;
+      }
+      if (clashTermId) {
+        const mine = await caller.timetable.listMine({ acadTermId: clashTermId });
         const timetable = mine.find((t) => t.isActive) ?? mine[0];
         if (timetable) {
           const arrangement = await caller.timetable.getArrangement({

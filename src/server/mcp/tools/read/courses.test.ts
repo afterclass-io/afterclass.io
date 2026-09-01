@@ -27,6 +27,7 @@ function makeCaller(procs: Record<string, unknown>) {
     courses: { getByCourseCode: procs.getByCourseCode },
     classes: { getAll: procs.getAll },
     professors: { getBySlug: procs.getBySlug },
+    acadTerms: { current: procs.acadTermsGetCurrent },
   } as unknown as ToolContext["caller"];
 }
 
@@ -55,6 +56,48 @@ describe("search-courses", () => {
     expect(searchCoursesTool.widgetName).toBe("course-search");
     const props = searchCoursesTool.toWidgetProps?.(result);
     expect(Array.isArray((props as { results?: unknown[] }).results)).toBe(true);
+  });
+
+  it("defaults acadTermId to the current term when omitted", async () => {
+    const fn = vi.fn().mockResolvedValue([{ id: "c1", code: "ACC101" }]);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        searchCourses: fn,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
+      }),
+    };
+    const result = await searchCoursesTool.run(ctx, { query: "acc" });
+    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", query: "acc" });
+    expect(result.isError).toBeUndefined();
+  });
+
+  it("treats an empty-string acadTermId as omitted and defaults to the current term (never sends '' to SQL)", async () => {
+    const fn = vi.fn().mockResolvedValue([{ id: "c1", code: "ACC101" }]);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        searchCourses: fn,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
+      }),
+    };
+    const result = await searchCoursesTool.run(ctx, { acadTermId: "", query: "acc" });
+    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", query: "acc" });
+    expect(result.isError).toBeUndefined();
+  });
+
+  it("returns a friendly error when acadTermId is omitted and there is no current term", async () => {
+    const fn = vi.fn();
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        searchCourses: fn,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
+      }),
+    };
+    const result = await searchCoursesTool.run(ctx, { query: "acc" });
+    expect(result.isError).toBe(true);
+    expect(fn).not.toHaveBeenCalled();
   });
 });
 
