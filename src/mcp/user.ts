@@ -55,6 +55,29 @@ export async function resolveMcpUser(auth: {
   return undefined;
 }
 
+/**
+ * Local dev bypass: when the MCP server runs without OAuth (NODE_ENV ===
+ * "development", see src/mcp/index.ts) and MCP_DEV_BYPASS is enabled, resolve
+ * the caller as the seeded dev user instead of failing closed. This lets the
+ * Inspector / local MCP clients exercise all 44 tools against the local
+ * Postgres without a Supabase project.
+ *
+ * Fail-closed guarantees:
+ * - Only active when NODE_ENV === "development" (production leaves NODE_ENV
+ *   empty/unset, so the bypass is structurally impossible outside dev).
+ * - Requires the explicit MCP_DEV_BYPASS=true opt-in.
+ * - Only fires as a fallback when resolveMcpUser returned nothing (empty auth
+ *   object) — a real token is still resolved through resolveMcpUser and still
+ *   fails closed when it does not match a user.
+ */
+async function resolveDevBypassUser(): Promise<SessionUser | undefined> {
+  if (process.env.NODE_ENV !== "development") return undefined;
+  if (process.env.MCP_DEV_BYPASS !== "true") return undefined;
+  const email = process.env.MCP_DEV_USER_EMAIL ?? "test_hash_pwd@smu.edu.sg";
+  const user = await db.users.findUnique({ where: { email } });
+  return user ? toSessionUser(user) : undefined;
+}
+
 /** Resolve auth and build a tRPC caller scoped to the user. */
 export async function buildToolContext(auth: {
   userId?: string;
@@ -63,7 +86,7 @@ export async function buildToolContext(auth: {
   emailVerified?: boolean;
   email_confirmed_at?: string | null;
 }): Promise<ToolContext | undefined> {
-  const user = await resolveMcpUser(auth);
+  const user = (await resolveMcpUser(auth)) ?? (await resolveDevBypassUser());
   if (!user) return undefined;
   return createCallerForUser(user);
 }

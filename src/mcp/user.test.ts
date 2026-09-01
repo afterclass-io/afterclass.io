@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 
 const { usersFindUnique } = vi.hoisted(() => ({ usersFindUnique: vi.fn() as Mock }));
@@ -12,7 +12,7 @@ vi.mock("@/server/db", () => ({
   db: { users: { findUnique: usersFindUnique } },
 }));
 
-import { resolveMcpUser } from "./user";
+import { resolveMcpUser, buildToolContext } from "./user";
 
 const row = {
   id: "supa-1", email: "a@x.com", username: "user_a", isVerified: true,
@@ -67,5 +67,71 @@ describe("resolveMcpUser", () => {
   it("returns undefined with no identity", async () => {
     await expect(resolveMcpUser({})).resolves.toBeUndefined();
     expect(usersFindUnique).not.toHaveBeenCalled();
+  });
+});
+
+describe("buildToolContext dev bypass", () => {
+  beforeEach(() => {
+    usersFindUnique.mockReset();
+    vi.unstubAllEnvs();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("resolves the dev user when NODE_ENV=development and MCP_DEV_BYPASS=true", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("MCP_DEV_BYPASS", "true");
+    delete process.env.MCP_DEV_USER_EMAIL;
+    usersFindUnique.mockResolvedValue(row);
+    await expect(buildToolContext({})).resolves.toMatchObject({ user: { id: "supa-1" } });
+    expect(usersFindUnique).toHaveBeenCalledWith({ where: { email: "test_hash_pwd@smu.edu.sg" } });
+  });
+
+  it("honors MCP_DEV_USER_EMAIL override", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("MCP_DEV_BYPASS", "true");
+    vi.stubEnv("MCP_DEV_USER_EMAIL", "dev@override.com");
+    usersFindUnique.mockResolvedValue(row);
+    await expect(buildToolContext({})).resolves.toMatchObject({ user: { id: "supa-1" } });
+    expect(usersFindUnique).toHaveBeenCalledWith({ where: { email: "dev@override.com" } });
+  });
+
+  it("fail-closed when bypass enabled but dev user missing from DB", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("MCP_DEV_BYPASS", "true");
+    usersFindUnique.mockResolvedValue(null);
+    await expect(buildToolContext({})).resolves.toBeUndefined();
+  });
+
+  it("fail-closed when MCP_DEV_BYPASS is not exactly 'true'", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("MCP_DEV_BYPASS", "1");
+    await expect(buildToolContext({})).resolves.toBeUndefined();
+    expect(usersFindUnique).not.toHaveBeenCalled();
+  });
+
+  it("fail-closed in production even with bypass enabled", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("MCP_DEV_BYPASS", "true");
+    await expect(buildToolContext({})).resolves.toBeUndefined();
+    expect(usersFindUnique).not.toHaveBeenCalled();
+  });
+
+  it("fail-closed when NODE_ENV is unset (prod default) even with bypass enabled", async () => {
+    vi.stubEnv("NODE_ENV", undefined);
+    vi.stubEnv("MCP_DEV_BYPASS", "true");
+    await expect(buildToolContext({})).resolves.toBeUndefined();
+    expect(usersFindUnique).not.toHaveBeenCalled();
+  });
+
+  it("real identity still wins over the bypass (token path unchanged)", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("MCP_DEV_BYPASS", "true");
+    usersFindUnique.mockResolvedValue(row);
+    await expect(buildToolContext({ userId: "supa-1" })).resolves.toMatchObject({ user: { id: "supa-1" } });
+    expect(usersFindUnique).toHaveBeenCalledWith({ where: { id: "supa-1" } });
+    expect(usersFindUnique).toHaveBeenCalledTimes(1);
   });
 });

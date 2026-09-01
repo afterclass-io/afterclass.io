@@ -7,6 +7,8 @@ The afterclass.io Model Context Protocol (MCP) server, built on [mcp-use](https:
 - **Widgets:** `src/mcp/resources/*/widget.tsx`
 - **Local dev:** `bun run mcp:dev` → Inspector at `http://localhost:3001/inspector`
 
+> **Local dev needs no Supabase.** `mcp:dev` runs the server with **no OAuth middleware** (see [Local dev mode](#local-dev-mode-no-supabase-required)). The Inspector connects instantly and tool calls resolve as the seeded dev user. The Supabase OAuth 2.1 flow described below only kicks in outside development (deployed servers, `mcp:start`).
+
 ## Architecture
 
 ```
@@ -43,6 +45,8 @@ Three moving parts:
 All 44 tools live in `src/server/mcp/tools` (e.g. `search-courses`, `my-timetables`, `recommend-bid-amount`). The same catalog powers the **in-app assistant** (via the tRPC caller) and the **MCP server** (`src/mcp/register.ts` iterates `allTools` and registers each as an mcp-use tool, resolving the caller from the OAuth identity per call). A tool only needs to be changed in one place.
 
 ## Authorization / consent flow
+
+> Only applies **outside development**. `mcp:dev` sets `NODE_ENV=development` and `src/mcp/index.ts` omits `oauth`, so no bearer middleware is mounted and the flow below is skipped entirely (see [Local dev mode](#local-dev-mode-no-supabase-required)).
 
 The end-to-end OAuth 2.1 authorization-code flow with Supabase-hosted consent:
 
@@ -100,7 +104,7 @@ Shared widget styling lives in `src/mcp/resources/shared/tokens.tsx` (`TOKENS` l
 
 ## Security
 
-- **Fail-closed auth.** Every tool resolves the caller from `ctx.auth.user` (`src/mcp/user.ts`); unauthenticated calls return an error instead of running.
+- **Fail-closed auth.** Every tool resolves the caller from `ctx.auth.user` (`src/mcp/user.ts`); unauthenticated calls return an error instead of running. The only exception is the explicit local dev bypass (`NODE_ENV=development` + `MCP_DEV_BYPASS=true`), which resolves a fixed seeded dev user — never active in production.
 - **Per-user write rate limit (DB-backed).** Every non-read-only tool shares one per-user write budget of `mcpRateLimitPerMinute` calls/minute (from `getChatConfig()`, default 60), keyed `mcp-write:<userId>`. Exhausted budget → a friendly error. Read tools are unaffected.
 - **`my-bids` scrubs `notes`.** Each bid's free-text `notes` field (user PII / private bidding strategy) is dropped from the JSON returned to the model; bid metadata is preserved.
 - **`get-classes` caps at 20 rows.** Any `limit > 20` is clamped to 20 before querying (larger values still accepted for backward compatibility).
@@ -117,6 +121,8 @@ Shared widget styling lives in `src/mcp/resources/shared/tokens.tsx` (`TOKENS` l
 | `MCP_USE_OAUTH_SUPABASE_PROJECT_ID` | **Required.** Supabase project ref. `oauthSupabaseProvider()` derives the auth URL `https://<ref>.supabase.co` from it.                                                                                                                    |
 | `MCP_USE_OAUTH_SUPABASE_URL`        | _Optional._ Full Supabase auth URL — only for **local / self-hosted** Supabase (e.g. `http://localhost:54321`). Overrides the URL derived from `MCP_USE_OAUTH_SUPABASE_PROJECT_ID`.                                                        |
 | `MCP_USE_OAUTH_SUPABASE_JWT_SECRET` | _Optional._ Only for **legacy HS256** Supabase JWT projects. Omit for the default RS256 (JWKS-verified) projects.                                                                                                                          |
+| `MCP_DEV_BYPASS`                    | _Dev only._ Set `true` to resolve unauthenticated MCP tool calls as the seeded dev user. Ignored unless `NODE_ENV === "development"`; never active in production. |
+| `MCP_DEV_USER_EMAIL`                | _Dev only._ Email of the dev user for the bypass (default `test_hash_pwd@smu.edu.sg` — must exist in the local seeded DB). |
 | `DATABASE_URL`                      | The same Postgres the Next.js app uses — tools read via the tRPC caller (Prisma).                                                                                                                                                          |
 | `SKIP_ENV_VALIDATION`               | **Do not set.** With the flag set, `@t3-oss/env-nextjs` skips the env schema transforms, so `NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS` stays a comma-string and `src/common/tools/zod/schemas.ts` crashes on `.join()` at boot. Provide the full app env set instead. |
 | Full Next.js app env                | `env` validation runs on the mcp process (it imports `@/env` via tRPC), so the host needs the same server vars as the app: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `LLM_API_KEY`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, plus the `NEXT_PUBLIC_*` vars below. The repo `.env` already has these. |
@@ -142,7 +148,7 @@ The consent route requires a signed-in session whose Auth.js JWT carries a Supab
 
 ## Known limitations
 
-1. **Supabase-identity only.** Supabase-issued MCP tokens identify users with a Supabase identity (`src/mcp/user.ts` resolves the caller from `ctx.auth.user`). A Google-only user (no linked Supabase identity) cannot connect an agent until a Supabase identity is linked to their account.
+1. **Supabase-identity only (prod).** Supabase-issued MCP tokens identify users with a Supabase identity (`src/mcp/user.ts` resolves the caller from `ctx.auth.user`). A Google-only user (no linked Supabase identity) cannot connect an agent until a Supabase identity is linked to their account. Local dev sidesteps this entirely via the [dev bypass](#local-dev-mode-no-supabase-required).
 2. **~1h access-token expiry in consent.** The Supabase access token captured at sign-in expires after roughly one hour. A stale consent attempt surfaces a Supabase auth error on the consent route (400) — the user should re-login. A refresh-token flow is tracked for later (documented in `src/server/supabase-consent.ts`).
 
 ## Deploy
@@ -171,12 +177,28 @@ bunx mcp-use start --mcp-dir src/mcp
 
 Set `NEXT_PUBLIC_MCP_PUBLIC_URL` to the deployed URL.
 
+## Local dev mode (no Supabase required)
+
+`src/mcp/index.ts` only wires `oauthSupabaseProvider()` when `NODE_ENV !== "development"`. The mcp-use CLI sets `NODE_ENV=development` for `mcp:dev` (and `production` for `mcp:start`), so local dev runs the server **without** any bearer middleware — no Supabase project, no consent screen, no `MCP_USE_OAUTH_SUPABASE_*` needed.
+
+When an MCP call arrives with no identity, `src/mcp/user.ts` falls back to the **dev bypass**: if `NODE_ENV === "development"` and `MCP_DEV_BYPASS=true`, it resolves the caller as `MCP_DEV_USER_EMAIL` (default the seeded `test_hash_pwd@smu.edu.sg`). A real bearer token is still resolved through the normal identity path, and everything still fail-closes when the dev user is missing from the DB or the bypass flag is off.
+
+**How to test locally:**
+
+1. `bun run db:reset` (seeds the dev user + data into local Postgres on `:5433`).
+2. `bun run mcp:dev` → wait for `[SERVER] Listening on http://0.0.0.0:3001` (~20–40s, loads all tRPC routers).
+3. Open `http://localhost:3001/inspector`, hit **Connect** — no OAuth prompt.
+4. `tools/list` shows the 44 tools; call e.g. `search-courses`, `get-me`, or `recommend-bid-amount`.
+5. Widget-backed tools (`search-courses`, `recommend-bid-amount`, `my-bid-plan`, `explore-bid-options`, reviews, roadmap, calendar-link) render the 7 MCP Apps widgets in the Inspector.
+
+All calls run as the single dev user (`test_hash_pwd@smu.edu.sg`), so the per-user write budget still applies to that user.
+
 ## Local commands
 
 | Command             | What it does                                                                    |
 | ------------------- | ------------------------------------------------------------------------------- |
-| `bun run mcp:dev`   | Dev server + Inspector on `:3001` (`mcp-use dev --mcp-dir src/mcp --port 3001`) |
+| `bun run mcp:dev`   | Dev server + Inspector on `:3001` (`mcp-use dev --mcp-dir src/mcp --port 3001`) — no OAuth, dev-bypass user |
 | `bun run mcp:build` | Build the server + widgets (`mcp-use build --mcp-dir src/mcp`)                  |
-| `bun run mcp:start` | Start the production server (`mcp-use start --mcp-dir src/mcp`)                 |
+| `bun run mcp:start` | Start the production server (`mcp-use start --mcp-dir src/mcp`) — OAuth required |
 
 Versions: `mcp-use@^1` (server) with `@mcp-use/cli@^3` (the v1-compatible CLI).
