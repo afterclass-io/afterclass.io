@@ -6,7 +6,7 @@ export const DEFAULT_CHAT_CONFIG = {
   rateLimitPerMinute: 10,
   mcpRateLimitPerMinute: 60,
   spendCapPerMonthUsd: 20,
-  maxInputTokens: 16000,
+  maxInputTokens: 64000,
   maxOutputTokens: 1024,
   maxToolRounds: 6,
   priceInputPerM: 0.14,
