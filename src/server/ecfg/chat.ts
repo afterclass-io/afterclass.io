@@ -27,6 +27,11 @@ export async function getChatConfig(): Promise<ChatConfig> {
     const n = Number(envMcpRate);
     if (Number.isFinite(n)) out = { ...out, mcpRateLimitPerMinute: n };
   }
+  const envMaxInput = process.env.CHAT_MAX_INPUT_TOKENS;
+  if (envMaxInput !== undefined && envMaxInput !== "") {
+    const n = Number(envMaxInput);
+    if (Number.isFinite(n) && n > 0) out = { ...out, maxInputTokens: n };
+  }
   return out;
 }
 

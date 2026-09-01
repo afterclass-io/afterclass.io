@@ -5,6 +5,7 @@ describe("chat config schema", () => {
   it("applies defaults when the chat object is missing", () => {
     const parsed = chatConfigSchema.parse(undefined);
     expect(parsed).toEqual(DEFAULT_CHAT_CONFIG);
+    expect(parsed.maxInputTokens).toBe(DEFAULT_CHAT_CONFIG.maxInputTokens);
   });
 
   it("applies defaults for partial remote configs", () => {
@@ -70,6 +71,25 @@ describe("getChatConfig env overrides", () => {
     const { getChatConfig } = await import("./chat");
     const cfg = await getChatConfig();
     expect(cfg.mcpRateLimitPerMinute).toBe(123);
+  });
+
+  it("overrides maxInputTokens from CHAT_MAX_INPUT_TOKENS", async () => {
+    const overrideTokens = "32000";
+    process.env.CHAT_MAX_INPUT_TOKENS = overrideTokens;
+    vi.doMock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+      getEdgeConfig: async () => ({
+        enableAnnouncementBanner: false,
+        enableCmdkTooltip: true,
+        enableReviewEventsTracking: true,
+        enableReviewSort: true,
+        enableReviewFilter: true,
+        enableReviewReactions: true,
+        chat: { ...DEFAULT_CHAT_CONFIG },
+      }),
+    }));
+    const { getChatConfig } = await import("./chat");
+    const cfg = await getChatConfig();
+    expect(cfg.maxInputTokens).toBe(Number(overrideTokens));
   });
 
   it("getChatWriteRateLimit respects CHAT_WRITE_RATE_LIMIT_PER_MINUTE", async () => {
