@@ -168,6 +168,43 @@ describe("timetable.searchCourses", () => {
     expect(classesFindManyMock).not.toHaveBeenCalled();
   });
 
+  it("returns [] for a single-char query (min-length guard) without hitting the db", async () => {
+    const result = await caller.timetable.searchCourses({
+      acadTermId: "t1",
+      query: "a",
+    });
+
+    expect(result).toEqual([]);
+    expect(queryRawMock).not.toHaveBeenCalled();
+    expect(classesFindManyMock).not.toHaveBeenCalled();
+  });
+
+  it("normalizes the query before it reaches SQL ('ACCT 102' collapses to 'ACCT102')", async () => {
+    queryRawMock.mockResolvedValue([statRow]);
+    classesFindManyMock.mockResolvedValue([]);
+
+    await caller.timetable.searchCourses({ acadTermId: "t1", query: "ACCT 102" });
+
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const params = rawCall.slice(1);
+    expect(params).toContain("ACCT102");
+    expect(params).not.toContain("ACCT 102");
+  });
+
+  it("uses prefix FTS and word_similarity in the ranked raw SQL", async () => {
+    queryRawMock.mockResolvedValue([statRow]);
+    classesFindManyMock.mockResolvedValue([]);
+
+    await caller.timetable.searchCourses({ acadTermId: "t1", query: "statistics" });
+
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const sql = rawCall[0].join("?");
+    expect(sql).toContain("plainto_tsquery('simple', ? || ':*')");
+    expect(sql).toContain("word_similarity(c.name");
+    expect(sql).toContain("similarity(c.code");
+    expect(sql).toContain("word_similarity(p.name");
+  });
+
   it("propagates an error when the raw query rejects", async () => {
     queryRawMock.mockRejectedValue(new Error("boom"));
 

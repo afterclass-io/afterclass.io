@@ -6,6 +6,7 @@ import {
   getProfessorTool,
   searchCoursesTool,
 } from "./read/courses";
+import { searchProfessorsTool } from "./read/professors";
 import {
   getBidPredictionTool,
   getBidResultsTool,
@@ -60,6 +61,7 @@ export const allTools: McpTool[] = [
   getCourseTool,
   getClassesTool,
   getProfessorTool,
+  searchProfessorsTool,
   // read - catalog
   getCourseReviewsTool,
   getProfessorReviewsTool,

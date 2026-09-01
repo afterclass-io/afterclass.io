@@ -4,6 +4,7 @@ import { countByCourseCode } from "./countByCourseCode";
 import { getAllByUniAbbrv } from "./getAllByUniAbbrv";
 import { getByCourseCode } from "./getByCourseCode";
 import { getBySlug } from "./getBySlug";
+import { search } from "./search";
 import { getProfessorsByClassId } from "@/server/api/professors/getByClassId";
 
 export const professorsRouter = createTRPCRouter({
@@ -11,5 +12,6 @@ export const professorsRouter = createTRPCRouter({
   getAllByUniAbbrv,
   getByCourseCode,
   getBySlug,
-  getProfessorsByClassId
+  getProfessorsByClassId,
+  search,
 });

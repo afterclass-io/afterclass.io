@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { normalizeSearchQuery } from "@/common/tools/query-normalize";
 import { publicProcedure } from "@/server/api/trpc";
 
 type SearchRow = {
@@ -17,14 +18,20 @@ export const searchCourses = publicProcedure
     }),
   )
   .query(async ({ ctx, input }) => {
-    const q = input.query.trim();
-    if (!q) return [];
+    const q = normalizeSearchQuery(input.query);
+    // Min-length guard: no SMU course code is 1 char, so a sub-2-char query is
+    // too generic to be useful (it would match `ILIKE '%a%'` on ~every code).
+    // Return early, before SQL.
+    if (q.length < 2) return [];
 
-    // Ranked fuzzy search: exact/prefix code first, then FTS over code+name,
-    // then trigram name similarity (typo-tolerant), then professor-name match
-    // in the same acad term (mirrors the pre-upgrade `classes.some({
-    // acadTermId, professor: { name: contains } })` branch). Offered-in-term
-    // filter via EXISTS on classes. Parameterized - safe (prepared statement).
+    // Ranked fuzzy search: exact/prefix code first, then prefix FTS over
+    // code+name (`:*` restores the pre-upgrade prefix behavior), then trigram
+    // name matching - word_similarity gives best-word typo tolerance
+    // ("statistics" matches "Statistical Analysis") + code similarity for
+    // spaced/dashed codes, then professor-name match in the same acad term
+    // (mirrors the pre-upgrade `classes.some({ acadTermId, professor: { name:
+    // contains } })` branch). Offered-in-term filter via EXISTS on classes.
+    // Parameterized - safe (prepared statement).
     const rows = await ctx.db.$queryRaw<SearchRow[]>`
       SELECT c.id, c.code, c.name, c.credit_units AS "creditUnits"
       FROM courses c
@@ -35,8 +42,9 @@ export const searchCourses = publicProcedure
       AND (
         c.code ILIKE ('%' || ${q} || '%')
         OR to_tsvector('simple', c.code || ' ' || c.name)
-           @@ plainto_tsquery('simple', ${q})
-        OR similarity(c.name, ${q}) > 0.3
+           @@ plainto_tsquery('simple', ${q} || ':*')
+        OR word_similarity(c.name, ${q}) > 0.3
+        OR similarity(c.code, ${q}) > 0.3
         OR EXISTS (
           SELECT 1 FROM classes clp
           JOIN professors p ON p.id = clp.professor_id
@@ -44,7 +52,7 @@ export const searchCourses = publicProcedure
             AND clp.acad_term_id = ${input.acadTermId}
             AND (
               p.name ILIKE ('%' || ${q} || '%')
-              OR similarity(p.name, ${q}) > 0.3
+              OR word_similarity(p.name, ${q}) > 0.3
             )
         )
       )
