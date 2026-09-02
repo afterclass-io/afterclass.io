@@ -308,8 +308,7 @@ export default function TimetablePage() {
       isLoggedIn &&
       selectedTermId &&
       !timetablesLoading &&
-      timetables &&
-      timetables.length === 0
+      timetables?.length === 0
     ) {
       createMutation.mutate({ acadTermId: selectedTermId });
     }

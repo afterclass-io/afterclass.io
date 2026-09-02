@@ -36,12 +36,13 @@ vi.mock("server-only", () => ({}));
 vi.mock("./user", () => ({
   buildToolContext: buildToolContextMock,
 }));
-// Single mock for mcp-use — the plan's reported dual-mock (mcp-use + mcp-use/server) is consolidated here
+// Single mock for mcp-use — the v2 package has no `mcp-use/server` subpath,
+// so there is nothing else to stub.
 vi.mock("mcp-use", () => ({
   MCPServer: vi.fn(),
 }));
 
-import { makeHandler, registerMcpUseTools, registerViewlessTools, toMcpUseResponse, viewBoundNames } from "./register";
+import { registerViewlessTools, viewBoundNames } from "./register";
 import { errText, okText } from "@/server/mcp/types";
 import { allTools } from "@/server/mcp/tools";
 
@@ -57,20 +58,7 @@ beforeEach(() => {
   buildToolContextMock.mockResolvedValue(fakeCtx);
 });
 
-describe("toMcpUseResponse", () => {
-  it("maps an ok result to a raw text response", () => {
-    const r = toMcpUseResponse(okText("hello"));
-    expect(r).toMatchObject({ content: [{ type: "text", text: "hello" }] });
-    expect(r.isError).toBeUndefined();
-  });
-  it("maps an isError result to an error envelope", () => {
-    const r = toMcpUseResponse(errText("boom"));
-    expect(r.isError).toBe(true);
-    expect(r.content?.[0]).toMatchObject({ type: "text", text: "boom" });
-  });
-});
-
-describe("registerViewlessTools / registerMcpUseTools", () => {
+describe("registerViewlessTools", () => {
   it("registers every non-view-bound tool with name, description and readOnly annotation", () => {
     const tool = vi.fn();
     const server = { tool } as never;
@@ -90,10 +78,6 @@ describe("registerViewlessTools / registerMcpUseTools", () => {
       expect(def.view).toBeUndefined();
       expect(def.outputSchema).toBeUndefined();
     }
-  });
-
-  it("registerMcpUseTools is alias for registerViewlessTools (back-compat)", () => {
-    expect(registerMcpUseTools).toBe(registerViewlessTools);
   });
 
   it("viewBoundNames contains exactly the 7 view-bound tools", () => {
@@ -143,9 +127,13 @@ describe("registerViewlessTools / registerMcpUseTools", () => {
       captured.push(handler);
     });
     registerViewlessTools({ tool } as never);
-    await expect(captured[0]!({})).resolves.toMatchObject({ content: [{ type: "text", text: "result-a" }] });
+    const ra = await captured[0]!({});
+    expect(ra.content).toMatchObject([{ type: "text", text: "result-a" }]);
+    expect(ra.isError).toBeUndefined();
     const rb = await captured[1]!({});
     expect(rb.isError).toBe(true);
+    // thrown run errors become the Internal-error envelope (no rethrow)
+    expect(rb.content?.[0]?.text).toBe("Internal error in tool tool-b");
   });
 
   it("rate-limits write tools via DB checkAndIncrement but not readOnly tools", async () => {
@@ -172,6 +160,8 @@ describe("registerViewlessTools / registerMcpUseTools", () => {
     expect(checkAndIncrementMock).toHaveBeenCalledWith("mcp-write:u1", 60, 1);
     expect(fakeRunA).not.toHaveBeenCalled();
     expect(writeResult.isError).toBe(true);
+    // blocked result carries the friendly rate-limit message
+    expect(writeResult.content?.[0]?.text).toMatch(/rate limit/i);
 
     // readOnly tool (tool-b) -> no limiter, run proceeds
     checkAndIncrementMock.mockClear();
@@ -237,81 +227,5 @@ describe("registerViewlessTools / registerMcpUseTools", () => {
     expect(result.content?.[0]?.text).toBe(JSON.stringify({ foo: "bar" }));
     expect(result.structuredContent).toBeUndefined();
     expect(result._meta).toBeUndefined();
-  });
-});
-
-describe("makeHandler", () => {
-  it("returns raw text envelope on success", async () => {
-    const tool = {
-      name: "dummy",
-      description: "x",
-      inputSchema: {} as never,
-      readOnly: true,
-      run: async () => ({ content: [{ type: "text", text: "hello" }] }),
-    } as unknown as Parameters<typeof makeHandler>[0];
-    const handler = makeHandler(tool, (ctx, args) => tool.run(ctx, args as never));
-    const result = await handler({}, { auth: { user: { id: "u1", email: "a@b" } } });
-    expect(result).toMatchObject({ content: [{ type: "text", text: "hello" }] });
-    expect(result.isError).toBeUndefined();
-  });
-
-  it("maps run isError to error envelope", async () => {
-    const tool = {
-      name: "dummy",
-      description: "x",
-      inputSchema: {} as never,
-      readOnly: true,
-      run: async () => ({ content: [{ type: "text", text: "oops" }], isError: true }),
-    } as unknown as Parameters<typeof makeHandler>[0];
-    const handler = makeHandler(tool, (ctx, args) => tool.run(ctx, args as never));
-    const result = await handler({}, { auth: { user: { id: "u1" } } });
-    expect(result.isError).toBe(true);
-    expect(result.content?.[0]?.text).toBe("oops");
-  });
-
-  it("catches thrown errors and returns Internal error", async () => {
-    const tool = {
-      name: "boom-tool",
-      description: "x",
-      inputSchema: {} as never,
-      readOnly: true,
-      run: async () => {
-        throw new Error("kaboom");
-      },
-    } as unknown as Parameters<typeof makeHandler>[0];
-    const handler = makeHandler(tool, (ctx, args) => tool.run(ctx, args as never));
-    const result = await handler({}, { auth: { user: { id: "u1" } } });
-    expect(result.isError).toBe(true);
-    expect(result.content?.[0]?.text).toMatch(/Internal error/);
-  });
-
-  it("rate-limits write tools via makeHandler as well", async () => {
-    const tool = {
-      name: "write-tool",
-      description: "x",
-      inputSchema: {} as never,
-      // no readOnly => write tool
-      run: async () => ({ content: [{ type: "text", text: "should-not-reach" }] }),
-    } as unknown as Parameters<typeof makeHandler>[0];
-    checkAndIncrementMock.mockResolvedValueOnce({ ok: false, retryAfterSeconds: 12 });
-    const handler = makeHandler(tool, (ctx, args) => tool.run(ctx, args as never));
-    const result = await handler({}, { auth: { user: { id: "u1" } } });
-    expect(result.isError).toBe(true);
-    expect(result.content?.[0]?.text).toMatch(/rate limit/i);
-  });
-
-  it("returns Unauthorized when context missing", async () => {
-    buildToolContextMock.mockResolvedValueOnce(undefined);
-    const tool = {
-      name: "dummy",
-      description: "x",
-      inputSchema: {} as never,
-      readOnly: true,
-      run: async () => ({ content: [{ type: "text", text: "ok" }] }),
-    } as unknown as Parameters<typeof makeHandler>[0];
-    const handler = makeHandler(tool, (ctx, args) => tool.run(ctx, args as never));
-    const result = await handler({}, undefined);
-    expect(result.isError).toBe(true);
-    expect(result.content?.[0]?.text).toMatch(/Unauthorized/);
   });
 });

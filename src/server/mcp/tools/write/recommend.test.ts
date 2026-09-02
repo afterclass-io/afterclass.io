@@ -75,10 +75,9 @@ describe("recommend-bid-amount", () => {
     expect(result.isError).toBe(true);
   });
 
-  it("exposes a bid-recommendation widget and props that parse from its JSON output", async () => {
+  it("exposes bid-recommendation props that parse from its JSON output", async () => {
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller(prediction, []) };
     const result = await recommendBidAmountTool.run(ctx, { classId: "cl1", beatsPercentage: 70 });
-    expect(recommendBidAmountTool.widgetName).toBe("bid-recommendation");
     const props = recommendBidAmountTool.toWidgetProps?.(result);
     expect(props).toMatchObject({ classId: "cl1" });
     expect(typeof (props as { suggestedBidAmount?: number }).suggestedBidAmount).toBe("number");

@@ -15,9 +15,9 @@ export interface ToolContext {
 export interface ToolResult {
   content: Array<{ type: "text"; text: string }>;
   isError?: boolean;
-  /** Widget-only props channel. When present, register.ts passes these to the
-   *  widget INSTEAD of toWidgetProps(result), so bearer secrets (e.g. iCal
-   *  URLs) never enter model-visible text. */
+  /** Widget-only props channel. When present, view-tools adapters surface
+   *  these to the bound View INSTEAD of toWidgetProps(result), so bearer
+   *  secrets (e.g. iCal URLs) never enter model-visible text. */
   widgetProps?: Record<string, unknown>;
 }
 
@@ -32,8 +32,7 @@ export interface McpTool<TSchema extends z.ZodType = z.ZodType> {
   // `McpTool<z.ZodType>` (needed for `allTools: McpTool[]`). No runtime difference.
   run(ctx: ToolContext, input: z.infer<TSchema>): Promise<ToolResult>;
 
-  /** Optional MCP Apps widget name (rendered in ChatGPT/Claude) and props extractor. */
-  widgetName?: string;
+  /** Optional extractor for the bound View's props (see view-tools adapters). */
   toWidgetProps?: (result: ToolResult) => Record<string, unknown>;
 }
 

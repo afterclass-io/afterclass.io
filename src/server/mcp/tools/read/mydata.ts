@@ -11,7 +11,7 @@ export const myTimetablesTool: McpTool<typeof myTimetablesSchema> = {
   inputSchema: myTimetablesSchema,
   readOnly: true,
   run: async ({ caller }, input) => {
-    const { acadTermId } = input as { acadTermId?: string };
+    const { acadTermId } = input;
     try {
       const term = await resolveTermId(caller, acadTermId);
       if (!term.ok) return errText(term.errText);
@@ -83,7 +83,7 @@ export const myBudgetTool: McpTool<typeof myBudgetSchema> = {
   inputSchema: myBudgetSchema,
   readOnly: true,
   run: async ({ caller }, input) => {
-    const { acadTermId } = input as { acadTermId?: string };
+    const { acadTermId } = input;
     try {
       const term = await resolveTermId(caller, acadTermId);
       if (!term.ok) return errText(term.errText);

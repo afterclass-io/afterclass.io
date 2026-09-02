@@ -24,7 +24,7 @@ export const getByRoadmapId = publicProcedure
 
     for (const r of reactions) {
       aggregated.set(r.reaction, (aggregated.get(r.reaction) ?? 0) + 1);
-      if (ctx.session?.user && r.userId === ctx.session.user.id) {
+      if (r.userId === ctx.session?.user?.id) {
         viewerReaction = r.reaction;
       }
     }

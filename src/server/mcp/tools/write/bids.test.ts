@@ -254,10 +254,7 @@ describe("bid write tools", () => {
     expect(parsed.plan.bids[0]!.notes).toBeUndefined(); // eslint-disable-line @typescript-eslint/no-unsafe-member-access -- typed envelope
   });
 
-  it("bid write tools expose bid-plan widgetName + toWidgetProps unwrapping plan", () => {
-    expect(upsertBidTool.widgetName).toBe("bid-plan");
-    expect(removeBidTool.widgetName).toBe("bid-plan");
-    expect(setBidBudgetTool.widgetName).toBe("bid-plan");
+  it("bid write tools expose toWidgetProps unwrapping the plan", () => {
     expect(upsertBidTool.toWidgetProps).toBeDefined();
     expect(removeBidTool.toWidgetProps).toBeDefined();
     expect(setBidBudgetTool.toWidgetProps).toBeDefined();

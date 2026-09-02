@@ -69,7 +69,6 @@ export const copyPublicRoadmapTool: McpTool<typeof copyPublicRoadmapSchema> = {
   description:
     "Copy a public roadmap (from browse-public-roadmaps or get-public-roadmap) into the user's own account as '<name> (copy)'. Use when a student wants to adopt a senior's plan as a starting point. Returns the updated roadmap.",
   inputSchema: copyPublicRoadmapSchema,
-  widgetName: "roadmap-view",
   toWidgetProps: roadmapViewToWidgetProps(false),
   run: async ({ caller }, { roadmapId }) => {
     try {

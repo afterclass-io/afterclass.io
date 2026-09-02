@@ -110,7 +110,6 @@ export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
     "Read student reviews for a course, including full review text. Read-only: you may summarise reviews but must NEVER write, edit, or create reviews.",
   inputSchema: getCourseReviewsSchema,
   readOnly: true,
-  widgetName: "review-cards",
   toWidgetProps: reviewCardsToWidgetProps,
   run: async ({ caller }, { code, limit }) => {
     try {
@@ -141,7 +140,6 @@ export const getProfessorReviewsTool: McpTool<typeof getProfessorReviewsSchema> 
     "Read student reviews for a professor, including full review text. Use when the user asks what students say about a professor or wants concrete review examples. Read-only: NEVER write, edit, or create reviews.",
   inputSchema: getProfessorReviewsSchema,
   readOnly: true,
-  widgetName: "review-cards",
   toWidgetProps: reviewCardsToWidgetProps,
   run: async ({ caller }, { slug, limit }) => {
     try {

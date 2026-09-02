@@ -21,7 +21,6 @@ export const getTimetableCalendarLinkTool: McpTool<typeof getTimetableCalendarLi
     "Get calendar subscribe links (Google / Apple / Outlook + ICS feed) for one of the user's timetables, so their calendar stays in sync automatically. If the timetable is private, the user must first agree to link-sharing (enableLinkSharing=true). Links render in a widget; never ask the user for tokens.",
   inputSchema: getTimetableCalendarLinkSchema,
   readOnly: false,
-  widgetName: "calendar-links",
   run: async ({ caller }, { timetableId, enableLinkSharing }) => {
     try {
       let madeLinkShareable = false;

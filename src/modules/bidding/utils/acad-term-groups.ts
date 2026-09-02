@@ -45,7 +45,9 @@ export function computeAcadTermGroups<T extends HasBidWindow>(
     const [acadTermId] = point.bidWindow.split("/");
     if (!acadTermId) continue;
 
-    if (!current || current.acadTermId !== acadTermId) {
+    // `at(-1)` (not an optional-chain on the mutable `current`): TS control
+    // flow can't narrow the loop-carried `let current` in the else-branch.
+    if (groups.at(-1)?.acadTermId !== acadTermId) {
       const { shortLabel } = inferAcadTerm(acadTermId);
       current = {
         acadTermId,
@@ -55,7 +57,7 @@ export function computeAcadTermGroups<T extends HasBidWindow>(
       };
       groups.push(current);
     } else {
-      current.lastBidWindow = point.bidWindow;
+      groups.at(-1)!.lastBidWindow = point.bidWindow;
     }
   }
 

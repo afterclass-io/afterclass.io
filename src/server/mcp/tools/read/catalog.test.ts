@@ -113,11 +113,6 @@ describe("catalog read tools", () => {
     expect(result.isError).toBeUndefined();
   });
 
-  it("both review tools declare the review-cards widget", () => {
-    expect(getCourseReviewsTool.widgetName).toBe("review-cards");
-    expect(getProfessorReviewsTool.widgetName).toBe("review-cards");
-  });
-
   it("get-course-reviews toWidgetProps normalizes the { items, nextCursor } envelope", async () => {
     const fn = vi
       .fn()
@@ -261,7 +256,7 @@ describe("catalog read tools", () => {
     const items = Array.from({ length: 30 }, (_, i) => ({ id: `r${i}` }));
     const fn = vi
       .fn()
-      .mockResolvedValue({ items, total: 30, extra: "keep" } as unknown as unknown[]);
+      .mockResolvedValue({ items, total: 30, extra: "keep" });
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getBy: fn }) };
     const result = await getBidResultsTool.run(ctx, { limit: 5 } as Record<string, unknown> as Parameters<typeof getBidResultsTool.run>[1]);
     const parsed = JSON.parse(result.content[0]!.text) as { items: unknown[]; total: number; extra: string };

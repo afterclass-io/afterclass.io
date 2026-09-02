@@ -81,7 +81,7 @@ const factors = [
 
 function makeCaller({
   results = [] as unknown[],
-  pred = null as unknown,
+  pred = null,
   professor = null as { id: string } | null,
 }: {
   results?: unknown[];
@@ -125,7 +125,6 @@ describe("explore-bid-options", () => {
     });
 
     expect(exploreBidOptionsTool.readOnly).toBe(true);
-    expect(exploreBidOptionsTool.widgetName).toBe("bid-explorer");
     expect(result.isError).toBeUndefined();
     expect(caller.bidResults.getBy).toHaveBeenCalledWith({ classId: "cl1" });
     expect(caller.bidPredictions.getBy).toHaveBeenCalledWith({ classId: "cl1" });

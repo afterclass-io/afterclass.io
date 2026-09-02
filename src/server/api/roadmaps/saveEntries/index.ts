@@ -26,7 +26,7 @@ export const saveEntries = protectedProcedure
       select: { id: true, userId: true, updatedAt: true },
     });
 
-    if (!roadmap || roadmap.userId !== ctx.session.user.id) {
+    if (roadmap?.userId !== ctx.session.user.id) {
       throw new TRPCError({ code: "FORBIDDEN" });
     }
 

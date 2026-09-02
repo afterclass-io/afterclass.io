@@ -16,7 +16,6 @@ export const upsertBidTool: McpTool<typeof upsertBidSchema> = {
   description:
     "Create or update one of the user's bids for a class in a bid window. Use get-bid-windows for valid window ids. Returns the full updated bid plan for the affected term.",
   inputSchema: upsertBidSchema,
-  widgetName: "bid-plan",
   toWidgetProps: bidPlanToWidgetProps,
   run: async ({ caller }, input) => {
     try {
@@ -57,7 +56,6 @@ export const removeBidTool: McpTool<typeof removeBidSchema> = {
   name: "remove-bid",
   description: "Delete one of the user's bids by its id. Returns the full updated bid plan for the affected term.",
   inputSchema: removeBidSchema,
-  widgetName: "bid-plan",
   toWidgetProps: bidPlanToWidgetProps,
   run: async ({ caller }, { id }) => {
     try {
@@ -95,7 +93,6 @@ export const setBidBudgetTool: McpTool<typeof setBidBudgetSchema> = {
   name: "set-bid-budget",
   description: `Set the user's bid budget balance for an academic term. balance must be between 0 and ${MAX_BUDGET}. Returns the full updated bid plan for the affected term.`,
   inputSchema: setBidBudgetSchema,
-  widgetName: "bid-plan",
   toWidgetProps: bidPlanToWidgetProps,
   run: async ({ caller }, input) => {
     if (input.balance > MAX_BUDGET) {

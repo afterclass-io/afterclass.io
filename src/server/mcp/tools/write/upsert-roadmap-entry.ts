@@ -27,7 +27,6 @@ export const upsertRoadmapEntryTool: McpTool<typeof upsertRoadmapEntrySchema> = 
   description:
     "Add a course to a study roadmap (additive: does NOT wipe other entries). Provide the roadmap id (omit for your active roadmap), a course code (e.g. ACCT102), and the desired placement year + term (e.g. year 3, T1). Returns the full updated roadmap (via roadmap-view) PLUS feasibility info { issues, isFeasible } (PREREQ_MISSING / TERM_DUPLICATE / EXAM_CLASH - same as check-roadmap-feasibility). Replaces save-roadmap-entries for single-course edits. If the course is already in the roadmap, its placement is updated (moved) rather than duplicated. Self-contained: one call is the answer. Additive merge is done on existing roadmap entries (thin wrapper over existing tRPC procedures, no new Prisma queries).",
   inputSchema: upsertRoadmapEntrySchema,
-  widgetName: "roadmap-view",
   toWidgetProps: roadmapViewToWidgetProps(false),
   run: async ({ caller }, { roadmapId, courseCode, yearNumber, term, sortOrder }) => {
     try {

@@ -19,7 +19,6 @@ export const createRoadmapTool: McpTool<typeof createRoadmapSchema> = {
   name: "create-roadmap",
   description: "Create a new study roadmap for the user. Returns the updated roadmap.",
   inputSchema: createRoadmapSchema,
-  widgetName: "roadmap-view",
   toWidgetProps: roadmapViewToWidgetProps(false),
   run: async ({ caller }, { name }) => {
     try {
@@ -76,7 +75,6 @@ export const saveRoadmapEntriesTool: McpTool<typeof saveRoadmapEntriesSchema> = 
   description:
     "Replace the course entries of a roadmap. entries is the full desired list: [{courseId, yearNumber (1-8), term (T1|T2|T3A|T3B), sortOrder}]. Returns the updated roadmap.",
   inputSchema: saveRoadmapEntriesSchema,
-  widgetName: "roadmap-view",
   toWidgetProps: roadmapViewToWidgetProps(false),
   run: async ({ caller }, input) => {
     try {

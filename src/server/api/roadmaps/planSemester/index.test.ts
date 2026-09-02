@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
-import type { Session } from "next-auth";
 
 // vi.mock factories are hoisted above top-level const declarations, so the
 // mock fns must be created via vi.hoisted to avoid a TDZ error - same pattern
@@ -69,7 +68,7 @@ const caller = createCaller(() => ({
     users: { findUnique: usersFindUniqueMock },
     userRoadmapEntry: { findMany: userRoadmapEntryFindManyMock },
   } as unknown as PrismaClient,
-  session: { expires: new Date().toISOString(), user: fakeUser } as Session,
+  session: { expires: new Date().toISOString(), user: fakeUser },
   headers: new Headers(),
 }));
 

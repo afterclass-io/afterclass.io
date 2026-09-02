@@ -29,7 +29,7 @@ function req(
   return new Request(url, {
     ...init,
     headers: { "sec-fetch-site": "same-origin", ...init.headers },
-  } as RequestInit);
+  });
 }
 
 describe("GET /api/oauth/consent", () => {

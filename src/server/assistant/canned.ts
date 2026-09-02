@@ -38,7 +38,7 @@ export function normalizePrompt(text: string): string {
 
 export function findCannedAnswer(messages: UIMessage[]): string | null {
   const last = messages.at(-1);
-  if (!last || last.role !== "user") return null;
+  if (last?.role !== "user") return null;
   // Tolerate legacy content-only messages (no `parts`): treat as empty text so
   // the short-circuit falls through to the normal gates instead of throwing.
   const parts = Array.isArray(last.parts) ? last.parts : [];

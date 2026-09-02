@@ -16,7 +16,8 @@ function formatInput(input: unknown): string {
   } catch {
     // JSON.stringify only throws on circular refs / BigInt - fall back to a
     // safe primitive string form (satisfies no-base-to-string).
-    return String(input as string | number | boolean | null);
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- primitive-only fallback by design
+    return String(input);
   }
 }
 

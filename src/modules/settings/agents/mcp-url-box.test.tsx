@@ -24,6 +24,7 @@ describe("MCPUrlBox", () => {
     const clipboard = (navigator as Navigator & {
       clipboard: { writeText: (t: string) => Promise<void> };
     }).clipboard;
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- clipboard is a plain function-typed property in the cast, not a class method; the test asserts the mock reference
     await vi.waitFor(() => expect(clipboard.writeText).toHaveBeenCalledWith("https://acme.run.mcp-use.com/mcp"));
   });
 });

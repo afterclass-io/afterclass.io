@@ -90,3 +90,18 @@ export const ErrorState: Story = {
     }),
   ],
 };
+
+/**
+ * Exercises the unavailable-host path: the bridge cannot call tools, so the
+ * "Add to timetable" CTA must stay hidden (see view.tsx `isAvailable` guard).
+ */
+export const UnavailableHost: Story = {
+  decorators: [
+    withMcpView({
+      status: "ready",
+      toolInput: { query: "ACC" },
+      toolOutput: sampleResults,
+      isAvailable: false,
+    }),
+  ],
+};

@@ -15,7 +15,6 @@ export const getMyRoadmapTool: McpTool<typeof getMyRoadmapSchema> = {
     "Get one of the user's own roadmaps with ALL its course entries (yearNumber, term T1|T2|T3A|T3B, course code/name/credit units). Use this to see your own progression before planning.",
   inputSchema: getMyRoadmapSchema,
   readOnly: true,
-  widgetName: "roadmap-view",
   toWidgetProps: roadmapViewWidgetProps(false),
   run: async ({ caller }, { roadmapId }) => {
     try {
@@ -36,7 +35,6 @@ export const getPublicRoadmapTool: McpTool<typeof getPublicRoadmapSchema> = {
     "Get a public roadmap with ALL its course entries (yearNumber, term, course code/name/credit units) plus the owner and vote count. Use this to study a senior's full progression.",
   inputSchema: getPublicRoadmapSchema,
   readOnly: true,
-  widgetName: "roadmap-view",
   toWidgetProps: roadmapViewWidgetProps(true),
   run: async ({ caller }, { roadmapId }) => {
     try {
