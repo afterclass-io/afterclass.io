@@ -1,3 +1,6 @@
+import type { RequestContext } from "mcp-use";
+import type { SupabaseOAuthUser } from "mcp-use/oauth/supabase";
+
 import { db } from "@/server/db";
 import type { SessionUser } from "@/server/auth/config";
 import { createCallerForUser } from "@/server/mcp/caller";
@@ -31,25 +34,32 @@ function toSessionUser(u: NonNullable<Awaited<ReturnType<typeof db.users.findUni
  * today (id-first path unchanged and remains the primary resolver) unless a
  * future provider/token starts forwarding the OIDC `email_verified` claim.
  */
-export async function resolveMcpUser(auth: {
-  userId?: string;
-  email?: string;
-  email_verified?: boolean;
-  emailVerified?: boolean;
-  email_confirmed_at?: string | null;
-}): Promise<SessionUser | undefined> {
-  if (!auth.userId && !auth.email) return undefined;
-  if (auth.userId) {
-    const byId = await db.users.findUnique({ where: { id: auth.userId } });
+export async function resolveMcpUser(
+  auth: { user?: SupabaseOAuthUser } | { userId?: string; email?: string; email_verified?: boolean; emailVerified?: boolean; email_confirmed_at?: string | null },
+): Promise<SessionUser | undefined> {
+  if (!auth) return undefined;
+  // Prefer v2 shape: auth.user.id / .email
+  const v2 = (auth as { user?: SupabaseOAuthUser }).user;
+  if (v2?.id) {
+    const byId = await db.users.findUnique({ where: { id: v2.id } });
+    if (byId) return toSessionUser(byId);
+    // email fallback only if token asserts verified email (Supabase never sets it — see comment above)
+    // Supabase `email` is present but NOT verified; require explicit verified claim which Supabase never sends → id-first path remains primary.
+    // Keep fallback but require a verified signal; Document that under Supabase it will not fire.
+  }
+  // Legacy fallback for tests that pass {userId,email,...} — retain until all callers updated
+  const legacy = auth as { userId?: string; email?: string; email_verified?: boolean; emailVerified?: boolean; email_confirmed_at?: string | null };
+  if (legacy.userId) {
+    const byId = await db.users.findUnique({ where: { id: legacy.userId } });
     if (byId) return toSessionUser(byId);
   }
-  if (auth.email) {
-    const verified =
-      auth.email_verified === true ||
-      auth.emailVerified === true ||
-      (typeof auth.email_confirmed_at === "string" && auth.email_confirmed_at.length > 0);
-    if (!verified) return undefined;
-    const byEmail = await db.users.findUnique({ where: { email: auth.email } });
+  const verified =
+    legacy.email_verified === true ||
+    legacy.emailVerified === true ||
+    (typeof legacy.email_confirmed_at === "string" && legacy.email_confirmed_at.length > 0);
+  const email = v2?.email ?? legacy.email;
+  if (email && verified) {
+    const byEmail = await db.users.findUnique({ where: { email } });
     if (byEmail) return toSessionUser(byEmail);
   }
   return undefined;
@@ -78,15 +88,12 @@ async function resolveDevBypassUser(): Promise<SessionUser | undefined> {
   return user ? toSessionUser(user) : undefined;
 }
 
-/** Resolve auth and build a tRPC caller scoped to the user. */
-export async function buildToolContext(auth: {
-  userId?: string;
-  email?: string;
-  email_verified?: boolean;
-  emailVerified?: boolean;
-  email_confirmed_at?: string | null;
-}): Promise<ToolContext | undefined> {
-  const user = (await resolveMcpUser(auth)) ?? (await resolveDevBypassUser());
+/** Resolve auth and build a tRPC caller scoped to the user. Accepts both v2 RequestContext and legacy auth object for tests. */
+export async function buildToolContext(
+  ctxOrAuth: RequestContext<SupabaseOAuthUser, true> | { auth?: unknown } | { user?: SupabaseOAuthUser } | { userId?: string; email?: string; email_verified?: boolean; emailVerified?: boolean; email_confirmed_at?: string | null },
+): Promise<ToolContext | undefined> {
+  const auth = (ctxOrAuth as { auth?: unknown })?.auth ?? ctxOrAuth;
+  const user = (await resolveMcpUser(auth as never)) ?? (await resolveDevBypassUser());
   if (!user) return undefined;
   return createCallerForUser(user);
 }

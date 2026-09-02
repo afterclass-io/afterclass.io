@@ -22,7 +22,6 @@ next-env.d.ts
 
 # mcp-use
 .mcp-use/
-mcp-env.d.ts
 
 # production
 /build

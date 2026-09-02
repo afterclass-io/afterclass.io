@@ -1,17 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 
-// Stub the heavy mcp-use module (response helpers only) so we can register the
-// resource against a fake `{ resource }` server and invoke the captured handler
-// with a mock caller - same pattern as `prompts.test.ts`. `zod` is not involved
-// here, and the caller is injected, so no server stack is pulled in.
-vi.mock("mcp-use/server", () => ({
-  object: (value: unknown) => ({ content: [{ type: "text", text: JSON.stringify(value) }] }),
+vi.mock("mcp-use", () => ({
+  MCPServer: class MockServer { resource = vi.fn(); tool = vi.fn(); prompt = vi.fn(); },
 }));
 
 import { registerResources } from "./resources";
 
-type CapturedHandler = () => Promise<{ content: Array<{ type: string; text?: string }> }>;
+type CapturedHandler = (
+  uri: URL,
+  ctx: unknown,
+) => Promise<{ contents: Array<{ uri: string; mimeType: string; text: string }> }>;
 
 describe("registerResources", () => {
   it("registers the acad-terms resource with the catalog uri", () => {
@@ -21,11 +20,12 @@ describe("registerResources", () => {
 
     expect(resource).toHaveBeenCalledTimes(1);
     const [definition, handler] = resource.mock.calls[0] as [
-      { name?: string; uri?: string; description?: string },
+      { name?: string; uri?: string; description?: string; mimeType?: string },
       unknown,
     ];
     expect(definition.name).toBe("Academic terms");
     expect(definition.uri).toBe("catalog://acad-terms");
+    expect(definition.mimeType).toBe("application/json");
     expect(handler).toBeInstanceOf(Function);
   });
 
@@ -40,15 +40,16 @@ describe("registerResources", () => {
     registerResources({ resource } as never, caller as never);
     const [, handler] = resource.mock.calls[0] as [unknown, CapturedHandler];
 
-    const result = await handler();
+    const result = await (handler as CapturedHandler)(new URL("catalog://acad-terms"), {} as never);
     expect(list).toHaveBeenCalledTimes(1);
 
-    const body = JSON.parse(result.content[0]?.text ?? "{}") as {
+    expect(result.contents).toHaveLength(1);
+    expect(result.contents[0]!.mimeType).toBe("application/json");
+    expect(result.contents[0]!.uri).toBe("catalog://acad-terms");
+    const body = JSON.parse(result.contents[0]?.text ?? "{}") as {
       terms: Array<{ id: string; label: string }>;
     };
-    // The resource must resolve live data - dead `terms: []` fails this.
     expect(body.terms.length).toBeGreaterThan(0);
-    // Inner shape matches what `list-acad-terms` returns ({ id, label, ... }).
     expect(body.terms[0]).toMatchObject({ id: "t1", label: "AY2026/27 T1" });
   });
 
@@ -58,7 +59,7 @@ describe("registerResources", () => {
     registerResources({ resource } as never, { acadTerms: { list } } as never);
     const [, handler] = resource.mock.calls[0] as [unknown, CapturedHandler];
 
-    const result = await handler();
-    expect(JSON.parse(result.content[0]?.text ?? "{}")).toEqual({ terms: [] });
+    const result = await (handler as CapturedHandler)(new URL("catalog://acad-terms"), {} as never);
+    expect(JSON.parse(result.contents[0]?.text ?? "{}")).toEqual({ terms: [] });
   });
 });

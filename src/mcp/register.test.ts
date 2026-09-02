@@ -13,12 +13,6 @@ const { checkAndIncrementMock, getChatConfigMock } = vi.hoisted(() => ({
 
 const { buildToolContextMock } = vi.hoisted(() => ({ buildToolContextMock: vi.fn() as Mock }));
 
-const { widgetMock, textMock, errorMock } = vi.hoisted(() => ({
-  widgetMock: vi.fn() as Mock,
-  textMock: vi.fn() as Mock,
-  errorMock: vi.fn() as Mock,
-}));
-
 vi.mock("@/server/assistant/ratelimit", () => ({
   checkAndIncrement: checkAndIncrementMock,
 }));
@@ -42,20 +36,14 @@ vi.mock("server-only", () => ({}));
 vi.mock("./user", () => ({
   buildToolContext: buildToolContextMock,
 }));
-vi.mock("mcp-use/server", () => ({
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  widget: (...args: unknown[]) => widgetMock(...args),
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  text: (...args: unknown[]) => textMock(...args),
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  error: (...args: unknown[]) => errorMock(...args),
+// Single mock for mcp-use — the plan's reported dual-mock (mcp-use + mcp-use/server) is consolidated here
+vi.mock("mcp-use", () => ({
+  MCPServer: vi.fn(),
 }));
 
-import { makeHandler, registerMcpUseTools, toMcpUseResponse } from "./register";
+import { makeHandler, registerMcpUseTools, registerViewlessTools, toMcpUseResponse, viewBoundNames } from "./register";
 import { errText, okText } from "@/server/mcp/types";
-
-type TextCall = { type: "text"; text: string };
-type WidgetCallArgs = { props: Record<string, unknown>; output: unknown };
+import { allTools } from "@/server/mcp/tools";
 
 const fakeCtx = {
   user: { id: "u1" } as never,
@@ -67,29 +55,26 @@ beforeEach(() => {
   getChatConfigMock.mockResolvedValue({ mcpRateLimitPerMinute: 60 });
   checkAndIncrementMock.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
   buildToolContextMock.mockResolvedValue(fakeCtx);
-  // Make mcp-use/server mocks return shapes compatible with toMcpUseResponse expectations.
-  textMock.mockImplementation((t: string) => ({ content: [{ type: "text", text: t }] }));
-  errorMock.mockImplementation((t: string) => ({ content: [{ type: "text", text: t }], isError: true }));
-  widgetMock.mockImplementation((args: WidgetCallArgs) => ({ widget: true, ...args }));
 });
 
 describe("toMcpUseResponse", () => {
-  it("maps an ok result to a text response", () => {
+  it("maps an ok result to a raw text response", () => {
     const r = toMcpUseResponse(okText("hello"));
     expect(r).toMatchObject({ content: [{ type: "text", text: "hello" }] });
+    expect(r.isError).toBeUndefined();
   });
-  it("maps an isError result to an error response", () => {
+  it("maps an isError result to an error envelope", () => {
     const r = toMcpUseResponse(errText("boom"));
     expect(r.isError).toBe(true);
     expect(r.content?.[0]).toMatchObject({ type: "text", text: "boom" });
   });
 });
 
-describe("registerMcpUseTools", () => {
-  it("registers every tool with its name, description and schema", () => {
+describe("registerViewlessTools / registerMcpUseTools", () => {
+  it("registers every non-view-bound tool with name, description and readOnly annotation", () => {
     const tool = vi.fn();
     const server = { tool } as never;
-    registerMcpUseTools(server);
+    registerViewlessTools(server);
     expect(tool).toHaveBeenCalledTimes(2);
     expect(tool).toHaveBeenCalledWith(
       expect.objectContaining({ name: "tool-a", description: "A" }),
@@ -99,6 +84,51 @@ describe("registerMcpUseTools", () => {
       expect.objectContaining({ name: "tool-b", annotations: { readOnlyHint: true } }),
       expect.any(Function),
     );
+    // No view/outputSchema for viewless tools
+    for (const call of (tool as unknown as Mock).mock.calls) {
+      const def = call[0] as Record<string, unknown>;
+      expect(def.view).toBeUndefined();
+      expect(def.outputSchema).toBeUndefined();
+    }
+  });
+
+  it("registerMcpUseTools is alias for registerViewlessTools (back-compat)", () => {
+    expect(registerMcpUseTools).toBe(registerViewlessTools);
+  });
+
+  it("viewBoundNames contains exactly the 7 view-bound tools", () => {
+    expect(viewBoundNames).toEqual(
+      new Set([
+        "search-courses",
+        "recommend-bid-amount",
+        "get-timetable-calendar-link",
+        "my-bid-plan",
+        "get-my-roadmap",
+        "get-course-reviews",
+        "explore-bid-options",
+      ]),
+    );
+    expect(viewBoundNames.size).toBe(7);
+  });
+
+  it("skips view-bound tools when they appear in allTools", async () => {
+    // Temporarily add a view-bound tool to allTools and ensure it's skipped
+    const original = [...(allTools as unknown[])];
+    (allTools as unknown as unknown[]).push({
+      name: "search-courses",
+      description: "Search courses",
+      inputSchema: {},
+      readOnly: true,
+      run: vi.fn().mockResolvedValue({ content: [{ type: "text", text: "should-not-register" }] }),
+    });
+    const tool = vi.fn();
+    registerViewlessTools({ tool } as never);
+    // Should still only register the 2 non-view-bound tools, not the injected view-bound one
+    expect(tool).toHaveBeenCalledTimes(2);
+    expect(tool).not.toHaveBeenCalledWith(expect.objectContaining({ name: "search-courses" }), expect.any(Function));
+    // Restore
+    (allTools as unknown as unknown[]).length = 0;
+    for (const t of original) (allTools as unknown as unknown[]).push(t);
   });
 
   it("invokes the tool handler and maps its result; never throws", async () => {
@@ -112,7 +142,7 @@ describe("registerMcpUseTools", () => {
     const tool = vi.fn((_opts: object, handler: CapturedHandler) => {
       captured.push(handler);
     });
-    registerMcpUseTools({ tool } as never);
+    registerViewlessTools({ tool } as never);
     await expect(captured[0]!({})).resolves.toMatchObject({ content: [{ type: "text", text: "result-a" }] });
     const rb = await captured[1]!({});
     expect(rb.isError).toBe(true);
@@ -131,14 +161,14 @@ describe("registerMcpUseTools", () => {
     const tool = vi.fn((_opts: object, handler: CapturedHandler) => {
       captured.push(handler);
     });
-    registerMcpUseTools({ tool } as never);
+    registerViewlessTools({ tool } as never);
     expect(captured).toHaveLength(2);
 
     // write tool (tool-a) hits DB limiter -> blocked, run NOT called
     checkAndIncrementMock.mockClear();
     fakeRunA.mockClear();
     checkAndIncrementMock.mockResolvedValueOnce({ ok: false, retryAfterSeconds: 12 });
-    const writeResult = await captured[0]!({}, { auth: { user: { userId: "u1" } } });
+    const writeResult = await captured[0]!({}, { auth: { user: { id: "u1", email: "a@b" } } });
     expect(checkAndIncrementMock).toHaveBeenCalledWith("mcp-write:u1", 60, 1);
     expect(fakeRunA).not.toHaveBeenCalled();
     expect(writeResult.isError).toBe(true);
@@ -146,131 +176,142 @@ describe("registerMcpUseTools", () => {
     // readOnly tool (tool-b) -> no limiter, run proceeds
     checkAndIncrementMock.mockClear();
     fakeRunB.mockClear();
-    const readResult = await captured[1]!({}, { auth: { user: { userId: "u1" } } });
+    const readResult = await captured[1]!({}, { auth: { user: { id: "u1", email: "a@b" } } });
     expect(checkAndIncrementMock).not.toHaveBeenCalled();
     expect(fakeRunB).toHaveBeenCalledTimes(1);
     expect(readResult).toMatchObject({ content: [{ type: "text", text: "b-ok" }] });
   });
+
+  it("returns Unauthorized when buildToolContext returns undefined", async () => {
+    buildToolContextMock.mockResolvedValue(undefined);
+    type CapturedHandler = (args: Record<string, unknown>, mcpCtx?: unknown) => Promise<{
+      isError?: boolean;
+      content: Array<{ type: string; text?: string }>;
+    }>;
+    const captured: CapturedHandler[] = [];
+    const tool = vi.fn((_opts: object, handler: CapturedHandler) => {
+      captured.push(handler);
+    });
+    registerViewlessTools({ tool } as never);
+    const result = await captured[0]!({}, {});
+    expect(result.isError).toBe(true);
+    expect(result.content?.[0]?.text).toMatch(/Unauthorized/);
+    expect(fakeRunA).not.toHaveBeenCalled();
+  });
+
+  it("maps tool run isError to error envelope", async () => {
+    buildToolContextMock.mockResolvedValue(fakeCtx);
+    // reset rate-limit mock that was consumed by earlier test's mockResolvedValueOnce
+    checkAndIncrementMock.mockReset();
+    checkAndIncrementMock.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
+    fakeRunA.mockResolvedValue(errText("bad input"));
+    type CapturedHandler = (args: Record<string, unknown>, mcpCtx?: unknown) => Promise<{
+      isError?: boolean;
+      content: Array<{ type: string; text?: string }>;
+    }>;
+    const captured: CapturedHandler[] = [];
+    const tool = vi.fn((_opts: object, handler: CapturedHandler) => {
+      captured.push(handler);
+    });
+    registerViewlessTools({ tool } as never);
+    const result = await captured[0]!({}, { auth: { user: { id: "u1" } } });
+    expect(result.isError).toBe(true);
+    expect(result.content?.[0]?.text).toBe("bad input");
+  });
+
+  it("viewless tools return raw text envelope (no structuredContent)", async () => {
+    buildToolContextMock.mockResolvedValue(fakeCtx);
+    fakeRunA.mockResolvedValue(okText(JSON.stringify({ foo: "bar" })));
+    type CapturedHandler = (args: Record<string, unknown>, mcpCtx?: unknown) => Promise<{
+      isError?: boolean;
+      content: Array<{ type: string; text?: string }>;
+      structuredContent?: unknown;
+      _meta?: unknown;
+    }>;
+    const captured: CapturedHandler[] = [];
+    const tool = vi.fn((_opts: object, handler: CapturedHandler) => {
+      captured.push(handler);
+    });
+    registerViewlessTools({ tool } as never);
+    const result = await captured[0]!({}, { auth: { user: { id: "u1" } } });
+    expect(result.content?.[0]?.text).toBe(JSON.stringify({ foo: "bar" }));
+    expect(result.structuredContent).toBeUndefined();
+    expect(result._meta).toBeUndefined();
+  });
 });
 
-describe("makeHandler widgetProps plumbing", () => {
-  it("prefers result.widgetProps over tool.toWidgetProps when both are present", async () => {
-    const toWidgetProps = vi.fn((result: { content: TextCall[] }) => ({
-      fromLegacy: result.content[0]?.text,
-    }));
-    const tool: Parameters<typeof makeHandler>[0] = {
+describe("makeHandler", () => {
+  it("returns raw text envelope on success", async () => {
+    const tool = {
       name: "dummy",
       description: "x",
       inputSchema: {} as never,
       readOnly: true,
-      widgetName: "calendar-links",
-      toWidgetProps,
-      run: async () => ({
-        content: [{ type: "text", text: "hello" }],
-        widgetProps: { feedUrl: "https://x/api/ical/tok" },
-      }),
-    };
-    const handler = makeHandler(
-      tool,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      (ctx, args) => tool.run(ctx, args as never),
-    );
-    await handler({}, { auth: { user: { userId: "u1" } } });
-    expect(toWidgetProps).not.toHaveBeenCalled();
-    expect(widgetMock).toHaveBeenCalledTimes(1);
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    const call = widgetMock.mock.calls[0]![0] as WidgetCallArgs;
-    expect(call.props).toEqual({ feedUrl: "https://x/api/ical/tok" });
+      run: async () => ({ content: [{ type: "text", text: "hello" }] }),
+    } as unknown as Parameters<typeof makeHandler>[0];
+    const handler = makeHandler(tool, (ctx, args) => tool.run(ctx, args as never));
+    const result = await handler({}, { auth: { user: { id: "u1", email: "a@b" } } });
+    expect(result).toMatchObject({ content: [{ type: "text", text: "hello" }] });
+    expect(result.isError).toBeUndefined();
   });
 
-  it("falls back to toWidgetProps when result has no widgetProps (regression guard)", async () => {
-    const toWidgetProps = vi.fn((result: { content: TextCall[] }) => ({
-      parsed: result.content[0]?.text,
-    }));
-    const tool: Parameters<typeof makeHandler>[0] = {
-      name: "dummy2",
+  it("maps run isError to error envelope", async () => {
+    const tool = {
+      name: "dummy",
       description: "x",
       inputSchema: {} as never,
       readOnly: true,
-      widgetName: "bid-recommendation",
-      toWidgetProps,
-      run: async () => ({
-        content: [{ type: "text", text: '{"a":1}' }],
-      }),
-    };
-    const handler = makeHandler(
-      tool,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      (ctx, args) => tool.run(ctx, args as never),
-    );
-    await handler({}, { auth: { user: { userId: "u1" } } });
-    expect(toWidgetProps).toHaveBeenCalledTimes(1);
-    expect(widgetMock).toHaveBeenCalledTimes(1);
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    const call = widgetMock.mock.calls[0]![0] as WidgetCallArgs;
-    expect(call.props).toEqual({ parsed: '{"a":1}' });
+      run: async () => ({ content: [{ type: "text", text: "oops" }], isError: true }),
+    } as unknown as Parameters<typeof makeHandler>[0];
+    const handler = makeHandler(tool, (ctx, args) => tool.run(ctx, args as never));
+    const result = await handler({}, { auth: { user: { id: "u1" } } });
+    expect(result.isError).toBe(true);
+    expect(result.content?.[0]?.text).toBe("oops");
   });
 
-  it("bid write tool with widgetName yields a widget() with plan props via toWidgetProps", async () => {
-    checkAndIncrementMock.mockReset();
-    checkAndIncrementMock.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
-    widgetMock.mockReset();
-    const planPayload = {
-      acadTermId: "AY2026/27-T1",
-      budget: { balance: 100 },
-      bids: [{ id: "b1", bidAmount: 25, courseCode: "ACC101", courseName: "Acct", section: "G1", professorName: null, status: "PLANNED", round: "1", window: 1 }],
-    };
-    const envelope = JSON.stringify({ updated: { balance: 100 }, plan: planPayload });
-    const toWidgetProps = vi.fn((result: { content: TextCall[] }) => {
-      const text = result.content.find((c) => c.type === "text")?.text ?? "";
-      try {
-        const parsed = JSON.parse(text) as Record<string, unknown>;
-        if (parsed && typeof parsed === "object" && "plan" in parsed) return parsed.plan as Record<string, unknown>;
-        return parsed;
-      } catch { return { raw: text }; }
-    });
-    const tool: Parameters<typeof makeHandler>[0] = {
-      name: "upsert-bid",
-      description: "Create or update bid. Returns the full updated bid plan for the affected term.",
+  it("catches thrown errors and returns Internal error", async () => {
+    const tool = {
+      name: "boom-tool",
+      description: "x",
       inputSchema: {} as never,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- test harness typed assertion
-      widgetName: "bid-plan" as unknown as "bid-plan",
-      toWidgetProps,
-      run: async () => ({ content: [{ type: "text", text: envelope }] }),
-    };
+      readOnly: true,
+      run: async () => {
+        throw new Error("kaboom");
+      },
+    } as unknown as Parameters<typeof makeHandler>[0];
     const handler = makeHandler(tool, (ctx, args) => tool.run(ctx, args as never));
-    await handler({}, { auth: { user: { userId: "u1" } } });
-    expect(toWidgetProps).toHaveBeenCalledTimes(1);
-    expect(widgetMock).toHaveBeenCalledTimes(1);
-    const call = widgetMock.mock.calls[0]![0] as WidgetCallArgs;
-    expect(call.props).toMatchObject({ acadTermId: "AY2026/27-T1", budget: { balance: 100 } });
+    const result = await handler({}, { auth: { user: { id: "u1" } } });
+    expect(result.isError).toBe(true);
+    expect(result.content?.[0]?.text).toMatch(/Internal error/);
   });
 
-  it("roadmap write tool with widgetName yields a widget() with roadmap-view props via toWidgetProps", async () => {
-    const roadmapView = JSON.stringify({
-      roadmap: { id: "r2", name: "Senior Plan (copy)" },
-      entries: [{ course: { code: "CS101", name: "Intro", creditUnits: 1 }, yearNumber: 1, term: "T1" }],
-    });
-    const toWidgetProps = (result: { content: TextCall[] }) => {
-      const text = result.content.find((c) => c.type === "text")?.text ?? "";
-      try {
-        const data = JSON.parse(text) as Record<string, unknown>;
-        const rawEntries = Array.isArray(data.entries) ? (data.entries as unknown[]) : [];
-        return { roadmapId: (data.roadmap as Record<string, unknown> | undefined)?.id ?? "", entries: rawEntries };
-      } catch { return { raw: text }; }
-    };
-    const tool: Parameters<typeof makeHandler>[0] = {
-      name: "copy-public-roadmap",
-      description: "Copy a public roadmap. Returns the updated roadmap.",
+  it("rate-limits write tools via makeHandler as well", async () => {
+    const tool = {
+      name: "write-tool",
+      description: "x",
       inputSchema: {} as never,
-      widgetName: "roadmap-view",
-      toWidgetProps,
-      run: async () => ({ content: [{ type: "text", text: roadmapView }] }),
-    };
+      // no readOnly => write tool
+      run: async () => ({ content: [{ type: "text", text: "should-not-reach" }] }),
+    } as unknown as Parameters<typeof makeHandler>[0];
+    checkAndIncrementMock.mockResolvedValueOnce({ ok: false, retryAfterSeconds: 12 });
     const handler = makeHandler(tool, (ctx, args) => tool.run(ctx, args as never));
-    await handler({}, { auth: { user: { userId: "u1" } } });
-    expect(widgetMock).toHaveBeenCalledTimes(1);
-    const call = widgetMock.mock.calls[0]![0] as WidgetCallArgs;
-    expect(call.props).toMatchObject({ roadmapId: "r2" });
+    const result = await handler({}, { auth: { user: { id: "u1" } } });
+    expect(result.isError).toBe(true);
+    expect(result.content?.[0]?.text).toMatch(/rate limit/i);
+  });
+
+  it("returns Unauthorized when context missing", async () => {
+    buildToolContextMock.mockResolvedValueOnce(undefined);
+    const tool = {
+      name: "dummy",
+      description: "x",
+      inputSchema: {} as never,
+      readOnly: true,
+      run: async () => ({ content: [{ type: "text", text: "ok" }] }),
+    } as unknown as Parameters<typeof makeHandler>[0];
+    const handler = makeHandler(tool, (ctx, args) => tool.run(ctx, args as never));
+    const result = await handler({}, undefined);
+    expect(result.isError).toBe(true);
+    expect(result.content?.[0]?.text).toMatch(/Unauthorized/);
   });
 });
