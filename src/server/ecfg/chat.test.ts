@@ -16,7 +16,7 @@ describe("chat config schema", () => {
 });
 
 describe("edge config schema", () => {
-  it("parses a config without a chat key", () => {
+  it("parses a config without a chat key (chat resolves to the defaults)", () => {
     const parsed = edgeConfigSchema.parse({
       enableAnnouncementBanner: true,
       enableCmdkTooltip: true,
@@ -25,7 +25,9 @@ describe("edge config schema", () => {
       enableReviewFilter: true,
       enableReviewReactions: true,
     });
-    expect(parsed.chat).toBeUndefined();
+    // zod 4.5 applies chatConfigSchema's inner `.default()` even when the
+    // `chat` key is absent, so chat is always populated - never undefined.
+    expect(parsed.chat).toEqual(DEFAULT_CHAT_CONFIG);
   });
 });
 
