@@ -98,8 +98,8 @@ const DEFAULT_CHAT_CONFIG = {
   mcpRateLimitPerMinute: 60,
   spendCapPerMonthUsd: 20,
   maxInputTokens: 16000,
-  maxOutputTokens: 1024,
-  maxToolRounds: 6,
+  maxOutputTokens: 4096,
+  maxToolRounds: 12,
   priceInputPerM: 0.14,
   priceCachedInputPerM: 0.014,
   priceOutputPerM: 0.28,
@@ -384,6 +384,50 @@ describe("POST /api/chat", () => {
     // Cancel must not refund - even after an error part, the abort keeps the slot.
     expect(mockRefundMessage).not.toHaveBeenCalled();
     expect(mockSettleUsage).not.toHaveBeenCalled();
+  });
+
+  // -- TASK 3 abort wiring --
+  it("passes the request's abortSignal to streamText", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    const req = buildReq({ messages: [{ role: "user", content: "hi" }] });
+    await POST(req);
+    expect(mockStreamText).toHaveBeenCalledWith(
+      expect.objectContaining({ abortSignal: req.signal }),
+    );
+  });
+
+  // -- provider-native cache shape (Task 2) --
+  it("settles cachedInput from a provider's raw prompt_cache_hit_tokens", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    mockStreamText.mockImplementation(
+      ((opts: {
+        onEnd?: (event: {
+          usage: {
+            inputTokens: number;
+            outputTokens: number;
+            inputTokenDetails?: { cacheReadTokens?: number };
+            raw?: unknown;
+          };
+        }) => void;
+      }) => {
+        capturedOnEnd = opts.onEnd as typeof capturedOnEnd;
+        void opts.onEnd?.({
+          usage: {
+            inputTokens: 1000,
+            outputTokens: 100,
+            raw: { prompt_cache_hit_tokens: 900 },
+          } as never,
+        });
+        return { stream: new ReadableStream() } as unknown as ReturnType<typeof streamText>;
+      }) as unknown as typeof streamText,
+    );
+
+    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    expect(res.status).toBe(200);
+    expect(mockSettleUsage).toHaveBeenCalledWith(
+      "u1",
+      expect.objectContaining({ input: 1000, output: 100, cachedInput: 900 }),
+    );
   });
 
   // -- canned answers stay quota-free (no reserve, no refund) --

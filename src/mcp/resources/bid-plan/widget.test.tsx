@@ -85,4 +85,30 @@ describe("bid-plan widget render", () => {
     expect(screen.getByText("No bids planned for this term yet.")).toBeTruthy();
     expect(screen.getByText(/No budget set/)).toBeTruthy();
   });
+
+  it("renders the post-mutation envelope's plan via toWidgetProps -> widget props passthrough", () => {
+    // Write tools emit { updated, plan }; the widget receives unwrapped plan.
+    // Simulate the register unwrap by feeding the plan directly (as widget would).
+    const mutationPlan = {
+      acadTermId: "AY2026/27-T1",
+      budget: { balance: 150 },
+      bids: [
+        {
+          id: "b3",
+          bidAmount: 30,
+          status: "PLANNED",
+          courseCode: "COR-STAT1202",
+          courseName: "Stats",
+          section: "G2",
+          professorName: "Prof Y",
+          round: "1",
+          window: 2,
+        },
+      ],
+    };
+    renderBidPlan(mutationPlan);
+    expect(screen.getByText("COR-STAT1202")).toBeTruthy();
+    expect(screen.getByText("$30")).toBeTruthy();
+    expect(screen.getByText(/150/)).toBeTruthy();
+  });
 });

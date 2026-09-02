@@ -4,14 +4,13 @@ export const MAX_SESSION_MESSAGES = 200;
 export const MAX_SESSIONS = 50;
 
 export function stripToolParts(messages: UIMessage[]): UIMessage[] {
+  // Remove tool parts entirely: hollow shells (input/output undefined) replay
+  // as malformed tool-call/tool-result pairs on restore and can 400 at the
+  // provider. A clean text transcript is valid, deterministic, and cheaper to
+  // re-send on the restore turn's cold cache.
   return messages.map((m) => ({
     ...m,
-    parts: m.parts.map((p) => {
-      if (p.type === "dynamic-tool" || p.type.startsWith("tool-")) {
-        return { ...p, input: undefined, output: undefined };
-      }
-      return p;
-    }),
+    parts: m.parts.filter((p) => p.type !== "dynamic-tool" && !p.type.startsWith("tool-")),
   }));
 }
 

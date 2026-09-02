@@ -1,5 +1,8 @@
-import { useWidget, type WidgetMetadata } from "mcp-use/react";
+import type React from "react";
+import type { WidgetMetadata } from "mcp-use/react";
 import { z } from "zod";
+import { useCtaFeedback } from "../shared/use-cta-feedback";
+import { useWidget } from "../shared/use-widget";
 
 import { TOKENS, Skeleton } from "../shared/tokens";
 
@@ -38,14 +41,16 @@ type RoadmapViewProps = z.infer<typeof roadmapViewPropsSchema>;
 const TERM_ORDER = ["T1", "T2", "T3A", "T3B"] as const;
 
 const RoadmapView: React.FC = () => {
-  const { props, isPending, theme, callTool } = useWidget<RoadmapViewProps>() as unknown as {
+  const { props, isPending, theme, callTool, isAvailable } = useWidget<RoadmapViewProps>() as unknown as {
     props: RoadmapViewProps;
     isPending: boolean;
     theme: string;
+    isAvailable: boolean;
     callTool?: (name: string, input: Record<string, unknown>) => Promise<unknown>;
   };
   const dark = theme === "dark";
   const c = dark ? TOKENS.dark : TOKENS.light;
+  const { feedback, showFeedback } = useCtaFeedback();
   if (isPending) return <Skeleton dark={dark} />;
 
   const years = [...new Set(props.entries.map((e) => e.yearNumber))].sort(
@@ -161,14 +166,20 @@ const RoadmapView: React.FC = () => {
           );
         })
       )}
-      {props.isPublic && callTool && (
+      {props.isPublic && isAvailable && callTool && (
         <button
           type="button"
-          aria-label="Copy this roadmap"
+          aria-label={feedback === "saved" ? "Copied \u2713" : feedback === "error" ? "Copy failed" : "Copy this roadmap"}
+          aria-live="polite"
           onClick={() =>
-            void callTool("copy-public-roadmap", {
+            callTool("copy-public-roadmap", {
               roadmapId: props.roadmapId,
             })
+              .then((res) => {
+                const isError = (res as { isError?: boolean })?.isError === true;
+                showFeedback(isError ? "error" : "saved");
+              })
+              .catch(() => showFeedback("error"))
           }
           style={{
             marginTop: 12,
@@ -176,14 +187,18 @@ const RoadmapView: React.FC = () => {
             padding: "8px 16px",
             borderRadius: 9999,
             border: "none",
-            background: c.primary,
+            background: feedback === "error" ? "oklch(0.6 0.2 20)" : c.primary,
             color: c.primaryFg,
             fontSize: 13,
             fontWeight: 600,
             cursor: "pointer",
           }}
         >
-          Copy this roadmap
+          {feedback === "saved"
+            ? "Copied \u2713"
+            : feedback === "error"
+              ? "Copy failed"
+              : "Copy this roadmap"}
         </button>
       )}
     </div>

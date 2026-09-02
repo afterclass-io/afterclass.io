@@ -4,6 +4,14 @@ import { allTools } from "@/server/mcp/tools";
 import type { ToolContext } from "@/server/mcp/types";
 import { checkAndIncrement } from "@/server/assistant/ratelimit";
 
+/** ~6k tokens at the chars/4 heuristic. Caps the per-call miss region AND the
+ * within-loop amplification (a result is re-sent at miss in every remaining
+ * agent-loop step of the same turn). */
+export const MAX_TOOL_RESULT_CHARS = 24_000;
+
+export const TRUNCATION_NOTE =
+  "\n[truncated - result too large; refine your query or request fewer items]";
+
 /**
  * Convert the shared MCP skill catalog into AI SDK tools for the chat route.
  *
@@ -44,7 +52,9 @@ export function buildAssistantTools(
         const result = await t.run(ctx, args as never);
         const text = result.content.find((c) => c.type === "text")?.text ?? "";
         if (result.isError) throw new Error(text || `${t.name} failed`);
-        return text;
+        return text.length > MAX_TOOL_RESULT_CHARS
+          ? text.slice(0, MAX_TOOL_RESULT_CHARS) + TRUNCATION_NOTE
+          : text;
       },
     });
   }

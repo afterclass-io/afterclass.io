@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ToolContext } from "./types";
 import {
+  resolveTermId,
   resolveTermIdOrError,
   resolveOpenWindowIdOrError,
   resolveCurrentContext,
@@ -62,6 +63,33 @@ describe("resolveTermIdOrError", () => {
     const res = await resolveTermIdOrError(ctx);
     expect(res.ok).toBe(false);
     if (!res.ok) expect(res.errText).toMatch(/boom/);
+  });
+});
+
+describe("resolveTermId", () => {
+  it("uses an explicit trimmed acadTermId without resolving the current term", async () => {
+    const getCurrent = vi.fn();
+    const ctx = makeCaller({ acadTermsGetCurrent: getCurrent });
+    const res = await resolveTermId(ctx, "  AY2026/27-T2  ");
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.value).toBe("AY2026/27-T2");
+    expect(getCurrent).not.toHaveBeenCalled();
+  });
+
+  it("defaults to the current term when acadTermId is omitted or empty", async () => {
+    const ctx = makeCaller({ acadTermsGetCurrent: vi.fn().mockResolvedValue(term) });
+    for (const input of [undefined, "", "   "]) {
+      const res = await resolveTermId(ctx, input);
+      expect(res.ok).toBe(true);
+      if (res.ok) expect(res.value).toBe("AY2026/27-T1");
+    }
+  });
+
+  it("returns the ask-user error when empty and there is no current term", async () => {
+    const ctx = makeCaller({ acadTermsGetCurrent: vi.fn().mockResolvedValue(null) });
+    const res = await resolveTermId(ctx, "");
+    expect(res.ok).toBe(false);
+    if (!res.ok) expect(res.errText).toMatch(/Ask the user which academic term/i);
   });
 });
 

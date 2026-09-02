@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { useWidget, type WidgetMetadata } from "mcp-use/react";
+import type { WidgetMetadata } from "mcp-use/react";
 import { z } from "zod";
+import { useCtaFeedback } from "../shared/use-cta-feedback";
+import { useWidget } from "../shared/use-widget";
 
 import { TOKENS, Skeleton } from "../shared/tokens";
 
@@ -128,10 +130,11 @@ const RangeRow: React.FC<{
 };
 
 const BidExplorer: React.FC = () => {
-  const { props, isPending, theme, callTool } = useWidget<Props>() as unknown as {
+  const { props, isPending, theme, callTool, isAvailable } = useWidget<Props>() as unknown as {
     props: Props;
     isPending: boolean;
     theme: string;
+    isAvailable: boolean;
     callTool?: (name: string, input: Record<string, unknown>) => Promise<unknown>;
   };
   // The slider's selected factor starts unset: props arrive asynchronously in
@@ -139,6 +142,7 @@ const BidExplorer: React.FC = () => {
   // initializer reading `props` would freeze the wrong default. The default
   // (70% factor, else middle) is resolved at render time instead.
   const [factorIdx, setFactorIdx] = useState<number | null>(null);
+  const { feedback, showFeedback } = useCtaFeedback();
 
   const dark = theme === "dark";
   const c = dark ? TOKENS.dark : TOKENS.light;
@@ -278,15 +282,21 @@ const BidExplorer: React.FC = () => {
         </div>
       )}
       {/* CTA */}
-      {callTool && props.classId && prediction && suggested !== null && (
+      {isAvailable && callTool && props.classId && prediction && suggested !== null && (
         <button
           type="button"
+          aria-live="polite"
           onClick={() =>
-            void callTool("upsert-bid", {
+            callTool("upsert-bid", {
               classId: props.classId,
               bidAmount: suggested,
               bidWindowId: prediction.bidWindow.id,
             })
+              .then((res) => {
+                const isError = (res as { isError?: boolean })?.isError === true;
+                showFeedback(isError ? "error" : "saved");
+              })
+              .catch(() => showFeedback("error"))
           }
           style={{
             marginTop: 12,
@@ -294,14 +304,18 @@ const BidExplorer: React.FC = () => {
             padding: "8px 16px",
             borderRadius: 9999,
             border: "none",
-            background: c.primary,
+            background: feedback === "error" ? "oklch(0.6 0.2 20)" : c.primary,
             color: c.primaryFg,
             fontSize: 13,
             fontWeight: 600,
             cursor: "pointer",
           }}
         >
-          Set bid to ${suggested}
+          {feedback === "saved"
+            ? "Saved \u2713"
+            : feedback === "error"
+              ? "Failed to save"
+              : `Set bid to $${suggested}`}
         </button>
       )}
     </div>

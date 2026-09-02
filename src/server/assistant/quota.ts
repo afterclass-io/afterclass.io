@@ -29,6 +29,8 @@ export async function getQuotaState(userId: string): Promise<{
   remaining: number;
   isCritical: boolean;
   period: string;
+  inputTokens: number;
+  cachedInputTokens: number;
 }> {
   const chat = await getChatConfig();
   const period = currentMonthPeriod();
@@ -41,7 +43,16 @@ export async function getQuotaState(userId: string): Promise<{
   const criticalFloor = Math.max(1, Math.floor(quota * 0.2));
   const remaining = Math.max(0, quota - used);
   const isCritical = remaining <= criticalFloor;
-  return { used, quota, criticalFloor, remaining, isCritical, period };
+  return {
+    used,
+    quota,
+    criticalFloor,
+    remaining,
+    isCritical,
+    period,
+    inputTokens: row?.inputTokens ?? 0,
+    cachedInputTokens: row?.cachedInputTokens ?? 0,
+  };
 }
 
 export async function checkQuota(userId: string): Promise<{ ok: boolean; remaining: number; quota: number }> {

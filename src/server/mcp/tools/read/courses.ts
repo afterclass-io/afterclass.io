@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { resolveTermIdOrError } from "../../current";
+import { resolveTermId } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const searchCoursesSchema = z.object({
@@ -9,12 +9,13 @@ const searchCoursesSchema = z.object({
     .optional()
     .describe("Academic term id; obtain via list-acad-terms"),
   query: z.string().min(1).describe("Search text: course code, course name, or professor name"),
+  facultyId: z.number().int().optional().describe("Optional faculty id to narrow results to that faculty's courses"),
 });
 
 export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
   name: "search-courses",
   description:
-    "Search courses offered in an academic term by code, name, or professor name. Fuzzy/typo-tolerant (e.g. 'statistics' matches 'Statistical Analysis'); returns matching courses with sections and timings.",
+    "Search courses offered in an academic term by code, name, description, courseArea, or professor name. Fuzzy/typo-tolerant (e.g. 'statistics' matches 'Statistical Analysis'); also matches description/courseArea and supports optional facultyId filter. Returns matching courses with sections and timings.",
   inputSchema: searchCoursesSchema,
   readOnly: true,
   widgetName: "course-search",
@@ -28,17 +29,15 @@ export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
       return { results: [] };
     }
   },
-  run: async ({ caller }, { acadTermId, query }) => {
+  run: async ({ caller }, { acadTermId, query, facultyId }) => {
     try {
       // Omitted or empty-string acadTermId defaults to the current term.
       // An empty string must never reach SQL (it returns `[]` for every query).
-      let termId = acadTermId?.trim() ?? "";
-      if (!termId) {
-        const resolved = await resolveTermIdOrError(caller);
-        if (!resolved.ok) return errText(resolved.errText);
-        termId = resolved.value;
-      }
-      return jsonText(await caller.timetable.searchCourses({ acadTermId: termId, query }));
+      const term = await resolveTermId(caller, acadTermId);
+      if (!term.ok) return errText(term.errText);
+      return jsonText(
+        await caller.timetable.searchCourses({ acadTermId: term.value, query, facultyId }),
+      );
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -76,6 +75,18 @@ const getClassesSchema = z.object({
   acadTermId: z.string().optional(),
   section: z.string().optional(),
   professorId: z.string().optional(),
+  day: z
+    .enum(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
+    .optional()
+    .describe("Filter to classes with a meeting on this day (e.g. Mon)"),
+  startsAfter: z
+    .string()
+    .optional()
+    .describe("Filter to classes starting at or after this time (HH:MM, e.g. 18:00 for night classes)"),
+  endsBefore: z
+    .string()
+    .optional()
+    .describe("Filter to classes ending at or before this time (HH:MM, e.g. 12:00)"),
   limit: z
     .number()
     .int()
@@ -88,7 +99,7 @@ const getClassesSchema = z.object({
 export const getClassesTool: McpTool<typeof getClassesSchema> = {
   name: "get-classes",
   description:
-    "Get class sections with timings, venue, and professor for a course and term. All filters are optional. Returns at most 20 rows.",
+    "Get class sections with timings, venue, and professor for a course and term. All filters are optional. Supports time filters day/startsAfter/endsBefore (e.g. day=Mon, startsAfter=18:00 for night classes). Returns at most 20 rows.",
   inputSchema: getClassesSchema,
   readOnly: true,
   run: async ({ caller }, input) => {

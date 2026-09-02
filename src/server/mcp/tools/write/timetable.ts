@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { resolveTermIdOrError } from "../../current";
+import { resolveTermId } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const visibilitySchema = z.enum(["PRIVATE", "UNLISTED", "PUBLIC"]);
@@ -17,13 +17,9 @@ export const createTimetableTool: McpTool<typeof createTimetableSchema> = {
   inputSchema: createTimetableSchema,
   run: async ({ caller }, input) => {
     try {
-      let acadTermId = input.acadTermId?.trim() ?? "";
-      if (!acadTermId) {
-        const resolved = await resolveTermIdOrError(caller);
-        if (!resolved.ok) return errText(resolved.errText);
-        acadTermId = resolved.value;
-      }
-      return jsonText(await caller.timetable.create({ ...input, acadTermId }));
+      const term = await resolveTermId(caller, input.acadTermId);
+      if (!term.ok) return errText(term.errText);
+      return jsonText(await caller.timetable.create({ ...input, acadTermId: term.value }));
     } catch (e) {
       return errText(errorMessage(e));
     }

@@ -33,6 +33,7 @@ function makeCaller(procs: Record<string, unknown>) {
       setActive: procs.roadmapsSetActive,
       syncProgress: procs.roadmapsSyncProgress,
       copyPublic: procs.roadmapsCopyPublic,
+      getMine: procs.roadmapsGetMine,
     },
   } as unknown as ToolContext["caller"];
 }
@@ -132,30 +133,38 @@ describe("roadmap-settings write tools", () => {
       description: null,
       entries: [],
     });
+    const getMine = vi.fn().mockResolvedValue({
+      roadmap: { id: "r2", name: "Senior Plan (copy)" },
+      entries: [],
+    });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ roadmapsCopyPublic: fn }),
+      caller: makeCaller({ roadmapsCopyPublic: fn, roadmapsGetMine: getMine }),
     };
     await copyPublicRoadmapTool.run(ctx, { roadmapId: "r1" });
     expect(fn).toHaveBeenCalledWith({ roadmapId: "r1" });
   });
 
-  it("copy-public-roadmap maps the created roadmap to { newRoadmapId, name }", async () => {
+  it("copy-public-roadmap returns the copied roadmap view (buildRoadmapView) not just { newRoadmapId, name }", async () => {
     const fn = vi.fn().mockResolvedValue({
       id: "r2",
       name: "Senior Plan (copy)",
       description: null,
       entries: [],
     });
+    const getMine = vi.fn().mockResolvedValue({
+      roadmap: { id: "r2", name: "Senior Plan (copy)" },
+      entries: [{ course: { code: "CS101", name: "Intro", creditUnits: 1 }, yearNumber: 1, term: "T1" }],
+    });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ roadmapsCopyPublic: fn }),
+      caller: makeCaller({ roadmapsCopyPublic: fn, roadmapsGetMine: getMine }),
     };
     const result = await copyPublicRoadmapTool.run(ctx, { roadmapId: "r1" });
     expect(result.isError).toBeUndefined();
-    const text = result.content[0]?.text ?? "";
-    expect(text).toContain('"newRoadmapId": "r2"');
-    expect(text).toContain('"name": "Senior Plan (copy)"');
+    const parsed = JSON.parse(result.content[0]!.text) as { roadmap: { id: string } };
+    expect(parsed.roadmap.id).toBe("r2");
+    expect(getMine).toHaveBeenCalledWith({ roadmapId: "r2" });
   });
 
   it("copy-public-roadmap returns errText when roadmaps.copyPublic rejects", async () => {

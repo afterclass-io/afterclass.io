@@ -101,7 +101,7 @@ describe("my-data read tools", () => {
         acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
       }),
     };
-    await myBidsTool.run(ctx, {});
+    await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({}));
     expect(fn).toHaveBeenCalledWith();
   });
 
@@ -130,7 +130,7 @@ describe("my-data read tools", () => {
         acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
       }),
     };
-    const result = await myBidsTool.run(ctx, {});
+    const result = await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({}));
     expect(result.isError).toBeUndefined();
     const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
     expect(parsed).toHaveLength(1);
@@ -143,7 +143,7 @@ describe("my-data read tools", () => {
   it("my-bids returns errText when userBids.listMine rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
-    const result = await myBidsTool.run(ctx, {});
+    const result = await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({}));
     expect(result.isError).toBe(true);
   });
 
@@ -153,7 +153,7 @@ describe("my-data read tools", () => {
       { id: "b2", bidAmount: 30, status: "SECURED", bidWindow: { acadTermId: "t2" }, courseCode: "FIN201" },
     ]);
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
-    const result = await myBidsTool.run(ctx, { acadTermId: "t1" });
+    const result = await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({ acadTermId: "t1" }));
     const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
     expect(parsed).toHaveLength(1);
     expect(parsed[0]!.id).toBe("b1");
@@ -172,7 +172,7 @@ describe("my-data read tools", () => {
         acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
       }),
     };
-    const result = await myBidsTool.run(ctx, {});
+    const result = await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({}));
     expect(result.isError).toBeUndefined();
     const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
     // Both windows within the current term are kept; the other term's bid is not.
@@ -189,9 +189,79 @@ describe("my-data read tools", () => {
         acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
       }),
     };
-    const result = await myBidsTool.run(ctx, {});
+    const result = await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({}));
     expect(result.isError).toBe(true);
     expect(result.content[0]!.text).toMatch(/current academic term/i);
+  });
+
+  it("my-bids defaults to limit 20 and clamps results", async () => {
+    const makeBids = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        id: `b${i}`,
+        bidAmount: 10 + i,
+        status: "PLANNED",
+        bidWindow: { acadTermId: "t1" },
+        courseCode: `C${i}`,
+      }));
+    // Omitted limit → default 20 (no acadTermId apart from auto-resolved t1)
+    const fnDefault = vi.fn().mockResolvedValue(makeBids(30));
+    const ctxDefault: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        userBidsListMine: fnDefault,
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
+      }),
+    };
+    const resultDefault = await myBidsTool.run(ctxDefault, myBidsTool.inputSchema.parse({}));
+    const parsedDefault = JSON.parse(resultDefault.content[0]!.text) as unknown[];
+    expect(parsedDefault).toHaveLength(20);
+
+    // Explicit limit 5 with acadTermId
+    const fn5 = vi.fn().mockResolvedValue(makeBids(30));
+    const ctx5: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn5 }) };
+    const result5 = await myBidsTool.run(ctx5, myBidsTool.inputSchema.parse({ acadTermId: "t1", limit: 5 }));
+    const parsed5 = JSON.parse(result5.content[0]!.text) as unknown[];
+    expect(parsed5).toHaveLength(5);
+  });
+
+  it("my-bids clamps after term filtering and widget-compatible shape is preserved", async () => {
+    const fn = vi.fn().mockResolvedValue([
+      ...Array.from({ length: 25 }, (_, i) => ({
+        id: `b${i}`,
+        bidAmount: 10 + i,
+        status: "PLANNED",
+        bidWindow: { acadTermId: "t1" },
+        courseCode: `C${i}`,
+      })),
+      ...Array.from({ length: 5 }, (_, i) => ({
+        id: `x${i}`,
+        bidAmount: 99,
+        status: "PLANNED",
+        bidWindow: { acadTermId: "t2" },
+        courseCode: `X${i}`,
+      })),
+    ]);
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
+    // Filtered to t1 → 25 rows → clamped to 20 default (no explicit limit)
+    const result = await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({ acadTermId: "t1" }));
+    const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
+    expect(parsed).toHaveLength(20);
+    for (const b of parsed) {
+      expect(b.notes).toBeUndefined();
+      expect(b.bidAmount).toBeDefined();
+      expect(b.courseCode).toBeDefined();
+    }
+  });
+
+  it("my-bids rejects limit > 50 and limit 0", () => {
+    expect(myBidsTool.inputSchema.safeParse({ limit: 51 }).success).toBe(false);
+    expect(myBidsTool.inputSchema.safeParse({ acadTermId: "t1", limit: 51 }).success).toBe(false);
+    expect(myBidsTool.inputSchema.safeParse({ acadTermId: "t1", limit: 0 }).success).toBe(false);
+    expect(myBidsTool.inputSchema.safeParse({ acadTermId: "t1", limit: 50 }).success).toBe(true);
+    expect(myBidsTool.inputSchema.safeParse({ acadTermId: "t1", limit: 1 }).success).toBe(true);
+    const parsedDefault = myBidsTool.inputSchema.safeParse({});
+    expect(parsedDefault.success).toBe(true);
+    if (parsedDefault.success) expect((parsedDefault.data as { limit: number }).limit).toBe(20);
   });
 
   it("my-bid-budget calls userBids.getBudget", async () => {

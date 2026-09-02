@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { resolveTermIdOrError } from "../../current";
+import { resolveTermId } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const checkRoadmapFeasibilitySchema = z.object({
@@ -218,11 +218,8 @@ export const checkRoadmapFeasibilityTool: McpTool<typeof checkRoadmapFeasibility
       // Omitted termId defaults to the current term (for consistency with the
       // other tools). If there is no current term either, EXAM_CLASH is simply
       // skipped - the roadmap-only checks still run.
-      let clashTermId = termId?.trim() ?? "";
-      if (!clashTermId) {
-        const resolved = await resolveTermIdOrError(caller);
-        if (resolved.ok) clashTermId = resolved.value;
-      }
+      const clash = await resolveTermId(caller, termId);
+      const clashTermId = clash.ok ? clash.value : "";
       if (clashTermId) {
         const mine = await caller.timetable.listMine({ acadTermId: clashTermId });
         const timetable = mine.find((t) => t.isActive) ?? mine[0];

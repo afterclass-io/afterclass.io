@@ -33,6 +33,7 @@ function makeCaller(procs: Record<string, unknown>) {
       rename: procs.roadmapsRename,
       remove: procs.roadmapsRemove,
       saveEntries: procs.roadmapsSaveEntries,
+      getMine: procs.roadmapsGetMine,
     },
     sharing: { setVisibility: procs.sharingSetVisibility },
   } as unknown as ToolContext["caller"];
@@ -41,11 +42,21 @@ function makeCaller(procs: Record<string, unknown>) {
 const entries = [{ courseId: "c1", yearNumber: 1, term: "T1" as const, sortOrder: 0 }];
 
 describe("roadmap write tools", () => {
-  it("create-roadmap calls roadmaps.create with name", async () => {
-    const fn = vi.fn().mockResolvedValue({ id: "r1" });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsCreate: fn }) };
-    await createRoadmapTool.run(ctx, { name: "My Plan" });
-    expect(fn).toHaveBeenCalledWith({ name: "My Plan" });
+  it("create-roadmap calls roadmaps.create with name and returns the roadmap view", async () => {
+    const create = vi.fn().mockResolvedValue({ id: "r1" });
+    const getMine = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "My Plan" },
+      entries: [],
+    });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsCreate: create, roadmapsGetMine: getMine }),
+    };
+    const result = await createRoadmapTool.run(ctx, { name: "My Plan" });
+    expect(create).toHaveBeenCalledWith({ name: "My Plan" });
+    const parsed = JSON.parse(result.content[0]!.text) as { roadmap: { id: string } };
+    expect(parsed.roadmap.id).toBe("r1");
+    expect(getMine).toHaveBeenCalledWith({ roadmapId: "r1" });
   });
 
   it("create-roadmap returns errText when roadmaps.create rejects", async () => {
@@ -83,11 +94,21 @@ describe("roadmap write tools", () => {
     expect(result.isError).toBe(true);
   });
 
-  it("save-roadmap-entries calls roadmaps.saveEntries with the entries array", async () => {
-    const fn = vi.fn().mockResolvedValue({});
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsSaveEntries: fn }) };
-    await saveRoadmapEntriesTool.run(ctx, { roadmapId: "r1", entries });
-    expect(fn).toHaveBeenCalledWith({ roadmapId: "r1", entries });
+  it("save-roadmap-entries calls roadmaps.saveEntries with the entries array and returns the roadmap view", async () => {
+    const saveEntries = vi.fn().mockResolvedValue({});
+    const getMine = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "My Plan" },
+      entries: [],
+    });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsSaveEntries: saveEntries, roadmapsGetMine: getMine }),
+    };
+    const result = await saveRoadmapEntriesTool.run(ctx, { roadmapId: "r1", entries });
+    expect(saveEntries).toHaveBeenCalledWith({ roadmapId: "r1", entries });
+    const parsed = JSON.parse(result.content[0]!.text) as { roadmap: { id: string } };
+    expect(parsed.roadmap.id).toBe("r1");
+    expect(getMine).toHaveBeenCalledWith({ roadmapId: "r1" });
   });
 
   it("save-roadmap-entries returns errText when roadmaps.saveEntries rejects", async () => {

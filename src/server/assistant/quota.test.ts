@@ -40,7 +40,7 @@ vi.mock("@/server/ecfg/chat", () => ({
   }),
 }));
 
-import { checkQuota, checkSpendGuard, refundMessage, reserveMessage, settleUsage, tokensToUsd } from "./quota";
+import { checkQuota, checkSpendGuard, getQuotaState, refundMessage, reserveMessage, settleUsage, tokensToUsd } from "./quota";
 import { DEFAULT_CHAT_CONFIG } from "@/server/ecfg/config";
 
 describe("quota", () => {
@@ -48,6 +48,28 @@ describe("quota", () => {
     txChatUsageFindUnique.mockReset(); txChatUsageUpsert.mockReset();
     txChatUsageUpdateMany.mockReset();
     txChatSpendFindUnique.mockReset(); txChatSpendUpsert.mockReset(); txChatSpendUpdateMany.mockReset();
+  });
+
+  // ---- getQuotaState token totals ----
+  it("returns token totals from the usage row", async () => {
+    txChatUsageFindUnique.mockResolvedValue({ messageCount: 3, inputTokens: 1000, cachedInputTokens: 800 });
+    const state = await getQuotaState("u1");
+    expect(state.inputTokens).toBe(1000);
+    expect(state.cachedInputTokens).toBe(800);
+  });
+
+  it("defaults token totals to 0 when no row exists", async () => {
+    txChatUsageFindUnique.mockResolvedValue(null);
+    const state = await getQuotaState("u1");
+    expect(state.inputTokens).toBe(0);
+    expect(state.cachedInputTokens).toBe(0);
+  });
+
+  it("defaults token totals to 0 when row has no token columns", async () => {
+    txChatUsageFindUnique.mockResolvedValue({ messageCount: 1 });
+    const state = await getQuotaState("u1");
+    expect(state.inputTokens).toBe(0);
+    expect(state.cachedInputTokens).toBe(0);
   });
 
   // ---- checkQuota ----

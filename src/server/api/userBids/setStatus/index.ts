@@ -98,7 +98,7 @@ export const setStatus = protectedProcedure
           );
         }
 
-        return updatedBid;
+        return { ...updatedBid, acadTermId: cls.acadTermId };
       });
 
     let updated;

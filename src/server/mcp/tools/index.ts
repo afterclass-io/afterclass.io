@@ -15,6 +15,8 @@ import {
   getProfessorReviewsTool,
   listAcadTermsTool,
 } from "./read/catalog";
+import { getReviewSummaryTool } from "./read/review-summary";
+import { bidEstimateTool } from "./read/bid-estimate";
 import { getContributeInfoTool } from "./read/contribute";
 import {
   browsePublicRoadmapsTool,
@@ -54,6 +56,8 @@ import { setBidStatusTool } from "./write/bid-status";
 import { recommendBidAmountTool } from "./write/recommend";
 import { getTimetableCalendarLinkTool } from "./write/calendar-link";
 import { exploreBidOptionsTool } from "./read/explore-bid-options";
+import { saveBidsTool } from "./write/save-bids";
+import { upsertRoadmapEntryTool } from "./write/upsert-roadmap-entry";
 
 export const allTools: McpTool[] = [
   // read - courses / classes / professors
@@ -65,6 +69,7 @@ export const allTools: McpTool[] = [
   // read - catalog
   getCourseReviewsTool,
   getProfessorReviewsTool,
+  getReviewSummaryTool,
   getBidPredictionTool,
   getBidResultsTool,
   listAcadTermsTool,
@@ -95,11 +100,13 @@ export const allTools: McpTool[] = [
   removeBidTool,
   setBidBudgetTool,
   setBidStatusTool,
+  saveBidsTool,
   // write - roadmaps
   createRoadmapTool,
   renameRoadmapTool,
   removeRoadmapTool,
   saveRoadmapEntriesTool,
+  upsertRoadmapEntryTool,
   setRoadmapVisibilityTool,
   setMatricTermTool,
   setActiveRoadmapTool,
@@ -108,4 +115,5 @@ export const allTools: McpTool[] = [
   // read-only recommendation
   recommendBidAmountTool,
   exploreBidOptionsTool,
+  bidEstimateTool,
 ];

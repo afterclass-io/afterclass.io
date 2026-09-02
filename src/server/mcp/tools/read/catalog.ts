@@ -101,7 +101,7 @@ const reviewCardsToWidgetProps = (result: ToolResult): Record<string, unknown> =
 
 const getCourseReviewsSchema = z.object({
   code: z.string().describe("Exact course code"),
-  limit: z.number().int().min(1).max(50).default(20),
+  limit: z.number().int().min(1).max(20).default(10),
 });
 
 export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
@@ -132,7 +132,7 @@ export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
 
 const getProfessorReviewsSchema = z.object({
   slug: z.string().describe("Professor slug, e.g. from get-professor"),
-  limit: z.number().int().min(1).max(50).default(20),
+  limit: z.number().int().min(1).max(20).default(10),
 });
 
 export const getProfessorReviewsTool: McpTool<typeof getProfessorReviewsSchema> = {
@@ -185,6 +185,7 @@ const getBidResultsSchema = z.object({
   classId: z.string().optional(),
   courseCode: z.string().optional(),
   section: z.string().optional(),
+  limit: z.number().int().min(1).max(50).default(20),
 });
 
 export const getBidResultsTool: McpTool<typeof getBidResultsSchema> = {
@@ -194,7 +195,25 @@ export const getBidResultsTool: McpTool<typeof getBidResultsSchema> = {
   readOnly: true,
   run: async ({ caller }, input) => {
     try {
-      return jsonText(await caller.bidResults.getBy(input));
+      const { limit = 20, ...filters } = input as {
+        classId?: string;
+        courseCode?: string;
+        section?: string;
+        limit?: number;
+      };
+      const data = (await caller.bidResults.getBy(filters)) as unknown;
+      if (Array.isArray(data)) {
+        return jsonText((data as unknown[]).slice(0, limit));
+      }
+      if (
+        data !== null &&
+        typeof data === "object" &&
+        Array.isArray((data as { items?: unknown }).items)
+      ) {
+        const obj = data as { items: unknown[] } & Record<string, unknown>;
+        return jsonText({ ...obj, items: obj.items.slice(0, limit) });
+      }
+      return jsonText(data);
     } catch (e) {
       return errText(errorMessage(e));
     }

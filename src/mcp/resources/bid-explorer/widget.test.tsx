@@ -194,4 +194,41 @@ describe("bid-explorer widget render", () => {
       stop();
     }
   });
+
+  it("shows Saved feedback after successful upsert-bid", async () => {
+    const { calls, stop } = captureToolCalls();
+    try {
+      renderBidExplorer(fullProps);
+      fireEvent.click(screen.getByRole("button", { name: "Set bid to $31.5" }));
+      await waitFor(() => expect(calls).toHaveLength(1));
+      await waitFor(() => expect(screen.getByRole("button", { name: /Saved/ })).toBeTruthy());
+    } finally {
+      stop();
+    }
+  });
+
+  it("shows Failed to save when callTool rejects", async () => {
+    const listener = (event: MessageEvent) => {
+      const msg = event.data as {
+        jsonrpc?: string;
+        id?: number;
+        method?: string;
+        params?: { name: string; arguments: Record<string, unknown> };
+      };
+      if (msg?.jsonrpc === "2.0" && msg.method === "tools/call" && msg.params) {
+        window.postMessage(
+          { jsonrpc: "2.0", id: msg.id, error: { code: -1, message: "rate limited" } },
+          "*",
+        );
+      }
+    };
+    window.addEventListener("message", listener);
+    try {
+      renderBidExplorer(fullProps);
+      fireEvent.click(screen.getByRole("button", { name: "Set bid to $31.5" }));
+      await waitFor(() => expect(screen.getByRole("button", { name: /Failed to save/ })).toBeTruthy());
+    } finally {
+      window.removeEventListener("message", listener);
+    }
+  });
 });

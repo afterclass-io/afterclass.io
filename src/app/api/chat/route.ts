@@ -15,11 +15,17 @@ import { reserveMessage, settleUsage, refundMessage, checkSpendGuard } from "@/s
 import { checkAndIncrement } from "@/server/assistant/ratelimit";
 import { getChatConfig, getChatWriteRateLimit, getRateLimitWindowMinutes } from "@/server/ecfg/chat";
 import { getModel } from "@/server/assistant/providers";
+import { extractCachedInputTokens } from "@/server/assistant/usage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+// Multi-step chains (12 rounds) need more than 60s. 300 is the Vercel Node.js ceiling — VERIFY against the actual deploy plan before going live (Hobby non-Fluid caps at 60); flagged human-pending.
+export const maxDuration = 300;
 
+// CACHE-CRITICAL: this prompt + the tool catalog are the shared account-wide
+// cached prefix for the LLM provider. Any byte change (wording, tool order,
+// tool schemas/descriptions) invalidates the cache for EVERY user at once.
+// Change only deliberately, and never per-request/per-user.
 const SYSTEM_PROMPT = [
   "You are the afterclass.io assistant, helping SMU students plan their studies.",
   "You can search courses and professors, manage the user's timetables, bids, and roadmaps, and recommend bid amounts.",
@@ -28,6 +34,22 @@ const SYSTEM_PROMPT = [
   "- Reviews are read-only: never write, edit, or fabricate reviews.",
   "- You can only see the user's own private data and public data; never claim to see others' private data.",
   "- Keep answers concise and cite what you actually looked up.",
+  "Prompt steering:",
+  "- If a request is vague, generic, or could match many things (e.g. 'reviews', 'courses starting with a', 'professor starting with a', 'how many professors'), do NOT fire a broad search. Ask ONE short clarifying question instead — which course code/name, which professor, which academic term, or what exactly.",
+  "- If a question is outside afterclass.io's data (general knowledge, exact counts we don't track, other schools), say so directly and offer the closest thing you CAN do. Never guess or invent numbers.",
+  "- Search is typo-tolerant but imperfect. If a search returns nothing or nonsense, retry with a corrected/simpler query (fix typos, drop filler words) and state the assumption you made.",
+  "- Academic-term and bid-window inputs default to the current term/window server-side. Do NOT invent a term id; prefer omitting it, or get it from list-acad-terms.",
+  "After any bid/budget change, the tool result already contains the full updated bid plan — summarize budget + each bid (course/section/professor/amount/status/round/window). Do not call my-bid-plan again for the same term.",
+  "After creating/copying/editing a roadmap, the tool result contains the updated roadmap — summarize its name, term grid, and key courses.",
+  "Multi-step planning:",
+  "- Before calling any tool, plan the full chain: what data you need and the order to fetch it. Prefer the fewest, most specific tools; if one tool returns everything you need, do not over-split.",
+  "- Run searches before proposing courses, professors, or plans. Never invent course codes, section numbers, professor names, review content, or bid prices - only use values returned by tools.",
+  "- State your assumptions explicitly (e.g. \"assuming 'night classes' means starting at or after 18:00\" or \"assuming you mean your active roadmap\").",
+  "- For math, sums, or optimisation (budgets, bid allocation, exam-clash overlap), use the dedicated tools (recommend-bid-amount, bid-estimate, optimize-bid-allocation, check-roadmap-feasibility) instead of computing in your head.",
+  "- After a write (upsert-bid, save-bids, save-roadmap-entries, add/remove class), verify by re-reading (my-bid-plan, get-my-roadmap, get-my-timetable-detail) and confirm what changed.",
+  "- If you hit the \"making changes too quickly\" message, stop and consolidate remaining writes into fewer tool calls, then retry.",
+  "- Ask at most one clarifying question, and only when the request is genuinely ambiguous (which term, which timetable, which roadmap). Otherwise proceed with the active/default and say what you assumed.",
+  "- Keep answers concise; cite the tools you used and the course codes / section numbers you looked up.",
 ].join("\n");
 
 const GATE = (reason: "quota" | "spend") =>
@@ -164,6 +186,10 @@ export async function POST(req: Request) {
       tools,
       stopWhen: isStepCount(chat.maxToolRounds),
       maxOutputTokens: chat.maxOutputTokens,
+      // Stop paying output tokens when the client disconnects (Stop button /
+      // navigation). Does NOT change quota semantics: the reserved slot stays
+      // consumed on abort (see guardAgainstFailedStream.cancel).
+      abortSignal: req.signal,
       // NOTE: The message slot was pre-reserved by reserveMessage(), so quota
       // cannot be bypassed by disconnecting. Token/spend settlement remains
       // best-effort on disconnect (onEnd may not fire) - this is a documented,
@@ -173,9 +199,21 @@ export async function POST(req: Request) {
       onEnd: async ({ usage }) => {
         if (quotaSettled.value) return; // already refunded - never settle after a refund
         quotaSettled.value = true; // claim the turn for settlement
-        // AI SDK v5: cached input tokens are in usage.inputTokenDetails.cacheReadTokens
-        // (provider cache-hit, e.g. prompt caching). Falls back to 0 if unavailable.
-        const cachedInput = usage.inputTokenDetails?.cacheReadTokens ?? 0;
+        // Cache reads: normalised field first, then the provider's raw
+        // prompt_cache_hit_tokens (see usage.ts - the SDK does not map it).
+        const cachedInput = extractCachedInputTokens(usage);
+        // One-time diagnostic: CHAT_LOG_USAGE=1 logs the raw usage payload so the
+        // provider field mapping can be re-verified after provider/SDK upgrades.
+        if (process.env.CHAT_LOG_USAGE === "1") {
+          console.log("[assistant:usage]", JSON.stringify(usage));
+        }
+        if ((usage.inputTokens ?? 0) > 30_000) {
+          // Settlement spike: usually a huge tool result re-sent across loop steps
+          // or a broken cached prefix. Loud enough to catch cost regressions.
+          console.warn(
+            `[assistant] large settlement: input=${usage.inputTokens} cached=${cachedInput}`,
+          );
+        }
         await settleUsage(userId, {
           input: usage.inputTokens ?? 0,
           output: usage.outputTokens ?? 0,

@@ -36,7 +36,7 @@ describe("search-courses", () => {
     const fn = vi.fn().mockResolvedValue([{ id: "c1", code: "ACC101" }]);
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ searchCourses: fn }) };
     const result = await searchCoursesTool.run(ctx, { acadTermId: "t1", query: "acc" });
-    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", query: "acc" });
+    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", query: "acc", facultyId: undefined });
     expect(result.isError).toBeUndefined();
   });
 
@@ -68,7 +68,7 @@ describe("search-courses", () => {
       }),
     };
     const result = await searchCoursesTool.run(ctx, { query: "acc" });
-    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", query: "acc" });
+    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", query: "acc", facultyId: undefined });
     expect(result.isError).toBeUndefined();
   });
 
@@ -82,7 +82,7 @@ describe("search-courses", () => {
       }),
     };
     const result = await searchCoursesTool.run(ctx, { acadTermId: "", query: "acc" });
-    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", query: "acc" });
+    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", query: "acc", facultyId: undefined });
     expect(result.isError).toBeUndefined();
   });
 
@@ -98,6 +98,18 @@ describe("search-courses", () => {
     const result = await searchCoursesTool.run(ctx, { query: "acc" });
     expect(result.isError).toBe(true);
     expect(fn).not.toHaveBeenCalled();
+  });
+
+  it("threads facultyId through to timetable.searchCourses", async () => {
+    const fn = vi.fn().mockResolvedValue([]);
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ searchCourses: fn }) };
+    await searchCoursesTool.run(ctx, { acadTermId: "t1", query: "tech", facultyId: 4 });
+    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", query: "tech", facultyId: 4 });
+  });
+
+  it("description mentions description/courseArea matching", () => {
+    expect(searchCoursesTool.description).toContain("description");
+    expect(searchCoursesTool.description).toContain("courseArea");
   });
 });
 
@@ -161,6 +173,38 @@ describe("get-classes", () => {
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getAll: fn }) };
     await getClassesTool.run(ctx, { limit: 15 });
     expect(fn).toHaveBeenCalledWith({ limit: 15 });
+  });
+
+  it("threads day/startsAfter/endsBefore filters through to classes.getAll", async () => {
+    const fn = vi.fn().mockResolvedValue([]);
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getAll: fn }) };
+    await getClassesTool.run(ctx, {
+      courseCode: "ACC101",
+      day: "Mon",
+      startsAfter: "18:00",
+      endsBefore: "22:00",
+      limit: 10,
+    });
+    expect(fn).toHaveBeenCalledWith({
+      courseCode: "ACC101",
+      day: "Mon",
+      startsAfter: "18:00",
+      endsBefore: "22:00",
+      limit: 10,
+    });
+  });
+
+  it("passes single time filter startsAfter alone", async () => {
+    const fn = vi.fn().mockResolvedValue([]);
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getAll: fn }) };
+    await getClassesTool.run(ctx, { startsAfter: "18:00", limit: 10 });
+    expect(fn).toHaveBeenCalledWith(expect.objectContaining({ startsAfter: "18:00" }));
+  });
+
+  it("description mentions the new time filters", () => {
+    expect(getClassesTool.description).toContain("day");
+    expect(getClassesTool.description).toContain("startsAfter");
+    expect(getClassesTool.description).toContain("endsBefore");
   });
 });
 
