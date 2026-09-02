@@ -1,6 +1,6 @@
 # afterclass.io MCP server
 
-The afterclass.io Model Context Protocol (MCP) server, built on [mcp-use](https://mcp-use.com). It exposes the shared tool catalog (`src/server/mcp/tools` — the same 44 tools the in-app assistant uses) as a remote, OAuth-protected MCP server with 7 MCP Apps widgets.
+The afterclass.io Model Context Protocol (MCP) server, built on [mcp-use](https://mcp-use.com). It exposes the shared tool catalog (`src/server/mcp/tools` — the same 49 tools the in-app assistant uses) as a remote, OAuth-protected MCP server with 7 MCP Apps widgets.
 
 - **Server entry:** `src/mcp/index.ts`
 - **Tool wiring:** `src/mcp/register.ts` + `src/mcp/user.ts`
@@ -16,7 +16,7 @@ The afterclass.io Model Context Protocol (MCP) server, built on [mcp-use](https:
 |  Next.js app (Vercel)       |      |  mcp-use server (this repo: src/mcp/)      |
 |                             |      |                                            |
 |  - website                  |      |  - MCP transport (streamable HTTP)         |
-|  - Supabase identity        |      |  - 44 tools from the shared catalog        |
+|  - Supabase identity        |      |  - 49 tools from the shared catalog        |
 |  - consent screen           |      |    (src/server/mcp/tools - single source   |
 |    /oauth/consent           |      |     of truth, shared with the assistant    |
 |                             |      |     widget)                                |
@@ -37,12 +37,12 @@ The afterclass.io Model Context Protocol (MCP) server, built on [mcp-use](https:
 Three moving parts:
 
 1. **Next.js app (Vercel)** — the website, Supabase-backed sign-in, and the hosted consent screen at `/oauth/consent` (`src/app/oauth/consent/page.tsx` + `src/app/api/oauth/consent/route.ts`). The user approves or denies an authorization request from this screen.
-2. **mcp-use server (`src/mcp/`)** — the MCP transport (streamable HTTP); hosts the 44 tools from the shared catalog + 7 widgets, and runs `oauthSupabaseProvider()`. Deployed independently of the Next.js app (see [Deploy](#deploy)).
+2. **mcp-use server (`src/mcp/`)** — the MCP transport (streamable HTTP); hosts the 49 tools from the shared catalog + 7 widgets, and runs `oauthSupabaseProvider()`. Deployed independently of the Next.js app (see [Deploy](#deploy)).
 3. **Supabase Auth** — the hosted OAuth 2.1 authorization server: issues MCP access tokens, handles Dynamic Client Registration (DCR) for MCP clients, and redirects the user to the app's consent screen.
 
 ### Single source of truth for tools
 
-All 44 tools live in `src/server/mcp/tools` (e.g. `search-courses`, `my-timetables`, `recommend-bid-amount`). The same catalog powers the **in-app assistant** (via the tRPC caller) and the **MCP server** (`src/mcp/register.ts` iterates `allTools` and registers each as an mcp-use tool, resolving the caller from the OAuth identity per call). A tool only needs to be changed in one place.
+All 49 tools live in `src/server/mcp/tools` (e.g. `search-courses`, `my-timetables`, `recommend-bid-amount`). The same catalog powers the **in-app assistant** (via the tRPC caller) and the **MCP server** (`src/mcp/register.ts` iterates `allTools` and registers each as an mcp-use tool, resolving the caller from the OAuth identity per call). A tool only needs to be changed in one place.
 
 ## Authorization / consent flow
 
@@ -60,17 +60,19 @@ The end-to-end OAuth 2.1 authorization-code flow with Supabase-hosted consent:
 
 Under the hood: `src/server/supabase-consent.ts` (a per-call Supabase client authenticated with the user's access token) → `approveConsent` / `denyConsent` / `getConsentDetails` → the consent route/page. On every call the token is verified by `oauthSupabaseProvider()` (Supabase JWKS); each tool resolves the caller from `ctx.auth.user` via `src/mcp/user.ts` → `createCallerForUser` (a user-scoped tRPC caller) and **fails closed** when unauthenticated.
 
-## Tool catalog (44 tools)
+## Tool catalog (49 tools)
 
-The shared catalog exposes 44 tools over MCP (24 readOnly + 20 write), defined in `src/server/mcp/tools` — read tools under `tools/read/`, write tools under `tools/write/`, aggregated in `tools/index.ts`. readOnly tools are annotated `readOnlyHint` and skip the write budget.
+The shared catalog exposes 49 tools over MCP (27 readOnly + 22 write), defined in `src/server/mcp/tools` — read tools under `tools/read/`, write tools under `tools/write/`, aggregated in `tools/index.ts`. readOnly tools are annotated `readOnlyHint` and skip the write budget.
 
 Tool families:
 
-- **Courses / classes / professors + ranked search** — course and class detail with ranked, senior-informed candidates (`search-courses`, `get-course`, `get-classes`, `list-acad-terms`).
-- **Catalog** — reviews, bid results / predictions / windows, and academic terms (`get-course-reviews`, `get-professor-reviews`, `get-bid-results`, `get-bid-windows`, `get-contribute-info`).
-- **Own data** — timetables, roadmaps, bids, budget, usage (`my-timetables`, `my-roadmaps`, `my-bids`, `my-bid-plan`, `get-budget`, `get-usage`, `get-me`).
-- **Planning** — `plan-semester`, `check-roadmap-feasibility`, `get-my-timetable-detail`.
-- **Write tools** — bids, timetables, roadmaps, roadmap settings, bid status, calendar links, recommend (`upsert-bid`, `set-bid-budget`, `set-bid-status`, `set-matric-term`, `set-active-roadmap`, `sync-roadmap-progress`, `copy-public-roadmap`, `set-roadmap-visibility`, `get-timetable-calendar-link`, `recommend-bid-amount`).
+- **Courses / classes / professors + ranked search** — course and class detail with ranked, senior-informed candidates (`search-courses`, `get-course`, `get-classes`, `search-professors`, `list-acad-terms`).
+- **Catalog** — reviews, bid results / predictions / windows, and academic terms (`get-course-reviews`, `get-professor-reviews`, `get-review-summary`, `get-bid-results`, `get-bid-windows`, `get-contribute-info`).
+- **Own data** — timetables, roadmaps, bids, budget (`my-timetables`, `my-roadmaps`, `my-bids`, `my-bid-plan`, `my-bid-budget`).
+- **Planning / estimation** — `plan-semester`, `check-roadmap-feasibility`, `get-my-timetable-detail`, `bid-estimate` (per-section median/min + suggested amount + vacancy for the open window).
+- **Write tools** — bids, timetables, roadmaps, roadmap settings, bid status, calendar links, recommend (`upsert-bid`, `set-bid-budget`, `set-bid-status`, `save-bids`, `set-matric-term`, `set-active-roadmap`, `sync-roadmap-progress`, `copy-public-roadmap`, `upsert-roadmap-entry`, `set-roadmap-visibility`, `get-timetable-calendar-link`, `recommend-bid-amount`).
+
+> **Mutation echo:** every bid/budget write (`set-bid-budget`, `upsert-bid`, `remove-bid`, `set-bid-status`, `save-bids`) returns the full updated `{ updated, plan }` and re-renders the `bid-plan` widget; roadmap writes (`copy-public-roadmap`, `create-roadmap`, `save-roadmap-entries`, `upsert-roadmap-entry`) return the updated roadmap view and re-render the `roadmap-view` widget. Chat prompts tell the model to summarize the returned plan/roadmap instead of re-fetching.
 
 Two companion surfaces are registered alongside the tools:
 
@@ -86,8 +88,8 @@ Two companion surfaces are registered alongside the tools:
 | `course-search`      | `search-courses`                              | `src/mcp/resources/course-search/widget.tsx`       | `{ results: [{ code, name, creditUnits?, sections: [{ classId?, section, professorName, timings[] }] }] }`                                   | — |
 | `bid-recommendation` | `recommend-bid-amount`                        | `src/mcp/resources/bid-recommendation/widget.tsx`  | `{ classId, acadTermId, bidWindow?, predictedMedian, suggestedBidAmount, multiplierUsed?, rationale? }`                                      | — |
 | `calendar-links`     | `get-timetable-calendar-link`                 | `src/mcp/resources/calendar-links/widget.tsx`      | `{ feedUrl, subscribeUrl, googleSubscribeUrl, appleSubscribeUrl, outlookSubscribeUrl, madeLinkShareable? }` via `widgetProps`                | External subscribe links |
-| `bid-plan`           | `my-bid-plan`                                 | `src/mcp/resources/bid-plan/widget.tsx`            | `{ acadTermId, budget: { balance } \| null, bids: [{ id, bidAmount, status, courseCode, courseName, section, professorName, round, window }] }` | — |
-| `roadmap-view`       | `get-my-roadmap`, `get-public-roadmap`        | `src/mcp/resources/roadmap-view/widget.tsx`        | `{ roadmapId, name, isPublic, owner, voteCount, entries: [{ yearNumber, term, courseCode, courseName, creditUnits }] }`                      | `copy-public-roadmap` when `isPublic` |
+| `bid-plan`           | `my-bid-plan`, `set-bid-budget`, `upsert-bid`, `remove-bid`, `set-bid-status`, `save-bids` | `src/mcp/resources/bid-plan/widget.tsx`            | `{ acadTermId, budget: { balance } \| null, bids: [{ id, bidAmount, status, courseCode, courseName, section, professorName, round, window }] }` | — |
+| `roadmap-view`       | `get-my-roadmap`, `get-public-roadmap`, `copy-public-roadmap`, `create-roadmap`, `save-roadmap-entries`, `upsert-roadmap-entry` | `src/mcp/resources/roadmap-view/widget.tsx`        | `{ roadmapId, name, isPublic, owner, voteCount, entries: [{ yearNumber, term, courseCode, courseName, creditUnits }] }`                      | `copy-public-roadmap` when `isPublic` |
 | `review-cards`       | `get-course-reviews`, `get-professor-reviews` | `src/mcp/resources/review-cards/widget.tsx`        | `{ context, reviews: [{ id, body, tips, rating, labels, voteCount, createdAt, courseCode, professorName }] }`                                | — |
 | `bid-explorer`       | `explore-bid-options`                         | `src/mcp/resources/bid-explorer/widget.tsx`        | `{ classId \| null, history: [{ acadTermId, round, window, min, median, vacancy }], prediction: { medianPredicted, minPredicted, bidWindow: { id, round, window } } \| null, safetyFactors: [{ beatsPercentage, multiplier }] }` | `upsert-bid` with `bidWindowId` + slider |
 
@@ -188,7 +190,7 @@ When an MCP call arrives with no identity, `src/mcp/user.ts` falls back to the *
 1. `bun run db:reset` (seeds the dev user + data into local Postgres on `:5433`).
 2. `bun run mcp:dev` → wait for `[SERVER] Listening on http://0.0.0.0:3001` (~20–40s, loads all tRPC routers).
 3. Open `http://localhost:3001/inspector`, hit **Connect** — no OAuth prompt.
-4. `tools/list` shows the 44 tools; call e.g. `search-courses`, `get-me`, or `recommend-bid-amount`.
+4. `tools/list` shows the 49 tools; call e.g. `search-courses`, `get-me`, or `recommend-bid-amount`.
 5. Widget-backed tools (`search-courses`, `recommend-bid-amount`, `my-bid-plan`, `explore-bid-options`, reviews, roadmap, calendar-link) render the 7 MCP Apps widgets in the Inspector.
 
 All calls run as the single dev user (`test_hash_pwd@smu.edu.sg`), so the per-user write budget still applies to that user.

@@ -40,6 +40,22 @@ export async function resolveTermIdOrError(
 }
 
 /**
+ * Resolve the academic term id for a tool call: an explicit (trimmed)
+ * `acadTermId` wins; omitted/empty defaults to the current term. Returns a
+ * friendly ask-the-user error when no current term exists. Centralises the
+ * "an empty string must never reach SQL" invariant shared by every
+ * term-scoped tool.
+ */
+export async function resolveTermId(
+  caller: RouterCaller,
+  acadTermId?: string,
+): Promise<ResolveResult<string>> {
+  const trimmed = acadTermId?.trim() ?? "";
+  if (trimmed) return { ok: true, value: trimmed };
+  return resolveTermIdOrError(caller);
+}
+
+/**
  * Resolve the id of the currently OPEN bid window via
  * `caller.bidWindows.getCurrentWindow()`.
  *

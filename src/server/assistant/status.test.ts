@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/server/assistant/quota", () => ({
-  checkQuota: vi.fn(),
+  getQuotaState: vi.fn(),
   checkSpendGuard: vi.fn(),
 }));
 vi.mock("@/server/ecfg/chat", () => ({
@@ -9,18 +9,21 @@ vi.mock("@/server/ecfg/chat", () => ({
 }));
 vi.mock("./connected", () => ({ hasConnectedAgent: vi.fn() }));
 
-import { checkQuota, checkSpendGuard } from "./quota";
+import { checkSpendGuard, getQuotaState } from "./quota";
 import { hasConnectedAgent } from "./connected";
 import { getAssistantStatus } from "./status";
 
-const mockedQuota = vi.mocked(checkQuota);
+const mockedQuotaState = vi.mocked(getQuotaState);
 const mockedSpend = vi.mocked(checkSpendGuard);
 const mockedConnected = vi.mocked(hasConnectedAgent);
 
 describe("getAssistantStatus", () => {
   beforeEach(() => {
-    mockedQuota.mockReset(); mockedSpend.mockReset(); mockedConnected.mockReset();
-    mockedQuota.mockResolvedValue({ ok: true, remaining: 30, quota: 50 });
+    mockedQuotaState.mockReset(); mockedSpend.mockReset(); mockedConnected.mockReset();
+    mockedQuotaState.mockResolvedValue({
+      used: 20, quota: 50, criticalFloor: 10, remaining: 30, isCritical: false,
+      period: "2026-09", inputTokens: 0, cachedInputTokens: 0,
+    });
     mockedSpend.mockResolvedValue(true);
     mockedConnected.mockResolvedValue(false);
   });
@@ -35,15 +38,20 @@ describe("getAssistantStatus", () => {
       spendPaused: false,
       hasConnectedAgent: false,
       nudgeAt: 40,
+      cacheHitRate: null,
     });
   });
 
-  it("reports quota exhausted when checkQuota returns ok:false", async () => {
-    mockedQuota.mockResolvedValue({ ok: false, remaining: 0, quota: 50 });
+  it("reports quota exhausted when remaining is 0", async () => {
+    mockedQuotaState.mockResolvedValue({
+      used: 50, quota: 50, criticalFloor: 10, remaining: 0, isCritical: true,
+      period: "2026-09", inputTokens: 0, cachedInputTokens: 0,
+    });
     const s = await getAssistantStatus("u1");
     expect(s.spendPaused).toBe(false);
     expect(s.remaining).toBe(0);
     expect(s.used).toBe(50);
+    expect(s.cacheHitRate).toBeNull();
   });
 
   it("reports spend paused when checkSpendGuard returns false", async () => {
@@ -57,5 +65,23 @@ describe("getAssistantStatus", () => {
     const s = await getAssistantStatus("u1", "tok");
     expect(s.hasConnectedAgent).toBe(true);
     expect(mockedConnected).toHaveBeenCalledWith("u1", "tok");
+  });
+
+  it("exposes cacheHitRate as cachedInputTokens / inputTokens", async () => {
+    mockedQuotaState.mockResolvedValue({
+      used: 5, quota: 50, criticalFloor: 10, remaining: 45, isCritical: false,
+      period: "2026-09", inputTokens: 1000, cachedInputTokens: 800,
+    });
+    const s = await getAssistantStatus("u1");
+    expect(s.cacheHitRate).toBeCloseTo(0.8);
+  });
+
+  it("cacheHitRate is null when no input tokens yet", async () => {
+    mockedQuotaState.mockResolvedValue({
+      used: 1, quota: 50, criticalFloor: 10, remaining: 49, isCritical: false,
+      period: "2026-09", inputTokens: 0, cachedInputTokens: 0,
+    });
+    const s = await getAssistantStatus("u1");
+    expect(s.cacheHitRate).toBeNull();
   });
 });

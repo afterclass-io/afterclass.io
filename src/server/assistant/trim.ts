@@ -3,7 +3,7 @@ import type { ModelMessage, UIMessage } from "ai";
 
 export const TOKEN_ESTIMATE_CHARS_PER_TOKEN = 4;
 // NOTE: heuristic (JSON chars / 4). ~right for English; JSON-heavy tool payloads skew it.
-// Verifying against DeepSeek's real tokenizer is a tracked follow-up — do NOT add a
+// Verifying against the provider's real tokenizer is a tracked follow-up — do NOT add a
 // tokenizer dependency in this change.
 
 const estimateTokens = (m: ModelMessage): number =>
@@ -42,6 +42,14 @@ export function applyTokenBudget(
 
   return trimmed;
 }
+
+// CACHE ECONOMICS (2026-09-01 audit) - do NOT widen this window:
+// W=2 bills each turn's tool results at miss exactly once (next turn), then
+// drops them. W>=3 is strictly worse: the with-tools -> without-tools
+// transition of the message leaving the window lands BEFORE newer tool
+// results in the byte stream, re-billing those newer results at miss on
+// every remaining turn. "Keep everything" only wins when a result survives
+// >10 subsequent turns and grows context without bound.
 
 /** Convert UI messages, prune reasoning/tool-call bloat, then enforce the token budget. */
 export async function trimToBudget(messages: UIMessage[]): Promise<ModelMessage[]> {

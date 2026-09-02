@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { resolveTermIdOrError } from "../../current";
+import { resolveTermId } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const myTimetablesSchema = z.object({ acadTermId: z.string().optional() });
@@ -10,15 +10,12 @@ export const myTimetablesTool: McpTool<typeof myTimetablesSchema> = {
   description: "List the user's own timetables for an academic term.",
   inputSchema: myTimetablesSchema,
   readOnly: true,
-  run: async ({ caller }, { acadTermId }) => {
+  run: async ({ caller }, input) => {
+    const { acadTermId } = input as { acadTermId?: string };
     try {
-      let termId = acadTermId?.trim() ?? "";
-      if (!termId) {
-        const resolved = await resolveTermIdOrError(caller);
-        if (!resolved.ok) return errText(resolved.errText);
-        termId = resolved.value;
-      }
-      const timetables = (await caller.timetable.listMine({ acadTermId: termId })) as Array<
+      const term = await resolveTermId(caller, acadTermId);
+      if (!term.ok) return errText(term.errText);
+      const timetables = (await caller.timetable.listMine({ acadTermId: term.value })) as Array<
         Record<string, unknown>
       >;
       const scrubbed = timetables.map((t) => {
@@ -41,6 +38,7 @@ const myBidsSchema = z.object({
     .string()
     .optional()
     .describe("Filter to one academic term; omit to use the current academic term — includes all bid windows"),
+  limit: z.number().int().min(1).max(50).default(20),
 });
 
 export const myBidsTool: McpTool<typeof myBidsSchema> = {
@@ -48,16 +46,16 @@ export const myBidsTool: McpTool<typeof myBidsSchema> = {
   description: "List the user's own saved bids.",
   inputSchema: myBidsSchema,
   readOnly: true,
-  run: async ({ caller }, { acadTermId }) => {
+  run: async ({ caller }, input) => {
+    const { acadTermId, limit = 20 } = input as {
+      acadTermId?: string;
+      limit?: number;
+    };
     try {
       // Omitted/empty acadTermId defaults to the current term (all bid windows
       // within that term are kept via the bidWindow.acadTermId filter below).
-      let termId = acadTermId?.trim() ?? "";
-      if (!termId) {
-        const resolved = await resolveTermIdOrError(caller);
-        if (!resolved.ok) return errText(resolved.errText);
-        termId = resolved.value;
-      }
+      const term = await resolveTermId(caller, acadTermId);
+      if (!term.ok) return errText(term.errText);
       const bids = await caller.userBids.listMine();
       // my-bids is exposed over MCP: strip the free-text `notes` field (user
       // PII / private bidding strategy) from the AI-visible output. All other
@@ -68,9 +66,9 @@ export const myBidsTool: McpTool<typeof myBidsSchema> = {
         return rest;
       });
       const filtered = scrubbed.filter(
-        (b) => (b as { bidWindow?: { acadTermId?: string } }).bidWindow?.acadTermId === termId,
+        (b) => (b as { bidWindow?: { acadTermId?: string } }).bidWindow?.acadTermId === term.value,
       );
-      return jsonText(filtered);
+      return jsonText(filtered.slice(0, limit));
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -84,15 +82,12 @@ export const myBudgetTool: McpTool<typeof myBudgetSchema> = {
   description: "Get the user's bid budget balance for an academic term.",
   inputSchema: myBudgetSchema,
   readOnly: true,
-  run: async ({ caller }, { acadTermId }) => {
+  run: async ({ caller }, input) => {
+    const { acadTermId } = input as { acadTermId?: string };
     try {
-      let termId = acadTermId?.trim() ?? "";
-      if (!termId) {
-        const resolved = await resolveTermIdOrError(caller);
-        if (!resolved.ok) return errText(resolved.errText);
-        termId = resolved.value;
-      }
-      return jsonText(await caller.userBids.getBudget({ acadTermId: termId }));
+      const term = await resolveTermId(caller, acadTermId);
+      if (!term.ok) return errText(term.errText);
+      return jsonText(await caller.userBids.getBudget({ acadTermId: term.value }));
     } catch (e) {
       return errText(errorMessage(e));
     }

@@ -15,6 +15,7 @@ export const searchCourses = publicProcedure
     z.object({
       acadTermId: z.string(),
       query: z.string().min(1),
+      facultyId: z.number().int().optional(),
     }),
   )
   .query(async ({ ctx, input }) => {
@@ -25,14 +26,51 @@ export const searchCourses = publicProcedure
     if (q.length < 2) return [];
 
     // Ranked fuzzy search: exact/prefix code first, then prefix FTS over
-    // code+name (`:*` restores the pre-upgrade prefix behavior), then trigram
-    // name matching - word_similarity gives best-word typo tolerance
-    // ("statistics" matches "Statistical Analysis") + code similarity for
-    // spaced/dashed codes, then professor-name match in the same acad term
-    // (mirrors the pre-upgrade `classes.some({ acadTermId, professor: { name:
-    // contains } })` branch). Offered-in-term filter via EXISTS on classes.
+    // code+name+description+courseArea (`:*` restores the pre-upgrade prefix
+    // behavior), then trigram name matching - word_similarity gives
+    // best-word typo tolerance ("statistics" matches "Statistical Analysis")
+    // + code similarity for spaced/dashed codes, then professor-name match
+    // in the same acad term (mirrors the pre-upgrade `classes.some({
+    // acadTermId, professor: { name: contains } })` branch). Offered-in-term
+    // filter via EXISTS on classes. Optional facultyId via c.belong_to_faculty
+    // and description/courseArea via word_similarity + FTS COALESCE.
     // Parameterized - safe (prepared statement).
-    const rows = await ctx.db.$queryRaw<SearchRow[]>`
+    const hasFaculty = typeof input.facultyId === "number";
+    const rows = hasFaculty
+      ? await ctx.db.$queryRaw<SearchRow[]>`
+      SELECT c.id, c.code, c.name, c.credit_units AS "creditUnits"
+      FROM courses c
+      WHERE c.belong_to_faculty = ${input.facultyId}
+      AND EXISTS (
+        SELECT 1 FROM classes cl
+        WHERE cl.course_id = c.id AND cl.acad_term_id = ${input.acadTermId}
+      )
+      AND (
+        c.code ILIKE ('%' || ${q} || '%')
+        OR to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description,'') || ' ' || COALESCE(c.course_area,''))
+           @@ plainto_tsquery('simple', ${q} || ':*')
+        OR word_similarity(c.name, ${q}) > 0.3
+        OR word_similarity(COALESCE(c.description,''), ${q}) > 0.3
+        OR word_similarity(COALESCE(c.course_area,''), ${q}) > 0.3
+        OR similarity(c.code, ${q}) > 0.3
+        OR EXISTS (
+          SELECT 1 FROM classes clp
+          JOIN professors p ON p.id = clp.professor_id
+          WHERE clp.course_id = c.id
+            AND clp.acad_term_id = ${input.acadTermId}
+            AND (
+              p.name ILIKE ('%' || ${q} || '%')
+              OR word_similarity(p.name, ${q}) > 0.3
+            )
+        )
+      )
+      ORDER BY
+        (c.code ILIKE (${q} || '%'))::int DESC,
+        similarity(c.name, ${q}) DESC,
+        c.code
+      LIMIT 20;
+    `
+      : await ctx.db.$queryRaw<SearchRow[]>`
       SELECT c.id, c.code, c.name, c.credit_units AS "creditUnits"
       FROM courses c
       WHERE EXISTS (
@@ -41,9 +79,11 @@ export const searchCourses = publicProcedure
       )
       AND (
         c.code ILIKE ('%' || ${q} || '%')
-        OR to_tsvector('simple', c.code || ' ' || c.name)
+        OR to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description,'') || ' ' || COALESCE(c.course_area,''))
            @@ plainto_tsquery('simple', ${q} || ':*')
         OR word_similarity(c.name, ${q}) > 0.3
+        OR word_similarity(COALESCE(c.description,''), ${q}) > 0.3
+        OR word_similarity(COALESCE(c.course_area,''), ${q}) > 0.3
         OR similarity(c.code, ${q}) > 0.3
         OR EXISTS (
           SELECT 1 FROM classes clp

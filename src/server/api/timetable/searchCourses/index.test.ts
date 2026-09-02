@@ -191,7 +191,7 @@ describe("timetable.searchCourses", () => {
     expect(params).not.toContain("ACCT 102");
   });
 
-  it("uses prefix FTS and word_similarity in the ranked raw SQL", async () => {
+  it("uses prefix FTS and word_similarity in the ranked raw SQL (now including description/courseArea)", async () => {
     queryRawMock.mockResolvedValue([statRow]);
     classesFindManyMock.mockResolvedValue([]);
 
@@ -199,10 +199,38 @@ describe("timetable.searchCourses", () => {
 
     const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const sql = rawCall[0].join("?");
+    // Now matches description/courseArea as well — old code/name-only assertion updated; see W4.
     expect(sql).toContain("plainto_tsquery('simple', ? || ':*')");
     expect(sql).toContain("word_similarity(c.name");
+    expect(sql).toContain("word_similarity(COALESCE(c.description");
+    expect(sql).toContain("word_similarity(COALESCE(c.course_area");
+    expect(sql).toContain("to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description");
     expect(sql).toContain("similarity(c.code");
     expect(sql).toContain("word_similarity(p.name");
+  });
+
+  it("filters by facultyId when provided", async () => {
+    queryRawMock.mockResolvedValue([statRow]);
+    classesFindManyMock.mockResolvedValue([]);
+
+    await caller.timetable.searchCourses({ acadTermId: "t1", query: "tech", facultyId: 4 });
+
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const sql = rawCall[0].join("?");
+    expect(sql).toContain("belong_to_faculty");
+    const params = rawCall.slice(1);
+    expect(params).toContain(4);
+  });
+
+  it("omits faculty filter when not provided", async () => {
+    queryRawMock.mockResolvedValue([statRow]);
+    classesFindManyMock.mockResolvedValue([]);
+
+    await caller.timetable.searchCourses({ acadTermId: "t1", query: "tech" });
+
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const sql = rawCall[0].join("?");
+    expect(sql).not.toContain("belong_to_faculty");
   });
 
   it("propagates an error when the raw query rejects", async () => {

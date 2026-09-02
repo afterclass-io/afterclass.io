@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { db } from "@/server/db";
 
-import { resolveTermIdOrError } from "../../current";
+import { resolveTermId } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const getMyTimetableDetailSchema = z.object({
@@ -38,7 +38,15 @@ interface ArrangementSlot {
   professorName: string | null;
   creditUnits: number;
   timings: ArrangementTiming[];
-  examTimings?: unknown[];
+  examTimings?: ArrangementExamTiming[];
+}
+
+interface ArrangementExamTiming {
+  date: Date | string | null;
+  dayOfWeek: string | null;
+  startTime: string;
+  endTime: string;
+  venue: string | null;
 }
 
 type Arrangement = {
@@ -65,6 +73,22 @@ function toFlatSlots(arrangement: Arrangement) {
   );
 }
 
+function toExamTimings(arrangement: Arrangement) {
+  return arrangement.slots.flatMap((slot) =>
+    (slot.examTimings ?? []).map((exam) => ({
+      classId: slot.classId,
+      courseCode: slot.courseCode,
+      section: slot.section,
+      // exam.date is Date | string | null per ArrangementExamTiming; keep the string branch without a redundant cast
+      date: exam.date instanceof Date ? exam.date.toISOString() : (exam.date as unknown as string | null),
+      dayOfWeek: exam.dayOfWeek,
+      startTime: exam.startTime,
+      endTime: exam.endTime,
+      venue: exam.venue,
+    })),
+  );
+}
+
 function toDetail(
   arrangement: Arrangement,
   timetableId: string,
@@ -81,6 +105,7 @@ function toDetail(
       ? { isActive: meta.isActive, ...(meta.termId ? { termId: meta.termId } : {}) }
       : {}),
     slots: toFlatSlots(arrangement),
+    examTimings: toExamTimings(arrangement),
   };
 }
 
@@ -104,17 +129,13 @@ export const getMyTimetableDetailTool: McpTool<typeof getMyTimetableDetailSchema
         // Omitted/empty acadTermId (with no timetableId) defaults to the
         // current academic term. A provided timetableId already pins the term,
         // so it never triggers a term default.
-        let termId = acadTermId?.trim() ?? "";
-        if (!termId) {
-          const resolved = await resolveTermIdOrError(caller);
-          if (!resolved.ok) return errText(resolved.errText);
-          termId = resolved.value;
-        }
-        const mine = await caller.timetable.listMine({ acadTermId: termId });
+        const term = await resolveTermId(caller, acadTermId);
+        if (!term.ok) return errText(term.errText);
+        const mine = await caller.timetable.listMine({ acadTermId: term.value });
         const active = mine.find((t) => t.isActive) ?? mine[0];
         if (!active) {
           return errText(
-            `You don't have any timetables for academic term ${termId}. Create one first, then ask again.`,
+            `You don't have any timetables for academic term ${term.value}. Create one first, then ask again.`,
           );
         }
         id = active.id;

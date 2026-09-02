@@ -32,6 +32,9 @@ function buildGlobals(params: McpWidgetParams) {
     toolInput: {},
     toolOutput,
     toolResponseMetadata: toolOutput === null ? null : {},
+    // Mock callTool so CTA buttons render (isAvailable true) and clicks don't throw.
+    // Mirrors the real window.openai.callTool contract; stories don't need a real round-trip.
+    callTool: async () => ({ content: [], structuredContent: {}, result: "" }),
   };
 }
 

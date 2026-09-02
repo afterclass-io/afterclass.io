@@ -210,4 +210,67 @@ describe("makeHandler widgetProps plumbing", () => {
     const call = widgetMock.mock.calls[0]![0] as WidgetCallArgs;
     expect(call.props).toEqual({ parsed: '{"a":1}' });
   });
+
+  it("bid write tool with widgetName yields a widget() with plan props via toWidgetProps", async () => {
+    checkAndIncrementMock.mockReset();
+    checkAndIncrementMock.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
+    widgetMock.mockReset();
+    const planPayload = {
+      acadTermId: "AY2026/27-T1",
+      budget: { balance: 100 },
+      bids: [{ id: "b1", bidAmount: 25, courseCode: "ACC101", courseName: "Acct", section: "G1", professorName: null, status: "PLANNED", round: "1", window: 1 }],
+    };
+    const envelope = JSON.stringify({ updated: { balance: 100 }, plan: planPayload });
+    const toWidgetProps = vi.fn((result: { content: TextCall[] }) => {
+      const text = result.content.find((c) => c.type === "text")?.text ?? "";
+      try {
+        const parsed = JSON.parse(text) as Record<string, unknown>;
+        if (parsed && typeof parsed === "object" && "plan" in parsed) return parsed.plan as Record<string, unknown>;
+        return parsed;
+      } catch { return { raw: text }; }
+    });
+    const tool: Parameters<typeof makeHandler>[0] = {
+      name: "upsert-bid",
+      description: "Create or update bid. Returns the full updated bid plan for the affected term.",
+      inputSchema: {} as never,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- test harness typed assertion
+      widgetName: "bid-plan" as unknown as "bid-plan",
+      toWidgetProps,
+      run: async () => ({ content: [{ type: "text", text: envelope }] }),
+    };
+    const handler = makeHandler(tool, (ctx, args) => tool.run(ctx, args as never));
+    await handler({}, { auth: { user: { userId: "u1" } } });
+    expect(toWidgetProps).toHaveBeenCalledTimes(1);
+    expect(widgetMock).toHaveBeenCalledTimes(1);
+    const call = widgetMock.mock.calls[0]![0] as WidgetCallArgs;
+    expect(call.props).toMatchObject({ acadTermId: "AY2026/27-T1", budget: { balance: 100 } });
+  });
+
+  it("roadmap write tool with widgetName yields a widget() with roadmap-view props via toWidgetProps", async () => {
+    const roadmapView = JSON.stringify({
+      roadmap: { id: "r2", name: "Senior Plan (copy)" },
+      entries: [{ course: { code: "CS101", name: "Intro", creditUnits: 1 }, yearNumber: 1, term: "T1" }],
+    });
+    const toWidgetProps = (result: { content: TextCall[] }) => {
+      const text = result.content.find((c) => c.type === "text")?.text ?? "";
+      try {
+        const data = JSON.parse(text) as Record<string, unknown>;
+        const rawEntries = Array.isArray(data.entries) ? (data.entries as unknown[]) : [];
+        return { roadmapId: (data.roadmap as Record<string, unknown> | undefined)?.id ?? "", entries: rawEntries };
+      } catch { return { raw: text }; }
+    };
+    const tool: Parameters<typeof makeHandler>[0] = {
+      name: "copy-public-roadmap",
+      description: "Copy a public roadmap. Returns the updated roadmap.",
+      inputSchema: {} as never,
+      widgetName: "roadmap-view",
+      toWidgetProps,
+      run: async () => ({ content: [{ type: "text", text: roadmapView }] }),
+    };
+    const handler = makeHandler(tool, (ctx, args) => tool.run(ctx, args as never));
+    await handler({}, { auth: { user: { userId: "u1" } } });
+    expect(widgetMock).toHaveBeenCalledTimes(1);
+    const call = widgetMock.mock.calls[0]![0] as WidgetCallArgs;
+    expect(call.props).toMatchObject({ roadmapId: "r2" });
+  });
 });

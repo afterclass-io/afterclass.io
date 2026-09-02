@@ -10,11 +10,45 @@ const toolMsg = (id: string): UIMessage => ({
 });
 
 describe("chat-store-logic", () => {
-  it("strips tool input/output from persisted messages", () => {
+  it("removes tool parts entirely (tool-only message ends with zero parts)", () => {
     const [m] = stripToolParts([toolMsg("a1")]);
-    const part = m!.parts[0] as { input?: unknown; output?: unknown };
-    expect(part.input).toBeUndefined();
-    expect(part.output).toBeUndefined();
+    expect(m!.parts).toHaveLength(0);
+  });
+
+  it("removes tool parts entirely instead of keeping hollow shells", () => {
+    const messages = [
+      {
+        id: "u1",
+        role: "user",
+        parts: [{ type: "text", text: "find courses" }],
+      },
+      {
+        id: "a1",
+        role: "assistant",
+        parts: [
+          { type: "step-start" },
+          { type: "tool-invocation", toolCallId: "t1", toolName: "search", state: "output-available", input: {}, output: {} },
+          { type: "text", text: "here you go" },
+        ],
+      },
+    ] as unknown as UIMessage[];
+    const out = stripToolParts(messages);
+    expect(out[1]!.parts.map((p) => p.type)).toEqual(["step-start", "text"]);
+  });
+
+  it("preserves non-tool parts while dropping tool parts", () => {
+    const msg = {
+      id: "a2",
+      role: "assistant",
+      parts: [
+        { type: "text", text: "hello" },
+        { type: "tool-search-courses", toolCallId: "t2", state: "output-available", input: { q: "x" }, output: { rows: [] } },
+        { type: "text", text: "world" },
+      ],
+    } as unknown as UIMessage;
+    const [out] = stripToolParts([msg]);
+    expect(out!.parts.map((p) => p.type)).toEqual(["text", "text"]);
+    expect(out!.parts.map((p) => (p as { text?: string }).text)).toEqual(["hello", "world"]);
   });
 
   it("caps at MAX_SESSION_MESSAGES keeping the newest", () => {

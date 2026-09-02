@@ -19,6 +19,11 @@ export function resolveLlmEnv(e: LlmEnvLike): { apiKey: string; baseURL: string;
   };
 }
 
+// Reasoning (low): deferred pending live verification that providerOptions
+// `thinkingLevel`/`reasoning_effort` round-trips through
+// `@ai-sdk/openai-compatible@^3.0.41` on the live endpoint (per plan
+// §9 impl-verification #1). Do NOT add providerOptions reasoning here
+// until that probe passes — no behavior change in this file.
 /** Single OpenAI-compatible provider configured from LLM_* env vars. */
 export async function getModel() {
   const { apiKey, baseURL, model } = resolveLlmEnv(env);

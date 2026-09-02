@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { buildRoadmapView, roadmapViewToWidgetProps } from "../roadmap-view-shared";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const termSchema = z.enum(["T1", "T2", "T3A", "T3B"]);
@@ -16,11 +17,15 @@ const createRoadmapSchema = z.object({ name: z.string().min(1).max(100) });
 
 export const createRoadmapTool: McpTool<typeof createRoadmapSchema> = {
   name: "create-roadmap",
-  description: "Create a new study roadmap for the user.",
+  description: "Create a new study roadmap for the user. Returns the updated roadmap.",
   inputSchema: createRoadmapSchema,
+  widgetName: "roadmap-view",
+  toWidgetProps: roadmapViewToWidgetProps(false),
   run: async ({ caller }, { name }) => {
     try {
-      return jsonText(await caller.roadmaps.create({ name }));
+      const created = (await caller.roadmaps.create({ name })) as { id: string };
+      const view = await buildRoadmapView(caller, created.id);
+      return jsonText(view);
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -69,11 +74,15 @@ const saveRoadmapEntriesSchema = z.object({
 export const saveRoadmapEntriesTool: McpTool<typeof saveRoadmapEntriesSchema> = {
   name: "save-roadmap-entries",
   description:
-    "Replace the course entries of a roadmap. entries is the full desired list: [{courseId, yearNumber (1-8), term (T1|T2|T3A|T3B), sortOrder}].",
+    "Replace the course entries of a roadmap. entries is the full desired list: [{courseId, yearNumber (1-8), term (T1|T2|T3A|T3B), sortOrder}]. Returns the updated roadmap.",
   inputSchema: saveRoadmapEntriesSchema,
+  widgetName: "roadmap-view",
+  toWidgetProps: roadmapViewToWidgetProps(false),
   run: async ({ caller }, input) => {
     try {
-      return jsonText(await caller.roadmaps.saveEntries(input));
+      await caller.roadmaps.saveEntries(input);
+      const view = await buildRoadmapView(caller, input.roadmapId);
+      return jsonText(view);
     } catch (e) {
       return errText(errorMessage(e));
     }

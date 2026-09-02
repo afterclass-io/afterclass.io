@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import CourseSearch, { widgetMetadata } from "./widget";
@@ -84,5 +84,107 @@ describe("course-search widget render", () => {
   it("renders an empty state for zero results", () => {
     renderCourseSearch({ results: [] });
     expect(screen.getByText("No courses found")).toBeTruthy();
+  });
+});
+
+describe("course-search widget CTA", () => {
+  function captureToolCalls() {
+    const calls: Array<{ name: string; arguments: Record<string, unknown> }> = [];
+    const listener = (event: MessageEvent) => {
+      const msg = event.data as {
+        jsonrpc?: string;
+        id?: number;
+        method?: string;
+        params?: { name: string; arguments: Record<string, unknown> };
+      };
+      if (msg?.jsonrpc === "2.0" && msg.method === "tools/call" && msg.params) {
+        calls.push(msg.params);
+        window.postMessage(
+          { jsonrpc: "2.0", id: msg.id, result: { content: [] } },
+          "*",
+        );
+      }
+    };
+    window.addEventListener("message", listener);
+    return {
+      calls,
+      stop: () => window.removeEventListener("message", listener),
+    };
+  }
+
+  it("Add G1 button calls add-class-to-timetable with classId cl1", async () => {
+    const { calls, stop } = captureToolCalls();
+    try {
+      renderCourseSearch({ results: [sampleResult] });
+      fireEvent.click(screen.getByRole("button", { name: "Add G1" }));
+      await waitFor(() => expect(calls).toHaveLength(1));
+      expect(calls[0]).toEqual({
+        name: "add-class-to-timetable",
+        arguments: { classId: "cl1" },
+      });
+    } finally {
+      stop();
+    }
+  });
+
+  it("Add G2 button calls add-class-to-timetable with classId cl2", async () => {
+    const { calls, stop } = captureToolCalls();
+    try {
+      renderCourseSearch({ results: [sampleResult] });
+      fireEvent.click(screen.getByRole("button", { name: "Add G2" }));
+      await waitFor(() => expect(calls).toHaveLength(1));
+      expect(calls[0]).toEqual({
+        name: "add-class-to-timetable",
+        arguments: { classId: "cl2" },
+      });
+    } finally {
+      stop();
+    }
+  });
+
+  it("does not render Add button when classId is missing", () => {
+    const noIdResult = {
+      ...sampleResult,
+      sections: [{ section: "G3", professorName: "Prof Tan", timings: [] }],
+    };
+    renderCourseSearch({ results: [noIdResult] });
+    expect(screen.queryByRole("button", { name: "Add G3" })).toBeNull();
+  });
+
+  it("shows Saved feedback after successful add-class-to-timetable", async () => {
+    const { calls, stop } = captureToolCalls();
+    try {
+      renderCourseSearch({ results: [sampleResult] });
+      fireEvent.click(screen.getByRole("button", { name: "Add G1" }));
+      await waitFor(() => expect(calls).toHaveLength(1));
+      await waitFor(() => expect(screen.getByRole("button", { name: /Saved/ })).toBeTruthy());
+    } finally {
+      stop();
+    }
+  });
+
+  it("shows Failed feedback when callTool rejects", async () => {
+    const listener = (event: MessageEvent) => {
+      const msg = event.data as {
+        jsonrpc?: string;
+        id?: number;
+        method?: string;
+        params?: { name: string; arguments: Record<string, unknown> };
+      };
+      if (msg?.jsonrpc === "2.0" && msg.method === "tools/call" && msg.params) {
+        window.postMessage(
+          { jsonrpc: "2.0", id: msg.id, error: { code: -1, message: "rate limited" } },
+          "*",
+        );
+      }
+    };
+    window.addEventListener("message", listener);
+    try {
+      renderCourseSearch({ results: [sampleResult] });
+      fireEvent.click(screen.getByRole("button", { name: "Add G1" }));
+      await waitFor(() => expect(screen.getByRole("button", { name: /Failed/ })).toBeTruthy());
+    } finally {
+      window.removeEventListener("message", listener);
+    }
   });
 });

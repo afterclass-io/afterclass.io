@@ -1,5 +1,8 @@
-import { useWidget, type WidgetMetadata } from "mcp-use/react";
+import type React from "react";
+import type { WidgetMetadata } from "mcp-use/react";
 import { z } from "zod";
+import { useCtaFeedback } from "../shared/use-cta-feedback";
+import { useWidget } from "../shared/use-widget";
 
 /**
  * Browser-iframe widget (MCP Apps) for `recommend-bid-amount`.
@@ -95,12 +98,13 @@ const Skeleton: React.FC<{ dark: boolean }> = ({ dark }) => {
 };
 
 const BidRecommendation: React.FC = () => {
-  const { props, isPending, theme, callTool } = useWidget<
+  const { props, isPending, theme, callTool, isAvailable } = useWidget<
     z.infer<typeof bidRecommendationPropsSchema>
   >() as unknown as {
     props: z.infer<typeof bidRecommendationPropsSchema>;
     isPending: boolean;
     theme: string;
+    isAvailable: boolean;
     callTool?: (
       name: string,
       input: Record<string, unknown>,
@@ -108,6 +112,7 @@ const BidRecommendation: React.FC = () => {
   };
   const dark = theme === "dark";
   const c = dark ? TOKENS.dark : TOKENS.light;
+  const { feedback, showFeedback } = useCtaFeedback();
   if (isPending) return <Skeleton dark={dark} />;
   const hasBidWindow = Boolean(props.bidWindow);
   return (
@@ -215,15 +220,21 @@ const BidRecommendation: React.FC = () => {
         </p>
       )}
       {/* CTA requires a bidWindow: upsert-bid's schema needs bidWindowId. */}
-      {callTool && props.bidWindow && (
+      {isAvailable && callTool && props.bidWindow && (
         <button
           type="button"
+          aria-live="polite"
           onClick={() =>
-            void callTool("upsert-bid", {
+            callTool("upsert-bid", {
               classId: props.classId,
               bidAmount: props.suggestedBidAmount,
               bidWindowId: props.bidWindow!.id,
             })
+              .then((res) => {
+                const isError = (res as { isError?: boolean })?.isError === true;
+                showFeedback(isError ? "error" : "saved");
+              })
+              .catch(() => showFeedback("error"))
           }
           style={{
             marginTop: 12,
@@ -231,14 +242,18 @@ const BidRecommendation: React.FC = () => {
             padding: "8px 16px",
             borderRadius: 9999,
             border: "none",
-            background: c.primary,
+            background: feedback === "error" ? "oklch(0.6 0.2 20)" : c.primary,
             color: c.primaryFg,
             fontSize: 13,
             fontWeight: 600,
             cursor: "pointer",
           }}
         >
-          Set bid to ${props.suggestedBidAmount}
+          {feedback === "saved"
+            ? "Saved \u2713"
+            : feedback === "error"
+              ? "Failed to save"
+              : `Set bid to $${props.suggestedBidAmount}`}
         </button>
       )}
     </div>

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
@@ -66,5 +66,40 @@ describe("calendar-links widget render", () => {
   it("when madeLinkShareable=true, shows the link-sharing note", () => {
     renderCalendarLinks({ ...fullProps, madeLinkShareable: true });
     expect(screen.getByText(/link-sharing was turned on/i)).toBeTruthy();
+  });
+
+  it("all three subscribe links render with correct hrefs, target and rel", () => {
+    renderCalendarLinks(fullProps);
+    const google = screen.getByRole("link", { name: /Google Calendar/i });
+    const apple = screen.getByRole("link", { name: /Apple Calendar/i });
+    const outlook = screen.getByRole("link", { name: /Outlook/i });
+    expect(google.getAttribute("href")).toBe(fullProps.googleSubscribeUrl);
+    expect(apple.getAttribute("href")).toBe(fullProps.appleSubscribeUrl);
+    expect(outlook.getAttribute("href")).toBe(fullProps.outlookSubscribeUrl);
+    for (const a of [google, apple, outlook]) {
+      expect(a.getAttribute("target")).toBe("_blank");
+      expect(a.getAttribute("rel")).toBe("noreferrer");
+    }
+  });
+});
+
+describe("calendar-links widget copy action", () => {
+  it("Copy button writes feedUrl to clipboard and shows Copied", async () => {
+    let written: string | null = null;
+    const origClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: (t: string) => { written = t; return Promise.resolve(); } },
+      configurable: true,
+    });
+    try {
+      renderCalendarLinks(fullProps);
+      const btn = screen.getByRole("button", { name: /Copy/i });
+      expect(btn.textContent).toBe("Copy");
+      fireEvent.click(btn);
+      await screen.findByRole("button", { name: /Copied/i });
+      expect(written).toBe(fullProps.feedUrl);
+    } finally {
+      Object.defineProperty(navigator, "clipboard", { value: origClipboard, configurable: true });
+    }
   });
 });

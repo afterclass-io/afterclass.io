@@ -1,5 +1,8 @@
-import { useWidget, type WidgetMetadata } from "mcp-use/react";
+import type React from "react";
+import type { WidgetMetadata } from "mcp-use/react";
 import { z } from "zod";
+import { useKeyedCtaFeedback } from "../shared/use-cta-feedback";
+import { useWidget } from "../shared/use-widget";
 
 /**
  * Browser-iframe widget (MCP Apps) for `search-courses`.
@@ -127,12 +130,13 @@ const SearchSkeleton: React.FC<{ dark: boolean }> = ({ dark }) => {
 };
 
 const CourseSearch: React.FC = () => {
-  const { props, isPending, theme, callTool } = useWidget<
+  const { props, isPending, theme, callTool, isAvailable } = useWidget<
     z.infer<typeof courseSearchPropsSchema>
   >() as unknown as {
     props: z.infer<typeof courseSearchPropsSchema>;
     isPending: boolean;
     theme: string;
+    isAvailable: boolean;
     callTool?: (
       name: string,
       input: Record<string, unknown>,
@@ -141,6 +145,7 @@ const CourseSearch: React.FC = () => {
   const dark = theme === "dark";
   const c = dark ? STOKENS.dark : STOKENS.light;
   const results = props.results ?? [];
+  const { feedback, showFeedback } = useKeyedCtaFeedback();
   if (isPending) return <SearchSkeleton dark={dark} />;
   if (results.length === 0) {
     return (
@@ -291,32 +296,48 @@ const CourseSearch: React.FC = () => {
                       </span>
                     )}
                   </span>
-                  {s.classId && callTool && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        void callTool("add-class-to-timetable", {
-                          classId: s.classId,
-                        })
-                      }
-                      style={
-                        {
-                          shrink: 0,
-                          padding: "2px 10px",
-                          borderRadius: 9999,
-                          border: `1px solid ${c.primary}`,
-                          background: c.primary,
-                          color: c.primaryFg,
-                          fontSize: 11,
-                          fontWeight: 600,
-                          cursor: "pointer",
-                          whiteSpace: "nowrap",
-                        } as unknown as React.CSSProperties
-                      }
-                    >
-                      Add {s.section}
-                    </button>
-                  )}
+                  {s.classId && isAvailable && callTool && (() => {
+                    // s.classId truthy above — narrow to string for map key
+                    const classId: string = s.classId;
+                    const fb = feedback[classId];
+                    const label =
+                      fb === "saved"
+                        ? "Saved \u2713"
+                        : fb === "error"
+                          ? "Failed"
+                          : `Add ${s.section}`;
+                    return (
+                      <button
+                        type="button"
+                        aria-live="polite"
+                        onClick={() =>
+                          callTool("add-class-to-timetable", { classId })
+                            .then((res) => {
+                              const isError =
+                                (res as { isError?: boolean })?.isError === true;
+                              showFeedback(classId, isError ? "error" : "saved");
+                            })
+                            .catch(() => showFeedback(classId, "error"))
+                        }
+                        style={
+                          {
+                            shrink: 0,
+                            padding: "2px 10px",
+                            borderRadius: 9999,
+                            border: `1px solid ${c.primary}`,
+                            background: c.primary,
+                            color: fb === "error" ? "white" : c.primaryFg,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            whiteSpace: "nowrap",
+                          } as unknown as React.CSSProperties
+                        }
+                      >
+                        {label}
+                      </button>
+                    );
+                  })()}
                 </div>
               ))}
             </div>

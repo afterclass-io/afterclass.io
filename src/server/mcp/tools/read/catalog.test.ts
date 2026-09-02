@@ -233,8 +233,64 @@ describe("catalog read tools", () => {
   it("get-bid-results passes filters to bidResults.getBy", async () => {
     const fn = vi.fn().mockResolvedValue([]);
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getBy: fn }) };
-    await getBidResultsTool.run(ctx, { courseCode: "ACC101", section: "G1" });
+    await getBidResultsTool.run(ctx, getBidResultsTool.inputSchema.parse({ courseCode: "ACC101", section: "G1" }));
     expect(fn).toHaveBeenCalledWith({ courseCode: "ACC101", section: "G1" });
+  });
+
+  it("get-bid-results clamps results to limit and defaults to 20", async () => {
+    const makeRows = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `r${i}` }));
+    // Default: no limit passed → 20
+    const fnDefault = vi.fn().mockResolvedValue(makeRows(30));
+    const ctxDefault: ToolContext = { user: fakeUser, caller: makeCaller({ getBy: fnDefault }) };
+    const resultDefault = await getBidResultsTool.run(ctxDefault, {} as Parameters<typeof getBidResultsTool.run>[1]);
+    const parsedDefault = JSON.parse(resultDefault.content[0]!.text) as unknown[];
+    expect(parsedDefault).toHaveLength(20);
+
+    // Explicit limit 5
+    const fn5 = vi.fn().mockResolvedValue(makeRows(30));
+    const ctx5: ToolContext = { user: fakeUser, caller: makeCaller({ getBy: fn5 }) };
+    const result5 = await getBidResultsTool.run(ctx5, { courseCode: "ACC101", limit: 5 } as Record<string, unknown> as Parameters<typeof getBidResultsTool.run>[1]);
+    const parsed5 = JSON.parse(result5.content[0]!.text) as unknown[];
+    expect(parsed5).toHaveLength(5);
+
+    // Does not send limit to procedure (filters only)
+    expect(fn5).toHaveBeenCalledWith({ courseCode: "ACC101" });
+  });
+
+  it("get-bid-results also clamps an { items } envelope without mutating other keys", async () => {
+    const items = Array.from({ length: 30 }, (_, i) => ({ id: `r${i}` }));
+    const fn = vi
+      .fn()
+      .mockResolvedValue({ items, total: 30, extra: "keep" } as unknown as unknown[]);
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getBy: fn }) };
+    const result = await getBidResultsTool.run(ctx, { limit: 5 } as Record<string, unknown> as Parameters<typeof getBidResultsTool.run>[1]);
+    const parsed = JSON.parse(result.content[0]!.text) as { items: unknown[]; total: number; extra: string };
+    expect(parsed.items).toHaveLength(5);
+    expect(parsed.total).toBe(30);
+    expect(parsed.extra).toBe("keep");
+  });
+
+  it("get-bid-results rejects limit > 50 and limit 0", () => {
+    expect(getBidResultsTool.inputSchema.safeParse({ limit: 51 }).success).toBe(false);
+    expect(getBidResultsTool.inputSchema.safeParse({ limit: 0 }).success).toBe(false);
+    expect(getBidResultsTool.inputSchema.safeParse({ limit: 50 }).success).toBe(true);
+    expect(getBidResultsTool.inputSchema.safeParse({ limit: 1 }).success).toBe(true);
+  });
+
+  it("review tools have tightened defaults (10) and max 20", () => {
+    expect(getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101", limit: 51 }).success).toBe(false);
+    expect(getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101", limit: 21 }).success).toBe(false);
+    expect(getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101", limit: 20 }).success).toBe(true);
+    expect(getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101", limit: 0 }).success).toBe(false);
+    const parsedCourse = getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101" });
+    expect(parsedCourse.success).toBe(true);
+    if (parsedCourse.success) expect(parsedCourse.data.limit).toBe(10);
+
+    expect(getProfessorReviewsTool.inputSchema.safeParse({ slug: "prof-x", limit: 21 }).success).toBe(false);
+    expect(getProfessorReviewsTool.inputSchema.safeParse({ slug: "prof-x", limit: 20 }).success).toBe(true);
+    const parsedProf = getProfessorReviewsTool.inputSchema.safeParse({ slug: "prof-x" });
+    expect(parsedProf.success).toBe(true);
+    if (parsedProf.success) expect(parsedProf.data.limit).toBe(10);
   });
 
   it("list-acad-terms calls acadTerms.list()", async () => {

@@ -69,6 +69,16 @@ type ParsedDetail = {
     professor: string | null;
     creditUnits: number;
   }>;
+  examTimings: Array<{
+    classId: string;
+    courseCode: string;
+    section: string;
+    date: string | null;
+    dayOfWeek: string | null;
+    startTime: string;
+    endTime: string;
+    venue: string | null;
+  }>;
 };
 
 // Mirrors the real `timetable.getArrangement` return: one slot per class, each
@@ -380,5 +390,70 @@ describe("get-my-timetable-detail read tool", () => {
     expect(parsed.timetableId).toBe("tt2");
     expect(parsed.name).toBe("Current - Honors");
     expect(parsed.isActive).toBe(true);
+  });
+
+  it("includes flattened examTimings per slot", async () => {
+    const examDate = new Date("2026-04-28T00:00:00.000Z");
+    const withExam = {
+      timetable: { id: "tt1", name: "My Timetable" },
+      slots: [
+        {
+          classId: "c1",
+          courseCode: "ACC101",
+          courseName: "Financial Accounting",
+          section: "G1",
+          professorName: "Jane Doe",
+          creditUnits: 4,
+          timings: [
+            { id: 1, dayOfWeek: "Mon", startTime: "10:00", endTime: "12:00", venue: "SOE/SR3-1" },
+          ],
+          examTimings: [
+            { date: examDate, dayOfWeek: "Tue", startTime: "09:00", endTime: "11:00", venue: "MPSH" },
+          ],
+        },
+        {
+          classId: "c2",
+          courseCode: "STAT101",
+          courseName: "Statistics",
+          section: "G2",
+          professorName: "John Smith",
+          creditUnits: 4,
+          timings: [{ id: 2, dayOfWeek: "Tue", startTime: "14:00", endTime: "16:00", venue: "SOE/SR2-1" }],
+          examTimings: [],
+        },
+      ],
+    };
+    const fn = vi.fn().mockResolvedValue(withExam);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ timetableGetArrangement: fn }),
+    };
+    const result = await getMyTimetableDetailTool.run(ctx, { timetableId: "tt1" });
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(textOf(result)) as ParsedDetail;
+    expect(parsed.examTimings).toHaveLength(1);
+    expect(parsed.examTimings[0]).toEqual({
+      classId: "c1",
+      courseCode: "ACC101",
+      section: "G1",
+      date: examDate.toISOString(),
+      dayOfWeek: "Tue",
+      startTime: "09:00",
+      endTime: "11:00",
+      venue: "MPSH",
+    });
+    // slots still correct
+    expect(parsed.slots).toHaveLength(2);
+  });
+
+  it("returns empty examTimings when no class has exams", async () => {
+    const fn = vi.fn().mockResolvedValue(arrangement);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ timetableGetArrangement: fn }),
+    };
+    const result = await getMyTimetableDetailTool.run(ctx, { timetableId: "tt1" });
+    const parsed = JSON.parse(textOf(result)) as ParsedDetail;
+    expect(parsed.examTimings).toEqual([]);
   });
 });

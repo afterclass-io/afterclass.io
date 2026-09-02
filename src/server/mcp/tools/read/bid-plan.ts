@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import { resolveTermIdOrError } from "../../current";
+import { resolveTermId } from "../../current";
+import { bidPlanToWidgetProps, buildBidPlan } from "../bid-plan-shared";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const myBidPlanSchema = z.object({
@@ -17,40 +18,13 @@ export const myBidPlanTool: McpTool<typeof myBidPlanSchema> = {
   inputSchema: myBidPlanSchema,
   readOnly: true,
   widgetName: "bid-plan",
-  toWidgetProps: (result) => {
-    const text = result.content.find((c) => c.type === "text")?.text ?? "";
-    try {
-      return JSON.parse(text) as Record<string, unknown>;
-    } catch {
-      return { raw: text };
-    }
-  },
+  toWidgetProps: bidPlanToWidgetProps,
   run: async ({ caller }, { acadTermId }) => {
     try {
-      let termId = acadTermId?.trim() ?? "";
-      if (!termId) {
-        const resolved = await resolveTermIdOrError(caller);
-        if (!resolved.ok) return errText(resolved.errText);
-        termId = resolved.value;
-      }
-      const [bids, budget] = await Promise.all([
-        caller.userBids.listMine(),
-        caller.userBids.getBudget({ acadTermId: termId }),
-      ]);
-      const plan = bids
-        .filter((b) => b.bidWindow?.acadTermId === termId)
-        .map((b) => ({
-          id: b.id,
-          bidAmount: b.bidAmount,
-          status: b.status,
-          courseCode: b.courseCode,
-          courseName: b.courseName,
-          section: b.section,
-          professorName: b.professorName ?? null,
-          round: b.bidWindow.round,
-          window: b.bidWindow.window,
-        }));
-      return jsonText({ acadTermId: termId, budget, bids: plan });
+      const term = await resolveTermId(caller, acadTermId);
+      if (!term.ok) return errText(term.errText);
+      const plan = await buildBidPlan(caller, term.value);
+      return jsonText(plan);
     } catch (e) {
       return errText(errorMessage(e));
     }
