@@ -41,8 +41,12 @@ export const edgeConfigSchema = z.object({
   enableReviewSort: z.boolean(),
   enableReviewFilter: z.boolean(),
   enableReviewReactions: z.boolean(),
-  // Optional so configs whose remote Edge Config hasn't been updated with `chat`
-  // yet still parse; getChatConfig() falls back to DEFAULT_CHAT_CONFIG then.
+  // A config whose remote Edge Config hasn't been updated with `chat` yet must
+  // still parse. NOTE (zod 4.5+): an inner schema's `.default()` is now applied
+  // even when the key is absent/undefined, so `chat` is always populated (with
+  // DEFAULT_CHAT_CONFIG when missing). `getChatConfig()` keeps its
+  // `?? DEFAULT_CHAT_CONFIG` fallback as defence-in-depth for the raw
+  // config.json fallback path.
   chat: chatConfigSchema.optional(),
 });
 
