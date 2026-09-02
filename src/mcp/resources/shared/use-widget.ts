@@ -13,16 +13,9 @@ import { useWidget as useMcpWidget } from "mcp-use/react";
  *    iff `mcp-use` gave us a real `callTool` (bridge postMessage handler).
  * 3. MCP Apps host (or unknown): delegate to mcp-use's own `isAvailable`.
  */
-export function useWidget<
-  TProps = unknown,
-  TState = unknown,
-  TOutput = unknown,
-  TMetadata = unknown,
-  TToolInput = unknown,
->(defaultProps?: TProps) {
-  const widget = useMcpWidget<TProps, TState, TOutput, TMetadata, TToolInput>(
-    defaultProps as TProps,
-  ) as unknown as {
+// TODO Task7: temporary v1-compat bridge (useWidget no longer exists in mcp-use v2); replaced by useToolContext in Task 7.
+export function useWidget<TProps = unknown>(defaultProps?: TProps) {
+  const widget = (useMcpWidget as unknown as (p?: TProps) => unknown)(defaultProps as TProps) as unknown as {
     props: TProps;
     isPending: boolean;
     theme: string;

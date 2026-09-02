@@ -1,27 +1,20 @@
-import { MCPServer, oauthSupabaseProvider } from "mcp-use/server";
+// src/mcp/index.ts — v2 entry (default export owned by the CLI)
+export { server, default } from "./server";
 
-import { registerMcpUseTools } from "./register";
+// View-bound ToolRefs (exported values feed mcp-env.d.ts):
+export { searchCourses } from "./view-tools/search-courses";
+export { recommendBidAmount } from "./view-tools/recommend-bid-amount";
+export { getTimetableCalendarLink } from "./view-tools/get-timetable-calendar-link";
+export { myBidPlan } from "./view-tools/my-bid-plan";
+export { getMyRoadmap } from "./view-tools/get-my-roadmap";
+export { getCourseReviews } from "./view-tools/get-course-reviews";
+export { exploreBidOptions } from "./view-tools/explore-bid-options";
+
+import { server } from "./server";
+import { registerViewlessTools } from "./register";
 import { registerPrompts } from "./prompts";
 import { registerResources } from "./resources";
 
-/**
- * OAuth is only wired outside development. The mcp-use CLI sets
- * NODE_ENV="development" for `mcp:dev` and "production" for `mcp:start`, so
- * local dev runs with NO bearer middleware: the Inspector connects with zero
- * auth dance and tool calls resolve via the MCP_DEV_BYPASS dev user
- * (src/mcp/user.ts). Deployed servers keep the Supabase OAuth 2.1 flow.
- */
-const isDev = process.env.NODE_ENV === "development";
-
-const server = new MCPServer({
-  name: "afterclass",
-  version: "0.2.0",
-  description: "afterclass.io MCP server - courses, professors, timetables, bids, roadmaps.",
-  ...(isDev ? {} : { oauth: oauthSupabaseProvider() }),
-});
-
-registerMcpUseTools(server);
+registerViewlessTools(server);
 registerPrompts(server);
 registerResources(server);
-
-export default server;

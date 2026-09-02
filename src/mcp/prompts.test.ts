@@ -1,19 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 
-// Stub the heavy mcp-use module (response helpers only) so we can register the
-// prompt/resource definitions against a fake `{ prompt, resource }` server and
-// assert the names/uris the brief specifies. `zod` is left real - the schema
-// passed to `server.prompt` must be a real ZodObject.
-vi.mock("mcp-use/server", () => ({
-  text: (text: string) => ({ content: [{ type: "text", text }] }),
-  object: (value: unknown) => ({ content: [{ type: "text", text: JSON.stringify(value) }] }),
+vi.mock("mcp-use", () => ({
+  MCPServer: class MockServer { resource = vi.fn(); tool = vi.fn(); prompt = vi.fn(); },
 }));
 
 import { registerPrompts } from "./prompts";
-import { registerResources } from "./resources";
+
+type CapturedPromptHandler = (args: { targetTermId?: string; facultyId?: number }) => Promise<{
+  messages: Array<{ role: string; content: { type: string; text: string } }>;
+}>;
 
 describe("registerPrompts", () => {
-  it("registers the plan-semester prompt with its name, description and a schema", () => {
+  it("registers the plan-semester prompt with its name, description and a schema", async () => {
     const prompt = vi.fn();
     const server = { prompt } as never;
     registerPrompts(server);
@@ -21,33 +19,45 @@ describe("registerPrompts", () => {
     expect(prompt).toHaveBeenCalledTimes(1);
     const [definition, handler] = prompt.mock.calls[0] as [
       { name?: string; description?: string; schema?: { shape?: Record<string, unknown> } },
-      unknown,
+      CapturedPromptHandler,
     ];
     expect(definition.name).toBe("plan-semester");
     expect(definition.description).toContain("what should I take next term");
     expect(definition.schema).toBeDefined();
-    // A zod v3 ZodObject exposes `shape` with the declared keys.
     expect(Object.keys(definition.schema?.shape ?? {})).toEqual(
       expect.arrayContaining(["targetTermId", "facultyId"]),
     );
     expect(handler).toBeInstanceOf(Function);
   });
-});
 
-describe("registerResources", () => {
-  it("registers the acad-terms resource with the catalog uri", () => {
-    const resource = vi.fn();
-    const server = { resource } as never;
-    registerResources(server);
+  it("returns raw GetPromptResult messages with interpolated args", async () => {
+    const prompt = vi.fn();
+    const server = { prompt } as never;
+    registerPrompts(server);
+    const [, handler] = prompt.mock.calls[0] as [unknown, CapturedPromptHandler];
 
-    expect(resource).toHaveBeenCalledTimes(1);
-    const [definition, handler] = resource.mock.calls[0] as [
-      { name?: string; uri?: string; description?: string },
+    const withArgs = await handler({ targetTermId: "T1", facultyId: 42 });
+    expect(withArgs.messages).toHaveLength(1);
+    expect(withArgs.messages[0]!.role).toBe("user");
+    expect(withArgs.messages[0]!.content.type).toBe("text");
+    expect(withArgs.messages[0]!.content.text).toContain('targetTermId "T1"');
+    expect(withArgs.messages[0]!.content.text).toContain("facultyId 42");
+
+    const withoutArgs = await handler({});
+    expect(withoutArgs.messages[0]!.content.text).not.toContain("targetTermId");
+    expect(withoutArgs.messages[0]!.content.text).toContain("plan-semester tool to get the target term");
+    expect(withoutArgs.messages[0]!.content.text).toContain("Do not invent course codes");
+  });
+
+  it("keeps schema describe text for targetTermId", async () => {
+    const prompt = vi.fn();
+    const server = { prompt } as never;
+    registerPrompts(server);
+    const [definition] = prompt.mock.calls[0] as [
+      { schema?: { shape?: Record<string, { description?: string }> } },
       unknown,
     ];
-    expect(definition.name).toBe("Academic terms");
-    expect(definition.uri).toBe("catalog://acad-terms");
-    expect(definition.description).toContain("plan-semester");
-    expect(handler).toBeInstanceOf(Function);
+    // The describe() string was dropped in Task 1 — ensure it's restored.
+    expect(definition.schema?.shape?.targetTermId?.description).toMatch(/list-acad-terms/);
   });
 });

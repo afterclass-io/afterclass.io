@@ -77,7 +77,7 @@
     "jotai": "^2.12.3",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.501.0",
-    "mcp-use": "^1",
+    "mcp-use": "^2.3.4",
     "nanoid": "5.0.9",
     "next": "15.4.8",
     "next-auth": "^5.0.0-beta.25",
@@ -106,7 +106,7 @@
   },
   "devDependencies": {
     "@iconify-icon/react": "2.1.0",
-    "@mcp-use/cli": "^3",
+    "@mcp-use/cli": "^4.1.8",
     "@next/eslint-plugin-next": "15.3.1",
     "@storybook/addon-actions": "8.3.4",
     "@storybook/addon-essentials": "8.3.4",
@@ -127,7 +127,7 @@
     "@types/bcrypt": "5.0.2",
     "@types/eslint": "8.56.12",
     "@types/js-cookie": "3.0.6",
-    "@types/node": "20.16.10",
+    "@types/node": "^22",
     "@types/prettier": "3.0.0",
     "@types/react": "19.1.2",
     "@types/react-dom": "19.1.2",
@@ -163,6 +163,9 @@
     "jackspeak": "4.0.1",
     "@types/react": "19.1.2",
     "@types/react-dom": "19.1.2"
+  },
+  "engines": {
+    "node": ">=22.22.2"
   },
   "overrides": {
     "@ai-sdk/provider-utils": "5.0.36"
