@@ -46,11 +46,6 @@ export default defineConfig(({ mode }) => {
           import.meta.dirname,
           "./node_modules/next/server.js",
         ),
-        // TODO Task1: temporary compat for mcp-use v1→v2 bump — v2 removed the
-        // `mcp-use/server` subpath (all exports moved to `mcp-use`) but Tasks
-        // 1-3 still import it. This alias keeps vitest's resolver from hard-failing
-        // the suite while Task 0 lands. Remove when src/mcp no longer imports it.
-        "mcp-use/server": "mcp-use",
       },
     },
   };

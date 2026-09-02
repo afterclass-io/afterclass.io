@@ -33,6 +33,13 @@ const config: StorybookConfig = {
       // one driven by `parameters.chatState`. Vitest does not use webpack, so
       // the unit suite is unaffected.
       "@ai-sdk/react": path.resolve(__dirname, "./mocks/ai-sdk-react.ts"),
+      // Storybook-only: point mcp-use/react at the mock that swaps the v2 View
+      // hooks (useToolContext/useViewTheme/useHostContext/useDynamicTool) for
+      // context-driven implementations seeded by the `withMcpView` decorator.
+      // The real hooks require the module-private bootstrapView runtime that
+      // only exists inside an MCP Apps host. Vitest mocks the module with
+      // vi.mock instead, so the unit suite is unaffected.
+      "mcp-use/react": path.resolve(__dirname, "./mocks/mcp-use-react.ts"),
     };
     return config;
   },
