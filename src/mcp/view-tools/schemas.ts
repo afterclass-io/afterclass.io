@@ -137,3 +137,12 @@ export type CalendarLinksMeta = {
   appleSubscribeUrl: string;
   outlookSubscribeUrl: string;
 };
+
+// Shared zod-inferred payload types for the View components (Task 6). Views
+// import these as `import type` — erased at runtime, so Views stay
+// dependency-free (no zod in the view bundle).
+export type BidPlan = z.infer<typeof bidPlanOutput>;
+export type RoadmapViewData = z.infer<typeof roadmapOutput>;
+export type ReviewCardsData = z.infer<typeof reviewCardsOutput>;
+export type BidExplorerData = z.infer<typeof bidExplorerOutput>;
+export type BidRecommendationData = z.infer<typeof bidRecommendationOutput>;
