@@ -4,7 +4,7 @@ import type { Mock } from "vitest";
 const { buildToolContext } = vi.hoisted(() => ({ buildToolContext: vi.fn() as Mock }));
 vi.mock("./user", () => ({ buildToolContext }));
 
-vi.mock("@/server/mcp/tools", () => ({ allTools: [] }));
+vi.mock("@/server/mcp/tools", () => ({ allTools: [authProbeTool] }));
 vi.mock("@/server/assistant/ratelimit", () => ({
   checkAndIncrement: vi.fn().mockResolvedValue({ ok: true, retryAfterSeconds: 0 }),
 }));
@@ -13,14 +13,54 @@ vi.mock("@/server/ecfg/chat", () => ({
   getRateLimitWindowMinutes: () => 1,
 }));
 
-import { makeHandler } from "./register";
+// Registration capture: the fake "auth-probe" tool lives in the mocked
+// allTools, so registerViewlessTools registers it on the stubbed MCPServer
+// and the tests capture the real handler from server.tool.mock.calls.
+const { serverTool } = vi.hoisted(() => ({ serverTool: vi.fn() as Mock }));
+const { toolRun } = vi.hoisted(() => ({ toolRun: vi.fn() as Mock }));
+const { authProbeTool } = vi.hoisted(() => ({
+  authProbeTool: {
+    name: "auth-probe",
+    description: "probe",
+    inputSchema: {} as never,
+    readOnly: true,
+    run: undefined as unknown as Mock,
+  },
+}));
+// No vi.mock("mcp-use") / vi.mock("./server") here: register.ts only imports
+// MCPServer as a TYPE and receives the server as a parameter, so the oauth
+// wiring describe below can keep mocking those modules itself.
+
+import { registerViewlessTools } from "./register";
+
+// Wire the probe tool's run to the shared mock (kept outside vi.hoisted so
+// `toolRun` stays the single handle tests assert on).
+authProbeTool.run = toolRun;
+
+type Handler = (params: unknown, ctx: unknown) => Promise<{
+  isError?: boolean;
+  content: Array<{ type: string; text?: string }>;
+}>;
+
+/** Register the fake tool through the real registerViewlessTools loop and capture its handler. */
+function captureHandler(): Handler {
+  serverTool.mockReset();
+  registerViewlessTools({ tool: serverTool } as never);
+  const call = serverTool.mock.calls.find((c) => (c[0] as { name?: string }).name === "auth-probe");
+  if (!call) throw new Error("no registration captured for auth-probe");
+  return call[1] as Handler;
+}
 
 describe("tool handler auth resolution", () => {
-  beforeEach(() => buildToolContext.mockReset());
+  beforeEach(() => {
+    buildToolContext.mockReset();
+    toolRun.mockReset();
+  });
 
   it("builds the tool context from mcpCtx and returns Unauthorized when absent", async () => {
+    const handler = captureHandler();
     buildToolContext.mockResolvedValueOnce({ user: { id: "u1" }, caller: {} });
-    const handler = makeHandler({} as never, async () => ({ content: [{ type: "text", text: "ok" }] }));
+    toolRun.mockResolvedValueOnce({ content: [{ type: "text", text: "ok" }] });
     await expect(
       handler({}, { auth: { user: { id: "supa-1", email: "a@x.com" } as never } }),
     ).resolves.toMatchObject({ content: [{ type: "text", text: "ok" }] });
@@ -33,7 +73,7 @@ describe("tool handler auth resolution", () => {
   });
 
   it("fail-closes when mcpCtx is undefined (no bearer token)", async () => {
-    const handler = makeHandler({} as never, async () => ({ content: [{ type: "text", text: "ok" }] }));
+    const handler = captureHandler();
     buildToolContext.mockResolvedValueOnce(undefined);
     const deniedNoCtx = await handler({}, undefined);
     expect(deniedNoCtx.isError).toBe(true);
@@ -53,8 +93,9 @@ describe("tool handler auth resolution", () => {
   });
 
   it("forwards a Supabase v2 auth.user with id into buildToolContext", async () => {
+    const handler = captureHandler();
     buildToolContext.mockResolvedValueOnce({ user: { id: "u1" }, caller: {} });
-    const handler = makeHandler({} as never, async () => ({ content: [{ type: "text", text: "ok" }] }));
+    toolRun.mockResolvedValueOnce({ content: [{ type: "text", text: "ok" }] });
     await expect(
       handler(
         {},
@@ -64,7 +105,7 @@ describe("tool handler auth resolution", () => {
               id: "supa-1",
               email: "a@x.com",
               amr: [],
-            } as never,
+            },
           },
         },
       ),
@@ -74,8 +115,9 @@ describe("tool handler auth resolution", () => {
 
   // legacy userId still works via buildToolContext fallback
   it("legacy userId shape still falls through to buildToolContext", async () => {
+    const handler = captureHandler();
     buildToolContext.mockResolvedValueOnce({ user: { id: "u1" }, caller: {} });
-    const handler = makeHandler({} as never, async () => ({ content: [{ type: "text", text: "ok" }] }));
+    toolRun.mockResolvedValueOnce({ content: [{ type: "text", text: "ok" }] });
     await expect(
       handler(
         {},
@@ -94,7 +136,6 @@ describe("tool handler auth resolution", () => {
       auth: { user: { userId: "supa-1", email: "a@x.com", email_verified: true } },
     });
   });
-
 });
 
 /**

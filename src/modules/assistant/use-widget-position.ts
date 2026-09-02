@@ -77,7 +77,7 @@ export function useWidgetPosition(viewport: Size) {
     // write clamped offsets back. fromOffsets clamps only the rendered position.
     const next = fromOffsets(offsetsRef.current, viewport);
     setPosition((prev) => {
-      if (!prev || next.x !== prev.x || next.y !== prev.y) return next;
+      if (next.x !== prev?.x || next.y !== prev?.y) return next;
       return prev;
     });
     // viewport is the only reactive dep; offsetsRef/position use functional form/refs.

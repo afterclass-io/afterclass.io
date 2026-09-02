@@ -8,16 +8,17 @@
 // WHY A MOCK MODULE (not a React provider over the real package): every v2
 // hook reads `useViewRuntime()` from `ViewRuntimeContext`, which is
 // module-private in the mcp-use dist — it is only populated by
-// `bootstrapView` inside the MCP Apps host iframe (Inspector/ChatGPT). In
-// Storybook the context is always null and the real hooks throw "hooks
-// require a browser view mounted by bootstrapView", so the real module cannot
-// be seeded from the outside.
+// `bootstrapView` inside the MCP Apps host iframe (Inspector or another MCP
+// host). In Storybook the context is always null and the real hooks throw
+// "hooks require a browser view mounted by bootstrapView", so the real module
+// cannot be seeded from the outside.
 //
 // WHY A CONTEXT (not module-scope state): module-scope seeds leak across
 // stories in a mounted-Docs page (the last-rendered story wins for all).
 // `McpViewSeedContext` is scoped to the decorator's subtree, so each story —
 // and each sibling story in Docs mode — reads its own snapshot.
 import { createContext, useContext } from "react";
+import type { CallToolHandle, CallToolSuccess, DisplayMode, HostContextHandle } from "mcp-use/react";
 import type { McpViewParams } from "../withMcpView";
 
 /** Snapshot carried by the seed provider; every field defaulted. */
@@ -56,6 +57,16 @@ function useSeed(): McpViewSeed {
   return seed;
 }
 
+/**
+ * Simplified stand-in for the real `mcp-use/react` `ToolContextHandle`, which
+ * is a RegisteredTools-keyed discriminated union (pending | ready | error)
+ * whose error variant carries a `ToolError` class instance and whose
+ * `toolOutput` is the bound tool's typed output. The seed snapshot cannot
+ * produce `ToolError` instances, so the mock keeps this structural handle.
+ * Views are NOT affected — they type against the real module (type imports
+ * are not webpack-aliased), so any field a future View reads is checked by
+ * tsc against the real union.
+ */
 export type ToolContextHandle = {
   status: "pending" | "ready" | "error";
   toolInput: Record<string, unknown> | undefined;
@@ -84,44 +95,65 @@ export function useViewTheme(): "light" | "dark" {
   return useSeed().theme;
 }
 
-export type HostContextHandle = {
-  isAvailable: boolean;
-};
-
 export function useHostContext(): HostContextHandle {
-  return { isAvailable: useSeed().isAvailable };
+  const seed = useSeed();
+  // Full real `HostContextHandle` shape, using the hook's documented
+  // fallbacks for everything the seed does not drive (the bridge is never
+  // connected in Storybook — see use-host-context.d.ts in mcp-use/dist).
+  return {
+    theme: seed.theme,
+    locale: "en-US",
+    timeZone: "UTC",
+    userAgent: "storybook",
+    platform: "web",
+    displayMode: "inline",
+    safeArea: { top: 0, right: 0, bottom: 0, left: 0 },
+    maxHeight: undefined,
+    maxWidth: undefined,
+    hostInfo: undefined,
+    hostCapabilities: undefined,
+    hostContext: undefined,
+    isAvailable: seed.isAvailable,
+  };
 }
 
-export type CallToolHandle = {
-  callTool: (args: Record<string, unknown>) => Promise<{
-    content: never[];
-    structuredContent: Record<string, never>;
-  }>;
-  data: undefined;
-  error: Error | undefined;
-  isPending: boolean;
-};
-
-export function useDynamicTool(
+export function useDynamicTool<
+  Args extends Record<string, unknown>,
+  Result = unknown,
+>(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- name accepted for signature parity; stories don't round-trip tool calls
   _name: string,
-): CallToolHandle {
+): CallToolHandle<Args, Result> {
   return {
-    callTool: async () => ({ content: [], structuredContent: {} }),
+    callTool: async () =>
+      ({ content: [], structuredContent: {} }) as CallToolSuccess<Result>,
     data: undefined,
     error: undefined,
     isPending: false,
   };
 }
 
-export function useDisplayMode(): { displayMode: string } {
-  return { displayMode: "inline" };
+export function useDisplayMode(): {
+  displayMode: DisplayMode;
+  availableDisplayModes: readonly DisplayMode[];
+  requestDisplayMode: (args: { mode: DisplayMode }) => Promise<void>;
+} {
+  return {
+    displayMode: "inline",
+    availableDisplayModes: ["inline"],
+    requestDisplayMode: async () => {},
+  };
 }
 
-export function useViewState<State = unknown>(): [
-  State | null,
-  (updater: (prev: State | null) => State | null) => void,
-] {
+// Real signature is `useViewState<T extends Record<string, unknown>>(
+// defaultState: T | (() => T)): readonly [T, SetStateAction<T>]`. Stories
+// never persist view state, so the mock keeps the parameter for signature
+// parity but returns a null-backed tuple (divergence from the real non-null
+// `T` return — nothing type-checks against it).
+export function useViewState<State extends Record<string, unknown> = Record<string, unknown>>(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- defaultState accepted for signature parity with the real hook
+  _defaultState?: State | (() => State),
+): readonly [State | null, (updater: (prev: State | null) => State | null) => void] {
   return [null, () => undefined];
 }
 

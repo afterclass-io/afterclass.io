@@ -1,8 +1,7 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
-import { buildToolContext } from "../user";
 import { bidRecommendationOutput } from "./schemas";
-import { errorResult, guardedParse, isRawPayload, unwrapResultData } from "./results";
+import { runViewTool } from "./results";
 
 const tool = allTools.find((t) => t.name === "recommend-bid-amount")!;
 
@@ -15,25 +14,19 @@ export const recommendBidAmount = server.tool(
     annotations: { readOnlyHint: true },
     view: { name: "bid-recommendation", description: "Bid recommendation", prefersBorder: true },
   },
-  async (params, ctx) => {
-    const toolCtx = await buildToolContext(ctx as never);
-    if (!toolCtx) return errorResult("Unauthorized");
-    const result = await tool.run(toolCtx, params as never);
-    if (result.isError) return errorResult(result.content[0]?.text ?? "Tool failed");
-    const unwrapped = unwrapResultData(result, tool, "");
-    if (!unwrapped.ok) return errorResult("Invalid JSON from catalog");
-    const structuredContent: unknown = unwrapped.data;
-    if (isRawPayload(structuredContent)) return errorResult("Invalid bid recommendation payload");
-    const parsed = guardedParse(bidRecommendationOutput, structuredContent);
-    if (!parsed.ok) return errorResult("Output schema validation failed");
-    const sc = structuredContent as { suggestedBidAmount?: number; classId?: string };
-    const summary =
-      typeof sc.suggestedBidAmount === "number"
-        ? `Suggested bid ${sc.suggestedBidAmount} for class ${sc.classId ?? ""}`.trim()
-        : "Bid recommendation ready";
-    return {
-      content: [{ type: "text" as const, text: summary }],
-      structuredContent,
-    };
-  },
+  async (params, ctx) =>
+    runViewTool({
+      ctx,
+      params,
+      tool,
+      schema: bidRecommendationOutput,
+      fallbackJson: "",
+      rawPayloadMessage: "Invalid bid recommendation payload",
+      summarize: (data) => {
+        const sc = data as { suggestedBidAmount?: number; classId?: string };
+        return typeof sc.suggestedBidAmount === "number"
+          ? `Suggested bid ${sc.suggestedBidAmount} for class ${sc.classId ?? ""}`.trim()
+          : "Bid recommendation ready";
+      },
+    }),
 );

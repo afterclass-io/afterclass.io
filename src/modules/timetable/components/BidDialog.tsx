@@ -359,7 +359,7 @@ export function BidDialog({
 
   useEffect(() => {
     // Only replace the placeholder (id === ""), never a user choice.
-    if (!initialCourseCode || !selectedCourse || selectedCourse.id !== "")
+    if (!initialCourseCode || selectedCourse?.id !== "")
       return;
     const match = resolveCourseQuery.data?.find(
       (c) => c.code === initialCourseCode,
@@ -608,9 +608,9 @@ export function BidDialog({
           { classIds: [selectedClassId ?? ""] },
           (old) =>
             old?.map((bid) => {
-              if (bid.id === id) return { ...bid, status } as typeof bid;
+              if (bid.id === id) return { ...bid, status };
               if (bid.classId === selectedClassId)
-                return { ...bid, status: "PARTICIPATED" } as typeof bid;
+                return { ...bid, status: "PARTICIPATED" };
               return bid;
             }),
         );

@@ -26,7 +26,13 @@ export const courseSearchOutput = z.object({
             examTimings: z
               .array(
                 z.object({
-                  date: z.union([z.string(), z.date()]).optional(),
+                  // Must be JSON-Schema-serializable: mcp-use serializes this
+                  // outputSchema into tools/list, and z.date() there throws
+                  // "Date cannot be represented in JSON Schema" (-32603 for
+                  // every client). The runtime always JSON-round-trips Prisma
+                  // Date -> ISO string before guardedParse, so string is the
+                  // honest type.
+                  date: z.string().optional(),
                   startTime: z.string().optional(),
                   endTime: z.string().optional(),
                   venue: z.string().nullable().optional(),

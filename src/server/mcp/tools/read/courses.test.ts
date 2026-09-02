@@ -47,13 +47,12 @@ describe("search-courses", () => {
     expect(result.isError).toBe(true);
   });
 
-  it("exposes a course-search widget whose props include results", async () => {
+  it("exposes course-search widget props including results", async () => {
     const fn = vi
       .fn()
       .mockResolvedValue([{ id: "c1", code: "ACC101", name: "Financial Accounting", creditUnits: 1 }]);
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ searchCourses: fn }) };
     const result = await searchCoursesTool.run(ctx, { acadTermId: "t1", query: "acc" });
-    expect(searchCoursesTool.widgetName).toBe("course-search");
     const props = searchCoursesTool.toWidgetProps?.(result);
     expect(Array.isArray((props as { results?: unknown[] }).results)).toBe(true);
   });

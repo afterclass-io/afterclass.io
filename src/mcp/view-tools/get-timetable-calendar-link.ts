@@ -20,12 +20,10 @@ export const getTimetableCalendarLink = server.tool(
     if (!toolCtx) return errorResult("Unauthorized");
     const limited = await checkWriteBudget(toolCtx);
     if (limited) return errorResult(limited);
-    const result = await tool.run(toolCtx, params as never);
+    const result = await tool.run(toolCtx, params);
     if (result.isError) return errorResult(result.content[0]?.text ?? "Tool failed");
     // widgetProps carries the secret-bearing URLs — NEVER put them in structuredContent
-    const widgetProps = (result.widgetProps ?? (tool.toWidgetProps ? tool.toWidgetProps(result) : undefined)) as
-      | Record<string, unknown>
-      | undefined;
+    const widgetProps = (result.widgetProps ?? (tool.toWidgetProps ? tool.toWidgetProps(result) : undefined));
     const timetableId = widgetProps?.timetableId as string | undefined;
     if (!timetableId) return errorResult("Missing timetableId in calendar response");
     const madeLinkShareable = widgetProps?.madeLinkShareable as boolean | undefined;

@@ -49,7 +49,7 @@ export function buildAssistantTools(
             );
           }
         }
-        const result = await t.run(ctx, args as never);
+        const result = await t.run(ctx, args);
         const text = result.content.find((c) => c.type === "text")?.text ?? "";
         if (result.isError) throw new Error(text || `${t.name} failed`);
         return text.length > MAX_TOOL_RESULT_CHARS

@@ -37,10 +37,10 @@ describe("registerResources", () => {
     const caller = { acadTerms: { list } };
 
     const resource = vi.fn();
-    registerResources({ resource } as never, caller as never);
+    registerResources({ resource } as never, caller);
     const [, handler] = resource.mock.calls[0] as [unknown, CapturedHandler];
 
-    const result = await (handler as CapturedHandler)(new URL("catalog://acad-terms"), {} as never);
+    const result = await (handler)(new URL("catalog://acad-terms"), {});
     expect(list).toHaveBeenCalledTimes(1);
 
     expect(result.contents).toHaveLength(1);
@@ -56,10 +56,10 @@ describe("registerResources", () => {
   it("returns an empty terms array when the caller has no terms", async () => {
     const list = vi.fn().mockResolvedValue([]) as Mock;
     const resource = vi.fn();
-    registerResources({ resource } as never, { acadTerms: { list } } as never);
+    registerResources({ resource } as never, { acadTerms: { list } });
     const [, handler] = resource.mock.calls[0] as [unknown, CapturedHandler];
 
-    const result = await (handler as CapturedHandler)(new URL("catalog://acad-terms"), {} as never);
+    const result = await (handler)(new URL("catalog://acad-terms"), {});
     expect(JSON.parse(result.contents[0]?.text ?? "{}")).toEqual({ terms: [] });
   });
 });

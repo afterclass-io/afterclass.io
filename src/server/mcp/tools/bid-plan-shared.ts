@@ -47,7 +47,7 @@ export async function buildBidPlan(
     }));
   return {
     acadTermId,
-    budget: (budget as { balance: number } | null) ?? null,
+    budget: (budget) ?? null,
     bids: plan,
   };
 }

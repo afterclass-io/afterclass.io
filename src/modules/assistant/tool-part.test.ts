@@ -9,7 +9,7 @@ describe("tool-part", () => {
     expect(toolLabel(dynamic("input-available"))).toBe("search-courses");
   });
   it("labels a typed tool by its name", () => {
-    expect(toolLabel({ type: "tool-search-courses", toolCallId: "t1", state: "input-available", input: {} } as ToolPart)).toBe("search-courses");
+    expect(toolLabel({ type: "tool-search-courses", toolCallId: "t1", state: "input-available", input: {} })).toBe("search-courses");
   });
   it("maps streaming states to running", () => {
     expect(toolStatus(dynamic("input-streaming"))).toBe("running");

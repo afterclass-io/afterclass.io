@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { errorMessage, errText, jsonText, okText } from "./types";
+import { errorMessage, errText, jsonText, okText, type ToolResult } from "./types";
 
 describe("mcp result helpers", () => {
   it("okText builds a text CallToolResult", () => {
@@ -31,7 +31,7 @@ describe("mcp result helpers", () => {
   });
 
   it("ToolResult supports optional widgetProps alongside text content", () => {
-    const r: import("./types").ToolResult = { content: [{ type: "text", text: "shown in widget" }], widgetProps: { feedUrl: "https://x/api/ical/tok" } };
+    const r: ToolResult = { content: [{ type: "text", text: "shown in widget" }], widgetProps: { feedUrl: "https://x/api/ical/tok" } };
     expect(r.widgetProps?.feedUrl).toContain("/api/ical/");
   });
 });

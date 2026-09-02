@@ -18,7 +18,6 @@ export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
     "Search courses offered in an academic term by code, name, description, courseArea, or professor name. Fuzzy/typo-tolerant (e.g. 'statistics' matches 'Statistical Analysis'); also matches description/courseArea and supports optional facultyId filter. Returns matching courses with sections and timings.",
   inputSchema: searchCoursesSchema,
   readOnly: true,
-  widgetName: "course-search",
   toWidgetProps: (result) => {
     // The tool emits a JSON array of courses; wrap it as `{ results }` for the widget.
     const text = result.content.find((c) => c.type === "text")?.text ?? "";

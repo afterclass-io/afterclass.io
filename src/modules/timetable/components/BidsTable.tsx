@@ -176,9 +176,9 @@ export function BidsTable() {
           const target = old.find((b) => b.id === id);
           const classId = target?.classId;
           return old.map((b) => {
-            if (b.id === id) return { ...b, status } as typeof b;
+            if (b.id === id) return { ...b, status };
             if (classId && b.classId === classId)
-              return { ...b, status: "PARTICIPATED" } as typeof b;
+              return { ...b, status: "PARTICIPATED" };
             return b;
           });
         });
@@ -609,12 +609,12 @@ function BidTableRow({
                 size="sm"
                 className={cn(
                   "h-7 px-2 text-xs",
-                  bidChipVariant(bid.status as UserBidStatus),
+                  bidChipVariant(bid.status),
                 )}
                 disabled={isBusy}
                 aria-label={`Change status for ${bid.courseCode} ${bid.section} bid`}
               >
-                {BID_STATUS_LABELS[bid.status as UserBidStatus] ?? bid.status}
+                {BID_STATUS_LABELS[bid.status] ?? bid.status}
                 <ChevronDown className="size-3.5" />
               </Button>
             </DropdownMenuTrigger>

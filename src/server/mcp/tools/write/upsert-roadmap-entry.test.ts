@@ -82,7 +82,6 @@ describe("upsert-roadmap-entry", () => {
     });
 
     expect(upsertRoadmapEntryTool.readOnly).not.toBe(true);
-    expect(upsertRoadmapEntryTool.widgetName).toBe("roadmap-view");
     expect(res.isError).toBeFalsy();
     expect(saveEntries).toHaveBeenCalledTimes(1);
     const saved = saveEntries.mock.calls[0]![0] as { roadmapId: string; entries: Array<{ courseId: string }> };

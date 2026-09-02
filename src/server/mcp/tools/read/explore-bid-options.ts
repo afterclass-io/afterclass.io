@@ -65,7 +65,6 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
     "Explore bid prices for a class or course+professor combination: historical clearing ranges per term/round, the latest prediction, and safety multipliers (what amount beats X% of bids). Use when the user wants to compare options and decide a bid themselves rather than get a single recommendation.",
   inputSchema: exploreBidOptionsSchema,
   readOnly: true,
-  widgetName: "bid-explorer",
   toWidgetProps: (result) => {
     const text = result.content.find((c) => c.type === "text")?.text ?? "";
     try {

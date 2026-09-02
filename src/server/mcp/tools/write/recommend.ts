@@ -21,7 +21,6 @@ export const recommendBidAmountTool: McpTool<typeof recommendBidAmountSchema> = 
     "Suggest a bid amount for a class by combining the latest prediction with a safety multiplier. Read-only; never writes data.",
   inputSchema: recommendBidAmountSchema,
   readOnly: true,
-  widgetName: "bid-recommendation",
   toWidgetProps: (result) => {
     // result is the JSON text emitted by `run` below; parse it back into props.
     const text = result.content.find((c) => c.type === "text")?.text ?? "";

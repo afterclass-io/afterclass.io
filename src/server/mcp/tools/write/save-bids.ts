@@ -24,9 +24,8 @@ const saveBidsSchema = z.object({
 export const saveBidsTool: McpTool<typeof saveBidsSchema> = {
   name: "save-bids",
   description:
-    "Save multiple bids in one call (bulk transactional) - costs only one write token. Provide an array of { courseCode, section, bidAmount, optional bidWindowId } (each bid targets a specific class section). Resolves each classId via the classes procedure by code+section in the current term. bidWindowId defaults to the current open window (per-entry override allowed); if no window is open and no id is given, the entry fails with a friendly 'ask the user for round + window' message. Returns { updated: per-entry results, plan: the full updated bid plan for the affected term } (buildBidPlan) with notes stripped. Partial failures are reported per row (succeeded/failed) without aborting other rows; a transaction abort would fail all remaining. Self-contained: one call is the answer; expose the bid-plan widget via widgetName.",
+    "Save multiple bids in one call (bulk transactional) - costs only one write token. Provide an array of { courseCode, section, bidAmount, optional bidWindowId } (each bid targets a specific class section). Resolves each classId via the classes procedure by code+section in the current term. bidWindowId defaults to the current open window (per-entry override allowed); if no window is open and no id is given, the entry fails with a friendly 'ask the user for round + window' message. Returns { updated: per-entry results, plan: the full updated bid plan for the affected term } (buildBidPlan) with notes stripped, so the caller has the full updated bid plan with no separate follow-up call needed. Partial failures are reported per row (succeeded/failed) without aborting other rows; a transaction abort would fail all remaining.",
   inputSchema: saveBidsSchema,
-  widgetName: "bid-plan",
   toWidgetProps: bidPlanToWidgetProps,
   run: async ({ caller }, { bids }) => {
     try {
@@ -80,8 +79,8 @@ export const saveBidsTool: McpTool<typeof saveBidsSchema> = {
           let termId: string | undefined;
           if (bidWindowId === defaultWindowId && defaultWindowId !== null) {
             try {
-              const cw = (await caller.bidWindows.getCurrentWindow()) as unknown as
-                | { id: number; acadTermId: string } | null;
+              const cw = await caller.bidWindows.getCurrentWindow();
+              // eslint-disable-next-line @typescript-eslint/prefer-optional-chain -- explicit null check narrows cw for the non-optional cw.acadTermId access below; cw?.id would not narrow
               if (cw && cw.id === bidWindowId) termId = cw.acadTermId;
             } catch {
               // ignore

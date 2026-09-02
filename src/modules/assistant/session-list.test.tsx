@@ -169,7 +169,7 @@ describe("SessionList delete - AlertDialog confirm (no native alert)", () => {
     expect(within(dialog).getByText(/Math homework/)).toBeInTheDocument();
     expect(screen.getByTestId("assistant-session-delete-confirm")).toBeInTheDocument();
     expect(getDialogEls()).not.toBeNull();
-    expect(getDialogEls()!.textContent!).toMatch(/Cancel/);
+    expect(getDialogEls()!.textContent).toMatch(/Cancel/);
   });
 
   it("keeps the session row in its normal state while the dialog is open", async () => {

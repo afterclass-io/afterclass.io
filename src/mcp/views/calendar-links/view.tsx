@@ -107,116 +107,116 @@ const CalendarLinksView: React.FC = () => {
       )}
       {urls && (
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-        <a
-          href={googleSubscribeUrl}
-          target="_blank"
-          rel="noreferrer"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            padding: "6px 14px",
-            borderRadius: 9999,
-            border: "none",
-            background: c.primary,
-            color: c.primaryFg,
-            fontSize: 13,
-            fontWeight: 600,
-            textDecoration: "none",
-            cursor: "pointer",
-          }}
-        >
-          Google Calendar
-        </a>
-        <a
-          href={appleSubscribeUrl}
-          target="_blank"
-          rel="noreferrer"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            padding: "6px 14px",
-            borderRadius: 9999,
-            border: `1px solid ${c.primary}`,
-            background: c.card,
-            color: c.primary,
-            fontSize: 13,
-            fontWeight: 600,
-            textDecoration: "none",
-            cursor: "pointer",
-          }}
-        >
-          Apple Calendar
-        </a>
-        <a
-          href={outlookSubscribeUrl}
-          target="_blank"
-          rel="noreferrer"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            padding: "6px 14px",
-            borderRadius: 9999,
-            border: `1px solid ${c.primary}`,
-            background: c.card,
-            color: c.primary,
-            fontSize: 13,
-            fontWeight: 600,
-            textDecoration: "none",
-            cursor: "pointer",
-          }}
-        >
-          Outlook
-        </a>
+          <a
+            href={googleSubscribeUrl}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "6px 14px",
+              borderRadius: 9999,
+              border: "none",
+              background: c.primary,
+              color: c.primaryFg,
+              fontSize: 13,
+              fontWeight: 600,
+              textDecoration: "none",
+              cursor: "pointer",
+            }}
+          >
+            Google Calendar
+          </a>
+          <a
+            href={appleSubscribeUrl}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "6px 14px",
+              borderRadius: 9999,
+              border: `1px solid ${c.primary}`,
+              background: c.card,
+              color: c.primary,
+              fontSize: 13,
+              fontWeight: 600,
+              textDecoration: "none",
+              cursor: "pointer",
+            }}
+          >
+            Apple Calendar
+          </a>
+          <a
+            href={outlookSubscribeUrl}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "6px 14px",
+              borderRadius: 9999,
+              border: `1px solid ${c.primary}`,
+              background: c.card,
+              color: c.primary,
+              fontSize: 13,
+              fontWeight: 600,
+              textDecoration: "none",
+              cursor: "pointer",
+            }}
+          >
+            Outlook
+          </a>
         </div>
       )}
       {urls && (
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <input
-          value={feedUrl}
-          readOnly
-          aria-label="Calendar feed URL"
-          style={{
-            flex: 1,
-            padding: "6px 10px",
-            borderRadius: 6,
-            border: `1px solid ${c.border}`,
-            background: dark ? "oklch(0.274 0.006 286.033)" : "white",
-            color: c.cardFg,
-            fontSize: 12,
-            fontFamily: "var(--font-geist-mono, ui-monospace)",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        />
-        <button
-          type="button"
-          aria-live="polite"
-          onClick={() => {
-            navigator.clipboard
-              .writeText(feedUrl)
-              .then(() => {
-                setCopied(true);
-                if (timerRef.current) clearTimeout(timerRef.current);
-                timerRef.current = setTimeout(() => setCopied(false), 2000);
-              })
-              .catch(() => {
-                // clipboard unavailable (non-secure context) — non-fatal
-              });
-          }}
-          style={{
-            padding: "6px 14px",
-            borderRadius: 9999,
-            border: `1px solid ${c.primary}`,
-            background: copied ? c.primary : c.card,
-            color: copied ? c.primaryFg : c.primary,
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {copied ? "Copied" : "Copy"}
-        </button>
+          <input
+            value={feedUrl}
+            readOnly
+            aria-label="Calendar feed URL"
+            style={{
+              flex: 1,
+              padding: "6px 10px",
+              borderRadius: 6,
+              border: `1px solid ${c.border}`,
+              background: dark ? "oklch(0.274 0.006 286.033)" : "white",
+              color: c.cardFg,
+              fontSize: 12,
+              fontFamily: "var(--font-geist-mono, ui-monospace)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          />
+          <button
+            type="button"
+            aria-live="polite"
+            onClick={() => {
+              navigator.clipboard
+                .writeText(feedUrl)
+                .then(() => {
+                  setCopied(true);
+                  if (timerRef.current) clearTimeout(timerRef.current);
+                  timerRef.current = setTimeout(() => setCopied(false), 2000);
+                })
+                .catch(() => {
+                  // clipboard unavailable (non-secure context) — non-fatal
+                });
+            }}
+            style={{
+              padding: "6px 14px",
+              borderRadius: 9999,
+              border: `1px solid ${c.primary}`,
+              background: copied ? c.primary : c.card,
+              color: copied ? c.primaryFg : c.primary,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {copied ? "Copied" : "Copy"}
+          </button>
         </div>
       )}
       <div style={{ fontSize: 11, color: c.mutedFg, marginTop: 8, lineHeight: 1.5 }}>

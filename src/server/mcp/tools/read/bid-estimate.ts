@@ -45,8 +45,7 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
           round: string;
           window: number;
         } | null;
-        if (w && w.id === openWindowId) bidWindow = w;
-        else if (w) bidWindow = w;
+        if (w) bidWindow = w;
       } catch {
         // Non-fatal; we'll still have the id.
       }
@@ -120,7 +119,7 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
         multiplier: number;
       }> = [];
       try {
-        safetyFactors = (await caller.safetyFactors.getAll()) as unknown as typeof safetyFactors;
+        safetyFactors = await caller.safetyFactors.getAll();
       } catch {
         // leave empty -> multiplier 1.0
       }

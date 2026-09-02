@@ -52,7 +52,7 @@ export async function requireOwnedRoadmap(
     : await db.userRoadmap.findUnique({
         where: { id: roadmapId },
       });
-  if (!row || row.userId !== userId) {
+  if (row?.userId !== userId) {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return row;
@@ -91,7 +91,7 @@ export async function requireOwnedTimetable(
     : await db.userTimetable.findUnique({
         where: { id: timetableId },
       });
-  if (!row || row.userId !== userId) {
+  if (row?.userId !== userId) {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return row;
@@ -126,7 +126,7 @@ export async function requireOwnedBid(
     : await db.userBid.findUnique({
         where: { id: bidId },
       });
-  if (!row || row.userId !== userId) {
+  if (row?.userId !== userId) {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return row;

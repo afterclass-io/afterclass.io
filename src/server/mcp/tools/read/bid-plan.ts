@@ -17,7 +17,6 @@ export const myBidPlanTool: McpTool<typeof myBidPlanSchema> = {
     "Show the user's bidding plan for one academic term: every saved bid (course, section, professor, amount, status, round/window) plus the budget balance. Use this when the user asks about their current bids or bidding plans for a term/academic year.",
   inputSchema: myBidPlanSchema,
   readOnly: true,
-  widgetName: "bid-plan",
   toWidgetProps: bidPlanToWidgetProps,
   run: async ({ caller }, { acadTermId }) => {
     try {

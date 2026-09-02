@@ -1,9 +1,6 @@
 import type { MCPServer } from "mcp-use";
-import type { RequestContext } from "mcp-use";
-import type { SupabaseOAuthUser } from "mcp-use/oauth/supabase";
 
 import { allTools } from "@/server/mcp/tools";
-import type { ToolContext } from "@/server/mcp/types";
 import { buildToolContext } from "./user";
 import { errorResult, textResult } from "./view-tools/results";
 import { checkWriteBudget } from "./rate-limit";
@@ -39,7 +36,7 @@ export function registerViewlessTools(server: MCPServer): void {
           if (limited) return errorResult(limited);
         }
         try {
-          const result = await tool.run(toolCtx, params as never);
+          const result = await tool.run(toolCtx, params);
           if (result.isError) return errorResult(result.content[0]?.text ?? "Tool failed");
           const text = result.content[0]?.text ?? "";
           return textResult(text);
@@ -49,39 +46,4 @@ export function registerViewlessTools(server: MCPServer): void {
       },
     );
   }
-}
-
-// Back-compat alias for earlier tests that import registerMcpUseTools
-export const registerMcpUseTools = registerViewlessTools;
-
-// Helpers kept for test import compatibility
-export function toMcpUseResponse(result: { content: Array<{ type: "text"; text: string }>; isError?: boolean }) {
-  return result.isError ? errorResult(result.content[0]?.text ?? "Tool failed") : textResult(result.content[0]?.text ?? "");
-}
-
-export function makeHandler(
-  tool: (typeof allTools)[number],
-  run: (ctx: ToolContext, args: unknown) => Promise<{ content: Array<{ type: "text"; text: string }>; isError?: boolean; widgetProps?: Record<string, unknown> }>,
-) {
-  return async (
-    args: unknown,
-    mcpCtx?: { auth?: { user?: SupabaseOAuthUser } | unknown } | RequestContext<SupabaseOAuthUser, true>,
-  ) => {
-    const ctx = await buildToolContext(mcpCtx as never);
-    if (!ctx) return errorResult("Unauthorized");
-    if (!tool.readOnly) {
-      const limited = await checkWriteBudget(ctx);
-      if (limited) return errorResult(limited);
-    }
-    try {
-      const result = await run(ctx, args);
-      if (result.isError) return errorResult(result.content[0]?.text ?? "Tool failed");
-      // Preserve widgetProps unwrapping for legacy handlers that expect it via helper — but return raw now
-      // For compat with old tests that asserted widget(), we return raw content; widget path is now handled in view-tools
-      const text = result.content[0]?.text ?? "";
-      return textResult(text);
-    } catch {
-      return errorResult(`Internal error in tool ${tool.name}`);
-    }
-  };
 }

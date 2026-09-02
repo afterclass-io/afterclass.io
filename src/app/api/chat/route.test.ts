@@ -416,7 +416,7 @@ describe("POST /api/chat", () => {
             inputTokens: 1000,
             outputTokens: 100,
             raw: { prompt_cache_hit_tokens: 900 },
-          } as never,
+          },
         });
         return { stream: new ReadableStream() } as unknown as ReturnType<typeof streamText>;
       }) as unknown as typeof streamText,

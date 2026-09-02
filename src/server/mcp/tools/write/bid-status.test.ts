@@ -117,8 +117,7 @@ describe("bid-status write tool", () => {
     expect(parsed.plan.bids[0]!.notes).toBeUndefined();
   });
 
-  it("set-bid-status exposes bid-plan widgetName + toWidgetProps that unwraps plan", async () => {
-    expect(setBidStatusTool.widgetName).toBe("bid-plan");
+  it("set-bid-status exposes toWidgetProps that unwraps the plan", async () => {
     expect(setBidStatusTool.toWidgetProps).toBeDefined();
     const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", acadTermId: "AY2026/27-T1" });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);

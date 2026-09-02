@@ -93,7 +93,6 @@ describe("get-my-roadmap", () => {
     });
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsGetMine: fn }) };
     const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
-    expect(getMyRoadmapTool.widgetName).toBe("roadmap-view");
     const props = getMyRoadmapTool.toWidgetProps?.(res);
     expect(props).toEqual({
       roadmapId: "r1",
@@ -177,7 +176,6 @@ describe("get-public-roadmap", () => {
     });
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsGetById: fn }) };
     const res = await getPublicRoadmapTool.run(ctx, { roadmapId: "r9" });
-    expect(getPublicRoadmapTool.widgetName).toBe("roadmap-view");
     const props = getPublicRoadmapTool.toWidgetProps?.(res);
     expect(props).toEqual({
       roadmapId: "r9",

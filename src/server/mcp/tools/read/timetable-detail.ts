@@ -80,7 +80,7 @@ function toExamTimings(arrangement: Arrangement) {
       courseCode: slot.courseCode,
       section: slot.section,
       // exam.date is Date | string | null per ArrangementExamTiming; keep the string branch without a redundant cast
-      date: exam.date instanceof Date ? exam.date.toISOString() : (exam.date as unknown as string | null),
+      date: exam.date instanceof Date ? exam.date.toISOString() : (exam.date),
       dayOfWeek: exam.dayOfWeek,
       startTime: exam.startTime,
       endTime: exam.endTime,
@@ -164,7 +164,7 @@ export const getMyTimetableDetailTool: McpTool<typeof getMyTimetableDetailSchema
           where: { id },
           select: { name: true, userId: true },
         });
-        if (!row || row.userId !== user.id) {
+        if (row?.userId !== user.id) {
           return errText(`Timetable ${id} not found.`);
         }
         name = row.name;

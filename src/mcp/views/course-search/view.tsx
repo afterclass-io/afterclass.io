@@ -47,7 +47,7 @@ type CourseResult = {
       venue?: string | null;
     }>;
     examTimings?: Array<{
-      date?: string | Date;
+      date?: string;
       startTime?: string;
       endTime?: string;
       venue?: string | null;

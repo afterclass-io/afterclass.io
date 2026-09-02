@@ -62,9 +62,8 @@ function openWindow() {
 }
 
 describe("save-bids", () => {
-  it("is not read-only and exposes bid-plan widget", () => {
+  it("is not read-only and exposes bid-plan toWidgetProps", () => {
     expect(saveBidsTool.readOnly).not.toBe(true);
-    expect(saveBidsTool.widgetName).toBe("bid-plan");
     expect(saveBidsTool.toWidgetProps).toBeDefined();
   });
 

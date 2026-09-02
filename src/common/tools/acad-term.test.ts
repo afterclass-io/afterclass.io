@@ -207,7 +207,7 @@ describe("_fetchAcadTerms", () => {
     const mockDb = { acadTerm: { findMany } };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    const result = await _fetchAcadTerms(mockDb as any);
+    const result = await _fetchAcadTerms(mockDb);
 
     // Verify the correct query was issued
     expect(findMany).toHaveBeenCalledWith({
@@ -227,7 +227,7 @@ describe("_fetchAcadTerms", () => {
     const mockDb = { acadTerm: { findMany } };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    const result = await _fetchAcadTerms(mockDb as any);
+    const result = await _fetchAcadTerms(mockDb);
 
     expect(result).toEqual([]);
   });

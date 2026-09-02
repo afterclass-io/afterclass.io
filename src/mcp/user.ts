@@ -69,7 +69,7 @@ export async function resolveMcpUser(
  * Local dev bypass: when the MCP server runs without OAuth (NODE_ENV ===
  * "development", see src/mcp/index.ts) and MCP_DEV_BYPASS is enabled, resolve
  * the caller as the seeded dev user instead of failing closed. This lets the
- * Inspector / local MCP clients exercise all 44 tools against the local
+ * Inspector / local MCP clients exercise all 49 tools against the local
  * Postgres without a Supabase project.
  *
  * Fail-closed guarantees:
@@ -93,7 +93,7 @@ export async function buildToolContext(
   ctxOrAuth: RequestContext<SupabaseOAuthUser, true> | { auth?: unknown } | { user?: SupabaseOAuthUser } | { userId?: string; email?: string; email_verified?: boolean; emailVerified?: boolean; email_confirmed_at?: string | null },
 ): Promise<ToolContext | undefined> {
   const auth = (ctxOrAuth as { auth?: unknown })?.auth ?? ctxOrAuth;
-  const user = (await resolveMcpUser(auth as never)) ?? (await resolveDevBypassUser());
+  const user = (await resolveMcpUser(auth)) ?? (await resolveDevBypassUser());
   if (!user) return undefined;
   return createCallerForUser(user);
 }

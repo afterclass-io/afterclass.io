@@ -233,7 +233,7 @@ describe("userBids.setStatus — active-timetable sync", () => {
   it("allows PARTICIPATED via the dropdown (same-window siblings default to participated)", async () => {
     const { dbMock, userBidUpdate } = makeSetStatusDb();
     const caller = makeCaller(dbMock);
-    await caller.setStatus({ id: "b1", status: "PARTICIPATED" as never });
+    await caller.setStatus({ id: "b1", status: "PARTICIPATED" });
     expect(userBidUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: "b1" }, data: { status: "PARTICIPATED" } }),
     );
