@@ -1,9 +1,10 @@
 import type { MCPServer } from "mcp-use";
+import { db } from "@/server/db";
+import { createCaller } from "@/server/api/root";
 
 export type AcadTermsCaller = { acadTerms: { list: () => Promise<Array<{ id: string; label: string; startDt: Date; endDt: Date }>> } };
 
 async function defaultCaller(): Promise<AcadTermsCaller> {
-  const [{ db }, { createCaller }] = await Promise.all([import("@/server/db"), import("@/server/api/root")]);
   return createCaller(async () => ({ db, session: null, headers: new Headers() }));
 }
 

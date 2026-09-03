@@ -43,23 +43,17 @@ function supabaseOAuth(): SupabaseOAuthProvider | undefined {
 
 const oauth = supabaseOAuth();
 
-// ServerConfig<TUser> is discriminated on oauth presence and tsc cannot narrow
-// the conditional, so the two variants are constructed explicitly; the union
-// is cast to the generic MCPServer used by register.ts/prompts/resources (in
-// production the server is always built with the authenticated shape).
-export const server = (
-  oauth
-    ? new MCPServer<SupabaseOAuthUser>({
-        name: "afterclass",
-        version: "0.2.0",
-        description: "afterclass.io MCP server - courses, professors, timetables, bids, roadmaps.",
-        oauth,
-      })
-    : new MCPServer({
-        name: "afterclass",
-        version: "0.2.0",
-        description: "afterclass.io MCP server - courses, professors, timetables, bids, roadmaps.",
-      })
-) as MCPServer;
+const SERVER_META = {
+  name: "afterclass",
+  version: "0.2.0",
+  description: "afterclass.io MCP server - courses, professors, timetables, bids, roadmaps.",
+} as const;
+
+function createServer(): MCPServer {
+  if (oauth) return new MCPServer<SupabaseOAuthUser>({ ...SERVER_META, oauth }) as unknown as MCPServer;
+  return new MCPServer(SERVER_META);
+}
+
+export const server: MCPServer = createServer();
 
 export default server;

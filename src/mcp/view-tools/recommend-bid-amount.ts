@@ -1,5 +1,6 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
+import { asSchema } from "../schema";
 import { bidRecommendationOutput } from "./schemas";
 import { runViewTool } from "./results";
 
@@ -9,8 +10,8 @@ export const recommendBidAmount = server.tool(
   {
     name: "recommend-bid-amount",
     description: tool.description,
-    inputSchema: tool.inputSchema as never,
-    outputSchema: bidRecommendationOutput as never,
+    inputSchema: asSchema(tool.inputSchema),
+    outputSchema: asSchema(bidRecommendationOutput),
     annotations: { readOnlyHint: true },
     view: { name: "bid-recommendation", description: "Bid recommendation", prefersBorder: true },
   },

@@ -1,5 +1,6 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
+import { asSchema } from "../schema";
 import { roadmapOutput } from "./schemas";
 import { runViewTool } from "./results";
 
@@ -9,8 +10,8 @@ export const getMyRoadmap = server.tool(
   {
     name: "get-my-roadmap",
     description: tool.description,
-    inputSchema: tool.inputSchema as never,
-    outputSchema: roadmapOutput as never,
+    inputSchema: asSchema(tool.inputSchema),
+    outputSchema: asSchema(roadmapOutput),
     annotations: { readOnlyHint: true },
     view: { name: "roadmap-view", description: "Study roadmap", prefersBorder: true },
   },

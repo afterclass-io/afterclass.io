@@ -1,5 +1,6 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
+import { asSchema } from "../schema";
 import { buildToolContext } from "../user";
 import { checkWriteBudget } from "../rate-limit";
 import { calendarLinksOutput } from "./schemas";
@@ -11,8 +12,8 @@ export const getTimetableCalendarLink = server.tool(
   {
     name: "get-timetable-calendar-link",
     description: tool.description,
-    inputSchema: tool.inputSchema as never,
-    outputSchema: calendarLinksOutput as never,
+    inputSchema: asSchema(tool.inputSchema),
+    outputSchema: asSchema(calendarLinksOutput),
     view: { name: "calendar-links", description: "Calendar subscribe links", prefersBorder: true },
   },
   async (params, ctx) => {

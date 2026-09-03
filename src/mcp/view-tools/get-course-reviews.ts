@@ -1,5 +1,6 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
+import { asSchema } from "../schema";
 import { reviewCardsOutput } from "./schemas";
 import { runViewTool } from "./results";
 
@@ -9,8 +10,8 @@ export const getCourseReviews = server.tool(
   {
     name: "get-course-reviews",
     description: tool.description,
-    inputSchema: tool.inputSchema as never,
-    outputSchema: reviewCardsOutput as never,
+    inputSchema: asSchema(tool.inputSchema),
+    outputSchema: asSchema(reviewCardsOutput),
     annotations: { readOnlyHint: true },
     view: { name: "review-cards", description: "Course reviews", prefersBorder: true },
   },

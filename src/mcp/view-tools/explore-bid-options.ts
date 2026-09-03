@@ -1,5 +1,6 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
+import { asSchema } from "../schema";
 import { bidExplorerOutput } from "./schemas";
 import { runViewTool } from "./results";
 
@@ -9,8 +10,8 @@ export const exploreBidOptions = server.tool(
   {
     name: "explore-bid-options",
     description: tool.description,
-    inputSchema: tool.inputSchema as never,
-    outputSchema: bidExplorerOutput as never,
+    inputSchema: asSchema(tool.inputSchema),
+    outputSchema: asSchema(bidExplorerOutput),
     annotations: { readOnlyHint: true },
     view: { name: "bid-explorer", description: "Bid explorer", prefersBorder: true },
   },
