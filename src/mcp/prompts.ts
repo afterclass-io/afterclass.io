@@ -4,7 +4,7 @@ import { z } from "zod";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const planSemesterSchema: z.ZodObject<any> = z.object({
   targetTermId: z.string().optional().describe("Academic term id from list-acad-terms; omit to auto-pick the next term"),
-  facultyId: z.number().int().optional(),
+  facultyId: z.union([z.number().int(), z.string()]).optional().describe("Faculty id or acronym (e.g. 4 or SCIS; obtain via list-faculties); omit to use the user's faculty"),
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -55,14 +55,23 @@ export function registerPrompts(server: MCPServer): void {
     },
     async (args: PromptArgs) => {
       const targetTermId = textArg(args, "targetTermId");
-      const facultyId = numArg(args, "facultyId");
+      const facultyStr = textArg(args, "facultyId");
+      const facultyNum = facultyStr === undefined ? numArg(args, "facultyId") : undefined;
+      // Numbers render bare (facultyId 42); acronym strings render quoted
+      // (facultyId "SCIS").
+      const facultyClause =
+        facultyStr !== undefined
+          ? ` with facultyId "${facultyStr}"`
+          : facultyNum !== undefined
+            ? ` with facultyId ${String(facultyNum)}`
+            : "";
       return {
         messages: [
           {
             role: "user" as const,
             content: { type: "text" as const, text: `Help the user plan their next semester.
 
-1. Call the plan-semester tool${targetTermId ? ` with targetTermId "${targetTermId}"` : ""}${facultyId !== undefined ? ` and facultyId ${String(facultyId)}` : ""} to get the target term, the user's position, and ranked course candidates inspired by seniors in their faculty.
+1. Call the plan-semester tool${targetTermId ? ` with targetTermId "${targetTermId}"` : ""}${facultyClause} to get the target term, the user's position, and ranked course candidates inspired by seniors in their faculty. facultyId accepts a numeric id or an acronym (e.g. SCIS); call list-faculties to resolve a school name to its acronym/id.
 2. For the top 3-5 candidates, optionally fetch details: get-course (exact code), get-classes (sections/timings), get-bid-prediction (bid guidance) if the user wants to bid.
 3. Present a concise per-term plan: course code, name, credit units, and a note on why it's recommended (how many seniors took it at that point).
 4. Do not invent course codes - only use codes returned by the tools.` },
@@ -160,7 +169,7 @@ export function registerPrompts(server: MCPServer): void {
             role: "user" as const,
             content: { type: "text" as const, text: `Help the user find courses about: "${interest}".
 
-1. Call search-courses with the interest as the query; if it names a professor, call search-professors too.
+1. Call search-courses with the interest as the query; if it names a professor, call search-professors too. To narrow to one school, call list-faculties to resolve the school name to its acronym/id, then pass it as search-courses facultyId (numeric id or acronym, e.g. SCIS).
 2. For the top 3-5 hits, call get-course-reviews (and get-professor-reviews for professor picks) plus get-review-summary to ground quality claims.
 3. Present each pick with code, name, credit units, and what reviewers actually say. Do not invent course codes or review quotes.` },
           },

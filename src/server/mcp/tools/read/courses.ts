@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { resolveTermId } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { resolveFacultyId } from "./faculties";
 
 const searchCoursesSchema = z.object({
   acadTermId: z
@@ -9,7 +10,10 @@ const searchCoursesSchema = z.object({
     .optional()
     .describe("Academic term id; obtain via list-acad-terms"),
   query: z.string().min(1).describe("Search text: course code, course name, or professor name"),
-  facultyId: z.number().int().optional().describe("Optional faculty id to narrow results to that faculty's courses"),
+  facultyId: z
+    .union([z.number().int(), z.string()])
+    .optional()
+    .describe("Optional faculty id or acronym (e.g. 4 or SCIS; obtain via list-faculties) to narrow results to that faculty's courses"),
 });
 
 export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
@@ -34,8 +38,16 @@ export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
       // An empty string must never reach SQL (it returns `[]` for every query).
       const term = await resolveTermId(caller, acadTermId);
       if (!term.ok) return errText(term.errText);
+      // Students say "SCIS", not numeric ids: resolve acronyms via the
+      // faculties table (numbers pass through untouched).
+      let resolvedFacultyId: number | undefined;
+      if (facultyId !== undefined) {
+        const resolved = await resolveFacultyId(facultyId);
+        if (!resolved.ok) return errText(resolved.errText);
+        resolvedFacultyId = resolved.value;
+      }
       return jsonText(
-        await caller.timetable.searchCourses({ acadTermId: term.value, query, facultyId }),
+        await caller.timetable.searchCourses({ acadTermId: term.value, query, facultyId: resolvedFacultyId }),
       );
     } catch (e) {
       return errText(errorMessage(e));

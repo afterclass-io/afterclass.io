@@ -69,7 +69,7 @@ const VIEW_OUTPUTS: Array<[string, z.ZodType]> = [
 ];
 
 describe("every MCP tool schema is JSON-Schema serializable", () => {
-  it("all 49 catalog inputSchemas convert (io=input)", () => {
+  it("all 50 catalog inputSchemas convert (io=input)", () => {
     const failures: string[] = [];
     for (const tool of allTools) {
       try {
@@ -93,7 +93,7 @@ describe("every MCP tool schema is JSON-Schema serializable", () => {
     expect(failures, `unserializable outputSchemas:\n${failures.join("\n")}`).toEqual([]);
   });
 
-  it("tools/list over the real server returns 49 tools with no -32603", async () => {
+  it("tools/list over the real server returns 50 tools with no -32603", async () => {
     // The server's 7 view-bound tools require primed views at mount (the CLI
     // does this automatically in dev/build; a unit test must do it itself).
     // `__primeViews` is mcp-use's string-keyed priming alias — the seam used

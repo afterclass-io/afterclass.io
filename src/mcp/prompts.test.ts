@@ -99,6 +99,27 @@ describe("registerPrompts", () => {
     expect(definition.schema?.shape?.targetTermId?.description).toMatch(/list-acad-terms/);
   });
 
+  it("plan-semester prompt accepts faculty acronyms and points at list-faculties", async () => {
+    const prompt = vi.fn();
+    const server = { prompt } as never;
+    registerPrompts(server);
+    const handler = registrations(prompt).get("plan-semester")!;
+
+    const withAcronym = await handler({ facultyId: "SCIS" });
+    expect(withAcronym.messages[0]!.content.text).toContain('facultyId "SCIS"');
+    expect(withAcronym.messages[0]!.content.text).toContain("list-faculties");
+  });
+
+  it("find-courses prompt points at list-faculties for faculty-scoped searches", async () => {
+    const prompt = vi.fn();
+    const server = { prompt } as never;
+    registerPrompts(server);
+    const handler = registrations(prompt).get("find-courses")!;
+
+    const result = await handler({ interest: "machine learning" });
+    expect(result.messages[0]!.content.text).toContain("list-faculties");
+  });
+
   it("each user-goal prompt grounds its workflow in real tools (no invented codes)", async () => {
     const prompt = vi.fn();
     const server = { prompt } as never;

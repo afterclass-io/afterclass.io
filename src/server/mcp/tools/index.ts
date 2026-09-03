@@ -30,6 +30,7 @@ import { getMyTimetableDetailTool } from "./read/timetable-detail";
 import { getMyRoadmapTool, getPublicRoadmapTool } from "./read/roadmap-detail";
 import { planSemesterTool } from "./read/plan-semester";
 import { checkRoadmapFeasibilityTool } from "./read/feasibility";
+import { listFacultiesTool } from "./read/faculties";
 import {
   addClassToTimetableTool,
   createTimetableTool,
@@ -87,6 +88,7 @@ export const allTools: McpTool[] = [
   getPublicRoadmapTool,
   planSemesterTool,
   checkRoadmapFeasibilityTool,
+  listFacultiesTool,
   // write - timetables
   createTimetableTool,
   renameTimetableTool,
