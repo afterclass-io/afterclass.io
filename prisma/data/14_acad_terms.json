@@ -79,5 +79,41 @@
     "bossId": 2532,
     "startDt": "2026-06-29T00:00:00.000Z",
     "endDt": "2026-08-16T23:59:59.999Z"
+  },
+  {
+    "id": "AY202324T1",
+    "acadYearStart": 2023,
+    "acadYearEnd": 2024,
+    "term": "1",
+    "bossId": 2320,
+    "startDt": "2023-08-21T00:00:00.000Z",
+    "endDt": "2023-12-03T23:59:59.999Z"
+  },
+  {
+    "id": "AY202324T2",
+    "acadYearStart": 2023,
+    "acadYearEnd": 2024,
+    "term": "2",
+    "bossId": 2320,
+    "startDt": "2024-01-15T00:00:00.000Z",
+    "endDt": "2024-04-28T23:59:59.999Z"
+  },
+  {
+    "id": "AY202324T3A",
+    "acadYearStart": 2023,
+    "acadYearEnd": 2024,
+    "term": "3A",
+    "bossId": 2331,
+    "startDt": "2024-05-06T00:00:00.000Z",
+    "endDt": "2024-06-23T23:59:59.999Z"
+  },
+  {
+    "id": "AY202324T3B",
+    "acadYearStart": 2023,
+    "acadYearEnd": 2024,
+    "term": "3B",
+    "bossId": 2332,
+    "startDt": "2024-07-01T00:00:00.000Z",
+    "endDt": "2024-08-18T23:59:59.999Z"
   }
 ]

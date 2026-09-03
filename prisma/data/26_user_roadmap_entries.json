@@ -142,5 +142,45 @@
     "yearNumber": 1,
     "term": "T1",
     "sortOrder": 1
+  },
+  {
+    "id": "entry-r5-cor1702-y1t1",
+    "roadmapId": "roadmap-005-user-a",
+    "courseId": "c229563a-4361-4b4a-8c89-346d0c6c6553",
+    "yearNumber": 1,
+    "term": "T1",
+    "sortOrder": 0
+  },
+  {
+    "id": "entry-r5-is215-y1t1",
+    "roadmapId": "roadmap-005-user-a",
+    "courseId": "2a45bab1-5ec4-4d2e-b245-27a142a78890",
+    "yearNumber": 1,
+    "term": "T1",
+    "sortOrder": 1
+  },
+  {
+    "id": "entry-r5-acct102-y1t2",
+    "roadmapId": "roadmap-005-user-a",
+    "courseId": "be218806-51fa-49aa-bd78-8367bd976e81",
+    "yearNumber": 1,
+    "term": "T2",
+    "sortOrder": 2
+  },
+  {
+    "id": "entry-r6-is215-y1t1",
+    "roadmapId": "roadmap-006-user-b",
+    "courseId": "2a45bab1-5ec4-4d2e-b245-27a142a78890",
+    "yearNumber": 1,
+    "term": "T1",
+    "sortOrder": 0
+  },
+  {
+    "id": "entry-r6-mgmt214-y1t2",
+    "roadmapId": "roadmap-006-user-b",
+    "courseId": "77526d76-f88c-4e82-91d7-822a2c658ea8",
+    "yearNumber": 1,
+    "term": "T2",
+    "sortOrder": 1
   }
 ]
