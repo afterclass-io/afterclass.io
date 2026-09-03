@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ToolContext } from "./types";
 import {
+  parseBidWindowAlias,
+  resolveLatestWindowIdOrError,
   resolveTermId,
   resolveTermIdOrError,
   resolveOpenWindowIdOrError,
@@ -13,7 +15,10 @@ import {
 function makeCaller(procs: Record<string, unknown>) {
   return {
     acadTerms: { current: procs.acadTermsGetCurrent },
-    bidWindows: { getCurrentWindow: procs.bidWindowsGetCurrentWindow },
+    bidWindows: {
+      getCurrentWindow: procs.bidWindowsGetCurrentWindow,
+      getByAcadTerm: procs.bidWindowsGetByAcadTerm,
+    },
   } as unknown as ToolContext["caller"];
 }
 
@@ -178,5 +183,54 @@ describe("resolveCurrentContext", () => {
     });
     const res = await resolveCurrentContext(ctx, now);
     expect(res.ok).toBe(false);
+  });
+});
+
+describe("parseBidWindowAlias", () => {
+  it.each([
+    ["r2aw3", { round: "2A", window: 3 }],
+    ["R2W3", { round: "2", window: 3 }],
+    ["round 2 window 3", { round: "2", window: 3 }],
+    ["Round 2A Window 3", { round: "2A", window: 3 }],
+    ["r1cw1", { round: "1C", window: 1 }],
+  ])("parses %s", (input, expected) => {
+    expect(parseBidWindowAlias(input)).toEqual(expected);
+  });
+
+  it("returns null for non-alias input", () => {
+    expect(parseBidWindowAlias("hello")).toBeNull();
+    expect(parseBidWindowAlias("")).toBeNull();
+  });
+});
+
+describe("resolveLatestWindowIdOrError", () => {
+  const w1 = { ...mkWindow({ id: 1 }), round: "1", window: 1 };
+  const w2 = { ...mkWindow({ id: 2 }), round: "2A", window: 3 };
+
+  it("returns the latest window for the term via getByAcadTerm", async () => {
+    const ctx = makeCaller({
+      bidWindowsGetByAcadTerm: vi.fn().mockResolvedValue([w1, w2]),
+    });
+    const res = await resolveLatestWindowIdOrError(ctx, "AY2026/27-T1");
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.value).toBe(2);
+  });
+
+  it("falls back to the latest overall window when no term is given", async () => {
+    const ctx = makeCaller({
+      bidWindowsGetCurrentWindow: vi.fn().mockResolvedValue(w2),
+    });
+    const res = await resolveLatestWindowIdOrError(ctx);
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.value).toBe(2);
+  });
+
+  it("returns a friendly error when the term has no windows", async () => {
+    const ctx = makeCaller({
+      bidWindowsGetByAcadTerm: vi.fn().mockResolvedValue([]),
+    });
+    const res = await resolveLatestWindowIdOrError(ctx, "AY2099/00-T9");
+    expect(res.ok).toBe(false);
+    if (!res.ok) expect(res.errText).toMatch(/bid window/i);
   });
 });

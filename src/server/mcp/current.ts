@@ -99,6 +99,74 @@ export async function resolveOpenWindowIdOrError(
 /** The current context for tools that need both term and window. */
 export type CurrentContext = { acadTermId: string; bidWindowId: number | null };
 
+/** A parsed bid-window alias: round (upper-cased, e.g. "2A") + window number. */
+export type BidWindowAlias = { round: string; window: number };
+
+/**
+ * Parse a human/compact bid-window alias into `{ round, window }`
+ * (case-insensitive). Accepts the compact `r2aw3` / `R2W3` / `r1cw1` form
+ * (`r{round}{suffix?}w{window}`) and the long `round 2 window 3` form.
+ * Returns `null` when the input is not a recognisable alias.
+ */
+export function parseBidWindowAlias(input: string): BidWindowAlias | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+  const compact = /^r(\d+[a-z]?)\s*w\s*(\d+)$/i.exec(trimmed);
+  if (compact?.[1] != null && compact[2] != null) {
+    return { round: compact[1].toUpperCase(), window: Number(compact[2]) };
+  }
+  const long = /^round\s+(\d+[a-z]?)\s+(?:window|w)\s*(\d+)$/i.exec(trimmed);
+  if (long?.[1] != null && long[2] != null) {
+    return { round: long[1].toUpperCase(), window: Number(long[2]) };
+  }
+  return null;
+}
+
+/**
+ * Resolve the id of the LATEST bid window: for an explicit (trimmed)
+ * `acadTermId`, the last window of that term via
+ * `caller.bidWindows.getByAcadTerm` (which returns round/window ascending);
+ * otherwise the latest overall window via `caller.bidWindows.getCurrentWindow`.
+ *
+ * Unlike `resolveOpenWindowIdOrError`, this is for READ-ONLY estimate paths
+ * only — never use it to place bids. Returns a friendly error when the term
+ * has no windows yet (e.g. a future term) or the lookup fails.
+ */
+export async function resolveLatestWindowIdOrError(
+  caller: RouterCaller,
+  acadTermId?: string,
+): Promise<ResolveResult<number>> {
+  try {
+    const trimmed = acadTermId?.trim() ?? "";
+    if (trimmed) {
+      const windows = await caller.bidWindows.getByAcadTerm({ acadTermId: trimmed });
+      const latest = windows.length > 0 ? windows[windows.length - 1] : undefined;
+      if (!latest) {
+        return {
+          ok: false,
+          errText: `No bid windows for term ${trimmed} yet — it may be a future term. Ask the user which term to use, or call get-bid-windows and let the user pick.`,
+        };
+      }
+      return { ok: true, value: latest.id };
+    }
+    const window = await caller.bidWindows.getCurrentWindow();
+    if (!window) {
+      return {
+        ok: false,
+        errText:
+          "No bid windows exist yet. Ask the user which bid round and window to use, or call get-bid-windows and let the user pick.",
+      };
+    }
+    return { ok: true, value: window.id };
+  } catch (e) {
+    return {
+      ok: false,
+      errText: `Could not resolve the latest bid window: ${
+        e instanceof Error ? e.message : String(e)
+      }`,
+    };
+  }
+}
 /**
  * Resolve both the current academic term and the current open bid window for
  * tools needing both. The term is required (error when absent); the window is

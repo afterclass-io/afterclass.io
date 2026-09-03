@@ -27,6 +27,7 @@ function mkCaller(opts: {
   bidResults?: unknown[];
   safetyFactors?: unknown[];
   currentWindowForBidWindow?: unknown;
+  windowsByTerm?: unknown;
 }) {
   const now = new Date();
   // resolveOpenWindowIdOrError reads caller.bidWindows.getCurrentWindow and checks active window.
@@ -43,7 +44,10 @@ function mkCaller(opts: {
           resultsAt: new Date(now.getTime() + 60_000),
         };
   return {
-    bidWindows: { getCurrentWindow: vi.fn().mockResolvedValue(openWindow) },
+    bidWindows: {
+      getCurrentWindow: vi.fn().mockResolvedValue(openWindow),
+      getByAcadTerm: vi.fn().mockResolvedValue(opts.windowsByTerm ?? []),
+    },
     courses: {
       getByCourseCode: vi.fn().mockResolvedValue(
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- keep ternary: null means \"not found\" vs fallback; ?? would collapse incorrectly for explicit undefined
@@ -138,28 +142,100 @@ describe("bid-estimate", () => {
     expect(res.content[0]!.text).toContain("not found");
   });
 
-  it("returns a friendly 'ask the user for round + window' error when no window is open", async () => {
+  it("falls back to the upcoming window as latest-overall with a warning when no window is open and no term is given", async () => {
     const now = new Date();
     const caller = mkCaller({
       openWindow: {
         id: 88,
         acadTermId: "t1",
+        round: "1",
+        window: 1,
         opensAt: new Date(now.getTime() + 60_000),
         resultsAt: new Date(now.getTime() + 120_000),
       },
+      windowsByTerm: [],
     });
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702" });
-    expect(res.isError).toBe(true);
-    expect(res.content[0]!.text).toMatch(/ask the user/i);
+    expect(res.isError).toBeFalsy();
+    const parsed = JSON.parse(res.content[0]!.text) as { bidWindow: { id: number }; warning: string };
+    expect(parsed.bidWindow.id).toBe(88);
+    expect(parsed.warning).toMatch(/prior-window results/);
   });
 
   it("returns errText when no window exists at all", async () => {
-    const caller = mkCaller({ openWindow: null });
+    const caller = mkCaller({ openWindow: null, windowsByTerm: [] });
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702" });
     expect(res.isError).toBe(true);
     expect(res.content[0]!.text).toMatch(/bid window/i);
+  });
+
+  it("falls back to the latest window with a warning when no window is open", async () => {
+    const now = new Date();
+    const latest = {
+      id: 99,
+      acadTermId: "AY2026/27-T1",
+      round: "2A",
+      window: 3,
+      opensAt: new Date(now.getTime() - 120_000),
+      resultsAt: new Date(now.getTime() - 60_000),
+    };
+    const caller = mkCaller({
+      openWindow: {
+        id: 88,
+        acadTermId: "AY2026/27-T1",
+        round: "1",
+        window: 1,
+        opensAt: new Date(now.getTime() + 60_000),
+        resultsAt: new Date(now.getTime() + 120_000),
+      },
+      windowsByTerm: [latest],
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702", acadTermId: "AY2026/27-T1" });
+    expect(res.isError).toBeFalsy();
+    const parsed = JSON.parse(res.content[0]!.text) as { bidWindow: { id: number }; warning: string };
+    expect(parsed.bidWindow.id).toBe(99);
+    expect(parsed.warning).toMatch(/prior-window results/);
+    expect(parsed.warning).toMatch(/immediate-next-window only/);
+  });
+
+  it("returns short guidance when the term has no windows yet (future term)", async () => {
+    const caller = mkCaller({ openWindow: null, windowsByTerm: [] });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702", acadTermId: "AY2099/00-T9" });
+    expect(res.isError).toBe(true);
+    expect(res.content[0]!.text).toMatch(/no bid windows/i);
+  });
+
+  it("resolves an explicit r2aw3 alias to the matching window", async () => {
+    const now = new Date();
+    const target = {
+      id: 99,
+      acadTermId: "AY2026/27-T1",
+      round: "2A",
+      window: 3,
+      opensAt: new Date(now.getTime() - 120_000),
+      resultsAt: new Date(now.getTime() - 60_000),
+    };
+    const caller = mkCaller({
+      openWindow: null,
+      windowsByTerm: [
+        { id: 77, acadTermId: "AY2026/27-T1", round: "1", window: 1 },
+        target,
+      ],
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const res = await bidEstimateTool.run(ctx, {
+      courseCode: "COR-IS1702",
+      acadTermId: "AY2026/27-T1",
+      bidWindow: "r2aw3",
+    });
+    expect(res.isError).toBeFalsy();
+    const parsed = JSON.parse(res.content[0]!.text) as { bidWindow: { id: number }; warning?: string };
+    expect(parsed.bidWindow.id).toBe(99);
+    expect(parsed.warning).toBeUndefined();
   });
 
   it("defaults multiplier to 1.0 when no safety factor matches (suggested = median)", async () => {
