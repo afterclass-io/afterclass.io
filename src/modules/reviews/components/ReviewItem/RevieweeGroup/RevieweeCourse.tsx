@@ -21,10 +21,10 @@ export const RevieweeCourse = ({
           variant="link"
           href={`/course/${courseCode}`}
           className="hover:text-primary text-muted-foreground min-w-0 break-words whitespace-normal shrink hover:no-underline"
-          aria-label="course"
           data-test="review-course-label"
         >
           {courseCode}
+          <span className="sr-only"> - {courseName}</span>
         </ProgressLink>
       </TooltipTrigger>
       <TooltipContent>

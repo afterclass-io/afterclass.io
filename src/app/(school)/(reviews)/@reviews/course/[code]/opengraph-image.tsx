@@ -8,7 +8,7 @@ import { toTitleCase, formatPercentage } from "@/common/functions";
 
 export const runtime = "nodejs";
 
-export const alt = "AfterClass";
+export const alt = "Course reviews on AfterClass";
 export const size = {
   width: 720,
   height: 400,

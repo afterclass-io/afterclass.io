@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { ReviewType } from "@/generated/prisma/enums";
 import type { UniversityAbbreviation } from "@/generated/prisma/enums";
 
@@ -11,6 +13,10 @@ import {
   ReviewFormSection,
 } from "@/modules/submit/components/ReviewForm";
 import { auth, signIn } from "@/server/auth";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function SubmitReviewPage() {
   const session = await auth();
