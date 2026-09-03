@@ -3,7 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import type Error from "next/error";
 import { useEffect } from "react";
 
-import { inter, poppins } from "@/common/fonts";
+import { inter } from "@/common/fonts";
 import { Button, buttonVariants } from "@/common/components/button";
 
 import { env } from "@/env";
@@ -22,7 +22,7 @@ export default function GlobalError({
     Sentry.captureException(error);
   }, [error]);
   return (
-    <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
+    <html lang="en" className={inter.variable}>
       <body>
         <ThemeProvider>
           <main className="grid min-h-full place-items-center px-6 py-24 sm:py-32 lg:px-8">
