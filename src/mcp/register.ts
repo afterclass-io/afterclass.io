@@ -7,7 +7,7 @@ import { errorResult, textResult } from "./view-tools/results";
 import { checkWriteBudget } from "./rate-limit";
 
 // The 7 view-bound tool names are registered by view-tools/* (module scope, exported ToolRefs);
-// this loop skips them and registers the remaining 42 as generic CallToolResult:
+// this loop skips them and registers the remaining 43 as generic CallToolResult:
 export const viewBoundNames = new Set([
   "search-courses",
   "recommend-bid-amount",

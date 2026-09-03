@@ -31,7 +31,7 @@ const bidEstimateSchema = z.object({
 export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
   name: "bid-estimate",
   description:
-    "Estimate bid prices for a course's sections for the upcoming bidding window. Provide a course code (e.g. COR-IS1702); optionally filter to a single section (e.g. G1). Returns per-section median and minimum clearing prices from the latest bid predictions, a suggested bid amount (median × safety multiplier for 70% confidence when available), and the current vacancy for the open window. If no bid window is currently open, returns a friendly message asking the user for the round and window. If the course or its sections are not found, explains what was tried. Self-contained: one call is the answer.",
+    "Estimate bid prices for a course's sections for the upcoming bidding window. Provide a course code (e.g. COR-IS1702); optionally filter to a single section (e.g. G1). Returns per-section median and minimum clearing prices from the latest bid predictions, a suggested bid amount (median × safety multiplier for 70% confidence when available), and the current vacancy for the resolved window. Window resolution: explicit bidWindow > open window > latest window (estimates then use prior-window results — immediate-next-window only). If the course or its sections are not found, explains what was tried. Self-contained: one call is the answer.",
   inputSchema: bidEstimateSchema,
   readOnly: true,
   run: async ({ caller }, { courseCode, section, acadTermId: acadTermInput, bidWindow: bidWindowInput }) => {

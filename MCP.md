@@ -1,10 +1,10 @@
 # afterclass.io MCP server
 
-The afterclass.io Model Context Protocol (MCP) server, built on [mcp-use](https://mcp-use.com) (v2). It exposes the shared tool catalog (`src/server/mcp/tools` — the same 49 tools the in-app assistant uses) as a remote, OAuth-protected MCP server with 7 MCP Apps Views.
+The afterclass.io Model Context Protocol (MCP) server, built on [mcp-use](https://mcp-use.com) (v2). It exposes the shared tool catalog (`src/server/mcp/tools` — the same 50 tools the in-app assistant uses) as a remote, OAuth-protected MCP server with 7 MCP Apps Views.
 
 - **Server entry:** `src/mcp/index.ts` (re-exports the shared `MCPServer` instance from `src/mcp/server.ts`)
 - **Server + OAuth wiring:** `src/mcp/server.ts` + `mcp-use/oauth/supabase`
-- **Tool wiring:** `src/mcp/view-tools/*` (7 view-bound tools) + `src/mcp/register.ts` (42 viewless tools) + `src/mcp/user.ts`
+- **Tool wiring:** `src/mcp/view-tools/*` (7 view-bound tools) + `src/mcp/register.ts` (43 viewless tools) + `src/mcp/user.ts`
 - **Views:** `views/<name>/view.tsx`
 - **Local dev:** `bun run mcp:dev` → Inspector at `http://localhost:3001/mcp/inspector`
 
@@ -17,7 +17,7 @@ The afterclass.io Model Context Protocol (MCP) server, built on [mcp-use](https:
 |  Next.js app (Vercel)       |      |  mcp-use server (this repo: src/mcp/)      |
 |                             |      |                                            |
 |  - website                  |      |  - MCP transport (streamable HTTP)         |
-|  - Supabase identity        |      |  - 49 tools from the shared catalog        |
+|  - Supabase identity        |      |  - 50 tools from the shared catalog        |
 |  - consent screen           |      |    (src/server/mcp/tools - single source   |
 |    /oauth/consent           |      |     of truth, shared with the in-app       |
 |                             |      |     assistant)                             |
@@ -38,12 +38,12 @@ The afterclass.io Model Context Protocol (MCP) server, built on [mcp-use](https:
 Three moving parts:
 
 1. **Next.js app (Vercel)** — the website, Supabase-backed sign-in, and the hosted consent screen at `/oauth/consent` (`src/app/oauth/consent/page.tsx` + `src/app/api/oauth/consent/route.ts`). The user approves or denies an authorization request from this screen.
-2. **mcp-use server (`src/mcp/`)** — the MCP transport (streamable HTTP); hosts the 49 tools from the shared catalog + 7 Views, and runs `oauthSupabaseProvider()`. Deployed independently of the Next.js app (see [Deploy](#deploy)).
+2. **mcp-use server (`src/mcp/`)** — the MCP transport (streamable HTTP); hosts the 50 tools from the shared catalog + 7 Views, and runs `oauthSupabaseProvider()`. Deployed independently of the Next.js app (see [Deploy](#deploy)).
 3. **Supabase Auth** — the hosted OAuth 2.1 authorization server: issues MCP access tokens, handles Dynamic Client Registration (DCR) for MCP clients, and redirects the user to the app's consent screen.
 
 ### Single source of truth for tools
 
-All 49 tools live in `src/server/mcp/tools` (e.g. `search-courses`, `my-timetables`, `recommend-bid-amount`). The same catalog powers the **in-app assistant** (via the tRPC caller) and the **MCP server** (`src/mcp/register.ts` + `src/mcp/view-tools/*` resolve the caller from the OAuth identity per call). A tool only needs to be changed in one place.
+All 50 tools live in `src/server/mcp/tools` (e.g. `search-courses`, `my-timetables`, `recommend-bid-amount`). The same catalog powers the **in-app assistant** (via the tRPC caller) and the **MCP server** (`src/mcp/register.ts` + `src/mcp/view-tools/*` resolve the caller from the OAuth identity per call). A tool only needs to be changed in one place.
 
 ## Authorization / consent flow
 
@@ -61,16 +61,16 @@ The end-to-end OAuth 2.1 authorization-code flow with Supabase-hosted consent:
 
 Under the hood: `src/server/supabase-consent.ts` (a per-call Supabase client authenticated with the user's access token) → `approveConsent` / `denyConsent` / `getConsentDetails` → the consent route/page. On every call the token is verified by `oauthSupabaseProvider()` (Supabase JWKS); each tool resolves the caller from `ctx.auth.user` via `src/mcp/user.ts` → `createCallerForUser` (a user-scoped tRPC caller) and **fails closed** when unauthenticated.
 
-## Tool catalog (49 tools)
+## Tool catalog (50 tools)
 
-The shared catalog exposes 49 tools over MCP (27 readOnly + 22 write), defined in `src/server/mcp/tools` — read tools under `tools/read/`, write tools under `tools/write/`, aggregated in `tools/index.ts`. readOnly tools are annotated `readOnlyHint` and skip the write budget.
+The shared catalog exposes 50 tools over MCP (28 readOnly + 22 write), defined in `src/server/mcp/tools` — read tools under `tools/read/`, write tools under `tools/write/`, aggregated in `tools/index.ts`. readOnly tools are annotated `readOnlyHint` and skip the write budget.
 
 Tool families:
 
 - **Courses / classes / professors + ranked search** — course and class detail with ranked, senior-informed candidates (`search-courses`, `get-course`, `get-classes`, `search-professors`, `list-acad-terms`).
 - **Catalog** — reviews, bid results / predictions / windows, and academic terms (`get-course-reviews`, `get-professor-reviews`, `get-review-summary`, `get-bid-results`, `get-bid-windows`, `get-contribute-info`).
 - **Own data** — timetables, roadmaps, bids, budget (`my-timetables`, `my-roadmaps`, `my-bids`, `my-bid-plan`, `my-bid-budget`).
-- **Planning / estimation** — `plan-semester`, `check-roadmap-feasibility`, `get-my-timetable-detail`, `bid-estimate` (per-section median/min + suggested amount + vacancy for the open window).
+- **Planning / estimation** — `plan-semester`, `check-roadmap-feasibility`, `get-my-timetable-detail`, `bid-estimate` (per-section median/min + suggested amount + vacancy for the open/latest/explicit window).
 - **Write tools** — bids, timetables, roadmaps, roadmap settings, bid status, calendar links, recommend (`upsert-bid`, `set-bid-budget`, `set-bid-status`, `save-bids`, `set-matric-term`, `set-active-roadmap`, `sync-roadmap-progress`, `copy-public-roadmap`, `upsert-roadmap-entry`, `set-roadmap-visibility`, `get-timetable-calendar-link`, `recommend-bid-amount`).
 
 > **Mutation echo:** every bid/budget write (`set-bid-budget`, `upsert-bid`, `remove-bid`, `set-bid-status`, `save-bids`) returns the full updated `{ updated, plan }` in its text output; roadmap writes (`copy-public-roadmap`, `create-roadmap`, `save-roadmap-entries`, `upsert-roadmap-entry`) return the updated roadmap view. Chat prompts tell the model to summarize the returned plan/roadmap instead of re-fetching.
@@ -195,7 +195,7 @@ When an MCP call arrives with no identity, `src/mcp/user.ts` falls back to the *
 1. `bun run db:reset` (seeds the dev user + data into local Postgres on `:5433`).
 2. `bun run mcp:dev` → wait for `[SERVER] Listening on http://0.0.0.0:3001` (~20–40s, loads all tRPC routers).
 3. Open `http://localhost:3001/mcp/inspector`, hit **Connect** — no OAuth prompt.
-4. `tools/list` shows the 49 tools; call e.g. `search-courses`, `my-bid-plan`, or `recommend-bid-amount`.
+4. `tools/list` shows the 50 tools; call e.g. `search-courses`, `my-bid-plan`, or `recommend-bid-amount`.
 5. View-bound tools (`search-courses`, `recommend-bid-amount`, `my-bid-plan`, `explore-bid-options`, `get-course-reviews`, `get-my-roadmap`, `get-timetable-calendar-link`) render the 7 MCP Apps Views in the Inspector.
 
 All calls run as the single dev user (`test_hash_pwd@smu.edu.sg`), so the per-user write budget still applies to that user.
