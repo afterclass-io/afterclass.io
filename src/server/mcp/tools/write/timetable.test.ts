@@ -35,7 +35,9 @@ function makeCaller(procs: Record<string, unknown>) {
       remove: procs.timetableRemove,
       addSlot: procs.timetableAddSlot,
       removeSlot: procs.timetableRemoveSlot,
+      listMine: procs.timetableListMine,
     },
+    classes: { getAll: procs.classesGetAll },
     sharing: { setVisibility: procs.sharingSetVisibility },
     acadTerms: { current: procs.acadTermsGetCurrent },
   } as unknown as ToolContext["caller"];
@@ -95,6 +97,62 @@ describe("timetable write tools", () => {
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ timetableAddSlot: fn }) };
     const result = await addClassToTimetableTool.run(ctx, { timetableId: "tt1", classId: "cl1" });
     expect(result.isError).toBe(true);
+  });
+
+  it("add-class-to-timetable with classId only resolves the active timetable for the class term", async () => {
+    const addSlot = vi.fn().mockResolvedValue({ created: true });
+    const listMine = vi
+      .fn()
+      .mockResolvedValue([
+        { id: "tt-old", name: "Old", isActive: false, acadTermId: "t1" },
+        { id: "tt-active", name: "Current", isActive: true, acadTermId: "t1" },
+      ]);
+    const getAll = vi.fn().mockResolvedValue([{ id: "cl1", acadTermId: "t1" }]);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        timetableAddSlot: addSlot,
+        timetableListMine: listMine,
+        classesGetAll: getAll,
+      }),
+    };
+    const result = await addClassToTimetableTool.run(ctx, { classId: "cl1" });
+    expect(result.isError).toBeFalsy();
+    expect(listMine).toHaveBeenCalledWith({ acadTermId: "t1" });
+    expect(addSlot).toHaveBeenCalledWith({ timetableId: "tt-active", classId: "cl1" });
+  });
+
+  it("add-class-to-timetable with classId only creates a timetable when none exists", async () => {
+    const addSlot = vi.fn().mockResolvedValue({ created: true });
+    const listMine = vi.fn().mockResolvedValue([]);
+    const create = vi.fn().mockResolvedValue({ id: "tt-new", acadTermId: "t1" });
+    const getAll = vi.fn().mockResolvedValue([{ id: "cl1", acadTermId: "t1" }]);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        timetableAddSlot: addSlot,
+        timetableListMine: listMine,
+        timetableCreate: create,
+        classesGetAll: getAll,
+      }),
+    };
+    const result = await addClassToTimetableTool.run(ctx, { classId: "cl1" });
+    expect(result.isError).toBeFalsy();
+    expect(create).toHaveBeenCalledWith({ acadTermId: "t1" });
+    expect(addSlot).toHaveBeenCalledWith({ timetableId: "tt-new", classId: "cl1" });
+  });
+
+  it("add-class-to-timetable with classId only returns a friendly pick-a-timetable error when the class cannot be resolved", async () => {
+    const addSlot = vi.fn();
+    const getAll = vi.fn().mockResolvedValue([]);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ timetableAddSlot: addSlot, classesGetAll: getAll }),
+    };
+    const result = await addClassToTimetableTool.run(ctx, { classId: "cl-missing" });
+    expect(result.isError).toBe(true);
+    expect(addSlot).not.toHaveBeenCalled();
+    expect(result.content[0]!.text).toMatch(/timetable/i);
   });
 
   it("remove-class-from-timetable calls timetable.removeSlot", async () => {
