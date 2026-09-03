@@ -11,7 +11,7 @@ export async function CoreLayout({ children }: CoreLayoutProps) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <CoreLayoutHeader />
         <div id="scroll-to-top"></div>
         <div className="flex flex-1 flex-col">{children}</div>
