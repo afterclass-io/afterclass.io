@@ -204,8 +204,8 @@ describe("parseBidWindowAlias", () => {
 });
 
 describe("resolveLatestWindowIdOrError", () => {
-  const w1 = { ...mkWindow({ id: 1 }), round: "1", window: 1 };
-  const w2 = { ...mkWindow({ id: 2 }), round: "2A", window: 3 };
+  const w1 = { ...mkWindow(), id: 1, round: "1", window: 1 };
+  const w2 = { ...mkWindow(), id: 2, round: "2A", window: 3 };
 
   it("returns the latest window for the term via getByAcadTerm", async () => {
     const ctx = makeCaller({
