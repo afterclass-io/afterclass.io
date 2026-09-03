@@ -190,7 +190,8 @@ const CourseSearchView: React.FC = () => {
       style={{
         fontFamily: "var(--font-inter, ui-sans-serif)",
         color: c.cardFg,
-        maxWidth: 520,
+        width: "100%",
+        maxWidth: "100%",
         boxSizing: "border-box",
       }}
     >

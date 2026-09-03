@@ -120,6 +120,18 @@ describe("CourseSearchView (v2)", () => {
     render(<CourseSearchView />);
     expect(screen.getByRole("alert")).toHaveTextContent("boom");
   });
+
+  it("root container fills host width (no maxWidth cap)", () => {
+    seedContext({
+      status: "ready",
+      toolInput: { query: "ACC" },
+      toolOutput: { results: [sampleResult] },
+    });
+    const { container } = render(<CourseSearchView />);
+    const root = container.firstElementChild as HTMLElement;
+    expect(root.style.width).toBe("100%");
+    expect(root.style.maxWidth).toBe("100%");
+  });
 });
 
 describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
