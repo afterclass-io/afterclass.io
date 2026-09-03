@@ -2,6 +2,7 @@ import type { MCPServer } from "mcp-use";
 
 import { allTools } from "@/server/mcp/tools";
 import { buildToolContext } from "./user";
+import { asSchema } from "./schema";
 import { errorResult, textResult } from "./view-tools/results";
 import { checkWriteBudget } from "./rate-limit";
 
@@ -24,7 +25,7 @@ export function registerViewlessTools(server: MCPServer): void {
       {
         name: tool.name,
         description: tool.description,
-        inputSchema: tool.inputSchema as never,
+        inputSchema: asSchema(tool.inputSchema),
         ...(tool.readOnly ? { annotations: { readOnlyHint: true } } : {}),
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- mcp-use context generic varies across Hono versions; params-first signature is what matters

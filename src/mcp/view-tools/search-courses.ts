@@ -1,5 +1,6 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
+import { asSchema } from "../schema";
 import { buildToolContext } from "../user";
 import { courseSearchOutput } from "./schemas";
 import { errorResult, guardedParse, unwrapResultData } from "./results";
@@ -10,8 +11,8 @@ export const searchCourses = server.tool(
   {
     name: "search-courses",
     description: searchCoursesTool.description,
-    inputSchema: searchCoursesTool.inputSchema as never,
-    outputSchema: courseSearchOutput as never,
+    inputSchema: asSchema(searchCoursesTool.inputSchema),
+    outputSchema: asSchema(courseSearchOutput),
     annotations: { readOnlyHint: true },
     view: { name: "course-search", description: "Course search results", prefersBorder: true },
   },
