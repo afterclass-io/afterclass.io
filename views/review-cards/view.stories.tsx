@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import View from "./view";
-import { withMcpView } from "../../../../.storybook/withMcpView";
+import { withMcpView } from "../../.storybook/withMcpView";
 
 /**
- * Stories for the bid-plan View (mcp-use v2).
+ * Stories for the review-cards View (mcp-use v2).
  *
  * Seeding mechanism: the shared `.storybook/withMcpView` decorator wraps each
  * story in the seed context consumed by the webpack-aliased
@@ -13,36 +13,35 @@ import { withMcpView } from "../../../../.storybook/withMcpView";
  */
 
 const fullProps = {
-  acadTermId: "AY2026/27-T1",
-  budget: { balance: 987.5 },
-  bids: [
+  context: "COR-MGMT1202",
+  reviews: [
     {
-      id: "b1",
-      bidAmount: 25,
-      status: "PLANNED",
-      courseCode: "ACC101",
-      courseName: "Financial Accounting",
-      section: "G1",
+      id: "rv1",
+      body: "Heavy group work but fair grading.",
+      tips: "Start the project early.",
+      rating: 4,
+      labels: ["Group Work", "Fair"],
+      voteCount: 12,
+      createdAt: "2026-01-15T00:00:00.000Z",
+      courseCode: "COR-MGMT1202",
       professorName: "Prof X",
-      round: "1",
-      window: 1,
     },
     {
-      id: "b2",
-      bidAmount: 51,
-      status: "SECURED",
-      courseCode: "FIN201",
-      courseName: "Finance",
-      section: "G3",
+      id: "rv2",
+      body: "Tough curve.",
+      tips: null,
+      rating: 2,
+      labels: [],
+      voteCount: 0,
+      createdAt: "2026-02-01T00:00:00.000Z",
+      courseCode: "COR-MGMT1202",
       professorName: null,
-      round: "1A",
-      window: 2,
     },
   ],
 };
 
 const meta: Meta<typeof View> = {
-  title: "MCP Views/bid-plan",
+  title: "MCP Views/review-cards",
   component: View,
 };
 
@@ -59,11 +58,11 @@ export const Dark: Story = {
   ],
 };
 
-export const Empty: Story = {
+export const NoReviews: Story = {
   decorators: [
     withMcpView({
       status: "ready",
-      toolOutput: { acadTermId: "AY2026/27-T1", budget: null, bids: [] },
+      toolOutput: { context: "CS101", reviews: [] },
     }),
   ],
 };

@@ -1,7 +1,7 @@
 import type React from "react";
 import type { ViewConfig } from "mcp-use/react";
 import { useToolContext, useViewTheme } from "mcp-use/react";
-import type { ReviewCardsData } from "../../view-tools/schemas";
+import type { ReviewCardsData } from "../../src/mcp/view-tools/schemas";
 import { TOKENS, Skeleton } from "../shared/tokens";
 
 /**

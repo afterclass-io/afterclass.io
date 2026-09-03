@@ -31,7 +31,10 @@ export function registerViewlessTools(server: MCPServer): void {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- mcp-use context generic varies across Hono versions; params-first signature is what matters
       async (params: unknown, ctx: any) => {
         const toolCtx = await buildToolContext(ctx as never);
-        if (!toolCtx) return errorResult("Unauthorized");
+        if (!toolCtx)
+          return errorResult(
+            "Unauthorized: no verified identity and dev bypass is off. For local Inspector use `bun run mcp:dev` with MCP_DEV_BYPASS=true (see MCP.md).",
+          );
         if (!tool.readOnly) {
           const limited = await checkWriteBudget(toolCtx);
           if (limited) return errorResult(limited);

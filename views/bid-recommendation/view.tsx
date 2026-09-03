@@ -6,7 +6,7 @@ import {
   useToolContext,
   useViewTheme,
 } from "mcp-use/react";
-import type { BidRecommendationData } from "../../view-tools/schemas";
+import type { BidRecommendationData } from "../../src/mcp/view-tools/schemas";
 import { useCtaFeedback } from "../shared/use-cta-feedback";
 import { TOKENS, Skeleton } from "../shared/tokens";
 

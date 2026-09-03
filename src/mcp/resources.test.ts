@@ -62,4 +62,14 @@ describe("registerResources", () => {
     const result = await (handler)(new URL("catalog://acad-terms"), {});
     expect(JSON.parse(result.contents[0]?.text ?? "{}")).toEqual({ terms: [] });
   });
+
+  it("returns an empty terms array (not a throw) when the caller fails", async () => {
+    const list = vi.fn().mockRejectedValue(new Error("incrementalCache missing")) as Mock;
+    const resource = vi.fn();
+    registerResources({ resource } as never, { acadTerms: { list } });
+    const [, handler] = resource.mock.calls[0] as [unknown, CapturedHandler];
+
+    const result = await (handler)(new URL("catalog://acad-terms"), {});
+    expect(JSON.parse(result.contents[0]?.text ?? "{}")).toEqual({ terms: [] });
+  });
 });

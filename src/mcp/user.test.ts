@@ -180,11 +180,13 @@ describe("buildToolContext", () => {
       expect(usersFindUnique).not.toHaveBeenCalled();
     });
 
-    it("fail-closed when NODE_ENV is unset (prod default) even with bypass enabled", async () => {
+    it("fail-closed when NODE_ENV is unset but bypass enabled (mcp-use dev inherits shell env)", async () => {
       vi.stubEnv("NODE_ENV", undefined);
       vi.stubEnv("MCP_DEV_BYPASS", "true");
-      await expect(buildToolContext({} as never)).resolves.toBeUndefined();
-      expect(usersFindUnique).not.toHaveBeenCalled();
+      delete process.env.MCP_DEV_USER_EMAIL;
+      usersFindUnique.mockResolvedValue(row);
+      await expect(buildToolContext({} as never)).resolves.toMatchObject({ user: { id: "supa-1" } });
+      expect(usersFindUnique).toHaveBeenCalledWith({ where: { email: "test_hash_pwd@smu.edu.sg" } });
     });
 
     it("real identity still wins over the bypass (token path unchanged)", async () => {

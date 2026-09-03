@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type React from "react";
 import type { ViewConfig } from "mcp-use/react";
 import { useToolContext, useViewTheme } from "mcp-use/react";
-import type { CalendarLinksMeta } from "../../view-tools/schemas";
+import type { CalendarLinksMeta } from "../../src/mcp/view-tools/schemas";
 import { Skeleton, TOKENS } from "../shared/tokens";
 
 /**

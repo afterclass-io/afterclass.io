@@ -18,7 +18,10 @@ export const searchCourses = server.tool(
   },
   async (params, ctx) => {
     const toolCtx = await buildToolContext(ctx as never);
-    if (!toolCtx) return errorResult("Unauthorized");
+    if (!toolCtx)
+      return errorResult(
+        "Unauthorized: no verified identity and dev bypass is off. For local Inspector use `bun run mcp:dev` with MCP_DEV_BYPASS=true (see MCP.md).",
+      );
     const result = await searchCoursesTool.run(toolCtx, params);
     if (result.isError) return errorResult(result.content[0]?.text ?? "Tool failed");
     // Preserve Invalid JSON semantics; don't use toWidgetProps which masks parse errors as {results:[]}

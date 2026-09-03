@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import View from "./view";
-import { withMcpView } from "../../../../.storybook/withMcpView";
+import { withMcpView } from "../../.storybook/withMcpView";
 
 /**
  * Stories for the roadmap-view View (mcp-use v2).

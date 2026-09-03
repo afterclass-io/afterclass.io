@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
       jsx: { runtime: "automatic", importSource: "react" },
     },
     test: {
-      include: ["src/**/*.test.{ts,tsx}", "prisma/**/*.test.{ts,tsx}"],
+      include: ["src/**/*.test.{ts,tsx}", "views/**/*.test.{ts,tsx}", "prisma/**/*.test.{ts,tsx}"],
       setupFiles: ["./vitest.setup.ts"],
       env,
       // Expose `describe`/`it`/`expect`/`afterEach` globals so

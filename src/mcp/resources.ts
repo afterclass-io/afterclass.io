@@ -18,7 +18,19 @@ export function registerResources(server: MCPServer, caller?: AcadTermsCaller): 
     },
     async (uri, _ctx) => {
       const acadTerms = caller ?? (await defaultCaller());
-      const terms = await acadTerms.acadTerms.list();
+      // listAcadTerms() already falls back to a direct DB fetch outside the
+      // Next.js runtime, but surface a clean empty-terms payload (not a 500)
+      // if the DB itself is unreachable from the MCP process.
+      let terms: Array<{ id: string; label: string; startDt: Date; endDt: Date }>;
+      try {
+        terms = await acadTerms.acadTerms.list();
+      } catch (e) {
+        terms = [];
+        console.error(
+          "[mcp] catalog://acad-terms failed, returning empty terms:",
+          e instanceof Error ? e.message : String(e),
+        );
+      }
       return {
         contents: [
           {

@@ -80,12 +80,15 @@ export interface RunViewToolOptions {
  * Shared pipeline for the object-shaped view-tool adapters:
  * auth → tool.run → unwrapResultData → raw-payload guard → schema guard →
  * { summary text, structuredContent }. Error envelopes mirror each adapter's
- * historical messages exactly ("Unauthorized", "Tool failed", "Invalid JSON
+ * historical messages exactly ("Unauthorized: ...", "Tool failed", "Invalid JSON
  * from catalog", rawPayloadMessage, "Output schema validation failed").
  */
 export async function runViewTool(opts: RunViewToolOptions): Promise<ViewToolOutcome> {
   const toolCtx = await buildToolContext(opts.ctx as never);
-  if (!toolCtx) return errorResult("Unauthorized");
+  if (!toolCtx)
+    return errorResult(
+      "Unauthorized: no verified identity and dev bypass is off. For local Inspector use `bun run mcp:dev` with MCP_DEV_BYPASS=true (see MCP.md).",
+    );
   const result = await opts.tool.run(toolCtx, opts.params);
   if (result.isError) return errorResult(result.content[0]?.text ?? "Tool failed");
   const unwrapped = unwrapResultData(result, opts.tool, opts.fallbackJson);
