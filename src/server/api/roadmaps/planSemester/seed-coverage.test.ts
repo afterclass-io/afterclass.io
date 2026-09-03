@@ -95,9 +95,7 @@ describe("plan-semester seed coverage (SCIS intake 2023)", () => {
       .filter((e) => {
         const target = targets.get(e.roadmapId);
         return (
-          target &&
-          e.yearNumber === target.yearNumber &&
-          e.term === target.term
+          target?.yearNumber === e.yearNumber && target?.term === e.term
         );
       })
       .map((e) => {

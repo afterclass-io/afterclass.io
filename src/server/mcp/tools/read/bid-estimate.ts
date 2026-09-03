@@ -64,10 +64,10 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
             );
           }
           if (match) {
-            bidWindow = match as unknown as WindowDetails;
+            bidWindow = match;
           } else {
-            const current = (await caller.bidWindows.getCurrentWindow()) as unknown as WindowDetails | null;
-            if (!current || current.id !== asId) {
+            const current = (await caller.bidWindows.getCurrentWindow()) as WindowDetails | null;
+            if (current?.id !== asId) {
               return errText(
                 `Bid window ${asId} not found. Call get-bid-windows and let the user pick.`,
               );
@@ -81,9 +81,8 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
               `Could not parse bid window "${trimmedWindowInput}". Use a window id (e.g. 77) or an alias like r2aw3 / R2W3 / "round 2 window 3".`,
             );
           }
-          const termForAlias =
-            trimmedTermInput ||
-            (await caller.bidWindows.getCurrentWindow().catch(() => null))?.acadTermId;
+          const currentForAlias = await caller.bidWindows.getCurrentWindow().catch(() => null);
+          const termForAlias = trimmedTermInput || currentForAlias?.acadTermId;
           if (!termForAlias) {
             return errText(
               "Could not resolve the academic term for that window alias. Ask the user which term to use, or call get-bid-windows and let the user pick.",
@@ -100,14 +99,14 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
               `No round ${alias.round} window ${alias.window} in term ${termForAlias}. Call get-bid-windows and let the user pick.`,
             );
           }
-          bidWindow = match as unknown as WindowDetails;
+          bidWindow = match;
         }
       } else {
         const openRes = await resolveOpenWindowIdOrError(caller);
         if (openRes.ok) {
           try {
-            const w = (await caller.bidWindows.getCurrentWindow()) as unknown as WindowDetails | null;
-            if (w && w.id === openRes.value) bidWindow = w;
+            const w = (await caller.bidWindows.getCurrentWindow()) as WindowDetails | null;
+            if (w?.id === openRes.value) bidWindow = w;
             else bidWindow = { id: openRes.value, acadTermId: "", round: "", window: 0 };
           } catch {
             bidWindow = { id: openRes.value, acadTermId: "", round: "", window: 0 };
@@ -123,12 +122,12 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
             : null;
           const match = windows?.find((w) => w.id === latestRes.value) ?? null;
           if (match) {
-            bidWindow = match as unknown as WindowDetails;
+            bidWindow = match;
           } else {
             try {
-              const w = (await caller.bidWindows.getCurrentWindow()) as unknown as WindowDetails | null;
+              const w = (await caller.bidWindows.getCurrentWindow()) as WindowDetails | null;
               bidWindow =
-                w && w.id === latestRes.value
+                w?.id === latestRes.value
                   ? w
                   : { id: latestRes.value, acadTermId: trimmedTermInput, round: "", window: 0 };
             } catch {
