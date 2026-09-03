@@ -18,50 +18,18 @@ function toSessionUser(u: NonNullable<Awaited<ReturnType<typeof db.users.findUni
 
 /**
  * Map the authenticated caller (from mcp-use oauthSupabaseProvider ctx.auth) to a
- * Prisma user. Email/password users have Users.id == Supabase auth.users.id; the
- * email fallback covers identity-scheme drift. Fail closed (undefined) otherwise.
- *
- * Security: the email fallback is only trusted when the token
- * asserts a verified email. Supabase JWTs per
- * https://supabase.com/docs/guides/auth/jwt-fields do NOT carry
- * `email_verified` / `email_confirmed_at` (and mcp-use's
- * `SupabaseOAuthProvider.getUserInfo()` does not surface it - it returns only
- * `userId/email/name/picture/role/aal/amr/session_id`). Other providers
- * (Auth0/WorkOS/Keycloak) do surface `email_verified`. To keep the fallback
- * fail-closed, we require an explicit verified signal (`email_verified === true`
- * or `emailVerified === true` or a non-empty `email_confirmed_at`) and reject
- * the fallback otherwise. This makes the email path unusable under Supabase
- * today (id-first path unchanged and remains the primary resolver) unless a
- * future provider/token starts forwarding the OIDC `email_verified` claim.
+ * Prisma user. Email/password users have Users.id == Supabase auth.users.id.
+ * Fail closed (undefined) otherwise — there is no email fallback because
+ * Supabase JWTs carry no verified-email claim (see SupabaseOAuthUser: only
+ * id/email/name/role/aal/amr/session_id), so an email match would be spoofable.
  */
 export async function resolveMcpUser(
-  auth: { user?: SupabaseOAuthUser } | { userId?: string; email?: string; email_verified?: boolean; emailVerified?: boolean; email_confirmed_at?: string | null },
+  auth: { user?: SupabaseOAuthUser } | null | undefined,
 ): Promise<SessionUser | undefined> {
-  if (!auth) return undefined;
-  // Prefer v2 shape: auth.user.id / .email
-  const v2 = (auth as { user?: SupabaseOAuthUser }).user;
-  if (v2?.id) {
-    const byId = await db.users.findUnique({ where: { id: v2.id } });
-    if (byId) return toSessionUser(byId);
-    // email fallback only if token asserts verified email (Supabase never sets it — see comment above)
-    // Supabase `email` is present but NOT verified; require explicit verified claim which Supabase never sends → id-first path remains primary.
-    // Keep fallback but require a verified signal; Document that under Supabase it will not fire.
-  }
-  // Legacy fallback for tests that pass {userId,email,...} — retain until all callers updated
-  const legacy = auth as { userId?: string; email?: string; email_verified?: boolean; emailVerified?: boolean; email_confirmed_at?: string | null };
-  if (legacy.userId) {
-    const byId = await db.users.findUnique({ where: { id: legacy.userId } });
-    if (byId) return toSessionUser(byId);
-  }
-  const verified =
-    legacy.email_verified === true ||
-    legacy.emailVerified === true ||
-    (typeof legacy.email_confirmed_at === "string" && legacy.email_confirmed_at.length > 0);
-  const email = v2?.email ?? legacy.email;
-  if (email && verified) {
-    const byEmail = await db.users.findUnique({ where: { email } });
-    if (byEmail) return toSessionUser(byEmail);
-  }
+  const user = auth?.user;
+  if (!user?.id) return undefined;
+  const byId = await db.users.findUnique({ where: { id: user.id } });
+  if (byId) return toSessionUser(byId);
   return undefined;
 }
 
@@ -90,9 +58,9 @@ async function resolveDevBypassUser(): Promise<SessionUser | undefined> {
   return user ? toSessionUser(user) : undefined;
 }
 
-/** Resolve auth and build a tRPC caller scoped to the user. Accepts both v2 RequestContext and legacy auth object for tests. */
+/** Resolve auth and build a tRPC caller scoped to the user. Accepts the v2 RequestContext (ctx.auth.user) or a bare auth object. */
 export async function buildToolContext(
-  ctxOrAuth: RequestContext<SupabaseOAuthUser, true> | { auth?: unknown } | { user?: SupabaseOAuthUser } | { userId?: string; email?: string; email_verified?: boolean; emailVerified?: boolean; email_confirmed_at?: string | null },
+  ctxOrAuth: RequestContext<SupabaseOAuthUser, true> | { auth?: { user?: SupabaseOAuthUser } } | { user?: SupabaseOAuthUser } | null | undefined,
 ): Promise<ToolContext | undefined> {
   const auth = (ctxOrAuth as { auth?: unknown })?.auth ?? ctxOrAuth;
   const user = (await resolveMcpUser(auth)) ?? (await resolveDevBypassUser());

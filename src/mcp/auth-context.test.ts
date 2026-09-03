@@ -113,29 +113,6 @@ describe("tool handler auth resolution", () => {
     expect(buildToolContext).toHaveBeenCalledWith({ auth: { user: { id: "supa-1", email: "a@x.com", amr: [] } } });
   });
 
-  // legacy userId still works via buildToolContext fallback
-  it("legacy userId shape still falls through to buildToolContext", async () => {
-    const handler = captureHandler();
-    buildToolContext.mockResolvedValueOnce({ user: { id: "u1" }, caller: {} });
-    toolRun.mockResolvedValueOnce({ content: [{ type: "text", text: "ok" }] });
-    await expect(
-      handler(
-        {},
-        {
-          auth: {
-            user: {
-              userId: "supa-1",
-              email: "a@x.com",
-              email_verified: true,
-            } as unknown as { userId: string; email: string },
-          },
-        },
-      ),
-    ).resolves.toMatchObject({ content: [{ type: "text", text: "ok" }] });
-    expect(buildToolContext).toHaveBeenCalledWith({
-      auth: { user: { userId: "supa-1", email: "a@x.com", email_verified: true } },
-    });
-  });
 });
 
 /**
