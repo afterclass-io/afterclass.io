@@ -64,7 +64,8 @@ const ReviewCardsView: React.FC = () => {
         borderRadius: c.radius,
         padding: 16,
         boxSizing: "border-box",
-        maxWidth: 480,
+        width: "100%",
+        maxWidth: "100%",
       }}
     >
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
