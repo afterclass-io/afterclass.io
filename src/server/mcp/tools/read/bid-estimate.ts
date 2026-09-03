@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { resolveOpenWindowIdOrError } from "../../current";
+import { parseBidWindowAlias, resolveLatestWindowIdOrError, resolveOpenWindowIdOrError } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const bidEstimateSchema = z.object({
@@ -14,6 +14,18 @@ const bidEstimateSchema = z.object({
     .describe(
       "Optional section, e.g. G1; omit to estimate all sections of the course",
     ),
+  acadTermId: z
+    .string()
+    .optional()
+    .describe(
+      "Optional academic term id; omit to use the open window's term. When no window is open, estimates fall back to the latest window for this term.",
+    ),
+  bidWindow: z
+    .string()
+    .optional()
+    .describe(
+      "Optional explicit bid window: a window id (e.g. 77) or an alias like r2aw3 / R2W3 / 'round 2 window 3'. Wins over the open/latest fallback.",
+    ),
 });
 
 export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
@@ -22,33 +34,113 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
     "Estimate bid prices for a course's sections for the upcoming bidding window. Provide a course code (e.g. COR-IS1702); optionally filter to a single section (e.g. G1). Returns per-section median and minimum clearing prices from the latest bid predictions, a suggested bid amount (median × safety multiplier for 70% confidence when available), and the current vacancy for the open window. If no bid window is currently open, returns a friendly message asking the user for the round and window. If the course or its sections are not found, explains what was tried. Self-contained: one call is the answer.",
   inputSchema: bidEstimateSchema,
   readOnly: true,
-  run: async ({ caller }, { courseCode, section }) => {
+  run: async ({ caller }, { courseCode, section, acadTermId: acadTermInput, bidWindow: bidWindowInput }) => {
     try {
       const trimmedCode = courseCode.trim();
       if (!trimmedCode) return errText("courseCode must not be empty");
 
-      const windowRes = await resolveOpenWindowIdOrError(caller);
-      if (!windowRes.ok) return errText(windowRes.errText);
-      const openWindowId = windowRes.value;
-
-      // Fetch the window details for term/round/window and vacancy lookup.
-      let bidWindow: {
+      // Fallback chain (read-only estimate path only): explicit window id >
+      // open window > latest window for the term (or latest overall).
+      type WindowDetails = {
         id: number;
         acadTermId: string;
         round: string;
         window: number;
-      } | null = null;
-      try {
-        const w = (await caller.bidWindows.getCurrentWindow()) as unknown as {
-          id: number;
-          acadTermId: string;
-          round: string;
-          window: number;
-        } | null;
-        if (w) bidWindow = w;
-      } catch {
-        // Non-fatal; we'll still have the id.
+      };
+      let bidWindow: WindowDetails | null = null;
+      let warning: string | undefined;
+      const trimmedWindowInput = bidWindowInput?.trim() ?? "";
+      const trimmedTermInput = acadTermInput?.trim() ?? "";
+      if (trimmedWindowInput) {
+        const asId = Number(trimmedWindowInput);
+        if (Number.isInteger(asId)) {
+          const windows = trimmedTermInput
+            ? await caller.bidWindows.getByAcadTerm({ acadTermId: trimmedTermInput })
+            : null;
+          const match = windows?.find((w) => w.id === asId) ?? null;
+          if (!match && windows) {
+            return errText(
+              `Bid window ${asId} not found in term ${trimmedTermInput}. Call get-bid-windows and let the user pick.`,
+            );
+          }
+          if (match) {
+            bidWindow = match as unknown as WindowDetails;
+          } else {
+            const current = (await caller.bidWindows.getCurrentWindow()) as unknown as WindowDetails | null;
+            if (!current || current.id !== asId) {
+              return errText(
+                `Bid window ${asId} not found. Call get-bid-windows and let the user pick.`,
+              );
+            }
+            bidWindow = current;
+          }
+        } else {
+          const alias = parseBidWindowAlias(trimmedWindowInput);
+          if (!alias) {
+            return errText(
+              `Could not parse bid window "${trimmedWindowInput}". Use a window id (e.g. 77) or an alias like r2aw3 / R2W3 / "round 2 window 3".`,
+            );
+          }
+          const termForAlias =
+            trimmedTermInput ||
+            (await caller.bidWindows.getCurrentWindow().catch(() => null))?.acadTermId;
+          if (!termForAlias) {
+            return errText(
+              "Could not resolve the academic term for that window alias. Ask the user which term to use, or call get-bid-windows and let the user pick.",
+            );
+          }
+          const windows = await caller.bidWindows.getByAcadTerm({ acadTermId: termForAlias });
+          const match =
+            windows.find(
+              (w) =>
+                String(w.round).toUpperCase() === alias.round && w.window === alias.window,
+            ) ?? null;
+          if (!match) {
+            return errText(
+              `No round ${alias.round} window ${alias.window} in term ${termForAlias}. Call get-bid-windows and let the user pick.`,
+            );
+          }
+          bidWindow = match as unknown as WindowDetails;
+        }
+      } else {
+        const openRes = await resolveOpenWindowIdOrError(caller);
+        if (openRes.ok) {
+          try {
+            const w = (await caller.bidWindows.getCurrentWindow()) as unknown as WindowDetails | null;
+            if (w && w.id === openRes.value) bidWindow = w;
+            else bidWindow = { id: openRes.value, acadTermId: "", round: "", window: 0 };
+          } catch {
+            bidWindow = { id: openRes.value, acadTermId: "", round: "", window: 0 };
+          }
+        } else {
+          const latestRes = await resolveLatestWindowIdOrError(
+            caller,
+            trimmedTermInput || undefined,
+          );
+          if (!latestRes.ok) return errText(latestRes.errText);
+          const windows = trimmedTermInput
+            ? await caller.bidWindows.getByAcadTerm({ acadTermId: trimmedTermInput })
+            : null;
+          const match = windows?.find((w) => w.id === latestRes.value) ?? null;
+          if (match) {
+            bidWindow = match as unknown as WindowDetails;
+          } else {
+            try {
+              const w = (await caller.bidWindows.getCurrentWindow()) as unknown as WindowDetails | null;
+              bidWindow =
+                w && w.id === latestRes.value
+                  ? w
+                  : { id: latestRes.value, acadTermId: trimmedTermInput, round: "", window: 0 };
+            } catch {
+              bidWindow = { id: latestRes.value, acadTermId: trimmedTermInput, round: "", window: 0 };
+            }
+          }
+          warning =
+            "No bid window is currently open — estimates use prior-window results; immediate-next-window only.";
+        }
       }
+      const openWindowId = bidWindow?.id;
+      if (openWindowId == null) return errText("Could not resolve a bid window for this estimate.");
 
       // Resolve course (canonical code/name)
       const course = (await caller.courses.getByCourseCode({
@@ -208,6 +300,7 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
         courseCode: course.code,
         courseName: course.name,
         bidWindow,
+        ...(warning ? { warning } : {}),
         estimates,
       });
     } catch (e) {
