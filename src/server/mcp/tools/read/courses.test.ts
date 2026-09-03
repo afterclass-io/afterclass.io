@@ -1,8 +1,24 @@
 import { describe, expect, it, vi } from "vitest";
+import type { Mock } from "vitest";
 import type { ToolContext } from "../../types";
 import type { SessionUser } from "@/server/auth/config";
 import { PUBLIC_COURSE_FIELDS } from "@/server/api/courses/constants";
 import { getClassesTool, getCourseTool, getProfessorTool, searchCoursesTool } from "./courses";
+
+// search-courses resolves string facultyId acronyms via db.faculties (see
+// faculties.ts); mock the store the same way account.test.ts does.
+const { facultiesFindMany } = vi.hoisted(() => ({
+  facultiesFindMany: vi.fn() as Mock,
+}));
+
+vi.mock("@/server/db", () => ({
+  db: { faculties: { findMany: facultiesFindMany } },
+}));
+
+const FACULTY_ROWS = [
+  { id: 1, acronym: "LKCSB" },
+  { id: 4, acronym: "SCIS" },
+];
 
 const fakeUser: SessionUser = {
   id: "u1",
@@ -104,6 +120,32 @@ describe("search-courses", () => {
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ searchCourses: fn }) };
     await searchCoursesTool.run(ctx, { acadTermId: "t1", query: "tech", facultyId: 4 });
     expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", query: "tech", facultyId: 4 });
+  });
+
+  it("resolves a faculty acronym (SCIS) to its numeric id", async () => {
+    facultiesFindMany.mockResolvedValue(FACULTY_ROWS);
+    const fn = vi.fn().mockResolvedValue([]);
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ searchCourses: fn }) };
+    const result = await searchCoursesTool.run(ctx, { acadTermId: "t1", query: "tech", facultyId: "SCIS" });
+    expect(result.isError).toBeFalsy();
+    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", query: "tech", facultyId: 4 });
+  });
+
+  it("resolves acronyms case-insensitively", async () => {
+    facultiesFindMany.mockResolvedValue(FACULTY_ROWS);
+    const fn = vi.fn().mockResolvedValue([]);
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ searchCourses: fn }) };
+    await searchCoursesTool.run(ctx, { acadTermId: "t1", query: "tech", facultyId: "scis" });
+    expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", query: "tech", facultyId: 4 });
+  });
+
+  it("returns a friendly error for an unknown faculty acronym without calling the procedure", async () => {
+    facultiesFindMany.mockResolvedValue(FACULTY_ROWS);
+    const fn = vi.fn().mockResolvedValue([]);
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ searchCourses: fn }) };
+    const result = await searchCoursesTool.run(ctx, { acadTermId: "t1", query: "tech", facultyId: "NOPE" });
+    expect(result.isError).toBe(true);
+    expect(fn).not.toHaveBeenCalled();
   });
 
   it("description mentions description/courseArea matching", () => {

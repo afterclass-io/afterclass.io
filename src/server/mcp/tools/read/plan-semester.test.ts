@@ -1,8 +1,24 @@
 import { describe, expect, it, vi } from "vitest";
+import type { Mock } from "vitest";
 
 import type { ToolContext } from "../../types";
 import type { SessionUser } from "@/server/auth/config";
 import { planSemesterTool } from "./plan-semester";
+
+// plan-semester resolves string facultyId acronyms via db.faculties (see
+// faculties.ts); mock the store the same way account.test.ts does.
+const { facultiesFindMany } = vi.hoisted(() => ({
+  facultiesFindMany: vi.fn() as Mock,
+}));
+
+vi.mock("@/server/db", () => ({
+  db: { faculties: { findMany: facultiesFindMany } },
+}));
+
+const FACULTY_ROWS = [
+  { id: 1, acronym: "LKCSB" },
+  { id: 4, acronym: "SCIS" },
+];
 
 const fakeUser: SessionUser = {
   id: "u1",
@@ -73,5 +89,33 @@ describe("plan-semester", () => {
     const res = await planSemesterTool.run(ctx, { limit: 10 });
 
     expect(res.isError).toBe(true);
+  });
+
+  it("resolves a faculty acronym (SCIS) to its numeric id", async () => {
+    facultiesFindMany.mockResolvedValue(FACULTY_ROWS);
+    const fn = vi.fn().mockResolvedValue(plan);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsPlanSemester: fn }),
+    };
+
+    const res = await planSemesterTool.run(ctx, { limit: 10, facultyId: "SCIS" });
+
+    expect(res.isError).toBeFalsy();
+    expect(fn).toHaveBeenCalledWith({ limit: 10, facultyId: 4 });
+  });
+
+  it("returns a friendly error for an unknown faculty acronym without calling the procedure", async () => {
+    facultiesFindMany.mockResolvedValue(FACULTY_ROWS);
+    const fn = vi.fn().mockResolvedValue(plan);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsPlanSemester: fn }),
+    };
+
+    const res = await planSemesterTool.run(ctx, { limit: 10, facultyId: "NOPE" });
+
+    expect(res.isError).toBe(true);
+    expect(fn).not.toHaveBeenCalled();
   });
 });

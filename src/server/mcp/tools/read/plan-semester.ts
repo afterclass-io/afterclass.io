@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { resolveFacultyId } from "./faculties";
 
 const planSemesterSchema = z.object({
   targetTermId: z
@@ -10,10 +11,9 @@ const planSemesterSchema = z.object({
       "Academic term id from list-acad-terms; defaults to the next term after the current one",
     ),
   facultyId: z
-    .number()
-    .int()
+    .union([z.number().int(), z.string()])
     .optional()
-    .describe("Faculty id; defaults to the user's faculty"),
+    .describe("Faculty id or acronym (e.g. 4 or SCIS; obtain via list-faculties); defaults to the user's faculty"),
   limit: z.number().int().min(1).max(20).default(10),
 });
 
@@ -25,7 +25,15 @@ export const planSemesterTool: McpTool<typeof planSemesterSchema> = {
   readOnly: true,
   run: async ({ caller }, input) => {
     try {
-      return jsonText(await caller.roadmaps.planSemester(input));
+      // Students say "SCIS", not numeric ids: resolve acronyms via the
+      // faculties table (numbers pass through untouched).
+      let facultyId = input.facultyId;
+      if (typeof facultyId === "string") {
+        const resolved = await resolveFacultyId(facultyId);
+        if (!resolved.ok) return errText(resolved.errText);
+        facultyId = resolved.value;
+      }
+      return jsonText(await caller.roadmaps.planSemester({ ...input, facultyId }));
     } catch (e) {
       return errText(errorMessage(e));
     }
