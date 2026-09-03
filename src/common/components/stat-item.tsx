@@ -77,9 +77,9 @@ const StatItemSkeleton = ({
         )}
       >
         {layout === "horizontal" ? (
-          <Skeleton className="h-[32px] w-[54.4px]" />
+          <Skeleton className="h-9 w-[54.4px]" />
         ) : (
-          <Skeleton className="h-[28px] w-[130px]" />
+          <Skeleton className="h-8 w-[130px]" />
         )}
       </div>
     </div>

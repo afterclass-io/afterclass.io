@@ -10,3 +10,9 @@ export const edgeConfigSchema = z.object({
 });
 
 export type EdgeConfig = z.infer<typeof edgeConfigSchema>;
+
+/**
+ * Cache tag for the cached edge-config read (see EdgeConfigProvider).
+ * `POST /api/revalidate` invalidates this tag on demand.
+ */
+export const EDGE_CONFIG_CACHE_TAG = "edge-config";

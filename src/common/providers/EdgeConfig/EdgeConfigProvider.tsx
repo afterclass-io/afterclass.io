@@ -1,12 +1,10 @@
+import { unstable_cache } from "next/cache";
 import { getAll } from "@vercel/edge-config";
-import { edgeConfigSchema } from "@/server/ecfg/config";
+import { edgeConfigSchema, EDGE_CONFIG_CACHE_TAG } from "@/server/ecfg/config";
 import { EdgeConfigContextProvider } from "./EdgeConfigContextProvider";
 
 async function fetchAndValidateEdgeConfig() {
   try {
-    // * FUTURE NOTE *
-    // if edge requests count nears the threshold,
-    // we should consider caching the edge config & revalidate every 24h
     const rawConfig = await getAll();
     const result = edgeConfigSchema.safeParse(rawConfig);
 
@@ -30,12 +28,21 @@ async function fetchAndValidateEdgeConfig() {
   }
 }
 
+// Cached for 24h; tagged `EDGE_CONFIG_CACHE_TAG` so an operator can push a
+// config change and invalidate on demand via `POST /api/revalidate` without
+// deploying (see src/server/ecfg/README.md).
+const getCachedEdgeConfig = unstable_cache(
+  fetchAndValidateEdgeConfig,
+  ["edge-config", "get-all"],
+  { revalidate: 86400, tags: [EDGE_CONFIG_CACHE_TAG] },
+);
+
 async function getFallbackConfig() {
   return (await import("@/server/ecfg/config.json")).default;
 }
 
 export async function getEdgeConfig() {
-  return (await fetchAndValidateEdgeConfig()) ?? (await getFallbackConfig());
+  return (await getCachedEdgeConfig()) ?? (await getFallbackConfig());
 }
 
 export async function EdgeConfigProvider({

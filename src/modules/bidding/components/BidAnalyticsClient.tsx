@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import {
   Card,
   CardContent,
@@ -8,11 +9,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/common/components/card";
-import { BidChart, sortChartData } from "@/modules/bidding/components/BidChart";
+import { Skeleton } from "@/common/components/skeleton";
+import { sortChartData } from "@/modules/bidding/utils/sort-chart-data";
 import { BidTable } from "@/modules/bidding/components/BidTable";
 import { TagToggleGroup } from "@/common/components/tag-toggle-group";
 import { DisclosureDisclaimer } from "@/modules/bidding/components/DisclosureDisclaimer";
 import { compareRounds } from "@/modules/bidding/utils/round-order";
+
+// #515: recharts (~180 KB) loads only when the chart is opened. Below the
+// fold on the analytics page; the aspect-video skeleton matches the chart's
+// 16:9 box so the swap does not shift layout.
+const BidChart = dynamic(
+  () => import("@/modules/bidding/components/BidChart").then((m) => m.BidChart),
+  { ssr: false, loading: () => <Skeleton className="aspect-video w-full" /> },
+);
 
 const EMPTY_ARRAY: never[] = [];
 

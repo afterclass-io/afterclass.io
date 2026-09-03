@@ -48,6 +48,10 @@
   --color-error-foreground: var(--error-foreground);
 }
 
+@theme {
+  --breakpoint-laptop: 1250px;
+}
+
 :root {
   color-scheme: light;
   --radius: 0.75rem;

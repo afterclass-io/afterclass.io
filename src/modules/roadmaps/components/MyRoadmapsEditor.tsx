@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAtom } from "jotai";
+import dynamic from "next/dynamic";
 import { toast } from "sonner";
 import {
   GitBranch,
@@ -26,7 +27,7 @@ import {
 } from "@/modules/roadmaps/atoms/roadmap";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
 import { RoadmapList } from "@/modules/roadmaps/components/RoadmapList";
-import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
+import { RoadmapTimelineSkeleton } from "@/modules/roadmaps/components/RoadmapTimelineSkeleton";
 import { CourseSearchSidebar } from "@/modules/roadmaps/components/CourseSearchSidebar";
 import { TermTimetableLink } from "@/modules/roadmaps/components/TermTimetableLink";
 import { ShareDialog } from "@/modules/sharing/components/ShareDialog";
@@ -567,6 +568,26 @@ export function MyRoadmapsEditor() {
       );
     },
     [acadTermsData],
+  );
+
+  // #515: @xyflow/react loads only when the timeline view opens (default view
+  // is the grid, so the timeline is never above the fold). useMemo keeps a
+  // stable component identity across re-renders so the loaded flow is not
+  // remounted; entries change only with the selected roadmap's data, when a
+  // remount is correct anyway.
+  const RoadmapTimeline = useMemo(
+    () =>
+      dynamic(
+        () =>
+          import("@/modules/roadmaps/components/RoadmapTimeline").then(
+            (m) => m.RoadmapTimeline,
+          ),
+        {
+          ssr: false,
+          loading: () => <RoadmapTimelineSkeleton entries={entries} />,
+        },
+      ),
+    [entries],
   );
 
   // ---- Loading state ----

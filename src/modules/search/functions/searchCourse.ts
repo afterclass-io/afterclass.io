@@ -1,6 +1,5 @@
 import type { Universities, Courses } from "@/generated/prisma/client";
 import { db } from "@/server/db";
-import { api } from "@/common/tools/trpc/server";
 import { auth } from "@/server/auth";
 import { processSearchQuery } from "./processSearchQuery";
 
@@ -25,39 +24,59 @@ export async function searchCourse(
   // https://github.com/prisma/prisma-client-js/issues/727#issuecomment-650096790
   const processedQuery = processSearchQuery(query);
 
-  const queryResult: QueryCourseResult[] = await db.$queryRaw`
+  const session = await auth();
+  if (!session) {
+    // unauthenticated: no counts (previously the count lookups were skipped)
+    const queryResult: QueryCourseResult[] = await db.$queryRaw`
+      SELECT
+        u.abbrv as "uniAbbrv",
+        c.code as "courseCode",
+        c.name as "courseName"
+      FROM
+        courses c
+      JOIN
+        universities u
+      ON
+        c.belong_to_university = u.id
+      WHERE
+        to_tsvector(c.code || ' ' || c.name)
+        @@ to_tsquery(${processedQuery + ":*"})
+      LIMIT ${limit};
+    `;
+    return queryResult.map((r) => ({ ...r, profCount: 0, reviewCount: 0 }));
+  }
+
+  // counts folded into the primary query as grouped aggregates
+  return db.$queryRaw<SearchCourseResult[]>`
     SELECT
       u.abbrv as "uniAbbrv",
       c.code as "courseCode",
-      c.name as "courseName"
+      c.name as "courseName",
+      COUNT(DISTINCT p.id)::int as "profCount",
+      COUNT(DISTINCT r.id)::int as "reviewCount"
     FROM
       courses c
     JOIN
       universities u
     ON
       c.belong_to_university = u.id
+    LEFT JOIN
+      classes cl
+    ON
+      cl.course_id = c.id
+    LEFT JOIN
+      professors p
+    ON
+      p.id = cl.professor_id
+    LEFT JOIN
+      reviews r
+    ON
+      r.reviewed_course_id = c.id
     WHERE
       to_tsvector(c.code || ' ' || c.name)
       @@ to_tsquery(${processedQuery + ":*"})
+    GROUP BY
+      u.abbrv, c.code, c.name
     LIMIT ${limit};
   `;
-
-  const session = await auth();
-  if (!session) {
-    return queryResult.map((r) => ({ ...r, profCount: 0, reviewCount: 0 }));
-  }
-
-  return Promise.all(
-    queryResult.map(async (r) => {
-      const [profCount, reviewCount] = await Promise.all([
-        api.professors.countByCourseCode({ courseCode: r.courseCode }),
-        api.reviews.count({ courseCode: r.courseCode }),
-      ]);
-      return {
-        ...r,
-        profCount,
-        reviewCount,
-      };
-    }),
-  );
 }

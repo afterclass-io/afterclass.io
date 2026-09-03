@@ -2,7 +2,9 @@ import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { api } from "@/common/tools/trpc/server";
+import { api, HydrateClient } from "@/common/tools/trpc/server";
+import { auth } from "@/server/auth";
+import { getCachedCourse } from "@/app/(school)/(reviews)/getCachedCourse";
 import { CourseStructuredData, buildEntityMetadata } from "@/modules/seo";
 import {
   ReviewSection,
@@ -13,12 +15,12 @@ import {
 } from "@/modules/reviews/components/ReviewSection";
 import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader";
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
+import {
+  getReviewFeedParams,
+  getReviewFeedProcedure,
+} from "@/modules/reviews/functions/reviewFeed";
 
 // Exactly one slot may own metadata for this route (@reviews). Metadata items merge in traversal order and the last writer wins; splitting tags across multiple slots causes non-deterministic overriding.
-
-const getCachedCourse = cache(async (code: string) => {
-  return api.courses.getByCourseCode({ code });
-});
 
 const getCachedCourseMetadata = cache(async (code: string) => {
   return api.reviews.getMetadataForCourse({ code });
@@ -51,7 +53,11 @@ export async function generateMetadata(props: {
 
 export default async function Course(props: {
   params: Promise<{ code: string }>;
-  searchParams?: Promise<{ professor?: string | string[] }>;
+  searchParams?: Promise<{
+    professor?: string | string[];
+    filter?: string | string[];
+    sort?: string | string[];
+  }>;
 }) {
   const searchParams = await props.searchParams;
   const params = await props.params;
@@ -68,8 +74,22 @@ export default async function Course(props: {
       : [searchParams.professor]
     : [];
 
+  // Resolve the session on the server and prefetch the procedure the client
+  // will actually use for this session state, so hydration hits the same
+  // query key and signed-in students fetch once, not twice (#516).
+  const session = await auth();
+  const isAuthed = !!session;
+  const { filterFor, sortBy } = getReviewFeedParams(searchParams);
+  const procedure = getReviewFeedProcedure("course", isAuthed);
+  await api.reviews[procedure].prefetchInfinite({
+    code: courseCode,
+    slugs: professorSlugs.length > 0 ? professorSlugs : undefined,
+    filterFor,
+    sortBy,
+  });
+
   return (
-    <>
+    <HydrateClient>
       <CourseStructuredData
         courseCode={course.code}
         courseName={course.name}
@@ -87,10 +107,11 @@ export default async function Course(props: {
             variant="course"
             code={courseCode}
             slugs={professorSlugs.length > 0 ? professorSlugs : undefined}
+            isAuthed={isAuthed}
           />
         </ReviewSectionList>
       </ReviewSection>
       <ReviewModalFocused variant="course" />
-    </>
+    </HydrateClient>
   );
 }

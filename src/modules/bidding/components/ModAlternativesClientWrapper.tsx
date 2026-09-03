@@ -6,7 +6,8 @@
  * Not imported anywhere. Remove after the commit-chunking migration is complete.
  */
 import { api } from "@/common/tools/trpc/server";
-import { BidChart } from "@/modules/bidding/components/BidChart";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/common/components/skeleton";
 
 import {
   Card,
@@ -20,6 +21,14 @@ import { notFound } from "next/navigation";
 import { MultiplierType, PredictionType } from "@/generated/prisma/enums";
 import { Info } from "lucide-react";
 import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
+
+// #515: dynamic import at every BidChart call site. No ssr:false here — this
+// is a server component, where next/dynamic forbids it. The file is orphaned
+// (scheduled for deletion), so it contributes nothing to any bundle.
+const BidChart = dynamic(
+  () => import("@/modules/bidding/components/BidChart").then((m) => m.BidChart),
+  { loading: () => <Skeleton className="aspect-video w-full" /> },
+);
 
 export default async function BiddingHistoryPage({
   searchParams,

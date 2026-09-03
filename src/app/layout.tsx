@@ -18,6 +18,7 @@ import ProgressProvider from "@/common/providers/ProgressProvider";
 import { GlobalProgressBar } from "@/modules/home/components/GlobalProgressBar";
 import { Toaster } from "@/common/components/sonner";
 import { UmamiIdentityTracker } from "@/modules/home/components/UmamiIdentityTracker";
+import { WebVitalsReporter } from "@/common/components/web-vitals-reporter";
 
 const appName = "AfterClass";
 const appDesc = [
@@ -93,6 +94,7 @@ export default function RootLayout({
                       <CoreLayout>{children}</CoreLayout>
                       <Toaster />
                       <UmamiIdentityTracker />
+                      <WebVitalsReporter />
                     </ThemeProvider>
                   </JotaiProvider>
                 </EdgeConfigProvider>

@@ -8,7 +8,15 @@ export const ReviewItemSkeleton = () => {
         <Skeleton className="h-[24px] w-[200px]" />
       </div>
 
-      <div className="flex flex-col gap-1">
+      {/* Body mirrors ReviewBody: rating row (5 × 16px hearts + gaps = w-24
+          h-4) + label row (24px) + 3-line clamped text — measured against the
+          rendered authenticated ReviewItem (#519). */}
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-4 w-24" />
+        <div className="flex gap-x-4">
+          <Skeleton className="h-[24px] w-[64px]" />
+          <Skeleton className="h-[24px] w-[96px]" />
+        </div>
         <div className="text-accent-foreground line-clamp-5 wrap-anywhere md:line-clamp-3 md:text-sm">
           <Skeleton aria-hidden tabIndex={-1}>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
@@ -20,6 +28,16 @@ export const ReviewItemSkeleton = () => {
             culpa qui officia deserunt mollit anim id est laborum
           </Skeleton>
         </div>
+      </div>
+
+      {/* Footer mirrors ReviewFooter vote row (~36px); the reactions group
+          (~44px more) only renders for reaction-enabled feeds, so it is the
+          residual delta for those users. */}
+      <div className="flex gap-4">
+        <Skeleton className="h-9 w-24 rounded-full" />
+        <Skeleton className="size-9 rounded-full" />
+        <Skeleton className="size-9 rounded-full" />
+        <Skeleton className="h-9 w-16" />
       </div>
     </div>
   );

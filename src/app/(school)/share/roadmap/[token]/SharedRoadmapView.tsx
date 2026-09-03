@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import {
@@ -15,7 +16,7 @@ import {
 } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
-import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
+import { RoadmapTimelineSkeleton } from "@/modules/roadmaps/components/RoadmapTimelineSkeleton";
 import { Button } from "@/common/components/button";
 import { PageTitle } from "@/common/components/page-title";
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
@@ -80,6 +81,26 @@ export function SharedRoadmapView({
   const loginHref = `/account/auth/login?callbackUrl=${encodeURIComponent(
     `/share/roadmap/${token}`,
   )}`;
+
+  // #515: @xyflow/react loads only when the timeline view opens (default view
+  // is the grid, so the timeline is never above the fold). useMemo keeps a
+  // stable component identity across re-renders so the loaded flow is not
+  // remounted; entries change only with the route's data, when a remount is
+  // correct anyway.
+  const RoadmapTimeline = useMemo(
+    () =>
+      dynamic(
+        () =>
+          import("@/modules/roadmaps/components/RoadmapTimeline").then(
+            (m) => m.RoadmapTimeline,
+          ),
+        {
+          ssr: false,
+          loading: () => <RoadmapTimelineSkeleton entries={entries} />,
+        },
+      ),
+    [entries],
+  );
 
   return (
     <div className="flex flex-col gap-6">

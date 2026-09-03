@@ -1,21 +1,24 @@
 "use client";
-import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { InView } from "react-intersection-observer";
-import { z } from "zod";
 
 import { api } from "@/common/tools/trpc/react";
 import { AfterclassIcon } from "@/common/components/icons";
 import { ProgressLink } from "@/common/components/progress-link";
 
-import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
+import type { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
+import { getReviewFeedParams } from "@/modules/reviews/functions/reviewFeed";
 import { ReviewItem, ReviewItemSkeleton } from "../ReviewItem";
 import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
 import { Separator } from "@/common/components/separator";
 
 type BaseReviewItemLoaderProps = {
   variant: "home" | "course" | "professor";
+  // Resolved server-side: the feed procedure (and lock state) must match what
+  // the server prefetched for this session, not what the client re-derives
+  // while `useSession` is still loading (#516).
+  isAuthed: boolean;
 };
 
 export type ReviewItemLoaderHomeProps = BaseReviewItemLoaderProps & {
@@ -39,6 +42,57 @@ export type ReviewItemLoaderProps =
   | ReviewItemLoaderCourseProps
   | ReviewItemLoaderProfessorProps;
 
+// Custom hook (module scope, per rules-of-hooks): the feed procedure depends
+// on the variant and the server-resolved auth state. `isAuthed` comes from a
+// prop, so the hook keeps the same query key across session resolution and
+// never re-fetches under a cold protected key (#516).
+const useReviewFeedQuery = (
+  props: ReviewItemLoaderProps,
+  filterFor: ReviewsFilterFor,
+  sortBy: ReviewsSortBy,
+) => {
+  switch (props.variant) {
+    case "course": {
+      const { code, slugs } = props;
+      const apiFn = props.isAuthed
+        ? api.reviews.getByCourseCodeProtected
+        : api.reviews.getByCourseCode;
+      return apiFn.useSuspenseInfiniteQuery(
+        { code, slugs, filterFor, sortBy },
+        {
+          getNextPageParam: (lastPage: { nextCursor?: string }) =>
+            lastPage.nextCursor,
+        },
+      );
+    }
+    case "professor": {
+      const { slug, courseCodes } = props;
+      const apiFn = props.isAuthed
+        ? api.reviews.getByProfSlugProtected
+        : api.reviews.getByProfSlug;
+      return apiFn.useSuspenseInfiniteQuery(
+        { slug, courseCodes, filterFor, sortBy },
+        {
+          getNextPageParam: (lastPage: { nextCursor?: string }) =>
+            lastPage.nextCursor,
+        },
+      );
+    }
+    default: {
+      const apiFn = props.isAuthed
+        ? api.reviews.getAllProtected
+        : api.reviews.getAll;
+      return apiFn.useSuspenseInfiniteQuery(
+        { filterFor, sortBy },
+        {
+          getNextPageParam: (lastPage: { nextCursor?: string }) =>
+            lastPage.nextCursor,
+        },
+      );
+    }
+  }
+};
+
 const NoReviewCtaNote = () => (
   <>
     <FullWidthEnforcer />
@@ -61,75 +115,14 @@ const NoReviewCtaNote = () => (
 );
 
 export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  // prettier-ignore
-  const filterFor = z.enum(ReviewsFilterFor)
-                    .safeParse(searchParams?.get("filter"))
-                    ?.data 
-                  ?? ReviewsFilterFor.ALL;
+  const { filterFor, sortBy } = getReviewFeedParams(searchParams);
 
-  // prettier-ignore
-  const sortBy = z.enum(ReviewsSortBy)
-                  .safeParse(searchParams?.get("sort"))
-                    ?.data
-                ?? ReviewsSortBy.LATEST;
-
-  const getInfiniteQuery = () => {
-    switch (props.variant) {
-      case "course": {
-        const { code, slugs } = props;
-        const apiFn = session
-          ? api.reviews.getByCourseCodeProtected
-          : api.reviews.getByCourseCode;
-        return apiFn.useSuspenseInfiniteQuery(
-          { code, slugs, filterFor, sortBy },
-          {
-            getNextPageParam: (lastPage: { nextCursor?: string }) =>
-              lastPage.nextCursor,
-          },
-        );
-      }
-      case "professor": {
-        const { slug, courseCodes } = props;
-        const apiFn = session
-          ? api.reviews.getByProfSlugProtected
-          : api.reviews.getByProfSlug;
-        return apiFn.useSuspenseInfiniteQuery(
-          { slug, courseCodes, filterFor, sortBy },
-          {
-            getNextPageParam: (lastPage: { nextCursor?: string }) =>
-              lastPage.nextCursor,
-          },
-        );
-      }
-      default: {
-        const apiFn = session
-          ? api.reviews.getAllProtected
-          : api.reviews.getAll;
-        return apiFn.useSuspenseInfiniteQuery(
-          { filterFor, sortBy },
-          {
-            getNextPageParam: (lastPage: { nextCursor?: string }) =>
-              lastPage.nextCursor,
-          },
-        );
-      }
-    }
-  };
-
-  const [{ pages }, reviewQuery] = getInfiniteQuery();
-  const { fetchNextPage, hasNextPage, isPending, isRefetching } = reviewQuery;
-  // reviewQuery is a tRPC infinite-query result, recreated on every render;
-  // we only want to refetch when the search params change. refetch is a
-  // stable React Query function, so `reviewQuery` is intentionally excluded.
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    reviewQuery.refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  const [{ pages }, reviewQuery] = useReviewFeedQuery(props, filterFor, sortBy);
+  const { fetchNextPage, hasNextPage, isPending } = reviewQuery;
 
   const reviews = pages.flatMap((page) => page.items);
 
@@ -137,7 +130,11 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
     return <NoReviewCtaNote />;
   }
 
-  if (status === "loading" || isPending || isRefetching) {
+  // Skeletons only while the session round trip is pending or the query has
+  // no data yet — never while refetching, or a background refetch collapses
+  // the scrolled feed. Filter/sort changes are already part of the query key,
+  // so the query library refetches on its own; no effect needed (#516).
+  if (status === "loading" || isPending) {
     return (
       <>
         <Separator />
@@ -162,7 +159,7 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
             key={review.id}
             variant={props.variant}
             review={review}
-            isLocked={!session}
+            isLocked={!props.isAuthed}
             seeMore={pathname === "/"}
           />,
           <Separator key={`hr-${review.id}`} />,

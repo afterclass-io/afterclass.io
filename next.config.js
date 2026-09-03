@@ -13,6 +13,42 @@ const config = withSentryConfig(
   {
     reactStrictMode: true,
 
+    images: {
+      // Serve AVIF/WebP when the client supports them
+      formats: ["image/avif", "image/webp"],
+      // Precondition for serving Google account avatars (user.photoUrl) via next/image (#514)
+      remotePatterns: [
+        {
+          protocol: "https",
+          hostname: "lh3.googleusercontent.com",
+        },
+      ],
+    },
+
+    experimental: {
+      // Tree-shake large packages without touching application code (#514)
+      optimizePackageImports: [
+        "lucide-react",
+        "date-fns",
+        "recharts",
+        "@xyflow/react",
+        "@dnd-kit/core",
+        "@dnd-kit/sortable",
+        "@radix-ui/react-dialog",
+        "rc-slider",
+        "driver.js",
+        "cmdk",
+        "@number-flow/react",
+      ],
+    },
+
+    compiler: {
+      // Drop console statements from production builds, keep errors and warnings (#514)
+      removeConsole: {
+        exclude: ["error", "warn"],
+      },
+    },
+
     /**
      * If you have `experimental: { appDir: true }` set, then you must comment the below `i18n` config
      * out.
@@ -62,19 +98,7 @@ const config = withSentryConfig(
         },
       ];
     },
-    async headers() {
-      return [
-        {
-          source: "/:path*",
-          headers: [
-            {
-              key: "Document-Policy",
-              value: "js-profiling",
-            },
-          ],
-        },
-      ];
-    },
+    // Document-Policy: js-profiling header removed with browserProfilingIntegration (#505).
   },
 
   // Injected content via Sentry wizard below

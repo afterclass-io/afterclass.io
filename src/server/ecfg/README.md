@@ -19,3 +19,16 @@ why use Vercel Edge Config?
 3. to validate the json against the zod schema, run `bun run ecfg:test`
 4. import the zod schema and use it as required
 5. commit & push the changes
+
+### Cache Invalidation
+
+The app caches the fetched edge config for 24h (`unstable_cache`, tag `edge-config`). After pushing a
+change to the remote config, invalidate the cache without deploying:
+
+```sh
+curl -X POST https://<site>/api/revalidate \
+  -H "x-revalidate-secret: $REVALIDATE_SECRET"
+```
+
+`REVALIDATE_SECRET` is a Vercel environment variable; requests without a matching
+`x-revalidate-secret` header are rejected with 401.

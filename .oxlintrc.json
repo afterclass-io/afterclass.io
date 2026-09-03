@@ -145,6 +145,7 @@
         "scripts/**",
         "sentry.*.config.ts",
         "src/instrumentation.ts",
+        "instrumentation-client.ts",
         "prisma/seed.ts",
         "src/common/tools/trpc/react.tsx",
         "src/server/api/trpc.ts",

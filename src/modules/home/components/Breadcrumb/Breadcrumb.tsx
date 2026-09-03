@@ -83,17 +83,6 @@ export const HomeBreadcrumb = (
   const path = usePathname();
   const pathSegments = (path ?? "").split("/").filter(Boolean);
 
-  // Hooks must be called unconditionally — always register both queries,
-  // but only enable the one matching the current route.
-  const profQuery = api.professors.getBySlug.useQuery(
-    { slug: pathSegments[1] ?? "" },
-    { enabled: pathSegments[0] === "professor" },
-  );
-  const courseQuery = api.courses.getByCourseCode.useQuery(
-    { code: pathSegments[1] ?? "" },
-    { enabled: pathSegments[0] === "course" },
-  );
-
   const elements = [HOME_BREADCRUMB];
   let isSuccess = false;
 
@@ -122,10 +111,11 @@ export const HomeBreadcrumb = (
     }
 
     case "professor": {
-      if (profQuery.isSuccess && profQuery.data) {
+      const slug = pathSegments[1];
+      if (slug) {
         elements.push({
-          label: `Prof. ${profQuery.data.name}`,
-          href: `/professor/${profQuery.data.slug}`,
+          label: `Prof. ${slug}`,
+          href: `/professor/${slug}`,
         });
         isSuccess = true;
       }
@@ -133,10 +123,11 @@ export const HomeBreadcrumb = (
     }
 
     case "course": {
-      if (courseQuery.isSuccess && courseQuery.data) {
+      const code = pathSegments[1]?.toUpperCase();
+      if (code) {
         elements.push({
-          label: `${courseQuery.data.code} ${courseQuery.data.name}`,
-          href: `/course/${courseQuery.data.code}`,
+          label: code,
+          href: `/course/${code}`,
         });
         isSuccess = true;
       }

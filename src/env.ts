@@ -29,6 +29,10 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string()
         : z.string().optional(),
+    // Guards POST /api/revalidate (on-demand invalidation of the cached
+    // edge-config read). Optional: when unset the endpoint rejects all
+    // requests with 401.
+    REVALIDATE_SECRET: z.string().optional(),
     // VERCEL_URL is automatically set by Vercel
     // as system environment variable. doesn't include `https`
     // https://vercel.com/docs/projects/environment-variables/system-environment-variables
@@ -91,6 +95,7 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     VERCEL_ENV: process.env.VERCEL_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    REVALIDATE_SECRET: process.env.REVALIDATE_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? process.env.VERCEL_URL,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,

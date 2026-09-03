@@ -95,17 +95,37 @@ describe("searchCourse", () => {
     expect(m.reviewsCount).not.toHaveBeenCalled();
   });
 
-  it("enriches each row with prof and review counts when authenticated", async () => {
-    m.queryRaw.mockResolvedValue([rows[0]]);
+  it("returns prof and review counts from the primary aggregate query when authenticated", async () => {
+    m.queryRaw.mockResolvedValue([
+      { ...rows[0], profCount: 3, reviewCount: 7 },
+      { ...rows[1], profCount: 1, reviewCount: 2 },
+    ]);
     m.auth.mockResolvedValue({ user: { id: "u1" } });
-    m.countByCourseCode.mockResolvedValue(3);
-    m.reviewsCount.mockResolvedValue(7);
 
     const result = await searchCourse("python");
 
-    expect(result).toEqual([{ ...rows[0], profCount: 3, reviewCount: 7 }]);
-    expect(m.countByCourseCode).toHaveBeenCalledWith({ courseCode: "IS111" });
-    expect(m.reviewsCount).toHaveBeenCalledWith({ courseCode: "IS111" });
+    expect(result).toEqual([
+      { ...rows[0], profCount: 3, reviewCount: 7 },
+      { ...rows[1], profCount: 1, reviewCount: 2 },
+    ]);
+    // counts come from the single raw query — the per-row lookups are gone
+    expect(m.queryRaw).toHaveBeenCalledTimes(1);
+    expect(m.countByCourseCode).not.toHaveBeenCalled();
+    expect(m.reviewsCount).not.toHaveBeenCalled();
+  });
+
+  it("folds distinct counts into the primary query with LEFT JOINs and GROUP BY", async () => {
+    m.queryRaw.mockResolvedValue([]);
+    m.auth.mockResolvedValue({ user: { id: "u1" } });
+
+    await searchCourse("python");
+
+    const sql = ((m.queryRaw.mock.calls[0] as unknown[])[0] as string[]).join(
+      " ",
+    );
+    expect(sql).toContain("COUNT(DISTINCT");
+    expect(sql).toContain("LEFT JOIN");
+    expect(sql).toContain("GROUP BY");
   });
 });
 
@@ -138,16 +158,36 @@ describe("searchProf", () => {
     expect(m.countByProfSlug).not.toHaveBeenCalled();
   });
 
-  it("enriches each row with course and review counts when authenticated", async () => {
-    m.queryRaw.mockResolvedValue([rows[0]]);
+  it("returns course and review counts from the primary aggregate query when authenticated", async () => {
+    m.queryRaw.mockResolvedValue([
+      { ...rows[0], courseCount: 4, reviewCount: 9 },
+      { ...rows[1], courseCount: 2, reviewCount: 5 },
+    ]);
     m.auth.mockResolvedValue({ user: { id: "u1" } });
-    m.countByProfSlug.mockResolvedValue(4);
-    m.reviewsCount.mockResolvedValue(9);
 
     const result = await searchProf("ada");
 
-    expect(result).toEqual([{ ...rows[0], courseCount: 4, reviewCount: 9 }]);
-    expect(m.countByProfSlug).toHaveBeenCalledWith({ slug: "ada-lovelace" });
-    expect(m.reviewsCount).toHaveBeenCalledWith({ profSlug: "ada-lovelace" });
+    expect(result).toEqual([
+      { ...rows[0], courseCount: 4, reviewCount: 9 },
+      { ...rows[1], courseCount: 2, reviewCount: 5 },
+    ]);
+    // counts come from the single raw query — the per-row lookups are gone
+    expect(m.queryRaw).toHaveBeenCalledTimes(1);
+    expect(m.countByProfSlug).not.toHaveBeenCalled();
+    expect(m.reviewsCount).not.toHaveBeenCalled();
+  });
+
+  it("folds distinct counts into the primary query with LEFT JOINs and GROUP BY", async () => {
+    m.queryRaw.mockResolvedValue([]);
+    m.auth.mockResolvedValue({ user: { id: "u1" } });
+
+    await searchProf("ada");
+
+    const sql = ((m.queryRaw.mock.calls[0] as unknown[])[0] as string[]).join(
+      " ",
+    );
+    expect(sql).toContain("COUNT(DISTINCT");
+    expect(sql).toContain("LEFT JOIN");
+    expect(sql).toContain("GROUP BY");
   });
 });
