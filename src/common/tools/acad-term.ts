@@ -132,19 +132,27 @@ const CACHE_OPTIONS = { revalidate: 86400, tags: ["acad-terms"] };
 export async function listAcadTerms(prisma: {
   acadTerm: AcadTermDelegate;
 }): Promise<AcadTermSummary[]> {
-  const cached = unstable_cache(
-    () => _fetchAcadTerms(prisma),
-    ["acad-terms", "list"],
-    CACHE_OPTIONS,
-  );
-  const terms = await cached();
-  // Cache hits come back JSON-deserialized: revive the Date objects so
-  // consumers (e.g. resolveCurrentTerm) can rely on real Dates.
-  return terms.map((t) => ({
-    ...t,
-    startDt: new Date(t.startDt),
-    endDt: new Date(t.endDt),
-  }));
+  // Outside the Next.js runtime (e.g. standalone `mcp-use dev/start`, which
+  // shims `next/cache`), `unstable_cache` throws "incrementalCache missing".
+  // Fall back to a direct DB fetch so MCP tools keep working there; the web
+  // app path still gets the 24h cache.
+  try {
+    const cached = unstable_cache(
+      () => _fetchAcadTerms(prisma),
+      ["acad-terms", "list"],
+      CACHE_OPTIONS,
+    );
+    const terms = await cached();
+    // Cache hits come back JSON-deserialized: revive the Date objects so
+    // consumers (e.g. resolveCurrentTerm) can rely on real Dates.
+    return terms.map((t) => ({
+      ...t,
+      startDt: new Date(t.startDt),
+      endDt: new Date(t.endDt),
+    }));
+  } catch {
+    return _fetchAcadTerms(prisma);
+  }
 }
 
 /**

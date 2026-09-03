@@ -6,18 +6,56 @@ vi.mock("mcp-use", () => ({
 
 import { registerPrompts } from "./prompts";
 
-type CapturedPromptHandler = (args: { targetTermId?: string; facultyId?: number }) => Promise<{
+type CapturedPromptHandler = (args: Record<string, unknown>) => Promise<{
   messages: Array<{ role: string; content: { type: string; text: string } }>;
 }>;
 
+const EXPECTED_PROMPTS = [
+  "plan-semester",
+  "plan-roadmap",
+  "check-graduation",
+  "plan-bidding",
+  "find-courses",
+  "review-timetable",
+] as const;
+
+function registrations(prompt: ReturnType<typeof vi.fn>): Map<string, CapturedPromptHandler> {
+  const map = new Map<string, CapturedPromptHandler>();
+  for (const [definition, handler] of prompt.mock.calls as Array<
+    [{ name?: string }, CapturedPromptHandler]
+  >) {
+    if (definition.name) map.set(definition.name, handler);
+  }
+  return map;
+}
+
 describe("registerPrompts", () => {
+  it("registers all 6 user-goal prompts with name, description and schema", async () => {
+    const prompt = vi.fn();
+    const server = { prompt } as never;
+    registerPrompts(server);
+
+    expect(prompt).toHaveBeenCalledTimes(EXPECTED_PROMPTS.length);
+    const names = (prompt.mock.calls as Array<[{ name?: string }]>).map((c) => c[0]?.name);
+    expect(names).toEqual([...EXPECTED_PROMPTS]);
+    for (const [definition, handler] of prompt.mock.calls as Array<
+      [{ description?: string; schema?: unknown }, unknown]
+    >) {
+      expect(definition.description).toBeTruthy();
+      expect(definition.schema).toBeDefined();
+      expect(handler).toBeInstanceOf(Function);
+    }
+  });
+
   it("registers the plan-semester prompt with its name, description and a schema", async () => {
     const prompt = vi.fn();
     const server = { prompt } as never;
     registerPrompts(server);
 
-    expect(prompt).toHaveBeenCalledTimes(1);
-    const [definition, handler] = prompt.mock.calls[0] as [
+    const call = (prompt.mock.calls as Array<
+      [{ name?: string; description?: string; schema?: { shape?: Record<string, unknown> } }, unknown]
+    >).find((c) => c[0]?.name === "plan-semester")!;
+    const [definition, handler] = call as [
       { name?: string; description?: string; schema?: { shape?: Record<string, unknown> } },
       CapturedPromptHandler,
     ];
@@ -34,7 +72,7 @@ describe("registerPrompts", () => {
     const prompt = vi.fn();
     const server = { prompt } as never;
     registerPrompts(server);
-    const [, handler] = prompt.mock.calls[0] as [unknown, CapturedPromptHandler];
+    const handler = registrations(prompt).get("plan-semester")!;
 
     const withArgs = await handler({ targetTermId: "T1", facultyId: 42 });
     expect(withArgs.messages).toHaveLength(1);
@@ -53,11 +91,40 @@ describe("registerPrompts", () => {
     const prompt = vi.fn();
     const server = { prompt } as never;
     registerPrompts(server);
-    const [definition] = prompt.mock.calls[0] as [
-      { schema?: { shape?: Record<string, { description?: string }> } },
-      unknown,
-    ];
+    const call = (prompt.mock.calls as Array<
+      [{ name?: string; schema?: { shape?: Record<string, { description?: string }> } }, unknown]
+    >).find((c) => c[0]?.name === "plan-semester")!;
+    const [definition] = call;
     // The describe() string was dropped in Task 1 — ensure it's restored.
     expect(definition.schema?.shape?.targetTermId?.description).toMatch(/list-acad-terms/);
+  });
+
+  it("each user-goal prompt grounds its workflow in real tools (no invented codes)", async () => {
+    const prompt = vi.fn();
+    const server = { prompt } as never;
+    registerPrompts(server);
+    const handlers = registrations(prompt);
+
+    const roadmap = await handlers.get("plan-roadmap")!({ goal: "double major in Finance and Marketing" });
+    expect(roadmap.messages[0]!.content.text).toContain("double major in Finance and Marketing");
+    expect(roadmap.messages[0]!.content.text).toContain("check-roadmap-feasibility");
+    expect(roadmap.messages[0]!.content.text).toContain("Do not invent course codes");
+
+    const graduation = await handlers.get("check-graduation")!({});
+    expect(graduation.messages[0]!.content.text).toContain("check-roadmap-feasibility");
+    expect(graduation.messages[0]!.content.text).toContain("Do not invent course codes");
+
+    const bidding = await handlers.get("plan-bidding")!({});
+    expect(bidding.messages[0]!.content.text).toContain("my-bid-plan");
+    expect(bidding.messages[0]!.content.text).toContain("get-bid-prediction");
+
+    const courses = await handlers.get("find-courses")!({ interest: "machine learning" });
+    expect(courses.messages[0]!.content.text).toContain("machine learning");
+    expect(courses.messages[0]!.content.text).toContain("search-courses");
+    expect(courses.messages[0]!.content.text).toContain("Do not invent course codes");
+
+    const timetable = await handlers.get("review-timetable")!({});
+    expect(timetable.messages[0]!.content.text).toContain("my-timetables");
+    expect(timetable.messages[0]!.content.text).toContain("exam clash");
   });
 });

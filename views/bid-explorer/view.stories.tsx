@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import View from "./view";
-import { withMcpView } from "../../../../.storybook/withMcpView";
+import { withMcpView } from "../../.storybook/withMcpView";
 
 /**
- * Stories for the review-cards View (mcp-use v2).
+ * Stories for the bid-explorer View (mcp-use v2).
  *
  * Seeding mechanism: the shared `.storybook/withMcpView` decorator wraps each
  * story in the seed context consumed by the webpack-aliased
@@ -13,35 +13,32 @@ import { withMcpView } from "../../../../.storybook/withMcpView";
  */
 
 const fullProps = {
-  context: "COR-MGMT1202",
-  reviews: [
-    {
-      id: "rv1",
-      body: "Heavy group work but fair grading.",
-      tips: "Start the project early.",
-      rating: 4,
-      labels: ["Group Work", "Fair"],
-      voteCount: 12,
-      createdAt: "2026-01-15T00:00:00.000Z",
-      courseCode: "COR-MGMT1202",
-      professorName: "Prof X",
-    },
-    {
-      id: "rv2",
-      body: "Tough curve.",
-      tips: null,
-      rating: 2,
-      labels: [],
-      voteCount: 0,
-      createdAt: "2026-02-01T00:00:00.000Z",
-      courseCode: "COR-MGMT1202",
-      professorName: null,
-    },
+  classId: "cl1",
+  history: [
+    { acadTermId: "AY2024/25-T1", round: "1", window: 1, min: 10, median: 22, vacancy: 45 },
+    { acadTermId: "AY2025/26-T1", round: "1", window: 1, min: 14, median: 28, vacancy: 40 },
+  ],
+  prediction: {
+    medianPredicted: 30,
+    minPredicted: 18,
+    bidWindow: { id: 53, round: "1", window: 1 },
+  },
+  safetyFactors: [
+    { beatsPercentage: 50, multiplier: 1.0 },
+    { beatsPercentage: 70, multiplier: 1.05 },
+    { beatsPercentage: 90, multiplier: 1.15 },
   ],
 };
 
+const historyOnlyProps = {
+  classId: null,
+  history: fullProps.history,
+  prediction: null,
+  safetyFactors: [],
+};
+
 const meta: Meta<typeof View> = {
-  title: "MCP Views/review-cards",
+  title: "MCP Views/bid-explorer",
   component: View,
 };
 
@@ -58,13 +55,8 @@ export const Dark: Story = {
   ],
 };
 
-export const NoReviews: Story = {
-  decorators: [
-    withMcpView({
-      status: "ready",
-      toolOutput: { context: "CS101", reviews: [] },
-    }),
-  ],
+export const HistoryOnly: Story = {
+  decorators: [withMcpView({ status: "ready", toolOutput: historyOnlyProps })],
 };
 
 export const Loading: Story = {

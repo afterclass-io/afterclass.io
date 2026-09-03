@@ -24,8 +24,12 @@ function supabaseOAuth(): SupabaseOAuthProvider | undefined {
   const jwtSecret = process.env.MCP_USE_OAUTH_SUPABASE_JWT_SECRET;
   // In dev, Task 1 omitted oauth entirely — keep that behavior: no bearer
   // middleware, Inspector zero-auth; resolveDevBypassUser resolves the dev
-  // user iff MCP_DEV_BYPASS=true (see src/mcp/user.ts).
-  if (process.env.NODE_ENV === "development") return undefined;
+  // user iff MCP_DEV_BYPASS=true (see src/mcp/user.ts). `mcp-use dev` does
+  // not force NODE_ENV — it inherits the shell — so treat unset/empty the
+  // same as development here (must match the bypass gate in user.ts).
+  // `mcp-use start` forces NODE_ENV=production, which enables OAuth there.
+  const nodeEnv: string = process.env.NODE_ENV ?? "";
+  if (nodeEnv === "" || nodeEnv === "development" || nodeEnv === "test") return undefined;
   // In prod, missing project config is a hard fail — surface a clear startup
   // error, not a cryptic 401 on the first request.
   if (!projectId && !supabaseUrl) {

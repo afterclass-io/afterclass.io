@@ -5,7 +5,7 @@ The afterclass.io Model Context Protocol (MCP) server, built on [mcp-use](https:
 - **Server entry:** `src/mcp/index.ts` (re-exports the shared `MCPServer` instance from `src/mcp/server.ts`)
 - **Server + OAuth wiring:** `src/mcp/server.ts` + `mcp-use/oauth/supabase`
 - **Tool wiring:** `src/mcp/view-tools/*` (7 view-bound tools) + `src/mcp/register.ts` (42 viewless tools) + `src/mcp/user.ts`
-- **Views:** `src/mcp/views/<name>/view.tsx`
+- **Views:** `views/<name>/view.tsx`
 - **Local dev:** `bun run mcp:dev` → Inspector at `http://localhost:3001/mcp/inspector`
 
 > **Local dev needs no Supabase.** `mcp:dev` runs the server with **no OAuth middleware** (see [Local dev mode](#local-dev-mode-no-supabase-required)). The Inspector connects instantly and tool calls resolve as the seeded dev user. The Supabase OAuth 2.1 flow described below only kicks in outside development (deployed servers, `mcp:start`).
@@ -84,17 +84,17 @@ Two companion surfaces are registered alongside the tools:
 
 ### MCP Apps Views (7)
 
-mcp-use v2 renders **one View per bound tool**: each of the 7 View directories (`src/mcp/views/<name>/view.tsx`) is bound to exactly one canonical tool, declared via the tool's `view: { name: ... }` config in `src/mcp/view-tools/*`. Every view-bound tool also declares an `outputSchema` — the validated `structuredContent` becomes the View's typed props (`useToolContext().toolOutput`). There are no wrapper/re-export View dirs; writes and secondary reads stay viewless.
+mcp-use v2 renders **one View per bound tool**: each of the 7 View directories (`views/<name>/view.tsx`) is bound to exactly one canonical tool, declared via the tool's `view: { name: ... }` config in `src/mcp/view-tools/*`. Every view-bound tool also declares an `outputSchema` — the validated `structuredContent` becomes the View's typed props (`useToolContext().toolOutput`). There are no wrapper/re-export View dirs; writes and secondary reads stay viewless.
 
 | View (dir)         | Bound tool                     | Component                              | Props (from `toolOutput`)                                                                                                                                                  | CTA (calls a viewless tool via `useDynamicTool`) |
 | ------------------ | ------------------------------ | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `course-search`    | `search-courses`               | `src/mcp/views/course-search/view.tsx` | `{ results: [{ code, name, creditUnits?, sections: [{ classId?, section, professorName, timings[] }] }] }`                                                                   | `add-class-to-timetable` per section             |
-| `bid-recommendation` | `recommend-bid-amount`       | `src/mcp/views/bid-recommendation/view.tsx` | `{ classId, acadTermId, bidWindow?, predictedMedian, suggestedBidAmount, multiplierUsed?, rationale? }`                                                                  | `upsert-bid` (when `bidWindow` present)          |
-| `calendar-links`   | `get-timetable-calendar-link`  | `src/mcp/views/calendar-links/view.tsx` | `{ timetableId, madeLinkShareable? }` (URLs arrive via `_meta`, see below)                                                                                                 | External subscribe links (`_meta` URLs)          |
-| `bid-plan`         | `my-bid-plan`                  | `src/mcp/views/bid-plan/view.tsx`      | `{ acadTermId, budget: { balance } \| null, bids: [{ id, bidAmount, status, courseCode, courseName, section, professorName, round, window }] }`                              | —                                                |
-| `roadmap-view`     | `get-my-roadmap`               | `src/mcp/views/roadmap-view/view.tsx`  | `{ roadmapId, name, isPublic, owner, voteCount, entries: [{ yearNumber, term, courseCode, courseName, creditUnits }] }`                                                     | `copy-public-roadmap` when `isPublic`            |
-| `review-cards`     | `get-course-reviews`           | `src/mcp/views/review-cards/view.tsx`  | `{ context, reviews: [{ id, body, tips, rating, labels, voteCount, createdAt, courseCode, professorName }] }`                                                                | — (`get-professor-reviews` is viewless)          |
-| `bid-explorer`     | `explore-bid-options`          | `src/mcp/views/bid-explorer/view.tsx`  | `{ classId \| null, history: [{ acadTermId, round, window, min, median, vacancy }], prediction: { medianPredicted, minPredicted, bidWindow: { id, round, window } } \| null, safetyFactors: [{ beatsPercentage, multiplier }] }` | `upsert-bid` with `bidWindowId` + slider        |
+| `course-search`    | `search-courses`               | `views/course-search/view.tsx` | `{ results: [{ code, name, creditUnits?, sections: [{ classId?, section, professorName, timings[] }] }] }`                                                                   | `add-class-to-timetable` per section             |
+| `bid-recommendation` | `recommend-bid-amount`       | `views/bid-recommendation/view.tsx` | `{ classId, acadTermId, bidWindow?, predictedMedian, suggestedBidAmount, multiplierUsed?, rationale? }`                                                                  | `upsert-bid` (when `bidWindow` present)          |
+| `calendar-links`   | `get-timetable-calendar-link`  | `views/calendar-links/view.tsx` | `{ timetableId, madeLinkShareable? }` (URLs arrive via `_meta`, see below)                                                                                                 | External subscribe links (`_meta` URLs)          |
+| `bid-plan`         | `my-bid-plan`                  | `views/bid-plan/view.tsx`      | `{ acadTermId, budget: { balance } \| null, bids: [{ id, bidAmount, status, courseCode, courseName, section, professorName, round, window }] }`                              | —                                                |
+| `roadmap-view`     | `get-my-roadmap`               | `views/roadmap-view/view.tsx`  | `{ roadmapId, name, isPublic, owner, voteCount, entries: [{ yearNumber, term, courseCode, courseName, creditUnits }] }`                                                     | `copy-public-roadmap` when `isPublic`            |
+| `review-cards`     | `get-course-reviews`           | `views/review-cards/view.tsx`  | `{ context, reviews: [{ id, body, tips, rating, labels, voteCount, createdAt, courseCode, professorName }] }`                                                                | — (`get-professor-reviews` is viewless)          |
+| `bid-explorer`     | `explore-bid-options`          | `views/bid-explorer/view.tsx`  | `{ classId \| null, history: [{ acadTermId, round, window, min, median, vacancy }], prediction: { medianPredicted, minPredicted, bidWindow: { id, round, window } } \| null, safetyFactors: [{ beatsPercentage, multiplier }] }` | `upsert-bid` with `bidWindowId` + slider        |
 
 #### View result plumbing
 
@@ -106,7 +106,7 @@ Tool results carry three channels (`src/mcp/view-tools/*`):
 
 Write CTAs inside Views call **viewless** tools via `useDynamicTool("upsert-bid" | "add-class-to-timetable" | "copy-public-roadmap", ...)` — the name-typed `useCallTool` hook only works for exported ToolRefs (see [ADR-0002](docs/decisions/adr-0002-mcp-use-v2-toolref-strategy.md)). CTAs only render when the host can call tools (`useHostContext().isAvailable`).
 
-Shared View styling lives in `src/mcp/views/shared/` (`tokens.tsx` = `TOKENS` light/dark palettes + `Skeleton` pending component; `use-cta-feedback.ts` = transient Done/Error CTA feedback). Every View shows a skeleton pending state while `toolOutput` is unset.
+Shared View styling lives in `views/shared/` (`tokens.tsx` = `TOKENS` light/dark palettes + `Skeleton` pending component; `use-cta-feedback.ts` = transient Done/Error CTA feedback). Every View shows a skeleton pending state while `toolOutput` is unset.
 
 ## Security
 

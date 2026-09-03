@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import View from "./view";
-import { withMcpView } from "../../../../.storybook/withMcpView";
+import { withMcpView } from "../../.storybook/withMcpView";
 
 /**
- * Stories for the bid-recommendation View (mcp-use v2).
+ * Stories for the bid-plan View (mcp-use v2).
  *
  * Seeding mechanism: the shared `.storybook/withMcpView` decorator wraps each
  * story in the seed context consumed by the webpack-aliased
@@ -13,24 +13,36 @@ import { withMcpView } from "../../../../.storybook/withMcpView";
  */
 
 const fullProps = {
-  classId: "cl1",
   acadTermId: "AY2026/27-T1",
-  bidWindow: { id: 53, round: "1", window: 1 },
-  predictedMedian: 25,
-  suggestedBidAmount: 26.25,
-  multiplierUsed: { beatsPercentage: 70, multiplier: 1.05 },
-  rationale:
-    "Predicted median 25 x safety multiplier 1.05 (beats 70% of bids).",
-};
-
-const minimalProps = {
-  classId: "cl2",
-  acadTermId: "AY2026/27-T1",
-  suggestedBidAmount: 20,
+  budget: { balance: 987.5 },
+  bids: [
+    {
+      id: "b1",
+      bidAmount: 25,
+      status: "PLANNED",
+      courseCode: "ACC101",
+      courseName: "Financial Accounting",
+      section: "G1",
+      professorName: "Prof X",
+      round: "1",
+      window: 1,
+    },
+    {
+      id: "b2",
+      bidAmount: 51,
+      status: "SECURED",
+      courseCode: "FIN201",
+      courseName: "Finance",
+      section: "G3",
+      professorName: null,
+      round: "1A",
+      window: 2,
+    },
+  ],
 };
 
 const meta: Meta<typeof View> = {
-  title: "MCP Views/bid-recommendation",
+  title: "MCP Views/bid-plan",
   component: View,
 };
 
@@ -47,8 +59,13 @@ export const Dark: Story = {
   ],
 };
 
-export const Minimal: Story = {
-  decorators: [withMcpView({ status: "ready", toolOutput: minimalProps })],
+export const Empty: Story = {
+  decorators: [
+    withMcpView({
+      status: "ready",
+      toolOutput: { acadTermId: "AY2026/27-T1", budget: null, bids: [] },
+    }),
+  ],
 };
 
 export const Loading: Story = {

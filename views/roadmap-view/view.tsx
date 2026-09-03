@@ -1,7 +1,7 @@
 import type React from "react";
 import type { ViewConfig } from "mcp-use/react";
 import { useDynamicTool, useHostContext, useToolContext, useViewTheme } from "mcp-use/react";
-import type { RoadmapViewData } from "../../view-tools/schemas";
+import type { RoadmapViewData } from "../../src/mcp/view-tools/schemas";
 import { useCtaFeedback } from "../shared/use-cta-feedback";
 import { TOKENS, Skeleton } from "../shared/tokens";
 

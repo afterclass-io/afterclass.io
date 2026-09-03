@@ -18,7 +18,10 @@ export const getTimetableCalendarLink = server.tool(
   },
   async (params, ctx) => {
     const toolCtx = await buildToolContext(ctx as never);
-    if (!toolCtx) return errorResult("Unauthorized");
+    if (!toolCtx)
+      return errorResult(
+        "Unauthorized: no verified identity and dev bypass is off. For local Inspector use `bun run mcp:dev` with MCP_DEV_BYPASS=true (see MCP.md).",
+      );
     const limited = await checkWriteBudget(toolCtx);
     if (limited) return errorResult(limited);
     const result = await tool.run(toolCtx, params);

@@ -73,15 +73,17 @@ export async function resolveMcpUser(
  * Postgres without a Supabase project.
  *
  * Fail-closed guarantees:
- * - Only active when NODE_ENV === "development" (production leaves NODE_ENV
- *   empty/unset, so the bypass is structurally impossible outside dev).
+ * - Only active when NODE_ENV is unset/empty or "development" (production sets
+ *   NODE_ENV=production explicitly, so the bypass is structurally impossible
+ *   outside dev; `mcp-use dev` does not force NODE_ENV, it inherits the shell).
  * - Requires the explicit MCP_DEV_BYPASS=true opt-in.
  * - Only fires as a fallback when resolveMcpUser returned nothing (empty auth
  *   object) — a real token is still resolved through resolveMcpUser and still
  *   fails closed when it does not match a user.
  */
 async function resolveDevBypassUser(): Promise<SessionUser | undefined> {
-  if (process.env.NODE_ENV !== "development") return undefined;
+  const nodeEnv: string = process.env.NODE_ENV ?? "";
+  if (nodeEnv !== "" && nodeEnv !== "development" && nodeEnv !== "test") return undefined;
   if (process.env.MCP_DEV_BYPASS !== "true") return undefined;
   const email = process.env.MCP_DEV_USER_EMAIL ?? "test_hash_pwd@smu.edu.sg";
   const user = await db.users.findUnique({ where: { email } });
