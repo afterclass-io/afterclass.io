@@ -224,7 +224,7 @@ const listAcadTermsSchema = z.object({});
 export const listAcadTermsTool: McpTool<typeof listAcadTermsSchema> = {
   name: "list-acad-terms",
   description:
-    "List all academic terms (e.g. AY2026/27 Term 1). Returns { terms, currentTermId } — use currentTermId when a term-scoped tool needs a default.",
+    "List all academic terms (e.g. AY2026/27 Term 1). Returns { terms, currentTermId } - use currentTermId when a term-scoped tool needs a default.",
   inputSchema: listAcadTermsSchema,
   readOnly: true,
   run: async ({ caller }) => {
@@ -256,7 +256,7 @@ export const getBidWindowsTool: McpTool<typeof getBidWindowsSchema> = {
   readOnly: true,
   run: async ({ caller }, { acadTermId }) => {
     try {
-      // Empty acadTermId must never reach SQL — resolveTermId trims and
+      // Empty acadTermId must never reach SQL - resolveTermId trims and
       // falls back to the current term (friendly error when none exists).
       const term = await resolveTermId(caller, acadTermId);
       if (!term.ok) return errText(term.errText);
