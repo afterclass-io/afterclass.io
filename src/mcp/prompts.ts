@@ -77,7 +77,7 @@ export function registerPrompts(server: MCPServer): void {
 1. Call the plan-semester tool${targetTermId ? ` with targetTermId "${targetTermId}"` : ""}${facultyClause}${goalClause} to get the target term, the user's position, and ranked course candidates inspired by seniors in their faculty. facultyId accepts a numeric id or an acronym (e.g. SCIS); call list-faculties once, cache id, and reuse it for every later call.
 2. If the result carries reason "fallback-catalog", the candidates come from catalog search on the goal (not seniors): present each with its offeredIn terms ("offered in T1, biddable now" vs "runs in T2, plan ahead"), then offer to widen (other terms / wider faculties?).
 3. For the top 3-5 candidates, optionally fetch details: get-course (exact code), get-classes (sections/timings), get-bid-prediction (bid guidance) if the user wants to bid.
-4. Present a concise per-term plan: course code, name, credit units, and a note on why it's recommended (how many seniors took it at that point).
+4. Present a concise per-term plan: course code, name, credit units, and a note on why it's recommended (how many seniors took it at that point, or offeredIn terms for fallback-catalog results).
 5. Do not invent course codes - only use codes returned by the tools.` },
           },
         ],

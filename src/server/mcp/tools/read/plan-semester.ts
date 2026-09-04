@@ -59,7 +59,7 @@ async function upcomingTermIds(
 export const planSemesterTool: McpTool<typeof planSemesterSchema> = {
   name: "plan-semester",
   description:
-    "Plan the user's next semester: given their progression (active roadmap + matriculation term), returns the target academic term, the user's position (year/term), and ranked course candidates that seniors in the same faculty took at that point in their roadmap (frequency + upvotes). Use this for 'what should I take next term' / 'plan inspired by seniors' questions instead of chaining many lookups.",
+    "Plan the user's next semester: given their progression (active roadmap + matriculation term), returns the target academic term, the user's position (year/term), and ranked course candidates that seniors in the same faculty took at that point in their roadmap (frequency + upvotes). When seniors have nothing (candidates empty) and a goal is given, falls back to catalog search on the goal across the target + upcoming terms (reason 'fallback-catalog', per-course offeredIn). Use this for 'what should I take next term' / 'plan inspired by seniors' questions instead of chaining many lookups.",
   inputSchema: planSemesterSchema,
   readOnly: true,
   run: async ({ caller }, input) => {
