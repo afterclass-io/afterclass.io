@@ -4,7 +4,7 @@ import { allTools } from "@/server/mcp/tools";
 import { buildToolContext } from "./user";
 import { asSchema } from "./schema";
 import { errorResult, textResult } from "./view-tools/results";
-import { checkWriteBudget } from "./rate-limit";
+import { checkDestructiveConfirm, checkWriteBudget } from "./rate-limit";
 
 // The 7 view-bound tool names are registered by view-tools/* (module scope, exported ToolRefs);
 // this loop skips them and registers the remaining 43 as generic CallToolResult:
@@ -36,6 +36,14 @@ export function registerViewlessTools(server: MCPServer): void {
             "Unauthorized: no verified identity and dev bypass is off. For local Inspector use `bun run mcp:dev` with MCP_DEV_BYPASS=true (see MCP.md).",
           );
         if (!tool.readOnly) {
+          // Destructive tools need explicit confirm:true — except under the
+          // local dev bypass (MCP_DEV_BYPASS, never active in production),
+          // where Inspector testing would otherwise be unable to exercise
+          // deletes at all.
+          if (process.env.MCP_DEV_BYPASS !== "true") {
+            const unconfirmed = checkDestructiveConfirm(tool.name, params);
+            if (unconfirmed) return errorResult(unconfirmed);
+          }
           const limited = await checkWriteBudget(toolCtx);
           if (limited) return errorResult(limited);
         }

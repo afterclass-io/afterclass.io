@@ -11,7 +11,9 @@ const { checkAndIncrementMock, getChatConfigMock } = vi.hoisted(() => ({
   getChatConfigMock: vi.fn() as Mock,
 }));
 
-const { buildToolContextMock } = vi.hoisted(() => ({ buildToolContextMock: vi.fn() as Mock }));
+const { buildToolContextMock } = vi.hoisted(() => ({
+  buildToolContextMock: vi.fn() as Mock,
+}));
 
 vi.mock("@/server/assistant/ratelimit", () => ({
   checkAndIncrement: checkAndIncrementMock,
@@ -24,12 +26,21 @@ vi.mock("@/server/ecfg/chat", () => ({
 vi.mock("@/server/mcp/tools", () => ({
   allTools: [
     { name: "tool-a", description: "A", inputSchema: {}, run: fakeRunA },
-    { name: "tool-b", description: "B", inputSchema: {}, readOnly: true, run: fakeRunB },
+    {
+      name: "tool-b",
+      description: "B",
+      inputSchema: {},
+      readOnly: true,
+      run: fakeRunB,
+    },
   ],
 }));
 vi.mock("@/server/mcp/types", () => ({
   okText: (text: string) => ({ content: [{ type: "text", text }] }),
-  errText: (text: string) => ({ content: [{ type: "text", text }], isError: true }),
+  errText: (text: string) => ({
+    content: [{ type: "text", text }],
+    isError: true,
+  }),
   errorMessage: (e: unknown) => (e instanceof Error ? e.message : String(e)),
 }));
 vi.mock("server-only", () => ({}));
@@ -53,6 +64,7 @@ const fakeCtx = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
   getChatConfigMock.mockResolvedValue({ mcpRateLimitPerMinute: 60 });
   checkAndIncrementMock.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
   buildToolContextMock.mockResolvedValue(fakeCtx);
@@ -69,7 +81,10 @@ describe("registerViewlessTools", () => {
       expect.any(Function),
     );
     expect(tool).toHaveBeenCalledWith(
-      expect.objectContaining({ name: "tool-b", annotations: { readOnlyHint: true } }),
+      expect.objectContaining({
+        name: "tool-b",
+        annotations: { readOnlyHint: true },
+      }),
       expect.any(Function),
     );
     // No view/outputSchema for viewless tools
@@ -103,13 +118,20 @@ describe("registerViewlessTools", () => {
       description: "Search courses",
       inputSchema: {},
       readOnly: true,
-      run: vi.fn().mockResolvedValue({ content: [{ type: "text", text: "should-not-register" }] }),
+      run: vi
+        .fn()
+        .mockResolvedValue({
+          content: [{ type: "text", text: "should-not-register" }],
+        }),
     });
     const tool = vi.fn();
     registerViewlessTools({ tool } as never);
     // Should still only register the 2 non-view-bound tools, not the injected view-bound one
     expect(tool).toHaveBeenCalledTimes(2);
-    expect(tool).not.toHaveBeenCalledWith(expect.objectContaining({ name: "search-courses" }), expect.any(Function));
+    expect(tool).not.toHaveBeenCalledWith(
+      expect.objectContaining({ name: "search-courses" }),
+      expect.any(Function),
+    );
     // Restore
     (allTools as unknown as unknown[]).length = 0;
     for (const t of original) (allTools as unknown as unknown[]).push(t);
@@ -118,7 +140,10 @@ describe("registerViewlessTools", () => {
   it("invokes the tool handler and maps its result; never throws", async () => {
     fakeRunA.mockResolvedValue(okText("result-a"));
     fakeRunB.mockRejectedValue(new Error("boom-b"));
-    type CapturedHandler = (args: Record<string, unknown>, mcpCtx?: unknown) => Promise<{
+    type CapturedHandler = (
+      args: Record<string, unknown>,
+      mcpCtx?: unknown,
+    ) => Promise<{
       isError?: boolean;
       content: Array<{ type: string; text?: string }>;
     }>;
@@ -137,11 +162,17 @@ describe("registerViewlessTools", () => {
   });
 
   it("rate-limits write tools via DB checkAndIncrement but not readOnly tools", async () => {
-    checkAndIncrementMock.mockResolvedValueOnce({ ok: false, retryAfterSeconds: 12 });
+    checkAndIncrementMock.mockResolvedValueOnce({
+      ok: false,
+      retryAfterSeconds: 12,
+    });
     fakeRunA.mockResolvedValue(okText("should-not-reach"));
     fakeRunB.mockResolvedValue(okText("b-ok"));
 
-    type CapturedHandler = (args: Record<string, unknown>, mcpCtx?: unknown) => Promise<{
+    type CapturedHandler = (
+      args: Record<string, unknown>,
+      mcpCtx?: unknown,
+    ) => Promise<{
       isError?: boolean;
       content: Array<{ type: string; text?: string }>;
     }>;
@@ -155,8 +186,14 @@ describe("registerViewlessTools", () => {
     // write tool (tool-a) hits DB limiter -> blocked, run NOT called
     checkAndIncrementMock.mockClear();
     fakeRunA.mockClear();
-    checkAndIncrementMock.mockResolvedValueOnce({ ok: false, retryAfterSeconds: 12 });
-    const writeResult = await captured[0]!({}, { auth: { user: { id: "u1", email: "a@b" } } });
+    checkAndIncrementMock.mockResolvedValueOnce({
+      ok: false,
+      retryAfterSeconds: 12,
+    });
+    const writeResult = await captured[0]!(
+      {},
+      { auth: { user: { id: "u1", email: "a@b" } } },
+    );
     expect(checkAndIncrementMock).toHaveBeenCalledWith("mcp-write:u1", 60, 1);
     expect(fakeRunA).not.toHaveBeenCalled();
     expect(writeResult.isError).toBe(true);
@@ -166,15 +203,23 @@ describe("registerViewlessTools", () => {
     // readOnly tool (tool-b) -> no limiter, run proceeds
     checkAndIncrementMock.mockClear();
     fakeRunB.mockClear();
-    const readResult = await captured[1]!({}, { auth: { user: { id: "u1", email: "a@b" } } });
+    const readResult = await captured[1]!(
+      {},
+      { auth: { user: { id: "u1", email: "a@b" } } },
+    );
     expect(checkAndIncrementMock).not.toHaveBeenCalled();
     expect(fakeRunB).toHaveBeenCalledTimes(1);
-    expect(readResult).toMatchObject({ content: [{ type: "text", text: "b-ok" }] });
+    expect(readResult).toMatchObject({
+      content: [{ type: "text", text: "b-ok" }],
+    });
   });
 
   it("returns Unauthorized when buildToolContext returns undefined", async () => {
     buildToolContextMock.mockResolvedValue(undefined);
-    type CapturedHandler = (args: Record<string, unknown>, mcpCtx?: unknown) => Promise<{
+    type CapturedHandler = (
+      args: Record<string, unknown>,
+      mcpCtx?: unknown,
+    ) => Promise<{
       isError?: boolean;
       content: Array<{ type: string; text?: string }>;
     }>;
@@ -195,7 +240,10 @@ describe("registerViewlessTools", () => {
     checkAndIncrementMock.mockReset();
     checkAndIncrementMock.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
     fakeRunA.mockResolvedValue(errText("bad input"));
-    type CapturedHandler = (args: Record<string, unknown>, mcpCtx?: unknown) => Promise<{
+    type CapturedHandler = (
+      args: Record<string, unknown>,
+      mcpCtx?: unknown,
+    ) => Promise<{
       isError?: boolean;
       content: Array<{ type: string; text?: string }>;
     }>;
@@ -212,7 +260,10 @@ describe("registerViewlessTools", () => {
   it("viewless tools return raw text envelope (no structuredContent)", async () => {
     buildToolContextMock.mockResolvedValue(fakeCtx);
     fakeRunA.mockResolvedValue(okText(JSON.stringify({ foo: "bar" })));
-    type CapturedHandler = (args: Record<string, unknown>, mcpCtx?: unknown) => Promise<{
+    type CapturedHandler = (
+      args: Record<string, unknown>,
+      mcpCtx?: unknown,
+    ) => Promise<{
       isError?: boolean;
       content: Array<{ type: string; text?: string }>;
       structuredContent?: unknown;
@@ -227,5 +278,98 @@ describe("registerViewlessTools", () => {
     expect(result.content?.[0]?.text).toBe(JSON.stringify({ foo: "bar" }));
     expect(result.structuredContent).toBeUndefined();
     expect(result._meta).toBeUndefined();
+  });
+
+  describe("destructive confirm gate", () => {
+    type CapturedHandler = (
+      args: Record<string, unknown>,
+      mcpCtx?: unknown,
+    ) => Promise<{
+      isError?: boolean;
+      content: Array<{ type: string; text?: string }>;
+    }>;
+
+    function withDestructiveTool(run: Mock) {
+      const original = [...(allTools as unknown[])];
+      (allTools as unknown as unknown[]).push({
+        name: "remove-timetable",
+        description: "Delete one of the user's timetables.",
+        inputSchema: {},
+        run,
+      });
+      return () => {
+        (allTools as unknown as unknown[]).length = 0;
+        for (const t of original) (allTools as unknown as unknown[]).push(t);
+      };
+    }
+
+    function captureHandlers() {
+      const captured: CapturedHandler[] = [];
+      const tool = vi.fn((_opts: object, handler: CapturedHandler) => {
+        captured.push(handler);
+      });
+      registerViewlessTools({ tool } as never);
+      return captured;
+    }
+
+    it("blocks remove-timetable without confirm:true and does not run the tool", async () => {
+      // The repo .env sets MCP_DEV_BYPASS=true (loaded into vitest via
+      // loadEnv) — stub it off so the prod gate path is exercised.
+      vi.stubEnv("MCP_DEV_BYPASS", "");
+      const run = vi.fn().mockResolvedValue(okText("deleted"));
+      const restore = withDestructiveTool(run);
+      try {
+        const captured = captureHandlers();
+        const remove = captured[captured.length - 1]!;
+        const result = await remove({ timetableId: "tt1" }, { auth: { user: { id: "u1" } } });
+        expect(result.isError).toBe(true);
+        expect(result.content?.[0]?.text).toMatch(/confirm/i);
+        expect(run).not.toHaveBeenCalled();
+      } finally {
+        restore();
+      }
+    });
+
+    it("runs remove-timetable with confirm:true", async () => {
+      vi.stubEnv("MCP_DEV_BYPASS", "");
+      const run = vi.fn().mockResolvedValue(okText("deleted"));
+      const restore = withDestructiveTool(run);
+      try {
+        const captured = captureHandlers();
+        const remove = captured[captured.length - 1]!;
+        const result = await remove(
+          { timetableId: "tt1", confirm: true },
+          { auth: { user: { id: "u1" } } },
+        );
+        expect(run).toHaveBeenCalledTimes(1);
+        expect(result).toMatchObject({ content: [{ type: "text", text: "deleted" }] });
+      } finally {
+        restore();
+      }
+    });
+
+    it("does not gate constructive writes (tool-a runs without confirm)", async () => {
+      fakeRunA.mockResolvedValue(okText("created"));
+      const captured = captureHandlers();
+      const result = await captured[0]!({ name: "x" }, { auth: { user: { id: "u1" } } });
+      expect(fakeRunA).toHaveBeenCalledTimes(1);
+      expect(result).toMatchObject({ content: [{ type: "text", text: "created" }] });
+    });
+
+    it("dev bypass skips the confirm gate (local Inspector testing)", async () => {
+      vi.stubEnv("MCP_DEV_BYPASS", "true");
+      const run = vi.fn().mockResolvedValue(okText("deleted"));
+      const restore = withDestructiveTool(run);
+      try {
+        const captured = captureHandlers();
+        const remove = captured[captured.length - 1]!;
+        const result = await remove({ timetableId: "tt1" }, { auth: { user: { id: "u1" } } });
+        expect(run).toHaveBeenCalledTimes(1);
+        expect(result).toMatchObject({ content: [{ type: "text", text: "deleted" }] });
+      } finally {
+        restore();
+        vi.unstubAllEnvs();
+      }
+    });
   });
 });
