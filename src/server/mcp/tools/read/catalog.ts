@@ -180,16 +180,22 @@ export const getBidPredictionTool: McpTool<typeof getBidPredictionSchema> = {
   },
 };
 
-const getBidResultsSchema = z.object({
-  classId: z.string().optional(),
-  courseCode: z.string().optional(),
-  section: z.string().optional(),
-  limit: z.number().int().min(1).max(50).default(20),
-});
+const getBidResultsSchema = z
+  .object({
+    classId: z.string().optional(),
+    courseCode: z.string().optional(),
+    section: z.string().optional(),
+    limit: z.number().int().min(1).max(50).default(20),
+  })
+  .refine((v) => Boolean(v.classId) || Boolean(v.courseCode && v.section), {
+    message:
+      "Provide classId, or courseCode + section together. Use get-classes to resolve a classId from a course code (and section).",
+  });
 
 export const getBidResultsTool: McpTool<typeof getBidResultsSchema> = {
   name: "get-bid-results",
-  description: "Get past bid results (clearing medians/mins) for a class, course code, and/or section.",
+  description:
+    "Get past bid results (clearing medians/mins). Provide either a classId (use get-classes to resolve it from a course code and section) or a courseCode + section pair.",
   inputSchema: getBidResultsSchema,
   readOnly: true,
   run: async ({ caller }, input) => {

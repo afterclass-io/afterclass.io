@@ -237,19 +237,19 @@ describe("catalog read tools", () => {
     // Default: no limit passed → 20
     const fnDefault = vi.fn().mockResolvedValue(makeRows(30));
     const ctxDefault: ToolContext = { user: fakeUser, caller: makeCaller({ getBy: fnDefault }) };
-    const resultDefault = await getBidResultsTool.run(ctxDefault, {} as Parameters<typeof getBidResultsTool.run>[1]);
+    const resultDefault = await getBidResultsTool.run(ctxDefault, { classId: "cl1" } as Parameters<typeof getBidResultsTool.run>[1]);
     const parsedDefault = JSON.parse(resultDefault.content[0]!.text) as unknown[];
     expect(parsedDefault).toHaveLength(20);
 
     // Explicit limit 5
     const fn5 = vi.fn().mockResolvedValue(makeRows(30));
     const ctx5: ToolContext = { user: fakeUser, caller: makeCaller({ getBy: fn5 }) };
-    const result5 = await getBidResultsTool.run(ctx5, { courseCode: "ACC101", limit: 5 } as Record<string, unknown> as Parameters<typeof getBidResultsTool.run>[1]);
+    const result5 = await getBidResultsTool.run(ctx5, { courseCode: "ACC101", section: "G1", limit: 5 } as Record<string, unknown> as Parameters<typeof getBidResultsTool.run>[1]);
     const parsed5 = JSON.parse(result5.content[0]!.text) as unknown[];
     expect(parsed5).toHaveLength(5);
 
     // Does not send limit to procedure (filters only)
-    expect(fn5).toHaveBeenCalledWith({ courseCode: "ACC101" });
+    expect(fn5).toHaveBeenCalledWith({ courseCode: "ACC101", section: "G1" });
   });
 
   it("get-bid-results also clamps an { items } envelope without mutating other keys", async () => {
@@ -258,7 +258,7 @@ describe("catalog read tools", () => {
       .fn()
       .mockResolvedValue({ items, total: 30, extra: "keep" });
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getBy: fn }) };
-    const result = await getBidResultsTool.run(ctx, { limit: 5 } as Record<string, unknown> as Parameters<typeof getBidResultsTool.run>[1]);
+    const result = await getBidResultsTool.run(ctx, { classId: "cl1", limit: 5 } as Record<string, unknown> as Parameters<typeof getBidResultsTool.run>[1]);
     const parsed = JSON.parse(result.content[0]!.text) as { items: unknown[]; total: number; extra: string };
     expect(parsed.items).toHaveLength(5);
     expect(parsed.total).toBe(30);
@@ -266,10 +266,36 @@ describe("catalog read tools", () => {
   });
 
   it("get-bid-results rejects limit > 50 and limit 0", () => {
-    expect(getBidResultsTool.inputSchema.safeParse({ limit: 51 }).success).toBe(false);
-    expect(getBidResultsTool.inputSchema.safeParse({ limit: 0 }).success).toBe(false);
-    expect(getBidResultsTool.inputSchema.safeParse({ limit: 50 }).success).toBe(true);
-    expect(getBidResultsTool.inputSchema.safeParse({ limit: 1 }).success).toBe(true);
+    expect(getBidResultsTool.inputSchema.safeParse({ classId: "cl1", limit: 51 }).success).toBe(false);
+    expect(getBidResultsTool.inputSchema.safeParse({ classId: "cl1", limit: 0 }).success).toBe(false);
+    expect(getBidResultsTool.inputSchema.safeParse({ classId: "cl1", limit: 50 }).success).toBe(true);
+    expect(getBidResultsTool.inputSchema.safeParse({ classId: "cl1", limit: 1 }).success).toBe(true);
+  });
+
+  it("get-bid-results requires classId OR (courseCode + section) with a guided error", () => {
+    // courseCode alone (no section, no classId) must fail with guidance
+    const alone = getBidResultsTool.inputSchema.safeParse({ courseCode: "ACC101" });
+    expect(alone.success).toBe(false);
+    if (!alone.success) {
+      const msg = alone.error.issues.map((i) => i.message).join(" ");
+      expect(msg).toMatch(/get-classes/);
+      expect(msg).toMatch(/classId/);
+    }
+    // empty input must also fail with guidance (never bare BAD_REQUEST)
+    const empty = getBidResultsTool.inputSchema.safeParse({});
+    expect(empty.success).toBe(false);
+    if (!empty.success) {
+      const msg = empty.error.issues.map((i) => i.message).join(" ");
+      expect(msg).toMatch(/get-classes/);
+    }
+    // valid combos pass through unchanged
+    expect(
+      getBidResultsTool.inputSchema.safeParse({ classId: "cl1" }).success,
+    ).toBe(true);
+    expect(
+      getBidResultsTool.inputSchema.safeParse({ courseCode: "ACC101", section: "G1" })
+        .success,
+    ).toBe(true);
   });
 
   it("review tools have tightened defaults (10) and max 20", () => {
