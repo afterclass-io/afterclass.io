@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
 
+import { resolveTermId } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool, type ToolResult } from "../../types";
 
 /** Flat review-card shape consumed by the review-cards widget. */
@@ -222,12 +223,21 @@ const listAcadTermsSchema = z.object({});
 
 export const listAcadTermsTool: McpTool<typeof listAcadTermsSchema> = {
   name: "list-acad-terms",
-  description: "List all academic terms (e.g. AY2026/27 Term 1).",
+  description:
+    "List all academic terms (e.g. AY2026/27 Term 1). Returns { terms, currentTermId } — use currentTermId when a term-scoped tool needs a default.",
   inputSchema: listAcadTermsSchema,
   readOnly: true,
   run: async ({ caller }) => {
     try {
-      return jsonText(await caller.acadTerms.list());
+      const terms = await caller.acadTerms.list();
+      let currentTermId: string | null = null;
+      try {
+        const current = await caller.acadTerms.current();
+        currentTermId = current?.id ?? null;
+      } catch {
+        currentTermId = null;
+      }
+      return jsonText({ terms, currentTermId });
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -240,15 +250,25 @@ const getBidWindowsSchema = z.object({
 
 export const getBidWindowsTool: McpTool<typeof getBidWindowsSchema> = {
   name: "get-bid-windows",
-  description: "Get bid windows (rounds and dates) for an academic term, or the current window when no term is given.",
+  description:
+    "Get bid windows (rounds and dates) for an academic term. Returns { windows, currentWindowId }. Omit acadTermId to use the current term.",
   inputSchema: getBidWindowsSchema,
   readOnly: true,
   run: async ({ caller }, { acadTermId }) => {
     try {
-      const result = acadTermId
-        ? await caller.bidWindows.getByAcadTerm({ acadTermId })
-        : await caller.bidWindows.getCurrentWindow();
-      return jsonText(result);
+      // Empty acadTermId must never reach SQL — resolveTermId trims and
+      // falls back to the current term (friendly error when none exists).
+      const term = await resolveTermId(caller, acadTermId);
+      if (!term.ok) return errText(term.errText);
+      const windows = await caller.bidWindows.getByAcadTerm({ acadTermId: term.value });
+      let currentWindowId: number | null = null;
+      try {
+        const current = await caller.bidWindows.getCurrentWindow();
+        currentWindowId = current?.id ?? null;
+      } catch {
+        currentWindowId = null;
+      }
+      return jsonText({ windows, currentWindowId });
     } catch (e) {
       return errText(errorMessage(e));
     }

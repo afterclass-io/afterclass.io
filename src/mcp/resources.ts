@@ -2,7 +2,12 @@ import type { MCPServer } from "mcp-use";
 import { db } from "@/server/db";
 import { createCaller } from "@/server/api/root";
 
-export type AcadTermsCaller = { acadTerms: { list: () => Promise<Array<{ id: string; label: string; startDt: Date; endDt: Date }>> } };
+export type AcadTermsCaller = {
+  acadTerms: {
+    list: () => Promise<Array<{ id: string; label: string; startDt: Date; endDt: Date }>>;
+    current?: () => Promise<{ id: string } | null>;
+  };
+};
 
 async function defaultCaller(): Promise<AcadTermsCaller> {
   return createCaller(async () => ({ db, session: null, headers: new Headers() }));
@@ -22,8 +27,15 @@ export function registerResources(server: MCPServer, caller?: AcadTermsCaller): 
       // Next.js runtime, but surface a clean empty-terms payload (not a 500)
       // if the DB itself is unreachable from the MCP process.
       let terms: Array<{ id: string; label: string; startDt: Date; endDt: Date }>;
+      let currentTermId: string | null = null;
       try {
         terms = await acadTerms.acadTerms.list();
+        try {
+          const current = await acadTerms.acadTerms.current?.();
+          currentTermId = current?.id ?? null;
+        } catch {
+          currentTermId = null;
+        }
       } catch (e) {
         terms = [];
         console.error(
@@ -36,7 +48,7 @@ export function registerResources(server: MCPServer, caller?: AcadTermsCaller): 
           {
             uri: uri.href,
             mimeType: "application/json",
-            text: JSON.stringify({ terms }, null, 2),
+            text: JSON.stringify({ terms, currentTermId }, null, 2),
           },
         ],
       };
