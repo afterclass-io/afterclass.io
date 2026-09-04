@@ -371,5 +371,23 @@ describe("registerViewlessTools", () => {
         vi.unstubAllEnvs();
       }
     });
+
+    it("production NODE_ENV keeps the confirm gate even with MCP_DEV_BYPASS=true", async () => {
+      vi.stubEnv("MCP_DEV_BYPASS", "true");
+      vi.stubEnv("NODE_ENV", "production");
+      const run = vi.fn().mockResolvedValue(okText("deleted"));
+      const restore = withDestructiveTool(run);
+      try {
+        const captured = captureHandlers();
+        const remove = captured[captured.length - 1]!;
+        const result = await remove({ timetableId: "tt1" }, { auth: { user: { id: "u1" } } });
+        expect(result.isError).toBe(true);
+        expect(result.content?.[0]?.text).toMatch(/confirm/i);
+        expect(run).not.toHaveBeenCalled();
+      } finally {
+        restore();
+        vi.unstubAllEnvs();
+      }
+    });
   });
 });

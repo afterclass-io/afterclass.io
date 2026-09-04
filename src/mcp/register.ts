@@ -37,10 +37,15 @@ export function registerViewlessTools(server: MCPServer): void {
           );
         if (!tool.readOnly) {
           // Destructive tools need explicit confirm:true — except under the
-          // local dev bypass (MCP_DEV_BYPASS, never active in production),
+          // local dev bypass (same NODE_ENV + MCP_DEV_BYPASS boundary as
+          // resolveDevBypassUser in user.ts, never active in production),
           // where Inspector testing would otherwise be unable to exercise
           // deletes at all.
-          if (process.env.MCP_DEV_BYPASS !== "true") {
+          const nodeEnv: string = process.env.NODE_ENV ?? "";
+          const devBypass =
+            process.env.MCP_DEV_BYPASS === "true" &&
+            (nodeEnv === "" || nodeEnv === "development" || nodeEnv === "test");
+          if (!devBypass) {
             const unconfirmed = checkDestructiveConfirm(tool.name, params);
             if (unconfirmed) return errorResult(unconfirmed);
           }
