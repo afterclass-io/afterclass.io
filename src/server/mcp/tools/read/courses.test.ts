@@ -148,6 +148,26 @@ describe("search-courses", () => {
     expect(fn).not.toHaveBeenCalled();
   });
 
+  it("threads day/startsAfter/endsBefore through to timetable.searchCourses", async () => {
+    const fn = vi.fn().mockResolvedValue([]);
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ searchCourses: fn }) };
+    await searchCoursesTool.run(ctx, {
+      acadTermId: "t1",
+      query: "IS",
+      day: "Mon",
+      startsAfter: "18:00",
+      endsBefore: "22:00",
+    });
+    expect(fn).toHaveBeenCalledWith({
+      acadTermId: "t1",
+      query: "IS",
+      facultyId: undefined,
+      day: "Mon",
+      startsAfter: "18:00",
+      endsBefore: "22:00",
+    });
+  });
+
   it("description mentions description/courseArea matching", () => {
     expect(searchCoursesTool.description).toContain("description");
     expect(searchCoursesTool.description).toContain("courseArea");

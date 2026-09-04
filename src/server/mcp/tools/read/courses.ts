@@ -14,12 +14,24 @@ const searchCoursesSchema = z.object({
     .union([z.number().int(), z.string()])
     .optional()
     .describe("Optional faculty id or acronym (e.g. 4 or SCIS; obtain via list-faculties) to narrow results to that faculty's courses"),
+  day: z
+    .enum(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
+    .optional()
+    .describe("Filter to courses with a class meeting on this day (e.g. Mon)"),
+  startsAfter: z
+    .string()
+    .optional()
+    .describe("Filter to courses with a class starting at or after this time (HH:MM, e.g. 18:00 for night classes)"),
+  endsBefore: z
+    .string()
+    .optional()
+    .describe("Filter to courses with a class ending at or before this time (HH:MM, e.g. 12:00)"),
 });
 
 export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
   name: "search-courses",
   description:
-    "Search courses offered in an academic term by code, name, description, courseArea, or professor name. Fuzzy/typo-tolerant (e.g. 'statistics' matches 'Statistical Analysis'); also matches description/courseArea and supports optional facultyId filter. Returns matching courses with sections and timings.",
+    "Search courses offered in an academic term by code, name, description, courseArea, or professor name. Fuzzy/typo-tolerant (e.g. 'statistics' matches 'Statistical Analysis'); also matches description/courseArea and supports optional facultyId filter. Supports time filters day/startsAfter/endsBefore (e.g. day=Mon, startsAfter=18:00 for night classes). Returns matching courses with sections and timings.",
   inputSchema: searchCoursesSchema,
   readOnly: true,
   toWidgetProps: (result) => {
@@ -32,7 +44,7 @@ export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
       return { results: [] };
     }
   },
-  run: async ({ caller }, { acadTermId, query, facultyId }) => {
+  run: async ({ caller }, { acadTermId, query, facultyId, day, startsAfter, endsBefore }) => {
     try {
       // Omitted or empty-string acadTermId defaults to the current term.
       // An empty string must never reach SQL (it returns `[]` for every query).
@@ -47,7 +59,14 @@ export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
         resolvedFacultyId = resolved.value;
       }
       return jsonText(
-        await caller.timetable.searchCourses({ acadTermId: term.value, query, facultyId: resolvedFacultyId }),
+        await caller.timetable.searchCourses({
+          acadTermId: term.value,
+          query,
+          facultyId: resolvedFacultyId,
+          day,
+          startsAfter,
+          endsBefore,
+        }),
       );
     } catch (e) {
       return errText(errorMessage(e));
