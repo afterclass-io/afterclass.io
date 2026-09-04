@@ -22,6 +22,36 @@ export const exploreBidOptions = server.tool(
       tool,
       schema: bidExplorerOutput,
       rawPayloadMessage: "Invalid bid explorer payload",
-      summarize: () => "Bid options ready",
+      summarize: (data) => {
+        const sc = data as {
+          classId?: string | null;
+          history?: Array<{
+            acadTermId?: string;
+            round?: string;
+            window?: number;
+            min?: number;
+            median?: number;
+            vacancy?: number | null;
+          }>;
+          prediction?: {
+            medianPredicted?: number;
+            minPredicted?: number | null;
+            bidWindow?: { round?: string; window?: number };
+          } | null;
+        };
+        const history = Array.isArray(sc.history) ? sc.history : [];
+        const head = `Bid options for class ${sc.classId ?? ""} — ${history.length} history rows`.trim();
+        const lines = history.map((h) => {
+          const vacancy = typeof h.vacancy === "number" ? `, vacancy ${h.vacancy}` : "";
+          return `${h.acadTermId} R${h.round}W${h.window}: min ${h.min}, median ${h.median}${vacancy}`;
+        });
+        if (sc.prediction) {
+          const p = sc.prediction;
+          const minPart = typeof p.minPredicted === "number" ? ` (min ${p.minPredicted})` : "";
+          const winPart = p.bidWindow ? ` for round ${p.bidWindow.round} window ${p.bidWindow.window}` : "";
+          lines.push(`Prediction: median ${p.medianPredicted}${minPart}${winPart}`);
+        }
+        return lines.length > 0 ? `${head}:\n${lines.join("\n")}` : head;
+      },
     }),
 );

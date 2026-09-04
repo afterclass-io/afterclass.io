@@ -80,13 +80,24 @@ describe("search-courses adapter", () => {
     expect(definition.outputSchema).toBeDefined();
   });
 
-  it("happy path — catalog array becomes {results} structuredContent, count in text", async () => {
+  it("happy path — catalog array becomes {results} structuredContent, summary carries codes", async () => {
     const { handler } = registration("search-courses");
     toolRun.mockResolvedValue({ content: [{ type: "text", text: JSON.stringify([COURSE]) }] });
     const res = await handler({ query: "acc" }, {});
     expect(res.isError).toBeUndefined();
     expect(res.structuredContent).toEqual({ results: [COURSE] });
-    expect(res.content[0]?.text).toBe("Found 1 courses");
+    expect(res.content[0]?.text).toBe("Found 1 courses:\nACC101 | Financial Accounting | 1 sections");
+  });
+
+  it("summary lists every hit as code | name | N sections (Task 7 chaining format)", async () => {
+    const { handler } = registration("search-courses");
+    const second = { ...COURSE, id: "c2", code: "COR-IS1702", name: "Computational Thinking", sections: [{}, {}, {}, {}, {}] };
+    toolRun.mockResolvedValue({ content: [{ type: "text", text: JSON.stringify([COURSE, second]) }] });
+    const res = await handler({ query: "comp" }, {});
+    expect(res.isError).toBeUndefined();
+    expect(res.content[0]?.text).toBe(
+      "Found 2 courses:\nACC101 | Financial Accounting | 1 sections\nCOR-IS1702 | Computational Thinking | 5 sections",
+    );
   });
 
   it("masks a non-array success payload to {results: []} (documented masking)", async () => {
@@ -95,6 +106,14 @@ describe("search-courses adapter", () => {
     const res = await handler({ query: "acc" }, {});
     expect(res.isError).toBeUndefined();
     expect(res.structuredContent).toEqual({ results: [] });
+    expect(res.content[0]?.text).toBe("Found 0 courses");
+  });
+
+  it("empty results keep the bare count summary (no trailing lines)", async () => {
+    const { handler } = registration("search-courses");
+    toolRun.mockResolvedValue({ content: [{ type: "text", text: JSON.stringify([]) }] });
+    const res = await handler({ query: "zzz-no-match" }, {});
+    expect(res.isError).toBeUndefined();
     expect(res.content[0]?.text).toBe("Found 0 courses");
   });
 

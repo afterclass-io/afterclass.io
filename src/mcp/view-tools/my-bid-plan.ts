@@ -23,9 +23,28 @@ export const myBidPlan = server.tool(
       schema: bidPlanOutput,
       rawPayloadMessage: "Invalid bid plan payload",
       summarize: (data) => {
-        const sc = data as { bids?: unknown[]; acadTermId?: string };
-        const count = Array.isArray(sc.bids) ? sc.bids.length : 0;
-        return `Bid plan for ${sc.acadTermId ?? ""} — ${count} bids`;
+        const sc = data as {
+          bids?: Array<{
+            courseCode?: string;
+            section?: string;
+            professorName?: string | null;
+            bidAmount?: number;
+            status?: string;
+            round?: string;
+            window?: number;
+          }>;
+          acadTermId?: string;
+          budget?: { balance?: number } | null;
+        };
+        const bids = Array.isArray(sc.bids) ? sc.bids : [];
+        const balancePart = typeof sc.budget?.balance === "number" ? `balance ${sc.budget.balance}, ` : "";
+        const head = `Bid plan for ${sc.acadTermId ?? ""} — ${balancePart}${bids.length} bids`;
+        if (bids.length === 0) return head;
+        const lines = bids.map((b) => {
+          const prof = b.professorName ? ` (${b.professorName})` : "";
+          return `${b.courseCode} ${b.section}${prof}: ${b.bidAmount} — ${b.status} R${b.round}W${b.window}`;
+        });
+        return `${head}:\n${lines.join("\n")}`;
       },
     }),
 );

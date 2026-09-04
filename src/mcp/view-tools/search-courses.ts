@@ -36,8 +36,17 @@ export const searchCourses = server.tool(
     const structuredContent = { results: Array.isArray(data) ? data : [] };
     const parsed = guardedParse(courseSearchOutput, structuredContent);
     if (!parsed.ok) return errorResult("Output schema validation failed");
+    // Content-carrying summary so the model can chain (e.g. resolve an exact
+    // code, then call get-course-reviews) without guessing. Format is stable
+    // by contract: `{code} | {name} | {n} sections` per hit.
+    const hits = structuredContent.results as Array<{ code?: string; name?: string; sections?: unknown[] }>;
+    const lines = hits.map(
+      (c) => `${c.code} | ${c.name} | ${Array.isArray(c.sections) ? c.sections.length : 0} sections`,
+    );
+    const text =
+      lines.length > 0 ? `Found ${hits.length} courses:\n${lines.join("\n")}` : `Found ${hits.length} courses`;
     return {
-      content: [{ type: "text" as const, text: `Found ${(structuredContent.results as unknown[]).length} courses` }],
+      content: [{ type: "text" as const, text }],
       structuredContent,
     };
   },
