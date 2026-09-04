@@ -53,6 +53,24 @@ describe("registerResources", () => {
     expect(body.terms[0]).toMatchObject({ id: "t1", label: "AY2026/27 T1" });
   });
 
+  it("exposes currentTermId alongside terms, matching the list-acad-terms envelope", async () => {
+    const list = vi.fn().mockResolvedValue([
+      { id: "t1", label: "AY2026/27 T1", startDt: new Date("2026-08-01"), endDt: new Date("2026-11-30") },
+    ]) as Mock;
+    const current = vi.fn().mockResolvedValue({ id: "t1" }) as Mock;
+    const resource = vi.fn();
+    registerResources({ resource } as never, { acadTerms: { list, current } });
+    const [, handler] = resource.mock.calls[0] as [unknown, CapturedHandler];
+
+    const result = await (handler)(new URL("catalog://acad-terms"), {});
+    expect(JSON.parse(result.contents[0]?.text ?? "{}")).toEqual({
+      terms: [
+        { id: "t1", label: "AY2026/27 T1", startDt: "2026-08-01T00:00:00.000Z", endDt: "2026-11-30T00:00:00.000Z" },
+      ],
+      currentTermId: "t1",
+    });
+  });
+
   it("returns an empty terms array when the caller has no terms", async () => {
     const list = vi.fn().mockResolvedValue([]) as Mock;
     const resource = vi.fn();
@@ -60,7 +78,7 @@ describe("registerResources", () => {
     const [, handler] = resource.mock.calls[0] as [unknown, CapturedHandler];
 
     const result = await (handler)(new URL("catalog://acad-terms"), {});
-    expect(JSON.parse(result.contents[0]?.text ?? "{}")).toEqual({ terms: [] });
+    expect(JSON.parse(result.contents[0]?.text ?? "{}")).toEqual({ terms: [], currentTermId: null });
   });
 
   it("returns an empty terms array (not a throw) when the caller fails", async () => {
@@ -70,6 +88,6 @@ describe("registerResources", () => {
     const [, handler] = resource.mock.calls[0] as [unknown, CapturedHandler];
 
     const result = await (handler)(new URL("catalog://acad-terms"), {});
-    expect(JSON.parse(result.contents[0]?.text ?? "{}")).toEqual({ terms: [] });
+    expect(JSON.parse(result.contents[0]?.text ?? "{}")).toEqual({ terms: [], currentTermId: null });
   });
 });

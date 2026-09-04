@@ -38,7 +38,7 @@ function makeCaller(procs: Record<string, unknown>) {
     },
     bidPredictions: { getBy: procs.getBy },
     bidResults: { getBy: procs.getBy },
-    acadTerms: { list: procs.list },
+    acadTerms: { list: procs.list, current: procs.current },
     bidWindows: {
       getByAcadTerm: procs.getByAcadTerm,
       getCurrentWindow: procs.getCurrentWindow,
@@ -288,23 +288,130 @@ describe("catalog read tools", () => {
     if (parsedProf.success) expect(parsedProf.data.limit).toBe(10);
   });
 
-  it("list-acad-terms calls acadTerms.list()", async () => {
-    const fn = vi.fn().mockResolvedValue([]);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ list: fn }) };
-    await listAcadTermsTool.run(ctx, {});
-    expect(fn).toHaveBeenCalledWith();
-  });
-
-  it("get-bid-windows calls getByAcadTerm when a term is given, else getCurrentWindow", async () => {
-    const byTerm = vi.fn().mockResolvedValue({});
-    const current = vi.fn().mockResolvedValue({});
+  it("list-acad-terms returns a { terms, currentTermId } envelope", async () => {
+    const terms = [
+      { id: "t1", label: "AY2026/27 T1" },
+      { id: "t2", label: "AY2026/27 T2" },
+    ];
+    const list = vi.fn().mockResolvedValue(terms);
+    const current = vi.fn().mockResolvedValue({ id: "t1", label: "AY2026/27 T1" });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ getByAcadTerm: byTerm, getCurrentWindow: current }),
+      caller: makeCaller({ list, current }),
     };
-    await getBidWindowsTool.run(ctx, { acadTermId: "t1" });
+    const result = await listAcadTermsTool.run(ctx, {});
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      terms: unknown[];
+      currentTermId: string | null;
+    };
+    expect(parsed.terms).toEqual(terms);
+    expect(parsed.currentTermId).toBe("t1");
+  });
+
+  it("list-acad-terms returns currentTermId null when there is no current term", async () => {
+    const list = vi.fn().mockResolvedValue([{ id: "t1", label: "AY2026/27 T1" }]);
+    const current = vi.fn().mockResolvedValue(null);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ list, current }),
+    };
+    const result = await listAcadTermsTool.run(ctx, {});
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      terms: unknown[];
+      currentTermId: string | null;
+    };
+    expect(parsed.terms).toHaveLength(1);
+    expect(parsed.currentTermId).toBeNull();
+  });
+
+  it("get-bid-windows({}) returns a { windows, currentWindowId } envelope for the current term", async () => {
+    const windows = [
+      { id: 1, acadTermId: "t1", round: "1", window: 1 },
+      { id: 2, acadTermId: "t1", round: "1", window: 2 },
+    ];
+    const currentTerm = vi.fn().mockResolvedValue({ id: "t1" });
+    const byTerm = vi.fn().mockResolvedValue(windows);
+    const currentWindow = vi.fn().mockResolvedValue({ id: 2, acadTermId: "t1" });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        current: currentTerm,
+        getByAcadTerm: byTerm,
+        getCurrentWindow: currentWindow,
+      }),
+    };
+    const result = await getBidWindowsTool.run(ctx, {});
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      windows: unknown[];
+      currentWindowId: number | null;
+    };
     expect(byTerm).toHaveBeenCalledWith({ acadTermId: "t1" });
-    await getBidWindowsTool.run(ctx, {});
-    expect(current).toHaveBeenCalledWith();
+    expect(parsed.windows).toEqual(windows);
+    expect(parsed.currentWindowId).toBe(2);
+  });
+
+  it("get-bid-windows({ acadTermId }) returns { windows, currentWindowId } for that term", async () => {
+    const windows = [{ id: 7, acadTermId: "t2", round: "2", window: 1 }];
+    const byTerm = vi.fn().mockResolvedValue(windows);
+    const currentWindow = vi.fn().mockResolvedValue({ id: 2, acadTermId: "t1" });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getByAcadTerm: byTerm, getCurrentWindow: currentWindow }),
+    };
+    const result = await getBidWindowsTool.run(ctx, { acadTermId: "t2" });
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      windows: unknown[];
+      currentWindowId: number | null;
+    };
+    expect(byTerm).toHaveBeenCalledWith({ acadTermId: "t2" });
+    expect(parsed.windows).toEqual(windows);
+    expect(parsed.currentWindowId).toBe(2);
+  });
+
+  it("get-bid-windows never sends an empty acadTermId to SQL (blank falls back to current term)", async () => {
+    const windows = [{ id: 1, acadTermId: "t1", round: "1", window: 1 }];
+    const currentTerm = vi.fn().mockResolvedValue({ id: "t1" });
+    const byTerm = vi.fn().mockResolvedValue(windows);
+    const currentWindow = vi.fn().mockResolvedValue({ id: 1, acadTermId: "t1" });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        current: currentTerm,
+        getByAcadTerm: byTerm,
+        getCurrentWindow: currentWindow,
+      }),
+    };
+    const result = await getBidWindowsTool.run(ctx, { acadTermId: "   " });
+    expect(result.isError).toBeUndefined();
+    expect(byTerm).toHaveBeenCalledWith({ acadTermId: "t1" });
+    const parsed = JSON.parse(result.content[0]!.text) as { windows: unknown[] };
+    expect(parsed.windows).toEqual(windows);
+  });
+
+  it("get-bid-windows returns currentWindowId null when no window exists yet", async () => {
+    const windows = [{ id: 1, acadTermId: "t1", round: "1", window: 1 }];
+    const currentTerm = vi.fn().mockResolvedValue({ id: "t1" });
+    const byTerm = vi.fn().mockResolvedValue(windows);
+    const currentWindow = vi.fn().mockResolvedValue(null);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        current: currentTerm,
+        getByAcadTerm: byTerm,
+        getCurrentWindow: currentWindow,
+      }),
+    };
+    const result = await getBidWindowsTool.run(ctx, {});
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      windows: unknown[];
+      currentWindowId: number | null;
+    };
+    expect(parsed.windows).toEqual(windows);
+    expect(parsed.currentWindowId).toBeNull();
   });
 });
