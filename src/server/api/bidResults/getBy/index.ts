@@ -25,7 +25,7 @@ export const getBy = publicProcedure
       throw new TRPCError({
         code: "BAD_REQUEST",
         message:
-          "classId is required when courseCode and section are not provided",
+          "Provide classId, or courseCode + section together. Use the get-classes tool to resolve a classId from a course code (and section).",
       });
     }
 
