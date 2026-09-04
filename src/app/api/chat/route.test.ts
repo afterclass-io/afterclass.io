@@ -460,4 +460,15 @@ describe("POST /api/chat", () => {
       }),
     );
   });
+
+  // -- TASK 8 scope gate --
+  it("gates the assistant to afterclass-only requests", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    await POST(buildReq({ messages: [{ role: "user", content: "reverse a linked list" }] }));
+    expect(mockStreamText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        instructions: expect.stringMatching(/SMU courses, bids, timetables, roadmaps, and reviews/),
+      }),
+    );
+  });
 });
