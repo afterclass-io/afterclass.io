@@ -25,7 +25,7 @@ export default function ReviewLayout({
       {rating}
       {filter}
       {information}
-      <div className="relative flex w-full justify-center gap-6">
+      <div className="relative flex w-full justify-center gap-6 [&>:first-child]:min-w-0">
         {reviews}
         <div className="sticky top-24 hidden h-fit max-w-min flex-col items-start gap-6 text-nowrap lg:flex">
           <CtaButton

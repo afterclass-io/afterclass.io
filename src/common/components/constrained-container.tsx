@@ -7,7 +7,8 @@ export type ConstrainedContainerProps = ComponentPropsWithoutRef<"div">;
 /**
  * Re-applies the classic 954px centered content column that used to live in
  * the (school) layout. Used by routes that should stay narrow (reviews,
- * bidding, search, submit) now that the (school) layout is full-width.
+ * search, submit) now that the (school) layout is full-width. Bidding opted
+ * back out — its content column plus CTA rail never fitted 954px.
  */
 export const ConstrainedContainer = ({
   className,

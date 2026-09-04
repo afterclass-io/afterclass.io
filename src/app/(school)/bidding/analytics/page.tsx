@@ -162,7 +162,10 @@ export default async function BiddingHistoryPage({
   }
 
   return (
-    <div className="flex w-full max-w-5xl flex-col gap-6 pt-2">
+    <div
+      className="flex w-full max-w-5xl flex-col gap-6 pt-2"
+      data-test="bid-analytics-content"
+    >
       {/* Class Info Summary Card — server rendered */}
       {classInfo && (
         <Card>
@@ -194,7 +197,7 @@ export default async function BiddingHistoryPage({
             {(classInfo.classTimings.length > 0 ||
               classInfo.classExamTimings.some((t) => t.date)) && (
               <>
-                <div className="text-sm">
+                <div className="overflow-x-auto text-sm">
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="text-muted-foreground border-b">

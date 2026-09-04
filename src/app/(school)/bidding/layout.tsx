@@ -1,6 +1,5 @@
 import { type ReactNode } from "react";
 
-import { ConstrainedContainer } from "@/common/components/constrained-container";
 import { CtaButton } from "@/common/components/cta-button";
 import { EditIcon, GithubIcon, PlusIcon } from "@/common/components/icons";
 import { env } from "@/env";
@@ -9,7 +8,12 @@ import { ReviewCtaButtons } from "@/modules/bidding/components/ReviewCtaButtons"
 
 export default function BidLayout({ children }: { children: ReactNode }) {
   return (
-    <ConstrainedContainer className="relative flex w-full justify-center gap-6">
+    // No ConstrainedContainer: the content column plus the CTA rail never fitted
+    // its 954px cap. min-w-0 lets the content column shrink — the rail is sized
+    // to its own content (`max-w-min` + `text-nowrap`) and never will, so without
+    // it the row overflows and `justify-center` spills half of that off-canvas
+    // to the left, under the fixed sidebar (afterclass-io#545).
+    <div className="relative flex w-full justify-center gap-6 md:px-8 [&>:first-child]:min-w-0">
       {children}
       <div className="sticky top-24 hidden h-fit max-w-min flex-col items-start gap-6 text-nowrap lg:flex">
         <CtaButton
@@ -34,6 +38,6 @@ export default function BidLayout({ children }: { children: ReactNode }) {
         <ReviewCtaButtons />
         <BidWindowScheduleCard />
       </div>
-    </ConstrainedContainer>
+    </div>
   );
 }
