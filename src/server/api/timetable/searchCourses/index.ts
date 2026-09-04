@@ -16,6 +16,11 @@ export const searchCourses = publicProcedure
       acadTermId: z.string(),
       query: z.string().min(1),
       facultyId: z.number().int().optional(),
+      // Same meeting-time semantics as classes.getAll: one class_timing row
+      // must satisfy every provided condition (day equality, start >=, end <=).
+      day: z.enum(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]).optional(),
+      startsAfter: z.string().optional(), // "18:00"
+      endsBefore: z.string().optional(), // "22:00"
     }),
   )
   .query(async ({ ctx, input }) => {
@@ -36,6 +41,15 @@ export const searchCourses = publicProcedure
     // and description/courseArea via word_similarity + FTS COALESCE.
     // Parameterized - safe (prepared statement).
     const hasFaculty = typeof input.facultyId === "number";
+    // Timing gate flag: when no day/time filters are given the flag is false
+    // and the class_timing EXISTS short-circuits, so courses whose classes
+    // have no timings still match, exactly as before. Nulls stand in for
+    // omitted filters (Prisma maps null to SQL NULL, unlike undefined).
+    const hasTimingFilter =
+      input.day !== undefined || input.startsAfter !== undefined || input.endsBefore !== undefined;
+    const day = input.day ?? null;
+    const startsAfter = input.startsAfter ?? null;
+    const endsBefore = input.endsBefore ?? null;
     const rows = hasFaculty
       ? await ctx.db.$queryRaw<SearchRow[]>`
       SELECT c.id, c.code, c.name, c.credit_units AS "creditUnits"
@@ -44,6 +58,17 @@ export const searchCourses = publicProcedure
       AND EXISTS (
         SELECT 1 FROM classes cl
         WHERE cl.course_id = c.id AND cl.acad_term_id = ${input.acadTermId}
+      )
+      AND (
+        ${hasTimingFilter} = false
+        OR EXISTS (
+          SELECT 1 FROM classes clt
+          JOIN class_timing ct ON ct.class_id = clt.id
+          WHERE clt.course_id = c.id AND clt.acad_term_id = ${input.acadTermId}
+            AND (${day} IS NULL OR ct.day_of_week = ${day})
+            AND (${startsAfter} IS NULL OR ct.start_time >= ${startsAfter})
+            AND (${endsBefore} IS NULL OR ct.end_time <= ${endsBefore})
+        )
       )
       AND (
         c.code ILIKE ('%' || ${q} || '%')
@@ -65,6 +90,7 @@ export const searchCourses = publicProcedure
         )
       )
       ORDER BY
+        (c.code = UPPER(${q}))::int DESC,
         (c.code ILIKE (${q} || '%'))::int DESC,
         similarity(c.name, ${q}) DESC,
         c.code
@@ -78,6 +104,17 @@ export const searchCourses = publicProcedure
         WHERE cl.course_id = c.id AND cl.acad_term_id = ${input.acadTermId}
       )
       AND (
+        ${hasTimingFilter} = false
+        OR EXISTS (
+          SELECT 1 FROM classes clt
+          JOIN class_timing ct ON ct.class_id = clt.id
+          WHERE clt.course_id = c.id AND clt.acad_term_id = ${input.acadTermId}
+            AND (${day} IS NULL OR ct.day_of_week = ${day})
+            AND (${startsAfter} IS NULL OR ct.start_time >= ${startsAfter})
+            AND (${endsBefore} IS NULL OR ct.end_time <= ${endsBefore})
+        )
+      )
+      AND (
         c.code ILIKE ('%' || ${q} || '%')
         OR to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description,'') || ' ' || COALESCE(c.course_area,''))
            @@ plainto_tsquery('simple', ${q} || ':*')
@@ -97,6 +134,7 @@ export const searchCourses = publicProcedure
         )
       )
       ORDER BY
+        (c.code = UPPER(${q}))::int DESC,
         (c.code ILIKE (${q} || '%'))::int DESC,
         similarity(c.name, ${q}) DESC,
         c.code

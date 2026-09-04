@@ -233,6 +233,79 @@ describe("timetable.searchCourses", () => {
     expect(sql).not.toContain("belong_to_faculty");
   });
 
+  it("ranks an exact code match first (IS210 beats IS215-style prefix collisions)", async () => {
+    queryRawMock.mockResolvedValue([statRow]);
+    classesFindManyMock.mockResolvedValue([]);
+
+    await caller.timetable.searchCourses({ acadTermId: "t1", query: "IS210" });
+
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const sql = rawCall[0].join("?");
+    const params = rawCall.slice(1);
+    expect(params).toContain("IS210");
+    // The exact-match tier must come before the prefix tier in ORDER BY, so a
+    // trigram/name-similarity hit (e.g. IS215) can never outrank the exact code.
+    const orderBy = sql.slice(sql.indexOf("ORDER BY"));
+    const exactIdx = orderBy.indexOf("c.code = UPPER(");
+    const prefixIdx = orderBy.indexOf("c.code ILIKE");
+    expect(exactIdx).toBeGreaterThanOrEqual(0);
+    expect(prefixIdx).toBeGreaterThanOrEqual(0);
+    expect(exactIdx).toBeLessThan(prefixIdx);
+  });
+
+  it("keeps exact-code ranking when combined with a faculty filter (Database + faculty)", async () => {
+    queryRawMock.mockResolvedValue([statRow]);
+    classesFindManyMock.mockResolvedValue([]);
+
+    await caller.timetable.searchCourses({ acadTermId: "t1", query: "Database", facultyId: 4 });
+
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const sql = rawCall[0].join("?");
+    expect(sql).toContain("belong_to_faculty");
+    const orderBy = sql.slice(sql.indexOf("ORDER BY"));
+    expect(orderBy).toContain("c.code = UPPER(");
+  });
+
+  it("constrains to class timings matching day/startsAfter/endsBefore when provided", async () => {
+    queryRawMock.mockResolvedValue([statRow]);
+    classesFindManyMock.mockResolvedValue([]);
+
+    await caller.timetable.searchCourses({
+      acadTermId: "t1",
+      query: "IS",
+      day: "Mon",
+      startsAfter: "18:00",
+      endsBefore: "22:00",
+    });
+
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const sql = rawCall[0].join("?");
+    const params = rawCall.slice(1);
+    // Same semantics as classes.getAll: one timing row must satisfy every
+    // provided condition (day equality, start >=, end <=).
+    expect(sql).toContain("class_timing");
+    expect(sql).toContain("day_of_week");
+    expect(sql).toContain("start_time >=");
+    expect(sql).toContain("end_time <=");
+    expect(params).toContain("Mon");
+    expect(params).toContain("18:00");
+    expect(params).toContain("22:00");
+    expect(params).toContain(true);
+  });
+
+  it("leaves the timing gate open when no day/time filters are provided", async () => {
+    queryRawMock.mockResolvedValue([statRow]);
+    classesFindManyMock.mockResolvedValue([]);
+
+    await caller.timetable.searchCourses({ acadTermId: "t1", query: "IS" });
+
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const params = rawCall.slice(1);
+    // Gate flag false => the class_timing EXISTS short-circuits, so courses
+    // whose classes have no timings still match, exactly as before.
+    expect(params).toContain(false);
+  });
+
   it("propagates an error when the raw query rejects", async () => {
     queryRawMock.mockRejectedValue(new Error("boom"));
 
