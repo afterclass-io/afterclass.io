@@ -6,6 +6,15 @@ import { EditIcon, GithubIcon, PlusIcon } from "@/common/components/icons";
 import { env } from "@/env";
 import { BidWindowScheduleCard } from "@/modules/bidding/components/BidWindowScheduleCard";
 
+/**
+ * Arranges review-page content with responsive review content and supporting actions.
+ *
+ * @param header - Header content displayed at the top of the layout
+ * @param rating - Rating content displayed below the header
+ * @param filter - Review filter controls
+ * @param information - Additional review information
+ * @param reviews - Review content displayed beside the desktop sidebar
+ */
 export default function ReviewLayout({
   header,
   rating,

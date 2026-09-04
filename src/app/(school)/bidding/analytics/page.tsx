@@ -21,6 +21,11 @@ import { EmptyState } from "@/common/components/empty-state";
 import { selectOneClassPerTerm } from "@/modules/bidding/utils/selectOneClassPerTerm";
 import { filterSafetyFactors } from "@/modules/bidding/utils/bid-prediction";
 
+/**
+ * Displays bidding history, analytics, predictions, and professor alternatives for a course section.
+ *
+ * @param searchParams - Query parameters identifying the class or course selection and initial analytics filters.
+ */
 export default async function BiddingHistoryPage({
   searchParams,
 }: {

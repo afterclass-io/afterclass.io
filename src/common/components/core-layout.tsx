@@ -7,6 +7,11 @@ import { ScrollToTopButton } from "@/common/components/scroll-to-top-button";
 // interface CoreLayoutProps extends PropsWithChildren {}
 type CoreLayoutProps = PropsWithChildren;
 
+/**
+ * Composes the application shell with navigation, header, content, and scroll controls.
+ *
+ * @param children - The content rendered in the main area
+ */
 export async function CoreLayout({ children }: CoreLayoutProps) {
   return (
     <SidebarProvider>

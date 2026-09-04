@@ -6,6 +6,12 @@ import { env } from "@/env";
 import { BidWindowScheduleCard } from "@/modules/bidding/components/BidWindowScheduleCard";
 import { ReviewCtaButtons } from "@/modules/bidding/components/ReviewCtaButtons";
 
+/**
+ * Renders bid content alongside a desktop-only sticky rail of review and contribution actions.
+ *
+ * @param children - The primary bid content to display
+ * @returns The responsive bid layout
+ */
 export default function BidLayout({ children }: { children: ReactNode }) {
   return (
     // No ConstrainedContainer: the content column plus the CTA rail never fitted
