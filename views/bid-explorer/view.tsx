@@ -102,16 +102,16 @@ const buildChartPoints = (history: HistoryPoint[]): ChartPoint[] => {
 
 /** Contiguous acadTermId runs for AY-group shading + zebra striping. */
 const computeTermGroups = (points: ChartPoint[]): string[][] => {
-  const groups: string[][] = [];
+  const groups: { term: string; keys: string[] }[] = [];
   for (const p of points) {
     const last = groups[groups.length - 1];
-    if (last && p.acadTermId === last[0]?.split("/")[0]) {
-      last.push(p.key);
+    if (last?.term === p.acadTermId) {
+      last.keys.push(p.key);
     } else {
-      groups.push([p.key]);
+      groups.push({ term: p.acadTermId, keys: [p.key] });
     }
   }
-  return groups;
+  return groups.map((g) => g.keys);
 };
 
 /** Inline-SVG min/median trend chart (mirror of `BidChart`, no recharts). */
@@ -552,18 +552,24 @@ const BidExplorerView: React.FC = () => {
     const next = selectedRounds.includes(round)
       ? selectedRounds.filter((r) => r !== round)
       : [...selectedRounds, round];
+    setSelectedRounds(next);
+    // Deselecting the last round clears the round filter: leave the window
+    // selection untouched instead of wiping it via an empty valid set.
+    if (next.length === 0) return;
     const valid = new Set<number>();
     for (const r of next) roundWindows.get(r)?.forEach((w) => valid.add(w));
-    setSelectedRounds(next);
     setSelectedWindows((prev) => prev.filter((w) => valid.has(parseInt(w, 10))));
   };
   const toggleWindow = (window: string) => {
     const next = selectedWindows.includes(window)
       ? selectedWindows.filter((w) => w !== window)
       : [...selectedWindows, window];
+    setSelectedWindows(next);
+    // Same guard as toggleRound: clearing the window filter must not wipe
+    // the round selection.
+    if (next.length === 0) return;
     const valid = new Set<string>();
     for (const w of next) windowRounds.get(parseInt(w, 10))?.forEach((r) => valid.add(r));
-    setSelectedWindows(next);
     setSelectedRounds((prev) => prev.filter((r) => valid.has(r)));
   };
   const currentKey = prediction

@@ -274,6 +274,33 @@ describe("BidExplorerView (v2)", () => {
       expect(within(table).queryByText("AY2025/26-T1")).not.toBeInTheDocument();
     });
 
+    it("deselecting the last round filter keeps the window selection", () => {
+      seedContext({ status: "ready", toolInput: {}, toolOutput: multiRoundProps });
+      render(<BidExplorerView />);
+      const roundBtn = screen.getByRole("button", { name: "1A" });
+      const windowBtn = screen.getByRole("button", { name: "W2" });
+      fireEvent.click(windowBtn); // select W2 first
+      fireEvent.click(roundBtn); // select 1A
+      fireEvent.click(roundBtn); // deselect 1A -> round filter cleared
+      expect(windowBtn.getAttribute("aria-pressed")).toBe("true");
+      const table = screen.getByRole("table");
+      // W2 only: header + 1 body row (the 1A/W2 point)
+      expect(within(table).getAllByRole("row")).toHaveLength(2);
+    });
+
+    it("zebra-stripes table rows by academic term group", () => {
+      seedContext({ status: "ready", toolInput: {}, toolOutput: multiRoundProps });
+      render(<BidExplorerView />);
+      const table = screen.getByRole("table");
+      const bodyRows = within(table).getAllByRole("row").slice(1);
+      // Newest first: AY2025/26-T1 (group 0, transparent), then the two
+      // AY2024/25-T1 rows (group 1, shaded). Same-group rows share a
+      // background; different-group rows differ.
+      const bgs = bodyRows.map((r) => r.style.background);
+      expect(bgs[1]).toBe(bgs[2]);
+      expect(bgs[0]).not.toBe(bgs[1]);
+    });
+
     it("sorts the history table by median when the column header is clicked", () => {
       seedContext({ status: "ready", toolInput: {}, toolOutput: multiRoundProps });
       render(<BidExplorerView />);
