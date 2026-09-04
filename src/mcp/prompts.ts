@@ -5,6 +5,7 @@ import { z } from "zod";
 const planSemesterSchema: z.ZodObject<any> = z.object({
   targetTermId: z.string().optional().describe("Academic term id from list-acad-terms; omit to auto-pick the next term"),
   facultyId: z.union([z.number().int(), z.string()]).optional().describe("Faculty id or acronym (e.g. 4 or SCIS; obtain via list-faculties); omit to use the user's faculty"),
+  goal: z.string().optional().describe("The user's goal in their own words, e.g. 'data engineering'; forwarded to plan-semester so it can fall back to catalog search when senior candidates are empty"),
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,6 +58,7 @@ export function registerPrompts(server: MCPServer): void {
       const targetTermId = textArg(args, "targetTermId");
       const facultyStr = textArg(args, "facultyId");
       const facultyNum = facultyStr === undefined ? numArg(args, "facultyId") : undefined;
+      const goal = textArg(args, "goal");
       // Numbers render bare (facultyId 42); acronym strings render quoted
       // (facultyId "SCIS").
       const facultyClause =
@@ -65,16 +67,18 @@ export function registerPrompts(server: MCPServer): void {
           : facultyNum !== undefined
             ? ` with facultyId ${String(facultyNum)}`
             : "";
+      const goalClause = goal !== undefined ? ` with goal "${goal}"` : "";
       return {
         messages: [
           {
             role: "user" as const,
             content: { type: "text" as const, text: `Help the user plan their next semester.
 
-1. Call the plan-semester tool${targetTermId ? ` with targetTermId "${targetTermId}"` : ""}${facultyClause} to get the target term, the user's position, and ranked course candidates inspired by seniors in their faculty. facultyId accepts a numeric id or an acronym (e.g. SCIS); call list-faculties to resolve a school name to its acronym/id.
-2. For the top 3-5 candidates, optionally fetch details: get-course (exact code), get-classes (sections/timings), get-bid-prediction (bid guidance) if the user wants to bid.
-3. Present a concise per-term plan: course code, name, credit units, and a note on why it's recommended (how many seniors took it at that point).
-4. Do not invent course codes - only use codes returned by the tools.` },
+1. Call the plan-semester tool${targetTermId ? ` with targetTermId "${targetTermId}"` : ""}${facultyClause}${goalClause} to get the target term, the user's position, and ranked course candidates inspired by seniors in their faculty. facultyId accepts a numeric id or an acronym (e.g. SCIS); call list-faculties once, cache id, and reuse it for every later call.
+2. If the result carries reason "fallback-catalog", the candidates come from catalog search on the goal (not seniors): present each with its offeredIn terms ("offered in T1, biddable now" vs "runs in T2, plan ahead"), then offer to widen (other terms / wider faculties?).
+3. For the top 3-5 candidates, optionally fetch details: get-course (exact code), get-classes (sections/timings), get-bid-prediction (bid guidance) if the user wants to bid.
+4. Present a concise per-term plan: course code, name, credit units, and a note on why it's recommended (how many seniors took it at that point).
+5. Do not invent course codes - only use codes returned by the tools.` },
           },
         ],
       };

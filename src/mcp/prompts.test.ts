@@ -110,6 +110,36 @@ describe("registerPrompts", () => {
     expect(withAcronym.messages[0]!.content.text).toContain("list-faculties");
   });
 
+  it("plan-semester prompt forwards goal and documents the catalog fallback", async () => {
+    const prompt = vi.fn();
+    const server = { prompt } as never;
+    registerPrompts(server);
+    const call = (prompt.mock.calls as Array<
+      [{ name?: string; schema?: { shape?: Record<string, unknown> } }, unknown]
+    >).find((c) => c[0]?.name === "plan-semester")!;
+    expect(Object.keys(call[0]?.schema?.shape ?? {})).toEqual(
+      expect.arrayContaining(["goal"]),
+    );
+
+    const handler = registrations(prompt).get("plan-semester")!;
+    const withGoal = await handler({ goal: "data engineering" });
+    expect(withGoal.messages[0]!.content.text).toContain("data engineering");
+    expect(withGoal.messages[0]!.content.text).toContain("fallback-catalog");
+  });
+
+  it("plan-semester prompt calls list-faculties once and caches the id", async () => {
+    const prompt = vi.fn();
+    const server = { prompt } as never;
+    registerPrompts(server);
+    const handler = registrations(prompt).get("plan-semester")!;
+
+    const result = await handler({});
+    const text = result.messages[0]!.content.text;
+    expect(text).toMatch(/list-faculties once/i);
+    // "once" must be literal: no second list-faculties call anywhere.
+    expect(text.match(/list-faculties/g)).toHaveLength(1);
+  });
+
   it("find-courses prompt points at list-faculties for faculty-scoped searches", async () => {
     const prompt = vi.fn();
     const server = { prompt } as never;
