@@ -24,10 +24,15 @@ export const recommendBidAmount = server.tool(
       fallbackJson: "",
       rawPayloadMessage: "Invalid bid recommendation payload",
       summarize: (data) => {
-        const sc = data as { suggestedBidAmount?: number; classId?: string };
-        return typeof sc.suggestedBidAmount === "number"
-          ? `Suggested bid ${sc.suggestedBidAmount} for class ${sc.classId ?? ""}`.trim()
-          : "Bid recommendation ready";
+        const sc = data as {
+          suggestedBidAmount?: number;
+          classId?: string;
+          predictedMedian?: number;
+          acadTermId?: string;
+          bidWindow?: { round?: string; window?: number };
+        };
+        const winPart = sc.bidWindow ? ` R${sc.bidWindow.round}W${sc.bidWindow.window}` : "";
+        return `Suggested bid ${sc.suggestedBidAmount} for class ${sc.classId ?? ""} (predicted median ${sc.predictedMedian}, ${sc.acadTermId ?? ""}${winPart})`.trim();
       },
     }),
 );

@@ -73,28 +73,45 @@ const VALID = {
     bids: [
       {
         id: "b1", bidAmount: 10, status: "SECURED", courseCode: "ACC101",
-        courseName: "Financial Accounting", section: "G1", professorName: null,
+        courseName: "Financial Accounting", section: "G1", professorName: "Jane Doe",
         round: "1", window: 1,
+      },
+      {
+        id: "b2", bidAmount: 25, status: "PENDING", courseCode: "COR-IS1702",
+        courseName: "Computational Thinking", section: "G2", professorName: null,
+        round: "1", window: 2,
       },
     ],
   },
   "get-my-roadmap": {
     roadmapId: "r1", name: "My Plan", isPublic: false, owner: "me", voteCount: 0,
-    entries: [{ yearNumber: 1, term: "T1", courseCode: "ACC101", courseName: "Financial Accounting", creditUnits: 3 }],
+    entries: [
+      { yearNumber: 1, term: "T1", courseCode: "ACC101", courseName: "Financial Accounting", creditUnits: 3 },
+      { yearNumber: 1, term: "T1", courseCode: "COR-IS1702", courseName: "Computational Thinking", creditUnits: 3 },
+      { yearNumber: 1, term: "T2", courseCode: "COR-STAT1202", courseName: "Statistics", creditUnits: 3 },
+    ],
   },
   "get-course-reviews": {
     context: "ACC101",
     reviews: [
       {
-        id: "rv1", body: "Great", tips: "Study", rating: 5, labels: ["hard"],
-        voteCount: 1, createdAt: "2026-01-01", courseCode: "ACC101", professorName: null,
+        id: "rv1", body: "Great professor, workload is heavy but fair", tips: "Study past papers",
+        rating: 5, labels: ["hard", "useful"],
+        voteCount: 3, createdAt: "2026-01-01", courseCode: "ACC101", professorName: "Jane Doe",
+      },
+      {
+        id: "rv2", body: null, tips: "Read before class", rating: 4, labels: [],
+        voteCount: 1, createdAt: "2026-02-01", courseCode: "ACC101", professorName: null,
       },
     ],
   },
   "explore-bid-options": {
     classId: "cl1",
-    history: [{ acadTermId: "2026-1", round: "1", window: 1, min: 1, median: 5, vacancy: 10 }],
-    prediction: { medianPredicted: 5, minPredicted: 1, bidWindow: { id: 1, round: "1", window: 1 } },
+    history: [
+      { acadTermId: "2025-2", round: "1", window: 1, min: 1, median: 5, vacancy: 10 },
+      { acadTermId: "2025-2", round: "1", window: 2, min: 2, median: 7, vacancy: null },
+    ],
+    prediction: { medianPredicted: 6, minPredicted: 2, bidWindow: { id: 1, round: "1", window: 1 } },
     safetyFactors: [{ beatsPercentage: 80, multiplier: 1.5 }],
   },
   "recommend-bid-amount": {
@@ -105,11 +122,11 @@ const VALID = {
 } as Record<string, Record<string, unknown>>;
 
 const ADAPTERS: Array<[string, unknown, string]> = [
-  ["my-bid-plan", myBidPlan, "Bid plan for 2026-1 — 1 bids"],
-  ["get-my-roadmap", getMyRoadmap, 'Roadmap "My Plan" — 1 entries'],
-  ["get-course-reviews", getCourseReviews, "Reviews for ACC101 — 1 reviews"],
-  ["explore-bid-options", exploreBidOptions, "Bid options ready"],
-  ["recommend-bid-amount", recommendBidAmount, "Suggested bid 8 for class cl1"],
+  ["my-bid-plan", myBidPlan, "Bid plan for 2026-1 — balance 100, 2 bids:\nACC101 G1 (Jane Doe): 10 — SECURED R1W1\nCOR-IS1702 G2: 25 — PENDING R1W2"],
+  ["get-my-roadmap", getMyRoadmap, 'Roadmap "My Plan" — 3 entries:\nY1 T1: ACC101, COR-IS1702\nY1 T2: COR-STAT1202'],
+  ["get-course-reviews", getCourseReviews, "Reviews for ACC101 — 2 reviews:\n★5 [hard, useful] Jane Doe — Great professor, workload is heavy but fair\n★4 — Read before class"],
+  ["explore-bid-options", exploreBidOptions, "Bid options for class cl1 — 2 history rows:\n2025-2 R1W1: min 1, median 5, vacancy 10\n2025-2 R1W2: min 2, median 7\nPrediction: median 6 (min 2) for round 1 window 1"],
+  ["recommend-bid-amount", recommendBidAmount, "Suggested bid 8 for class cl1 (predicted median 5, 2026-1 R1W1)"],
 ];
 
 describe("object-shaped view-tool adapters", () => {
@@ -180,13 +197,13 @@ describe("object-shaped view-tool adapters", () => {
 });
 
 describe("recommend-bid-amount fallback summary", () => {
-  it("summary includes the suggested amount when suggestedBidAmount is a number", async () => {
+  it("summary includes the suggested amount, predicted median, and window", async () => {
     const { handler } = registration("recommend-bid-amount");
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: JSON.stringify({ classId: "cl1", acadTermId: "2026-1", predictedMedian: 5, suggestedBidAmount: 8 }) }],
     });
     const res = await handler({}, {});
-    expect(res.content[0]?.text).toBe("Suggested bid 8 for class cl1");
+    expect(res.content[0]?.text).toBe("Suggested bid 8 for class cl1 (predicted median 5, 2026-1)");
   });
 
   it("schema-invalid payload (non-numeric suggestedBidAmount) is rejected before the summary is built", async () => {
@@ -195,8 +212,7 @@ describe("recommend-bid-amount fallback summary", () => {
       content: [{ type: "text", text: JSON.stringify({ classId: "cl1", acadTermId: "2026-1", predictedMedian: 5, suggestedBidAmount: "8" }) }],
     });
     const res = await handler({}, {});
-    // The generic "Bid recommendation ready" summary is unreachable: the
-    // schema requires a numeric suggestedBidAmount, and guardedParse runs
+    // The schema requires a numeric suggestedBidAmount, and guardedParse runs
     // before the summary — a payload missing it errors out first.
     expect(res.isError).toBe(true);
     expect(res.content[0]?.text).toBe("Output schema validation failed");

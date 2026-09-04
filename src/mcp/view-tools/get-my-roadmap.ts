@@ -23,8 +23,23 @@ export const getMyRoadmap = server.tool(
       schema: roadmapOutput,
       rawPayloadMessage: "Invalid roadmap payload",
       summarize: (data) => {
-        const sc = data as { name?: string; entries?: unknown[] };
-        return `Roadmap "${sc.name ?? ""}" — ${Array.isArray(sc.entries) ? sc.entries.length : 0} entries`;
+        const sc = data as {
+          name?: string;
+          entries?: Array<{ yearNumber?: number; term?: string; courseCode?: string }>;
+        };
+        const entries = Array.isArray(sc.entries) ? sc.entries : [];
+        const head = `Roadmap "${sc.name ?? ""}" — ${entries.length} entries`;
+        if (entries.length === 0) return head;
+        // Group course codes by year+term so the model sees the term grid.
+        const groups = new Map<string, string[]>();
+        for (const e of entries) {
+          const key = `Y${e.yearNumber} ${e.term}`;
+          const list = groups.get(key) ?? [];
+          if (e.courseCode) list.push(e.courseCode);
+          groups.set(key, list);
+        }
+        const lines = [...groups.entries()].map(([k, codes]) => `${k}: ${codes.join(", ")}`);
+        return `${head}:\n${lines.join("\n")}`;
       },
     }),
 );
