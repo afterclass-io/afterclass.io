@@ -449,4 +449,15 @@ describe("POST /api/chat", () => {
     expect(mockRefundMessage).not.toHaveBeenCalled();
     expect(mockSettleUsage).not.toHaveBeenCalled();
   });
+
+  // -- TASK 7 reviews chaining --
+  it("steers review requests to resolve the exact code then call get-course-reviews", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    await POST(buildReq({ messages: [{ role: "user", content: "reviews for computational thinking" }] }));
+    expect(mockStreamText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        instructions: expect.stringMatching(/resolve.*exact.*code.*then.*get-course-reviews/i),
+      }),
+    );
+  });
 });
