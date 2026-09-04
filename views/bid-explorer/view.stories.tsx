@@ -37,6 +37,17 @@ const historyOnlyProps = {
   safetyFactors: [],
 };
 
+// Multi-round history exercises the Task 9 trend chart, round/window
+// filters, and sortable history table.
+const multiRoundProps = {
+  ...fullProps,
+  history: [
+    { acadTermId: "AY2024/25-T1", round: "1", window: 1, min: 10, median: 22, vacancy: 45 },
+    { acadTermId: "AY2024/25-T1", round: "1A", window: 2, min: 12, median: 25, vacancy: 40 },
+    { acadTermId: "AY2025/26-T1", round: "1", window: 1, min: 14, median: 28, vacancy: 38 },
+  ],
+};
+
 const meta: Meta<typeof View> = {
   title: "MCP Views/bid-explorer",
   component: View,
@@ -57,6 +68,10 @@ export const Dark: Story = {
 
 export const HistoryOnly: Story = {
   decorators: [withMcpView({ status: "ready", toolOutput: historyOnlyProps })],
+};
+
+export const MultiRound: Story = {
+  decorators: [withMcpView({ status: "ready", toolOutput: multiRoundProps })],
 };
 
 export const Loading: Story = {
