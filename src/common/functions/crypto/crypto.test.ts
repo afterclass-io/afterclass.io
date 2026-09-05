@@ -42,7 +42,7 @@ describe("encrypt / decrypt", () => {
 
   it("throws on a tampered ciphertext (GCM auth tag mismatch)", () => {
     const buf = Buffer.from(encrypt("secret payload", KEY), "base64");
-    buf[buf.length - 1] ^= 0x01;
+    buf[buf.length - 1]! ^= 0x01;
     expect(() => decrypt(buf.toString("base64"), KEY)).toThrow();
   });
 });

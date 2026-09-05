@@ -50,6 +50,7 @@
   "exclude": [
     "node_modules",
     "cypress/**/*.cy.js",
-    "storybook-static"
+    "storybook-static",
+    "coverage"
   ]
 }
