@@ -1,5 +1,5 @@
 import { type Review } from "@/modules/reviews/types";
-import { type Labels } from "@prisma/client";
+import { type Labels } from "@/generated/prisma/client";
 import { formatPercentage } from "@/common/functions";
 
 export default function calculateRatingItems(
@@ -12,7 +12,9 @@ export default function calculateRatingItems(
     );
     return {
       label: label.name.replaceAll("_", " ").toLowerCase(),
-      rating: formatPercentage(reviewsWithThisLabel.length / reviews.length),
+      rating: formatPercentage(
+        reviews.length === 0 ? 0 : reviewsWithThisLabel.length / reviews.length,
+      ),
     };
   });
 }

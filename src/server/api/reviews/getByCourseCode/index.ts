@@ -1,4 +1,4 @@
-import { ReviewType } from "@prisma/client";
+import { ReviewType } from "@/generated/prisma/enums";
 import { z } from "zod";
 
 import { publicProcedure } from "@/server/api/trpc";
@@ -19,8 +19,8 @@ export const getByCourseCode = publicProcedure
       skip: z.number().default(0),
       code: z.string(),
       slugs: z.string().array().optional(),
-      filterFor: z.nativeEnum(ReviewsFilterFor),
-      sortBy: z.nativeEnum(ReviewsSortBy),
+      filterFor: z.enum(ReviewsFilterFor),
+      sortBy: z.enum(ReviewsSortBy),
     }),
   )
   .query(async ({ ctx, input }) => {
@@ -30,7 +30,7 @@ export const getByCourseCode = publicProcedure
       cursor: input.cursor ? { id: input.cursor } : undefined,
       where: {
         reviewedCourse: { code: input.code },
-        reviewedProfessor: { slug: { in: input.slugs } },
+        reviewedProfessor: input.slugs && { slug: { in: input.slugs } },
       },
       orderBy: getOrderBy(input.sortBy),
       select: PUBLIC_REVIEW_FIELDS,

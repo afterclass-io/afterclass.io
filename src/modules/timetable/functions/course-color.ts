@@ -2,7 +2,7 @@
  * Deterministic course-code → color mapping for timetable display.
  *
  * Uses djb2 hash modulo 12 to pick from a fixed palette of theme-aware
- * shadcn token classes (see `src/common/styles/shadcn.scss`). Same course
+ * shadcn token classes (see `src/common/styles/shadcn.css`). Same course
  * code always produces the same class set, and every entry adapts to both
  * light and dark themes via CSS variables — no hardcoded hex values.
  */

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { TRPCError } from "@trpc/server";
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@/generated/prisma/client";
 
 import { protectedProcedure } from "@/server/api/trpc";
 import { requireOwnedBid } from "@/server/api/ownership";

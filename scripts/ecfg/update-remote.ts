@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import readJson from "../utils/readJson";
 import { fetchEdgeConfig } from "./utils";
 

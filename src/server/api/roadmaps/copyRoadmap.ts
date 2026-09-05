@@ -1,5 +1,5 @@
-import { Visibility } from "@prisma/client";
-import type { PrismaClient } from "@prisma/client";
+import { Visibility } from "@/generated/prisma/enums";
+import type { PrismaClient } from "@/generated/prisma/client";
 
 const ENTRY_SELECT = {
   courseId: true,

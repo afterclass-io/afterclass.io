@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 // Assuming you've removed ClassDetails and ModuleSummary from the component file
 import { ModAlternativesCard } from "./ModAlternativesCard"; 
 

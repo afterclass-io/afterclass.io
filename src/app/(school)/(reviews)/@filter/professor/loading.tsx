@@ -1,4 +1,4 @@
-import { ReviewType } from "@prisma/client";
+import { ReviewType } from "@/generated/prisma/enums";
 import { FilterToggleSection } from "@/common/components/FilterToggleSection";
 
 export default function Loading() {

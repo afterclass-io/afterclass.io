@@ -1,23 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/auth", () => ({ auth: () => null }));
-vi.mock("@sentry/nextjs", () => ({
-  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
-}));
-
+import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { setSlotSection } from "./index";
 
 const router = createTRPCRouter({ setSlotSection });
-
-function makeCaller(dbMock: unknown) {
-  return router.createCaller({
-    db: dbMock,
-    session: { user: { id: "u1" } },
-    headers: new Headers(),
-  } as never);
-}
 
 describe("timetable.setSlotSection", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -39,7 +26,7 @@ describe("timetable.setSlotSection", () => {
         fn({ userTimetableSlot: { deleteMany, create } }),
       ),
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setSlotSection({
       timetableId: "t1",
       courseId: "co1",
@@ -74,7 +61,7 @@ describe("timetable.setSlotSection", () => {
         fn({ userTimetableSlot: { deleteMany, create } }),
       ),
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await caller.setSlotSection({
       timetableId: "t1",
       courseId: "co1",
@@ -90,7 +77,7 @@ describe("timetable.setSlotSection", () => {
         findUnique: vi.fn().mockResolvedValue(null),
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(
       caller.setSlotSection({
         timetableId: "t1",
@@ -111,7 +98,7 @@ describe("timetable.setSlotSection", () => {
         findUnique: vi.fn().mockResolvedValue({ acadTermId: "term-b" }),
       },
     };
-    const caller = makeCaller(dbMock);
+    const caller = makeCaller(router.createCaller, dbMock);
     await expect(
       caller.setSlotSection({
         timetableId: "t1",

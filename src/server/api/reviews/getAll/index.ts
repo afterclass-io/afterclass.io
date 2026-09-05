@@ -1,4 +1,4 @@
-import { ReviewType } from "@prisma/client";
+import { ReviewType } from "@/generated/prisma/enums";
 import { z } from "zod";
 
 import { publicProcedure } from "@/server/api/trpc";
@@ -20,8 +20,8 @@ export const getAll = publicProcedure
       universityId: z.number().optional(),
       courseId: z.string().optional(),
       profId: z.string().optional(),
-      filterFor: z.nativeEnum(ReviewsFilterFor),
-      sortBy: z.nativeEnum(ReviewsSortBy),
+      filterFor: z.enum(ReviewsFilterFor),
+      sortBy: z.enum(ReviewsSortBy),
     }),
   )
   .query(async ({ ctx, input }) => {

@@ -93,7 +93,7 @@ export function BidsDashboard({
     [handleSaveBudget],
   );
 
-  if (budgetQuery.isLoading) {
+  if (budgetQuery.isPending) {
     return <Skeleton className={cn("h-24 w-full rounded-lg", className)} />;
   }
 

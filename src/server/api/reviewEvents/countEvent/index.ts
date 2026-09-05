@@ -1,4 +1,4 @@
-import { ReviewEventType } from "@prisma/client";
+import { ReviewEventType } from "@/generated/prisma/enums";
 import { z } from "zod";
 
 import { protectedProcedure } from "@/server/api/trpc";
@@ -7,7 +7,7 @@ export const countEvent = protectedProcedure
   .input(
     z.object({
       reviewId: z.string(),
-      eventType: z.nativeEnum(ReviewEventType),
+      eventType: z.enum(ReviewEventType),
     }),
   )
   .query(

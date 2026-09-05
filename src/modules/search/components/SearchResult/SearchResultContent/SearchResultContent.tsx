@@ -12,7 +12,7 @@ import { SearchResultList } from "../SearchResultList";
 import { SearchResultItem } from "../SearchResultItem";
 import { SearchResultFilter } from "../SearchResultFilter";
 import { SearchResultEmpty } from "../SearchResultEmpty";
-import { type UniversityAbbreviation } from "@prisma/client";
+import { type UniversityAbbreviation } from "@/generated/prisma/enums";
 import { Separator } from "@/common/components/separator";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

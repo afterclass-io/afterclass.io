@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@/generated/prisma/client";
 import { requirePublicRoadmap } from "@/server/api/roadmaps/requirePublicRoadmap";
 import { checkAndIncrement, clientKey } from "@/server/api/engagement-limit";
 

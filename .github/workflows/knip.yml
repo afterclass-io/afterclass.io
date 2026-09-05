@@ -1,0 +1,42 @@
+name: Knip
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "src/**"
+      - "package.json"
+      - "bun.lock"
+      - "knip.json"
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - "src/**"
+      - "package.json"
+      - "bun.lock"
+      - "knip.json"
+
+jobs:
+  knip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
+
+      - name: copy .env file
+        run: cp .env.example .env
+
+      - run: bun install
+
+      # NOTE: a green knip run does NOT prove all eight undeclared dependencies
+      # from GH #511 were handled — knip structurally cannot see the three
+      # root-config ones (dotenv, jiti, pg) imported only from next.config.js
+      # and prisma.config.ts outside the production entry graph. Those three
+      # were verified by inspection, not by this gate. See .scratch/specs/deps-remediation.md § "Scope of the declaration pass".
+      - name: Check unlisted and unused dependencies
+        run: bunx knip --production

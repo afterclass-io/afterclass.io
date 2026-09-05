@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import type { PrismaClient, Prisma } from "@prisma/client";
+import type { PrismaClient, Prisma } from "@/generated/prisma/client";
 import { nanoid } from "nanoid";
 
 /**

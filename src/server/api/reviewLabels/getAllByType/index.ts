@@ -1,10 +1,10 @@
-import { ReviewType } from "@prisma/client";
+import { ReviewType } from "@/generated/prisma/enums";
 import { z } from "zod";
 
 import { publicProcedure } from "@/server/api/trpc";
 
 export const getAllByType = publicProcedure
-  .input(z.object({ typeOf: z.nativeEnum(ReviewType) }))
+  .input(z.object({ typeOf: z.enum(ReviewType) }))
   .query(
     async ({ input, ctx }) =>
       await ctx.db.reviewLabels.findMany({

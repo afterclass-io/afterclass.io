@@ -39,7 +39,7 @@ const loginFormInputsSchema = z.object({
   email: emailValidationSchema,
   password: z
     .string()
-    .min(8, { message: "Passwords must be at least 8 characters long" }),
+    .min(8, { error: "Passwords must be at least 8 characters long" }),
 });
 type LoginFormInputs = z.infer<typeof loginFormInputsSchema>;
 

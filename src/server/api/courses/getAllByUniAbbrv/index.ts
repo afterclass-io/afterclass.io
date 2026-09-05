@@ -1,12 +1,13 @@
 import { z } from "zod";
-import { type Prisma, UniversityAbbreviation } from "@prisma/client";
+import { type Prisma } from "@/generated/prisma/client";
+import { UniversityAbbreviation } from "@/generated/prisma/enums";
 
 import { publicProcedure } from "@/server/api/trpc";
 
 export const getAllByUniAbbrv = publicProcedure
   .input(
     z.object({
-      universityAbbrv: z.nativeEnum(UniversityAbbreviation),
+      universityAbbrv: z.enum(UniversityAbbreviation),
     }),
   )
   .query(async ({ ctx, input }) => {

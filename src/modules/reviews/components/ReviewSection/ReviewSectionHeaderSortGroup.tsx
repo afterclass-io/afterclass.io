@@ -27,7 +27,7 @@ export const ReviewSectionHeaderSortGroup = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   // prettier-ignore
-  const defaultSortBy = z.nativeEnum(ReviewsSortBy)
+  const defaultSortBy = z.enum(ReviewsSortBy)
                           .safeParse(searchParams?.get("sort"))
                             ?.data
                         ?? ReviewsSortBy.LATEST;

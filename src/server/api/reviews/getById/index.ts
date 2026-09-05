@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { ReviewType } from "@prisma/client";
+import { ReviewType } from "@/generated/prisma/enums";
 import { z } from "zod";
 
 import { protectedProcedure } from "@/server/api/trpc";

@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { reviewFormSchema } from "@/common/tools/zod/schemas";
@@ -25,29 +25,31 @@ export const create = protectedProcedure
       reviewsToCreate.push(profReview);
     }
     try {
-      for (const r of reviewsToCreate) {
-        const review = await ctx.db.reviews.create({
-          data: {
-            body: r.body,
-            tips: r.tips,
-            rating: r.rating,
-            reviewedCourseId: input.course.value,
-            reviewedFacultyId: course.belongToFacultyId,
-            reviewedProfessorId:
-              r.value === profReview?.value ? r.value : undefined,
-            reviewedUniversityId: course.belongToUniversityId,
-            reviewerId: ctx.session.user.id,
-          },
-        });
-        if (r.labels) {
-          await ctx.db.reviewLabels.createMany({
-            data: r.labels.map((label) => ({
-              reviewId: review.id,
-              labelId: parseInt(label),
-            })),
+      await ctx.db.$transaction(async (tx) => {
+        for (const r of reviewsToCreate) {
+          const review = await tx.reviews.create({
+            data: {
+              body: r.body,
+              tips: r.tips,
+              rating: r.rating,
+              reviewedCourseId: input.course.value,
+              reviewedFacultyId: course.belongToFacultyId,
+              reviewedProfessorId:
+                r.value === profReview?.value ? r.value : undefined,
+              reviewedUniversityId: course.belongToUniversityId,
+              reviewerId: ctx.session.user.id,
+            },
           });
+          if (r.labels) {
+            await tx.reviewLabels.createMany({
+              data: r.labels.map((label) => ({
+                reviewId: review.id,
+                labelId: parseInt(label),
+              })),
+            });
+          }
         }
-      }
+      });
       return;
     } catch (error) {
       console.error(error);

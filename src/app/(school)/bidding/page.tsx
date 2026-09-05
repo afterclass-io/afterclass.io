@@ -3,7 +3,7 @@ import { api } from "@/common/tools/trpc/server";
 import { BiddingClassList } from "@/modules/bidding/components/BiddingClassList";
 import { Combobox } from "@/modules/bidding/components/Combobox";
 import { texts } from "@/modules/bidding/constants";
-import { type UniversityAbbreviation } from "@prisma/client";
+import { type UniversityAbbreviation } from "@/generated/prisma/enums";
 
 export default async function BiddingHistoryPage({
   searchParams,
