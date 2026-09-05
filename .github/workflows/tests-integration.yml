@@ -32,7 +32,10 @@ jobs:
         with:
           bun-version: "latest"
 
-      - run: bun install
+      - name: copy .env file
+        run: cp .env.example .env
+      - name: Install dependencies
+        run: bun install
 
       - name: Run integration tests
         env:
