@@ -1,30 +1,17 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/auth", () => ({ auth: () => null }));
-vi.mock("@sentry/nextjs", () => ({
-  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
-}));
-
+import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { upsert } from "./index";
 
 const router = createTRPCRouter({ upsert });
-
-function makeCaller(dbMock: unknown) {
-  return router.createCaller({
-    db: dbMock,
-    session: { user: { id: "u1" } },
-    headers: new Headers(),
-  } as never);
-}
 
 describe("userBids.upsert", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("uses a single native upsert keyed by (userId, classId, bidWindowId)", async () => {
     const upsertMock = vi.fn().mockResolvedValue({ id: "b1" });
-    const caller = makeCaller({ userBid: { upsert: upsertMock } });
+    const caller = makeCaller(router.createCaller, { userBid: { upsert: upsertMock } });
 
     const result = await caller.upsert({
       classId: "c1",
@@ -56,7 +43,7 @@ describe("userBids.upsert", () => {
 
   it("does not touch status when updating an existing bid", async () => {
     const upsertMock = vi.fn().mockResolvedValue({ id: "b1" });
-    const caller = makeCaller({ userBid: { upsert: upsertMock } });
+    const caller = makeCaller(router.createCaller, { userBid: { upsert: upsertMock } });
 
     await caller.upsert({ classId: "c1", bidWindowId: 2, bidAmount: 50 });
 

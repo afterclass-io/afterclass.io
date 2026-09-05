@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
-// getFeedData imports "server-only" which throws outside Next.
+// Not a createCaller test: getFeedData is a plain exported function that takes
+// `db` as an argument, so it doesn't use the shared trpc-test-helpers caller.
+// It imports "server-only" (throws outside Next) and @/server/db, both stubbed.
 vi.mock("server-only", () => ({}));
 vi.mock("@/server/db", () => ({ db: {} }));
 
@@ -25,7 +27,18 @@ describe("getFeedData", () => {
     expect(result).toBeNull();
   });
 
-  it("returns feed data for an UNLISTED timetable", async () => {
+  it("returns null when the token matches no timetable", async () => {
+    const db = {
+      userTimetable: { findUnique: vi.fn().mockResolvedValue(null) },
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+    const result = await getFeedData("bad-tok", db as any);
+    expect(result).toBeNull();
+  });
+
+  it("maps slots to ArrangedClass and resolves the term window for an UNLISTED timetable", async () => {
+    const termStart = new Date("2026-08-10T00:00:00Z");
+    const termEnd = new Date("2026-12-01T00:00:00Z");
     const db = {
       userTimetable: {
         findUnique: vi.fn().mockResolvedValue({
@@ -33,13 +46,45 @@ describe("getFeedData", () => {
           visibility: "UNLISTED",
           icalToken: "tok",
           name: "My Plan",
-          acadTerm: { startDt: new Date(), endDt: new Date() },
-          slots: [],
+          acadTerm: { startDt: termStart, endDt: termEnd },
+          slots: [
+            {
+              class: {
+                id: "cls1",
+                section: "G1",
+                course: { code: "IS111", name: "Python", creditUnits: 1 },
+                professor: { name: "Prof X" },
+                classTimings: [
+                  { dayOfWeek: "MON", startTime: "0800", endTime: "1200", venue: "SR1" },
+                ],
+                classExamTimings: [],
+              },
+            },
+          ],
         }),
       },
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
     const result = await getFeedData("tok", db as any);
-    expect(result).not.toBeNull();
+
+    expect(result).toEqual({
+      timetableName: "My Plan",
+      termStart,
+      termEnd,
+      classes: [
+        {
+          classId: "cls1",
+          courseCode: "IS111",
+          courseName: "Python",
+          section: "G1",
+          professorName: null, // omitProfessorName — no PII in the iCal feed
+          creditUnits: 1,
+          timings: [
+            { dayOfWeek: "MON", startTime: "0800", endTime: "1200", venue: "SR1" },
+          ],
+          examTimings: [],
+        },
+      ],
+    });
   });
 });

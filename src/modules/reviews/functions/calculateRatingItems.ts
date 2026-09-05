@@ -12,7 +12,9 @@ export default function calculateRatingItems(
     );
     return {
       label: label.name.replaceAll("_", " ").toLowerCase(),
-      rating: formatPercentage(reviewsWithThisLabel.length / reviews.length),
+      rating: formatPercentage(
+        reviews.length === 0 ? 0 : reviewsWithThisLabel.length / reviews.length,
+      ),
     };
   });
 }

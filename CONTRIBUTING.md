@@ -121,7 +121,9 @@ Request.
   - Add appropriate test coverage if applicable.
 - It's OK to have multiple small commits as you work on the PR. GitHub can
   automatically squash them before merging.
-- Make sure tests pass!
+- Make sure tests pass! `bun run test` runs the mocked-`db` unit suite (no
+  Docker required). `bun run test:integration` runs the real-Postgres
+  integration suite via Testcontainers and needs a running Docker daemon.
 - No need to worry about code style as long as you have installed the dev
   dependencies and recommended dev setup. Modified files are automatically
   formatted with Prettier on save.
