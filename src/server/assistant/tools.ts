@@ -26,7 +26,8 @@ export const TRUNCATION_NOTE =
  * of running - the model relays it and the stream is not broken by a throw.
  * Read-only tools have no budget and pass through untouched. (The MCP path
  * has its own limiter in `src/mcp/register.ts`; this one is separate and
- * does not share its budget.)
+ * does not share its budget — see the budget matrix in
+ * `src/mcp/rate-limit.ts` for the three buckets and why.)
  */
 export function buildAssistantTools(
   ctx: ToolContext,

@@ -38,6 +38,10 @@ const CalendarLinksView: React.FC = () => {
   const dark = theme === "dark";
   const c = dark ? TOKENS.dark : TOKENS.light;
   const [copied, setCopied] = useState(false);
+  // Local clipboard toggle (NOT a tool-call CTA): use-cta-feedback's
+  // useCtaFeedback/useKeyedCtaFeedback cover tool-call saved/error feedback
+  // (roadmap-view, bid-explorer, course-search). This Copy button only flips
+  // `navigator.clipboard` state, so it keeps its own timer by design.
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     return () => {
@@ -76,9 +80,7 @@ const CalendarLinksView: React.FC = () => {
     { key: "appleSubscribeUrl", label: "Apple Calendar" },
     { key: "outlookSubscribeUrl", label: "Outlook" },
   ];
-  const missingLinks = urls
-    ? LINK_LABELS.filter(({ key }) => !urls[key])
-    : [];
+  const missingLinks = urls ? LINK_LABELS.filter(({ key }) => !urls[key]) : [];
   const madeLinkShareable =
     (toolOutput as { madeLinkShareable?: boolean } | undefined)
       ?.madeLinkShareable === true;
@@ -117,7 +119,14 @@ const CalendarLinksView: React.FC = () => {
         </div>
       )}
       {urls && (
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+            marginBottom: 12,
+          }}
+        >
           {googleSubscribeUrl && (
             <a
               href={googleSubscribeUrl}
@@ -187,7 +196,14 @@ const CalendarLinksView: React.FC = () => {
         </div>
       )}
       {urls && missingLinks.length > 0 && (
-        <div style={{ fontSize: 11, color: c.mutedFg, marginBottom: 12, lineHeight: 1.5 }}>
+        <div
+          style={{
+            fontSize: 11,
+            color: c.mutedFg,
+            marginBottom: 12,
+            lineHeight: 1.5,
+          }}
+        >
           {missingLinks
             .map(({ label }) => `${label} link unavailable`)
             .join(" · ")}
@@ -244,12 +260,27 @@ const CalendarLinksView: React.FC = () => {
           </button>
         </div>
       )}
-      <div style={{ fontSize: 11, color: c.mutedFg, marginTop: 8, lineHeight: 1.5 }}>
+      <div
+        style={{
+          fontSize: 11,
+          color: c.mutedFg,
+          marginTop: 8,
+          lineHeight: 1.5,
+        }}
+      >
         Subscribed calendars update automatically when your timetable changes.
       </div>
       {madeLinkShareable && (
-        <div style={{ fontSize: 11, color: c.mutedFg, marginTop: 6, lineHeight: 1.5 }}>
-          Link-sharing was turned on for this timetable (anyone with the link can view it).
+        <div
+          style={{
+            fontSize: 11,
+            color: c.mutedFg,
+            marginTop: 6,
+            lineHeight: 1.5,
+          }}
+        >
+          Link-sharing was turned on for this timetable (anyone with the link
+          can view it).
         </div>
       )}
     </div>

@@ -12,6 +12,10 @@ import { nanoid } from "nanoid";
 // reach the model. The only multi-phrase canned entry is the first welcome-
 // suggestion chip ("What are your capabilities? What can you help me with?")
 // which is an exact normalized phrase, not a contains fallback.
+// The identity/capability lines below mirror `src/server/assistant/rules.ts`
+// (ASSISTANT_RULES) by duplication: importing it here would change the canned
+// answer bytes served to users, so keep the text in sync manually and let the
+// verbatim tests pin both sides.
 const CAPABILITIES_ANSWER = [
   "I'm the afterclass.io assistant for SMU students. I can:",
   "- Search courses, classes, and professors",

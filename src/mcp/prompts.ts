@@ -1,6 +1,13 @@
 import type { MCPServer } from "mcp-use";
 import { z } from "zod";
 
+// NOTE: the "Do not invent course codes - only use codes returned by the
+// tools" grounding lines in the prompt templates below mirror the never-invent
+// invariant in `src/server/assistant/rules.ts` (ASSISTANT_RULES) by
+// duplication: importing it here would change the model-visible template bytes
+// (provider cache prefix), so keep the line in sync manually and let the
+// verbatim tests pin both sides.
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const planSemesterSchema: z.ZodObject<any> = z.object({
   targetTermId: z

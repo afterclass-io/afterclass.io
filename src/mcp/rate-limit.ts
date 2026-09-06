@@ -3,6 +3,25 @@ import { getChatConfig, getRateLimitWindowMinutes } from "@/server/ecfg/chat";
 import type { ToolContext } from "@/server/mcp/types";
 
 /**
+ * Budget matrix (Task 5 — documentation only, no limit changes; Task 7/8 own
+ * the numbers).
+ *
+ * Three per-user buckets, keyed `<prefix>:<userId>` in the shared
+ * `checkAndIncrement` store (`src/server/assistant/ratelimit.ts`), all with
+ * the same fixed window (`getRateLimitWindowMinutes()`, default 1 minute):
+ *
+ * | Bucket        | Owner (who charges it)                              | Limit source                                  |
+ * |---------------|-------------------------------------------------------|-----------------------------------------------|
+ * | `mcp-read:`   | MCP transport (`src/mcp/register.ts`, viewless reads; view-bound adapters) via `checkReadBudget` below | `chat.mcpRateLimitPerMinute` (`getChatConfig`) |
+ * | `mcp-write:`  | MCP transport (viewless writes) via `checkWriteBudget` below; `dispatchToolCall` with `budget: "read"|"write"` + default prefixes | same `chat.mcpRateLimitPerMinute` ceiling, separate bucket |
+ * | `chat-write:` | Chat transport (`src/server/assistant/tools.ts` `buildAssistantTools`, inline `checkAndIncrement` — NOT via the helpers below) | `getChatWriteRateLimit(chat)` (env `CHAT_WRITE_RATE_LIMIT_PER_MINUTE`, falls back to `chat.rateLimitPerMinute`) |
+ *
+ * Why they don't share: reads are legitimately higher-volume than writes, so
+ * `mcp-read:` and `mcp-write:` share the configured ceiling but draw from
+ * separate buckets (a read burst can never starve writes and vice versa);
+ * `chat-write:` lives on the chat path's own effective limit so in-app agent
+ * loops and external MCP hosts cannot consume each other's budget.
+ *
  * Tools that permanently delete user data — plus full-replace writes that can
  * wipe state just as thoroughly (an empty payload overwrites instead of
  * deleting row-by-row). A call to one of these must carry an explicit

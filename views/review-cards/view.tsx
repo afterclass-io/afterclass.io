@@ -3,6 +3,7 @@ import type { ViewConfig } from "mcp-use/react";
 import { useToolContext, useViewTheme } from "mcp-use/react";
 import type { ReviewCardsData } from "../../src/mcp/view-tools/schemas";
 import { TOKENS, Skeleton } from "../shared/tokens";
+import { ViewShell } from "../shared/view-shell";
 import { ReviewCard } from "../shared/components/ReviewCard";
 
 /**
@@ -31,22 +32,22 @@ const ReviewCardsView: React.FC = () => {
   const theme = useViewTheme();
   const dark = theme === "dark";
   const c = dark ? TOKENS.dark : TOKENS.light;
-  if (status === "pending") return <Skeleton dark={dark} />;
+  if (status === "pending") {
+    return (
+      <ViewShell
+        status="pending"
+        dark={dark}
+        skeleton={<Skeleton dark={dark} />}
+      >
+        <span />
+      </ViewShell>
+    );
+  }
   if (status === "error") {
     return (
-      <div
-        role="alert"
-        style={{
-          fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
-          color: c.cardFg,
-          background: c.card,
-          border: `1px solid ${c.border}`,
-          borderRadius: c.radius,
-          padding: 16,
-        }}
-      >
-        {error.message}
-      </div>
+      <ViewShell status="error" dark={dark} error={error}>
+        <span />
+      </ViewShell>
     );
   }
   // `toolOutput` is {context, reviews} from the tool's outputSchema. The tool

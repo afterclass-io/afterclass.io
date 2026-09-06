@@ -46,6 +46,10 @@ const SETTLEMENT_SPIKE_INPUT_TOKENS = 30_000;
 // cached prefix for the LLM provider. Any byte change (wording, tool order,
 // tool schemas/descriptions) invalidates the cache for EVERY user at once.
 // Change only deliberately, and never per-request/per-user.
+// The identity/capability/scope/never-invent invariants below mirror the
+// canonical source `src/server/assistant/rules.ts` (ASSISTANT_RULES) by
+// duplication: importing it here would change these bytes (join shape), so
+// keep the text in sync manually and let the verbatim tests pin both sides.
 const SYSTEM_PROMPT = [
   "You are the afterclass.io assistant, helping SMU students plan their studies.",
   "You can search courses and professors, manage the user's timetables, bids, and roadmaps, and recommend bid amounts.",

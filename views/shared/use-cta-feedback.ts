@@ -5,10 +5,24 @@ export type CtaFeedback = "idle" | "saved" | "error";
 const DEFAULT_DISMISS_MS = 2500;
 
 /**
- * Transient "Done / Error" confirmation for a single CTA button. Callers flip
- * the state to "saved" or "error" after a tool call resolves; it resets to
- * "idle" after a short delay so the button reads as a normal CTA again.
- * Shared by roadmap-view, bid-explorer and course-search.
+ * Single CTA-feedback factory (Task 5 — the factory already exists; do NOT
+ * merge the two hooks: they serve different call sites with different
+ * signatures, and merging would force every caller through one shape).
+ *
+ * When to use which:
+ * - `useCtaFeedback` — ONE CTA per view (single button). Used by roadmap-view
+ *   ("Copy this roadmap") and bid-explorer ("Set bid to $X"). State is a
+ *   single `"idle" | "saved" | "error"`; call `showFeedback("saved"|"error")`
+ *   after the tool call resolves/rejects.
+ * - `useKeyedCtaFeedback` — MANY identical CTAs per view (one per row).
+ *   Used by course-search (one "Add <section>" button per result row). State
+ *   is a `Record<rowKey, "saved" | "error">` (absent key = idle); call
+ *   `showFeedback(rowKey, "saved"|"error")`.
+ *
+ * Both auto-reset after `dismissMs` so the button reads as a normal CTA again.
+ * The only ad-hoc `setTimeout` feedback left in views is calendar-links'
+ * clipboard "Copied" toggle — clipboard state, not a tool-call CTA, so it
+ * stays local (documented at its call site).
  */
 export function useCtaFeedback(dismissMs = DEFAULT_DISMISS_MS) {
   const [feedback, setFeedback] = useState<CtaFeedback>("idle");
@@ -35,7 +49,9 @@ export function useCtaFeedback(dismissMs = DEFAULT_DISMISS_MS) {
  * timer only clears the most recently triggered row.
  */
 export function useKeyedCtaFeedback(dismissMs = DEFAULT_DISMISS_MS) {
-  const [feedback, setFeedback] = useState<Record<string, "saved" | "error">>({});
+  const [feedback, setFeedback] = useState<Record<string, "saved" | "error">>(
+    {},
+  );
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     return () => {
