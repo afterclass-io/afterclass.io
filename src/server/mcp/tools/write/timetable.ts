@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { stripSecretsFromValue } from "@/mcp/output-policy";
 import { pickActiveOrFirst, resolveTermId } from "../../current";
 import {
   confirmField,
@@ -181,8 +182,11 @@ export const setTimetableVisibilityTool: McpTool<
         id: timetableId,
         visibility,
       })) as Record<string, unknown>;
-      // stripShareToken: the bearer shareToken must not reach the LLM.
-      return jsonText(stripShareToken(res));
+      // Canonical output policy: bearer tokens must not reach the LLM.
+      // `stripSecretsFromValue` covers shareToken + icalToken (setVisibility
+      // can return both for timetables); the per-row `stripShareToken` legacy
+      // helper is kept in the chain for diff-reviewability.
+      return jsonText(stripSecretsFromValue(stripShareToken(res)));
     } catch (e) {
       return errText(errorMessage(e));
     }

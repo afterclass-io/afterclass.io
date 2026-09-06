@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { capPage } from "@/mcp/output-policy";
 import { resolveTermId } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 import { stripBidNotes, stripShareToken } from "../bid-shared";
@@ -44,10 +45,11 @@ export const myBidsTool: McpTool<typeof myBidsSchema> = {
   inputSchema: myBidsSchema,
   readOnly: true,
   run: async ({ caller }, input) => {
-    const { acadTermId, limit = 20 } = input as {
-      acadTermId?: string;
-      limit?: number;
-    };
+    // Central pagination policy: clamp through `capPage` (defaults match
+    // this schema: limit default 20, max 50) so the clamp lives in one place.
+    const { acadTermId, limit } = capPage(
+      input as { acadTermId?: string; limit?: number },
+    );
     try {
       // Omitted/empty acadTermId defaults to the current term (all bid windows
       // within that term are kept via the bidWindow.acadTermId filter below).

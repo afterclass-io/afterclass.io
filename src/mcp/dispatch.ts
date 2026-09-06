@@ -2,6 +2,7 @@ import type { ToolContext, ToolResult } from "@/server/mcp/types";
 
 import { errorResult, textResult } from "./envelopes";
 import { isDevBypass } from "./env-gate";
+import { stripSecrets, truncate } from "./output-policy";
 import { buildToolContext } from "./user";
 import {
   checkDestructiveConfirm,
@@ -169,11 +170,18 @@ export async function dispatchToolCall(opts: {
   }
 
   if (result.isError)
-    return errorResult(extractText(result.content) ?? "Tool failed");
-  const text = extractText(result.content) ?? "";
+    return errorResult(
+      stripSecrets(extractText(result.content) ?? "Tool failed"),
+    );
+  const rawText = extractText(result.content) ?? "";
+  // Central secret-strip on the model-visible text path: bearer tokens
+  // (`shareToken`, `icalToken`) and private `notes` never reach model text,
+  // even from a catalog tool that forgot its own per-row strip. Then the
+  // central truncate (policy-supplied limit, unchanged semantics).
+  const text = stripSecrets(rawText);
   if (policy.truncateAt !== undefined && text.length > policy.truncateAt)
     return textResult(
-      text.slice(0, policy.truncateAt) + (policy.truncationNote ?? ""),
+      truncate(text, policy.truncateAt, policy.truncationNote ?? ""),
     );
   return textResult(text);
 }

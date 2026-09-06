@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { stripSecretsFromValue } from "@/mcp/output-policy";
 import { roadmapTermSchema } from "../feasibility-check";
 import { stripShareToken } from "../bid-shared";
 import {
@@ -126,8 +127,10 @@ export const setRoadmapVisibilityTool: McpTool<
         id: roadmapId,
         visibility,
       })) as Record<string, unknown>;
-      // stripShareToken: the bearer shareToken must not reach the LLM.
-      return jsonText(stripShareToken(res));
+      // Canonical output policy: bearer tokens must not reach the LLM
+      // (shareToken + icalToken; per-row `stripShareToken` kept in the chain
+      // for diff-reviewability).
+      return jsonText(stripSecretsFromValue(stripShareToken(res)));
     } catch (e) {
       return errText(errorMessage(e));
     }

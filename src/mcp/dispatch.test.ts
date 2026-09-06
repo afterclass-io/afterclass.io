@@ -169,4 +169,41 @@ describe("dispatchToolCall", () => {
     });
     expect("error" in res ? res.error : "").toBe("Internal error in tool v");
   });
+
+  it("strips bearer tokens and notes from text-shaped results (central output policy)", async () => {
+    // A catalog tool that forgot its own per-row strip must still not leak
+    // secrets: dispatch strips the serialized text before shaping.
+    const tool = okTool(
+      JSON.stringify({
+        shareToken: "s",
+        icalToken: "i",
+        notes: "n",
+        code: "C",
+      }),
+    );
+    const res = await dispatchToolCall({
+      tool: tool as never,
+      params: {},
+      ctx: fakeCtx,
+      policy: { confirm: false, budget: "none", shape: "text" },
+    });
+    const text = "error" in res ? res.error : (res.content[0]?.text ?? "");
+    expect(text).not.toMatch(/shareToken|icalToken|"notes"/);
+    expect(text).toMatch(/"code"/);
+  });
+
+  it("strips secrets from isError text too", async () => {
+    const run = vi.fn().mockResolvedValue({
+      content: [{ type: "text", text: 'failed: "shareToken": "sekret"' }],
+      isError: true,
+    });
+    const res = await dispatchToolCall({
+      tool: { name: "v", run } as never,
+      params: {},
+      ctx: fakeCtx,
+      policy: { confirm: false, budget: "none", shape: "text" },
+    });
+    if ("error" in res) throw new Error("expected text success envelope");
+    expect(res.content[0]?.text).not.toContain("sekret");
+  });
 });
