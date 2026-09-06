@@ -22,9 +22,9 @@ export const searchCourses = server.tool(
     },
   },
   async (params, ctx) => {
-    // Auth + read-budget + run via the single shared pipeline (`shape:
-    // "view"` preserves the widgetProps channel); the bespoke array-tail
-    // below (masking, schema guard, chained summary) is unchanged.
+    // Auth + run via the single shared pipeline (`shape: "view"` preserves
+    // the raw catalog content); the bespoke array-tail below (masking, schema
+    // guard, chained summary) is unchanged.
     const out = await dispatchToolCall({
       tool: searchCoursesTool as never,
       params,
