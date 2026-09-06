@@ -47,6 +47,9 @@ export async function generateMetadata(props: {
     return {
       title,
       description,
+      alternates: {
+        canonical: `/course/${courseCode}`,
+      },
       openGraph: {
         title,
         description,

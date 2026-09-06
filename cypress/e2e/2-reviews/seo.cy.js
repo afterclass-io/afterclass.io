@@ -29,6 +29,27 @@ describe("SEO: Page Head Metadata", () => {
         expect(desc).to.include("9 reviews");
         expect(desc).to.include("Digital Business - Technologies and Transformation");
         expect(desc).to.include("4.11/5");
+        // Canonical link points to /course/IS215
+        const canonicalMatch = html.match(
+          /<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']*)["']/i,
+        );
+        expect(canonicalMatch).to.not.be.null;
+        expect(canonicalMatch[1]).to.match(/\/course\/IS215$/);
+      },
+    },
+    {
+      name: "Course /course/IS215 with query parameters",
+      url: "/course/IS215?professor=ouh-eng-lieh&sort=recent",
+      assertHead: (html) => {
+        // Canonical link drops query parameters
+        const canonicalMatch = html.match(
+          /<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']*)["']/i,
+        );
+        expect(canonicalMatch).to.not.be.null;
+        const canonicalHref = canonicalMatch[1];
+        expect(canonicalHref).to.match(/\/course\/IS215$/);
+        expect(canonicalHref).to.not.include("professor");
+        expect(canonicalHref).to.not.include("sort");
       },
     },
     {
@@ -46,6 +67,26 @@ describe("SEO: Page Head Metadata", () => {
         expect(desc).to.include("20 reviews");
         expect(desc).to.match(/Ouh Eng Lieh/i);
         expect(desc).to.include("4.25/5");
+        // Canonical link points to /professor/ouh-eng-lieh
+        const canonicalMatch = html.match(
+          /<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']*)["']/i,
+        );
+        expect(canonicalMatch).to.not.be.null;
+        expect(canonicalMatch[1]).to.match(/\/professor\/ouh-eng-lieh$/);
+      },
+    },
+    {
+      name: "Professor /professor/ouh-eng-lieh with query parameters",
+      url: "/professor/ouh-eng-lieh?sort=recent",
+      assertHead: (html) => {
+        // Canonical link drops query parameters
+        const canonicalMatch = html.match(
+          /<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']*)["']/i,
+        );
+        expect(canonicalMatch).to.not.be.null;
+        const canonicalHref = canonicalMatch[1];
+        expect(canonicalHref).to.match(/\/professor\/ouh-eng-lieh$/);
+        expect(canonicalHref).to.not.include("sort");
       },
     },
     {

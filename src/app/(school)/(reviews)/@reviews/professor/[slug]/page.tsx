@@ -46,6 +46,9 @@ export async function generateMetadata(props: {
     return {
       title,
       description,
+      alternates: {
+        canonical: `/professor/${slug}`,
+      },
       openGraph: {
         title,
         description,

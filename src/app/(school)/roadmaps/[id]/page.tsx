@@ -26,6 +26,9 @@ export async function generateMetadata(props: {
     return {
       title: `${data.roadmap.name} — Roadmap by ${data.ownerUsername}`,
       description: `A public degree roadmap by ${data.ownerUsername} with ${data.entries.length} courses.`,
+      alternates: {
+        canonical: `/roadmaps/${id}`,
+      },
     };
   } catch {
     return { title: "Roadmap Not Found" };
