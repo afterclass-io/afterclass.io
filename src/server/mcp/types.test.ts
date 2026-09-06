@@ -1,9 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { errorMessage, errText, jsonText, okText, type ToolResult } from "./types";
+import { TRPCError } from "@trpc/server";
+import {
+  errorMessage,
+  errText,
+  jsonText,
+  okText,
+  parseWidgetJson,
+  type ToolResult,
+} from "./types";
 
 describe("mcp result helpers", () => {
   it("okText builds a text CallToolResult", () => {
-    expect(okText("hello")).toEqual({ content: [{ type: "text", text: "hello" }] });
+    expect(okText("hello")).toEqual({
+      content: [{ type: "text", text: "hello" }],
+    });
   });
 
   it("jsonText pretty-prints JSON", () => {
@@ -30,8 +40,52 @@ describe("mcp result helpers", () => {
     expect(errorMessage({})).toContain("[object Object]");
   });
 
+  it("errorMessage passes TRPCError messages through (coded + friendly)", () => {
+    expect(
+      errorMessage(
+        new TRPCError({ code: "NOT_FOUND", message: "Course X not found" }),
+      ),
+    ).toBe("Course X not found");
+    expect(errorMessage(new TRPCError({ code: "FORBIDDEN" }))).toContain(
+      "FORBIDDEN",
+    );
+  });
+
+  it("errorMessage maps Prisma P2002/P2003 constraint noise to a generic retry message", () => {
+    const p2002 = Object.assign(
+      new Error("Unique constraint failed on the fields: (`id`)"),
+      {
+        code: "P2002",
+      },
+    );
+    expect(errorMessage(p2002)).toMatch(/refresh and try again/);
+    expect(errorMessage(p2002)).not.toContain("Unique constraint");
+    const p2003 = Object.assign(new Error("Foreign key constraint failed"), {
+      code: "P2003",
+    });
+    expect(errorMessage(p2003)).toMatch(/refresh and try again/);
+    // Raw DB text without a code is sanitized too.
+    expect(
+      errorMessage(new Error('duplicate key violates unique constraint "x"')),
+    ).toMatch(/refresh and try again/);
+  });
+
+  it("parseWidgetJson returns { data } on valid JSON and { raw } otherwise", () => {
+    const ok = parseWidgetJson({
+      content: [{ type: "text", text: '{"a":1}' }],
+    });
+    expect(ok).toEqual({ data: { a: 1 } });
+    const bad = parseWidgetJson({
+      content: [{ type: "text", text: "not json" }],
+    });
+    expect(bad).toEqual({ raw: "not json" });
+  });
+
   it("ToolResult supports optional widgetProps alongside text content", () => {
-    const r: ToolResult = { content: [{ type: "text", text: "shown in widget" }], widgetProps: { feedUrl: "https://x/api/ical/tok" } };
+    const r: ToolResult = {
+      content: [{ type: "text", text: "shown in widget" }],
+      widgetProps: { feedUrl: "https://x/api/ical/tok" },
+    };
     expect(r.widgetProps?.feedUrl).toContain("/api/ical/");
   });
 });

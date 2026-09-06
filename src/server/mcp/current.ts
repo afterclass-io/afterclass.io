@@ -5,7 +5,9 @@ import type { RouterCaller } from "./types";
  * value; `ok: false` carries a friendly, model-directed error message that the
  * caller should wrap in `errText(...)` (never a bare `[]`).
  */
-export type ResolveResult<T> = { ok: true; value: T } | { ok: false; errText: string };
+export type ResolveResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; errText: string };
 
 /**
  * Resolve the current academic term's id via the existing cached tRPC
@@ -40,18 +42,35 @@ export async function resolveTermIdOrError(
 }
 
 /**
- * Resolve the academic term id for a tool call: an explicit (trimmed)
- * `acadTermId` wins; omitted/empty defaults to the current term. Returns a
- * friendly ask-the-user error when no current term exists. Centralises the
- * "an empty string must never reach SQL" invariant shared by every
- * term-scoped tool.
+ * Normalise an academic term id to the canonical compact DB form
+ * (e.g. `AY202627T1`). The compact form passes through upper-cased; the
+ * UI-only display form `AY2026/27-T1` converts to compact; anything else
+ * passes through trimmed (fail-open so downstream "unknown term" errors
+ * still work).
+ */
+export function normalizeAcadTermId(input: string): string {
+  const trimmed = input.trim();
+  if (/^AY\d{6}T\w+$/i.test(trimmed)) return trimmed.toUpperCase();
+  const display = /^AY(\d{4})\/(\d{2})-(T\w+)$/i.exec(trimmed);
+  if (display) {
+    return `AY${display[1]}${display[2]}${display[3]}`.toUpperCase();
+  }
+  return trimmed;
+}
+
+/**
+ * Resolve the academic term id for a tool call: an explicit (trimmed,
+ * normalised) `acadTermId` wins; omitted/empty defaults to the current term.
+ * Returns a friendly ask-the-user error when no current term exists.
+ * Centralises the "an empty string must never reach SQL" invariant shared by
+ * every term-scoped tool.
  */
 export async function resolveTermId(
   caller: RouterCaller,
   acadTermId?: string,
 ): Promise<ResolveResult<string>> {
-  const trimmed = acadTermId?.trim() ?? "";
-  if (trimmed) return { ok: true, value: trimmed };
+  const normalized = normalizeAcadTermId(acadTermId ?? "");
+  if (normalized) return { ok: true, value: normalized };
   return resolveTermIdOrError(caller);
 }
 
@@ -137,10 +156,13 @@ export async function resolveLatestWindowIdOrError(
   acadTermId?: string,
 ): Promise<ResolveResult<number>> {
   try {
-    const trimmed = acadTermId?.trim() ?? "";
+    const trimmed = normalizeAcadTermId(acadTermId ?? "");
     if (trimmed) {
-      const windows = await caller.bidWindows.getByAcadTerm({ acadTermId: trimmed });
-      const latest = windows.length > 0 ? windows[windows.length - 1] : undefined;
+      const windows = await caller.bidWindows.getByAcadTerm({
+        acadTermId: trimmed,
+      });
+      const latest =
+        windows.length > 0 ? windows[windows.length - 1] : undefined;
       if (!latest) {
         return {
           ok: false,
@@ -181,6 +203,65 @@ export async function resolveCurrentContext(
   const window = await resolveOpenWindowIdOrError(caller, now);
   return {
     ok: true,
-    value: { acadTermId: term.value, bidWindowId: window.ok ? window.value : null },
+    value: {
+      acadTermId: term.value,
+      bidWindowId: window.ok ? window.value : null,
+    },
   };
+}
+
+/**
+ * Pick the list's active entry, falling back to the first entry (or
+ * `undefined` for an empty list). Centralises the `find(isActive) ?? [0]`
+ * idiom shared by the timetable/roadmap/feasibility tools.
+ */
+export function pickActiveOrFirst<T extends { isActive?: boolean }>(
+  list: T[],
+): T | undefined {
+  return list.find((t) => t.isActive) ?? list[0];
+}
+
+type ClassRow = { id: string; section: string };
+
+/**
+ * Resolve a class id by course code + section via `caller.classes.getAll`.
+ * Trims inputs; looks up in the given term first (exact-section match —
+ * `getAll` already filters exactly, the local filter is defensive), then
+ * falls back to a term-agnostic lookup when the term-scoped one is empty.
+ * Returns the matched class id, or `null` when nothing matches.
+ */
+export async function resolveClassIdByCodeSection(
+  caller: RouterCaller,
+  opts: {
+    courseCode: string;
+    section: string;
+    termId?: string;
+    limit?: number;
+  },
+): Promise<string | null> {
+  const courseCode = opts.courseCode.trim();
+  const section = opts.section.trim();
+  if (!courseCode || !section) return null;
+  const limit = opts.limit ?? 5;
+  const getAll = (termId?: string) =>
+    caller.classes.getAll({
+      courseCode,
+      section,
+      ...(termId ? { acadTermId: termId } : {}),
+      limit,
+    }) as unknown as Promise<ClassRow[] | null>;
+  const pick = (rows: ClassRow[] | null): string | null => {
+    const arr = rows ?? [];
+    const exact = arr.find((c) => c.section === section);
+    if (exact) return exact.id;
+    if (arr.length === 1) return arr[0]!.id;
+    return null;
+  };
+  const scoped = await getAll(opts.termId);
+  const scopedId = pick(scoped);
+  if (scopedId) return scopedId;
+  if ((scoped ?? []).length === 0 && opts.termId) {
+    return pick(await getAll(undefined));
+  }
+  return null;
 }
