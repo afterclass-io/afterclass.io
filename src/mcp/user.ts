@@ -45,11 +45,11 @@ export async function resolveMcpUser(
 }
 
 /**
- * Local dev bypass: when the MCP server runs without OAuth (NODE_ENV ===
- * "development", see src/mcp/index.ts) and MCP_DEV_BYPASS is enabled, resolve
- * the caller as the seeded dev user instead of failing closed. This lets the
- * Inspector / local MCP clients exercise all 50 tools against the local
- * Postgres without a Supabase project.
+ * Local dev bypass: when `isDevBypass()` passes (see `src/mcp/env-gate.ts`;
+ * `server.ts` omits OAuth on the same gate) and MCP_DEV_BYPASS is enabled,
+ * resolve the caller as the seeded dev user instead of failing closed. This
+ * lets the Inspector / local MCP clients exercise all 50 tools against the
+ * local Postgres without a Supabase project.
  *
  * Fail-closed guarantees (see src/mcp/env-gate.ts `isDevBypass`, the single
  * gate this helper delegates to):
