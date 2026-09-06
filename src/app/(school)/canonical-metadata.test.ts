@@ -6,6 +6,7 @@ const mockGetBySlug = vi.fn();
 const mockGetMetadataForProf = vi.fn();
 const mockGetRoadmapById = vi.fn();
 
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 vi.mock("@/common/tools/trpc/server", () => ({
   api: {
     courses: {
@@ -25,6 +26,7 @@ vi.mock("@/common/tools/trpc/server", () => ({
     },
   },
 }));
+/* eslint-enable @typescript-eslint/no-unsafe-return */
 
 vi.mock("@/env", () => ({
   env: {

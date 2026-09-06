@@ -40,6 +40,17 @@ describe("sanitizeJsonLd", () => {
     const parsed: unknown = JSON.parse(sanitized);
     expect(parsed).toEqual(maliciousPayload);
   });
+
+  it("handles undefined gracefully without throwing", () => {
+    expect(sanitizeJsonLd(undefined)).toBe("{}");
+  });
+
+  it("escapes line separators U+2028 and U+2029", () => {
+    const text = { text: "line1\u2028line2\u2029line3" };
+    const sanitized = sanitizeJsonLd(text);
+    expect(sanitized).toContain("\\u2028");
+    expect(sanitized).toContain("\\u2029");
+  });
 });
 
 describe("JsonLd Component", () => {

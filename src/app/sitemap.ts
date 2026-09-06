@@ -28,13 +28,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const roadmapUrls: MetadataRoute.Sitemap = [];
+  const seenCursors = new Set<string>();
+  const MAX_ROADMAP_PAGES = 50;
   let cursor: string | undefined = undefined;
+  let pages = 0;
 
   do {
-    const page: ListPublicOutput = await api.roadmaps.listPublic({
-      limit: 50,
-      cursor,
-    });
+    if (cursor && seenCursors.has(cursor)) break;
+    if (cursor) seenCursors.add(cursor);
+    if (++pages > MAX_ROADMAP_PAGES) break;
+
+    const page: ListPublicOutput = await api.roadmaps
+      .listPublic({
+        limit: 50,
+        cursor,
+      })
+      .catch(() => ({ items: [], nextCursor: null }));
 
     for (const item of page.items) {
       roadmapUrls.push({
@@ -42,13 +51,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
-    cursor = page.nextCursor ?? undefined;
+    const next: string | undefined = page.nextCursor ?? undefined;
+    if (!next || next === cursor) break;
+    cursor = next;
   } while (cursor);
 
   const staticUrls: MetadataRoute.Sitemap = [
     { url: `${baseUrl}/` },
     { url: `${baseUrl}/roadmaps` },
     { url: `${baseUrl}/bidding` },
+    { url: `${baseUrl}/bidding/analytics` },
   ];
 
   const courseUrls: MetadataRoute.Sitemap = courses.map((c) => ({

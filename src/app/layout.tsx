@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     siteName: appName,
     description: appDesc,
     url: new URL(env.NEXT_PUBLIC_SITE_URL),
-    locale: "en_SG",
+    locale: "en_GB",
     type: "website",
     images: [
       {

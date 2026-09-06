@@ -23,8 +23,17 @@ import {
 const getCourseData = cache(async (code: string) => {
   const course = await api.courses.getByCourseCode({ code });
   if (!course) return null;
-  const reviewMetadata = await api.reviews.getMetadataForCourse({ code });
-  return { course, reviewMetadata };
+  const reviewMetadata = await api.reviews
+    .getMetadataForCourse({ code })
+    .catch(() => null);
+  return {
+    course,
+    reviewMetadata: reviewMetadata ?? {
+      averageRating: 0,
+      reviewCount: 0,
+      reviewLabels: [],
+    },
+  };
 });
 
 export async function generateMetadata(props: {
@@ -80,7 +89,7 @@ export default async function Course(
   const searchParams = await props.searchParams;
   const params = await props.params;
   // assuming all course codes are uppercase
-  const courseCode = params.code.toUpperCase();
+  const courseCode = params.code?.toUpperCase() ?? "";
   const professorSlugs = searchParams?.professor
     ? Array.isArray(searchParams?.professor)
       ? searchParams?.professor

@@ -15,23 +15,21 @@ import { env } from "@/env";
  */
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = env.NEXT_PUBLIC_SITE_URL.replace(/\/+$/, "");
-
-  if (env.VERCEL_ENV !== "production") {
-    return {
-      rules: {
-        userAgent: "*",
-        disallow: "/",
-      },
-      sitemap: `${baseUrl}/sitemap.xml`,
-    };
-  }
+  const isProduction = env.VERCEL_ENV
+    ? env.VERCEL_ENV === "production"
+    : env.NODE_ENV === "production";
 
   return {
-    rules: {
-      userAgent: "*",
-      allow: "/",
-      disallow: ["/api/", "/account/auth/", "/submit", "/search"],
-    },
+    rules: isProduction
+      ? {
+          userAgent: "*",
+          allow: "/",
+          disallow: ["/api/", "/account/auth/", "/submit", "/search"],
+        }
+      : {
+          userAgent: "*",
+          disallow: "/",
+        },
     sitemap: `${baseUrl}/sitemap.xml`,
   };
 }

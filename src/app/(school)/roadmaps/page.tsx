@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/server/auth";
 import { RoadmapsExplorer } from "@/modules/roadmaps/components/RoadmapsExplorer";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/roadmaps",
+  },
+};
 
 // ---------------------------------------------------------------------------
 // Page

@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import AppleIcon, { size, contentType, runtime } from "./apple-icon";
+import AppleIcon, { size, contentType, runtime, dynamic } from "./apple-icon";
 
 describe("apple-icon", () => {
+  it("exports dynamic force-static", () => {
+    expect(dynamic).toBe("force-static");
+  });
+
   it("exports size 180x180", () => {
     expect(size).toEqual({
       width: 180,

@@ -117,4 +117,30 @@ context("SEO: Discovery & Metadata", function () {
       });
     });
   });
+
+  describe("Robots directives and viewport accessibility", function () {
+    const privateRoutes = [
+      "/account/auth/login",
+      "/submit",
+      "/search",
+      "/timetable",
+      "/roadmaps/mine",
+    ];
+
+    privateRoutes.forEach((route) => {
+      it(`should include noindex, nofollow meta tag on ${route}`, function () {
+        cy.request({ url: route, failOnStatusCode: false }).then((response) => {
+          expect(response.body).to.match(
+            /<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex[^"']*["']/i,
+          );
+        });
+      });
+    });
+
+    it("should allow pinch-to-zoom by omitting maximumScale from viewport", function () {
+      cy.request("/").then((response) => {
+        expect(response.body).not.to.include("maximum-scale=1.0");
+      });
+    });
+  });
 });

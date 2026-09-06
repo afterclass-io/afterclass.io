@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import Icon, { size, contentType, runtime } from "./icon";
+import Icon, { size, contentType, runtime, dynamic } from "./icon";
 
 describe("icon", () => {
+  it("exports dynamic force-static", () => {
+    expect(dynamic).toBe("force-static");
+  });
+
   it("exports size 32x32", () => {
     expect(size).toEqual({
       width: 32,

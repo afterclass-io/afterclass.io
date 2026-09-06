@@ -7,10 +7,14 @@ import { env } from "@/env";
  * Standard JSON parsers (e.g., JSON.parse, search engine crawlers) decode these back to characters.
  */
 export function sanitizeJsonLd(data: unknown): string {
-  return JSON.stringify(data)
+  const json = JSON.stringify(data);
+  if (!json) return "{}";
+  return json
     .replace(/</g, "\\u003c")
     .replace(/>/g, "\\u003e")
-    .replace(/&/g, "\\u0026");
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
 }
 
 export interface JsonLdProps {
@@ -56,7 +60,7 @@ export interface BreadcrumbItem {
 export function createCourseJsonLd(
   course: CourseData,
   reviewMetadata?: ReviewMetadata | null,
-  baseUrl: string = (env.NEXT_PUBLIC_SITE_URL ?? "https://afterclass.io").replace(/\/$/, ""),
+  baseUrl: string = (env.NEXT_PUBLIC_SITE_URL ?? "https://afterclass.io").replace(/\/+$/, ""),
 ) {
   const reviewCount = reviewMetadata?.reviewCount ?? 0;
   const university = course.belongToUniversity;
@@ -91,7 +95,7 @@ export function createCourseJsonLd(
 export function createProfessorJsonLd(
   prof: ProfessorData,
   reviewMetadata?: ReviewMetadata | null,
-  baseUrl: string = (env.NEXT_PUBLIC_SITE_URL ?? "https://afterclass.io").replace(/\/$/, ""),
+  baseUrl: string = (env.NEXT_PUBLIC_SITE_URL ?? "https://afterclass.io").replace(/\/+$/, ""),
 ) {
   const reviewCount = reviewMetadata?.reviewCount ?? 0;
 
@@ -130,7 +134,7 @@ export function createBreadcrumbJsonLd(items: BreadcrumbItem[]) {
 }
 
 export function createWebSiteJsonLd(
-  baseUrl: string = (env.NEXT_PUBLIC_SITE_URL ?? "https://afterclass.io").replace(/\/$/, ""),
+  baseUrl: string = (env.NEXT_PUBLIC_SITE_URL ?? "https://afterclass.io").replace(/\/+$/, ""),
 ) {
   return {
     "@context": "https://schema.org",

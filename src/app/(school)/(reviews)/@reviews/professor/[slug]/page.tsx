@@ -23,8 +23,17 @@ import {
 const getProfData = cache(async (slug: string) => {
   const prof = await api.professors.getBySlug({ slug });
   if (!prof) return null;
-  const reviewMetadata = await api.reviews.getMetadataForProf({ slug });
-  return { prof, reviewMetadata };
+  const reviewMetadata = await api.reviews
+    .getMetadataForProf({ slug })
+    .catch(() => null);
+  return {
+    prof,
+    reviewMetadata: reviewMetadata ?? {
+      averageRating: 0,
+      reviewCount: 0,
+      reviewLabels: [],
+    },
+  };
 });
 
 export async function generateMetadata(props: {

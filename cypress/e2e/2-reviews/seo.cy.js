@@ -17,7 +17,7 @@ describe("SEO: Page Head Metadata", () => {
           /<meta[^>]*property=["']og:url["'][^>]*content=["'][^"']+["']/i,
         );
         expect(html).to.match(
-          /<meta[^>]*property=["']og:locale["'][^>]*content=["']en_SG["']/i,
+          /<meta[^>]*property=["']og:locale["'][^>]*content=["']en_GB["']/i,
         );
         expect(html).to.match(
           /<meta[^>]*name=["']twitter:card["'][^>]*content=["']summary_large_image["']/i,

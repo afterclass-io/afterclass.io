@@ -23,11 +23,23 @@ export async function generateMetadata(props: {
 
   try {
     const data = await getCachedRoadmap(id);
+    const title = `${data.roadmap.name} — Roadmap by ${data.ownerUsername}`;
+    const description = `A public degree roadmap by ${data.ownerUsername} with ${data.entries.length} courses.`;
+
     return {
-      title: `${data.roadmap.name} — Roadmap by ${data.ownerUsername}`,
-      description: `A public degree roadmap by ${data.ownerUsername} with ${data.entries.length} courses.`,
+      title,
+      description,
       alternates: {
         canonical: `/roadmaps/${id}`,
+      },
+      openGraph: {
+        title,
+        description,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
       },
     };
   } catch {

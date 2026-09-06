@@ -12,6 +12,7 @@ const mockGetAllCourses = vi.fn();
 const mockGetAllProfessors = vi.fn();
 const mockListPublicRoadmaps = vi.fn();
 
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 vi.mock("@/common/tools/trpc/server", () => ({
   api: {
     courses: {
@@ -25,6 +26,7 @@ vi.mock("@/common/tools/trpc/server", () => ({
     },
   },
 }));
+/* eslint-enable @typescript-eslint/no-unsafe-return */
 
 describe("sitemap()", () => {
   beforeEach(() => {
@@ -79,6 +81,7 @@ describe("sitemap()", () => {
       { url: "https://afterclass.io/" },
       { url: "https://afterclass.io/roadmaps" },
       { url: "https://afterclass.io/bidding" },
+      { url: "https://afterclass.io/bidding/analytics" },
       // Courses
       { url: "https://afterclass.io/course/IS215" },
       { url: "https://afterclass.io/course/MGMT214" },
@@ -106,6 +109,23 @@ describe("sitemap()", () => {
       { url: "https://afterclass.io/" },
       { url: "https://afterclass.io/roadmaps" },
       { url: "https://afterclass.io/bidding" },
+      { url: "https://afterclass.io/bidding/analytics" },
     ]);
+  });
+
+  it("terminates when cursor repeats in cycle", async () => {
+    mockGetAllCourses.mockResolvedValue([]);
+    mockGetAllProfessors.mockResolvedValue([]);
+    mockListPublicRoadmaps.mockResolvedValue({
+      items: [{ roadmap: { id: "roadmap-cycle" } }],
+      nextCursor: "same-cursor",
+    });
+
+    const result = await sitemap();
+
+    expect(mockListPublicRoadmaps).toHaveBeenCalledTimes(2);
+    expect(result).toContainEqual({
+      url: "https://afterclass.io/roadmaps/roadmap-cycle",
+    });
   });
 });
