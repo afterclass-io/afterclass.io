@@ -17,18 +17,24 @@ import type { Mock } from "vitest";
  */
 
 vi.hoisted(() => {
-  // src/mcp/server.ts wires OAuth from NODE_ENV: development omits the provider
-  // entirely (no bearer middleware), so the real singleton can be probed
-  // in-process without Supabase env vars or tokens. Must run before the
-  // module imports below (the singleton is constructed at import time).
+  // src/mcp/server.ts wires OAuth from isDevBypass(): development + flag
+  // omits the provider entirely (no bearer middleware), so the real
+  // singleton can be probed in-process without Supabase env vars or tokens.
+  // Must run before the module imports below (the singleton is constructed
+  // at import time).
   // `as Record<...>` — lib.dom/next-env types NODE_ENV as readonly.
   (process.env as Record<string, string>).NODE_ENV = "development";
+  (process.env as Record<string, string>).MCP_DEV_BYPASS = "true";
 });
 
-const { buildToolContext } = vi.hoisted(() => ({ buildToolContext: vi.fn() as Mock }));
+const { buildToolContext } = vi.hoisted(() => ({
+  buildToolContext: vi.fn() as Mock,
+}));
 vi.mock("./user", () => ({ buildToolContext }));
 vi.mock("@/server/assistant/ratelimit", () => ({
-  checkAndIncrement: vi.fn().mockResolvedValue({ ok: true, retryAfterSeconds: 0 }),
+  checkAndIncrement: vi
+    .fn()
+    .mockResolvedValue({ ok: true, retryAfterSeconds: 0 }),
 }));
 vi.mock("@/server/ecfg/chat", () => ({
   getChatConfig: vi.fn().mockResolvedValue({ mcpRateLimitPerMinute: 60 }),
@@ -73,12 +79,20 @@ describe("every MCP tool schema is JSON-Schema serializable", () => {
     const failures: string[] = [];
     for (const tool of allTools) {
       try {
-        z.toJSONSchema(tool.inputSchema, { target: "draft-2020-12", io: "input" });
+        z.toJSONSchema(tool.inputSchema, {
+          target: "draft-2020-12",
+          io: "input",
+        });
       } catch (e) {
-        failures.push(`${tool.name}: ${e instanceof Error ? e.message : String(e)}`);
+        failures.push(
+          `${tool.name}: ${e instanceof Error ? e.message : String(e)}`,
+        );
       }
     }
-    expect(failures, `unserializable inputSchemas:\n${failures.join("\n")}`).toEqual([]);
+    expect(
+      failures,
+      `unserializable inputSchemas:\n${failures.join("\n")}`,
+    ).toEqual([]);
   });
 
   it("all 7 view-tool outputSchemas convert (io=output)", () => {
@@ -90,7 +104,10 @@ describe("every MCP tool schema is JSON-Schema serializable", () => {
         failures.push(`${name}: ${e instanceof Error ? e.message : String(e)}`);
       }
     }
-    expect(failures, `unserializable outputSchemas:\n${failures.join("\n")}`).toEqual([]);
+    expect(
+      failures,
+      `unserializable outputSchemas:\n${failures.join("\n")}`,
+    ).toEqual([]);
   });
 
   it("tools/list over the real server returns 50 tools with no -32603", async () => {
@@ -110,15 +127,29 @@ describe("every MCP tool schema is JSON-Schema serializable", () => {
       "timetable",
     ];
     const prime = server as unknown as {
-      __primeViews: (views: Record<string, { kind: "inline"; js: string; css: string }>) => void;
+      __primeViews: (
+        views: Record<string, { kind: "inline"; js: string; css: string }>,
+      ) => void;
     };
-    prime.__primeViews(Object.fromEntries(viewNames.map((n) => [n, { kind: "inline" as const, js: "", css: "" }])));
+    prime.__primeViews(
+      Object.fromEntries(
+        viewNames.map((n) => [n, { kind: "inline" as const, js: "", css: "" }]),
+      ),
+    );
     registerViewlessTools(server);
     const res = await server.fetch(
       new Request("http://localhost/mcp", {
         method: "POST",
-        headers: { "content-type": "application/json", accept: "application/json, text/event-stream" },
-        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} }),
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json, text/event-stream",
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "tools/list",
+          params: {},
+        }),
       }),
     );
     expect(res.status).toBe(200);
@@ -133,7 +164,13 @@ describe("every MCP tool schema is JSON-Schema serializable", () => {
       payload = JSON.parse(dataLine!.slice("data:".length).trim()) as unknown;
     }
     const { result, error } = payload as {
-      result?: { tools: Array<{ name: string; inputSchema?: { type?: string }; outputSchema?: { type?: string } }> };
+      result?: {
+        tools: Array<{
+          name: string;
+          inputSchema?: { type?: string };
+          outputSchema?: { type?: string };
+        }>;
+      };
       error?: { code: number; message: string };
     };
     // The z.date() defect surfaced exactly here: -32603 "Date cannot be
@@ -141,7 +178,9 @@ describe("every MCP tool schema is JSON-Schema serializable", () => {
     expect(error).toBeUndefined();
     const tools = result?.tools ?? [];
     expect(tools).toHaveLength(allTools.length);
-    expect(tools.map((t) => t.name).sort()).toEqual(allTools.map((t) => t.name).sort());
+    expect(tools.map((t) => t.name).sort()).toEqual(
+      allTools.map((t) => t.name).sort(),
+    );
     // Every schema was really serialized (not silently stripped):
     for (const t of tools) {
       expect(t.inputSchema?.type, `${t.name}.inputSchema`).toBe("object");

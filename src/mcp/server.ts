@@ -1,6 +1,10 @@
 // src/mcp/server.ts — the single MCPServer instance
 import { MCPServer } from "mcp-use";
-import { oauthSupabaseProvider, type SupabaseOAuthUser } from "mcp-use/oauth/supabase";
+import {
+  oauthSupabaseProvider,
+  type SupabaseOAuthUser,
+} from "mcp-use/oauth/supabase";
+import { isDevBypass } from "./env-gate";
 
 /** OAuth provider produced by oauthSupabaseProvider (OAuthProvider<SupabaseOAuthUser>). */
 type SupabaseOAuthProvider = ReturnType<typeof oauthSupabaseProvider>;
@@ -22,14 +26,17 @@ function supabaseOAuth(): SupabaseOAuthProvider | undefined {
   const projectId = process.env.MCP_USE_OAUTH_SUPABASE_PROJECT_ID;
   const supabaseUrl = process.env.MCP_USE_OAUTH_SUPABASE_URL;
   const jwtSecret = process.env.MCP_USE_OAUTH_SUPABASE_JWT_SECRET;
-  // In dev, Task 1 omitted oauth entirely — keep that behavior: no bearer
+  // In dev, OAuth is omitted entirely — keep that behavior: no bearer
   // middleware, Inspector zero-auth; resolveDevBypassUser resolves the dev
-  // user iff MCP_DEV_BYPASS=true (see src/mcp/user.ts). `mcp-use dev` does
-  // not force NODE_ENV — it inherits the shell — so treat unset/empty the
-  // same as development here (must match the bypass gate in user.ts).
-  // `mcp-use start` forces NODE_ENV=production, which enables OAuth there.
-  const nodeEnv: string = process.env.NODE_ENV ?? "";
-  if (nodeEnv === "" || nodeEnv === "development" || nodeEnv === "test") return undefined;
+  // user iff the single isDevBypass() gate (./env-gate: NODE_ENV unset or
+  // exactly "development" + MCP_DEV_BYPASS=true) passes. `mcp:dev` sets both
+  // explicitly (scripts/mcp-dev.ts); `mcp-use start` forces
+  // NODE_ENV=production, which enables OAuth there.
+  // NOTE: `mcp-use dev` in a shell with no NODE_ENV inherits unset in a real
+  // shell (bypass allowed iff MCP_DEV_BYPASS=true — the historical
+  // ergonomics); under vitest, NODE_ENV defaults to "test" (fail closed →
+  // OAuth mounted). Use `bun run mcp:dev` for Inspector zero-auth.
+  if (isDevBypass()) return undefined;
   // In prod, missing project config is a hard fail — surface a clear startup
   // error, not a cryptic 401 on the first request.
   if (!projectId && !supabaseUrl) {
@@ -50,11 +57,16 @@ const oauth = supabaseOAuth();
 const SERVER_META = {
   name: "afterclass",
   version: "0.2.0",
-  description: "afterclass.io MCP server - courses, professors, timetables, bids, roadmaps.",
+  description:
+    "afterclass.io MCP server - courses, professors, timetables, bids, roadmaps.",
 } as const;
 
 function createServer(): MCPServer {
-  if (oauth) return new MCPServer<SupabaseOAuthUser>({ ...SERVER_META, oauth }) as unknown as MCPServer;
+  if (oauth)
+    return new MCPServer<SupabaseOAuthUser>({
+      ...SERVER_META,
+      oauth,
+    }) as unknown as MCPServer;
   return new MCPServer(SERVER_META);
 }
 

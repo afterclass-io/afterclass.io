@@ -1,6 +1,7 @@
 import type { ToolContext, ToolResult } from "@/server/mcp/types";
 
 import { errorResult, textResult } from "./envelopes";
+import { isDevBypass } from "./env-gate";
 import { buildToolContext } from "./user";
 import {
   checkDestructiveConfirm,
@@ -20,8 +21,9 @@ import {
 export interface DispatchPolicy {
   /**
    * Whether the destructive confirm-gate applies (non-readOnly write tools).
-   * The gate is skipped under the local dev bypass (same NODE_ENV +
-   * MCP_DEV_BYPASS boundary as before — never active in production or tests).
+   * The gate is skipped under the local dev bypass (the single
+   * `isDevBypass()` gate in ./env-gate — never active in production or
+   * tests).
    */
   confirm: boolean;
   /** Which budget bucket to draw from (`"none"` skips budgeting entirely). */
@@ -89,11 +91,7 @@ function isToolContext(v: unknown): v is ToolContext {
 
 function isDevBypassActive(devBypassOverride?: boolean): boolean {
   if (devBypassOverride !== undefined) return devBypassOverride;
-  const nodeEnv: string = process.env.NODE_ENV ?? "";
-  return (
-    process.env.MCP_DEV_BYPASS === "true" &&
-    (nodeEnv === "" || nodeEnv === "development")
-  );
+  return isDevBypass();
 }
 
 /** Historical model-visible text extraction: first `type: "text"` block. */

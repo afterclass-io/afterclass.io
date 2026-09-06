@@ -237,6 +237,7 @@ describe("oauth wiring (Task 4)", () => {
 
   it("omits oauth entirely when NODE_ENV=development (Inspector zero-auth)", async () => {
     vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("MCP_DEV_BYPASS", "true");
     vi.stubEnv("MCP_USE_OAUTH_SUPABASE_PROJECT_ID", "proj-ref");
 
     const { server } = await import("./server");

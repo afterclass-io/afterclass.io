@@ -5,14 +5,25 @@ import { db } from "@/server/db";
 import type { SessionUser } from "@/server/auth/config";
 import { createCallerForUser } from "@/server/mcp/caller";
 import type { ToolContext } from "@/server/mcp/types";
+import { isDevBypass } from "./env-gate";
 
 /** Explicit whitelist-pick of SessionUser fields (must fail at compile time if the type grows). */
-function toSessionUser(u: NonNullable<Awaited<ReturnType<typeof db.users.findUnique>>>): SessionUser {
+function toSessionUser(
+  u: NonNullable<Awaited<ReturnType<typeof db.users.findUnique>>>,
+): SessionUser {
   return {
-    id: u.id, email: u.email, username: u.username, isVerified: u.isVerified,
-    universityId: u.universityId, firstName: u.firstName, lastName: u.lastName,
-    telegramId: u.telegramId, photoUrl: u.photoUrl, facultyId: u.facultyId,
-    createdAt: u.createdAt, updatedAt: u.updatedAt,
+    id: u.id,
+    email: u.email,
+    username: u.username,
+    isVerified: u.isVerified,
+    universityId: u.universityId,
+    firstName: u.firstName,
+    lastName: u.lastName,
+    telegramId: u.telegramId,
+    photoUrl: u.photoUrl,
+    facultyId: u.facultyId,
+    createdAt: u.createdAt,
+    updatedAt: u.updatedAt,
   };
 }
 
@@ -37,22 +48,22 @@ export async function resolveMcpUser(
  * Local dev bypass: when the MCP server runs without OAuth (NODE_ENV ===
  * "development", see src/mcp/index.ts) and MCP_DEV_BYPASS is enabled, resolve
  * the caller as the seeded dev user instead of failing closed. This lets the
- * Inspector / local MCP clients exercise all 49 tools against the local
+ * Inspector / local MCP clients exercise all 50 tools against the local
  * Postgres without a Supabase project.
  *
- * Fail-closed guarantees:
- * - Only active when NODE_ENV is unset/empty or "development" (production sets
- *   NODE_ENV=production explicitly, so the bypass is structurally impossible
- *   outside dev; `mcp-use dev` does not force NODE_ENV, it inherits the shell).
+ * Fail-closed guarantees (see src/mcp/env-gate.ts `isDevBypass`, the single
+ * gate this helper delegates to):
+ * - Only active when NODE_ENV is unset (undefined) or exactly "development"
+ *   (production sets NODE_ENV=production explicitly via `mcp-use start`, so
+ *   the bypass is structurally impossible outside dev; `mcp:dev` sets
+ *   NODE_ENV=development explicitly in scripts/mcp-dev.ts).
  * - Requires the explicit MCP_DEV_BYPASS=true opt-in.
  * - Only fires as a fallback when resolveMcpUser returned nothing (empty auth
  *   object) — a real token is still resolved through resolveMcpUser and still
  *   fails closed when it does not match a user.
  */
 async function resolveDevBypassUser(): Promise<SessionUser | undefined> {
-  const nodeEnv: string = process.env.NODE_ENV ?? "";
-  if (nodeEnv !== "" && nodeEnv !== "development" && nodeEnv !== "test") return undefined;
-  if (process.env.MCP_DEV_BYPASS !== "true") return undefined;
+  if (!isDevBypass()) return undefined;
   const email = process.env.MCP_DEV_USER_EMAIL ?? "test_hash_pwd@smu.edu.sg";
   const user = await db.users.findUnique({ where: { email } });
   return user ? toSessionUser(user) : undefined;
@@ -60,7 +71,12 @@ async function resolveDevBypassUser(): Promise<SessionUser | undefined> {
 
 /** Resolve auth and build a tRPC caller scoped to the user. Accepts the v2 RequestContext (ctx.auth.user) or a bare auth object. */
 export async function buildToolContext(
-  ctxOrAuth: RequestContext<SupabaseOAuthUser, true> | { auth?: { user?: SupabaseOAuthUser } } | { user?: SupabaseOAuthUser } | null | undefined,
+  ctxOrAuth:
+    | RequestContext<SupabaseOAuthUser, true>
+    | { auth?: { user?: SupabaseOAuthUser } }
+    | { user?: SupabaseOAuthUser }
+    | null
+    | undefined,
 ): Promise<ToolContext | undefined> {
   const auth = (ctxOrAuth as { auth?: unknown })?.auth ?? ctxOrAuth;
   const user = (await resolveMcpUser(auth)) ?? (await resolveDevBypassUser());
