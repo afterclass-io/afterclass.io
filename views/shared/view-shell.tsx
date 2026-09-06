@@ -1,5 +1,5 @@
 import type React from "react";
-import { TOKENS, Skeleton } from "./tokens";
+import { TOKENS, Skeleton, viewShellStyle } from "./tokens";
 
 /**
  * Host-agnostic pending/error wrapper for MCP App Views (Task 5).
@@ -13,6 +13,13 @@ import { TOKENS, Skeleton } from "./tokens";
  * `error` renders the card-chrome alert with the message, `ready` renders
  * `children`. `dark` selects the TOKENS theme. `skeleton` overrides the
  * pending placeholder when a view needs its own.
+ *
+ * NOTE (naming): `tokens.tsx` also exports a presentational `ViewShell`
+ * (`{ dark, role, children }` card chrome). This component is the stateful
+ * status wrapper; prefer importing this one in views (`../shared/view-shell`)
+ * and treat the tokens one as legacy chrome for non-status layouts. A future
+ * task may consolidate the two (reusing `viewShellStyle` here is the first
+ * step — both shells now share the same chrome object).
  */
 export type ViewShellStatus = "pending" | "ready" | "error";
 
@@ -29,17 +36,7 @@ export const ViewShell: React.FC<{
   }
   if (status === "error") {
     return (
-      <div
-        role="alert"
-        style={{
-          fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
-          color: c.cardFg,
-          background: c.card,
-          border: `1px solid ${c.border}`,
-          borderRadius: c.radius,
-          padding: 16,
-        }}
-      >
+      <div role="alert" style={viewShellStyle(c)}>
         {error?.message ?? "Something went wrong."}
       </div>
     );
