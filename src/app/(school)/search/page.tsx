@@ -1,3 +1,5 @@
+import { type Metadata } from "next";
+
 import { ConstrainedContainer } from "@/common/components/constrained-container";
 import { SearchResult } from "@/modules/search/components/SearchResult";
 import {
@@ -8,6 +10,13 @@ import {
   type SearchProfResult,
   searchProf,
 } from "@/modules/search/functions/searchProf";
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function Search(props: {
   searchParams: Promise<{ q: string }>;
