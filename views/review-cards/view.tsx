@@ -3,6 +3,7 @@ import type { ViewConfig } from "mcp-use/react";
 import { useToolContext, useViewTheme } from "mcp-use/react";
 import type { ReviewCardsData } from "../../src/mcp/view-tools/schemas";
 import { TOKENS, Skeleton } from "../shared/tokens";
+import { ReviewCard } from "../shared/components/ReviewCard";
 
 /**
  * MCP App View (mcp-use v2) for the `get-course-reviews` tool. Must stay
@@ -116,89 +117,7 @@ const ReviewCardsView: React.FC = () => {
           }}
         >
           {reviews.map((review) => (
-            <div
-              key={review.id}
-              style={{
-                border: `1px solid ${c.border}`,
-                borderRadius: c.radius,
-                padding: 12,
-              }}
-            >
-              {review.rating !== null && (
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: c.primary,
-                  }}
-                >
-                  ★ {review.rating}/5
-                </div>
-              )}
-              {review.body && (
-                <p
-                  style={{
-                    margin: "6px 0 0",
-                    fontSize: 14,
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {review.body}
-                </p>
-              )}
-              {review.tips && (
-                <p
-                  style={{
-                    margin: "6px 0 0",
-                    fontSize: 12,
-                    color: c.mutedFg,
-                    lineHeight: 1.5,
-                  }}
-                >
-                  Tips: {review.tips}
-                </p>
-              )}
-              {review.labels.length > 0 && (
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 6,
-                    flexWrap: "wrap",
-                    marginTop: 8,
-                  }}
-                >
-                  {review.labels.map((label) => (
-                    <span
-                      key={label}
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        padding: "2px 8px",
-                        borderRadius: 9999,
-                        background: dark
-                          ? "oklch(0.488 0.243 264.376 / 15%)"
-                          : "oklch(0.546 0.245 262.881 / 12%)",
-                        color: dark
-                          ? "oklch(0.623 0.214 259.815)"
-                          : "oklch(0.488 0.243 264.376)",
-                        border: `1px solid ${c.border}`,
-                      }}
-                    >
-                      {label}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <div
-                style={{
-                  marginTop: 8,
-                  fontSize: 11,
-                  color: c.mutedFg,
-                }}
-              >
-                {review.voteCount} upvotes
-              </div>
-            </div>
+            <ReviewCard key={review.id} review={review} c={c} dark={dark} />
           ))}
         </div>
       )}
