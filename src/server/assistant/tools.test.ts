@@ -11,6 +11,10 @@ vi.mock("@/server/assistant/ratelimit", () => ({
   checkAndIncrement: mockCheckAndIncrement,
 }));
 
+// `server-only` throws outside a Next.js server bundle — stub as no-op
+// (tools.ts now reaches it via @/mcp/dispatch → ./user → caller).
+vi.mock("server-only", () => ({}));
+
 import {
   buildAssistantTools,
   MAX_TOOL_RESULT_CHARS,

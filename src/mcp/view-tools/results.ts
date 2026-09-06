@@ -1,7 +1,6 @@
 import type { ToolResult } from "@/server/mcp/types";
 import type { ZodType } from "zod";
-import { buildToolContext } from "../user";
-import { checkReadBudget } from "../rate-limit";
+import { dispatchToolCall, isDispatchCatalogError } from "../dispatch";
 
 export function textResult(text: string): {
   content: Array<{ type: "text"; text: string }>;
@@ -115,39 +114,69 @@ export interface RunViewToolOptions {
 }
 
 /**
- * Shared pipeline for the object-shaped view-tool adapters:
- * auth → tool.run → unwrapResultData → raw-payload guard → schema guard →
- * { summary text, structuredContent }. Error envelopes mirror each adapter's
- * historical messages exactly ("Unauthorized: ...", "Tool failed", "Invalid JSON
- * from catalog", rawPayloadMessage, "Output schema validation failed").
+ * Shared pipeline for the object-shaped view-tool adapters: auth → tool.run →
+ * unwrapResultData → raw-payload guard → schema guard → { summary text,
+ * structuredContent }. Auth/budget/run delegate to `dispatchToolCall`; the
+ * unwrap tail is `finishViewTool` below. Error envelopes mirror each
+ * adapter's historical messages exactly ("Unauthorized: ...", "Tool failed",
+ * "Invalid JSON from catalog", rawPayloadMessage, "Output schema validation
+ * failed").
  */
 export async function runViewTool(
   opts: RunViewToolOptions,
 ): Promise<ViewToolOutcome> {
-  const toolCtx = await buildToolContext(opts.ctx as never);
-  if (!toolCtx)
-    return errorResult(
-      "Unauthorized: no verified identity and dev bypass is off. For local Inspector use `bun run mcp:dev` with MCP_DEV_BYPASS=true (see MCP.md).",
-    );
-  // Read-only view tools draw from the same per-user read bucket as the
-  // viewless read path (`src/mcp/register.ts`) — each call consumes exactly
-  // one token, so token-spray reads are throttled everywhere.
-  const limited = await checkReadBudget(toolCtx);
-  if (limited) return errorResult(limited);
-  const result = await opts.tool.run(toolCtx, opts.params);
-  if (result.isError)
-    return errorResult(result.content[0]?.text ?? "Tool failed");
-  const unwrapped = unwrapResultData(result, opts.tool, opts.fallbackJson);
+  // Auth + read-budget + run via the single shared pipeline (`shape: "view"`
+  // preserves the widgetProps channel for the unwrap below). Error envelopes
+  // mirror each adapter's historical messages exactly ("Unauthorized: ...",
+  // "Tool failed", "Invalid JSON from catalog", rawPayloadMessage, "Output
+  // schema validation failed").
+  const out = await dispatchToolCall({
+    tool: opts.tool as never,
+    params: opts.params,
+    ctx: opts.ctx,
+    policy: { confirm: false, budget: "read", shape: "view" },
+  });
+  if ("error" in out) return errorResult(out.error);
+  return finishViewTool(opts, out.content, out.structuredContent);
+}
+
+export function isCatalogError(
+  v: unknown,
+): v is { __catalogError: true; text: string } {
+  return isDispatchCatalogError(v);
+}
+
+/**
+ * Unwrap → raw-payload guard → schema guard → { summary text,
+ * structuredContent }. Pure over the dispatch result so bespoke adapters
+ * (search-courses) can reuse the tail without changing envelopes.
+ */
+export function finishViewTool(
+  opts: Pick<
+    RunViewToolOptions,
+    "tool" | "schema" | "fallbackJson" | "rawPayloadMessage" | "summarize"
+  >,
+  content: Array<{ type: "text"; text: string }>,
+  structuredContent: unknown,
+): ViewToolOutcome {
+  // Catalog isError results pass through dispatch with their original text
+  // intact: propagate the message verbatim (adapters' historical contract).
+  if (isCatalogError(structuredContent))
+    return errorResult(structuredContent.text);
+  const fake: ToolResult = {
+    content: content.map((c) => ({ type: "text", text: c.text })),
+    ...(structuredContent !== undefined
+      ? { widgetProps: structuredContent as Record<string, unknown> }
+      : {}),
+  };
+  const unwrapped = unwrapResultData(fake, opts.tool, opts.fallbackJson);
   if (!unwrapped.ok) return errorResult("Invalid JSON from catalog");
-  const structuredContent: unknown = unwrapped.data;
-  if (isRawPayload(structuredContent))
-    return errorResult(opts.rawPayloadMessage);
-  const parsed = guardedParse(opts.schema, structuredContent);
+  const structured: unknown = unwrapped.data;
+  if (isRawPayload(structured)) return errorResult(opts.rawPayloadMessage);
+  const parsed = guardedParse(opts.schema, structured);
   if (!parsed.ok) return errorResult("Output schema validation failed");
   return {
-    content: [
-      { type: "text" as const, text: opts.summarize(structuredContent) },
-    ],
-    structuredContent,
+    content: [{ type: "text" as const, text: opts.summarize(structured) }],
+    structuredContent: structured,
   };
 }

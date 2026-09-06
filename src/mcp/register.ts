@@ -1,14 +1,8 @@
 import type { MCPServer } from "mcp-use";
 
 import { allTools } from "@/server/mcp/tools";
-import { buildToolContext } from "./user";
 import { asSchema } from "./schema";
-import { errorResult, textResult } from "./view-tools/results";
-import {
-  checkDestructiveConfirm,
-  checkReadBudget,
-  checkWriteBudget,
-} from "./rate-limit";
+import { dispatchToolCall } from "./dispatch";
 
 // The 7 view-bound tool names are registered by view-tools/* (module scope, exported ToolRefs);
 // this loop skips them and registers the remaining 43 as generic CallToolResult:
@@ -35,43 +29,38 @@ export function registerViewlessTools(server: MCPServer): void {
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- mcp-use context generic varies across Hono versions; params-first signature is what matters
       async (params: unknown, ctx: any) => {
-        const toolCtx = await buildToolContext(ctx as never);
-        if (!toolCtx)
-          return errorResult(
-            "Unauthorized: no verified identity and dev bypass is off. For local Inspector use `bun run mcp:dev` with MCP_DEV_BYPASS=true (see MCP.md).",
-          );
-        if (!tool.readOnly) {
-          // Destructive tools need explicit confirm:true — except under the
-          // local dev bypass (same NODE_ENV + MCP_DEV_BYPASS boundary as
-          // resolveDevBypassUser in user.ts, never active in production or in
-          // tests), where Inspector testing would otherwise be unable to
-          // exercise deletes at all.
-          const nodeEnv: string = process.env.NODE_ENV ?? "";
-          const devBypass =
-            process.env.MCP_DEV_BYPASS === "true" &&
-            (nodeEnv === "" || nodeEnv === "development");
-          if (!devBypass) {
-            const unconfirmed = checkDestructiveConfirm(tool.name, params);
-            if (unconfirmed) return errorResult(unconfirmed);
-          }
-          const limited = await checkWriteBudget(toolCtx);
-          if (limited) return errorResult(limited);
-        } else {
-          // Read-only tools draw from their own per-user read bucket
-          // (`mcp-read:` prefix) so token-spray reads cannot run unbounded
-          // and read bursts can never starve the write budget.
-          const limited = await checkReadBudget(toolCtx);
-          if (limited) return errorResult(limited);
-        }
-        try {
-          const result = await tool.run(toolCtx, params);
-          if (result.isError)
-            return errorResult(result.content[0]?.text ?? "Tool failed");
-          const text = result.content[0]?.text ?? "";
-          return textResult(text);
-        } catch {
-          return errorResult(`Internal error in tool ${tool.name}`);
-        }
+        // Single shared pipeline (auth → confirm-gate → budget → run → shape);
+        // policy preserves this path's historical semantics: destructive gate
+        // for writes, separate mcp-write:/mcp-read: buckets, raw text envelope.
+        const out = await dispatchToolCall({
+          tool: tool as never,
+          params,
+          ctx,
+          policy: {
+            confirm: !tool.readOnly,
+            budget: tool.readOnly ? "read" : "write",
+            shape: "text",
+          },
+        });
+        if ("error" in out)
+          return {
+            isError: true as const,
+            content: [{ type: "text" as const, text: out.error }],
+          };
+        if (out.isError)
+          return {
+            isError: true as const,
+            content: out.content.map((c) => ({
+              type: "text" as const,
+              text: c.text,
+            })),
+          };
+        return {
+          content: out.content.map((c) => ({
+            type: "text" as const,
+            text: c.text,
+          })),
+        };
       },
     );
   }

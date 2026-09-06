@@ -62,12 +62,13 @@ export function checkDestructiveConfirm(
  */
 export async function checkWriteBudget(
   ctx: ToolContext,
+  keyPrefix = "mcp-write",
 ): Promise<string | null> {
   const chat = await getChatConfig();
   const limit = chat.mcpRateLimitPerMinute;
   const windowMinutes = getRateLimitWindowMinutes();
   const res = await checkAndIncrement(
-    `mcp-write:${ctx.user.id}`,
+    `${keyPrefix}:${ctx.user.id}`,
     limit,
     windowMinutes,
   );
@@ -91,12 +92,13 @@ export async function checkWriteBudget(
  */
 export async function checkReadBudget(
   ctx: ToolContext,
+  keyPrefix = "mcp-read",
 ): Promise<string | null> {
   const chat = await getChatConfig();
   const limit = chat.mcpRateLimitPerMinute;
   const windowMinutes = getRateLimitWindowMinutes();
   const res = await checkAndIncrement(
-    `mcp-read:${ctx.user.id}`,
+    `${keyPrefix}:${ctx.user.id}`,
     limit,
     windowMinutes,
   );
