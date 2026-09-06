@@ -21,7 +21,7 @@ describe("bidResults.getBy", () => {
 
     await caller.getBy({ courseCode: "CS101", section: "G1" });
 
-    /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+    /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
@@ -31,6 +31,6 @@ describe("bidResults.getBy", () => {
         }),
       }),
     );
-    /* eslint-enable @typescript-eslint/no-unsafe-assignment */
+    /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
   });
 });
