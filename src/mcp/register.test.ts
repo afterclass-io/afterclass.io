@@ -33,6 +33,19 @@ vi.mock("@/server/mcp/tools", () => ({
       readOnly: true,
       run: fakeRunB,
     },
+    // Catalog entries backing the 7 view-bound adapters imported (via
+    // register.ts) at module scope: each adapter resolves its tool with
+    // `allTools.find((t) => t.name === "...")!` and reads `.description` /
+    // `.inputSchema` at import time, so every name must be present.
+    ...[
+      "search-courses",
+      "get-timetable-calendar-link",
+      "my-bid-plan",
+      "get-my-roadmap",
+      "get-course-reviews",
+      "explore-bid-options",
+      "get-my-timetable-detail",
+    ].map((name) => ({ name, description: "D", inputSchema: {} })),
   ],
 }));
 vi.mock("@/server/mcp/types", () => ({
@@ -53,7 +66,20 @@ vi.mock("mcp-use", () => ({
   MCPServer: vi.fn(),
 }));
 
+// register.ts imports the 7 view-tools adapters (deriving viewBoundNames from
+// their ToolRefs); each adapter calls the real `server.tool(...)` at module
+// scope and register.ts reads each ToolRef's `.name`, so stub the singleton
+// with a registrar returning `{ name }` (the runtime ToolRef shape). The
+// register loop itself takes the server as a parameter, so this mock cannot
+// affect the registration assertions below.
+const { serverTool } = vi.hoisted(() => ({
+  serverTool: vi.fn((def: { name: string }) => ({ name: def.name })) as Mock,
+}));
+vi.mock("./server", () => ({ server: { tool: serverTool } }));
+
 import { registerViewlessTools, viewBoundNames } from "./register";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { checkDestructiveConfirm } from "./rate-limit";
 import { errText, okText } from "@/server/mcp/types";
 import { allTools } from "@/server/mcp/tools";
@@ -109,6 +135,24 @@ describe("registerViewlessTools", () => {
       ]),
     );
     expect(viewBoundNames.size).toBe(7);
+  });
+
+  it("viewBoundNames is derived from ToolRefs, not hardcoded literals", () => {
+    // Pins the Task 2 invariant without importing the real view-tools
+    // adapters (their module scope needs a full `allTools` catalog): none
+    // of the 7 tool names may appear as a string literal in register.ts, so
+    // a rename of any ToolRef breaks loudly (undefined `.name`) instead of
+    // silently double-registering.
+    const source = readFileSync(
+      fileURLToPath(new URL("./register.ts", import.meta.url)),
+      "utf8",
+    );
+    for (const name of viewBoundNames) {
+      expect(
+        source.includes(`"${name}"`) || source.includes(`'${name}'`),
+        `register.ts must not hardcode tool-name literal ${name}`,
+      ).toBe(false);
+    }
   });
 
   it("skips view-bound tools when they appear in allTools", async () => {

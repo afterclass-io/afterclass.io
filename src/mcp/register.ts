@@ -4,18 +4,32 @@ import { allTools } from "@/server/mcp/tools";
 import { asSchema } from "./schema";
 import { dispatchToolCall } from "./dispatch";
 
-// The 7 view-bound tool names are registered by view-tools/* (module scope, exported ToolRefs);
-// this loop skips them and registers the remaining 43 as generic CallToolResult:
-// (recommend-bid-amount is viewless — its view was removed — so it registers here.)
-export const viewBoundNames = new Set([
-  "search-courses",
-  "get-timetable-calendar-link",
-  "my-bid-plan",
-  "get-my-roadmap",
-  "get-course-reviews",
-  "explore-bid-options",
-  "get-my-timetable-detail",
-]);
+import { searchCourses } from "./view-tools/search-courses";
+import { getTimetableCalendarLink } from "./view-tools/get-timetable-calendar-link";
+import { myBidPlan } from "./view-tools/my-bid-plan";
+import { getMyRoadmap } from "./view-tools/get-my-roadmap";
+import { getCourseReviews } from "./view-tools/get-course-reviews";
+import { exploreBidOptions } from "./view-tools/explore-bid-options";
+import { getMyTimetableDetail } from "./view-tools/get-my-timetable-detail";
+
+// The 7 view-bound tool names are registered by view-tools/* (module scope,
+// exported ToolRefs); this loop skips them and registers the remaining 43 as
+// generic CallToolResult: (recommend-bid-amount is viewless — its view was
+// removed — so it registers here.) The set is derived from the ToolRefs so a
+// rename breaks loudly (undefined `.name`) instead of silently
+// double-registering. Import from the view-tools/* modules directly —
+// register.ts must NOT import ./index (index.ts imports register.ts).
+export const viewBoundNames: Set<string> = new Set(
+  [
+    searchCourses,
+    getTimetableCalendarLink,
+    myBidPlan,
+    getMyRoadmap,
+    getCourseReviews,
+    exploreBidOptions,
+    getMyTimetableDetail,
+  ].map((ref) => ref.name),
+);
 
 export function registerViewlessTools(server: MCPServer): void {
   for (const tool of allTools) {
