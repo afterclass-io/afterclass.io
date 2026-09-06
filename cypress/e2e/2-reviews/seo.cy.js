@@ -199,3 +199,131 @@ describe("SEO: Page Head Metadata", () => {
     });
   });
 });
+
+describe("SEO: Structured Data (JSON-LD)", () => {
+  function extractJsonLd(html) {
+    const regex =
+      /<script\s+type=["']application\/ld\+json["']>([\s\S]*?)<\/script>/gi;
+    const items = [];
+    let match;
+    while ((match = regex.exec(html)) !== null) {
+      const parsed = JSON.parse(match[1]);
+      if (Array.isArray(parsed)) {
+        items.push(...parsed);
+      } else {
+        items.push(parsed);
+      }
+    }
+    return items;
+  }
+
+  it("serves valid Course JSON-LD with aggregateRating and BreadcrumbList for /course/IS215", () => {
+    cy.request("/course/IS215").then((response) => {
+      const jsonLd = extractJsonLd(response.body);
+      const course = jsonLd.find((item) => item["@type"] === "Course");
+      expect(course, "Course JSON-LD exists").to.not.be.undefined;
+      expect(course.name).to.include(
+        "Digital Business - Technologies and Transformation",
+      );
+      expect(course.courseCode).to.eq("IS215");
+      expect(course.provider).to.not.be.undefined;
+      expect(course.provider["@type"]).to.eq("Organization");
+      expect(course.provider.name).to.include(
+        "Singapore Management University",
+      );
+
+      expect(course.aggregateRating, "aggregateRating exists").to.not.be
+        .undefined;
+      expect(course.aggregateRating["@type"]).to.eq("AggregateRating");
+      expect(Number(course.aggregateRating.ratingValue)).to.eq(4.11);
+      expect(String(course.aggregateRating.bestRating)).to.eq("5");
+      expect(String(course.aggregateRating.worstRating)).to.eq("1");
+      expect(course.aggregateRating.ratingCount).to.eq(9);
+
+      const breadcrumbs = jsonLd.find(
+        (item) => item["@type"] === "BreadcrumbList",
+      );
+      expect(breadcrumbs, "BreadcrumbList exists").to.not.be.undefined;
+      expect(breadcrumbs.itemListElement).to.have.length(2);
+      expect(breadcrumbs.itemListElement[0].name).to.eq("Home");
+      expect(breadcrumbs.itemListElement[1].name).to.include(
+        "Digital Business - Technologies and Transformation",
+      );
+      expect(breadcrumbs.itemListElement[1].item).to.include("/course/IS215");
+    });
+  });
+
+  it("serves Course JSON-LD WITHOUT aggregateRating for /course/MGMT214 (0 reviews)", () => {
+    cy.request("/course/MGMT214").then((response) => {
+      const jsonLd = extractJsonLd(response.body);
+      const course = jsonLd.find((item) => item["@type"] === "Course");
+      // Tautological Test Prevention: Assert the entity exists and the field is undefined unconditionally
+      expect(course, "Course JSON-LD exists").to.not.be.undefined;
+      expect(course.name).to.include(
+        "Management and Leadership: A Seminar with CEOs",
+      );
+      expect(course.courseCode).to.eq("MGMT214");
+      expect(course.provider).to.not.be.undefined;
+      expect(
+        course.aggregateRating,
+        "aggregateRating must be omitted unconditionally when review count is 0",
+      ).to.be.undefined;
+
+      const breadcrumbs = jsonLd.find(
+        (item) => item["@type"] === "BreadcrumbList",
+      );
+      expect(breadcrumbs, "BreadcrumbList exists").to.not.be.undefined;
+      expect(breadcrumbs.itemListElement).to.have.length(2);
+      expect(breadcrumbs.itemListElement[0].name).to.eq("Home");
+      expect(breadcrumbs.itemListElement[1].name).to.include(
+        "Management and Leadership: A Seminar with CEOs",
+      );
+    });
+  });
+
+  it("serves Person JSON-LD with aggregateRating and BreadcrumbList for /professor/ouh-eng-lieh", () => {
+    cy.request("/professor/ouh-eng-lieh").then((response) => {
+      const jsonLd = extractJsonLd(response.body);
+      const person = jsonLd.find((item) => item["@type"] === "Person");
+      expect(person, "Person JSON-LD exists").to.not.be.undefined;
+      expect(person.name).to.match(/Ouh Eng Lieh/i);
+      expect(person.jobTitle).to.eq("Professor");
+
+      expect(person.aggregateRating, "aggregateRating exists").to.not.be
+        .undefined;
+      expect(person.aggregateRating["@type"]).to.eq("AggregateRating");
+      expect(Number(person.aggregateRating.ratingValue)).to.eq(4.25);
+      expect(String(person.aggregateRating.bestRating)).to.eq("5");
+      expect(String(person.aggregateRating.worstRating)).to.eq("1");
+      expect(person.aggregateRating.ratingCount).to.eq(20);
+
+      const breadcrumbs = jsonLd.find(
+        (item) => item["@type"] === "BreadcrumbList",
+      );
+      expect(breadcrumbs, "BreadcrumbList exists").to.not.be.undefined;
+      expect(breadcrumbs.itemListElement).to.have.length(2);
+      expect(breadcrumbs.itemListElement[0].name).to.eq("Home");
+      expect(breadcrumbs.itemListElement[1].name).to.match(/Ouh Eng Lieh/i);
+      expect(breadcrumbs.itemListElement[1].item).to.include(
+        "/professor/ouh-eng-lieh",
+      );
+    });
+  });
+
+  it("serves WebSite JSON-LD with SearchAction for /", () => {
+    cy.request("/").then((response) => {
+      const jsonLd = extractJsonLd(response.body);
+      const website = jsonLd.find((item) => item["@type"] === "WebSite");
+      expect(website, "WebSite JSON-LD exists").to.not.be.undefined;
+      expect(website.potentialAction, "SearchAction exists").to.not.be.undefined;
+      expect(website.potentialAction["@type"]).to.eq("SearchAction");
+      expect(website.potentialAction.target).to.include(
+        "/search?q={search_term_string}",
+      );
+      expect(website.potentialAction["query-input"]).to.eq(
+        "required name=search_term_string",
+      );
+    });
+  });
+});
+

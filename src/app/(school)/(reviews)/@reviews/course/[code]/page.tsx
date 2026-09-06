@@ -2,6 +2,7 @@ import { cache } from "react";
 import type { Metadata } from "next";
 
 import { api } from "@/common/tools/trpc/server";
+import { env } from "@/env";
 import {
   ReviewSection,
   ReviewSectionHeader,
@@ -11,6 +12,11 @@ import {
 } from "@/modules/reviews/components/ReviewSection";
 import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader";
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
+import {
+  JsonLd,
+  createCourseJsonLd,
+  createBreadcrumbJsonLd,
+} from "@/common/components/json-ld";
 
 // CONSTRAINT (SEO): Exactly one parallel-route slot may own metadata for this route (@reviews).
 
@@ -81,10 +87,23 @@ export default async function Course(
       : [searchParams?.professor]
     : [];
 
-  await getCourseData(courseCode);
+  const data = await getCourseData(courseCode);
+  const baseUrl = (env.NEXT_PUBLIC_SITE_URL ?? "https://afterclass.io").replace(/\/$/, "");
+
+  const courseJsonLd = data?.course
+    ? createCourseJsonLd(data.course, data.reviewMetadata, baseUrl)
+    : null;
+  const breadcrumbsJsonLd = data?.course
+    ? createBreadcrumbJsonLd([
+        { name: "Home", url: `${baseUrl}/` },
+        { name: data.course.name, url: `${baseUrl}/course/${data.course.code}` },
+      ])
+    : null;
 
   return (
     <>
+      {courseJsonLd && <JsonLd data={courseJsonLd} />}
+      {breadcrumbsJsonLd && <JsonLd data={breadcrumbsJsonLd} />}
       <ReviewSection>
         <ReviewSectionHeader>
           <ReviewSectionHeaderSortGroup />
