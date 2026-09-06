@@ -8,18 +8,25 @@ import {
   WELCOME_BUBBLE_KEY, WELCOME_SHOW_DELAY_MS, type WelcomePrefs,
 } from "./logic";
 
+import type { Point, Size } from "../widget-geometry";
+import { bubbleStyle } from "./positioning";
+
 export function WelcomeBubble({
   open,
   onOpen,
   remaining,
   quota,
   hasConnectedAgent,
+  launcher,
+  viewport,
 }: {
   open: boolean;
   onOpen: () => void;
   remaining: number;
   quota: number;
   hasConnectedAgent: boolean;
+  launcher: Point | null;
+  viewport: Size;
 }) {
   const [visible, setVisible] = useState(false);
   const [message, setMessage] = useState("");
@@ -60,13 +67,14 @@ export function WelcomeBubble({
     };
   }, [visible]);
 
-  if (!visible) return null;
+  if (!visible || !launcher) return null;
 
   return (
     <div
       role="status"
       aria-live="polite"
-      className="fixed right-4 bottom-24 z-40 flex max-w-72 items-start gap-2 rounded-2xl border bg-popover p-3 text-sm shadow-xl motion-reduce:animate-none"
+      className="fixed z-40 flex max-w-72 items-start gap-2 rounded-2xl border bg-popover p-3 text-sm shadow-xl motion-reduce:animate-none"
+      style={bubbleStyle(launcher, viewport)}
       data-umami-event="assistant-welcome-shown"
     >
       <button type="button" onClick={onOpen} className="text-left" data-umami-event="assistant-welcome-tryit">

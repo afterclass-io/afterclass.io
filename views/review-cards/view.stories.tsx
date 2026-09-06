@@ -13,7 +13,7 @@ import { withMcpView } from "../../.storybook/withMcpView";
  */
 
 const fullProps = {
-  context: "COR-MGMT1202",
+  context: "ACCT102",
   reviews: [
     {
       id: "rv1",
@@ -23,8 +23,8 @@ const fullProps = {
       labels: ["Group Work", "Fair"],
       voteCount: 12,
       createdAt: "2026-01-15T00:00:00.000Z",
-      courseCode: "COR-MGMT1202",
-      professorName: "Prof X",
+      courseCode: "ACCT102",
+      professorName: "FANG Bingxu",
     },
     {
       id: "rv2",
@@ -34,7 +34,7 @@ const fullProps = {
       labels: [],
       voteCount: 0,
       createdAt: "2026-02-01T00:00:00.000Z",
-      courseCode: "COR-MGMT1202",
+      courseCode: "ACCT102",
       professorName: null,
     },
   ],
@@ -48,8 +48,46 @@ const meta: Meta<typeof View> = {
 export default meta;
 type Story = StoryObj<typeof View>;
 
+/** Course-context reviews (kept as `Default` to preserve Chromatic baselines). */
 export const Default: Story = {
   decorators: [withMcpView({ status: "ready", toolOutput: fullProps })],
+};
+
+/**
+ * Professor-context reviews. `get-professor-reviews` is viewless (one tool
+ * per view), so this story is the visual proof the shared cards handle the
+ * professor shape: context is a professor name, courseCode is informational.
+ */
+const professorProps = {
+  context: "FANG Bingxu",
+  reviews: [
+    {
+      id: "rv-p1",
+      body: "Clear lectures, generous with consultation.",
+      tips: "Read the case before class.",
+      rating: 5,
+      labels: ["Clear", "Helpful"],
+      voteCount: 21,
+      createdAt: "2026-03-10T00:00:00.000Z",
+      courseCode: "ACCT102",
+      professorName: "FANG Bingxu",
+    },
+    {
+      id: "rv-p2",
+      body: "Fast-paced finals.",
+      tips: null,
+      rating: 3,
+      labels: ["Tough Grading"],
+      voteCount: 4,
+      createdAt: "2026-04-02T00:00:00.000Z",
+      courseCode: "ACCT102",
+      professorName: "FANG Bingxu",
+    },
+  ],
+};
+
+export const ProfessorReviews: Story = {
+  decorators: [withMcpView({ status: "ready", toolOutput: professorProps })],
 };
 
 export const Dark: Story = {
@@ -62,7 +100,7 @@ export const NoReviews: Story = {
   decorators: [
     withMcpView({
       status: "ready",
-      toolOutput: { context: "CS101", reviews: [] },
+      toolOutput: { context: "ACCT102", reviews: [] },
     }),
   ],
 };

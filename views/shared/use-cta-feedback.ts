@@ -8,7 +8,7 @@ const DEFAULT_DISMISS_MS = 2500;
  * Transient "Done / Error" confirmation for a single CTA button. Callers flip
  * the state to "saved" or "error" after a tool call resolves; it resets to
  * "idle" after a short delay so the button reads as a normal CTA again.
- * Shared by roadmap-view, bid-explorer and bid-recommendation.
+ * Shared by roadmap-view, bid-explorer and course-search.
  */
 export function useCtaFeedback(dismissMs = DEFAULT_DISMISS_MS) {
   const [feedback, setFeedback] = useState<CtaFeedback>("idle");

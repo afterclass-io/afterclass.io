@@ -8,6 +8,8 @@ import { ChatPanel } from "./chat-panel";
 import { ConnectGate } from "./connect-gate";
 import { type ChatGate } from "./gate";
 import { SignedOutPanel } from "./signed-out-panel";
+import { useViewport } from "./use-viewport";
+import { useWidgetPosition } from "./use-widget-position";
 import { WelcomeBubble } from "./welcome-bubble/welcome-bubble";
 
 type Status =
@@ -38,11 +40,14 @@ function SignedInAssistant({
     if (status.spendPaused) setGate("spend");
   }, [status.spendPaused]);
 
+  const viewport = useViewport();
+  const geometry = useWidgetPosition(viewport);
+
   if (gate) return <ConnectGate reason={gate} />;
 
   return (
     <>
-      <AssistantWidget open={open} onOpenChange={onOpenChange}>
+      <AssistantWidget open={open} onOpenChange={onOpenChange} geometry={geometry}>
         <ChatPanel
           quota={status.quota}
           remaining={status.remaining}
@@ -56,6 +61,8 @@ function SignedInAssistant({
         remaining={status.remaining}
         quota={status.quota}
         hasConnectedAgent={status.hasConnectedAgent}
+        launcher={geometry.position}
+        viewport={viewport}
       />
     </>
   );

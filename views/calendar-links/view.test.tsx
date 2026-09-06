@@ -142,6 +142,51 @@ describe("CalendarLinksView (v2)", () => {
     }
   });
 
+  it("partial meta (only feedUrl) renders the links it has plus a fallback for the missing ones", () => {
+    // G5 regression: before the partial-meta guard, missing subscribe URLs
+    // rendered as dead href="" anchors.
+    seedContext({
+      status: "ready",
+      toolInput: {},
+      toolOutput,
+      meta: { feedUrl: fullMeta.feedUrl },
+    });
+    render(<CalendarLinksView />);
+    // Present: feed input + copy button; absent: no empty subscribe links.
+    expect(screen.getByDisplayValue(fullMeta.feedUrl)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /Google Calendar/i }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("link", { name: /Apple Calendar/i }),
+    ).toBeNull();
+    expect(screen.queryByRole("link", { name: /Outlook/i })).toBeNull();
+    const hrefs = screen
+      .queryAllByRole("link")
+      .map((a) => a.getAttribute("href"));
+    expect(hrefs.every((h) => h && h !== "")).toBe(true);
+    // Fallback note names the missing subscribe links.
+    expect(screen.getByText(/Google Calendar link unavailable/)).toBeInTheDocument();
+    expect(screen.getByText(/Apple Calendar link unavailable/)).toBeInTheDocument();
+  });
+
+  it("partial meta (missing one URL) still renders the available subscribe link", () => {
+    seedContext({
+      status: "ready",
+      toolInput: {},
+      toolOutput,
+      meta: { ...fullMeta, outlookSubscribeUrl: undefined },
+    });
+    render(<CalendarLinksView />);
+    expect(
+      screen.getByRole("link", { name: /Google Calendar/i }).getAttribute("href"),
+    ).toBe(fullMeta.googleSubscribeUrl);
+    expect(
+      screen.queryByRole("link", { name: /Outlook/i }),
+    ).toBeNull();
+    expect(screen.getByText(/Outlook link unavailable/)).toBeInTheDocument();
+  });
+
   it("renders an error alert when the tool fails", () => {
     seedContext({ status: "error", toolInput: {}, error: { message: "boom" } });
     render(<CalendarLinksView />);

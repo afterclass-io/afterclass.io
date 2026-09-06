@@ -306,6 +306,58 @@ describe("timetable.searchCourses", () => {
     expect(params).toContain(false);
   });
 
+  it("casts nullable timing params as ::text at every use (42P18: untyped NULL params)", async () => {
+    queryRawMock.mockResolvedValue([statRow]);
+    classesFindManyMock.mockResolvedValue([]);
+
+    // The plan-semester fallback path: faculty filter, NO day/time filters,
+    // so day/startsAfter/endsBefore are all NULL params. Without an explicit
+    // cast Postgres cannot infer the parameter type at the `=` comparison
+    // and fails with 42P18 ("could not determine data type of parameter").
+    await caller.timetable.searchCourses({
+      acadTermId: "AY202627T1",
+      query: "data engineering",
+      facultyId: 4,
+    });
+
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const sql = rawCall[0].join("?");
+    const params = rawCall.slice(1);
+    expect(params).toContain(null);
+    // day, startsAfter, endsBefore are each interpolated twice
+    // (`<p> IS NULL OR <col> = <p>`), so every use must carry a cast.
+    for (const line of sql
+      .split("\n")
+      .filter(
+        (l) =>
+          l.includes("day_of_week") || l.includes("start_time >=") || l.includes("end_time <="),
+      )) {
+      expect(line).toMatch(/\?::text IS NULL OR/);
+      expect(line).toMatch(/(day_of_week = \?::text|start_time >= \?::text|end_time <= \?::text)/);
+    }
+  });
+
+  it("casts nullable timing params as ::text in the non-faculty branch too", async () => {
+    queryRawMock.mockResolvedValue([statRow]);
+    classesFindManyMock.mockResolvedValue([]);
+
+    await caller.timetable.searchCourses({ acadTermId: "t1", query: "IS" });
+
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const sql = rawCall[0].join("?");
+    expect(sql).not.toContain("belong_to_faculty");
+    const timingLines = sql
+      .split("\n")
+      .filter(
+        (l) =>
+          l.includes("day_of_week") || l.includes("start_time >=") || l.includes("end_time <="),
+      );
+    expect(timingLines).toHaveLength(3);
+    for (const line of timingLines) {
+      expect(line).toMatch(/\?::text IS NULL OR/);
+    }
+  });
+
   it("propagates an error when the raw query rejects", async () => {
     queryRawMock.mockRejectedValue(new Error("boom"));
 

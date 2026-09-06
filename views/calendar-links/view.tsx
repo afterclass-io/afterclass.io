@@ -64,11 +64,21 @@ const CalendarLinksView: React.FC = () => {
   }
   // URLs come from the View-only `_meta` channel, never from toolOutput
   // (structuredContent is what the model sees and holds no secrets).
-  const urls = meta as CalendarLinksMeta | undefined;
+  const urls = meta as Partial<CalendarLinksMeta> | undefined;
   const feedUrl = urls?.feedUrl ?? "";
   const googleSubscribeUrl = urls?.googleSubscribeUrl ?? "";
   const appleSubscribeUrl = urls?.appleSubscribeUrl ?? "";
   const outlookSubscribeUrl = urls?.outlookSubscribeUrl ?? "";
+  // GUARD: a partial meta (some URLs missing) renders the links it has and a
+  // fallback note naming the missing ones — never dead href="" anchors.
+  const LINK_LABELS: Array<{ key: keyof CalendarLinksMeta; label: string }> = [
+    { key: "googleSubscribeUrl", label: "Google Calendar" },
+    { key: "appleSubscribeUrl", label: "Apple Calendar" },
+    { key: "outlookSubscribeUrl", label: "Outlook" },
+  ];
+  const missingLinks = urls
+    ? LINK_LABELS.filter(({ key }) => !urls[key])
+    : [];
   const madeLinkShareable =
     (toolOutput as { madeLinkShareable?: boolean } | undefined)
       ?.madeLinkShareable === true;
@@ -108,69 +118,83 @@ const CalendarLinksView: React.FC = () => {
       )}
       {urls && (
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-          <a
-            href={googleSubscribeUrl}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "6px 14px",
-              borderRadius: 9999,
-              border: "none",
-              background: c.primary,
-              color: c.primaryFg,
-              fontSize: 13,
-              fontWeight: 600,
-              textDecoration: "none",
-              cursor: "pointer",
-            }}
-          >
-            Google Calendar
-          </a>
-          <a
-            href={appleSubscribeUrl}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "6px 14px",
-              borderRadius: 9999,
-              border: `1px solid ${c.primary}`,
-              background: c.card,
-              color: c.primary,
-              fontSize: 13,
-              fontWeight: 600,
-              textDecoration: "none",
-              cursor: "pointer",
-            }}
-          >
-            Apple Calendar
-          </a>
-          <a
-            href={outlookSubscribeUrl}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "6px 14px",
-              borderRadius: 9999,
-              border: `1px solid ${c.primary}`,
-              background: c.card,
-              color: c.primary,
-              fontSize: 13,
-              fontWeight: 600,
-              textDecoration: "none",
-              cursor: "pointer",
-            }}
-          >
-            Outlook
-          </a>
+          {googleSubscribeUrl && (
+            <a
+              href={googleSubscribeUrl}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "6px 14px",
+                borderRadius: 9999,
+                border: "none",
+                background: c.primary,
+                color: c.primaryFg,
+                fontSize: 13,
+                fontWeight: 600,
+                textDecoration: "none",
+                cursor: "pointer",
+              }}
+            >
+              Google Calendar
+            </a>
+          )}
+          {appleSubscribeUrl && (
+            <a
+              href={appleSubscribeUrl}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "6px 14px",
+                borderRadius: 9999,
+                border: `1px solid ${c.primary}`,
+                background: c.card,
+                color: c.primary,
+                fontSize: 13,
+                fontWeight: 600,
+                textDecoration: "none",
+                cursor: "pointer",
+              }}
+            >
+              Apple Calendar
+            </a>
+          )}
+          {outlookSubscribeUrl && (
+            <a
+              href={outlookSubscribeUrl}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "6px 14px",
+                borderRadius: 9999,
+                border: `1px solid ${c.primary}`,
+                background: c.card,
+                color: c.primary,
+                fontSize: 13,
+                fontWeight: 600,
+                textDecoration: "none",
+                cursor: "pointer",
+              }}
+            >
+              Outlook
+            </a>
+          )}
         </div>
       )}
-      {urls && (
+      {urls && missingLinks.length > 0 && (
+        <div style={{ fontSize: 11, color: c.mutedFg, marginBottom: 12, lineHeight: 1.5 }}>
+          {missingLinks
+            .map(({ label }) => `${label} link unavailable`)
+            .join(" · ")}
+          : ask the assistant to regenerate the calendar link.
+        </div>
+      )}
+      {urls && feedUrl && (
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <input
             value={feedUrl}

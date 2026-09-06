@@ -27,7 +27,7 @@ export function ToolCallCard({ part, stepIndex, stepTotal }: { part: ToolPart; s
   const input = "input" in part ? part.input : undefined;
   const errorText = "errorText" in part ? part.errorText : undefined;
   const running = status === "running";
-  const [open, setOpen] = useState(running);
+  const [open, setOpen] = useState(false);
 
   return (
     <div className="w-full max-w-[100%] overflow-hidden rounded-xl border border-border/60 bg-muted/30 text-xs">

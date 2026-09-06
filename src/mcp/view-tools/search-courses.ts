@@ -1,5 +1,6 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
+import { coursePage, searchPage } from "@/server/mcp/tools/page-links";
 import { asSchema } from "../schema";
 import { buildToolContext } from "../user";
 import { courseSearchOutput } from "./schemas";
@@ -43,8 +44,19 @@ export const searchCourses = server.tool(
     const lines = hits.map(
       (c) => `${c.code} | ${c.name} | ${Array.isArray(c.sections) ? c.sections.length : 0} sections`,
     );
-    const text =
+    const query = (params as { query?: unknown }).query;
+    const base =
       lines.length > 0 ? `Found ${hits.length} courses:\n${lines.join("\n")}` : `Found ${hits.length} courses`;
+    const extra: string[] = [];
+    if (typeof query === "string" && query.length > 0) extra.push(`Search page: ${searchPage(query)}`);
+    // Per-hit page links only for short lists — beyond 5 hits the summary
+    // list is long enough already; the search page alone suffices.
+    if (hits.length > 0 && hits.length <= 5) {
+      for (const c of hits) {
+        if (typeof c.code === "string" && c.code.length > 0) extra.push(`${c.code}: ${coursePage(c.code)}`);
+      }
+    }
+    const text = extra.length > 0 ? `${base}\n${extra.join("\n")}` : base;
     return {
       content: [{ type: "text" as const, text }],
       structuredContent,

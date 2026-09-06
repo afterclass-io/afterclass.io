@@ -58,6 +58,19 @@ export const Shareable: Story = {
   ],
 };
 
+// Partial meta: only the feed URL survived (e.g. truncated _meta) — the View
+// renders the feed input + copy button with a fallback note naming the
+// missing subscribe links instead of dead href="" anchors.
+const partialMetaUrls = {
+  feedUrl: metaUrls.feedUrl,
+};
+
+export const PartialMeta: Story = {
+  decorators: [
+    withMcpView({ status: "ready", toolOutput, meta: partialMetaUrls }),
+  ],
+};
+
 export const Loading: Story = {
   decorators: [withMcpView({ status: "pending" })],
 };

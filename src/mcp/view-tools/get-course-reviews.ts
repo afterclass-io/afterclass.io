@@ -1,5 +1,6 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
+import { coursePage } from "@/server/mcp/tools/page-links";
 import { asSchema } from "../schema";
 import { reviewCardsOutput } from "./schemas";
 import { runViewTool } from "./results";
@@ -35,7 +36,10 @@ export const getCourseReviews = server.tool(
         };
         const reviews = Array.isArray(sc.reviews) ? sc.reviews : [];
         const head = `Reviews for ${sc.context ?? ""} — ${reviews.length} reviews`;
-        if (reviews.length === 0) return head;
+        // Page link from own output only (context echoes the queried code) —
+        // never invented; omitted when context is absent.
+        const link = typeof sc.context === "string" && sc.context.length > 0 ? `\nFull reviews: ${coursePage(sc.context)}` : "";
+        if (reviews.length === 0) return `${head}${link}`;
         // One line per review: rating, labels, professor, body-or-tips
         // snippet (truncated so a 20-review payload stays compact).
         const lines = reviews.map((r) => {
@@ -45,7 +49,7 @@ export const getCourseReviews = server.tool(
           const snippet = (r.body ?? r.tips ?? "").slice(0, 120);
           return `${stars}${labels}${prof} — ${snippet}`.trim();
         });
-        return `${head}:\n${lines.join("\n")}`;
+        return `${head}:\n${lines.join("\n")}${link}`;
       },
     }),
 );

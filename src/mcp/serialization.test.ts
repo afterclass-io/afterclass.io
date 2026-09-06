@@ -44,18 +44,18 @@ import "./view-tools/my-bid-plan";
 import "./view-tools/get-my-roadmap";
 import "./view-tools/get-course-reviews";
 import "./view-tools/explore-bid-options";
-import "./view-tools/recommend-bid-amount";
 import "./view-tools/get-timetable-calendar-link";
+import "./view-tools/get-my-timetable-detail";
 import { registerViewlessTools, viewBoundNames } from "./register";
 import { server } from "./server";
 import {
   bidExplorerOutput,
   bidPlanOutput,
-  bidRecommendationOutput,
   calendarLinksOutput,
   courseSearchOutput,
   reviewCardsOutput,
   roadmapOutput,
+  timetableDetailOutput,
 } from "./view-tools/schemas";
 
 const VIEW_OUTPUTS: Array<[string, z.ZodType]> = [
@@ -64,8 +64,8 @@ const VIEW_OUTPUTS: Array<[string, z.ZodType]> = [
   ["get-my-roadmap", roadmapOutput],
   ["get-course-reviews", reviewCardsOutput],
   ["explore-bid-options", bidExplorerOutput],
-  ["recommend-bid-amount", bidRecommendationOutput],
   ["get-timetable-calendar-link", calendarLinksOutput],
+  ["get-my-timetable-detail", timetableDetailOutput],
 ];
 
 describe("every MCP tool schema is JSON-Schema serializable", () => {
@@ -106,8 +106,8 @@ describe("every MCP tool schema is JSON-Schema serializable", () => {
       "roadmap-view",
       "review-cards",
       "bid-explorer",
-      "bid-recommendation",
       "calendar-links",
+      "timetable",
     ];
     const prime = server as unknown as {
       __primeViews: (views: Record<string, { kind: "inline"; js: string; css: string }>) => void;

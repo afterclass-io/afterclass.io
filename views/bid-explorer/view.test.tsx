@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the whole mcp-use/react surface the View consumes (v2 contract) —
@@ -12,8 +18,13 @@ vi.mock("mcp-use/react", () => ({
   useDynamicTool: vi.fn(),
 }));
 
-import BidExplorerView, { viewConfig } from "./view";
-import { useDynamicTool, useHostContext, useToolContext, useViewTheme } from "mcp-use/react";
+import BidExplorerView, { viewConfig, shortTermLabel } from "./view";
+import {
+  useDynamicTool,
+  useHostContext,
+  useToolContext,
+  useViewTheme,
+} from "mcp-use/react";
 
 const mockedUseToolContext = vi.mocked(useToolContext);
 const mockedUseViewTheme = vi.mocked(useViewTheme);
@@ -21,10 +32,27 @@ const mockedUseHostContext = vi.mocked(useHostContext);
 const mockedUseDynamicTool = vi.mocked(useDynamicTool);
 
 const history = [
-  { acadTermId: "AY2024/25-T1", round: "1", window: 1, min: 10, median: 22, vacancy: 45 },
-  { acadTermId: "AY2025/26-T1", round: "1", window: 1, min: 14, median: 28, vacancy: 40 },
+  {
+    acadTermId: "AY2024/25-T1",
+    round: "1",
+    window: 1,
+    min: 10,
+    median: 22,
+    vacancy: 45,
+  },
+  {
+    acadTermId: "AY2025/26-T1",
+    round: "1",
+    window: 1,
+    min: 14,
+    median: 28,
+    vacancy: 40,
+  },
 ];
 
+// Safety factors mirror the real seed data
+// (`prisma/data/22_safety_factors.json`, EMPIRICAL/MEDIAN): six
+// rates 50/60/70/80/90/95 with ascending multipliers.
 const fullProps = {
   classId: "cl1",
   history,
@@ -34,9 +62,12 @@ const fullProps = {
     bidWindow: { id: 53, round: "1", window: 1 },
   },
   safetyFactors: [
-    { beatsPercentage: 50, multiplier: 1.0 },
-    { beatsPercentage: 70, multiplier: 1.05 },
-    { beatsPercentage: 90, multiplier: 1.15 },
+    { beatsPercentage: 50, multiplier: 0 },
+    { beatsPercentage: 60, multiplier: 0.25 },
+    { beatsPercentage: 70, multiplier: 0.54 },
+    { beatsPercentage: 80, multiplier: 0.88 },
+    { beatsPercentage: 90, multiplier: 1.37 },
+    { beatsPercentage: 95, multiplier: 1.81 },
   ],
 };
 
@@ -80,7 +111,9 @@ describe("BidExplorerView (v2)", () => {
   it("shows the skeleton while pending (no toolOutput yet)", () => {
     seedContext({ status: "pending", toolInput: {} });
     const { container } = render(<BidExplorerView />);
-    expect(container.querySelector("[aria-label='Loading']")).toBeInTheDocument();
+    expect(
+      container.querySelector("[aria-label='Loading']"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
@@ -105,24 +138,30 @@ describe("BidExplorerView (v2)", () => {
     expect(screen.getByText("Round 1 W1")).toBeInTheDocument();
     expect(screen.getByText(/median \$30/)).toBeInTheDocument(); // predicted median
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
-    expect(slider.getAttribute("value")).toBe("1"); // index of the 70% factor
-    expect(screen.getByText(/beats 70% of bids × 1\.05/)).toBeInTheDocument();
-    // suggested = round(30 x 1.05 x 100) / 100 = 31.5
-    expect(screen.getByText("$31.5")).toBeInTheDocument();
+    expect(slider.getAttribute("value")).toBe("2"); // index of the 70% factor
+    expect(screen.getByText(/beats 70% of bids × 0\.54/)).toBeInTheDocument();
+    // suggested median = round(30 x 0.54 x 100) / 100 = 16.2,
+    // suggested min = round(18 x 0.54 x 100) / 100 = 9.72
+    expect(screen.getByText("$9.72–$16.2")).toBeInTheDocument();
   });
 
   it("updates the suggested amount and label when the slider moves", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
-    fireEvent.change(slider, { target: { value: "2" } });
-    expect(screen.getByText(/beats 90% of bids × 1\.15/)).toBeInTheDocument();
-    // suggested = round(30 x 1.15 x 100) / 100 = 34.5
-    expect(screen.getByText("$34.5")).toBeInTheDocument();
+    fireEvent.change(slider, { target: { value: "4" } });
+    expect(screen.getByText(/beats 90% of bids × 1\.37/)).toBeInTheDocument();
+    // suggested median = round(30 x 1.37 x 100) / 100 = 41.1,
+    // suggested min = round(18 x 1.37 x 100) / 100 = 24.66
+    expect(screen.getByText("$24.66–$41.1")).toBeInTheDocument();
   });
 
   it("renders history without slider or CTA when there is no prediction", () => {
-    seedContext({ status: "ready", toolInput: {}, toolOutput: historyOnlyProps });
+    seedContext({
+      status: "ready",
+      toolInput: {},
+      toolOutput: historyOnlyProps,
+    });
     render(<BidExplorerView />);
     const table = screen.getByRole("table");
     expect(within(table).getByText("AY2024/25-T1")).toBeInTheDocument();
@@ -134,12 +173,12 @@ describe("BidExplorerView (v2)", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
     expect(
-      screen.getByRole("button", { name: "Set bid to $31.5" }),
+      screen.getByRole("button", { name: "Set bid to $16.2" }),
     ).toBeInTheDocument();
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
-    fireEvent.change(slider, { target: { value: "2" } });
+    fireEvent.change(slider, { target: { value: "4" } });
     expect(
-      screen.getByRole("button", { name: "Set bid to $34.5" }),
+      screen.getByRole("button", { name: "Set bid to $41.1" }),
     ).toBeInTheDocument();
   });
 
@@ -148,11 +187,11 @@ describe("BidExplorerView (v2)", () => {
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
-    fireEvent.click(screen.getByRole("button", { name: "Set bid to $31.5" }));
+    fireEvent.click(screen.getByRole("button", { name: "Set bid to $16.2" }));
     await waitFor(() => expect(callTool).toHaveBeenCalledTimes(1));
     expect(callTool).toHaveBeenCalledWith({
       classId: "cl1",
-      bidAmount: 31.5,
+      bidAmount: 16.2,
       bidWindowId: 53,
     });
   });
@@ -166,8 +205,8 @@ describe("BidExplorerView (v2)", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     rerender(<BidExplorerView />);
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
-    expect(slider.getAttribute("value")).toBe("1"); // index of the 70% factor
-    expect(screen.getByText("$31.5")).toBeInTheDocument();
+    expect(slider.getAttribute("value")).toBe("2"); // index of the 70% factor
+    expect(screen.getByText("$9.72–$16.2")).toBeInTheDocument();
   });
 
   it("prediction without safety factors falls back to multiplier 1.0 (CTA still shows)", async () => {
@@ -200,7 +239,7 @@ describe("BidExplorerView (v2)", () => {
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
-    fireEvent.click(screen.getByRole("button", { name: "Set bid to $31.5" }));
+    fireEvent.click(screen.getByRole("button", { name: "Set bid to $16.2" }));
     await waitFor(() =>
       expect(screen.getByRole("button", { name: /Saved/ })).toBeInTheDocument(),
     );
@@ -211,9 +250,11 @@ describe("BidExplorerView (v2)", () => {
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
-    fireEvent.click(screen.getByRole("button", { name: "Set bid to $31.5" }));
+    fireEvent.click(screen.getByRole("button", { name: "Set bid to $16.2" }));
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: /Failed to save/ })).toBeInTheDocument(),
+      expect(
+        screen.getByRole("button", { name: /Failed to save/ }),
+      ).toBeInTheDocument(),
     );
   });
 
@@ -227,9 +268,30 @@ describe("BidExplorerView (v2)", () => {
     const multiRoundProps = {
       classId: "cl1",
       history: [
-        { acadTermId: "AY2024/25-T1", round: "1", window: 1, min: 10, median: 22, vacancy: 45 },
-        { acadTermId: "AY2024/25-T1", round: "1A", window: 2, min: 12, median: 25, vacancy: 40 },
-        { acadTermId: "AY2025/26-T1", round: "1", window: 1, min: 14, median: 28, vacancy: 38 },
+        {
+          acadTermId: "AY2024/25-T1",
+          round: "1",
+          window: 1,
+          min: 10,
+          median: 22,
+          vacancy: 45,
+        },
+        {
+          acadTermId: "AY2024/25-T1",
+          round: "1A",
+          window: 2,
+          min: 12,
+          median: 25,
+          vacancy: 40,
+        },
+        {
+          acadTermId: "AY2025/26-T1",
+          round: "1",
+          window: 1,
+          min: 14,
+          median: 28,
+          vacancy: 38,
+        },
       ],
       prediction: {
         medianPredicted: 30,
@@ -237,14 +299,21 @@ describe("BidExplorerView (v2)", () => {
         bidWindow: { id: 53, round: "1", window: 1 },
       },
       safetyFactors: [
-        { beatsPercentage: 50, multiplier: 1.0 },
-        { beatsPercentage: 70, multiplier: 1.05 },
-        { beatsPercentage: 90, multiplier: 1.15 },
+        { beatsPercentage: 50, multiplier: 0 },
+        { beatsPercentage: 60, multiplier: 0.25 },
+        { beatsPercentage: 70, multiplier: 0.54 },
+        { beatsPercentage: 80, multiplier: 0.88 },
+        { beatsPercentage: 90, multiplier: 1.37 },
+        { beatsPercentage: 95, multiplier: 1.81 },
       ],
     };
 
     it("renders an inline-SVG trend chart with min and median lines", () => {
-      seedContext({ status: "ready", toolInput: {}, toolOutput: multiRoundProps });
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: multiRoundProps,
+      });
       render(<BidExplorerView />);
       const chart = screen.getByRole("img", { name: /bid trend/i });
       expect(chart.tagName.toLowerCase()).toBe("svg");
@@ -254,7 +323,11 @@ describe("BidExplorerView (v2)", () => {
     });
 
     it("renders data-driven round and window filter toggles", () => {
-      seedContext({ status: "ready", toolInput: {}, toolOutput: multiRoundProps });
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: multiRoundProps,
+      });
       render(<BidExplorerView />);
       expect(screen.getByRole("button", { name: "1" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "1A" })).toBeInTheDocument();
@@ -263,7 +336,11 @@ describe("BidExplorerView (v2)", () => {
     });
 
     it("toggling a round filter narrows the chart and table", () => {
-      seedContext({ status: "ready", toolInput: {}, toolOutput: multiRoundProps });
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: multiRoundProps,
+      });
       render(<BidExplorerView />);
       fireEvent.click(screen.getByRole("button", { name: "1A" }));
       const table = screen.getByRole("table");
@@ -275,7 +352,11 @@ describe("BidExplorerView (v2)", () => {
     });
 
     it("deselecting the last round filter keeps the window selection", () => {
-      seedContext({ status: "ready", toolInput: {}, toolOutput: multiRoundProps });
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: multiRoundProps,
+      });
       render(<BidExplorerView />);
       const roundBtn = screen.getByRole("button", { name: "1A" });
       const windowBtn = screen.getByRole("button", { name: "W2" });
@@ -289,7 +370,11 @@ describe("BidExplorerView (v2)", () => {
     });
 
     it("zebra-stripes table rows by academic term group", () => {
-      seedContext({ status: "ready", toolInput: {}, toolOutput: multiRoundProps });
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: multiRoundProps,
+      });
       render(<BidExplorerView />);
       const table = screen.getByRole("table");
       const bodyRows = within(table).getAllByRole("row").slice(1);
@@ -302,9 +387,15 @@ describe("BidExplorerView (v2)", () => {
     });
 
     it("sorts the history table by median when the column header is clicked", () => {
-      seedContext({ status: "ready", toolInput: {}, toolOutput: multiRoundProps });
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: multiRoundProps,
+      });
       render(<BidExplorerView />);
-      const medianHeader = screen.getByRole("columnheader", { name: /median/i });
+      const medianHeader = screen.getByRole("columnheader", {
+        name: /median/i,
+      });
       fireEvent.click(medianHeader);
       const table = screen.getByRole("table");
       const bodyRows = within(table).getAllByRole("row").slice(1);
@@ -341,16 +432,294 @@ describe("BidExplorerView (v2)", () => {
       expect(within(table).getAllByRole("row")).toHaveLength(13); // header + 12
     });
 
+    it("shows the formula line with predicted min and median (formula display; recommend-bid-amount is viewless)", () => {
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: multiRoundProps,
+      });
+      render(<BidExplorerView />);
+      // Formula display wording (recommend-bid-amount is viewless):
+      // "Predicted median X × multiplier Y (beats Z%)".
+      expect(
+        screen.getByText(
+          "Predicted min 18 and median 30 × multiplier 0.54 (beats 70%)",
+        ),
+      ).toBeInTheDocument();
+      // Hero shows suggested min AND median, not median alone.
+      expect(screen.getByText("$9.72–$16.2")).toBeInTheDocument();
+    });
+
     it("keeps the empty state when there is no history and no prediction", () => {
       seedContext({
         status: "ready",
         toolInput: {},
-        toolOutput: { classId: null, history: [], prediction: null, safetyFactors: [] },
+        toolOutput: {
+          classId: null,
+          history: [],
+          prediction: null,
+          safetyFactors: [],
+        },
       });
       render(<BidExplorerView />);
-      expect(screen.getByText("No bid history for this combination.")).toBeInTheDocument();
+      expect(
+        screen.getByText("No bid history for this combination."),
+      ).toBeInTheDocument();
       expect(screen.queryByRole("img", { name: /bid trend/i })).toBeNull();
       expect(screen.queryByRole("table")).toBeNull();
+    });
+  });
+
+  describe("chart label guards + grouping invariant + formula wording", () => {
+    const dupHistoryProps = {
+      ...fullProps,
+      history: [
+        {
+          acadTermId: "AY2024/25-T1",
+          round: "1",
+          window: 1,
+          min: 20,
+          median: 30,
+          vacancy: 45,
+        },
+        // Duplicate key: lowest min/median wins, single row survives.
+        {
+          acadTermId: "AY2024/25-T1",
+          round: "1",
+          window: 1,
+          min: 10,
+          median: 22,
+          vacancy: 45,
+        },
+        {
+          acadTermId: "AY2025/26-T1",
+          round: "1",
+          window: 1,
+          min: 14,
+          median: 28,
+          vacancy: 40,
+        },
+      ],
+    };
+
+    it("dedupes to one row per term+round+window key (lowest min/median wins)", () => {
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: dupHistoryProps,
+      });
+      render(<BidExplorerView />);
+      const table = screen.getByRole("table");
+      // 2 unique keys -> header + 2 body rows.
+      expect(within(table).getAllByRole("row")).toHaveLength(3);
+      // Newest first: the deduped AY2024/25-T1 row carries
+      // min 10/median 22.
+      const dupRow = within(table).getAllByRole("row")[2];
+      expect(within(dupRow!).getByText("10")).toBeInTheDocument();
+      expect(within(dupRow!).getByText("22")).toBeInTheDocument();
+      // Chart shows one dot per unique key.
+      const chart = screen.getByRole("img", { name: /bid trend/i });
+      expect(chart.querySelectorAll("circle")).toHaveLength(2);
+    });
+
+    it("keeps all chart labels inside the viewBox (x, y, now)", () => {
+      const manyTerms = {
+        ...fullProps,
+        history: [
+          {
+            acadTermId: "AY2023/24-T1",
+            round: "1",
+            window: 1,
+            min: 12.24,
+            median: 18,
+            vacancy: 50,
+          },
+          {
+            acadTermId: "AY2024/25-T1",
+            round: "1",
+            window: 1,
+            min: 10,
+            median: 22,
+            vacancy: 45,
+          },
+          {
+            acadTermId: "AY2024/25-T1",
+            round: "1A",
+            window: 2,
+            min: 12,
+            median: 25,
+            vacancy: 40,
+          },
+          {
+            acadTermId: "AY2025/26-T1",
+            round: "1",
+            window: 1,
+            min: 14,
+            median: 28,
+            vacancy: 38,
+          },
+          {
+            acadTermId: "AY2026/27-T1",
+            round: "1",
+            window: 1,
+            min: 16,
+            median: 32,
+            vacancy: 36,
+          },
+        ],
+      };
+      seedContext({ status: "ready", toolInput: {}, toolOutput: manyTerms });
+      render(<BidExplorerView />);
+      const chart = screen.getByRole("img", { name: /bid trend/i });
+      const viewBox = chart.getAttribute("viewBox")!.split(" ").map(Number);
+      const [, , vbW, vbH] = viewBox as [number, number, number, number];
+      for (const t of Array.from(chart.querySelectorAll("text"))) {
+        const x = Number(t.getAttribute("x"));
+        const y = Number(t.getAttribute("y"));
+        expect(x).toBeGreaterThanOrEqual(0);
+        expect(x).toBeLessThanOrEqual(vbW);
+        expect(y).toBeGreaterThanOrEqual(0);
+        expect(y).toBeLessThanOrEqual(vbH);
+      }
+    });
+
+    it("shortens term labels and staggers them when >2 points", () => {
+      expect(shortTermLabel("AY2025/26-T1")).toBe("25/26-T1");
+      expect(shortTermLabel("AY2024/25-T3A")).toBe("24/25-T3A");
+      // Compact DB form shortens to the same family of labels
+      // ("AY202627T1" -> "26-27 T1"; see inferAcadTerm shortLabel).
+      expect(shortTermLabel("AY202627T1")).toBe("26-27 T1");
+      expect(shortTermLabel("AY202425T3A")).toBe("24-25 T3A");
+      seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+      const { unmount } = render(<BidExplorerView />);
+      // Shortened labels regardless of point count.
+      let chart = screen.getByRole("img", { name: /bid trend/i });
+      expect(chart.textContent).toContain("25/26-T1");
+      expect(chart.textContent).not.toContain("AY2025/26-T1");
+      unmount();
+      const threeTerms = {
+        ...fullProps,
+        history: [
+          {
+            acadTermId: "AY2023/24-T1",
+            round: "1",
+            window: 1,
+            min: 12.24,
+            median: 18,
+            vacancy: 50,
+          },
+          {
+            acadTermId: "AY2024/25-T1",
+            round: "1",
+            window: 1,
+            min: 10,
+            median: 22,
+            vacancy: 45,
+          },
+          {
+            acadTermId: "AY2025/26-T1",
+            round: "1",
+            window: 1,
+            min: 14,
+            median: 28,
+            vacancy: 38,
+          },
+        ],
+      };
+      seedContext({ status: "ready", toolInput: {}, toolOutput: threeTerms });
+      render(<BidExplorerView />);
+      chart = screen.getByRole("img", { name: /bid trend/i });
+      // 3 points: staggered two-row labels — at least two
+      // distinct y values.
+      const labelYs = Array.from(chart.querySelectorAll("text"))
+        .map((t) => Number(t.getAttribute("y")))
+        .filter((yy) => yy > 150);
+      expect(new Set(labelYs).size).toBeGreaterThanOrEqual(2);
+    });
+
+    it("offsets the now marker away from the max-value label", () => {
+      seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+      render(<BidExplorerView />);
+      const chart = screen.getByRole("img", { name: /bid trend/i });
+      const texts = Array.from(chart.querySelectorAll("text"));
+      const now = texts.find((t) => t.textContent === "now");
+      expect(now).toBeDefined();
+      // now marker sits above the plot in small type, anchored
+      // away from the line (start+offset, or end when hugging
+      // the right edge).
+      expect(Number(now!.getAttribute("font-size"))).toBeLessThanOrEqual(9);
+      expect(now!.getAttribute("text-anchor")).not.toBe("middle");
+      // Above the plot, clear of the x-label row.
+      const nowY = Number(now!.getAttribute("y"));
+      expect(nowY).toBeLessThan(16);
+    });
+  });
+
+  describe("nullable branches (view-level graceful render)", () => {
+    it("renders history rows with vacancy:null (no crash, no 'null' text)", () => {
+      // Adapter-level vacancy:null is covered in adapters.test.ts:110; the
+      // View ignores vacancy (min/median chart + table only) and must pass
+      // the rows through untouched.
+      const nullVacancyProps = {
+        ...fullProps,
+        history: fullProps.history.map((h) => ({ ...h, vacancy: null })),
+      };
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: nullVacancyProps,
+      });
+      render(<BidExplorerView />);
+      const table = screen.getByRole("table");
+      expect(within(table).getByText("AY2024/25-T1")).toBeInTheDocument();
+      expect(within(table).getByText("AY2025/26-T1")).toBeInTheDocument();
+      expect(
+        screen.getByRole("img", { name: /bid trend/i }),
+      ).toBeInTheDocument();
+      expect(screen.queryByText("null")).toBeNull();
+    });
+
+    it("renders a median-only suggestion when minPredicted is null", () => {
+      const nullMinProps = {
+        ...fullProps,
+        prediction: { ...fullProps.prediction, minPredicted: null },
+      };
+      seedContext({ status: "ready", toolInput: {}, toolOutput: nullMinProps });
+      // Median-only hero: with minPredicted null the hero div renders "$16.2"
+      // with no en-dash range prefix (view.tsx:893). The hero text is split
+      // across expression containers, so assert via container text content.
+      const { container } = render(<BidExplorerView />);
+      expect(container.textContent).toContain("$16.2");
+      expect(container.textContent).not.toContain("$9.72");
+      expect(
+        screen.getByText("Predicted median 30 × multiplier 0.54 (beats 70%)"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Set bid to $16.2" }),
+      ).toBeInTheDocument();
+      expect(screen.queryByText("null")).toBeNull();
+    });
+
+    it("renders prediction + filters gracefully when history rows are absent (tool-dropped null min/median)", () => {
+      // explore-bid-options drops rows with null min/median server-side; when
+      // every row is dropped the View sees history:[] WITH a prediction and
+      // must show the prediction block plus the filtered-empty note (not the
+      // fully-empty state, not a crash).
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: { ...fullProps, history: [] },
+      });
+      render(<BidExplorerView />);
+      expect(screen.getByText("Predicted")).toBeInTheDocument();
+      expect(
+        screen.getByText("No bid data available for the selected filters."),
+      ).toBeInTheDocument();
+      expect(screen.queryByRole("table")).toBeNull();
+      expect(screen.queryByRole("img", { name: /bid trend/i })).toBeNull();
+      expect(
+        screen.getByRole("button", { name: "Set bid to $16.2" }),
+      ).toBeInTheDocument();
     });
   });
 });

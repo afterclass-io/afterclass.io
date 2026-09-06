@@ -65,9 +65,9 @@ export const searchCourses = publicProcedure
           SELECT 1 FROM classes clt
           JOIN class_timing ct ON ct.class_id = clt.id
           WHERE clt.course_id = c.id AND clt.acad_term_id = ${input.acadTermId}
-            AND (${day} IS NULL OR ct.day_of_week = ${day})
-            AND (${startsAfter} IS NULL OR ct.start_time >= ${startsAfter})
-            AND (${endsBefore} IS NULL OR ct.end_time <= ${endsBefore})
+            AND (${day}::text IS NULL OR ct.day_of_week = ${day}::text)
+            AND (${startsAfter}::text IS NULL OR ct.start_time >= ${startsAfter}::text)
+            AND (${endsBefore}::text IS NULL OR ct.end_time <= ${endsBefore}::text)
         )
       )
       AND (
@@ -109,9 +109,9 @@ export const searchCourses = publicProcedure
           SELECT 1 FROM classes clt
           JOIN class_timing ct ON ct.class_id = clt.id
           WHERE clt.course_id = c.id AND clt.acad_term_id = ${input.acadTermId}
-            AND (${day} IS NULL OR ct.day_of_week = ${day})
-            AND (${startsAfter} IS NULL OR ct.start_time >= ${startsAfter})
-            AND (${endsBefore} IS NULL OR ct.end_time <= ${endsBefore})
+            AND (${day}::text IS NULL OR ct.day_of_week = ${day}::text)
+            AND (${startsAfter}::text IS NULL OR ct.start_time >= ${startsAfter}::text)
+            AND (${endsBefore}::text IS NULL OR ct.end_time <= ${endsBefore}::text)
         )
       )
       AND (

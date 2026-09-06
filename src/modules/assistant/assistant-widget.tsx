@@ -9,17 +9,22 @@ import { useViewport } from "./use-viewport";
 import { useWidgetPosition } from "./use-widget-position";
 import { boxPositionFromLauncher } from "./widget-geometry";
 
+export type WidgetGeometry = ReturnType<typeof useWidgetPosition>;
+
 export function AssistantWidget({
   open,
   onOpenChange,
   children,
+  geometry: geometryProp,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: ReactNode;
+  geometry?: WidgetGeometry;
 }) {
   const viewport = useViewport();
-  const { position, size, dragHandlers, resizeHandlers } = useWidgetPosition(viewport);
+  const fallback = useWidgetPosition(viewport);
+  const { position, size, dragHandlers, resizeHandlers } = geometryProp ?? fallback;
 
   if (!position) return null;
 

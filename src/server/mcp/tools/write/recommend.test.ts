@@ -75,7 +75,7 @@ describe("recommend-bid-amount", () => {
     expect(result.isError).toBe(true);
   });
 
-  it("exposes bid-recommendation props that parse from its JSON output", async () => {
+  it("exposes widget props that parse from its JSON output", async () => {
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller(prediction, []) };
     const result = await recommendBidAmountTool.run(ctx, { classId: "cl1", beatsPercentage: 70 });
     const props = recommendBidAmountTool.toWidgetProps?.(result);

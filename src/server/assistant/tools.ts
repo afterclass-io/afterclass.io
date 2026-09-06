@@ -1,5 +1,6 @@
 import { tool, type ToolSet } from "ai";
 
+import { checkDestructiveConfirm } from "@/mcp/rate-limit";
 import { allTools } from "@/server/mcp/tools";
 import type { ToolContext } from "@/server/mcp/types";
 import { checkAndIncrement } from "@/server/assistant/ratelimit";
@@ -35,6 +36,14 @@ export function buildAssistantTools(
       description: t.description,
       inputSchema: t.inputSchema,
       execute: async (args) => {
+        // Destructive/full-replace writes need explicit confirm:true — same
+        // gate as the MCP path (`src/mcp/register.ts`). Checked before the
+        // write budget so rejected calls are not charged. Returns the
+        // "call again with confirm:true" message as plain text for the model
+        // to relay (unlike the MCP path there is no error envelope here, and
+        // no dev bypass — chat always requires a signed-in user).
+        const gate = checkDestructiveConfirm(t.name, args);
+        if (gate) return gate;
         if (!t.readOnly) {
           const { ok, retryAfterSeconds } = await checkAndIncrement(
             `chat-write:${ctx.user.id}`,

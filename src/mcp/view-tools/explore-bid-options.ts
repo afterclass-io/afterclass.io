@@ -1,5 +1,6 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
+import { exploreLinkFor } from "@/server/mcp/tools/page-links";
 import { asSchema } from "../schema";
 import { bidExplorerOutput } from "./schemas";
 import { runViewTool } from "./results";
@@ -51,7 +52,16 @@ export const exploreBidOptions = server.tool(
           const winPart = p.bidWindow ? ` for round ${p.bidWindow.round} window ${p.bidWindow.window}` : "";
           lines.push(`Prediction: median ${p.medianPredicted}${minPart}${winPart}`);
         }
-        return lines.length > 0 ? `${head}:\n${lines.join("\n")}` : head;
+        const body = lines.length > 0 ? `${head}:\n${lines.join("\n")}` : head;
+        // Inputs first (courseCode/section from adapter params), resolved
+        // classId fallback from own output — never invented; omit when null.
+        const input = params as { courseCode?: unknown; section?: unknown };
+        const link = exploreLinkFor(
+          typeof input.courseCode === "string" ? input.courseCode : undefined,
+          typeof input.section === "string" ? input.section : undefined,
+          { classId: sc.classId },
+        );
+        return link ? `${body}\nOpen in bid analytics: ${link}` : body;
       },
     }),
 );

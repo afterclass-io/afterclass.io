@@ -24,10 +24,10 @@ const fullProps = {
       id: "b1",
       bidAmount: 25,
       status: "PLANNED",
-      courseCode: "ACC101",
-      courseName: "Financial Accounting",
+      courseCode: "ACCT102",
+      courseName: "Management Accounting",
       section: "G1",
-      professorName: "Prof X",
+      professorName: "FANG Bingxu",
       round: "1",
       window: 1,
     },
@@ -35,8 +35,8 @@ const fullProps = {
       id: "b2",
       bidAmount: 51,
       status: "SECURED",
-      courseCode: "FIN201",
-      courseName: "Finance",
+      courseCode: "CS301",
+      courseName: "IT Solution Architecture",
       section: "G3",
       professorName: null,
       round: "1A",
@@ -72,7 +72,9 @@ describe("BidPlanView (v2)", () => {
   it("shows the skeleton while pending (no toolOutput yet)", () => {
     seedContext({ status: "pending", toolInput: {} });
     const { container } = render(<BidPlanView />);
-    expect(container.querySelector("[aria-label='Loading']")).toBeInTheDocument();
+    expect(
+      container.querySelector("[aria-label='Loading']"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
@@ -80,8 +82,8 @@ describe("BidPlanView (v2)", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidPlanView />);
     expect(screen.getByText(/987\.5/)).toBeInTheDocument();
-    expect(screen.getByText("ACC101")).toBeInTheDocument();
-    expect(screen.getByText("FIN201")).toBeInTheDocument();
+    expect(screen.getByText("ACCT102")).toBeInTheDocument();
+    expect(screen.getByText("CS301")).toBeInTheDocument();
     expect(screen.getByText("$25")).toBeInTheDocument();
     expect(screen.getByText("$51")).toBeInTheDocument();
     // status chips contain the raw status text
@@ -96,7 +98,9 @@ describe("BidPlanView (v2)", () => {
       toolOutput: { acadTermId: "AY2026/27-T1", budget: null, bids: [] },
     });
     render(<BidPlanView />);
-    expect(screen.getByText("No bids planned for this term yet.")).toBeInTheDocument();
+    expect(
+      screen.getByText("No bids planned for this term yet."),
+    ).toBeInTheDocument();
     expect(screen.getByText(/No budget set/)).toBeInTheDocument();
   });
 
@@ -111,10 +115,10 @@ describe("BidPlanView (v2)", () => {
           id: "b3",
           bidAmount: 30,
           status: "PLANNED",
-          courseCode: "COR-STAT1202",
-          courseName: "Stats",
+          courseCode: "STAT203",
+          courseName: "Financial Mathematics",
           section: "G2",
-          professorName: "Prof Y",
+          professorName: "Yixin CAO",
           round: "1",
           window: 2,
         },
@@ -122,7 +126,7 @@ describe("BidPlanView (v2)", () => {
     };
     seedContext({ status: "ready", toolInput: {}, toolOutput: mutationPlan });
     render(<BidPlanView />);
-    expect(screen.getByText("COR-STAT1202")).toBeInTheDocument();
+    expect(screen.getByText("STAT203")).toBeInTheDocument();
     expect(screen.getByText("$30")).toBeInTheDocument();
     expect(screen.getByText(/150/)).toBeInTheDocument();
   });
