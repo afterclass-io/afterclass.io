@@ -26,6 +26,12 @@ vi.mock("@/common/tools/trpc/server", () => ({
   },
 }));
 
+vi.mock("@/env", () => ({
+  env: {
+    NEXT_PUBLIC_SITE_URL: "https://afterclass.io",
+  },
+}));
+
 import { generateMetadata as generateCourseMetadata } from "./(reviews)/@reviews/course/[code]/page";
 import { generateMetadata as generateProfMetadata } from "./(reviews)/@reviews/professor/[slug]/page";
 import { generateMetadata as generateRoadmapMetadata } from "./roadmaps/[id]/page";
