@@ -73,7 +73,11 @@ export function stripShareToken<T extends object>(
   row: T,
 ): Omit<T, "shareToken" | "icalToken"> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- bearer tokens must not reach the LLM
-  const { shareToken: _s, icalToken: _i, ...rest } = row as T & {
+  const {
+    shareToken: _s,
+    icalToken: _i,
+    ...rest
+  } = row as T & {
     shareToken?: unknown;
     icalToken?: unknown;
   };
