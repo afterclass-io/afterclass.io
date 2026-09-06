@@ -83,10 +83,14 @@ function makeCaller({
   results = [] as unknown[],
   pred = null,
   professor = null as { id: string } | null,
+  classes = [] as Array<{ id: string; section: string }>,
+  currentWindow = { id: 53, acadTermId: "t2", round: "1", window: 1 },
 }: {
   results?: unknown[];
   pred?: unknown;
   professor?: { id: string } | null;
+  classes?: Array<{ id: string; section: string }>;
+  currentWindow?: { id: number; acadTermId: string; round: string; window: number };
 } = {}) {
   return {
     bidResults: {
@@ -96,6 +100,8 @@ function makeCaller({
     bidPredictions: { getBy: vi.fn().mockResolvedValue(pred) },
     safetyFactors: { getAll: vi.fn().mockResolvedValue(factors) },
     professors: { getBySlug: vi.fn().mockResolvedValue(professor) },
+    classes: { getAll: vi.fn().mockResolvedValue(classes) },
+    bidWindows: { getCurrentWindow: vi.fn().mockResolvedValue(currentWindow) },
   } as unknown as ToolContext["caller"];
 }
 
@@ -234,6 +240,8 @@ describe("explore-bid-options", () => {
       bidPredictions: { getBy: vi.fn() },
       safetyFactors: { getAll: vi.fn() },
       professors: { getBySlug: vi.fn() },
+      classes: { getAll: vi.fn() },
+      bidWindows: { getCurrentWindow: vi.fn() },
     } as unknown as ToolContext["caller"];
     const ctx: ToolContext = { user: fakeUser, caller };
     const result = await exploreBidOptionsTool.run(ctx, {
@@ -259,5 +267,120 @@ describe("explore-bid-options", () => {
     const props = exploreBidOptionsTool.toWidgetProps?.(result);
     expect(props).toMatchObject({ classId: "cl1" });
     expect(Array.isArray((props as { history?: unknown[] }).history)).toBe(true);
+  });
+
+  it("resolves classId from courseCode + section and fetches its prediction", async () => {
+    const caller = makeCaller({
+      results: [bidRow("t2", "1", 1, 14, 28, 40)],
+      pred: prediction,
+      classes: [{ id: "cl1", section: "G1" }],
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const result = await exploreBidOptionsTool.run(ctx, {
+      classId: undefined,
+      courseCode: "COR-IS1702",
+      professorSlug: undefined,
+      section: "G1",
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(caller.classes.getAll).toHaveBeenCalledWith({
+      courseCode: "COR-IS1702",
+      section: "G1",
+      acadTermId: "t2",
+      limit: 5,
+    });
+    expect(caller.bidResults.getBy).toHaveBeenCalledWith({ classId: "cl1" });
+    expect(caller.bidPredictions.getBy).toHaveBeenCalledWith({ classId: "cl1" });
+    expect(caller.bidResults.getByCourseProfessor).not.toHaveBeenCalled();
+
+    const out = parse(result);
+    expect(out.classId).toBe("cl1");
+    expect(out.history).toHaveLength(1);
+    expect(out.prediction).toEqual({
+      medianPredicted: 30,
+      minPredicted: 18,
+      bidWindow: { id: 53, round: "1", window: 1 },
+    });
+  });
+
+  it("errTexts when no class matches courseCode + section", async () => {
+    const caller = makeCaller({ results: [], classes: [] });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const result = await exploreBidOptionsTool.run(ctx, {
+      classId: undefined,
+      courseCode: "COR-IS1702",
+      professorSlug: undefined,
+      section: "G9",
+    });
+    expect(result.isError).toBe(true);
+    expect(result.content[0]!.text).toContain("COR-IS1702");
+    expect(result.content[0]!.text).toContain("G9");
+    expect(caller.bidResults.getBy).not.toHaveBeenCalled();
+  });
+
+  it("falls back to a term-agnostic lookup when the term-scoped lookup is empty", async () => {
+    const getAll = vi
+      .fn()
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ id: "cl9", section: "G1" }]);
+    const caller = {
+      ...makeCaller({ results: [bidRow("t1", "1", 1, 10, 22)] }),
+      classes: { getAll },
+    } as unknown as ToolContext["caller"];
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const result = await exploreBidOptionsTool.run(ctx, {
+      classId: undefined,
+      courseCode: "COR-IS1702",
+      professorSlug: undefined,
+      section: "G1",
+    });
+    expect(result.isError).toBeUndefined();
+    expect(getAll).toHaveBeenCalledTimes(2);
+    expect(getAll.mock.calls[1]![0]).toMatchObject({ courseCode: "COR-IS1702", section: "G1" });
+    expect(getAll.mock.calls[1]![0]).not.toHaveProperty("acadTermId");
+    const out = parse(result);
+    expect(out.classId).toBe("cl9");
+  });
+
+  it("keeps classId primary: ignores section when both are given", async () => {
+    const caller = makeCaller({
+      results: [bidRow("t1", "1", 1, 10, 22)],
+      pred: prediction,
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const result = await exploreBidOptionsTool.run(ctx, {
+      classId: "cl1",
+      courseCode: "COR-IS1702",
+      professorSlug: undefined,
+      section: "G1",
+    });
+    expect(result.isError).toBeUndefined();
+    expect(caller.classes.getAll).not.toHaveBeenCalled();
+    const out = parse(result);
+    expect(out.classId).toBe("cl1");
+  });
+
+  it("dedupes history to one row per term+round+window, lowest min/median wins", async () => {
+    const caller = makeCaller({
+      results: [
+        bidRow("t1", "1", 1, 10, 22, 45),
+        bidRow("t1", "1", 1, 8, 25, 30), // same key: min 8 < 10, median 22 < 25
+        bidRow("t1", "1", 2, 5.5, 17.25, 30),
+      ],
+      pred: null,
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const result = await exploreBidOptionsTool.run(ctx, {
+      classId: "cl1",
+      courseCode: undefined,
+      professorSlug: undefined,
+    });
+    expect(result.isError).toBeUndefined();
+    const out = parse(result);
+    expect(out.history).toEqual([
+      { acadTermId: "t1", round: "1", window: 1, min: 8, median: 22, vacancy: 30 },
+      { acadTermId: "t1", round: "1", window: 2, min: 5.5, median: 17.25, vacancy: 30 },
+    ]);
   });
 });

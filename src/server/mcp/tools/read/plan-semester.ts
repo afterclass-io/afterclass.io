@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-import { errText, errorMessage, jsonText, type McpTool, type ToolContext } from "../../types";
+import {
+  errText,
+  errorMessage,
+  jsonText,
+  type McpTool,
+  type ToolContext,
+} from "../../types";
 import { resolveFacultyId } from "./faculties";
 
 const planSemesterSchema = z.object({
@@ -13,7 +19,9 @@ const planSemesterSchema = z.object({
   facultyId: z
     .union([z.number().int(), z.string()])
     .optional()
-    .describe("Faculty id or acronym (e.g. 4 or SCIS; obtain via list-faculties); defaults to the user's faculty"),
+    .describe(
+      "Faculty id or acronym (e.g. 4 or SCIS; obtain via list-faculties); defaults to the user's faculty",
+    ),
   limit: z.number().int().min(1).max(20).default(10),
   goal: z
     .string()
@@ -65,16 +73,21 @@ export const planSemesterTool: McpTool<typeof planSemesterSchema> = {
   run: async ({ caller }, input) => {
     try {
       // Students say "SCIS", not numeric ids: resolve acronyms via the
-      // faculties table (numbers pass through untouched).
+      // faculties table (numbers pass through untouched). resolveFacultyId
+      // handles both shapes, so every input goes through it (aligns with
+      // search-courses, which resolves unconditionally).
       let facultyId = input.facultyId;
-      if (typeof facultyId === "string") {
+      if (facultyId !== undefined) {
         const resolved = await resolveFacultyId(facultyId);
         if (!resolved.ok) return errText(resolved.errText);
         facultyId = resolved.value;
       }
       // `goal` is a tool-layer param: the procedure knows nothing about it.
       const { goal, ...procInput } = input;
-      const result = (await caller.roadmaps.planSemester({ ...procInput, facultyId })) as {
+      const result = (await caller.roadmaps.planSemester({
+        ...procInput,
+        facultyId,
+      })) as {
         targetTerm: { id: string } | null;
         userPosition: unknown;
         candidates: Array<{ courseId: string }>;
@@ -94,10 +107,7 @@ export const planSemesterTool: McpTool<typeof planSemesterSchema> = {
         targetTermId,
         ...(await upcomingTermIds(caller, targetTermId, FALLBACK_FANOUT_TERMS)),
       ];
-      const byCourse = new Map<
-        string,
-        CatalogHit & { offeredIn: string[] }
-      >();
+      const byCourse = new Map<string, CatalogHit & { offeredIn: string[] }>();
       for (const acadTermId of termIds) {
         const hits = (await caller.timetable.searchCourses({
           acadTermId,

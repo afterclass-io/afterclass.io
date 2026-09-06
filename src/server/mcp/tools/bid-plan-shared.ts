@@ -1,4 +1,5 @@
 import type { RouterCaller } from "../types";
+import { parseWidgetJson } from "../types";
 
 export interface BidPlanEntry {
   id: string;
@@ -47,7 +48,7 @@ export async function buildBidPlan(
     }));
   return {
     acadTermId,
-    budget: (budget) ?? null,
+    budget: budget ?? null,
     bids: plan,
   };
 }
@@ -60,20 +61,17 @@ export async function buildBidPlan(
 export function bidPlanToWidgetProps(result: {
   content: Array<{ type: "text"; text: string }>;
 }): Record<string, unknown> {
-  const text = result.content.find((c) => c.type === "text")?.text ?? "";
-  try {
-    const parsed = JSON.parse(text) as Record<string, unknown>;
-    if (
-      parsed &&
-      typeof parsed === "object" &&
-      "plan" in parsed &&
-      parsed.plan &&
-      typeof parsed.plan === "object"
-    ) {
-      return parsed.plan as Record<string, unknown>;
-    }
-    return parsed;
-  } catch {
-    return { raw: text };
+  const parsed = parseWidgetJson(result);
+  if (!("data" in parsed)) return { raw: parsed.raw };
+  const data = parsed.data;
+  if (
+    data &&
+    typeof data === "object" &&
+    "plan" in data &&
+    data.plan &&
+    typeof data.plan === "object"
+  ) {
+    return data.plan as Record<string, unknown>;
   }
+  return data;
 }

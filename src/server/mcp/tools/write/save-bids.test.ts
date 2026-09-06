@@ -68,15 +68,39 @@ describe("save-bids", () => {
   });
 
   it("bulk saves two bids, resolving classIds and returning { updated, plan } with notes stripped", async () => {
-    const upsert = vi.fn().mockResolvedValue({ id: "b1", classId: "cl-g1", bidWindowId: 77 });
-    const getAll = vi.fn().mockImplementation(async ({ courseCode, section }: { courseCode: string; section: string }) => {
-      if (courseCode === "COR-IS1702" && section === "G1") return [{ id: "cl-g1", section: "G1" }];
-      if (courseCode === "ACCT102" && section === "G2") return [{ id: "cl-g2", section: "G2" }];
-      return [];
-    });
+    const upsert = vi
+      .fn()
+      .mockResolvedValue({ id: "b1", classId: "cl-g1", bidWindowId: 77 });
+    const getAll = vi
+      .fn()
+      .mockImplementation(
+        async ({
+          courseCode,
+          section,
+        }: {
+          courseCode: string;
+          section: string;
+        }) => {
+          if (courseCode === "COR-IS1702" && section === "G1")
+            return [{ id: "cl-g1", section: "G1" }];
+          if (courseCode === "ACCT102" && section === "G2")
+            return [{ id: "cl-g2", section: "G2" }];
+          return [];
+        },
+      );
     const listMine = vi.fn().mockResolvedValue([
-      mkBid({ classId: "cl-g1", bidWindowId: 77, bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 } }),
-      mkBid({ classId: "cl-g2", bidWindowId: 77, bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 }, section: "G2", courseCode: "ACCT102" }),
+      mkBid({
+        classId: "cl-g1",
+        bidWindowId: 77,
+        bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 },
+      }),
+      mkBid({
+        classId: "cl-g2",
+        bidWindowId: 77,
+        bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 },
+        section: "G2",
+        courseCode: "ACCT102",
+      }),
     ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const caller = makeCaller({
@@ -95,8 +119,18 @@ describe("save-bids", () => {
     });
     expect(res.isError).toBeUndefined();
     expect(upsert).toHaveBeenCalledTimes(2);
-    expect(upsert).toHaveBeenNthCalledWith(1, { classId: "cl-g1", bidWindowId: 77, bidAmount: 25, notes: undefined });
-    expect(upsert).toHaveBeenNthCalledWith(2, { classId: "cl-g2", bidWindowId: 77, bidAmount: 30, notes: undefined });
+    expect(upsert).toHaveBeenNthCalledWith(1, {
+      classId: "cl-g1",
+      bidWindowId: 77,
+      bidAmount: 25,
+      notes: undefined,
+    });
+    expect(upsert).toHaveBeenNthCalledWith(2, {
+      classId: "cl-g2",
+      bidWindowId: 77,
+      bidAmount: 30,
+      notes: undefined,
+    });
     const parsed = JSON.parse(res.content[0]!.text) as {
       updated: Array<{ ok: boolean; courseCode: string; section: string }>;
       plan: { acadTermId: string; bids: Array<Record<string, unknown>> };
@@ -107,8 +141,44 @@ describe("save-bids", () => {
     expect(parsed.plan.bids[0]!.notes).toBeUndefined();
   });
 
+  it("save-bids per-entry results carry no notes key", async () => {
+    const upsert = vi.fn().mockResolvedValue({
+      id: "b1",
+      classId: "cl-g1",
+      bidWindowId: 77,
+      notes: "secret plan",
+    });
+    const getAll = vi.fn().mockResolvedValue([{ id: "cl-g1", section: "G1" }]);
+    const listMine = vi
+      .fn()
+      .mockResolvedValue([mkBid({ classId: "cl-g1", bidWindowId: 77 })]);
+    const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
+    const caller = makeCaller({
+      userBidsUpsert: upsert,
+      classesGetAll: getAll,
+      bidWindowsGetCurrentWindow: vi.fn().mockResolvedValue(openWindow()),
+      userBidsListMine: listMine,
+      userBidsGetBudget: getBudget,
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const out = await saveBidsTool.run(ctx, {
+      bids: [
+        {
+          courseCode: "COR-IS1702",
+          section: "G1",
+          bidAmount: 25,
+          notes: "secret plan",
+        },
+      ],
+    });
+    const text = out.content.find((c) => c.type === "text")?.text ?? "";
+    expect(text).not.toContain('"notes"');
+  });
+
   it("supports per-entry bidWindowId override", async () => {
-    const upsert = vi.fn().mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 99 });
+    const upsert = vi
+      .fn()
+      .mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 99 });
     const caller = makeCaller({
       userBidsUpsert: upsert,
       classesGetAll: vi.fn().mockResolvedValue([{ id: "cl1", section: "G1" }]),
@@ -118,29 +188,46 @@ describe("save-bids", () => {
     });
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await saveBidsTool.run(ctx, {
-      bids: [{ courseCode: "COR-IS1702", section: "G1", bidAmount: 25, bidWindowId: 99 }],
+      bids: [
+        {
+          courseCode: "COR-IS1702",
+          section: "G1",
+          bidAmount: 25,
+          bidWindowId: 99,
+        },
+      ],
     });
-    expect(upsert).toHaveBeenCalledWith({ classId: "cl1", bidWindowId: 99, bidAmount: 25, notes: undefined });
+    expect(upsert).toHaveBeenCalledWith({
+      classId: "cl1",
+      bidWindowId: 99,
+      bidAmount: 25,
+      notes: undefined,
+    });
     expect(res.isError).toBeUndefined();
   });
 
   it("reports partial failure per row without aborting other rows", async () => {
-    const upsert = vi.fn().mockImplementation(async ({ classId }: { classId: string }) => {
-      if (classId === "cl-g1") return { id: "b1", classId: "cl-g1", bidWindowId: 77 };
-      throw new Error("upsert failed for g2");
-    });
-    const getAll = vi.fn().mockImplementation(async ({ section }: { section: string }) => {
-      if (section === "G1") return [{ id: "cl-g1", section: "G1" }];
-      if (section === "G2") return [{ id: "cl-g2", section: "G2" }];
-      return [];
-    });
+    const upsert = vi
+      .fn()
+      .mockImplementation(async ({ classId }: { classId: string }) => {
+        if (classId === "cl-g1")
+          return { id: "b1", classId: "cl-g1", bidWindowId: 77 };
+        throw new Error("upsert failed for g2");
+      });
+    const getAll = vi
+      .fn()
+      .mockImplementation(async ({ section }: { section: string }) => {
+        if (section === "G1") return [{ id: "cl-g1", section: "G1" }];
+        if (section === "G2") return [{ id: "cl-g2", section: "G2" }];
+        return [];
+      });
     const caller = makeCaller({
       userBidsUpsert: upsert,
       classesGetAll: getAll,
       bidWindowsGetCurrentWindow: vi.fn().mockResolvedValue(openWindow()),
-      userBidsListMine: vi.fn().mockResolvedValue([
-        mkBid({ classId: "cl-g1", bidWindowId: 77 }),
-      ]),
+      userBidsListMine: vi
+        .fn()
+        .mockResolvedValue([mkBid({ classId: "cl-g1", bidWindowId: 77 })]),
       userBidsGetBudget: vi.fn().mockResolvedValue({ balance: 50 }),
     });
     const ctx: ToolContext = { user: fakeUser, caller };
@@ -158,7 +245,9 @@ describe("save-bids", () => {
     expect(parsed.updated).toHaveLength(2);
     expect(parsed.updated[0]!.ok).toBe(true);
     expect(parsed.updated[1]!.ok).toBe(false);
-    expect((parsed.updated[1] as { error: string }).error).toContain("upsert failed");
+    expect((parsed.updated[1] as { error: string }).error).toContain(
+      "upsert failed",
+    );
     expect(parsed.plan).not.toBeNull();
   });
 
@@ -183,7 +272,9 @@ describe("save-bids", () => {
       bids: [{ courseCode: "COR-IS1702", section: "G1", bidAmount: 25 }],
     });
     expect(res.isError).toBeUndefined();
-    const parsed = JSON.parse(res.content[0]!.text) as { updated: Array<{ ok: boolean; error: string }> };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      updated: Array<{ ok: boolean; error: string }>;
+    };
     expect(parsed.updated[0]!.ok).toBe(false);
     expect(parsed.updated[0]!.error).toMatch(/ask the user/i);
     expect(upsert).not.toHaveBeenCalled();
@@ -201,7 +292,9 @@ describe("save-bids", () => {
     const res = await saveBidsTool.run(ctx, {
       bids: [{ courseCode: "UNKNOWN", section: "G1", bidAmount: 25 }],
     });
-    const parsed = JSON.parse(res.content[0]!.text) as { updated: Array<{ ok: boolean; error: string }> };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      updated: Array<{ ok: boolean; error: string }>;
+    };
     expect(parsed.updated[0]!.ok).toBe(false);
     expect(parsed.updated[0]!.error).toContain("not found");
   });
@@ -212,9 +305,13 @@ describe("save-bids", () => {
   });
 
   it("toWidgetProps unwraps plan from { updated, plan } envelope", async () => {
-    const upsert = vi.fn().mockResolvedValue({ id: "b1", classId: "cl-g1", bidWindowId: 77 });
+    const upsert = vi
+      .fn()
+      .mockResolvedValue({ id: "b1", classId: "cl-g1", bidWindowId: 77 });
     const getAll = vi.fn().mockResolvedValue([{ id: "cl-g1", section: "G1" }]);
-    const listMine = vi.fn().mockResolvedValue([mkBid({ classId: "cl-g1", bidWindowId: 77 })]);
+    const listMine = vi
+      .fn()
+      .mockResolvedValue([mkBid({ classId: "cl-g1", bidWindowId: 77 })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const caller = makeCaller({
       userBidsUpsert: upsert,
@@ -229,5 +326,42 @@ describe("save-bids", () => {
     });
     const props = saveBidsTool.toWidgetProps!(res);
     expect(props.acadTermId).toBe("AY2026/27-T1");
+  });
+
+  it("passes a sub-floor bidAmount through unclamped (the e$10 floor is suggestion-only)", async () => {
+    const upsert = vi
+      .fn()
+      .mockResolvedValue({ id: "b1", classId: "cl-g1", bidWindowId: 77 });
+    const caller = makeCaller({
+      userBidsUpsert: upsert,
+      classesGetAll: vi
+        .fn()
+        .mockResolvedValue([{ id: "cl-g1", section: "G1" }]),
+      bidWindowsGetCurrentWindow: vi.fn().mockResolvedValue(openWindow()),
+      userBidsListMine: vi
+        .fn()
+        .mockResolvedValue([
+          mkBid({ classId: "cl-g1", bidWindowId: 77, bidAmount: 5 }),
+        ]),
+      userBidsGetBudget: vi.fn().mockResolvedValue({ balance: 100 }),
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const res = await saveBidsTool.run(ctx, {
+      bids: [{ courseCode: "COR-IS1702", section: "G1", bidAmount: 5 }],
+    });
+    expect(res.isError).toBeUndefined();
+    // Server does NOT clamp inputs: the raw amount reaches the procedure.
+    expect(upsert).toHaveBeenCalledWith({
+      classId: "cl-g1",
+      bidWindowId: 77,
+      bidAmount: 5,
+      notes: undefined,
+    });
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      updated: Array<{ ok: boolean }>;
+      plan: { bids: Array<{ bidAmount: number }> };
+    };
+    expect(parsed.updated[0]!.ok).toBe(true);
+    expect(parsed.plan.bids[0]!.bidAmount).toBe(5);
   });
 });

@@ -102,6 +102,19 @@ describe("bid-status write tool", () => {
     expect(parsed.success).toBe(false);
   });
 
+  it("set-bid-status response carries no notes key", async () => {
+    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", notes: "secret plan", acadTermId: "AY2026/27-T1" });
+    const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);
+    const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ userBidsSetStatus: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
+    };
+    const out = await setBidStatusTool.run(ctx, { id: "b1", status: "SECURED" });
+    const text = out.content.find((c) => c.type === "text")?.text ?? "";
+    expect(text).not.toContain("\"notes\"");
+  });
+
   it("set-bid-status returns { updated, plan } with notes stripped", async () => {
     const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", acadTermId: "AY2026/27-T1" });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { resolveTermId } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { stripBidNotes, stripShareToken } from "../bid-shared";
 
 const myTimetablesSchema = z.object({ acadTermId: z.string().optional() });
 
@@ -15,17 +16,11 @@ export const myTimetablesTool: McpTool<typeof myTimetablesSchema> = {
     try {
       const term = await resolveTermId(caller, acadTermId);
       if (!term.ok) return errText(term.errText);
-      const timetables = (await caller.timetable.listMine({ acadTermId: term.value })) as Array<
-        Record<string, unknown>
-      >;
-      const scrubbed = timetables.map((t) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- bearer tokens must not reach the LLM
-        const { shareToken: _s, icalToken: _i, ...rest } = t as Record<string, unknown> & {
-          shareToken?: unknown;
-          icalToken?: unknown;
-        };
-        return rest;
-      });
+      const timetables = (await caller.timetable.listMine({
+        acadTermId: term.value,
+      })) as Array<Record<string, unknown>>;
+      // stripShareToken: bearer tokens must not reach the LLM.
+      const scrubbed = timetables.map((t) => stripShareToken(t));
       return jsonText(scrubbed);
     } catch (e) {
       return errText(errorMessage(e));
@@ -37,7 +32,9 @@ const myBidsSchema = z.object({
   acadTermId: z
     .string()
     .optional()
-    .describe("Filter to one academic term; omit to use the current academic term — includes all bid windows"),
+    .describe(
+      "Filter to one academic term; omit to use the current academic term — includes all bid windows",
+    ),
   limit: z.number().int().min(1).max(50).default(20),
 });
 
@@ -60,13 +57,11 @@ export const myBidsTool: McpTool<typeof myBidsSchema> = {
       // my-bids is exposed over MCP: strip the free-text `notes` field (user
       // PII / private bidding strategy) from the AI-visible output. All other
       // metadata (amount, status, class, window, result) is preserved.
-      const scrubbed = bids.map((bid) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- notes is deliberately stripped from MCP output
-        const { notes: _notes, ...rest } = bid;
-        return rest;
-      });
+      const scrubbed = bids.map((bid) => stripBidNotes(bid));
       const filtered = scrubbed.filter(
-        (b) => (b as { bidWindow?: { acadTermId?: string } }).bidWindow?.acadTermId === term.value,
+        (b) =>
+          (b as { bidWindow?: { acadTermId?: string } }).bidWindow
+            ?.acadTermId === term.value,
       );
       return jsonText(filtered.slice(0, limit));
     } catch (e) {
@@ -87,7 +82,9 @@ export const myBudgetTool: McpTool<typeof myBudgetSchema> = {
     try {
       const term = await resolveTermId(caller, acadTermId);
       if (!term.ok) return errText(term.errText);
-      return jsonText(await caller.userBids.getBudget({ acadTermId: term.value }));
+      return jsonText(
+        await caller.userBids.getBudget({ acadTermId: term.value }),
+      );
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -103,14 +100,11 @@ export const myRoadmapsTool: McpTool<typeof myRoadmapsSchema> = {
   readOnly: true,
   run: async ({ caller }) => {
     try {
-      const roadmaps = (await caller.roadmaps.listMine()) as Array<Record<string, unknown>>;
-      const scrubbed = roadmaps.map((r) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- shareToken is a bearer secret
-        const { shareToken: _s, ...rest } = r as Record<string, unknown> & {
-          shareToken?: unknown;
-        };
-        return rest;
-      });
+      const roadmaps = (await caller.roadmaps.listMine()) as Array<
+        Record<string, unknown>
+      >;
+      // stripShareToken: the bearer shareToken must not reach the LLM.
+      const scrubbed = roadmaps.map((r) => stripShareToken(r));
       return jsonText(scrubbed);
     } catch (e) {
       return errText(errorMessage(e));
@@ -124,7 +118,9 @@ const browsePublicRoadmapsSchema = z.object({
   cursor: z.string().optional(),
 });
 
-export const browsePublicRoadmapsTool: McpTool<typeof browsePublicRoadmapsSchema> = {
+export const browsePublicRoadmapsTool: McpTool<
+  typeof browsePublicRoadmapsSchema
+> = {
   name: "browse-public-roadmaps",
   description:
     "Browse roadmaps other users have published publicly (metadata: name, description, entry count, upvotes, faculty). Use get-public-roadmap with the returned id to see the actual course entries.",
@@ -143,16 +139,17 @@ const getSharedTimetableSchema = z.object({
   token: z.string().describe("The share token from a shared timetable link"),
 });
 
-export const getSharedTimetableTool: McpTool<typeof getSharedTimetableSchema> = {
-  name: "get-shared-timetable",
-  description: "View a timetable that was shared via a share-link token.",
-  inputSchema: getSharedTimetableSchema,
-  readOnly: true,
-  run: async ({ caller }, { token }) => {
-    try {
-      return jsonText(await caller.sharing.getSharedTimetable({ token }));
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
-};
+export const getSharedTimetableTool: McpTool<typeof getSharedTimetableSchema> =
+  {
+    name: "get-shared-timetable",
+    description: "View a timetable that was shared via a share-link token.",
+    inputSchema: getSharedTimetableSchema,
+    readOnly: true,
+    run: async ({ caller }, { token }) => {
+      try {
+        return jsonText(await caller.sharing.getSharedTimetable({ token }));
+      } catch (e) {
+        return errText(errorMessage(e));
+      }
+    },
+  };

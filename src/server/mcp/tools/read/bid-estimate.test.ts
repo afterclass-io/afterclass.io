@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ToolContext } from "../../types";
 import type { SessionUser } from "@/server/auth/config";
-import { bidEstimateTool } from "./bid-estimate";
+import { bidEstimateTool, resolveEstimateWindow } from "./bid-estimate";
 
 const fakeUser: SessionUser = {
   id: "u1",
@@ -51,27 +51,48 @@ function mkCaller(opts: {
     courses: {
       getByCourseCode: vi.fn().mockResolvedValue(
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- keep ternary: null means \"not found\" vs fallback; ?? would collapse incorrectly for explicit undefined
-        opts.course !== undefined ? opts.course : { id: "cs1", code: "COR-IS1702", name: "Computational Thinking" },
+        opts.course !== undefined
+          ? opts.course
+          : { id: "cs1", code: "COR-IS1702", name: "Computational Thinking" },
       ),
     },
     classes: {
       getAll: vi.fn().mockResolvedValue(
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- keep ternary: null/[] semantics differ
-        opts.classes !== undefined ? opts.classes : [{ id: "cl-g1", section: "G1", professor: { name: "Prof A", slug: "prof-a" } }],
+        opts.classes !== undefined
+          ? opts.classes
+          : [
+              {
+                id: "cl-g1",
+                section: "G1",
+                professor: { name: "Prof A", slug: "prof-a" },
+              },
+            ],
       ),
     },
     bidPredictions: {
       getBy: vi.fn().mockResolvedValue(
         opts.prediction !== undefined
           ? opts.prediction
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- keep ternary: ?? would break null case (null ?? fallback != null ? null : fallback)
-          : { medianPredicted: 25, minPredicted: 18, bidWindow: { id: 77, acadTermId: "AY2026/27-T1", round: "1", window: 1 } },
+          : // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- keep ternary: ?? would break null case (null ?? fallback != null ? null : fallback)
+            {
+              medianPredicted: 25,
+              minPredicted: 18,
+              bidWindow: {
+                id: 77,
+                acadTermId: "AY2026/27-T1",
+                round: "1",
+                window: 1,
+              },
+            },
       ),
     },
     bidResults: {
       getBy: vi.fn().mockResolvedValue(
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- keep ternary: null is a meaningful test value
-        opts.bidResults !== undefined ? opts.bidResults : [{ bidWindowId: 77, vacancy: 12, bidWindow: { id: 77 } }],
+        opts.bidResults !== undefined
+          ? opts.bidResults
+          : [{ bidWindowId: 77, vacancy: 12, bidWindow: { id: 77 } }],
       ),
     },
     safetyFactors: {
@@ -79,7 +100,14 @@ function mkCaller(opts: {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- keep ternary: [] and null differ in semantics
         opts.safetyFactors !== undefined
           ? opts.safetyFactors
-          : [{ acadTermId: "AY2026/27-T1", predictionType: "MEDIAN", beatsPercentage: 70, multiplier: 1.05 }],
+          : [
+              {
+                acadTermId: "AY2026/27-T1",
+                predictionType: "MEDIAN",
+                beatsPercentage: 70,
+                multiplier: 1.05,
+              },
+            ],
       ),
     },
   } as unknown as ToolContext["caller"];
@@ -89,10 +117,27 @@ describe("bid-estimate", () => {
   it("is read-only and returns per-section estimates with suggested = median x multiplier and vacancy", async () => {
     const caller = mkCaller({
       classes: [
-        { id: "cl-g1", section: "G1", professor: { name: "Prof A", slug: "prof-a" } },
-        { id: "cl-g2", section: "G2", professor: { name: "Prof B", slug: "prof-b" } },
+        {
+          id: "cl-g1",
+          section: "G1",
+          professor: { name: "Prof A", slug: "prof-a" },
+        },
+        {
+          id: "cl-g2",
+          section: "G2",
+          professor: { name: "Prof B", slug: "prof-b" },
+        },
       ],
-      prediction: { medianPredicted: 25, minPredicted: 18, bidWindow: { id: 77, acadTermId: "AY2026/27-T1", round: "1", window: 1 } },
+      prediction: {
+        medianPredicted: 25,
+        minPredicted: 18,
+        bidWindow: {
+          id: 77,
+          acadTermId: "AY2026/27-T1",
+          round: "1",
+          window: 1,
+        },
+      },
     });
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702" });
@@ -117,20 +162,37 @@ describe("bid-estimate", () => {
     // 25 x 1.05 = 26.25
     expect(parsed.estimates[0]!.suggestedBidAmount).toBe(26.25);
     expect(parsed.estimates[0]!.multiplierUsed).toBe(1.05);
-    expect((caller.classes.getAll as ReturnType<typeof vi.fn>)).toHaveBeenCalled();
-    expect((caller.bidPredictions.getBy as ReturnType<typeof vi.fn>)).toHaveBeenCalledTimes(2);
+    expect(
+      caller.classes.getAll as ReturnType<typeof vi.fn>,
+    ).toHaveBeenCalled();
+    expect(
+      caller.bidPredictions.getBy as ReturnType<typeof vi.fn>,
+    ).toHaveBeenCalledTimes(2);
   });
 
   it("filters to a single section when section is given", async () => {
     const caller = mkCaller({
       classes: [
-        { id: "cl-g1", section: "G1", professor: { name: "Prof A", slug: "prof-a" } },
-        { id: "cl-g2", section: "G2", professor: { name: "Prof B", slug: "prof-b" } },
+        {
+          id: "cl-g1",
+          section: "G1",
+          professor: { name: "Prof A", slug: "prof-a" },
+        },
+        {
+          id: "cl-g2",
+          section: "G2",
+          professor: { name: "Prof B", slug: "prof-b" },
+        },
       ],
     });
     const ctx: ToolContext = { user: fakeUser, caller };
-    const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702", section: "G1" });
-    const parsed = JSON.parse(res.content[0]!.text) as { estimates: Array<{ section: string }> };
+    const res = await bidEstimateTool.run(ctx, {
+      courseCode: "COR-IS1702",
+      section: "G1",
+    });
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      estimates: Array<{ section: string }>;
+    };
     expect(parsed.estimates.map((e) => e.section)).toEqual(["G1"]);
   });
 
@@ -158,7 +220,10 @@ describe("bid-estimate", () => {
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702" });
     expect(res.isError).toBeFalsy();
-    const parsed = JSON.parse(res.content[0]!.text) as { bidWindow: { id: number }; warning: string };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      bidWindow: { id: number };
+      warning: string;
+    };
     expect(parsed.bidWindow.id).toBe(88);
     expect(parsed.warning).toMatch(/prior-window results/);
   });
@@ -193,9 +258,15 @@ describe("bid-estimate", () => {
       windowsByTerm: [latest],
     });
     const ctx: ToolContext = { user: fakeUser, caller };
-    const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702", acadTermId: "AY2026/27-T1" });
+    const res = await bidEstimateTool.run(ctx, {
+      courseCode: "COR-IS1702",
+      acadTermId: "AY2026/27-T1",
+    });
     expect(res.isError).toBeFalsy();
-    const parsed = JSON.parse(res.content[0]!.text) as { bidWindow: { id: number }; warning: string };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      bidWindow: { id: number };
+      warning: string;
+    };
     expect(parsed.bidWindow.id).toBe(99);
     expect(parsed.warning).toMatch(/prior-window results/);
     expect(parsed.warning).toMatch(/immediate-next-window only/);
@@ -204,9 +275,48 @@ describe("bid-estimate", () => {
   it("returns short guidance when the term has no windows yet (future term)", async () => {
     const caller = mkCaller({ openWindow: null, windowsByTerm: [] });
     const ctx: ToolContext = { user: fakeUser, caller };
-    const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702", acadTermId: "AY2099/00-T9" });
+    const res = await bidEstimateTool.run(ctx, {
+      courseCode: "COR-IS1702",
+      acadTermId: "AY2099/00-T9",
+    });
     expect(res.isError).toBe(true);
     expect(res.content[0]!.text).toMatch(/no bid windows/i);
+  });
+
+  it("normalizes display-form acadTermId to compact before querying windows", async () => {
+    const now = new Date();
+    const latest = {
+      id: 99,
+      acadTermId: "AY202627T1",
+      round: "2A",
+      window: 3,
+      opensAt: new Date(now.getTime() - 120_000),
+      resultsAt: new Date(now.getTime() - 60_000),
+    };
+    const caller = mkCaller({
+      openWindow: {
+        id: 88,
+        acadTermId: "AY202627T1",
+        round: "1",
+        window: 1,
+        opensAt: new Date(now.getTime() + 60_000),
+        resultsAt: new Date(now.getTime() + 120_000),
+      },
+      windowsByTerm: [latest],
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const res = await bidEstimateTool.run(ctx, {
+      courseCode: "COR-IS1702",
+      acadTermId: " ay2026/27-t1 ",
+    });
+    expect(res.isError).toBeFalsy();
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      bidWindow: { id: number };
+    };
+    expect(parsed.bidWindow.id).toBe(99);
+    expect(caller.bidWindows.getByAcadTerm).toHaveBeenCalledWith({
+      acadTermId: "AY202627T1",
+    });
   });
 
   it("resolves an explicit r2aw3 alias to the matching window", async () => {
@@ -233,7 +343,10 @@ describe("bid-estimate", () => {
       bidWindow: "r2aw3",
     });
     expect(res.isError).toBeFalsy();
-    const parsed = JSON.parse(res.content[0]!.text) as { bidWindow: { id: number }; warning?: string };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      bidWindow: { id: number };
+      warning?: string;
+    };
     expect(parsed.bidWindow.id).toBe(99);
     expect(parsed.warning).toBeUndefined();
   });
@@ -241,11 +354,22 @@ describe("bid-estimate", () => {
   it("defaults multiplier to 1.0 when no safety factor matches (suggested = median)", async () => {
     const caller = mkCaller({
       safetyFactors: [],
-      prediction: { medianPredicted: 25, minPredicted: 18, bidWindow: { id: 77, acadTermId: "AY2026/27-T1", round: "1", window: 1 } },
+      prediction: {
+        medianPredicted: 25,
+        minPredicted: 18,
+        bidWindow: {
+          id: 77,
+          acadTermId: "AY2026/27-T1",
+          round: "1",
+          window: 1,
+        },
+      },
     });
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702" });
-    const parsed = JSON.parse(res.content[0]!.text) as { estimates: Array<{ suggestedBidAmount: number; multiplierUsed: unknown }> };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      estimates: Array<{ suggestedBidAmount: number; multiplierUsed: unknown }>;
+    };
     expect(parsed.estimates[0]!.suggestedBidAmount).toBe(25);
     expect(parsed.estimates[0]!.multiplierUsed).toBeNull();
   });
@@ -258,7 +382,12 @@ describe("bid-estimate", () => {
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702" });
     const parsed = JSON.parse(res.content[0]!.text) as {
-      estimates: Array<{ medianPredicted: unknown; minPredicted: unknown; suggestedBidAmount: unknown; vacancy: unknown }>;
+      estimates: Array<{
+        medianPredicted: unknown;
+        minPredicted: unknown;
+        suggestedBidAmount: unknown;
+        vacancy: unknown;
+      }>;
     };
     expect(parsed.estimates[0]!.medianPredicted).toBeNull();
   });
@@ -272,7 +401,10 @@ describe("bid-estimate", () => {
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702" });
     expect(res.isError).toBeFalsy();
-    const parsed = JSON.parse(res.content[0]!.text) as { estimates: unknown[]; note: string };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      estimates: unknown[];
+      note: string;
+    };
     expect(parsed.estimates).toEqual([]);
     expect(parsed.note).toContain("No sections found");
   });
@@ -289,7 +421,9 @@ describe("bid-estimate", () => {
           resultsAt: new Date(Date.now() + 60_000),
         }),
       },
-      courses: { getByCourseCode: vi.fn().mockRejectedValue(new Error("db down")) },
+      courses: {
+        getByCourseCode: vi.fn().mockRejectedValue(new Error("db down")),
+      },
       classes: { getAll: vi.fn() },
       bidPredictions: { getBy: vi.fn() },
       bidResults: { getBy: vi.fn() },
@@ -299,5 +433,154 @@ describe("bid-estimate", () => {
     const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702" });
     expect(res.isError).toBe(true);
     expect(res.content[0]!.text).toContain("db down");
+  });
+
+  it("floors the suggested amount at e$10 when median x multiplier dips below 10", async () => {
+    const caller = mkCaller({
+      safetyFactors: [
+        {
+          acadTermId: "AY2026/27-T1",
+          predictionType: "MEDIAN",
+          beatsPercentage: 70,
+          multiplier: 1.05,
+        },
+      ],
+      prediction: {
+        medianPredicted: 8,
+        minPredicted: 5,
+        bidWindow: {
+          id: 77,
+          acadTermId: "AY2026/27-T1",
+          round: "1",
+          window: 1,
+        },
+      },
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702" });
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      estimates: Array<{ suggestedBidAmount: number }>;
+    };
+    // 8 x 1.05 = 8.4 -> floored to 10
+    expect(parsed.estimates[0]!.suggestedBidAmount).toBe(10);
+  });
+
+  it("floors a low median with no safety factor at e$10 (median x 1.0)", async () => {
+    const caller = mkCaller({
+      safetyFactors: [],
+      prediction: {
+        medianPredicted: 6,
+        minPredicted: 4,
+        bidWindow: {
+          id: 77,
+          acadTermId: "AY2026/27-T1",
+          round: "1",
+          window: 1,
+        },
+      },
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702" });
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      estimates: Array<{ suggestedBidAmount: number }>;
+    };
+    expect(parsed.estimates[0]!.suggestedBidAmount).toBe(10);
+  });
+});
+
+describe("resolveEstimateWindow", () => {
+  function windowCaller(opts: { current?: unknown; byTerm?: unknown[] }) {
+    return {
+      bidWindows: {
+        getCurrentWindow: vi.fn().mockResolvedValue(opts.current ?? null),
+        getByAcadTerm: vi.fn().mockResolvedValue(opts.byTerm ?? []),
+      },
+    } as unknown as ToolContext["caller"];
+  }
+
+  function open(id: number, term = "t1") {
+    const now = new Date();
+    return {
+      id,
+      acadTermId: term,
+      round: "1",
+      window: 1,
+      opensAt: new Date(now.getTime() - 60_000),
+      resultsAt: new Date(now.getTime() + 60_000),
+    };
+  }
+
+  it("resolves the open window with no warnings when nothing is passed", async () => {
+    const caller = windowCaller({ current: open(77) });
+    const res = await resolveEstimateWindow(caller, {});
+    expect(res.ok).toBe(true);
+    if (!res.ok) throw new Error("expected ok");
+    expect(res.value.window.id).toBe(77);
+    expect(res.value.warnings).toEqual([]);
+  });
+
+  it("resolves an explicit window id against the term's windows", async () => {
+    const target = { id: 99, acadTermId: "t1", round: "2A", window: 3 };
+    const caller = windowCaller({
+      current: open(77),
+      byTerm: [{ id: 77, acadTermId: "t1", round: "1", window: 1 }, target],
+    });
+    const res = await resolveEstimateWindow(caller, {
+      bidWindowInput: "99",
+      termInput: "t1",
+    });
+    expect(res.ok).toBe(true);
+    if (!res.ok) throw new Error("expected ok");
+    expect(res.value.window.id).toBe(99);
+  });
+
+  it("errors when the explicit id is not in the term", async () => {
+    const caller = windowCaller({ current: open(77), byTerm: [] });
+    const res = await resolveEstimateWindow(caller, {
+      bidWindowInput: "123",
+      termInput: "t1",
+    });
+    expect(res.ok).toBe(false);
+    if (res.ok) throw new Error("expected err");
+    expect(res.errText).toMatch(/not found/);
+  });
+
+  it("resolves an r2aw3 alias to the matching window", async () => {
+    const target = { id: 99, acadTermId: "t1", round: "2A", window: 3 };
+    const caller = windowCaller({
+      current: null,
+      byTerm: [{ id: 77, acadTermId: "t1", round: "1", window: 1 }, target],
+    });
+    const res = await resolveEstimateWindow(caller, {
+      bidWindowInput: "r2aw3",
+      termInput: "t1",
+    });
+    expect(res.ok).toBe(true);
+    if (!res.ok) throw new Error("expected ok");
+    expect(res.value.window.id).toBe(99);
+  });
+
+  it("falls back to the latest window with a prior-window warning when nothing is open", async () => {
+    const now = new Date();
+    const latest = {
+      id: 88,
+      acadTermId: "t1",
+      round: "1",
+      window: 2,
+      opensAt: new Date(now.getTime() - 120_000),
+      resultsAt: new Date(now.getTime() - 60_000),
+    };
+    const caller = windowCaller({ current: latest, byTerm: [] });
+    const res = await resolveEstimateWindow(caller, {});
+    expect(res.ok).toBe(true);
+    if (!res.ok) throw new Error("expected ok");
+    expect(res.value.window.id).toBe(88);
+    expect(res.value.warnings[0]).toMatch(/prior-window results/);
+  });
+
+  it("errors when no window exists at all", async () => {
+    const caller = windowCaller({ current: null, byTerm: [] });
+    const res = await resolveEstimateWindow(caller, {});
+    expect(res.ok).toBe(false);
   });
 });

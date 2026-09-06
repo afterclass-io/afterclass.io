@@ -225,6 +225,19 @@ describe("bid write tools", () => {
     expect(parsed.success).toBe(false);
   });
 
+  it("upsert-bid response carries no notes key", async () => {
+    const fn = vi.fn().mockResolvedValue({ id: "b1", classId: "c1", bidWindowId: 53, bidAmount: 50, notes: "secret plan" });
+    const listMine = vi.fn().mockResolvedValue([]);
+    const getBudget = vi.fn().mockResolvedValue(null);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ userBidsUpsert: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
+    };
+    const out = await upsertBidTool.run(ctx, { classId: "c1", bidWindowId: 53, bidAmount: 50, notes: "secret plan" });
+    const text = out.content.find((c) => c.type === "text")?.text ?? "";
+    expect(text).not.toContain("\"notes\"");
+  });
+
   it("upsert-bid returns { updated, plan } with notes stripped", async () => {
     const fn = vi.fn().mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 53 });
     const listMine = vi.fn().mockResolvedValue([

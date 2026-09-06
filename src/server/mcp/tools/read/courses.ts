@@ -9,11 +9,16 @@ const searchCoursesSchema = z.object({
     .string()
     .optional()
     .describe("Academic term id; obtain via list-acad-terms"),
-  query: z.string().min(1).describe("Search text: course code, course name, or professor name"),
+  query: z
+    .string()
+    .min(1)
+    .describe("Search text: course code, course name, or professor name"),
   facultyId: z
     .union([z.number().int(), z.string()])
     .optional()
-    .describe("Optional faculty id or acronym (e.g. 4 or SCIS; obtain via list-faculties) to narrow results to that faculty's courses"),
+    .describe(
+      "Optional faculty id or acronym (e.g. 4 or SCIS; obtain via list-faculties) to narrow results to that faculty's courses",
+    ),
   day: z
     .enum(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
     .optional()
@@ -21,11 +26,15 @@ const searchCoursesSchema = z.object({
   startsAfter: z
     .string()
     .optional()
-    .describe("Filter to courses with a class starting at or after this time (HH:MM, e.g. 18:00 for night classes)"),
+    .describe(
+      "Filter to courses with a class starting at or after this time (HH:MM, e.g. 18:00 for night classes)",
+    ),
   endsBefore: z
     .string()
     .optional()
-    .describe("Filter to courses with a class ending at or before this time (HH:MM, e.g. 12:00)"),
+    .describe(
+      "Filter to courses with a class ending at or before this time (HH:MM, e.g. 12:00)",
+    ),
 });
 
 export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
@@ -44,7 +53,10 @@ export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
       return { results: [] };
     }
   },
-  run: async ({ caller }, { acadTermId, query, facultyId, day, startsAfter, endsBefore }) => {
+  run: async (
+    { caller },
+    { acadTermId, query, facultyId, day, startsAfter, endsBefore },
+  ) => {
     try {
       // Omitted or empty-string acadTermId defaults to the current term.
       // An empty string must never reach SQL (it returns `[]` for every query).
@@ -58,23 +70,40 @@ export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
         if (!resolved.ok) return errText(resolved.errText);
         resolvedFacultyId = resolved.value;
       }
-      return jsonText(
-        await caller.timetable.searchCourses({
-          acadTermId: term.value,
-          query,
-          facultyId: resolvedFacultyId,
-          day,
-          startsAfter,
-          endsBefore,
-        }),
-      );
+      const rows = (await caller.timetable.searchCourses({
+        acadTermId: term.value,
+        query,
+        facultyId: resolvedFacultyId,
+        day,
+        startsAfter,
+        endsBefore,
+      })) as Array<Record<string, unknown>>;
+      // Pass description through verbatim when the procedure already returns
+      // it; omit (never null-fill) when absent so the optional view schema
+      // keeps parsing. (The SQL path selects id/code/name/creditUnits only —
+      // description is search-only there — so today this is a no-op map that
+      // future-proofs the view contract.)
+      const mapped = rows.map((r) => {
+        if (typeof r.description === "string" && r.description.length > 0) {
+          return r;
+        }
+        if ("description" in r) {
+          const { description: _dropped, ...rest } = r;
+          void _dropped;
+          return rest;
+        }
+        return r;
+      });
+      return jsonText(mapped);
     } catch (e) {
       return errText(errorMessage(e));
     }
   },
 };
 
-const getCourseSchema = z.object({ code: z.string().describe("Exact course code") });
+const getCourseSchema = z.object({
+  code: z.string().describe("Exact course code"),
+});
 
 export const getCourseTool: McpTool<typeof getCourseSchema> = {
   name: "get-course",
@@ -112,18 +141,22 @@ const getClassesSchema = z.object({
   startsAfter: z
     .string()
     .optional()
-    .describe("Filter to classes starting at or after this time (HH:MM, e.g. 18:00 for night classes)"),
+    .describe(
+      "Filter to classes starting at or after this time (HH:MM, e.g. 18:00 for night classes)",
+    ),
   endsBefore: z
     .string()
     .optional()
-    .describe("Filter to classes ending at or before this time (HH:MM, e.g. 12:00)"),
+    .describe(
+      "Filter to classes ending at or before this time (HH:MM, e.g. 12:00)",
+    ),
   limit: z
     .number()
     .int()
     .min(1)
     .max(200)
     .describe("Max rows to return (capped at 20).")
-    .default(100),
+    .default(20),
 });
 
 export const getClassesTool: McpTool<typeof getClassesSchema> = {
@@ -134,7 +167,10 @@ export const getClassesTool: McpTool<typeof getClassesSchema> = {
   readOnly: true,
   run: async ({ caller }, input) => {
     try {
-      const clamped = { ...input, limit: Math.min(input.limit, MAX_CLASSES_LIMIT) };
+      const clamped = {
+        ...input,
+        limit: Math.min(input.limit, MAX_CLASSES_LIMIT),
+      };
       return jsonText(await caller.classes.getAll(clamped));
     } catch (e) {
       return errText(errorMessage(e));
@@ -142,7 +178,9 @@ export const getClassesTool: McpTool<typeof getClassesSchema> = {
   },
 };
 
-const getProfessorSchema = z.object({ slug: z.string().describe("Professor slug") });
+const getProfessorSchema = z.object({
+  slug: z.string().describe("Professor slug"),
+});
 
 export const getProfessorTool: McpTool<typeof getProfessorSchema> = {
   name: "get-professor",

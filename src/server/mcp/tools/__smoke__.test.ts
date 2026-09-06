@@ -1,6 +1,6 @@
 // Tool schema & type smoke test - verifies the shared tool infrastructure
 // (types.ts + local ToolResult) is self-consistent without the MCP SDK, and
-// that the catalog keeps the documented 44-tool shape.
+// that the catalog keeps the documented 50-tool shape.
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { okText, errText, jsonText } from "@/server/mcp/types";

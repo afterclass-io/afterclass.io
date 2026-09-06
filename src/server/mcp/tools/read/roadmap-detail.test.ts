@@ -24,7 +24,10 @@ const fakeUser: SessionUser = {
 // that happens to be present under the same property name elsewhere.
 function makeCaller(procs: Record<string, unknown>) {
   return {
-    roadmaps: { getMine: procs.roadmapsGetMine, getById: procs.roadmapsGetById },
+    roadmaps: {
+      getMine: procs.roadmapsGetMine,
+      getById: procs.roadmapsGetById,
+    },
   } as unknown as ToolContext["caller"];
 }
 
@@ -42,7 +45,10 @@ describe("get-my-roadmap", () => {
         },
       ],
     });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsGetMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsGetMine: fn }),
+    };
     const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
     expect(res.isError).toBeFalsy();
     expect(JSON.parse(res.content[0]!.text)).toMatchObject({
@@ -54,7 +60,10 @@ describe("get-my-roadmap", () => {
 
   it("returns errText when the procedure throws", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("forbidden"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsGetMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsGetMine: fn }),
+    };
     const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
     expect(res.isError).toBe(true);
   });
@@ -64,9 +73,14 @@ describe("get-my-roadmap", () => {
       roadmap: { id: "r1", name: "My Plan", shareToken: "secret-tok" },
       entries: [],
     });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsGetMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsGetMine: fn }),
+    };
     const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
-    const parsed = JSON.parse(res.content[0]!.text) as { roadmap: Record<string, unknown> };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      roadmap: Record<string, unknown>;
+    };
     expect(parsed.roadmap.shareToken).toBeUndefined();
     expect(parsed.roadmap.id).toBe("r1");
   });
@@ -91,7 +105,10 @@ describe("get-my-roadmap", () => {
         },
       ],
     });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsGetMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsGetMine: fn }),
+    };
     const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
     const props = getMyRoadmapTool.toWidgetProps?.(res);
     expect(props).toEqual({
@@ -100,6 +117,7 @@ describe("get-my-roadmap", () => {
       isPublic: false,
       owner: null,
       voteCount: null,
+      progress: { completed: 1, total: 1 },
       entries: [
         {
           yearNumber: 1,
@@ -128,7 +146,10 @@ describe("get-public-roadmap", () => {
         },
       ],
     });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsGetById: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsGetById: fn }),
+    };
     const res = await getPublicRoadmapTool.run(ctx, { roadmapId: "r9" });
     expect(res.isError).toBeFalsy();
     expect(fn).toHaveBeenCalledWith({ id: "r9" });
@@ -140,7 +161,10 @@ describe("get-public-roadmap", () => {
 
   it("returns errText when the roadmap is not found", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("NOT_FOUND"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsGetById: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsGetById: fn }),
+    };
     const res = await getPublicRoadmapTool.run(ctx, { roadmapId: "nope" });
     expect(res.isError).toBe(true);
   });
@@ -174,7 +198,10 @@ describe("get-public-roadmap", () => {
       voteCount: 42,
       viewerHasVoted: false,
     });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsGetById: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsGetById: fn }),
+    };
     const res = await getPublicRoadmapTool.run(ctx, { roadmapId: "r9" });
     const props = getPublicRoadmapTool.toWidgetProps?.(res);
     expect(props).toEqual({
@@ -183,6 +210,7 @@ describe("get-public-roadmap", () => {
       isPublic: true,
       owner: "senior123",
       voteCount: 42,
+      progress: { completed: 1, total: 1 },
       entries: [
         {
           yearNumber: 2,

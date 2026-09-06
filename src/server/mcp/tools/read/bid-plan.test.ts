@@ -48,8 +48,8 @@ function mkBid(overrides: Record<string, unknown> = {}) {
 describe("my-bid-plan", () => {
   it("calls listMine and getBudget and returns filtered bids with notes stripped", async () => {
     const listMine = vi.fn().mockResolvedValue([
-      mkBid({ id: "b1", bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 } }),
-      mkBid({ id: "b2", bidWindow: { acadTermId: "AY2026/27-T2", round: "1", window: 1 } }),
+      mkBid({ id: "b1", bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 } }),
+      mkBid({ id: "b2", bidWindow: { acadTermId: "AY202627T2", round: "1", window: 1 } }),
     ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 987.5 });
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ listMine, getBudget }) };
@@ -57,19 +57,41 @@ describe("my-bid-plan", () => {
     const result = await myBidPlanTool.run(ctx, { acadTermId: "AY2026/27-T1" });
 
     expect(listMine).toHaveBeenCalled();
-    expect(getBudget).toHaveBeenCalledWith({ acadTermId: "AY2026/27-T1" });
+    // Display-form input normalises to compact before reaching the DB.
+    expect(getBudget).toHaveBeenCalledWith({ acadTermId: "AY202627T1" });
     expect(result.isError).toBeUndefined();
     const parsed = JSON.parse(result.content[0]!.text) as {
       acadTermId: string;
       budget: unknown;
       bids: Array<Record<string, unknown>>;
     };
-    expect(parsed.acadTermId).toBe("AY2026/27-T1");
+    expect(parsed.acadTermId).toBe("AY202627T1");
     expect(parsed.budget).toEqual({ balance: 987.5 });
     expect(parsed.bids).toHaveLength(1);
     expect(parsed.bids[0]!.id).toBe("b1");
     // notes must not leak
     expect(parsed.bids[0]!.notes).toBeUndefined();
+  });
+
+  it("normalizes display-form acadTermId to compact before filtering bids", async () => {
+    const listMine = vi.fn().mockResolvedValue([
+      mkBid({ id: "b1", bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 } }),
+      mkBid({ id: "b2", bidWindow: { acadTermId: "AY202627T2", round: "1", window: 1 } }),
+    ]);
+    const getBudget = vi.fn().mockResolvedValue({ balance: 987.5 });
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ listMine, getBudget }) };
+
+    const result = await myBidPlanTool.run(ctx, { acadTermId: "ay2026/27-t1" });
+
+    expect(result.isError).toBeUndefined();
+    expect(getBudget).toHaveBeenCalledWith({ acadTermId: "AY202627T1" });
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      acadTermId: string;
+      bids: Array<Record<string, unknown>>;
+    };
+    expect(parsed.acadTermId).toBe("AY202627T1");
+    expect(parsed.bids).toHaveLength(1);
+    expect(parsed.bids[0]!.id).toBe("b1");
   });
 
   it("normalizes each bid to the flat BidPlanEntry shape", async () => {
@@ -78,7 +100,7 @@ describe("my-bid-plan", () => {
         id: "b1",
         bidAmount: 25,
         status: "PLANNED",
-        bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 },
+        bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
         courseCode: "ACC101",
         courseName: "Financial Accounting",
         section: "G1",
@@ -88,7 +110,7 @@ describe("my-bid-plan", () => {
         id: "b2",
         bidAmount: 51,
         status: "SECURED",
-        bidWindow: { acadTermId: "AY2026/27-T1", round: "1A", window: 2 },
+        bidWindow: { acadTermId: "AY202627T1", round: "1A", window: 2 },
         courseCode: "FIN201",
         courseName: "Finance",
         section: "G3",
@@ -98,7 +120,7 @@ describe("my-bid-plan", () => {
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ listMine, getBudget }) };
 
-    const result = await myBidPlanTool.run(ctx, { acadTermId: "AY2026/27-T1" });
+    const result = await myBidPlanTool.run(ctx, { acadTermId: "AY202627T1" });
     const parsed = JSON.parse(result.content[0]!.text) as {
       bids: Array<Record<string, unknown>>;
     };
@@ -126,7 +148,7 @@ describe("my-bid-plan", () => {
     const getBudget = vi.fn().mockResolvedValue(null);
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ listMine, getBudget }) };
 
-    const result = await myBidPlanTool.run(ctx, { acadTermId: "AY2026/27-T1" });
+    const result = await myBidPlanTool.run(ctx, { acadTermId: "AY202627T1" });
     expect(result.isError).toBeUndefined();
     const parsed = JSON.parse(result.content[0]!.text) as {
       budget: unknown;
@@ -141,14 +163,14 @@ describe("my-bid-plan", () => {
     const getBudget = vi.fn().mockResolvedValue({ balance: 10 });
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ listMine, getBudget }) };
 
-    const result = await myBidPlanTool.run(ctx, { acadTermId: "AY2026/27-T1" });
+    const result = await myBidPlanTool.run(ctx, { acadTermId: "AY202627T1" });
     expect(result.isError).toBe(true);
   });
 
   it("defaults acadTermId to the current term when omitted", async () => {
     const listMine = vi.fn().mockResolvedValue([
-      mkBid({ id: "b1", bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 } }),
-      mkBid({ id: "b2", bidWindow: { acadTermId: "AY2026/27-T2", round: "1", window: 1 } }),
+      mkBid({ id: "b1", bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 } }),
+      mkBid({ id: "b2", bidWindow: { acadTermId: "AY202627T2", round: "1", window: 1 } }),
     ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 200 });
     const ctx: ToolContext = {
@@ -156,18 +178,18 @@ describe("my-bid-plan", () => {
       caller: makeCaller({
         listMine,
         getBudget,
-        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "AY2026/27-T1" }),
+        acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "AY202627T1" }),
       }),
     };
 
     const result = await myBidPlanTool.run(ctx, {});
     expect(result.isError).toBeUndefined();
-    expect(getBudget).toHaveBeenCalledWith({ acadTermId: "AY2026/27-T1" });
+    expect(getBudget).toHaveBeenCalledWith({ acadTermId: "AY202627T1" });
     const parsed = JSON.parse(result.content[0]!.text) as {
       acadTermId: string;
       bids: Array<Record<string, unknown>>;
     };
-    expect(parsed.acadTermId).toBe("AY2026/27-T1");
+    expect(parsed.acadTermId).toBe("AY202627T1");
     expect(parsed.bids).toHaveLength(1);
     expect(parsed.bids[0]!.id).toBe("b1");
   });

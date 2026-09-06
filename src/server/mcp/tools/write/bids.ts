@@ -2,7 +2,14 @@ import { z } from "zod";
 
 import { resolveOpenWindowIdOrError, resolveTermId } from "../../current";
 import { bidPlanToWidgetProps, buildBidPlan } from "../bid-plan-shared";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { stripBidNotes } from "../bid-shared";
+import {
+  confirmField,
+  errText,
+  errorMessage,
+  jsonText,
+  type McpTool,
+} from "../../types";
 
 const upsertBidSchema = z.object({
   classId: z.string(),
@@ -35,26 +42,30 @@ export const upsertBidTool: McpTool<typeof upsertBidSchema> = {
       try {
         const bids = await caller.userBids.listMine();
         const matched = bids.find(
-          (b) => b.classId === updated.classId && b.bidWindowId === updated.bidWindowId,
+          (b) =>
+            b.classId === updated.classId &&
+            b.bidWindowId === updated.bidWindowId,
         );
         acadTermId = matched?.bidWindow?.acadTermId ?? null;
       } catch {
         // Non-fatal — plan enrichment failed; return updated alone below.
       }
-      if (!acadTermId) return jsonText({ updated, plan: null });
+      if (!acadTermId)
+        return jsonText({ updated: stripBidNotes(updated), plan: null });
       const plan = await buildBidPlan(caller, acadTermId);
-      return jsonText({ updated, plan });
+      return jsonText({ updated: stripBidNotes(updated), plan });
     } catch (e) {
       return errText(errorMessage(e));
     }
   },
 };
 
-const removeBidSchema = z.object({ id: z.string() });
+const removeBidSchema = z.object({ id: z.string(), ...confirmField });
 
 export const removeBidTool: McpTool<typeof removeBidSchema> = {
   name: "remove-bid",
-  description: "Delete one of the user's bids by its id. Returns the full updated bid plan for the affected term.",
+  description:
+    "Delete one of the user's bids by its id. Returns the full updated bid plan for the affected term.",
   inputSchema: removeBidSchema,
   toWidgetProps: bidPlanToWidgetProps,
   run: async ({ caller }, { id }) => {
@@ -71,7 +82,8 @@ export const removeBidTool: McpTool<typeof removeBidSchema> = {
         acadTermId?: string | null;
         success?: boolean;
       };
-      if (!acadTermId && raw && typeof raw.acadTermId === "string") acadTermId = raw.acadTermId;
+      if (!acadTermId && raw && typeof raw.acadTermId === "string")
+        acadTermId = raw.acadTermId;
       const updated = { success: raw?.success ?? true };
       if (!acadTermId) return jsonText({ updated, plan: null });
       const plan = await buildBidPlan(caller, acadTermId);
@@ -87,6 +99,7 @@ export const MAX_BUDGET = 10000;
 const setBidBudgetSchema = z.object({
   acadTermId: z.string().optional(),
   balance: z.number().min(0).max(MAX_BUDGET),
+  ...confirmField,
 });
 
 export const setBidBudgetTool: McpTool<typeof setBidBudgetSchema> = {
@@ -103,7 +116,10 @@ export const setBidBudgetTool: McpTool<typeof setBidBudgetSchema> = {
     try {
       const term = await resolveTermId(caller, input.acadTermId);
       if (!term.ok) return errText(term.errText);
-      const updated = await caller.userBids.upsertBudget({ ...input, acadTermId: term.value });
+      const updated = await caller.userBids.upsertBudget({
+        ...input,
+        acadTermId: term.value,
+      });
       const plan = await buildBidPlan(caller, term.value);
       return jsonText({ updated, plan });
     } catch (e) {

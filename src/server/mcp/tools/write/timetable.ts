@@ -1,7 +1,14 @@
 import { z } from "zod";
 
-import { resolveTermId } from "../../current";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { pickActiveOrFirst, resolveTermId } from "../../current";
+import {
+  confirmField,
+  errText,
+  errorMessage,
+  jsonText,
+  type McpTool,
+} from "../../types";
+import { stripShareToken } from "../bid-shared";
 
 const visibilitySchema = z.enum(["PRIVATE", "UNLISTED", "PUBLIC"]);
 
@@ -19,7 +26,9 @@ export const createTimetableTool: McpTool<typeof createTimetableSchema> = {
     try {
       const term = await resolveTermId(caller, input.acadTermId);
       if (!term.ok) return errText(term.errText);
-      return jsonText(await caller.timetable.create({ ...input, acadTermId: term.value }));
+      return jsonText(
+        await caller.timetable.create({ ...input, acadTermId: term.value }),
+      );
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -44,7 +53,10 @@ export const renameTimetableTool: McpTool<typeof renameTimetableSchema> = {
   },
 };
 
-const removeTimetableSchema = z.object({ timetableId: z.string() });
+const removeTimetableSchema = z.object({
+  timetableId: z.string(),
+  ...confirmField,
+});
 
 export const removeTimetableTool: McpTool<typeof removeTimetableSchema> = {
   name: "remove-timetable",
@@ -69,7 +81,9 @@ const addClassToTimetableSchema = z.object({
   classId: z.string(),
 });
 
-export const addClassToTimetableTool: McpTool<typeof addClassToTimetableSchema> = {
+export const addClassToTimetableTool: McpTool<
+  typeof addClassToTimetableSchema
+> = {
   name: "add-class-to-timetable",
   description:
     "Add a class section to one of the user's timetables. Omit timetableId to add to the active timetable for the class's academic term (created automatically when none exists).",
@@ -78,7 +92,10 @@ export const addClassToTimetableTool: McpTool<typeof addClassToTimetableSchema> 
     try {
       if (input.timetableId?.trim()) {
         return jsonText(
-          await caller.timetable.addSlot({ timetableId: input.timetableId.trim(), classId: input.classId }),
+          await caller.timetable.addSlot({
+            timetableId: input.timetableId.trim(),
+            classId: input.classId,
+          }),
         );
       }
       // Resolve the class's term, then the user's active timetable for it.
@@ -101,10 +118,12 @@ export const addClassToTimetableTool: McpTool<typeof addClassToTimetableSchema> 
         id: string;
         isActive: boolean;
       }>;
-      const active = mine.find((t) => t.isActive) ?? mine[0];
+      const active = pickActiveOrFirst(mine);
       let timetableId = active?.id;
       if (!timetableId) {
-        const created = (await caller.timetable.create({ acadTermId })) as { id: string };
+        const created = (await caller.timetable.create({ acadTermId })) as {
+          id: string;
+        };
         timetableId = created.id;
       }
       if (!timetableId) {
@@ -112,7 +131,9 @@ export const addClassToTimetableTool: McpTool<typeof addClassToTimetableSchema> 
           `Could not resolve a timetable for academic term ${acadTermId}. Ask the user to pick one of their timetables (from my-timetables) and try again with an explicit timetableId.`,
         );
       }
-      return jsonText(await caller.timetable.addSlot({ timetableId, classId: input.classId }));
+      return jsonText(
+        await caller.timetable.addSlot({ timetableId, classId: input.classId }),
+      );
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -122,9 +143,12 @@ export const addClassToTimetableTool: McpTool<typeof addClassToTimetableSchema> 
 const removeClassFromTimetableSchema = z.object({
   timetableId: z.string(),
   classId: z.string(),
+  ...confirmField,
 });
 
-export const removeClassFromTimetableTool: McpTool<typeof removeClassFromTimetableSchema> = {
+export const removeClassFromTimetableTool: McpTool<
+  typeof removeClassFromTimetableSchema
+> = {
   name: "remove-class-from-timetable",
   description: "Remove a class section from one of the user's timetables.",
   inputSchema: removeClassFromTimetableSchema,
@@ -140,9 +164,12 @@ export const removeClassFromTimetableTool: McpTool<typeof removeClassFromTimetab
 const setTimetableVisibilitySchema = z.object({
   timetableId: z.string(),
   visibility: visibilitySchema,
+  ...confirmField,
 });
 
-export const setTimetableVisibilityTool: McpTool<typeof setTimetableVisibilitySchema> = {
+export const setTimetableVisibilityTool: McpTool<
+  typeof setTimetableVisibilitySchema
+> = {
   name: "set-timetable-visibility",
   description:
     "Set a timetable's visibility: PRIVATE (only you), UNLISTED (shareable via link), or PUBLIC.",
@@ -154,11 +181,8 @@ export const setTimetableVisibilityTool: McpTool<typeof setTimetableVisibilitySc
         id: timetableId,
         visibility,
       })) as Record<string, unknown>;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- bearer token must not reach the LLM
-      const { shareToken: _s, ...rest } = res as Record<string, unknown> & {
-        shareToken?: unknown;
-      };
-      return jsonText(rest);
+      // stripShareToken: the bearer shareToken must not reach the LLM.
+      return jsonText(stripShareToken(res));
     } catch (e) {
       return errText(errorMessage(e));
     }

@@ -1,4 +1,5 @@
 import type { RouterCaller } from "../types";
+import { parseWidgetJson } from "../types";
 
 export interface RoadmapEntryView {
   yearNumber: number;
@@ -14,6 +15,7 @@ export interface RoadmapView {
   isPublic: boolean;
   owner: string | null;
   voteCount: number | null;
+  progress?: { completed: number; total: number };
   entries: RoadmapEntryView[];
 }
 
@@ -24,8 +26,8 @@ function toRoadmapViewPropsShared(
   const roadmap = (data.roadmap ?? data) as Record<string, unknown>;
   const rawEntries = Array.isArray(data.entries)
     ? (data.entries as unknown[])
-    : Array.isArray((roadmap).entries)
-      ? ((roadmap).entries as unknown[])
+    : Array.isArray(roadmap.entries)
+      ? (roadmap.entries as unknown[])
       : [];
   const entries: RoadmapEntryView[] = rawEntries.map((e) => {
     const entry = e as Record<string, unknown>;
@@ -50,6 +52,25 @@ function toRoadmapViewPropsShared(
     isPublic,
     owner: isPublic ? (data.ownerUsername as string | null) : null,
     voteCount: isPublic ? (data.voteCount as number | null) : null,
+    // Honest progress signal from the existing getMine payload only (no new
+    // queries): completed = entries whose course carries a non-empty
+    // description (content synced), total = all entries. Omit when there are
+    // no entries so the view hides the row.
+    ...(entries.length > 0
+      ? {
+          progress: {
+            completed: rawEntries.filter((e) => {
+              const course = ((e as Record<string, unknown>).course ??
+                {}) as Record<string, unknown>;
+              return (
+                typeof course.description === "string" &&
+                course.description.length > 0
+              );
+            }).length,
+            total: entries.length,
+          },
+        }
+      : {}),
     entries,
   };
 }
@@ -59,12 +80,13 @@ export async function buildRoadmapView(
   caller: RouterCaller,
   roadmapId: string,
 ): Promise<Record<string, unknown>> {
-  const data = (await caller.roadmaps.getMine({ roadmapId })) as unknown as Record<
-    string,
-    unknown
-  >;
+  const data = (await caller.roadmaps.getMine({
+    roadmapId,
+  })) as unknown as Record<string, unknown>;
   const roadmapSrc = data.roadmap as Record<string, unknown> | undefined;
-  const roadmapRest: Record<string, unknown> = roadmapSrc ? { ...roadmapSrc } : {};
+  const roadmapRest: Record<string, unknown> = roadmapSrc
+    ? { ...roadmapSrc }
+    : {};
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- deliberate PII stripping
   delete roadmapRest.shareToken;
   return { roadmap: roadmapRest, entries: data.entries };
@@ -73,23 +95,25 @@ export async function buildRoadmapView(
 /** Shared toWidgetProps for any tool whose JSON text is a roadmap view. */
 export function roadmapViewToWidgetProps(
   isPublic: boolean,
-): (result: { content: Array<{ type: "text"; text: string }> }) => Record<string, unknown> {
+): (result: {
+  content: Array<{ type: "text"; text: string }>;
+}) => Record<string, unknown> {
   return (result) => {
-    const text = result.content.find((c) => c.type === "text")?.text ?? "";
-    try {
-      const data = JSON.parse(text) as Record<string, unknown>;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access -- untyped JSON
-      const payload =
-        data && typeof data === "object" && "roadmapView" in data
-          ? (data.roadmapView as Record<string, unknown>)
-          : data && typeof data === "object" && "roadmap" in data
-            ? (data)
-            : (data);
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- keeps return typed as Record
-      return toRoadmapViewPropsShared(payload, isPublic) as unknown as Record<string, unknown>;
-    } catch {
-      return { raw: text };
-    }
+    const parsed = parseWidgetJson(result);
+    if (!("data" in parsed)) return { raw: parsed.raw };
+    const data = parsed.data;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access -- untyped JSON
+    const payload =
+      data && typeof data === "object" && "roadmapView" in data
+        ? (data.roadmapView as Record<string, unknown>)
+        : data && typeof data === "object" && "roadmap" in data
+          ? data
+          : data;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- keeps return typed as Record
+    return toRoadmapViewPropsShared(payload, isPublic) as unknown as Record<
+      string,
+      unknown
+    >;
   };
 }
 
@@ -98,5 +122,8 @@ export function toRoadmapViewProps(
   isPublic: boolean,
 ): Record<string, unknown> {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- keeps return typed as Record
-  return toRoadmapViewPropsShared(data, isPublic) as unknown as Record<string, unknown>;
+  return toRoadmapViewPropsShared(data, isPublic) as unknown as Record<
+    string,
+    unknown
+  >;
 }

@@ -1,8 +1,14 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { requireOwnedTimetable } from "@/server/api/ownership";
 import { db } from "@/server/db";
 
-import { resolveTermId } from "../../current";
+import {
+  normalizeAcadTermId,
+  pickActiveOrFirst,
+  resolveTermId,
+} from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const getMyTimetableDetailSchema = z.object({
@@ -80,7 +86,7 @@ function toExamTimings(arrangement: Arrangement) {
       courseCode: slot.courseCode,
       section: slot.section,
       // exam.date is Date | string | null per ArrangementExamTiming; keep the string branch without a redundant cast
-      date: exam.date instanceof Date ? exam.date.toISOString() : (exam.date),
+      date: exam.date instanceof Date ? exam.date.toISOString() : exam.date,
       dayOfWeek: exam.dayOfWeek,
       startTime: exam.startTime,
       endTime: exam.endTime,
@@ -102,14 +108,19 @@ function toDetail(
     // listMine lookup). Emitting isActive: false for an id we never resolved
     // would be affirmatively wrong for the user's active timetable.
     ...(meta
-      ? { isActive: meta.isActive, ...(meta.termId ? { termId: meta.termId } : {}) }
+      ? {
+          isActive: meta.isActive,
+          ...(meta.termId ? { termId: meta.termId } : {}),
+        }
       : {}),
     slots: toFlatSlots(arrangement),
     examTimings: toExamTimings(arrangement),
   };
 }
 
-export const getMyTimetableDetailTool: McpTool<typeof getMyTimetableDetailSchema> = {
+export const getMyTimetableDetailTool: McpTool<
+  typeof getMyTimetableDetailSchema
+> = {
   name: "get-my-timetable-detail",
   description:
     "Get the full weekly arrangement of your timetable including class times, venues, and professors - use when a student asks 'show me my timetable' or 'what classes do I have?'",
@@ -131,8 +142,10 @@ export const getMyTimetableDetailTool: McpTool<typeof getMyTimetableDetailSchema
         // so it never triggers a term default.
         const term = await resolveTermId(caller, acadTermId);
         if (!term.ok) return errText(term.errText);
-        const mine = await caller.timetable.listMine({ acadTermId: term.value });
-        const active = mine.find((t) => t.isActive) ?? mine[0];
+        const mine = await caller.timetable.listMine({
+          acadTermId: term.value,
+        });
+        const active = pickActiveOrFirst(mine);
         if (!active) {
           return errText(
             `You don't have any timetables for academic term ${term.value}. Create one first, then ask again.`,
@@ -143,7 +156,9 @@ export const getMyTimetableDetailTool: McpTool<typeof getMyTimetableDetailSchema
         meta = { isActive: active.isActive, termId: active.acadTermId };
       } else if (acadTermId?.trim()) {
         // Enrich metadata (isActive/termId) from listMine when we can.
-        const mine = await caller.timetable.listMine({ acadTermId: acadTermId.trim() });
+        const mine = await caller.timetable.listMine({
+          acadTermId: normalizeAcadTermId(acadTermId),
+        });
         const match = mine.find((t) => t.id === id);
         if (match) {
           resolvedName = match.name;
@@ -160,12 +175,17 @@ export const getMyTimetableDetailTool: McpTool<typeof getMyTimetableDetailSchema
       // the arrangement doesn't include it and listMine didn't already provide it.
       let name = resolvedName ?? arrangement.timetable?.name;
       if (!name) {
-        const row = await db.userTimetable.findUnique({
-          where: { id },
-          select: { name: true, userId: true },
-        });
-        if (row?.userId !== user.id) {
-          return errText(`Timetable ${id} not found.`);
+        // Ownership failure (missing or another user's row) surfaces as the
+        // same "not found" text as before; other errors propagate to the
+        // outer handler.
+        let row: { name: string };
+        try {
+          row = await requireOwnedTimetable(db, id, user.id, { name: true });
+        } catch (e) {
+          if (e instanceof TRPCError && e.code === "FORBIDDEN") {
+            return errText(`Timetable ${id} not found.`);
+          }
+          throw e;
         }
         name = row.name;
       }

@@ -1,6 +1,13 @@
 import { z } from "zod";
 
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { resolveClassIdByCodeSection } from "../../current";
+import {
+  errText,
+  errorMessage,
+  jsonText,
+  parseWidgetJson,
+  type McpTool,
+} from "../../types";
 
 /** Flat history shape consumed by the bid-explorer widget. */
 interface HistoryPoint {
@@ -29,71 +36,141 @@ interface BidResultRow {
  * Map real bid-result rows into `HistoryPoint[]`, dropping rows without
  * clearing prices (min/median are null until results are released) and sorting
  * ascending by acadTermId, then round, then window.
+ *
+ * At most one row per term+round+window is emitted: duplicates collapse to the
+ * lowest min/median (mirrors `buildChartPoints` grouping in
+ * views/bid-explorer/view.tsx). The vacancy follows the row that set the
+ * lowest min (first such row wins ties).
  */
 function normalizeHistory(results: BidResultRow[]): HistoryPoint[] {
-  return results
-    .filter((r) => r.min !== null && r.median !== null)
-    .map((r) => ({
-      acadTermId: r.bidWindow.acadTermId,
-      round: r.bidWindow.round,
-      window: r.bidWindow.window,
-      min: r.min!,
-      median: r.median!,
-      vacancy: r.vacancy ?? null,
-    }))
-    .sort(
-      (a, b) =>
-        a.acadTermId.localeCompare(b.acadTermId) ||
-        a.round.localeCompare(b.round, undefined, { numeric: true }) ||
-        a.window - b.window,
-    );
+  const grouped = new Map<string, HistoryPoint>();
+  for (const r of results) {
+    if (r.min === null || r.median === null) continue;
+    const key = `${r.bidWindow.acadTermId}/${r.bidWindow.round}/${r.bidWindow.window}`;
+    const existing = grouped.get(key);
+    if (existing) {
+      if (
+        r.min < existing.min ||
+        (r.min === existing.min && r.median < existing.median)
+      ) {
+        existing.vacancy = r.vacancy ?? null;
+      }
+      existing.min = Math.min(existing.min, r.min);
+      existing.median = Math.min(existing.median, r.median);
+    } else {
+      grouped.set(key, {
+        acadTermId: r.bidWindow.acadTermId,
+        round: r.bidWindow.round,
+        window: r.bidWindow.window,
+        min: r.min,
+        median: r.median,
+        vacancy: r.vacancy ?? null,
+      });
+    }
+  }
+  return [...grouped.values()].sort(
+    (a, b) =>
+      a.acadTermId.localeCompare(b.acadTermId) ||
+      a.round.localeCompare(b.round, undefined, { numeric: true }) ||
+      a.window - b.window,
+  );
 }
 
 const exploreBidOptionsSchema = z
   .object({
-    classId: z.string().optional().describe("Class id; obtain from get-classes"),
-    courseCode: z.string().optional().describe("Course code, e.g. COR-MGMT1202"),
-    professorSlug: z.string().optional().describe("Professor slug; obtain from get-professor"),
+    classId: z
+      .string()
+      .optional()
+      .describe("Class id; obtain from get-classes"),
+    courseCode: z
+      .string()
+      .optional()
+      .describe("Course code, e.g. COR-MGMT1202"),
+    professorSlug: z
+      .string()
+      .optional()
+      .describe("Professor slug; obtain from get-professor"),
+    section: z
+      .string()
+      .optional()
+      .describe("Section, e.g. G1; combine with courseCode"),
   })
-  .refine((v) => v.classId ?? (v.courseCode && v.professorSlug), {
-    message: "Provide classId, or courseCode + professorSlug",
-  });
+  .refine(
+    (v) => v.classId ?? (v.courseCode && (v.professorSlug ?? v.section)),
+    {
+      message:
+        "Provide classId, or courseCode + professorSlug, or courseCode + section",
+    },
+  );
 
 export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
   name: "explore-bid-options",
   description:
-    "Explore bid prices for a class or course+professor combination: historical clearing ranges per term/round, the latest prediction, and safety multipliers (what amount beats X% of bids). Use when the user wants to compare options and decide a bid themselves rather than get a single recommendation.",
+    "Explore bid prices for a class, course+professor, or course+section combination: historical clearing ranges per term/round, the latest prediction, and safety multipliers (what amount beats X% of bids). Use for interactive section-level bidding questions ('how much for COR-IS1702 G1?') — pass courseCode+section. Use when the user wants to compare options and decide a bid themselves rather than get a single recommendation.",
   inputSchema: exploreBidOptionsSchema,
   readOnly: true,
   toWidgetProps: (result) => {
-    const text = result.content.find((c) => c.type === "text")?.text ?? "";
-    try {
-      return JSON.parse(text) as Record<string, unknown>;
-    } catch {
-      return { raw: text };
-    }
+    const parsed = parseWidgetJson(result);
+    return "data" in parsed ? parsed.data : { raw: parsed.raw };
   },
-  run: async ({ caller }, { classId, courseCode, professorSlug }) => {
+  run: async ({ caller }, { classId, courseCode, professorSlug, section }) => {
     try {
       let results;
-      if (classId) {
-        results = await caller.bidResults.getBy({ classId });
+      let resolvedClassId: string | null = classId ?? null;
+      if (resolvedClassId) {
+        results = await caller.bidResults.getBy({ classId: resolvedClassId });
+      } else if (section && !professorSlug) {
+        // courseCode + section path: resolve the classId via the shared
+        // code+section resolver (term-scoped, term-agnostic fallback).
+        const trimmedCode = courseCode!.trim();
+        const trimmedSection = section.trim();
+        if (!trimmedCode) return errText("courseCode must not be empty");
+        if (!trimmedSection) return errText("section must not be empty");
+        let termId: string | undefined;
+        try {
+          const cw =
+            (await caller.bidWindows.getCurrentWindow()) as unknown as {
+              id: number;
+              acadTermId: string;
+            } | null;
+          termId = cw?.acadTermId ?? undefined;
+        } catch {
+          // leave termId undefined — the lookup below searches broadly
+        }
+        resolvedClassId = await resolveClassIdByCodeSection(caller, {
+          courseCode: trimmedCode,
+          section: trimmedSection,
+          termId,
+        });
+        if (!resolvedClassId) {
+          return errText(
+            `Class for ${trimmedCode} section ${trimmedSection} not found${termId ? ` in term ${termId}` : ""}.`,
+          );
+        }
+        results = await caller.bidResults.getBy({ classId: resolvedClassId });
       } else {
         // getByCourseProfessor keys on professorId, so resolve the slug first.
-        const professor = await caller.professors.getBySlug({ slug: professorSlug! });
+        const professor = await caller.professors.getBySlug({
+          slug: professorSlug!,
+        });
         if (!professor) return errText(`Professor ${professorSlug} not found.`);
         results = await caller.bidResults.getByCourseProfessor({
           courseCode: courseCode!,
           professorId: professor.id,
         });
       }
-      // A prediction is per-class; without a classId there is none.
-      const prediction = classId ? await caller.bidPredictions.getBy({ classId }) : null;
+      // A prediction is per-class; without a resolved classId there is none.
+      const prediction = resolvedClassId
+        ? await caller.bidPredictions.getBy({ classId: resolvedClassId })
+        : null;
       const history = normalizeHistory(results);
       if (history.length === 0 && !prediction?.bidWindow) {
         return errText("No bid data available for this combination yet.");
       }
-      let safetyFactors: Array<{ beatsPercentage: number; multiplier: number }> = [];
+      let safetyFactors: Array<{
+        beatsPercentage: number;
+        multiplier: number;
+      }> = [];
       if (prediction?.bidWindow) {
         const factors = await caller.safetyFactors.getAll();
         safetyFactors = factors
@@ -102,11 +179,14 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
               f.acadTermId === prediction.bidWindow.acadTermId &&
               f.predictionType === "MEDIAN",
           )
-          .map((f) => ({ beatsPercentage: f.beatsPercentage, multiplier: f.multiplier }))
+          .map((f) => ({
+            beatsPercentage: f.beatsPercentage,
+            multiplier: f.multiplier,
+          }))
           .sort((a, b) => a.beatsPercentage - b.beatsPercentage);
       }
       return jsonText({
-        classId: classId ?? null,
+        classId: resolvedClassId,
         history,
         prediction: prediction?.bidWindow
           ? {

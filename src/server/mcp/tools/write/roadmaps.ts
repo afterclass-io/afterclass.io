@@ -1,9 +1,20 @@
 import { z } from "zod";
 
-import { buildRoadmapView, roadmapViewToWidgetProps } from "../roadmap-view-shared";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { roadmapTermSchema } from "../feasibility-check";
+import { stripShareToken } from "../bid-shared";
+import {
+  buildRoadmapView,
+  roadmapViewToWidgetProps,
+} from "../roadmap-view-shared";
+import {
+  confirmField,
+  errText,
+  errorMessage,
+  jsonText,
+  type McpTool,
+} from "../../types";
 
-const termSchema = z.enum(["T1", "T2", "T3A", "T3B"]);
+const termSchema = roadmapTermSchema;
 const visibilitySchema = z.enum(["PRIVATE", "UNLISTED", "PUBLIC"]);
 
 const roadmapEntrySchema = z.object({
@@ -17,12 +28,15 @@ const createRoadmapSchema = z.object({ name: z.string().min(1).max(100) });
 
 export const createRoadmapTool: McpTool<typeof createRoadmapSchema> = {
   name: "create-roadmap",
-  description: "Create a new study roadmap for the user. Returns the updated roadmap.",
+  description:
+    "Create a new study roadmap for the user. Returns the updated roadmap.",
   inputSchema: createRoadmapSchema,
   toWidgetProps: roadmapViewToWidgetProps(false),
   run: async ({ caller }, { name }) => {
     try {
-      const created = (await caller.roadmaps.create({ name })) as { id: string };
+      const created = (await caller.roadmaps.create({ name })) as {
+        id: string;
+      };
       const view = await buildRoadmapView(caller, created.id);
       return jsonText(view);
     } catch (e) {
@@ -50,7 +64,10 @@ export const renameRoadmapTool: McpTool<typeof renameRoadmapSchema> = {
   },
 };
 
-const removeRoadmapSchema = z.object({ roadmapId: z.string() });
+const removeRoadmapSchema = z.object({
+  roadmapId: z.string(),
+  ...confirmField,
+});
 
 export const removeRoadmapTool: McpTool<typeof removeRoadmapSchema> = {
   name: "remove-roadmap",
@@ -68,31 +85,36 @@ export const removeRoadmapTool: McpTool<typeof removeRoadmapSchema> = {
 const saveRoadmapEntriesSchema = z.object({
   roadmapId: z.string(),
   entries: z.array(roadmapEntrySchema).max(100),
+  ...confirmField,
 });
 
-export const saveRoadmapEntriesTool: McpTool<typeof saveRoadmapEntriesSchema> = {
-  name: "save-roadmap-entries",
-  description:
-    "Replace the course entries of a roadmap. entries is the full desired list: [{courseId, yearNumber (1-8), term (T1|T2|T3A|T3B), sortOrder}]. Returns the updated roadmap.",
-  inputSchema: saveRoadmapEntriesSchema,
-  toWidgetProps: roadmapViewToWidgetProps(false),
-  run: async ({ caller }, input) => {
-    try {
-      await caller.roadmaps.saveEntries(input);
-      const view = await buildRoadmapView(caller, input.roadmapId);
-      return jsonText(view);
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
-};
+export const saveRoadmapEntriesTool: McpTool<typeof saveRoadmapEntriesSchema> =
+  {
+    name: "save-roadmap-entries",
+    description:
+      "Replace the course entries of a roadmap. entries is the full desired list: [{courseId, yearNumber (1-8), term (T1|T2|T3A|T3B), sortOrder}]. Returns the updated roadmap.",
+    inputSchema: saveRoadmapEntriesSchema,
+    toWidgetProps: roadmapViewToWidgetProps(false),
+    run: async ({ caller }, input) => {
+      try {
+        await caller.roadmaps.saveEntries(input);
+        const view = await buildRoadmapView(caller, input.roadmapId);
+        return jsonText(view);
+      } catch (e) {
+        return errText(errorMessage(e));
+      }
+    },
+  };
 
 const setRoadmapVisibilitySchema = z.object({
   roadmapId: z.string(),
   visibility: visibilitySchema,
+  ...confirmField,
 });
 
-export const setRoadmapVisibilityTool: McpTool<typeof setRoadmapVisibilitySchema> = {
+export const setRoadmapVisibilityTool: McpTool<
+  typeof setRoadmapVisibilitySchema
+> = {
   name: "set-roadmap-visibility",
   description:
     "Set a roadmap's visibility - the single visibility tool. PRIVATE (only you; removes it from the public gallery), UNLISTED (shareable via link), or PUBLIC (publishes to the public gallery; requires a verified account).",
@@ -104,11 +126,8 @@ export const setRoadmapVisibilityTool: McpTool<typeof setRoadmapVisibilitySchema
         id: roadmapId,
         visibility,
       })) as Record<string, unknown>;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- bearer token must not reach the LLM
-      const { shareToken: _s, ...rest } = res as Record<string, unknown> & {
-        shareToken?: unknown;
-      };
-      return jsonText(rest);
+      // stripShareToken: the bearer shareToken must not reach the LLM.
+      return jsonText(stripShareToken(res));
     } catch (e) {
       return errText(errorMessage(e));
     }

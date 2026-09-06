@@ -61,6 +61,12 @@ import { saveBidsTool } from "./write/save-bids";
 import { upsertRoadmapEntryTool } from "./write/upsert-roadmap-entry";
 
 export const allTools: McpTool[] = [
+  // NOTE (I12): get-me / get-usage / get-shared-timetable are INTENTIONALLY
+  // excluded from the chat tool catalog. get-me and get-usage are chat/status-
+  // only surfaces (their data already lives in the session context), and
+  // get-shared-timetable accepts a bearer share token that must never be
+  // model-routed. They remain importable from read/account + read/mydata for
+  // direct/status wiring. The __smoke__ test pins this exclusion + the count.
   // read - courses / classes / professors
   searchCoursesTool,
   getCourseTool,

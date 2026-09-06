@@ -1,13 +1,27 @@
 import { z } from "zod";
 
 import { bidPlanToWidgetProps, buildBidPlan } from "../bid-plan-shared";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { stripBidNotes } from "../bid-shared";
+import {
+  confirmField,
+  errText,
+  errorMessage,
+  jsonText,
+  type McpTool,
+} from "../../types";
 
 // Mirrors the UserBidStatus enum in prisma/schema.prisma
 // (PLANNED | SECURED | DROPPED | CANCELLED | PARTICIPATED).
 const setBidStatusSchema = z.object({
   id: z.string(),
-  status: z.enum(["PLANNED", "SECURED", "DROPPED", "CANCELLED", "PARTICIPATED"]),
+  status: z.enum([
+    "PLANNED",
+    "SECURED",
+    "DROPPED",
+    "CANCELLED",
+    "PARTICIPATED",
+  ]),
+  ...confirmField,
 });
 
 export const setBidStatusTool: McpTool<typeof setBidStatusSchema> = {
@@ -18,34 +32,42 @@ export const setBidStatusTool: McpTool<typeof setBidStatusSchema> = {
   toWidgetProps: bidPlanToWidgetProps,
   run: async ({ caller }, { id, status }) => {
     try {
-      const updated = (await caller.userBids.setStatus({ id, status })) as unknown as Record<
-        string,
-        unknown
-      > & { classId?: string };
+      const updated = (await caller.userBids.setStatus({
+        id,
+        status,
+      })) as unknown as Record<string, unknown> & { classId?: string };
+      // M5: one listMine lookup (not two) for the term enrichment below.
+      let bids: Array<{
+        id: string;
+        bidWindow?: { acadTermId: string | null } | null;
+      }> | null = null;
+      const listMineOnce = async () => {
+        if (!bids) {
+          try {
+            bids = await caller.userBids.listMine();
+          } catch {
+            bids = null;
+          }
+        }
+        return bids;
+      };
       let acadTermId: string | null =
         (updated as { acadTermId?: string })?.acadTermId ?? null;
       if (!acadTermId && updated?.classId) {
-        try {
-          const bids = await caller.userBids.listMine();
-          const updatedId = (updated as { id?: string }).id ?? id;
-          const m = bids.find((b) => b.id === updatedId);
-          acadTermId = m?.bidWindow?.acadTermId ?? null;
-        } catch {
-          // ignore enrichment failure
-        }
+        const rows = await listMineOnce();
+        const updatedId = (updated as { id?: string }).id ?? id;
+        const m = rows?.find((b) => b.id === updatedId);
+        acadTermId = m?.bidWindow?.acadTermId ?? null;
       }
       if (!acadTermId) {
-        try {
-          const bids = await caller.userBids.listMine();
-          const m2 = bids.find((b) => b.id === id);
-          acadTermId = m2?.bidWindow?.acadTermId ?? null;
-        } catch {
-          // ignore
-        }
+        const rows = await listMineOnce();
+        const m2 = rows?.find((b) => b.id === id);
+        acadTermId = m2?.bidWindow?.acadTermId ?? null;
       }
-      if (!acadTermId) return jsonText({ updated, plan: null });
+      if (!acadTermId)
+        return jsonText({ updated: stripBidNotes(updated), plan: null });
       const plan = await buildBidPlan(caller, acadTermId);
-      return jsonText({ updated, plan });
+      return jsonText({ updated: stripBidNotes(updated), plan });
     } catch (e) {
       return errText(errorMessage(e));
     }
