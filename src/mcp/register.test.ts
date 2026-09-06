@@ -142,14 +142,25 @@ describe("registerViewlessTools", () => {
     // adapters (their module scope needs a full `allTools` catalog): none
     // of the 7 tool names may appear as a string literal in register.ts, so
     // a rename of any ToolRef breaks loudly (undefined `.name`) instead of
-    // silently double-registering.
+    // silently double-registering. Iterates the hardcoded expectation (not
+    // the derived set) so the test cannot pass vacuously on an empty set.
     const source = readFileSync(
       fileURLToPath(new URL("./register.ts", import.meta.url)),
       "utf8",
     );
-    for (const name of viewBoundNames) {
+    for (const name of [
+      "search-courses",
+      "get-timetable-calendar-link",
+      "my-bid-plan",
+      "get-my-roadmap",
+      "get-course-reviews",
+      "explore-bid-options",
+      "get-my-timetable-detail",
+    ]) {
       expect(
-        source.includes(`"${name}"`) || source.includes(`'${name}'`),
+        source.includes(`"${name}"`) ||
+          source.includes(`'${name}'`) ||
+          source.includes(`\`${name}\``),
         `register.ts must not hardcode tool-name literal ${name}`,
       ).toBe(false);
     }
