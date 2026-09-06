@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, Suspense } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { Composer } from "./composer";
@@ -12,6 +12,7 @@ import { parseGateError, type ChatGate } from "./gate";
 import { QuotaAlertBar } from "./quota-alert-bar";
 import { usePersistSession } from "./use-persist-session";
 import { useChatStore } from "./chat-store";
+import { usePageContext, type PageContext } from "./use-page-context";
 
 export type ChatPanelProps = {
   quota: number;
@@ -26,8 +27,45 @@ export function ChatPanel({
   hasConnectedAgent,
   onGate,
 }: ChatPanelProps) {
+  return (
+    <Suspense fallback={null}>
+      <ChatPanelInner
+        quota={quota}
+        remaining={remaining}
+        hasConnectedAgent={hasConnectedAgent}
+        onGate={onGate}
+      />
+    </Suspense>
+  );
+}
+
+// Inner component hosted under <Suspense>: usePageContext() reads
+// useSearchParams, which requires a Suspense ancestor (same precedent as
+// Breadcrumb/TermPicker). The provider stays mounted across navigation, so
+// panel-local hosting keeps the diff small and the snapshot send-time fresh.
+function ChatPanelInner({
+  quota,
+  remaining,
+  hasConnectedAgent,
+  onGate,
+}: ChatPanelProps) {
+  // Snapshot AT SEND TIME, not mount: transport `body` is a Resolvable
+  // resolved fresh per send (see Task 2 verification), so a ref mirror of the
+  // latest context covers every send path (composer, suggestions, retry) with
+  // no composer.tsx change.
+  const pageContext = usePageContext();
+  const pageContextRef = useRef<PageContext | null>(pageContext);
+  pageContextRef.current = pageContext;
+
   const transport = useMemo(
-    () => new DefaultChatTransport({ api: "/api/chat" }),
+    () =>
+      new DefaultChatTransport({
+        api: "/api/chat",
+        body: () => {
+          const ctx = pageContextRef.current;
+          return ctx ? { pageContext: ctx } : {};
+        },
+      }),
     [],
   );
 

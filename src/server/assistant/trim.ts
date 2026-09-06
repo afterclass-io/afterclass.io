@@ -23,7 +23,8 @@ export function applyTokenBudget(
 ): ModelMessage[] {
   const head = Math.max(1, options?.maxHeadMessages ?? 1);
   const tail = Math.max(1, options?.minTailMessages ?? 1);
-  const total = (ms: ModelMessage[]) => ms.reduce((sum, m) => sum + estimateTokens(m), 0);
+  const total = (ms: ModelMessage[]) =>
+    ms.reduce((sum, m) => sum + estimateTokens(m), 0);
 
   let trimmed = messages;
   if (total(trimmed) <= maxTokens) return trimmed;
@@ -51,10 +52,67 @@ export function applyTokenBudget(
 // every remaining turn. "Keep everything" only wins when a result survives
 // >10 subsequent turns and grows context without bound.
 
+export const PAGE_CONTEXT_BLOCK_RE = /<page_context>[\s\S]*?<\/page_context>/g;
+
+const hasPageContextBlock = (text: string): boolean => {
+  // Fresh non-global scan each call: module-global /g regexes carry lastIndex
+  // state across .test() calls and are a classic source of flaky alternation.
+  PAGE_CONTEXT_BLOCK_RE.lastIndex = 0;
+  const found = PAGE_CONTEXT_BLOCK_RE.test(text);
+  PAGE_CONTEXT_BLOCK_RE.lastIndex = 0;
+  return found;
+};
+
+const removePageContextBlocks = (text: string): string => {
+  PAGE_CONTEXT_BLOCK_RE.lastIndex = 0;
+  return text.replace(PAGE_CONTEXT_BLOCK_RE, "");
+};
+
+/**
+ * Drop superseded <page_context> blocks from older user turns, keeping only
+ * the latest user message that carries one. Per-send snapshots keep new turns
+ * fresh, but old blocks linger and burn tokens / confuse the "latest applies"
+ * rule — enforcement, not just prompting. Pure + unit-tested.
+ */
+export function stripStalePageContext(messages: UIMessage[]): UIMessage[] {
+  let latestIdx = -1;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i];
+    if (m?.role !== "user") continue;
+    const parts = Array.isArray(m.parts) ? m.parts : [];
+    const hasBlock = parts.some(
+      (p) => p.type === "text" && "text" in p && hasPageContextBlock(p.text),
+    );
+    if (hasBlock) {
+      latestIdx = i;
+      break;
+    }
+  }
+  if (latestIdx === -1) return messages;
+  return messages.map((m, i) => {
+    if (i === latestIdx || m?.role !== "user") return m;
+    const parts = Array.isArray(m.parts) ? m.parts : [];
+    let changed = false;
+    const stripped = parts.map((p) => {
+      if (p.type !== "text" || !("text" in p)) return p;
+      if (!hasPageContextBlock(p.text)) return p;
+      changed = true;
+      return { ...p, text: removePageContextBlocks(p.text) };
+    });
+    return changed ? { ...m, parts: stripped } : m;
+  });
+}
+
 /** Convert UI messages, prune reasoning/tool-call bloat, then enforce the token budget. */
-export async function trimToBudget(messages: UIMessage[]): Promise<ModelMessage[]> {
-  const chat = await import("@/server/ecfg/chat").then((m) => m.getChatConfig());
-  const modelMessages = await convertToModelMessages(messages);
+export async function trimToBudget(
+  messages: UIMessage[],
+): Promise<ModelMessage[]> {
+  const chat = await import("@/server/ecfg/chat").then((m) =>
+    m.getChatConfig(),
+  );
+  const modelMessages = await convertToModelMessages(
+    stripStalePageContext(messages),
+  );
   const pruned = pruneMessages({
     messages: modelMessages,
     reasoning: "all",

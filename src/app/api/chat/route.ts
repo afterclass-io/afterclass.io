@@ -10,10 +10,23 @@ import { auth } from "@/server/auth";
 import { createCallerForUser } from "@/server/mcp/caller";
 import { buildAssistantTools } from "@/server/assistant/tools";
 import { trimToBudget } from "@/server/assistant/trim";
+import {
+  buildPageContextSuffix,
+  pageContextSchema,
+} from "@/server/assistant/page-context";
 import { cannedResponse, findCannedAnswer } from "@/server/assistant/canned";
-import { reserveMessage, settleUsage, refundMessage, checkSpendGuard } from "@/server/assistant/quota";
+import {
+  reserveMessage,
+  settleUsage,
+  refundMessage,
+  checkSpendGuard,
+} from "@/server/assistant/quota";
 import { checkAndIncrement } from "@/server/assistant/ratelimit";
-import { getChatConfig, getChatWriteRateLimit, getRateLimitWindowMinutes } from "@/server/ecfg/chat";
+import {
+  getChatConfig,
+  getChatWriteRateLimit,
+  getRateLimitWindowMinutes,
+} from "@/server/ecfg/chat";
 import { getModel } from "@/server/assistant/providers";
 import { extractCachedInputTokens } from "@/server/assistant/usage";
 
@@ -21,6 +34,13 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 // Multi-step chains (12 rounds) need more than 60s. 300 is the Vercel Node.js ceiling — VERIFY against the actual deploy plan before going live (Hobby non-Fluid caps at 60); flagged human-pending.
 export const maxDuration = 300;
+
+// Input-token count above which a settlement logs a loud spike warning
+// (usually a huge tool result re-sent across loop steps or a broken cached
+// prefix). Module-local const (not exported): route-module exports are
+// constrained by Next.js route-type validation. Named so the threshold is
+// greppable, not a magic literal.
+const SETTLEMENT_SPIKE_INPUT_TOKENS = 30_000;
 
 // CACHE-CRITICAL: this prompt + the tool catalog are the shared account-wide
 // cached prefix for the LLM provider. Any byte change (wording, tool order,
@@ -40,18 +60,20 @@ const SYSTEM_PROMPT = [
   "- Search is typo-tolerant but imperfect. If a search returns nothing or nonsense, retry with a corrected/simpler query (fix typos, drop filler words) and state the assumption you made.",
   "- Academic-term and bid-window inputs default to the current term/window server-side. Do NOT invent a term id; prefer omitting it, or get it from list-acad-terms.",
   "- Reviews: when the user names a course, resolve its exact code first (search-courses/get-course), then call get-course-reviews — never present search results as the review answer.",
+  "- Section-specific bid questions ('how much for COR-IS1702 G1?', 'for G1?') go to explore-bid-options with courseCode+section (interactive chart/slider), not bid-estimate.",
   "- Scope: you help with SMU courses, bids, timetables, roadmaps, and reviews only. For anything else, refuse politely in one sentence and offer the closest in-scope help. Never write code or do coursework.",
   "After any bid/budget change, the tool result already contains the full updated bid plan — summarize budget + each bid (course/section/professor/amount/status/round/window). Do not call my-bid-plan again for the same term.",
   "After creating/copying/editing a roadmap, the tool result contains the updated roadmap — summarize its name, term grid, and key courses.",
   "Multi-step planning:",
   "- Before calling any tool, plan the full chain: what data you need and the order to fetch it. Prefer the fewest, most specific tools; if one tool returns everything you need, do not over-split.",
   "- Run searches before proposing courses, professors, or plans. Never invent course codes, section numbers, professor names, review content, or bid prices - only use values returned by tools.",
-  "- State your assumptions explicitly (e.g. \"assuming 'night classes' means starting at or after 18:00\" or \"assuming you mean your active roadmap\").",
-  "- For math, sums, or optimisation (budgets, bid allocation, exam-clash overlap), use the dedicated tools (recommend-bid-amount, bid-estimate, optimize-bid-allocation, check-roadmap-feasibility) instead of computing in your head.",
+  '- State your assumptions explicitly (e.g. "assuming \'night classes\' means starting at or after 18:00" or "assuming you mean your active roadmap").',
+  "- For math, sums, or optimisation (budgets, bid allocation, exam-clash overlap), use the dedicated tools (recommend-bid-amount, bid-estimate, check-roadmap-feasibility) instead of computing in your head.",
   "- After a write (upsert-bid, save-bids, save-roadmap-entries, add/remove class), verify by re-reading (my-bid-plan, get-my-roadmap, get-my-timetable-detail) and confirm what changed.",
-  "- If you hit the \"making changes too quickly\" message, stop and consolidate remaining writes into fewer tool calls, then retry.",
+  '- If you hit the "making changes too quickly" message, stop and consolidate remaining writes into fewer tool calls, then retry.',
   "- Ask at most one clarifying question, and only when the request is genuinely ambiguous (which term, which timetable, which roadmap). Otherwise proceed with the active/default and say what you assumed.",
   "- Keep answers concise; cite the tools you used and the course codes / section numbers you looked up.",
+  "- Deep-links: when a tool result contains a page link (e.g. 'Open in bid analytics: /bidding/analytics?...'), render it as a markdown link with a short label ('Open in bid analytics') after your 1-2 sentence summary. Link to the page instead of pasting raw data or dumping the full result — the page is the action surface. Never invent page URLs; only render links the tools returned.",
 ].join("\n");
 
 const GATE = (reason: "quota" | "spend") =>
@@ -140,10 +162,23 @@ export async function POST(req: Request) {
   // Validate the body BEFORE any gates so a malformed request can never burn
   // a quota slot (reserveMessage writes a row) or hit the rate limiter.
   let messages: UIMessage[];
+  let contextSuffix = "";
   try {
-    const body = (await req.json()) as { messages?: unknown };
-    if (!Array.isArray(body.messages)) return new Response("Invalid request body", { status: 400 });
+    const body = (await req.json()) as {
+      messages?: unknown;
+      pageContext?: unknown;
+    };
+    if (!Array.isArray(body.messages))
+      return new Response("Invalid request body", { status: 400 });
     messages = body.messages as UIMessage[];
+    // pageContext is untrusted client input: safeParse + ignore-on-failure.
+    // Never 400 a chat turn for bad context; the turn proceeds context-free.
+    // It also never auto-authorizes writes — the confirm:true gate in
+    // src/server/assistant/tools.ts is unchanged.
+    if (body.pageContext !== undefined) {
+      const parsed = pageContextSchema.safeParse(body.pageContext);
+      if (parsed.success) contextSuffix = buildPageContextSuffix(parsed.data);
+    }
   } catch {
     return new Response("Invalid request body", { status: 400 });
   }
@@ -172,7 +207,11 @@ export async function POST(req: Request) {
     reserved = true;
 
     const ctx = createCallerForUser(session.user);
-    const tools = buildAssistantTools(ctx, getChatWriteRateLimit(chat), windowMinutes);
+    const tools = buildAssistantTools(
+      ctx,
+      getChatWriteRateLimit(chat),
+      windowMinutes,
+    );
     const modelMessages = await trimToBudget(messages);
 
     // Shared quota decision for this turn: onEnd (settlement) and the stream
@@ -183,7 +222,7 @@ export async function POST(req: Request) {
 
     const result = streamText({
       model: await getModel(),
-      instructions: SYSTEM_PROMPT,
+      instructions: SYSTEM_PROMPT + contextSuffix,
       messages: modelMessages,
       tools,
       stopWhen: isStepCount(chat.maxToolRounds),
@@ -207,11 +246,13 @@ export async function POST(req: Request) {
         // One-time diagnostic: CHAT_LOG_USAGE=1 logs the raw usage payload so the
         // provider field mapping can be re-verified after provider/SDK upgrades.
         if (process.env.CHAT_LOG_USAGE === "1") {
+          // intentional: one-time opt-in diagnostic for provider field mapping
           console.log("[assistant:usage]", JSON.stringify(usage));
         }
-        if ((usage.inputTokens ?? 0) > 30_000) {
+        if ((usage.inputTokens ?? 0) > SETTLEMENT_SPIKE_INPUT_TOKENS) {
           // Settlement spike: usually a huge tool result re-sent across loop steps
           // or a broken cached prefix. Loud enough to catch cost regressions.
+          // intentional: cost-regression signal, keep loud
           console.warn(
             `[assistant] large settlement: input=${usage.inputTokens} cached=${cachedInput}`,
           );
@@ -226,9 +267,15 @@ export async function POST(req: Request) {
 
     // Refund the reserved slot when the stream errors or is aborted before it
     // can settle (onEnd). Successful/partial streams still settle via onEnd.
-    const guarded = guardAgainstFailedStream(result.stream, () => refundMessage(userId), quotaSettled);
+    const guarded = guardAgainstFailedStream(
+      result.stream,
+      () => refundMessage(userId),
+      quotaSettled,
+    );
 
-    return createUIMessageStreamResponse({ stream: toUIMessageStream({ stream: guarded }) });
+    return createUIMessageStreamResponse({
+      stream: toUIMessageStream({ stream: guarded }),
+    });
   } catch (error) {
     // Synchronous failure after reservation (e.g. model/config error) - the
     // client sees a 500 and the reserved slot is rolled back so the failed
@@ -238,6 +285,7 @@ export async function POST(req: Request) {
         // best-effort refund
       });
     }
+    // intentional: server-side failure signal for the pre-stream catch path
     console.error("[assistant] chat request failed before streaming:", error);
     return new Response("Assistant unavailable", { status: 500 });
   }

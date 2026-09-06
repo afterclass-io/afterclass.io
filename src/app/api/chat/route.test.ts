@@ -41,7 +41,8 @@ vi.mock("@/server/assistant/ratelimit", () => ({
 }));
 vi.mock("@/server/ecfg/chat", () => ({
   getChatConfig: mockGetChatConfig,
-  getChatWriteRateLimit: (c: { rateLimitPerMinute: number }) => c.rateLimitPerMinute,
+  getChatWriteRateLimit: (c: { rateLimitPerMinute: number }) =>
+    c.rateLimitPerMinute,
   getRateLimitWindowMinutes: () => 1,
 }));
 vi.mock("@/server/assistant/providers", () => ({
@@ -72,15 +73,23 @@ vi.mock("ai", () => ({
   streamText: vi.fn().mockImplementation(
     (opts: {
       onEnd?: (event: {
-        usage: { inputTokens: number; outputTokens: number; inputTokenDetails?: { cacheReadTokens?: number } };
+        usage: {
+          inputTokens: number;
+          outputTokens: number;
+          inputTokenDetails?: { cacheReadTokens?: number };
+        };
       }) => void;
     }) => {
       capturedOnEnd = opts.onEnd ?? null;
       return { stream: new ReadableStream() };
     },
   ),
-  createUIMessageStreamResponse: vi.fn().mockReturnValue(new Response("ok", { status: 200 })),
-  toUIMessageStream: vi.fn().mockImplementation(({ stream }: { stream: ReadableStream }) => stream),
+  createUIMessageStreamResponse: vi
+    .fn()
+    .mockReturnValue(new Response("ok", { status: 200 })),
+  toUIMessageStream: vi
+    .fn()
+    .mockImplementation(({ stream }: { stream: ReadableStream }) => stream),
   createUIMessageStream: vi.fn().mockReturnValue({}),
   isStepCount: vi.fn(() => () => false),
 }));
@@ -89,7 +98,9 @@ import { POST } from "@/app/api/chat/route";
 import { createUIMessageStreamResponse, streamText } from "ai";
 
 const mockStreamText = vi.mocked(streamText);
-const mockCreateUIMessageStreamResponse = vi.mocked(createUIMessageStreamResponse);
+const mockCreateUIMessageStreamResponse = vi.mocked(
+  createUIMessageStreamResponse,
+);
 
 const DEFAULT_CHAT_CONFIG = {
   quotaPerMonth: 50,
@@ -128,12 +139,18 @@ describe("POST /api/chat", () => {
     mockCreateCallerForUser.mockReset();
     mockStreamText.mockClear();
     mockCreateUIMessageStreamResponse.mockReset();
-    mockCreateUIMessageStreamResponse.mockReturnValue(new Response("ok", { status: 200 }));
+    mockCreateUIMessageStreamResponse.mockReturnValue(
+      new Response("ok", { status: 200 }),
+    );
 
     // defaults: everything passing
     mockGetChatConfig.mockResolvedValue(DEFAULT_CHAT_CONFIG);
     mockCheckSpendGuard.mockResolvedValue(true);
-    mockReserveMessage.mockResolvedValue({ ok: true, remaining: 49, quota: 50 });
+    mockReserveMessage.mockResolvedValue({
+      ok: true,
+      remaining: 49,
+      quota: 50,
+    });
     mockRefundMessage.mockResolvedValue(undefined);
     mockCheckAndIncrement.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
     mockGetModel.mockResolvedValue("mock-model");
@@ -145,15 +162,22 @@ describe("POST /api/chat", () => {
   // -- 401 --
   it("returns 401 when not authenticated", async () => {
     mockAuth.mockResolvedValue(null);
-    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
     expect(res.status).toBe(401);
   });
 
   // -- 429 --
   it("returns 429 when rate limited; reserveMessage NOT called", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    mockCheckAndIncrement.mockResolvedValue({ ok: false, retryAfterSeconds: 1 });
-    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    mockCheckAndIncrement.mockResolvedValue({
+      ok: false,
+      retryAfterSeconds: 1,
+    });
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
     expect(res.status).toBe(429);
     expect(mockReserveMessage).not.toHaveBeenCalled();
   });
@@ -162,7 +186,9 @@ describe("POST /api/chat", () => {
   it("returns 403 {gate:'spend'} when spend guard tripped; reserveMessage NOT called", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     mockCheckSpendGuard.mockResolvedValue(false);
-    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
     expect(res.status).toBe(403);
     const body = (await res.json()) as { gate: string };
     expect(body.gate).toBe("spend");
@@ -172,8 +198,14 @@ describe("POST /api/chat", () => {
   // -- 403 quota --
   it("returns 403 {gate:'quota'} when reserveMessage fails", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    mockReserveMessage.mockResolvedValue({ ok: false, remaining: 0, quota: 50 });
-    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    mockReserveMessage.mockResolvedValue({
+      ok: false,
+      remaining: 0,
+      quota: 50,
+    });
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
     expect(res.status).toBe(403);
     const body = (await res.json()) as { gate: string };
     expect(body.gate).toBe("quota");
@@ -183,8 +215,14 @@ describe("POST /api/chat", () => {
   // -- 403 quota gate must NOT refund (nothing was reserved) --
   it("does not call refundMessage when the quota gate rejects the reservation", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    mockReserveMessage.mockResolvedValue({ ok: false, remaining: 0, quota: 50 });
-    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    mockReserveMessage.mockResolvedValue({
+      ok: false,
+      remaining: 0,
+      quota: 50,
+    });
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
     expect(res.status).toBe(403);
     expect(mockRefundMessage).not.toHaveBeenCalled();
     expect(mockSettleUsage).not.toHaveBeenCalled();
@@ -193,10 +231,12 @@ describe("POST /api/chat", () => {
   // -- 400 x2 (malformed bodies must NOT burn a quota slot) --
   it("returns 400 on non-JSON body; reserveMessage NOT called", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    const res = await POST(new Request("http://localhost/api/chat", {
-      method: "POST",
-      body: "not json",
-    }));
+    const res = await POST(
+      new Request("http://localhost/api/chat", {
+        method: "POST",
+        body: "not json",
+      }),
+    );
     expect(res.status).toBe(400);
     expect(mockReserveMessage).not.toHaveBeenCalled();
   });
@@ -212,7 +252,9 @@ describe("POST /api/chat", () => {
   it("returns 200 on happy path, calls streamText, and onEnd invokes settleUsage", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
 
-    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
     expect(res.status).toBe(200);
 
     expect(mockStreamText).toHaveBeenCalledWith(
@@ -229,7 +271,11 @@ describe("POST /api/chat", () => {
     // eslint-disable-next-line @typescript-eslint/await-thenable -- onEnd returns void|Promise<void>
     await capturedOnEnd!({ usage: { inputTokens: 10, outputTokens: 5 } });
 
-    expect(mockSettleUsage).toHaveBeenCalledWith("u1", { input: 10, output: 5, cachedInput: 0 });
+    expect(mockSettleUsage).toHaveBeenCalledWith("u1", {
+      input: 10,
+      output: 5,
+      cachedInput: 0,
+    });
     // a successful stream must never refund the reserved slot
     expect(mockRefundMessage).not.toHaveBeenCalled();
   });
@@ -241,7 +287,9 @@ describe("POST /api/chat", () => {
       throw new Error("model unavailable");
     });
 
-    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
     expect(res.status).toBe(500);
     expect(mockRefundMessage).toHaveBeenCalledWith("u1");
     expect(mockSettleUsage).not.toHaveBeenCalled();
@@ -251,7 +299,9 @@ describe("POST /api/chat", () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     mockGetModel.mockRejectedValue(new Error("no LLM key configured"));
 
-    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
     expect(res.status).toBe(500);
     expect(mockRefundMessage).toHaveBeenCalledWith("u1");
     expect(mockSettleUsage).not.toHaveBeenCalled();
@@ -260,29 +310,34 @@ describe("POST /api/chat", () => {
   // -- async stream failure after the response started --
   it("refunds the reserved slot when the stream emits an error part", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    mockStreamText.mockImplementation(
-      (() => ({
-        stream: new ReadableStream({
-          start(controller) {
-            controller.enqueue({ type: "error", error: new Error("upstream model failure") });
-            controller.close();
-          },
-        }),
-      })) as unknown as typeof streamText,
-    );
+    mockStreamText.mockImplementation((() => ({
+      stream: new ReadableStream({
+        start(controller) {
+          controller.enqueue({
+            type: "error",
+            error: new Error("upstream model failure"),
+          });
+          controller.close();
+        },
+      }),
+    })) as unknown as typeof streamText);
     // consume the wrapped stream like createUIMessageStreamResponse would
-    mockCreateUIMessageStreamResponse.mockImplementation(
-      (async ({ stream }: { stream: ReadableStream }) => {
-        const reader = stream.getReader();
-        while (true) {
-          const { done } = await reader.read();
-          if (done) break;
-        }
-        return new Response("streamed", { status: 200 });
-      }) as unknown as typeof createUIMessageStreamResponse,
-    );
+    mockCreateUIMessageStreamResponse.mockImplementation((async ({
+      stream,
+    }: {
+      stream: ReadableStream;
+    }) => {
+      const reader = stream.getReader();
+      while (true) {
+        const { done } = await reader.read();
+        if (done) break;
+      }
+      return new Response("streamed", { status: 200 });
+    }) as unknown as typeof createUIMessageStreamResponse);
 
-    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
     expect(res.status).toBe(200);
     expect(mockRefundMessage).toHaveBeenCalledWith("u1");
     expect(mockSettleUsage).not.toHaveBeenCalled();
@@ -291,18 +346,25 @@ describe("POST /api/chat", () => {
   it("does NOT refund when the client disconnects - the slot stays consumed (abort is not free)", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     mockStreamText.mockImplementation(
-      () => ({ stream: new ReadableStream({}) }) as unknown as ReturnType<typeof streamText>,
+      () =>
+        ({ stream: new ReadableStream({}) }) as unknown as ReturnType<
+          typeof streamText
+        >,
     );
     // simulate a client aborting mid-stream (cancels the response body)
-    mockCreateUIMessageStreamResponse.mockImplementation(
-      (async ({ stream }: { stream: ReadableStream }) => {
-        const reader = stream.getReader();
-        await reader.cancel();
-        return new Response("cancelled", { status: 200 });
-      }) as unknown as typeof createUIMessageStreamResponse,
-    );
+    mockCreateUIMessageStreamResponse.mockImplementation((async ({
+      stream,
+    }: {
+      stream: ReadableStream;
+    }) => {
+      const reader = stream.getReader();
+      await reader.cancel();
+      return new Response("cancelled", { status: 200 });
+    }) as unknown as typeof createUIMessageStreamResponse);
 
-    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
     expect(res.status).toBe(200);
     // Aborting must NOT refund - reading the answer then disconnecting
     // must not yield a free message or unrecorded spend.
@@ -318,68 +380,86 @@ describe("POST /api/chat", () => {
     // part. Settlement must win: partial spend is recorded and the slot is
     // kept - the refund must NOT also fire.
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    mockStreamText.mockImplementation(
-      ((opts: {
-        onEnd?: (event: {
-          usage: { inputTokens: number; outputTokens: number; inputTokenDetails?: { cacheReadTokens?: number } };
-        }) => void;
-      }) => {
-        capturedOnEnd = opts.onEnd ?? null;
-        return {
-          stream: new ReadableStream({
-            start(controller) {
-              controller.enqueue({ type: "error", error: new Error("upstream model failure") });
-              controller.close();
-            },
-          }),
+    mockStreamText.mockImplementation(((opts: {
+      onEnd?: (event: {
+        usage: {
+          inputTokens: number;
+          outputTokens: number;
+          inputTokenDetails?: { cacheReadTokens?: number };
         };
-      }) as unknown as typeof streamText,
-    );
-    mockCreateUIMessageStreamResponse.mockImplementation(
-      (async ({ stream }: { stream: ReadableStream }) => {
-        const reader = stream.getReader();
-        // read the error part (the guard defers the refund - no settle yet)
-        await reader.read();
-        // the SDK's flush then settles the partial usage via onEnd
-        expect(capturedOnEnd).not.toBeNull();
-        // eslint-disable-next-line @typescript-eslint/await-thenable -- onEnd returns void|Promise<void>
-        await capturedOnEnd!({ usage: { inputTokens: 10, outputTokens: 5 } });
-        // drain to close: the guard must NOT refund because onEnd already settled
-        while (true) {
-          const { done } = await reader.read();
-          if (done) break;
-        }
-        return new Response("streamed", { status: 200 });
-      }) as unknown as typeof createUIMessageStreamResponse,
-    );
+      }) => void;
+    }) => {
+      capturedOnEnd = opts.onEnd ?? null;
+      return {
+        stream: new ReadableStream({
+          start(controller) {
+            controller.enqueue({
+              type: "error",
+              error: new Error("upstream model failure"),
+            });
+            controller.close();
+          },
+        }),
+      };
+    }) as unknown as typeof streamText);
+    mockCreateUIMessageStreamResponse.mockImplementation((async ({
+      stream,
+    }: {
+      stream: ReadableStream;
+    }) => {
+      const reader = stream.getReader();
+      // read the error part (the guard defers the refund - no settle yet)
+      await reader.read();
+      // the SDK's flush then settles the partial usage via onEnd
+      expect(capturedOnEnd).not.toBeNull();
+      // eslint-disable-next-line @typescript-eslint/await-thenable -- onEnd returns void|Promise<void>
+      await capturedOnEnd!({ usage: { inputTokens: 10, outputTokens: 5 } });
+      // drain to close: the guard must NOT refund because onEnd already settled
+      while (true) {
+        const { done } = await reader.read();
+        if (done) break;
+      }
+      return new Response("streamed", { status: 200 });
+    }) as unknown as typeof createUIMessageStreamResponse);
 
-    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
     expect(res.status).toBe(200);
-    expect(mockSettleUsage).toHaveBeenCalledWith("u1", { input: 10, output: 5, cachedInput: 0 });
+    expect(mockSettleUsage).toHaveBeenCalledWith("u1", {
+      input: 10,
+      output: 5,
+      cachedInput: 0,
+    });
     expect(mockRefundMessage).not.toHaveBeenCalled();
   });
 
   it("does NOT refund when a mid-stream error is followed by a client cancel (abort wins, at-most-once)", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    mockStreamText.mockImplementation(
-      (() => ({
-        stream: new ReadableStream({
-          start(controller) {
-            controller.enqueue({ type: "error", error: new Error("upstream failure") });
-          },
-        }),
-      })) as unknown as typeof streamText,
-    );
-    mockCreateUIMessageStreamResponse.mockImplementation(
-      (async ({ stream }: { stream: ReadableStream }) => {
-        const reader = stream.getReader();
-        await reader.read(); // consume the error part (refund is deferred)
-        await reader.cancel(); // client disconnects -> abort claims the turn, no refund
-        return new Response("cancelled", { status: 200 });
-      }) as unknown as typeof createUIMessageStreamResponse,
-    );
+    mockStreamText.mockImplementation((() => ({
+      stream: new ReadableStream({
+        start(controller) {
+          controller.enqueue({
+            type: "error",
+            error: new Error("upstream failure"),
+          });
+        },
+      }),
+    })) as unknown as typeof streamText);
+    mockCreateUIMessageStreamResponse.mockImplementation((async ({
+      stream,
+    }: {
+      stream: ReadableStream;
+    }) => {
+      const reader = stream.getReader();
+      await reader.read(); // consume the error part (refund is deferred)
+      await reader.cancel(); // client disconnects -> abort claims the turn, no refund
+      return new Response("cancelled", { status: 200 });
+    }) as unknown as typeof createUIMessageStreamResponse);
 
-    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
     expect(res.status).toBe(200);
     // Cancel must not refund - even after an error part, the abort keeps the slot.
     expect(mockRefundMessage).not.toHaveBeenCalled();
@@ -399,30 +479,32 @@ describe("POST /api/chat", () => {
   // -- provider-native cache shape (Task 2) --
   it("settles cachedInput from a provider's raw prompt_cache_hit_tokens", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    mockStreamText.mockImplementation(
-      ((opts: {
-        onEnd?: (event: {
-          usage: {
-            inputTokens: number;
-            outputTokens: number;
-            inputTokenDetails?: { cacheReadTokens?: number };
-            raw?: unknown;
-          };
-        }) => void;
-      }) => {
-        capturedOnEnd = opts.onEnd as typeof capturedOnEnd;
-        void opts.onEnd?.({
-          usage: {
-            inputTokens: 1000,
-            outputTokens: 100,
-            raw: { prompt_cache_hit_tokens: 900 },
-          },
-        });
-        return { stream: new ReadableStream() } as unknown as ReturnType<typeof streamText>;
-      }) as unknown as typeof streamText,
-    );
+    mockStreamText.mockImplementation(((opts: {
+      onEnd?: (event: {
+        usage: {
+          inputTokens: number;
+          outputTokens: number;
+          inputTokenDetails?: { cacheReadTokens?: number };
+          raw?: unknown;
+        };
+      }) => void;
+    }) => {
+      capturedOnEnd = opts.onEnd as typeof capturedOnEnd;
+      void opts.onEnd?.({
+        usage: {
+          inputTokens: 1000,
+          outputTokens: 100,
+          raw: { prompt_cache_hit_tokens: 900 },
+        },
+      });
+      return { stream: new ReadableStream() } as unknown as ReturnType<
+        typeof streamText
+      >;
+    }) as unknown as typeof streamText);
 
-    const res = await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
     expect(res.status).toBe(200);
     expect(mockSettleUsage).toHaveBeenCalledWith(
       "u1",
@@ -450,13 +532,34 @@ describe("POST /api/chat", () => {
     expect(mockSettleUsage).not.toHaveBeenCalled();
   });
 
+  // -- TASK 6 phantom tool ref --
+  it("system prompt names only real tools", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    expect(mockStreamText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        instructions: expect.not.stringContaining(
+          "optimize-bid-allocation",
+        ) as string,
+      }),
+    );
+  });
+
   // -- TASK 7 reviews chaining --
   it("steers review requests to resolve the exact code then call get-course-reviews", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    await POST(buildReq({ messages: [{ role: "user", content: "reviews for computational thinking" }] }));
+    await POST(
+      buildReq({
+        messages: [
+          { role: "user", content: "reviews for computational thinking" },
+        ],
+      }),
+    );
     expect(mockStreamText).toHaveBeenCalledWith(
       expect.objectContaining({
-        instructions: expect.stringMatching(/resolve.*exact.*code.*then.*get-course-reviews/i),
+        instructions: expect.stringMatching(
+          /resolve.*exact.*code.*then.*get-course-reviews/i,
+        ) as string,
       }),
     );
   });
@@ -464,11 +567,99 @@ describe("POST /api/chat", () => {
   // -- TASK 8 scope gate --
   it("gates the assistant to afterclass-only requests", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    await POST(buildReq({ messages: [{ role: "user", content: "reverse a linked list" }] }));
-    expect(mockStreamText).toHaveBeenCalledWith(
-      expect.objectContaining({
-        instructions: expect.stringMatching(/SMU courses, bids, timetables, roadmaps, and reviews/),
+    await POST(
+      buildReq({
+        messages: [{ role: "user", content: "reverse a linked list" }],
       }),
     );
+    expect(mockStreamText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        instructions: expect.stringMatching(
+          /SMU courses, bids, timetables, roadmaps, and reviews/,
+        ) as string,
+      }),
+    );
+  });
+
+  // -- section bids go to the explorer, not the text estimator --
+  it("steers section-specific bid questions to explore-bid-options with courseCode+section", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    await POST(
+      buildReq({
+        messages: [{ role: "user", content: "how much for COR-IS1702 G1?" }],
+      }),
+    );
+    expect(mockStreamText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        instructions: expect.stringMatching(
+          /explore-bid-options.*courseCode\+section/i,
+        ) as string,
+      }),
+    );
+  });
+
+  it("steers the model to render tool-provided page links", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    expect(mockStreamText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        instructions: expect.stringContaining("Deep-links") as string,
+      }),
+    );
+  });
+
+  // -- page context (context-aware widget) --
+  it("appends a page_context block for the current turn only", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    const res = await POST(
+      buildReq({
+        messages: [
+          { role: "user", content: "what do students say about this course?" },
+        ],
+        pageContext: {
+          pathname: "/bidding/analytics",
+          course: "IS215",
+          section: "G1",
+        },
+      }),
+    );
+    expect(res.status).toBe(200);
+    const instructions = mockStreamText.mock.calls[0]?.[0]
+      ?.instructions as string;
+    expect(instructions).toContain("<page_context>");
+    expect(instructions).toContain("IS215");
+    expect(instructions).toContain("G1");
+    expect(instructions).toContain("/bidding/analytics");
+  });
+
+  it("keeps the SYSTEM_PROMPT head byte-identical with and without context", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    const plain = mockStreamText.mock.calls[0]?.[0]?.instructions as string;
+    mockStreamText.mockClear();
+    await POST(
+      buildReq({
+        messages: [{ role: "user", content: "hi" }],
+        pageContext: { pathname: "/bidding/analytics", course: "IS215" },
+      }),
+    );
+    const withCtx = mockStreamText.mock.calls[0]?.[0]?.instructions as string;
+    expect(withCtx.startsWith(plain)).toBe(true);
+    expect(withCtx.length).toBeGreaterThan(plain.length);
+  });
+
+  it("ignores invalid pageContext without failing the turn", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    const res = await POST(
+      buildReq({
+        messages: [{ role: "user", content: "hi" }],
+        pageContext: { pathname: "/x", evil: "1".repeat(99999), course: 42 },
+      }),
+    );
+    expect(res.status).toBe(200);
+    const instructions = mockStreamText.mock.calls[0]?.[0]
+      ?.instructions as string;
+    expect(instructions).not.toContain("evil");
+    expect(instructions).not.toContain("<page_context>");
   });
 });

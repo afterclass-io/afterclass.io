@@ -55,7 +55,7 @@ export function ChatPage({
   });
 
   usePersistSession({ status: chat.status, messages: chat.messages });
-  useRefreshAfterTools(chat.status);
+  useRefreshAfterTools(chat.status, chat.messages);
 
   // Resume the highlighted active session once, right after hydrate. Without
   // this, /assistant mounts an EMPTY thread while the sidebar highlights the

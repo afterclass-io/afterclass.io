@@ -1,9 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { getQuotaMeterState } from "./logic";
+import { criticalFloorFor, getQuotaMeterState } from "./logic";
+
+describe("criticalFloorFor", () => {
+  it("is 20% of quota with a minimum of 1", () => {
+    expect(criticalFloorFor(50)).toBe(10);
+    expect(criticalFloorFor(3)).toBe(1);
+    expect(criticalFloorFor(0)).toBe(1);
+  });
+});
 
 describe("getQuotaMeterState", () => {
   it("is ok above the nudgeAt threshold", () => {
-    expect(getQuotaMeterState(50, 50, 40)).toEqual({ level: "ok", pct: 100, remaining: 50, quota: 50 });
+    expect(getQuotaMeterState(50, 50, 40)).toEqual({
+      level: "ok",
+      pct: 100,
+      remaining: 50,
+      quota: 50,
+    });
     expect(getQuotaMeterState(41, 50, 40).level).toBe("ok");
   });
   it("is low at or below nudgeAt but above the 20% floor", () => {

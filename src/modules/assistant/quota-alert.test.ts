@@ -8,9 +8,11 @@ describe("getQuotaAlert", () => {
   });
   it("warns at or below 50%", () => {
     expect(getQuotaAlert(25, 50)?.level).toBe("warn");
-    expect(getQuotaAlert(6, 50)?.level).toBe("warn");
+    expect(getQuotaAlert(11, 50)?.level).toBe("warn");
   });
-  it("is critical at or below 10%", () => {
+  it("is critical at or below the shared 20% floor", () => {
+    // quota=50 → floor(50*0.2)=10, reconciled with criticalFloorFor (I11).
+    expect(getQuotaAlert(10, 50)?.level).toBe("critical");
     expect(getQuotaAlert(5, 50)?.level).toBe("critical");
     expect(getQuotaAlert(1, 50)?.level).toBe("critical");
   });

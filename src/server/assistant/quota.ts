@@ -1,6 +1,7 @@
 import { db } from "@/server/db";
 import { getChatConfig } from "@/server/ecfg/chat";
 import type { ChatConfig } from "@/server/ecfg/config";
+import { criticalFloorFor } from "@/modules/assistant/quota-meter/logic";
 import { currentMonthPeriod } from "./month";
 
 export function tokensToUsd(
@@ -34,13 +35,15 @@ export async function getQuotaState(userId: string): Promise<{
 }> {
   const chat = await getChatConfig();
   const period = currentMonthPeriod();
-  const row = await db.chatUsage.findUnique({ where: { userId_period: { userId, period } } });
+  const row = await db.chatUsage.findUnique({
+    where: { userId_period: { userId, period } },
+  });
   const used = row?.messageCount ?? 0;
   const quota = chat.quotaPerMonth;
   // Mirrors the quota meter's critical zone (`getQuotaMeterState`): this many
   // remaining (or fewer) is critical. `nudgeAt` is only the "low" nudge
-  // threshold, not the critical floor.
-  const criticalFloor = Math.max(1, Math.floor(quota * 0.2));
+  // threshold, not the critical floor. Single source: criticalFloorFor.
+  const criticalFloor = criticalFloorFor(quota);
   const remaining = Math.max(0, quota - used);
   const isCritical = remaining <= criticalFloor;
   return {
@@ -55,7 +58,9 @@ export async function getQuotaState(userId: string): Promise<{
   };
 }
 
-export async function checkQuota(userId: string): Promise<{ ok: boolean; remaining: number; quota: number }> {
+export async function checkQuota(
+  userId: string,
+): Promise<{ ok: boolean; remaining: number; quota: number }> {
   const { remaining, quota } = await getQuotaState(userId);
   return { ok: remaining > 0, remaining, quota };
 }
@@ -72,7 +77,9 @@ export async function checkQuota(userId: string): Promise<{ ok: boolean; remaini
  * the lost-update / double-reserve race of the old read-then-upsert pattern
  * even under Prisma's default READ COMMITTED isolation.
  */
-export async function reserveMessage(userId: string): Promise<{ ok: boolean; remaining: number; quota: number }> {
+export async function reserveMessage(
+  userId: string,
+): Promise<{ ok: boolean; remaining: number; quota: number }> {
   const chat = await getChatConfig();
   const period = currentMonthPeriod();
   const quota = chat.quotaPerMonth;
@@ -81,7 +88,15 @@ export async function reserveMessage(userId: string): Promise<{ ok: boolean; rem
     // row when it already exists (keeps the statement idempotent).
     await tx.chatUsage.upsert({
       where: { userId_period: { userId, period } },
-      create: { userId, period, messageCount: 0, inputTokens: 0, outputTokens: 0, cachedInputTokens: 0, spendUsd: 0 },
+      create: {
+        userId,
+        period,
+        messageCount: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        cachedInputTokens: 0,
+        spendUsd: 0,
+      },
       update: {},
     });
     // Conditional increment - only succeeds when the row is still under quota.
@@ -97,7 +112,9 @@ export async function reserveMessage(userId: string): Promise<{ ok: boolean; rem
     // One slot claimed. Re-read the fresh count for an accurate `remaining`
     // (avoids the stale-read trap of deriving remaining from the pre-increment
     // snapshot when concurrent increments raced).
-    const fresh = await tx.chatUsage.findUnique({ where: { userId_period: { userId, period } } });
+    const fresh = await tx.chatUsage.findUnique({
+      where: { userId_period: { userId, period } },
+    });
     const used = fresh?.messageCount ?? quota;
     return { ok: true, remaining: Math.max(0, quota - used), quota };
   });
@@ -140,7 +157,15 @@ export async function settleUsage(
     });
     await tx.chatUsage.upsert({
       where: { userId_period: { userId, period } },
-      create: { userId, period, messageCount: 0, inputTokens: tokens.input, outputTokens: tokens.output, cachedInputTokens: cachedInput, spendUsd },
+      create: {
+        userId,
+        period,
+        messageCount: 0,
+        inputTokens: tokens.input,
+        outputTokens: tokens.output,
+        cachedInputTokens: cachedInput,
+        spendUsd,
+      },
       update: {
         inputTokens: { increment: tokens.input },
         outputTokens: { increment: tokens.output },

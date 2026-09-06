@@ -1,3 +1,5 @@
+import { criticalFloorFor } from "../quota-meter/logic";
+
 export type WelcomePrefs = { lastShownAt: string | null; shownCount: number };
 
 export const WELCOME_BUBBLE_KEY = "ac:assistant:welcome:v1";
@@ -23,12 +25,24 @@ export function shouldShowWelcome(prefs: WelcomePrefs, now: number): boolean {
 }
 
 export function markShown(prefs: WelcomePrefs): WelcomePrefs {
-  return { lastShownAt: new Date().toISOString(), shownCount: prefs.shownCount + 1 };
+  return {
+    lastShownAt: new Date().toISOString(),
+    shownCount: prefs.shownCount + 1,
+  };
 }
 
-export function pickEngagementMessage(hasConnectedAgent: boolean, remaining: number, quota: number): string {
-  if (hasConnectedAgent) return "Unlimited via your connected agent - ask me anything.";
-  if (remaining <= Math.max(1, Math.floor(quota * 0.2)))
+export function pickEngagementMessage(
+  hasConnectedAgent: boolean,
+  remaining: number,
+  quota: number,
+): string {
+  if (hasConnectedAgent)
+    return "Unlimited via your connected agent - ask me anything.";
+  // Same critical floor as the meter/server (criticalFloorFor): the push fires
+  // exactly when usage is critical, not on a separate magic threshold.
+  if (remaining <= criticalFloorFor(quota))
     return `${remaining} free messages left - connect your agent for unlimited.`;
-  return ENGAGEMENT_MESSAGES[Math.floor(Math.random() * ENGAGEMENT_MESSAGES.length)]!;
+  return ENGAGEMENT_MESSAGES[
+    Math.floor(Math.random() * ENGAGEMENT_MESSAGES.length)
+  ]!;
 }
