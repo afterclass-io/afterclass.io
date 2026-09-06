@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { buttonVariants } from "@/common/components/button";
 import { ProgressLink } from "@/common/components/progress-link";
 import { env } from "@/env";
 import { cn } from "@/common/functions";
+
+export const metadata: Metadata = {
+  title: "Page Not Found",
+};
 
 export default function NotFound() {
   return (
