@@ -35,14 +35,27 @@ export const Conversation: Story = {
     assistant: {
       status: status(),
       sessions: [
-        { id: "s1", title: "Semester planning", updatedAt: new Date().toISOString(), messages: [] },
+        {
+          id: "s1",
+          title: "Semester planning",
+          updatedAt: new Date().toISOString(),
+          messages: [],
+        },
       ],
       activeSessionId: "s1",
     },
     chatState: {
       messages: [
-        { id: "1", role: "user", parts: [{ type: "text", text: "Plan my semester" }] },
-        { id: "2", role: "assistant", parts: [{ type: "text", text: "Here's your plan." }] },
+        {
+          id: "1",
+          role: "user",
+          parts: [{ type: "text", text: "Plan my semester" }],
+        },
+        {
+          id: "2",
+          role: "assistant",
+          parts: [{ type: "text", text: "Here's your plan." }],
+        },
       ],
     },
   },
@@ -53,6 +66,40 @@ export const QuotaGate: Story = {
   parameters: {
     chatState: {
       error: new globalThis.Error('[POST /api/chat] 403: {"gate":"quota"}'),
+    },
+  },
+};
+
+export const Streaming: Story = {
+  args: { initialStatus: status() },
+  parameters: {
+    chatState: {
+      status: "streaming",
+      messages: [
+        {
+          id: "1",
+          role: "user",
+          parts: [{ type: "text", text: "Plan my semester" }],
+        },
+        {
+          id: "2",
+          role: "assistant",
+          parts: [{ type: "text", text: "Building your plan..." }],
+        },
+      ],
+    },
+  },
+};
+
+export const GenericError: Story = {
+  args: { initialStatus: status() },
+  parameters: {
+    chatState: {
+      status: "error",
+      error: new globalThis.Error("[POST /api/chat] 500: something failed"),
+      messages: [
+        { id: "1", role: "user", parts: [{ type: "text", text: "Hello" }] },
+      ],
     },
   },
 };

@@ -4,7 +4,7 @@ The afterclass.io Model Context Protocol (MCP) server, built on [mcp-use](https:
 
 - **Server entry:** `src/mcp/index.ts` (re-exports the shared `MCPServer` instance from `src/mcp/server.ts`)
 - **Server + OAuth wiring:** `src/mcp/server.ts` + `mcp-use/oauth/supabase`
-- **Tool wiring:** `src/mcp/view-tools/*` (7 view-bound tools) + `src/mcp/register.ts` (43 viewless tools) + `src/mcp/user.ts`
+- **Tool wiring:** `src/mcp/view-tools/*` (7 view-bound tools) + `src/mcp/register.ts` (43 viewless tools: the other 43 of the 50 in the shared catalog) + `src/mcp/user.ts`
 - **Views:** `views/<name>/view.tsx`
 - **Local dev:** `bun run mcp:dev` → Inspector at `http://localhost:3001/mcp/inspector`
 
@@ -22,13 +22,13 @@ The afterclass.io Model Context Protocol (MCP) server, built on [mcp-use](https:
 |    /oauth/consent           |      |     of truth, shared with the in-app       |
 |                             |      |     assistant)                             |
 +--------------+--------------+      |  - MCP Apps Views (7)                      |
-               |                     |    (views/bid-recommendation,              |
-               | redirects here      |     views/course-search,                   |
-               v                     |     views/calendar-links,                  |
-+-------------------------------------+     views/bid-plan,                      |
-|  Supabase Auth (hosted OAuth 2.1    |     views/roadmap-view,                   |
-|  authorization server)              |     views/review-cards,                   |
-|  - issues MCP tokens                |     views/bid-explorer)                   |
+               |                     |    (views/course-search,                   |
+               | redirects here      |     views/calendar-links,                  |
+               v                     |     views/bid-plan,                        |
++-------------------------------------+     views/roadmap-view,                  |
+|  Supabase Auth (hosted OAuth 2.1    |     views/review-cards,                   |
+|  authorization server)              |     views/bid-explorer,                   |
+|  - issues MCP tokens                |     views/timetable)                      |
 |  - Dynamic Client Registration      |               +----------------------------+
 +-------------------------------------+              | token verification
                                                      |  (JWT), DCR metadata
@@ -71,36 +71,46 @@ Tool families:
 - **Catalog** — reviews, bid results / predictions / windows, and academic terms (`get-course-reviews`, `get-professor-reviews`, `get-review-summary`, `get-bid-results`, `get-bid-windows`, `get-contribute-info`).
 - **Own data** — timetables, roadmaps, bids, budget (`my-timetables`, `my-roadmaps`, `my-bids`, `my-bid-plan`, `my-bid-budget`).
 - **Planning / estimation** — `plan-semester`, `check-roadmap-feasibility`, `get-my-timetable-detail`, `bid-estimate` (per-section median/min + suggested amount + vacancy for the open/latest/explicit window).
-- **Write tools** — bids, timetables, roadmaps, roadmap settings, bid status, calendar links, recommend (`upsert-bid`, `set-bid-budget`, `set-bid-status`, `save-bids`, `set-matric-term`, `set-active-roadmap`, `sync-roadmap-progress`, `copy-public-roadmap`, `upsert-roadmap-entry`, `set-roadmap-visibility`, `get-timetable-calendar-link`, `recommend-bid-amount`).
+- **Write tools** — bids, timetables, roadmaps, roadmap settings, bid status, calendar links, recommend (`upsert-bid`, `set-bid-budget`, `set-bid-status`, `save-bids`, `set-matric-term`, `set-active-roadmap`, `sync-roadmap-progress`, `copy-public-roadmap`, `upsert-roadmap-entry`, `set-roadmap-visibility`, `get-timetable-calendar-link`, `recommend-bid-amount` — viewless despite being read-only).
 
 > **Mutation echo:** every bid/budget write (`set-bid-budget`, `upsert-bid`, `remove-bid`, `set-bid-status`, `save-bids`) returns the full updated `{ updated, plan }` in its text output; roadmap writes (`copy-public-roadmap`, `create-roadmap`, `save-roadmap-entries`, `upsert-roadmap-entry`) return the updated roadmap view. Chat prompts tell the model to summarize the returned plan/roadmap instead of re-fetching.
 
-Two companion surfaces are registered alongside the tools:
+Two companion surfaces are registered alongside the tools (verified in `src/mcp/prompts.ts:44-177` — 5 `server.prompt` calls — and `src/mcp/resources.ts:19-20` — 1 `catalog://acad-terms` resource):
 
-| Surface                | Kind     | Purpose                                                             |
-| ---------------------- | -------- | ------------------------------------------------------------------- |
-| `plan-semester`        | Prompt   | User-selectable template steering the model toward the `plan-semester` workflow instead of a long tool chain. |
+| Surface                | Kind     | Purpose                                                                                                                 |
+| ---------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `plan-semester`        | Prompt   | "What should I take next term" — ranked senior-informed candidates (falls back to catalog search on a goal).            |
+| `plan-roadmap`         | Prompt   | "Plan my entire degree / become a data analyst" — multi-year plan, public roadmaps as hints, verified by tools.         |
+| `plan-bidding`         | Prompt   | "How should I bid" — budget, predictions, and suggested amounts per class.                                              |
+| `find-courses`         | Prompt   | "Find courses about X" — interest/professor search grounded in reviews.                                                 |
+| `review-timetable`     | Prompt   | "Is my timetable OK" — classes, timetable exam clashes, and calendar links.                                             |
 | `catalog://acad-terms` | Resource | The academic terms the course catalog is offered in (`id` = `acadTermId` used by `search-courses` and `plan-semester`). |
+
+Fallback order for course suggestions: same-faculty senior candidates first; when those are empty and a goal is given, `plan-semester` falls back to catalog search (`reason fallback-catalog` with per-course `offeredIn`); when both are empty, say so honestly instead of inventing codes. (The `check-roadmap-feasibility` tool stays directly callable — only the `check-graduation` prompt, which promised a graduation verdict, was removed.)
+
+Omitted `acadTermId` / `bidWindowId` inputs resolve server-side to the current term / open window via `resolveTermId` / `resolveOpenWindowIdOrError`; `catalog://acad-terms` is retained for explicit user-requested terms. Term ids are canonical compact `AY<YYYY><YY>T<term>` (e.g. `AY202627T1`); display (`AY2026/27-T1`) and other forms are normalized server-side by `normalizeAcadTermId`.
+
+> **Intentionally excluded from the MCP catalog** (chat/status-only + token-bearing): `get-me` / `get-usage` (defined in `src/server/mcp/tools/read/account.ts:16-17,57-58`, tested in `account.test.ts` but never added to `allTools` in `src/server/mcp/tools/index.ts:63-121`) and `get-shared-timetable` (defined in `src/server/mcp/tools/read/mydata.ts:146-147`, bearer share-token input — excluded alongside the account tools; see `src/server/mcp/tools/__smoke__.test.ts:50-53`).
 
 ### MCP Apps Views (7)
 
 mcp-use v2 renders **one View per bound tool**: each of the 7 View directories (`views/<name>/view.tsx`) is bound to exactly one canonical tool, declared via the tool's `view: { name: ... }` config in `src/mcp/view-tools/*`. Every view-bound tool also declares an `outputSchema` — the validated `structuredContent` becomes the View's typed props (`useToolContext().toolOutput`). There are no wrapper/re-export View dirs; writes and secondary reads stay viewless.
 
-| View (dir)         | Bound tool                     | Component                              | Props (from `toolOutput`)                                                                                                                                                  | CTA (calls a viewless tool via `useDynamicTool`) |
-| ------------------ | ------------------------------ | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `course-search`    | `search-courses`               | `views/course-search/view.tsx` | `{ results: [{ code, name, creditUnits?, sections: [{ classId?, section, professorName, timings[] }] }] }`                                                                   | `add-class-to-timetable` per section             |
-| `bid-recommendation` | `recommend-bid-amount`       | `views/bid-recommendation/view.tsx` | `{ classId, acadTermId, bidWindow?, predictedMedian, suggestedBidAmount, multiplierUsed?, rationale? }`                                                                  | `upsert-bid` (when `bidWindow` present)          |
-| `calendar-links`   | `get-timetable-calendar-link`  | `views/calendar-links/view.tsx` | `{ timetableId, madeLinkShareable? }` (URLs arrive via `_meta`, see below)                                                                                                 | External subscribe links (`_meta` URLs)          |
-| `bid-plan`         | `my-bid-plan`                  | `views/bid-plan/view.tsx`      | `{ acadTermId, budget: { balance } \| null, bids: [{ id, bidAmount, status, courseCode, courseName, section, professorName, round, window }] }`                              | —                                                |
-| `roadmap-view`     | `get-my-roadmap`               | `views/roadmap-view/view.tsx`  | `{ roadmapId, name, isPublic, owner, voteCount, entries: [{ yearNumber, term, courseCode, courseName, creditUnits }] }`                                                     | `copy-public-roadmap` when `isPublic`            |
-| `review-cards`     | `get-course-reviews`           | `views/review-cards/view.tsx`  | `{ context, reviews: [{ id, body, tips, rating, labels, voteCount, createdAt, courseCode, professorName }] }`                                                                | — (`get-professor-reviews` is viewless)          |
-| `bid-explorer`     | `explore-bid-options`          | `views/bid-explorer/view.tsx`  | `{ classId \| null, history: [{ acadTermId, round, window, min, median, vacancy }], prediction: { medianPredicted, minPredicted, bidWindow: { id, round, window } } \| null, safetyFactors: [{ beatsPercentage, multiplier }] }` | `upsert-bid` with `bidWindowId` + slider        |
+| View (dir)       | Bound tool                    | Component                       | Props (from `toolOutput`)                                                                                                                                                                                                                               | CTA (calls a viewless tool via `useDynamicTool`)    |
+| ---------------- | ----------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `course-search`  | `search-courses`              | `views/course-search/view.tsx`  | `{ results: [{ code, name, creditUnits?, sections: [{ classId?, section, professorName, timings[] }] }] }`                                                                                                                                              | `add-class-to-timetable` per section                |
+| `calendar-links` | `get-timetable-calendar-link` | `views/calendar-links/view.tsx` | `{ timetableId, madeLinkShareable? }` (URLs arrive via `_meta`, see below)                                                                                                                                                                              | External subscribe links (`_meta` URLs)             |
+| `bid-plan`       | `my-bid-plan`                 | `views/bid-plan/view.tsx`       | `{ acadTermId, budget: { balance } \| null, bids: [{ id, bidAmount, status, courseCode, courseName, section, professorName, round, window }] }`                                                                                                         | —                                                   |
+| `roadmap-view`   | `get-my-roadmap`              | `views/roadmap-view/view.tsx`   | `{ roadmapId, name, isPublic, owner, voteCount, entries: [{ yearNumber, term, courseCode, courseName, creditUnits }] }`                                                                                                                                 | `copy-public-roadmap` when `isPublic`               |
+| `review-cards`   | `get-course-reviews`          | `views/review-cards/view.tsx`   | `{ context, reviews: [{ id, body, tips, rating, labels, voteCount, createdAt, courseCode, professorName }] }`                                                                                                                                           | — (`get-professor-reviews` is viewless)             |
+| `bid-explorer`   | `explore-bid-options`         | `views/bid-explorer/view.tsx`   | `{ classId \| null, history: [{ acadTermId, round, window, min, median, vacancy }], prediction: { medianPredicted, minPredicted, bidWindow: { id, round, window } } \| null, safetyFactors: [{ beatsPercentage, multiplier }] }`                        | `upsert-bid` with `bidWindowId` + slider            |
+| `timetable`      | `get-my-timetable-detail`     | `views/timetable/view.tsx`      | `{ timetableId, name, isActive?, termId?, slots: [{ classId, courseCode, courseName, section, day, startTime, endTime, venue, professor, creditUnits }], examTimings: [{ classId, courseCode, section, date, dayOfWeek, startTime, endTime, venue }] }` | — (read-only grid, mirrors the shared-timetable UI) |
 
 #### View result plumbing
 
 Tool results carry three channels (`src/mcp/view-tools/*`):
 
-- **`content` (text):** what the model sees — a short summary line, not the raw payload.
+- **`content` (text):** what the model sees — a short summary line, not the raw payload. Page link convention: tool summaries append website deep-links (e.g. `/course/<CODE>`, `/timetable`), and the model renders them as markdown links with a short label after its 1-2 sentence summary instead of pasting raw data — the page is the action surface.
 - **`structuredContent`:** the full payload, validated against the tool's `outputSchema`. The model reads it and the View receives it as typed props via `useToolContext().toolOutput`.
 - **`_meta` (View-only secrets):** delivered to the View through `useToolContext().meta` but **not** part of `structuredContent` and not validated by the `outputSchema`. `get-timetable-calendar-link` puts the bearer-bearing iCal URLs here so they never enter model context — the model only sees `timetableId`.
 
@@ -113,7 +123,7 @@ Shared View styling lives in `views/shared/` (`tokens.tsx` = `TOKENS` light/dark
 - **Fail-closed auth.** Every tool resolves the caller from `ctx.auth.user` (`src/mcp/user.ts`); unauthenticated calls return an error instead of running. The only exception is the explicit local dev bypass (`NODE_ENV=development` + `MCP_DEV_BYPASS=true`), which resolves a fixed seeded dev user — never active in production.
 - **Transport security is mcp-use built-in (v2).** The server is mounted at `basePath` (default `/mcp`) — that same prefix serves the Inspector (`/mcp/inspector`) and view assets (`/mcp/_mcp-use/views/...`). Localhost-class binds get DNS-rebinding protection (Host validation on every request, Origin validation on non-GET/HEAD) automatically; `allowedHosts` / `allowedOrigins` extend the allowlists for production hosts (the repo does not set them — add them in `src/mcp/server.ts` if the host needs it). `MCP_URL` overrides the public origin behind proxies/tunnels (set `MCP_ASSETS_URL` only if view JS/CSS are served from a CDN — the repo does not set it).
 - **Per-user write rate limit (DB-backed).** Every non-read-only tool shares one per-user write budget of `mcpRateLimitPerMinute` calls/minute (from `getChatConfig()`, default 60), keyed `mcp-write:<userId>`. Exhausted budget → a friendly error. Read tools are unaffected.
-- **Destructive tools require `confirm:true`.** `remove-timetable`, `remove-class-from-timetable`, `remove-bid`, and `remove-roadmap` are blocked at the dispatch layer (`src/mcp/register.ts` → `checkDestructiveConfirm` in `src/mcp/rate-limit.ts`) unless the call carries an explicit `confirm:true` param — the model must first show the user what will be deleted. Constructive writes (create/upsert/rename) are not gated. The gate is skipped only under the local dev bypass (same `NODE_ENV` + `MCP_DEV_BYPASS=true` boundary as auth — production keeps the gate even if the flag is set) so Inspector testing can still exercise deletes.
+- **Destructive tools require `confirm:true`.** `remove-timetable`, `remove-class-from-timetable`, `remove-bid`, `remove-roadmap`, `save-roadmap-entries` (full-replace — `entries: []` wipes the roadmap), `save-bids` (bulk overwrite), and `set-bid-status` (flips financial status) are blocked at the dispatch layer (`src/mcp/register.ts` for MCP, `buildAssistantTools` in `src/server/assistant/tools.ts` for chat → `checkDestructiveConfirm` in `src/mcp/rate-limit.ts`) unless the call carries an explicit `confirm:true` param — the model must first show the user what will be deleted. `confirm` is a declared optional field on each gated tool's schema (otherwise SDK validation would strip it before the gate sees it); handlers ignore it downstream. Constructive writes (create/upsert/rename) are not gated. The gate is skipped only under the local dev bypass (same `NODE_ENV` + `MCP_DEV_BYPASS=true` boundary as auth — production keeps the gate even if the flag is set; the chat path has no bypass) so Inspector testing can still exercise deletes.
 - **`my-bids` scrubs `notes`.** Each bid's free-text `notes` field (user PII / private bidding strategy) is dropped from the JSON returned to the model; bid metadata is preserved.
 - **`get-classes` caps at 20 rows.** Any `limit > 20` is clamped to 20 before querying (larger values still accepted for backward compatibility).
 - **iCal bearer URLs stay out of model context.** `get-timetable-calendar-link` delivers bearer iCal URLs via the result's `_meta` (View-only channel, read by the View via `useToolContext().meta`); `my-timetables` / `my-roadmaps` scrub `shareToken` / `icalToken`.
@@ -124,18 +134,18 @@ Shared View styling lives in `views/shared/` (`tokens.tsx` = `TOKENS` light/dark
 
 `src/mcp/server.ts` reads these server env vars and passes them **explicitly** to `oauthSupabaseProvider({ projectId, supabaseUrl, jwtSecret })` — the provider does not auto-read env vars (set them in the host's dashboard):
 
-| Variable                            | Purpose                                                                                                                                                                                                                                    |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `MCP_USE_OAUTH_SUPABASE_PROJECT_ID` | **Required.** Supabase project ref. `oauthSupabaseProvider()` derives the auth URL `https://<ref>.supabase.co` from it.                                                                                                                    |
-| `MCP_USE_OAUTH_SUPABASE_URL`        | _Optional._ Full Supabase auth URL — only for **local / self-hosted** Supabase (e.g. `http://localhost:54321`). Overrides the URL derived from `MCP_USE_OAUTH_SUPABASE_PROJECT_ID`.                                                        |
-| `MCP_USE_OAUTH_SUPABASE_JWT_SECRET` | _Optional._ Only for **legacy HS256** Supabase JWT projects. Omit for the default RS256 (JWKS-verified) projects.                                                                                                                          |
-| `MCP_DEV_BYPASS`                    | _Dev only._ Set `true` to resolve unauthenticated MCP tool calls as the seeded dev user. Ignored unless `NODE_ENV === "development"`; never active in production. |
-| `MCP_DEV_USER_EMAIL`                | _Dev only._ Email of the dev user for the bypass (default `test_hash_pwd@smu.edu.sg` — must exist in the local seeded DB). |
-| `DATABASE_URL`                      | The same Postgres the Next.js app uses — tools read via the tRPC caller (Prisma).                                                                                                                                                          |
-| `SKIP_ENV_VALIDATION`               | **Do not set.** With the flag set, `@t3-oss/env-nextjs` skips the env schema transforms, so `NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS` stays a comma-string and `src/common/tools/zod/schemas.ts` crashes on `.join()` at boot. Provide the full app env set instead. |
+| Variable                            | Purpose                                                                                                                                                                                                                                                                                          |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `MCP_USE_OAUTH_SUPABASE_PROJECT_ID` | **Required.** Supabase project ref. `oauthSupabaseProvider()` derives the auth URL `https://<ref>.supabase.co` from it.                                                                                                                                                                          |
+| `MCP_USE_OAUTH_SUPABASE_URL`        | _Optional._ Full Supabase auth URL — only for **local / self-hosted** Supabase (e.g. `http://localhost:54321`). Overrides the URL derived from `MCP_USE_OAUTH_SUPABASE_PROJECT_ID`.                                                                                                              |
+| `MCP_USE_OAUTH_SUPABASE_JWT_SECRET` | _Optional._ Only for **legacy HS256** Supabase JWT projects. Omit for the default RS256 (JWKS-verified) projects.                                                                                                                                                                                |
+| `MCP_DEV_BYPASS`                    | _Dev only._ Set `true` to resolve unauthenticated MCP tool calls as the seeded dev user. Ignored unless `NODE_ENV === "development"`; never active in production.                                                                                                                                |
+| `MCP_DEV_USER_EMAIL`                | _Dev only._ Email of the dev user for the bypass (default `test_hash_pwd@smu.edu.sg` — must exist in the local seeded DB).                                                                                                                                                                       |
+| `DATABASE_URL`                      | The same Postgres the Next.js app uses — tools read via the tRPC caller (Prisma).                                                                                                                                                                                                                |
+| `SKIP_ENV_VALIDATION`               | **Do not set.** With the flag set, `@t3-oss/env-nextjs` skips the env schema transforms, so `NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS` stays a comma-string and `src/common/tools/zod/schemas.ts` crashes on `.join()` at boot. Provide the full app env set instead.                                   |
 | Full Next.js app env                | `env` validation runs on the mcp process (it imports `@/env` via tRPC), so the host needs the same server vars as the app: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `LLM_API_KEY`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, plus the `NEXT_PUBLIC_*` vars below. The repo `.env` already has these. |
-| `NEXT_PUBLIC_*` vars                | Any client env var a tool path reads (e.g. `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS`). Add more as runtime errors surface.                                                              |
-| `NEXT_PUBLIC_MCP_PUBLIC_URL`        | _Optional._ Public MCP URL used by the Settings -> Agents connect page deep links (`src/modules/settings/agents/connect-links.ts` -> `MCP_PUBLIC_URL`). Falls back to the placeholder until deployed.                                       |
+| `NEXT_PUBLIC_*` vars                | Any client env var a tool path reads (e.g. `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS`). Add more as runtime errors surface.                                                                                                                |
+| `NEXT_PUBLIC_MCP_PUBLIC_URL`        | _Optional._ Public MCP URL used by the Settings -> Agents connect page deep links (`src/modules/settings/agents/connect-links.ts` -> `MCP_PUBLIC_URL`). Falls back to the placeholder until deployed.                                                                                            |
 
 > **`MCP_USE_OAUTH_SUPABASE_PUBLISHABLE_KEY` is NOT a server env var.** The server never reads it — `src/mcp/server.ts` only reads `MCP_USE_OAUTH_SUPABASE_PROJECT_ID`, `MCP_USE_OAUTH_SUPABASE_URL` and `MCP_USE_OAUTH_SUPABASE_JWT_SECRET` and passes them explicitly to `oauthSupabaseProvider()`. The publishable key (`sb_publishable_...`) is a **client-facing** Dynamic Client Registration (DCR) credential: MCP clients obtain it from Supabase's OAuth authorization-server metadata, which the mcp-use server proxies at `/.well-known/oauth-authorization-server`. Setting it in the deployed server's env would be a no-op.
 
@@ -197,17 +207,17 @@ When an MCP call arrives with no identity, `src/mcp/user.ts` falls back to the *
 2. `bun run mcp:dev` → wait for `[SERVER] Listening on http://0.0.0.0:3001` (~20–40s, loads all tRPC routers).
 3. Open `http://localhost:3001/mcp/inspector`, hit **Connect** — no OAuth prompt.
 4. `tools/list` shows the 50 tools; call e.g. `search-courses`, `my-bid-plan`, or `recommend-bid-amount`.
-5. View-bound tools (`search-courses`, `recommend-bid-amount`, `my-bid-plan`, `explore-bid-options`, `get-course-reviews`, `get-my-roadmap`, `get-timetable-calendar-link`) render the 7 MCP Apps Views in the Inspector.
+5. View-bound tools (`search-courses`, `my-bid-plan`, `explore-bid-options`, `get-course-reviews`, `get-my-roadmap`, `get-timetable-calendar-link`, `get-my-timetable-detail`) render the 7 MCP Apps Views in the Inspector.
 
 All calls run as the single dev user (`test_hash_pwd@smu.edu.sg`), so the per-user write budget still applies to that user.
 
 ## Local commands
 
-| Command             | What it does                                                                    |
-| ------------------- | ------------------------------------------------------------------------------- |
-| `bun run mcp:dev`   | Dev server + Inspector on `:3001` (`mcp-use dev --mcp-dir src/mcp --port 3001`) — no OAuth, dev-bypass user |
-| `bun run mcp:build` | Build the server + Views (`mcp-use build --mcp-dir src/mcp`)                     |
-| `bun run mcp:start` | Start the production server (`mcp-use start --mcp-dir src/mcp`) — OAuth required |
+| Command                  | What it does                                                                                                  |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `bun run mcp:dev`        | Dev server + Inspector on `:3001` (`mcp-use dev --mcp-dir src/mcp --port 3001`) — no OAuth, dev-bypass user   |
+| `bun run mcp:build`      | Build the server + Views (`mcp-use build --mcp-dir src/mcp`)                                                  |
+| `bun run mcp:start`      | Start the production server (`mcp-use start --mcp-dir src/mcp`) — OAuth required                              |
 | `bunx mcp-use typecheck` | Refreshes `mcp-env.d.ts` (generated from the exported ToolRefs in `src/mcp/index.ts`) and runs `tsc --noEmit` |
 
 Versions: `mcp-use@^2` (server) with `@mcp-use/cli@^4` (the v2-compatible CLI).
