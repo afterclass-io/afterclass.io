@@ -33,16 +33,14 @@ export const viewport: Viewport = {
   ],
   width: "device-width",
   initialScale: 1.0,
-  maximumScale: 1.0,
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : env.NEXTAUTH_URL,
-  ),
-  title: appName,
+  metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
+  title: {
+    default: appName,
+    template: `%s | ${appName}`,
+  },
   description: appDesc,
   openGraph: {
     title: appName,
