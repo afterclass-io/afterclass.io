@@ -46,8 +46,23 @@ export const metadata: Metadata = {
     title: appName,
     siteName: appName,
     description: appDesc,
-    locale: "en_US",
+    url: new URL(env.NEXT_PUBLIC_SITE_URL),
+    locale: "en_SG",
     type: "website",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "AfterClass",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: appName,
+    description: appDesc,
+    images: ["/opengraph-image.png"],
   },
 };
 

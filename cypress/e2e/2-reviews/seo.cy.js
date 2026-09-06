@@ -10,6 +10,18 @@ describe("SEO: Page Head Metadata", () => {
         expect(html).to.match(
           /<meta[^>]*name=["']description["'][^>]*content=["'][^"']+["']/i,
         );
+        expect(html).to.match(
+          /<meta[^>]*property=["']og:image["'][^>]*content=["'][^"']+["']/i,
+        );
+        expect(html).to.match(
+          /<meta[^>]*property=["']og:url["'][^>]*content=["'][^"']+["']/i,
+        );
+        expect(html).to.match(
+          /<meta[^>]*property=["']og:locale["'][^>]*content=["']en_SG["']/i,
+        );
+        expect(html).to.match(
+          /<meta[^>]*name=["']twitter:card["'][^>]*content=["']summary_large_image["']/i,
+        );
       },
     },
     {
@@ -35,6 +47,33 @@ describe("SEO: Page Head Metadata", () => {
         );
         expect(canonicalMatch).to.not.be.null;
         expect(canonicalMatch[1]).to.match(/\/course\/IS215$/);
+
+        // Open Graph tags
+        const ogTitleMatch = html.match(
+          /<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']*)["']/i,
+        );
+        expect(ogTitleMatch).to.not.be.null;
+        expect(ogTitleMatch[1]).to.include("IS215");
+        expect(ogTitleMatch[1]).to.include("Digital Business - Technologies and Transformation");
+
+        const ogDescMatch = html.match(
+          /<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']*)["']/i,
+        );
+        expect(ogDescMatch).to.not.be.null;
+        expect(ogDescMatch[1]).to.include("9 reviews");
+        expect(ogDescMatch[1]).to.include("Digital Business - Technologies and Transformation");
+        expect(ogDescMatch[1]).to.include("4.11/5");
+
+        // Twitter tags
+        expect(html).to.match(
+          /<meta[^>]*name=["']twitter:card["'][^>]*content=["']summary_large_image["']/i,
+        );
+        const twitterTitleMatch = html.match(
+          /<meta[^>]*name=["']twitter:title["'][^>]*content=["']([^"']*)["']/i,
+        );
+        expect(twitterTitleMatch).to.not.be.null;
+        expect(twitterTitleMatch[1]).to.include("IS215");
+        expect(twitterTitleMatch[1]).to.include("Digital Business - Technologies and Transformation");
       },
     },
     {
@@ -73,6 +112,31 @@ describe("SEO: Page Head Metadata", () => {
         );
         expect(canonicalMatch).to.not.be.null;
         expect(canonicalMatch[1]).to.match(/\/professor\/ouh-eng-lieh$/);
+
+        // Open Graph tags
+        const ogTitleMatch = html.match(
+          /<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']*)["']/i,
+        );
+        expect(ogTitleMatch).to.not.be.null;
+        expect(ogTitleMatch[1]).to.match(/Ouh Eng Lieh/i);
+
+        const ogDescMatch = html.match(
+          /<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']*)["']/i,
+        );
+        expect(ogDescMatch).to.not.be.null;
+        expect(ogDescMatch[1]).to.include("20 reviews");
+        expect(ogDescMatch[1]).to.match(/Ouh Eng Lieh/i);
+        expect(ogDescMatch[1]).to.include("4.25/5");
+
+        // Twitter tags
+        expect(html).to.match(
+          /<meta[^>]*name=["']twitter:card["'][^>]*content=["']summary_large_image["']/i,
+        );
+        const twitterTitleMatch = html.match(
+          /<meta[^>]*name=["']twitter:title["'][^>]*content=["']([^"']*)["']/i,
+        );
+        expect(twitterTitleMatch).to.not.be.null;
+        expect(twitterTitleMatch[1]).to.match(/Ouh Eng Lieh/i);
       },
     },
     {
