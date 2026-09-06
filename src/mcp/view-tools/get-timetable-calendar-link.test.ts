@@ -3,7 +3,7 @@ import type { Mock } from "vitest";
 
 /**
  * Adapter-level tests for get-timetable-calendar-link — the secret-isolation
- * boundary. The catalog tool's widgetProps carry bearer-bearing iCal URLs that
+ * boundary. The catalog tool's viewProps carry bearer-bearing iCal URLs that
  * must NEVER reach structuredContent or model-visible text; they may only ride
  * in `_meta` (the View-only channel). This mirrors the View's poison test at
  * the adapter level.
@@ -86,10 +86,10 @@ describe("get-timetable-calendar-link adapter", () => {
 
   it("keeps secret URLs out of structuredContent and text; _meta carries them", async () => {
     const catalogText =
-      "Calendar subscribe links are shown in the widget. The feed stays in sync automatically when the timetable changes.";
+      "Calendar subscribe links are shown in the View. The feed stays in sync automatically when the timetable changes.";
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: catalogText }],
-      widgetProps: { timetableId: "tt1", madeLinkShareable: false, ...SECRET_URLS },
+      viewProps: { timetableId: "tt1", madeLinkShareable: false, ...SECRET_URLS },
     });
     const res = await captured().handler({ timetableId: "tt1" }, {});
     expect(res.isError).toBeUndefined();
@@ -117,26 +117,26 @@ describe("get-timetable-calendar-link adapter", () => {
     expect(res.content[0]?.text).toBe("boom");
   });
 
-  it("errors when no timetableId comes back in widgetProps", async () => {
+  it("errors when no timetableId comes back in viewProps", async () => {
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: "ok" }],
-      widgetProps: { feedUrl: "https://x.test/f.ics" },
+      viewProps: { feedUrl: "https://x.test/f.ics" },
     });
     const res = await captured().handler({ timetableId: "tt1" }, {});
     expect(res.isError).toBe(true);
     expect(res.content[0]?.text).toMatch(/Missing timetableId/);
   });
 
-  it("falls back to tool.toWidgetProps when result.widgetProps is absent", async () => {
+  it("falls back to tool.toViewProps when result.viewProps is absent", async () => {
     const props = { timetableId: "tt9", ...SECRET_URLS };
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: "ok" }],
     });
-    // Re-import with the catalog tool exposing toWidgetProps: patch via allTools entry
+    // Re-import with the catalog tool exposing toViewProps: patch via allTools entry
     const { allTools } = (await import("@/server/mcp/tools")) as {
-      allTools: Array<{ toWidgetProps?: (r: unknown) => unknown }>;
+      allTools: Array<{ toViewProps?: (r: unknown) => unknown }>;
     };
-    (allTools[0] as { toWidgetProps?: (r: unknown) => unknown }).toWidgetProps = () => props;
+    (allTools[0] as { toViewProps?: (r: unknown) => unknown }).toViewProps = () => props;
     const res = await captured().handler({ timetableId: "tt9" }, {});
     expect(res.isError).toBeUndefined();
     expect(res.structuredContent).toEqual({ timetableId: "tt9" });
@@ -146,7 +146,7 @@ describe("get-timetable-calendar-link adapter", () => {
   it("omits _meta entirely when every URL is empty", async () => {
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: "ok" }],
-      widgetProps: { timetableId: "tt1", feedUrl: "", subscribeUrl: "", googleSubscribeUrl: "", appleSubscribeUrl: "", outlookSubscribeUrl: "" },
+      viewProps: { timetableId: "tt1", feedUrl: "", subscribeUrl: "", googleSubscribeUrl: "", appleSubscribeUrl: "", outlookSubscribeUrl: "" },
     });
     const res = await captured().handler({ timetableId: "tt1" }, {});
     expect(res.isError).toBeUndefined();
@@ -156,14 +156,14 @@ describe("get-timetable-calendar-link adapter", () => {
   it("only includes madeLinkShareable when it is a boolean", async () => {
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: "ok" }],
-      widgetProps: { timetableId: "tt1", madeLinkShareable: true, feedUrl: "https://x.test/f.ics" },
+      viewProps: { timetableId: "tt1", madeLinkShareable: true, feedUrl: "https://x.test/f.ics" },
     });
     const withFlag = await captured().handler({ timetableId: "tt1" }, {});
     expect(withFlag.structuredContent).toEqual({ timetableId: "tt1", madeLinkShareable: true });
 
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: "ok" }],
-      widgetProps: { timetableId: "tt1", madeLinkShareable: "yes", feedUrl: "https://x.test/f.ics" },
+      viewProps: { timetableId: "tt1", madeLinkShareable: "yes", feedUrl: "https://x.test/f.ics" },
     });
     const withoutFlag = await captured().handler({ timetableId: "tt1" }, {});
     expect(withoutFlag.structuredContent).toEqual({ timetableId: "tt1" });

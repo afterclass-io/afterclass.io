@@ -26,7 +26,7 @@ function makeCaller(procs: Record<string, unknown>) {
 }
 
 describe("get-timetable-calendar-link", () => {
-  it("returns links in widgetProps and keeps the token OUT of the text", async () => {
+  it("returns links in viewProps and keeps the token OUT of the text", async () => {
     const fn = vi.fn().mockResolvedValue({ icalToken: "secret-token" });
     const ctx: ToolContext = {
       user: fakeUser,
@@ -38,11 +38,11 @@ describe("get-timetable-calendar-link", () => {
     });
     expect(result.isError).toBeUndefined();
     expect(result.content[0]!.text).not.toContain("secret-token");
-    expect(result.widgetProps?.feedUrl).toContain("/api/ical/secret-token");
-    expect(String(result.widgetProps?.googleSubscribeUrl)).toContain(
+    expect(result.viewProps?.feedUrl).toContain("/api/ical/secret-token");
+    expect(String(result.viewProps?.googleSubscribeUrl)).toContain(
       "calendar.google.com",
     );
-    expect(String(result.widgetProps?.subscribeUrl)).toMatch(/^webcal:\/\//);
+    expect(String(result.viewProps?.subscribeUrl)).toMatch(/^webcal:\/\//);
   });
 
   it("sets UNLISTED visibility only when enableLinkSharing=true AND confirm:true and the timetable is private", async () => {
@@ -72,7 +72,7 @@ describe("get-timetable-calendar-link", () => {
       id: "tt1",
       visibility: "UNLISTED",
     });
-    expect(result.widgetProps?.madeLinkShareable).toBe(true);
+    expect(result.viewProps?.madeLinkShareable).toBe(true);
   });
 
   it("rejects the UNLISTED escalation when enableLinkSharing=true but confirm is missing", async () => {

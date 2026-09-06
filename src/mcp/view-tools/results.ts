@@ -9,13 +9,13 @@ export type UnwrapOk = {
   ok: true;
   data: unknown;
   text: string;
-  widgetProps?: Record<string, unknown>;
+  viewProps?: Record<string, unknown>;
 };
 export type UnwrapErr = { ok: false; error: string; text: string };
 
 /**
  * Unwrap catalog run result into a data payload.
- * Order: result.widgetProps -> tool.toWidgetProps(result) -> JSON.parse(text) (guarded).
+ * Order: result.viewProps -> tool.toViewProps(result) -> JSON.parse(text) (guarded).
  * Returns ok:false with error string if JSON parsing fails.
  * `fallbackJson` controls what to parse when content text is missing (undefined/null):
  *   - "{}" for object-shaped tools (roadmap, reviews, bid-plan, explore)
@@ -23,22 +23,21 @@ export type UnwrapErr = { ok: false; error: string; text: string };
  */
 export function unwrapResultData(
   result: ToolResult,
-  tool?: { toWidgetProps?: (result: ToolResult) => unknown },
+  tool?: { toViewProps?: (result: ToolResult) => unknown },
   fallbackJson = "{}",
 ): UnwrapOk | UnwrapErr {
   const text = result.content[0]?.text ?? "";
-  const widgetProps = result.widgetProps;
+  const viewProps = result.viewProps;
   let data: unknown =
-    widgetProps ??
-    (tool?.toWidgetProps ? tool.toWidgetProps(result) : undefined);
+    viewProps ?? (tool?.toViewProps ? tool.toViewProps(result) : undefined);
   if (data !== undefined) {
-    return { ok: true, data, text, widgetProps };
+    return { ok: true, data, text, viewProps };
   }
   const rawText = result.content[0]?.text;
   const jsonSource = rawText ?? fallbackJson;
   try {
     data = JSON.parse(jsonSource);
-    return { ok: true, data, text, widgetProps };
+    return { ok: true, data, text, viewProps };
   } catch (e) {
     return { ok: false, error: String(e), text };
   }
@@ -77,10 +76,10 @@ export type ViewToolOutcome =
 export interface RunViewToolOptions {
   ctx: unknown;
   params: unknown;
-  /** The catalog tool backing this adapter (its toWidgetProps participates in unwrapping). */
+  /** The catalog tool backing this adapter (its toViewProps participates in unwrapping). */
   tool: {
     run(ctx: unknown, input: unknown): Promise<ToolResult>;
-    toWidgetProps?: (result: ToolResult) => unknown;
+    toViewProps?: (result: ToolResult) => unknown;
   };
   schema: ZodType;
   /** Default "{}" — pass "" for array-shaped/recommend tools where missing content must fail. */
@@ -104,7 +103,7 @@ export async function runViewTool(
   opts: RunViewToolOptions,
 ): Promise<ViewToolOutcome> {
   // Auth + read-budget + run via the single shared pipeline (`shape: "view"`
-  // preserves the widgetProps channel for the unwrap below). Error envelopes
+  // preserves the viewProps channel for the unwrap below). Error envelopes
   // mirror each adapter's historical messages exactly ("Unauthorized: ...",
   // "Tool failed", "Invalid JSON from catalog", rawPayloadMessage, "Output
   // schema validation failed").
@@ -144,7 +143,7 @@ export function finishViewTool(
   const fake: ToolResult = {
     content: content.map((c) => ({ type: "text", text: c.text })),
     ...(structuredContent !== undefined
-      ? { widgetProps: structuredContent as Record<string, unknown> }
+      ? { viewProps: structuredContent as Record<string, unknown> }
       : {}),
   };
   const unwrapped = unwrapResultData(fake, opts.tool, opts.fallbackJson);

@@ -5,7 +5,7 @@ import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
 import { resolveTermId } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool, type ToolResult } from "../../types";
 
-/** Flat review-card shape consumed by the review-cards widget. */
+/** Flat review-card shape consumed by the review-cards view. */
 interface ReviewCard {
   id: string;
   body: string | null;
@@ -19,14 +19,14 @@ interface ReviewCard {
 }
 
 /**
- * Normalize a review tool's JSON text output into review-cards widget props.
+ * Normalize a review tool's JSON text output into review-cards view props.
  * The protected procedures return { items, nextCursor } where items are
  * flattened Reviews (reviewLabels[{name}], likeCount, courseCode,
  * professorName, createdAt as epoch ms); a bare array of raw prisma-shaped
  * rows (reviewLabels[{label.name}], countVotes, reviewedCourse,
  * reviewedProfessor) is also accepted for robustness.
  * The tool's `run` embeds `context` (course code / professor slug) alongside
- * the procedure payload so the widget header stays populated even on empty
+ * the procedure payload so the view header stays populated even on empty
  * results; this helper reads that `context` directly.
  */
 function reviewCardsProps(text: string): Record<string, unknown> {
@@ -62,9 +62,9 @@ function reviewCardsProps(text: string): Record<string, unknown> {
       const createdAt = r.createdAt;
       return {
         id: (r.id as string) ?? "",
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- empty string must coerce to null for widget
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- empty string must coerce to null for view
         body: (r.body as string | null) || null,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- empty string must coerce to null for widget
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- empty string must coerce to null for view
         tips: (r.tips as string | null) || null,
         rating: (r.rating as number | null) ?? null,
         labels,
@@ -95,7 +95,7 @@ function reviewCardsProps(text: string): Record<string, unknown> {
   }
 }
 
-const reviewCardsToWidgetProps = (result: ToolResult): Record<string, unknown> => {
+const reviewCardsToViewProps = (result: ToolResult): Record<string, unknown> => {
   const text = result.content.find((c) => c.type === "text")?.text ?? "";
   return reviewCardsProps(text);
 };
@@ -111,7 +111,7 @@ export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
     "Read student reviews for a course, including full review text. Read-only: you may summarise reviews but must NEVER write, edit, or create reviews.",
   inputSchema: getCourseReviewsSchema,
   readOnly: true,
-  toWidgetProps: reviewCardsToWidgetProps,
+  toViewProps: reviewCardsToViewProps,
   run: async ({ caller }, { code, limit }) => {
     try {
       const data = await caller.reviews.getByCourseCodeProtected({
@@ -141,7 +141,7 @@ export const getProfessorReviewsTool: McpTool<typeof getProfessorReviewsSchema> 
     "Read student reviews for a professor, including full review text. Use when the user asks what students say about a professor or wants concrete review examples. Read-only: NEVER write, edit, or create reviews.",
   inputSchema: getProfessorReviewsSchema,
   readOnly: true,
-  toWidgetProps: reviewCardsToWidgetProps,
+  toViewProps: reviewCardsToViewProps,
   run: async ({ caller }, { slug, limit }) => {
     try {
       const data = await caller.reviews.getByProfSlugProtected({

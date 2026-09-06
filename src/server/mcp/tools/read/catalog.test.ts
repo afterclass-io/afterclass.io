@@ -113,7 +113,7 @@ describe("catalog read tools", () => {
     expect(result.isError).toBeUndefined();
   });
 
-  it("get-course-reviews toWidgetProps normalizes the { items, nextCursor } envelope", async () => {
+  it("get-course-reviews toViewProps normalizes the { items, nextCursor } envelope", async () => {
     const fn = vi
       .fn()
       .mockResolvedValue({ items: [protectedReview], nextCursor: "rv2" });
@@ -122,11 +122,11 @@ describe("catalog read tools", () => {
       caller: makeCaller({ getByCourseCodeProtected: fn }),
     };
     const result = await getCourseReviewsTool.run(ctx, { code: "COR-MGMT1202", limit: 20 });
-    const props = getCourseReviewsTool.toWidgetProps?.(result);
+    const props = getCourseReviewsTool.toViewProps?.(result);
     expect(props).toEqual({ context: "COR-MGMT1202", reviews: [expectedCard] });
   });
 
-  it("get-professor-reviews toWidgetProps normalizes the { items, nextCursor } envelope", async () => {
+  it("get-professor-reviews toViewProps normalizes the { items, nextCursor } envelope", async () => {
     const fn = vi
       .fn()
       .mockResolvedValue({ items: [protectedReview], nextCursor: undefined });
@@ -135,11 +135,11 @@ describe("catalog read tools", () => {
       caller: makeCaller({ getByProfSlugProtected: fn }),
     };
     const result = await getProfessorReviewsTool.run(ctx, { slug: "prof-x", limit: 20 });
-    const props = getProfessorReviewsTool.toWidgetProps?.(result);
+    const props = getProfessorReviewsTool.toViewProps?.(result);
     expect(props).toEqual({ context: "prof-x", reviews: [expectedCard] });
   });
 
-  it("toWidgetProps also handles a bare array with raw prisma-shaped rows", async () => {
+  it("toViewProps also handles a bare array with raw prisma-shaped rows", async () => {
     const fn = vi.fn().mockResolvedValue([
       {
         id: "rv9",
@@ -158,7 +158,7 @@ describe("catalog read tools", () => {
       caller: makeCaller({ getByCourseCodeProtected: fn }),
     };
     const result = await getCourseReviewsTool.run(ctx, { code: "CS101", limit: 20 });
-    const props = getCourseReviewsTool.toWidgetProps?.(result);
+    const props = getCourseReviewsTool.toViewProps?.(result);
     expect(props).toEqual({
       context: "CS101",
       reviews: [
@@ -177,7 +177,7 @@ describe("catalog read tools", () => {
     });
   });
 
-  it("toWidgetProps keeps context on empty results", async () => {
+  it("toViewProps keeps context on empty results", async () => {
     const courseFn = vi.fn().mockResolvedValue({ items: [], nextCursor: undefined });
     const profFn = vi.fn().mockResolvedValue({ items: [], nextCursor: undefined });
     const courseCtx: ToolContext = {
@@ -189,12 +189,12 @@ describe("catalog read tools", () => {
       caller: makeCaller({ getByProfSlugProtected: profFn }),
     };
     const courseResult = await getCourseReviewsTool.run(courseCtx, { code: "CS101", limit: 20 });
-    expect(getCourseReviewsTool.toWidgetProps?.(courseResult)).toEqual({
+    expect(getCourseReviewsTool.toViewProps?.(courseResult)).toEqual({
       context: "CS101",
       reviews: [],
     });
     const profResult = await getProfessorReviewsTool.run(profCtx, { slug: "prof-x", limit: 20 });
-    expect(getProfessorReviewsTool.toWidgetProps?.(profResult)).toEqual({
+    expect(getProfessorReviewsTool.toViewProps?.(profResult)).toEqual({
       context: "prof-x",
       reviews: [],
     });

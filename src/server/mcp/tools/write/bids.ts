@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { resolveOpenWindowIdOrError, resolveTermId } from "../../current";
-import { bidPlanToWidgetProps, buildBidPlan } from "../bid-plan-shared";
+import { bidPlanToViewProps, buildBidPlan } from "../bid-plan-shared";
 import { stripBidNotes } from "../bid-shared";
 import {
   confirmField,
@@ -23,7 +23,7 @@ export const upsertBidTool: McpTool<typeof upsertBidSchema> = {
   description:
     "Create or update one of the user's bids for a class in a bid window. Use get-bid-windows for valid window ids. Returns the full updated bid plan for the affected term.",
   inputSchema: upsertBidSchema,
-  toWidgetProps: bidPlanToWidgetProps,
+  toViewProps: bidPlanToViewProps,
   run: async ({ caller }, input) => {
     try {
       let bidWindowId = input.bidWindowId;
@@ -67,7 +67,7 @@ export const removeBidTool: McpTool<typeof removeBidSchema> = {
   description:
     "Delete one of the user's bids by its id. Returns the full updated bid plan for the affected term.",
   inputSchema: removeBidSchema,
-  toWidgetProps: bidPlanToWidgetProps,
+  toViewProps: bidPlanToViewProps,
   run: async ({ caller }, { id }) => {
     try {
       let acadTermId: string | null = null;
@@ -106,7 +106,7 @@ export const setBidBudgetTool: McpTool<typeof setBidBudgetSchema> = {
   name: "set-bid-budget",
   description: `Set the user's bid budget balance for an academic term. balance must be between 0 and ${MAX_BUDGET}. Returns the full updated bid plan for the affected term.`,
   inputSchema: setBidBudgetSchema,
-  toWidgetProps: bidPlanToWidgetProps,
+  toViewProps: bidPlanToViewProps,
   run: async ({ caller }, input) => {
     if (input.balance > MAX_BUDGET) {
       return errText(

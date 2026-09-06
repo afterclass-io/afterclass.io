@@ -66,7 +66,7 @@ const RoadmapView: React.FC = () => {
   }
   // `toolOutput` is the normalized RoadmapView from the tool's outputSchema.
   // The tool adapter currently passes its schemas `as never` (Task 9
-  // candidate to tighten), so read defensively like the v1 widget read props.
+  // candidate to tighten), so read defensively like the v1 view read props.
   const props = toolOutput as RoadmapViewData | undefined;
   const entries = props?.entries ?? [];
   const name = props?.name ?? "";

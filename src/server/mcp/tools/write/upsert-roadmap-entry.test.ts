@@ -44,7 +44,7 @@ function entry(courseId: string, code: string, name: string, yearNumber: number,
 }
 
 describe("upsert-roadmap-entry", () => {
-  it("is not read-only, exposes roadmap-view widget, and adds an entry additively without wiping others", async () => {
+  it("is not read-only, exposes roadmap-view View, and adds an entry additively without wiping others", async () => {
     const existing = [
       entry("c1", "COR-IS1702", "Comp Thinking", 1, "T1", 0),
       entry("c2", "IS215", "Digital Business", 1, "T2", 0),
@@ -194,7 +194,7 @@ describe("upsert-roadmap-entry", () => {
     expect(res.content[0]!.text).toContain("CONFLICT");
   });
 
-  it("toWidgetProps normalizes the nested roadmapView payload", async () => {
+  it("toViewProps normalizes the nested roadmapView payload", async () => {
     const existing: unknown[] = [];
     const getMine = vi.fn().mockResolvedValue({ roadmap: { id: "r1", name: "My Plan" }, entries: existing });
     const getMineAfter = vi.fn().mockResolvedValue({
@@ -218,9 +218,9 @@ describe("upsert-roadmap-entry", () => {
     });
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await upsertRoadmapEntryTool.run(ctx, { roadmapId: "r1", courseCode: "ACCT102", yearNumber: 3, term: "T1" });
-    const props = upsertRoadmapEntryTool.toWidgetProps?.(res);
+    const props = upsertRoadmapEntryTool.toViewProps?.(res);
     expect(props).toBeDefined();
-    // roadmapViewToWidgetProps(false) should normalize roadmapView.roadmap + entries
+    // roadmapViewToViewProps(false) should normalize roadmapView.roadmap + entries
     expect((props as { roadmapId?: string }).roadmapId).toBeTruthy();
   });
 

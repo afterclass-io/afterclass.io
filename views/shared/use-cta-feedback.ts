@@ -44,7 +44,7 @@ export function useCtaFeedback(dismissMs = DEFAULT_DISMISS_MS) {
 }
 
 /**
- * Per-row variant for widgets with many identical CTAs (e.g. one "Add"
+ * Per-row variant for Views with many identical CTAs (e.g. one "Add"
  * button per search result): feedback is keyed by row id, and the shared
  * timer only clears the most recently triggered row.
  */

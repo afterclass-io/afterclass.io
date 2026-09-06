@@ -52,7 +52,7 @@ const ReviewCardsView: React.FC = () => {
   }
   // `toolOutput` is {context, reviews} from the tool's outputSchema. The tool
   // adapter currently passes its schemas `as never` (Task 9 candidate to
-  // tighten), so read defensively exactly like the v1 widget read `props`.
+  // tighten), so read defensively exactly like the v1 view read `props`.
   const props = toolOutput as ReviewCardsData | undefined;
   const reviews = props?.reviews ?? [];
   const context = props?.context ?? "";

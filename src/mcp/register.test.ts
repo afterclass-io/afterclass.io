@@ -78,6 +78,7 @@ const { serverTool } = vi.hoisted(() => ({
 vi.mock("./server", () => ({ server: { tool: serverTool } }));
 
 import { registerViewlessTools, viewBoundNames } from "./register";
+import { getToolAnnotations, getToolRegistration } from "./register";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { checkDestructiveConfirm } from "./rate-limit";
@@ -110,7 +111,12 @@ describe("registerViewlessTools", () => {
     expect(tool).toHaveBeenCalledWith(
       expect.objectContaining({
         name: "tool-b",
-        annotations: { readOnlyHint: true },
+        annotations: {
+          readOnlyHint: true,
+          destructiveHint: false,
+          openWorldHint: false,
+          idempotentHint: true,
+        },
       }),
       expect.any(Function),
     );
@@ -407,6 +413,59 @@ describe("registerViewlessTools", () => {
     expect(result.content?.[0]?.text).toBe(JSON.stringify({ foo: "bar" }));
     expect(result.structuredContent).toBeUndefined();
     expect(result._meta).toBeUndefined();
+  });
+
+  describe("tool annotations (Task 6 hints plumbing)", () => {
+    it("marks destructive tools with destructiveHint", () => {
+      expect(getToolAnnotations("remove-timetable").destructiveHint).toBe(true);
+    });
+
+    it("marks readOnly tools readOnly+idempotent, never destructive", () => {
+      // tool-b is the mocked readOnly tool (not in the destructive set).
+      expect(getToolAnnotations("tool-b")).toMatchObject({
+        title: "Tool B",
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+        idempotentHint: true,
+      });
+    });
+
+    it("marks constructive writes non-destructive and non-idempotent", () => {
+      // tool-a is the mocked write tool (not in the destructive set).
+      expect(getToolAnnotations("tool-a")).toMatchObject({
+        readOnlyHint: false,
+        destructiveHint: false,
+        openWorldHint: false,
+        idempotentHint: false,
+      });
+    });
+
+    it("surfaces the confirm:true requirement in destructive descriptions", () => {
+      const destructive = getToolRegistration("remove-timetable");
+      expect(destructive.description).toContain("confirm:true");
+      expect(destructive.title).toBe("Remove Timetable");
+      // Non-destructive descriptions pass through verbatim.
+      expect(getToolRegistration("tool-b").description).toBe("B");
+    });
+
+    it("registers viewless tools with title + full annotations", () => {
+      const tool = vi.fn();
+      registerViewlessTools({ tool } as never);
+      expect(tool).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "tool-b",
+          title: "Tool B",
+          annotations: {
+            readOnlyHint: true,
+            destructiveHint: false,
+            openWorldHint: false,
+            idempotentHint: true,
+          },
+        }),
+        expect.any(Function),
+      );
+    });
   });
 
   describe("destructive confirm gate", () => {

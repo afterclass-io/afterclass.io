@@ -27,7 +27,7 @@ export const getTimetableCalendarLinkTool: McpTool<
 > = {
   name: "get-timetable-calendar-link",
   description:
-    "Get calendar subscribe links (Google / Apple / Outlook + ICS feed) for one of the user's timetables, so their calendar stays in sync automatically. If the timetable is private, the user must first agree to link-sharing (enableLinkSharing=true). Links render in a widget; never ask the user for tokens.",
+    "Get calendar subscribe links (Google / Apple / Outlook + ICS feed) for one of the user's timetables, so their calendar stays in sync automatically. If the timetable is private, the user must first agree to link-sharing (enableLinkSharing=true). Links render in a View; never ask the user for tokens.",
   inputSchema: getTimetableCalendarLinkSchema,
   readOnly: false,
   run: async ({ caller }, { timetableId, enableLinkSharing, confirm }) => {
@@ -61,15 +61,15 @@ export const getTimetableCalendarLinkTool: McpTool<
       });
       const links = buildCalendarLinks(env.NEXT_PUBLIC_SITE_URL, icalToken);
       return {
-        // Model sees NO token-bearing URLs — they go to the widget only.
+        // Model sees NO token-bearing URLs — they go to the view only.
         ...okText(
-          "Calendar subscribe links are shown in the widget. The feed stays in sync automatically when the timetable changes." +
+          "Calendar subscribe links are shown in the View. The feed stays in sync automatically when the timetable changes." +
             (madeLinkShareable
               ? " The timetable is now link-shareable (UNLISTED)."
               : "") +
-            " If the widget is not visible, the user can also export from the Timetable page on the site.",
+            " If the View is not visible, the user can also export from the Timetable page on the site.",
         ),
-        widgetProps: { timetableId, madeLinkShareable, ...links },
+        viewProps: { timetableId, madeLinkShareable, ...links },
       };
     } catch (e) {
       return errText(errorMessage(e));

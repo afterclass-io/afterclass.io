@@ -1,4 +1,4 @@
-/** Shared design tokens + Skeleton for MCP Apps widgets. Dependency-free: no `@/` imports. */
+/** Shared design tokens + Skeleton for MCP Apps Views. Dependency-free: no `@/` imports. */
 
 export type ThemeColors = (typeof TOKENS)[keyof typeof TOKENS];
 

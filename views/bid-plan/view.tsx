@@ -74,7 +74,7 @@ const BidPlanView: React.FC = () => {
   }
   // `toolOutput` is the unwrapped BidPlan from the tool's outputSchema. The
   // tool adapter currently passes its schemas `as never` (Task 9 candidate to
-  // tighten), so read defensively exactly like the v1 widget read `props`.
+  // tighten), so read defensively exactly like the v1 view read `props`.
   const props = toolOutput as BidPlan | undefined;
   const bids = props?.bids ?? [];
   const acadTermId = props?.acadTermId ?? "";

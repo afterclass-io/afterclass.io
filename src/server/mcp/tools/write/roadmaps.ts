@@ -5,7 +5,7 @@ import { roadmapTermSchema } from "../feasibility-check";
 import { stripShareToken } from "../bid-shared";
 import {
   buildRoadmapView,
-  roadmapViewToWidgetProps,
+  roadmapViewToViewProps,
 } from "../roadmap-view-shared";
 import {
   confirmField,
@@ -32,7 +32,7 @@ export const createRoadmapTool: McpTool<typeof createRoadmapSchema> = {
   description:
     "Create a new study roadmap for the user. Returns the updated roadmap.",
   inputSchema: createRoadmapSchema,
-  toWidgetProps: roadmapViewToWidgetProps(false),
+  toViewProps: roadmapViewToViewProps(false),
   run: async ({ caller }, { name }) => {
     try {
       const created = (await caller.roadmaps.create({ name })) as {
@@ -95,7 +95,7 @@ export const saveRoadmapEntriesTool: McpTool<typeof saveRoadmapEntriesSchema> =
     description:
       "Replace the course entries of a roadmap. entries is the full desired list: [{courseId, yearNumber (1-8), term (T1|T2|T3A|T3B), sortOrder}]. Returns the updated roadmap.",
     inputSchema: saveRoadmapEntriesSchema,
-    toWidgetProps: roadmapViewToWidgetProps(false),
+    toViewProps: roadmapViewToViewProps(false),
     run: async ({ caller }, input) => {
       try {
         await caller.roadmaps.saveEntries(input);

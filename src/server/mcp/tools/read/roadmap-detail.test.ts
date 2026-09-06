@@ -85,7 +85,7 @@ describe("get-my-roadmap", () => {
     expect(parsed.roadmap.id).toBe("r1");
   });
 
-  it("exposes a roadmap-view widget whose props normalize the { roadmap, entries } output", async () => {
+  it("exposes a roadmap-view View whose props normalize the { roadmap, entries } output", async () => {
     // Shape mirrors caller.roadmaps.getMine: entries carry a nested `course`
     // with { code, name, creditUnits, description }.
     const fn = vi.fn().mockResolvedValue({
@@ -110,7 +110,7 @@ describe("get-my-roadmap", () => {
       caller: makeCaller({ roadmapsGetMine: fn }),
     };
     const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
-    const props = getMyRoadmapTool.toWidgetProps?.(res);
+    const props = getMyRoadmapTool.toViewProps?.(res);
     expect(props).toEqual({
       roadmapId: "r1",
       name: "My Plan",
@@ -169,7 +169,7 @@ describe("get-public-roadmap", () => {
     expect(res.isError).toBe(true);
   });
 
-  it("exposes a roadmap-view widget whose props normalize owner + voteCount", async () => {
+  it("exposes a roadmap-view View whose props normalize owner + voteCount", async () => {
     // Shape mirrors caller.roadmaps.getById: { roadmap, entries, ownerUsername,
     // ownerFaculty, voteCount, viewerHasVoted }; entries nest `course`.
     const fn = vi.fn().mockResolvedValue({
@@ -203,7 +203,7 @@ describe("get-public-roadmap", () => {
       caller: makeCaller({ roadmapsGetById: fn }),
     };
     const res = await getPublicRoadmapTool.run(ctx, { roadmapId: "r9" });
-    const props = getPublicRoadmapTool.toWidgetProps?.(res);
+    const props = getPublicRoadmapTool.toViewProps?.(res);
     expect(props).toEqual({
       roadmapId: "r9",
       name: "Senior CS",

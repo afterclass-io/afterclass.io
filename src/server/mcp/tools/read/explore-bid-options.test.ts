@@ -115,7 +115,7 @@ function parse(result: { content: Array<{ type: string; text: string }> }) {
 }
 
 describe("explore-bid-options", () => {
-  it("is read-only, exposes the bid-explorer widget, and normalizes the classId path", async () => {
+  it("is read-only, exposes the bid-explorer View, and normalizes the classId path", async () => {
     const caller = makeCaller({
       results: [
         bidRow("t2", "1", 1, 14, 28, 40),
@@ -253,7 +253,7 @@ describe("explore-bid-options", () => {
     expect(result.content[0]!.text).toContain("db down");
   });
 
-  it("toWidgetProps parses its own JSON output back into widget props", async () => {
+  it("toViewProps parses its own JSON output back into view props", async () => {
     const caller = makeCaller({
       results: [bidRow("t1", "1", 1, 10, 22)],
       pred: prediction,
@@ -264,7 +264,7 @@ describe("explore-bid-options", () => {
       courseCode: undefined,
       professorSlug: undefined,
     });
-    const props = exploreBidOptionsTool.toWidgetProps?.(result);
+    const props = exploreBidOptionsTool.toViewProps?.(result);
     expect(props).toMatchObject({ classId: "cl1" });
     expect(Array.isArray((props as { history?: unknown[] }).history)).toBe(true);
   });

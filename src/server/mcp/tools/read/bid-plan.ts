@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { resolveTermId } from "../../current";
-import { bidPlanToWidgetProps, buildBidPlan } from "../bid-plan-shared";
+import { bidPlanToViewProps, buildBidPlan } from "../bid-plan-shared";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const myBidPlanSchema = z.object({
@@ -17,7 +17,7 @@ export const myBidPlanTool: McpTool<typeof myBidPlanSchema> = {
     "Show the user's bidding plan for one academic term: every saved bid (course, section, professor, amount, status, round/window) plus the budget balance. Use this when the user asks about their current bids or bidding plans for a term/academic year.",
   inputSchema: myBidPlanSchema,
   readOnly: true,
-  toWidgetProps: bidPlanToWidgetProps,
+  toViewProps: bidPlanToViewProps,
   run: async ({ caller }, { acadTermId }) => {
     try {
       const term = await resolveTermId(caller, acadTermId);

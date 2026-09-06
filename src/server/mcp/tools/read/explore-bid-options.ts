@@ -5,11 +5,11 @@ import {
   errText,
   errorMessage,
   jsonText,
-  parseWidgetJson,
+  parseViewJson,
   type McpTool,
 } from "../../types";
 
-/** Flat history shape consumed by the bid-explorer widget. */
+/** Flat history shape consumed by the bid-explorer view. */
 interface HistoryPoint {
   acadTermId: string;
   round: string;
@@ -109,8 +109,8 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
     "Explore bid prices for a class, course+professor, or course+section combination: historical clearing ranges per term/round, the latest prediction, and safety multipliers (what amount beats X% of bids). Use for interactive section-level bidding questions ('how much for COR-IS1702 G1?') — pass courseCode+section. Use when the user wants to compare options and decide a bid themselves rather than get a single recommendation.",
   inputSchema: exploreBidOptionsSchema,
   readOnly: true,
-  toWidgetProps: (result) => {
-    const parsed = parseWidgetJson(result);
+  toViewProps: (result) => {
+    const parsed = parseViewJson(result);
     return "data" in parsed ? parsed.data : { raw: parsed.raw };
   },
   run: async ({ caller }, { classId, courseCode, professorSlug, section }) => {

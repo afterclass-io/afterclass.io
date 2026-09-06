@@ -3,7 +3,7 @@ import type { Mock } from "vitest";
 
 /**
  * Adapter tests for search-courses. Unlike the object-shaped adapters it does
- * NOT use tool.toWidgetProps (that would mask JSON parse errors as
+ * NOT use tool.toViewProps (that would mask JSON parse errors as
  * {results:[]}): it unwraps the raw catalog array itself, masks a non-array
  * success payload to [] (documented in the adapter), and validates against
  * courseSearchOutput.
@@ -20,7 +20,7 @@ vi.mock("../server", () => ({ server: { tool: serverTool } }));
 vi.mock("../user", () => ({ buildToolContext }));
 vi.mock("@/server/mcp/tools", () => ({
   allTools: [
-    // toWidgetProps deliberately present: the adapter must NOT use it
+    // toViewProps deliberately present: the adapter must NOT use it
     // (it preserves Invalid JSON semantics instead of masking to {results:[]}).
     {
       name: "search-courses",
@@ -28,7 +28,7 @@ vi.mock("@/server/mcp/tools", () => ({
       inputSchema: {},
       readOnly: true,
       run: toolRun,
-      toWidgetProps: () => ({ results: [{ code: "MASKED", name: "MASKED" }] }),
+      toViewProps: () => ({ results: [{ code: "MASKED", name: "MASKED" }] }),
     },
   ],
 }));
@@ -206,7 +206,7 @@ describe("search-courses adapter", () => {
     );
   });
 
-  it("malformed JSON stays an error — toWidgetProps masking is NOT used", async () => {
+  it("malformed JSON stays an error — toViewProps masking is NOT used", async () => {
     const { handler } = registration("search-courses");
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: "{not json" }],
@@ -214,7 +214,7 @@ describe("search-courses adapter", () => {
     const res = await handler({ query: "acc" }, {});
     expect(res.isError).toBe(true);
     expect(res.content[0]?.text).toBe("Invalid JSON from catalog");
-    // If the adapter had (wrongly) used toWidgetProps, this would have been a
+    // If the adapter had (wrongly) used toViewProps, this would have been a
     // success result with {results:[{code:"MASKED"}]} instead.
   });
 

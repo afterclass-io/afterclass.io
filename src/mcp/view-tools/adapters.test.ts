@@ -21,11 +21,11 @@ const { checkAndIncrement } = vi.hoisted(() => ({
   checkAndIncrement: vi.fn() as Mock,
 }));
 
-// toWidgetProps used only in the dedicated fallback test — returns the valid
+// toViewProps used only in the dedicated fallback test — returns the valid
 // my-bid-plan payload regardless of result (the real catalog tools build a
 // structured payload from result text).
-const toWidgetPropsMock = vi.hoisted(() => ({
-  toWidgetPropsMock: vi.fn() as Mock,
+const toViewPropsMock = vi.hoisted(() => ({
+  toViewPropsMock: vi.fn() as Mock,
 }));
 
 // `server-only` throws outside a Next.js server bundle — stub as no-op
@@ -46,7 +46,7 @@ vi.mock("@/server/mcp/tools", () => ({
       inputSchema: {},
       readOnly: true,
       run: toolRun,
-      toWidgetProps: toWidgetPropsMock.toWidgetPropsMock,
+      toViewProps: toViewPropsMock.toViewPropsMock,
     },
     {
       name: "get-my-roadmap",
@@ -410,31 +410,31 @@ describe("deep-link line details", () => {
   });
 });
 
-describe("widgetProps unwrap path (my-bid-plan via toWidgetProps fallback)", () => {
-  it("prefers result.widgetProps over content JSON", async () => {
+describe("viewProps unwrap path (my-bid-plan via toViewProps fallback)", () => {
+  it("prefers result.viewProps over content JSON", async () => {
     const { handler } = registration("my-bid-plan");
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: "{}" }],
-      widgetProps: VALID["my-bid-plan"],
+      viewProps: VALID["my-bid-plan"],
     });
     const res = await handler({}, {});
     expect(res.isError).toBeUndefined();
     expect(res.structuredContent).toEqual(VALID["my-bid-plan"]);
   });
 
-  it("falls back to tool.toWidgetProps when widgetProps is absent", async () => {
+  it("falls back to tool.toViewProps when viewProps is absent", async () => {
     const { handler } = registration("my-bid-plan");
-    toWidgetPropsMock.toWidgetPropsMock.mockReturnValue(VALID["my-bid-plan"]);
+    toViewPropsMock.toViewPropsMock.mockReturnValue(VALID["my-bid-plan"]);
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: "not-json-shape-but-unused" }],
     });
     const res = await handler({}, {});
-    expect(toWidgetPropsMock.toWidgetPropsMock).toHaveBeenCalled();
+    expect(toViewPropsMock.toViewPropsMock).toHaveBeenCalled();
     expect(res.isError).toBeUndefined();
     expect(res.structuredContent).toEqual(VALID["my-bid-plan"]);
   });
 
-  it("falls back to content-text JSON when neither widgetProps nor toWidgetProps yields data", async () => {
+  it("falls back to content-text JSON when neither viewProps nor toViewProps yields data", async () => {
     const { handler } = registration("get-my-roadmap");
     toolRun.mockResolvedValue({
       content: [

@@ -31,7 +31,7 @@ export interface DispatchPolicy {
   budget: "read" | "write" | "none";
   /**
    * `"text"` shapes the catalog result into a model-visible text envelope;
-   * `"view"` returns `{ content, structuredContent }` with the `widgetProps`
+   * `"view"` returns `{ content, structuredContent }` with the `viewProps`
    * channel preserved for view-bound adapters (`runViewTool` unwraps,
    * schema-validates, and summarizes downstream).
    */
@@ -57,7 +57,7 @@ export interface DispatchPolicy {
 export interface DispatchableTool {
   name: string;
   readOnly?: boolean;
-  toWidgetProps?: (result: ToolResult) => unknown;
+  toViewProps?: (result: ToolResult) => unknown;
   run(ctx: ToolContext, input: never): Promise<ToolResult>;
 }
 
@@ -162,10 +162,10 @@ export async function dispatchToolCall(opts: {
         structuredContent: { __catalogError: true, text },
       };
     }
-    const widgetProps = result.widgetProps ?? tool.toWidgetProps?.(result);
+    const viewProps = result.viewProps ?? tool.toViewProps?.(result);
     return {
       content: result.content,
-      ...(widgetProps !== undefined ? { structuredContent: widgetProps } : {}),
+      ...(viewProps !== undefined ? { structuredContent: viewProps } : {}),
     };
   }
 

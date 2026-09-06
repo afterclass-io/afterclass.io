@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import {
-  parseWidgetJson,
+  parseViewJson,
   errText,
   errorMessage,
   jsonText,
@@ -32,9 +32,9 @@ export const recommendBidAmountTool: McpTool<typeof recommendBidAmountSchema> =
       "Suggest a bid amount for a class by combining the latest prediction with a safety multiplier. Read-only; never writes data. Suggested amounts are never below e$10.",
     inputSchema: recommendBidAmountSchema,
     readOnly: true,
-    toWidgetProps: (result) => {
+    toViewProps: (result) => {
       // result is the JSON text emitted by `run` below; parse it back into props.
-      const parsed = parseWidgetJson(result);
+      const parsed = parseViewJson(result);
       return "data" in parsed ? parsed.data : { raw: parsed.raw };
     },
     run: async ({ caller }, { classId, beatsPercentage }) => {

@@ -1,5 +1,5 @@
 import type { RouterCaller } from "../types";
-import { parseWidgetJson } from "../types";
+import { parseViewJson } from "../types";
 
 export interface BidPlanEntry {
   id: string;
@@ -54,14 +54,14 @@ export async function buildBidPlan(
 }
 
 /**
- * Shared toWidgetProps for any tool whose JSON text is a BidPlan. Mirrors
- * bid-plan.ts:16-21 — parses the text back into the widget's BidPlan props.
- * Write tools emit { updated, plan } — unwrap the plan for the widget.
+ * Shared toViewProps for any tool whose JSON text is a BidPlan. Mirrors
+ * bid-plan.ts:16-21 — parses the text back into the view's BidPlan props.
+ * Write tools emit { updated, plan } — unwrap the plan for the view.
  */
-export function bidPlanToWidgetProps(result: {
+export function bidPlanToViewProps(result: {
   content: Array<{ type: "text"; text: string }>;
 }): Record<string, unknown> {
-  const parsed = parseWidgetJson(result);
+  const parsed = parseViewJson(result);
   if (!("data" in parsed)) return { raw: parsed.raw };
   const data = parsed.data;
   if (

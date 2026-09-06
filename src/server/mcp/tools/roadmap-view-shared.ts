@@ -1,5 +1,5 @@
 import type { RouterCaller } from "../types";
-import { parseWidgetJson } from "../types";
+import { parseViewJson } from "../types";
 
 export interface RoadmapEntryView {
   yearNumber: number;
@@ -92,14 +92,14 @@ export async function buildRoadmapView(
   return { roadmap: roadmapRest, entries: data.entries };
 }
 
-/** Shared toWidgetProps for any tool whose JSON text is a roadmap view. */
-export function roadmapViewToWidgetProps(
+/** Shared toViewProps for any tool whose JSON text is a roadmap view. */
+export function roadmapViewToViewProps(
   isPublic: boolean,
 ): (result: {
   content: Array<{ type: "text"; text: string }>;
 }) => Record<string, unknown> {
   return (result) => {
-    const parsed = parseWidgetJson(result);
+    const parsed = parseViewJson(result);
     if (!("data" in parsed)) return { raw: parsed.raw };
     const data = parsed.data;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access -- untyped JSON

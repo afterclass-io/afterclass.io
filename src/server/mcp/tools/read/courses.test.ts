@@ -84,7 +84,7 @@ describe("search-courses", () => {
     expect(result.isError).toBe(true);
   });
 
-  it("exposes course-search widget props including results", async () => {
+  it("exposes course-search view props including results", async () => {
     const fn = vi.fn().mockResolvedValue([
       {
         id: "c1",
@@ -101,7 +101,7 @@ describe("search-courses", () => {
       acadTermId: "t1",
       query: "acc",
     });
-    const props = searchCoursesTool.toWidgetProps?.(result);
+    const props = searchCoursesTool.toViewProps?.(result);
     expect(Array.isArray((props as { results?: unknown[] }).results)).toBe(
       true,
     );

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { bidPlanToWidgetProps, buildBidPlan } from "../bid-plan-shared";
+import { bidPlanToViewProps, buildBidPlan } from "../bid-plan-shared";
 import { stripBidNotes } from "../bid-shared";
 import {
   confirmField,
@@ -29,7 +29,7 @@ export const setBidStatusTool: McpTool<typeof setBidStatusSchema> = {
   description:
     "Set the status of one of the user's bids: PLANNED, SECURED, DROPPED, CANCELLED, or PARTICIPATED. Use after bid results release or when a student reports a bid outcome. Returns the full updated bid plan for the affected term.",
   inputSchema: setBidStatusSchema,
-  toWidgetProps: bidPlanToWidgetProps,
+  toViewProps: bidPlanToViewProps,
   run: async ({ caller }, { id, status }) => {
     try {
       const updated = (await caller.userBids.setStatus({

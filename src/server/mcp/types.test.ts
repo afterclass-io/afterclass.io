@@ -5,7 +5,7 @@ import {
   errText,
   jsonText,
   okText,
-  parseWidgetJson,
+  parseViewJson,
   type ToolResult,
 } from "./types";
 
@@ -70,22 +70,33 @@ describe("mcp result helpers", () => {
     ).toMatch(/refresh and try again/);
   });
 
-  it("parseWidgetJson returns { data } on valid JSON and { raw } otherwise", () => {
-    const ok = parseWidgetJson({
+  it("exposes viewProps channel (no widget legacy)", async () => {
+    const mod = await import("./types");
+    expect("widgetProps" in mod).toBe(false);
+  });
+
+  it("exposes parseViewJson (no parseWidgetJson legacy)", async () => {
+    const mod = await import("./types");
+    expect("parseViewJson" in mod).toBe(true);
+    expect("parseWidgetJson" in mod).toBe(false);
+  });
+
+  it("parseViewJson returns { data } on valid JSON and { raw } otherwise", () => {
+    const ok = parseViewJson({
       content: [{ type: "text", text: '{"a":1}' }],
     });
     expect(ok).toEqual({ data: { a: 1 } });
-    const bad = parseWidgetJson({
+    const bad = parseViewJson({
       content: [{ type: "text", text: "not json" }],
     });
     expect(bad).toEqual({ raw: "not json" });
   });
 
-  it("ToolResult supports optional widgetProps alongside text content", () => {
+  it("ToolResult supports optional viewProps alongside text content", () => {
     const r: ToolResult = {
-      content: [{ type: "text", text: "shown in widget" }],
-      widgetProps: { feedUrl: "https://x/api/ical/tok" },
+      content: [{ type: "text", text: "shown in view" }],
+      viewProps: { feedUrl: "https://x/api/ical/tok" },
     };
-    expect(r.widgetProps?.feedUrl).toContain("/api/ical/");
+    expect(r.viewProps?.feedUrl).toContain("/api/ical/");
   });
 });

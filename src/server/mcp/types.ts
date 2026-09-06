@@ -16,10 +16,10 @@ export interface ToolContext {
 export interface ToolResult {
   content: Array<{ type: "text"; text: string }>;
   isError?: boolean;
-  /** Widget-only props channel. When present, view-tools adapters surface
-   *  these to the bound View INSTEAD of toWidgetProps(result), so bearer
+  /** View-only props channel. When present, view-tools adapters surface
+   *  these to the bound View INSTEAD of toViewProps(result), so bearer
    *  secrets (e.g. iCal URLs) never enter model-visible text. */
-  widgetProps?: Record<string, unknown>;
+  viewProps?: Record<string, unknown>;
 }
 
 /** A single AI-visible skill. `run` must never throw; return errText instead. */
@@ -34,7 +34,7 @@ export interface McpTool<TSchema extends z.ZodType = z.ZodType> {
   run(ctx: ToolContext, input: z.infer<TSchema>): Promise<ToolResult>;
 
   /** Optional extractor for the bound View's props (see view-tools adapters). */
-  toWidgetProps?: (result: ToolResult) => Record<string, unknown>;
+  toViewProps?: (result: ToolResult) => Record<string, unknown>;
 }
 
 export const okText = (text: string): ToolResult => ({
@@ -82,8 +82,8 @@ export const errorMessage = (e: unknown): string => {
   return String(e);
 };
 
-/** Parse a tool's JSON-text `ToolResult` back into widget props. */
-export const parseWidgetJson = (result: {
+/** Parse a tool's JSON-text `ToolResult` back into view props. */
+export const parseViewJson = (result: {
   content: Array<{ type: "text"; text: string }>;
 }): { data: Record<string, unknown> } | { raw: string } => {
   const text = result.content.find((c) => c.type === "text")?.text ?? "";

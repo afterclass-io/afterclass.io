@@ -62,9 +62,9 @@ function openWindow() {
 }
 
 describe("save-bids", () => {
-  it("is not read-only and exposes bid-plan toWidgetProps", () => {
+  it("is not read-only and exposes bid-plan toViewProps", () => {
     expect(saveBidsTool.readOnly).not.toBe(true);
-    expect(saveBidsTool.toWidgetProps).toBeDefined();
+    expect(saveBidsTool.toViewProps).toBeDefined();
   });
 
   it("bulk saves two bids, resolving classIds and returning { updated, plan } with notes stripped", async () => {
@@ -304,7 +304,7 @@ describe("save-bids", () => {
     expect(parsed.success).toBe(false);
   });
 
-  it("toWidgetProps unwraps plan from { updated, plan } envelope", async () => {
+  it("toViewProps unwraps plan from { updated, plan } envelope", async () => {
     const upsert = vi
       .fn()
       .mockResolvedValue({ id: "b1", classId: "cl-g1", bidWindowId: 77 });
@@ -324,7 +324,7 @@ describe("save-bids", () => {
     const res = await saveBidsTool.run(ctx, {
       bids: [{ courseCode: "COR-IS1702", section: "G1", bidAmount: 25 }],
     });
-    const props = saveBidsTool.toWidgetProps!(res);
+    const props = saveBidsTool.toViewProps!(res);
     expect(props.acadTermId).toBe("AY2026/27-T1");
   });
 

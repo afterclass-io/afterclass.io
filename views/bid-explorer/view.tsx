@@ -83,7 +83,7 @@ const BidExplorerView: React.FC = () => {
   // `toolOutput` is {classId, history, prediction, safetyFactors} from the
   // tool's outputSchema. The tool adapter currently passes its schemas
   // `as never` (Task 9 candidate to tighten), so read defensively exactly
-  // like the v1 widget read `props`.
+  // like the v1 view read `props`.
   const props = toolOutput as BidExplorerData | undefined;
   // Memoize so downstream useMemo deps stay referentially stable across
   // renders when toolOutput is absent (avoids a fresh [] each render).

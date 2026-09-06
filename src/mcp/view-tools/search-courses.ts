@@ -36,8 +36,8 @@ export const searchCourses = server.tool(
     });
     if ("error" in out) return errorResult(out.error);
     if (out.isError) return errorResult(out.content[0]?.text ?? "Tool failed");
-    // Preserve Invalid JSON semantics; don't use toWidgetProps which masks parse errors as {results:[]}.
-    // Dispatch's view shape already applied toWidgetProps into
+    // Preserve Invalid JSON semantics; don't use toViewProps which masks parse errors as {results:[]}.
+    // Dispatch's view shape already applied toViewProps into
     // structuredContent — ignore it here and parse the raw catalog text
     // instead (dispatch content is the catalog result verbatim on success).
     const rawText = out.content[0]?.text;

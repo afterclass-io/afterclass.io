@@ -4,7 +4,7 @@ import {
   resolveClassIdByCodeSection,
   resolveOpenWindowIdOrError,
 } from "../../current";
-import { bidPlanToWidgetProps, buildBidPlan } from "../bid-plan-shared";
+import { bidPlanToViewProps, buildBidPlan } from "../bid-plan-shared";
 import { stripBidNotes } from "../bid-shared";
 import {
   confirmField,
@@ -47,7 +47,7 @@ export const saveBidsTool: McpTool<typeof saveBidsSchema> = {
   description:
     "Save multiple bids in one call (bulk transactional) - costs only one write token. Provide an array of { courseCode, section, bidAmount, optional bidWindowId, optional notes } (each bid targets a specific class section). Resolves each classId via the classes procedure by code+section in the current term. bidWindowId defaults to the current open window (per-entry override allowed); if no window is open and no id is given, the entry fails with a friendly 'ask the user for round + window' message. Returns { updated: per-entry results, plan: the full updated bid plan for the affected term } (buildBidPlan); private notes are accepted as input but never echoed in the output, so the caller has the full updated bid plan with no separate follow-up call needed. Partial failures are reported per row (succeeded/failed) without aborting other rows; a transaction abort would fail all remaining.",
   inputSchema: saveBidsSchema,
-  toWidgetProps: bidPlanToWidgetProps,
+  toViewProps: bidPlanToViewProps,
   run: async ({ caller }, { bids }) => {
     try {
       // Resolve default open window once if any entry lacks bidWindowId.

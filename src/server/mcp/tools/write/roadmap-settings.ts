@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { buildRoadmapView, roadmapViewToWidgetProps } from "../roadmap-view-shared";
+import { buildRoadmapView, roadmapViewToViewProps } from "../roadmap-view-shared";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const setMatricTermSchema = z.object({
@@ -69,7 +69,7 @@ export const copyPublicRoadmapTool: McpTool<typeof copyPublicRoadmapSchema> = {
   description:
     "Copy a public roadmap (from browse-public-roadmaps or get-public-roadmap) into the user's own account as '<name> (copy)'. Use when a student wants to adopt a senior's plan as a starting point. Returns the updated roadmap.",
   inputSchema: copyPublicRoadmapSchema,
-  toWidgetProps: roadmapViewToWidgetProps(false),
+  toViewProps: roadmapViewToViewProps(false),
   run: async ({ caller }, { roadmapId }) => {
     try {
       const created = await caller.roadmaps.copyPublic({ roadmapId });

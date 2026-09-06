@@ -130,8 +130,8 @@ describe("bid-status write tool", () => {
     expect(parsed.plan.bids[0]!.notes).toBeUndefined();
   });
 
-  it("set-bid-status exposes toWidgetProps that unwraps the plan", async () => {
-    expect(setBidStatusTool.toWidgetProps).toBeDefined();
+  it("set-bid-status exposes toViewProps that unwraps the plan", async () => {
+    expect(setBidStatusTool.toViewProps).toBeDefined();
     const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", acadTermId: "AY2026/27-T1" });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
@@ -140,7 +140,7 @@ describe("bid-status write tool", () => {
       caller: makeCaller({ userBidsSetStatus: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
     };
     const result = await setBidStatusTool.run(ctx, { id: "b1", status: "SECURED" });
-    const props = setBidStatusTool.toWidgetProps!(result);
+    const props = setBidStatusTool.toViewProps!(result);
     expect(props.acadTermId).toBeDefined();
   });
 });

@@ -13,7 +13,7 @@ import { formatExamDate } from "../shared/format";
 
 /**
  * MCP App View (mcp-use v2) for the `search-courses` tool — the pilot of the
- * widget -> View migration. Must stay dependency-free: no `@/server/*`, no
+ * widget -> View migration (v1 vocabulary retired; v2 calls these Views). Must stay dependency-free: no `@/server/*`, no
  * `next/*`.
  *
  * The card layout, formatTiming, sections/CTA rendering and tokens are copied
@@ -86,7 +86,7 @@ const CourseSearchView: React.FC = () => {
   const c = dark ? TOKENS.dark : TOKENS.light;
   // `toolOutput` is `{results: Course[]}` from the tool's outputSchema. The
   // tool adapter currently passes its schemas `as never` (Task 9 candidate to
-  // tighten), so read defensively exactly like the v1 widget read `props`.
+  // tighten), so read defensively exactly like the v1 view read `props`.
   const results =
     (toolOutput as { results?: CourseResult[] } | undefined)?.results ?? [];
   const { feedback, showFeedback } = useKeyedCtaFeedback();

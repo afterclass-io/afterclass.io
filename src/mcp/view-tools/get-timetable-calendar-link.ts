@@ -21,7 +21,7 @@ export const getTimetableCalendarLink = server.tool(
   },
   async (params, ctx) => {
     // Auth + write-budget + run via the single shared pipeline (`shape:
-    // "view"` preserves the widgetProps channel; this bespoke adapter keeps
+    // "view"` preserves the viewProps channel; this bespoke adapter keeps
     // its secret-splitting tail: secret URLs stay in `_meta`, only the safe
     // `{ timetableId, madeLinkShareable? }` enters `structuredContent`).
     const out = await dispatchToolCall({
@@ -34,16 +34,16 @@ export const getTimetableCalendarLink = server.tool(
     if (out.isError) return errorResult(out.content[0]?.text ?? "Tool failed");
     const result = {
       content: out.content,
-      widgetProps: out.structuredContent as Record<string, unknown> | undefined,
+      viewProps: out.structuredContent as Record<string, unknown> | undefined,
     };
-    // widgetProps carries the secret-bearing URLs — NEVER put them in structuredContent
-    const widgetProps =
-      result.widgetProps ??
-      (tool.toWidgetProps ? tool.toWidgetProps(result) : undefined);
-    const timetableId = widgetProps?.timetableId as string | undefined;
+    // viewProps carries the secret-bearing URLs — NEVER put them in structuredContent
+    const viewProps =
+      result.viewProps ??
+      (tool.toViewProps ? tool.toViewProps(result) : undefined);
+    const timetableId = viewProps?.timetableId as string | undefined;
     if (!timetableId)
       return errorResult("Missing timetableId in calendar response");
-    const madeLinkShareable = widgetProps?.madeLinkShareable as
+    const madeLinkShareable = viewProps?.madeLinkShareable as
       | boolean
       | undefined;
     const structuredContent: Record<string, unknown> = { timetableId };
@@ -51,17 +51,15 @@ export const getTimetableCalendarLink = server.tool(
       structuredContent.madeLinkShareable = madeLinkShareable;
     const parsed = guardedParse(calendarLinksOutput, structuredContent);
     if (!parsed.ok) return errorResult("Output schema validation failed");
-    const meta = widgetProps
+    const meta = viewProps
       ? {
-          feedUrl: widgetProps.feedUrl as string | undefined,
-          subscribeUrl: widgetProps.subscribeUrl as string | undefined,
-          googleSubscribeUrl: widgetProps.googleSubscribeUrl as
+          feedUrl: viewProps.feedUrl as string | undefined,
+          subscribeUrl: viewProps.subscribeUrl as string | undefined,
+          googleSubscribeUrl: viewProps.googleSubscribeUrl as
             | string
             | undefined,
-          appleSubscribeUrl: widgetProps.appleSubscribeUrl as
-            | string
-            | undefined,
-          outlookSubscribeUrl: widgetProps.outlookSubscribeUrl as
+          appleSubscribeUrl: viewProps.appleSubscribeUrl as string | undefined,
+          outlookSubscribeUrl: viewProps.outlookSubscribeUrl as
             | string
             | undefined,
         }

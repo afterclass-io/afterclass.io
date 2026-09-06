@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import { buildRoadmapView, roadmapViewToWidgetProps } from "../roadmap-view-shared";
+import { buildRoadmapView, roadmapViewToViewProps } from "../roadmap-view-shared";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
-const roadmapViewWidgetProps = roadmapViewToWidgetProps;
+const roadmapViewExtractor = roadmapViewToViewProps;
 
 const getMyRoadmapSchema = z.object({
   roadmapId: z.string().describe("Roadmap id from my-roadmaps"),
@@ -15,7 +15,7 @@ export const getMyRoadmapTool: McpTool<typeof getMyRoadmapSchema> = {
     "Get one of the user's own roadmaps with ALL its course entries (yearNumber, term T1|T2|T3A|T3B, course code/name/credit units). Use this to see your own progression before planning.",
   inputSchema: getMyRoadmapSchema,
   readOnly: true,
-  toWidgetProps: roadmapViewWidgetProps(false),
+  toViewProps: roadmapViewExtractor(false),
   run: async ({ caller }, { roadmapId }) => {
     try {
       return jsonText(await buildRoadmapView(caller, roadmapId));
@@ -35,7 +35,7 @@ export const getPublicRoadmapTool: McpTool<typeof getPublicRoadmapSchema> = {
     "Get a public roadmap with ALL its course entries (yearNumber, term, course code/name/credit units) plus the owner and vote count. Use this to study a senior's full progression.",
   inputSchema: getPublicRoadmapSchema,
   readOnly: true,
-  toWidgetProps: roadmapViewWidgetProps(true),
+  toViewProps: roadmapViewExtractor(true),
   run: async ({ caller }, { roadmapId }) => {
     try {
       return jsonText(await caller.roadmaps.getById({ id: roadmapId }));

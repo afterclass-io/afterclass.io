@@ -267,13 +267,13 @@ describe("bid write tools", () => {
     expect(parsed.plan.bids[0]!.notes).toBeUndefined(); // eslint-disable-line @typescript-eslint/no-unsafe-member-access -- typed envelope
   });
 
-  it("bid write tools expose toWidgetProps unwrapping the plan", () => {
-    expect(upsertBidTool.toWidgetProps).toBeDefined();
-    expect(removeBidTool.toWidgetProps).toBeDefined();
-    expect(setBidBudgetTool.toWidgetProps).toBeDefined();
+  it("bid write tools expose toViewProps unwrapping the plan", () => {
+    expect(upsertBidTool.toViewProps).toBeDefined();
+    expect(removeBidTool.toViewProps).toBeDefined();
+    expect(setBidBudgetTool.toViewProps).toBeDefined();
   });
 
-  it("bid write tool toWidgetProps unwraps { updated, plan } to plan props", async () => {
+  it("bid write tool toViewProps unwraps { updated, plan } to plan props", async () => {
     const fn = vi.fn().mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 53 });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1", classId: "cl1", bidWindowId: 53 })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
@@ -282,7 +282,7 @@ describe("bid write tools", () => {
       caller: makeCaller({ userBidsUpsert: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
     };
     const result = await upsertBidTool.run(ctx, { classId: "cl1", bidWindowId: 53, bidAmount: 25 });
-    const props = upsertBidTool.toWidgetProps!(result);
+    const props = upsertBidTool.toViewProps!(result);
     expect(props.acadTermId).toBeDefined();
   });
 });

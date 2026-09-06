@@ -12,7 +12,7 @@ date: 2026-09-03
 
 ## Context and Problem Statement
 
-The MCP server (`src/mcp/`) was built on mcp-use v1 (`mcp-use@1.34.6` + `@mcp-use/cli@3.6.7`), which is no longer the supported line. v1 used `mcp-use/server` imports, `widget: { name }` declarations, `resources/<name>/widget.tsx` components reading `useWidget()`, and server-side helpers (`toWidgetProps` unwrapping, `widget({ props, output })`) to wire tools to widgets. mcp-use v2 (2.3.4 / CLI 4.1.8) removes all of those APIs. Migrating required deciding how the 49-tool catalog maps onto the v2 model — in particular which tools get a View, how Views reach the shared server instance for type generation, and how write actions are initiated from Views.
+The MCP server (`src/mcp/`) was built on mcp-use v1 (`mcp-use@1.34.6` + `@mcp-use/cli@3.6.7`), which is no longer the supported line. v1 used `mcp-use/server` imports, `widget: { name }` declarations, `resources/<name>/widget.tsx` components reading `useWidget()`, and server-side helpers (`toWidgetProps` unwrapping, `widget({ props, output })`) to wire tools to widgets. mcp-use v2 (2.3.4 / CLI 4.1.8) removes all of those APIs. Migrating required deciding how the 50-tool catalog maps onto the v2 model — in particular which tools get a View, how Views reach the shared server instance for type generation, and how write actions are initiated from Views.
 
 ## Decision Drivers
 
@@ -35,7 +35,7 @@ Concretely:
 
 - **(a) 7 View directories, one bound tool each.** `src/mcp/views/<name>/view.tsx` for: `course-search` ← `search-courses`, `bid-recommendation` ← `recommend-bid-amount`, `calendar-links` ← `get-timetable-calendar-link`, `bid-plan` ← `my-bid-plan`, `roadmap-view` ← `get-my-roadmap`, `review-cards` ← `get-course-reviews`, `bid-explorer` ← `explore-bid-options`. Binding is declared in each tool's registration via `view: { name: ... }` (`src/mcp/view-tools/*`).
 - **(b) No wrapper/re-export View dirs.** v1's `bid-plan` widget (bound to 6 tools) and `roadmap-view` widget (bound to 6 tools) collapse to their canonical read tools; write tools do not get Views of their own.
-- **(c) 42 viewless tools are loop-registered** in `src/mcp/register.ts` (`registerViewlessTools`), returning raw content-only results (`{ content }`) with no `view:` config and no `outputSchema` — `structuredContent`/`_meta` are available in the envelope shape but unused. `_meta` is reserved for View-only secrets (calendar-links' bearer iCal URLs).
+- **(c) 43 viewless tools are loop-registered** in `src/mcp/register.ts` (`registerViewlessTools`), returning raw content-only results (`{ content }`) with no `view:` config and no `outputSchema` — `structuredContent`/`_meta` are available in the envelope shape but unused. `_meta` is reserved for View-only secrets (calendar-links' bearer iCal URLs).
 - **(d) ToolRefs exported at module scope** from `src/mcp/view-tools/*` against the single shared `MCPServer` instance in `src/mcp/server.ts` (re-exported by `src/mcp/index.ts`). The exported values (not factory functions) are what `mcp-env.d.ts` generation reads to type `useCallTool` for view-bound tools. `mcp-use dev`/`build` regenerate `mcp-env.d.ts`; `bunx mcp-use typecheck` regenerates it AND runs `tsc --noEmit`.
 
 ### Consequences
