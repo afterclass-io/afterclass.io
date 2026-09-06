@@ -64,8 +64,12 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 // When trpcMiddleware is unavailable we degrade to a no-op so the MCP process
 // can still boot; Sentry instrumentation is not needed in the MCP path.
 const sentryMiddleware: ReturnType<typeof t.middleware> = (() => {
-  if (typeof (Sentry as Record<string, unknown>).trpcMiddleware === "function") {
-    return t.middleware(Sentry.trpcMiddleware({ attachRpcInput: true }));
+  if (
+    typeof (Sentry as Record<string, unknown>).trpcMiddleware === "function"
+  ) {
+    // attachRpcInput:false — procedure inputs may carry PII (e.g. bid notes);
+    // they must never be attached to Sentry error events.
+    return t.middleware(Sentry.trpcMiddleware({ attachRpcInput: false }));
   }
   return t.middleware(async ({ next }) => next());
 })();

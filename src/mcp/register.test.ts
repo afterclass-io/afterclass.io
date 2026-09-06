@@ -54,6 +54,7 @@ vi.mock("mcp-use", () => ({
 }));
 
 import { registerViewlessTools, viewBoundNames } from "./register";
+import { checkDestructiveConfirm } from "./rate-limit";
 import { errText, okText } from "@/server/mcp/types";
 import { allTools } from "@/server/mcp/tools";
 
@@ -99,12 +100,12 @@ describe("registerViewlessTools", () => {
     expect(viewBoundNames).toEqual(
       new Set([
         "search-courses",
-        "recommend-bid-amount",
         "get-timetable-calendar-link",
         "my-bid-plan",
         "get-my-roadmap",
         "get-course-reviews",
         "explore-bid-options",
+        "get-my-timetable-detail",
       ]),
     );
     expect(viewBoundNames.size).toBe(7);
@@ -118,11 +119,9 @@ describe("registerViewlessTools", () => {
       description: "Search courses",
       inputSchema: {},
       readOnly: true,
-      run: vi
-        .fn()
-        .mockResolvedValue({
-          content: [{ type: "text", text: "should-not-register" }],
-        }),
+      run: vi.fn().mockResolvedValue({
+        content: [{ type: "text", text: "should-not-register" }],
+      }),
     });
     const tool = vi.fn();
     registerViewlessTools({ tool } as never);
@@ -161,11 +160,7 @@ describe("registerViewlessTools", () => {
     expect(rb.content?.[0]?.text).toBe("Internal error in tool tool-b");
   });
 
-  it("rate-limits write tools via DB checkAndIncrement but not readOnly tools", async () => {
-    checkAndIncrementMock.mockResolvedValueOnce({
-      ok: false,
-      retryAfterSeconds: 12,
-    });
+  it("rate-limits write tools via DB checkAndIncrement and read tools via a separate read bucket", async () => {
     fakeRunA.mockResolvedValue(okText("should-not-reach"));
     fakeRunB.mockResolvedValue(okText("b-ok"));
 
@@ -183,7 +178,7 @@ describe("registerViewlessTools", () => {
     registerViewlessTools({ tool } as never);
     expect(captured).toHaveLength(2);
 
-    // write tool (tool-a) hits DB limiter -> blocked, run NOT called
+    // write tool (tool-a) hits the write bucket -> blocked, run NOT called
     checkAndIncrementMock.mockClear();
     fakeRunA.mockClear();
     checkAndIncrementMock.mockResolvedValueOnce({
@@ -200,18 +195,97 @@ describe("registerViewlessTools", () => {
     // blocked result carries the friendly rate-limit message
     expect(writeResult.content?.[0]?.text).toMatch(/rate limit/i);
 
-    // readOnly tool (tool-b) -> no limiter, run proceeds
+    // readOnly tool (tool-b) -> draws from its own read bucket, run proceeds
     checkAndIncrementMock.mockClear();
     fakeRunB.mockClear();
     const readResult = await captured[1]!(
       {},
       { auth: { user: { id: "u1", email: "a@b" } } },
     );
-    expect(checkAndIncrementMock).not.toHaveBeenCalled();
+    expect(checkAndIncrementMock).toHaveBeenCalledWith("mcp-read:u1", 60, 1);
     expect(fakeRunB).toHaveBeenCalledTimes(1);
     expect(readResult).toMatchObject({
       content: [{ type: "text", text: "b-ok" }],
     });
+  });
+
+  it("blocks readOnly tools when the read bucket is exhausted", async () => {
+    fakeRunB.mockResolvedValue(okText("should-not-reach"));
+    type CapturedHandler = (
+      args: Record<string, unknown>,
+      mcpCtx?: unknown,
+    ) => Promise<{
+      isError?: boolean;
+      content: Array<{ type: string; text?: string }>;
+    }>;
+    const captured: CapturedHandler[] = [];
+    const tool = vi.fn((_opts: object, handler: CapturedHandler) => {
+      captured.push(handler);
+    });
+    registerViewlessTools({ tool } as never);
+    checkAndIncrementMock.mockClear();
+    fakeRunB.mockClear();
+    checkAndIncrementMock.mockResolvedValueOnce({
+      ok: false,
+      retryAfterSeconds: 9,
+    });
+    const result = await captured[1]!(
+      {},
+      { auth: { user: { id: "u1", email: "a@b" } } },
+    );
+    expect(checkAndIncrementMock).toHaveBeenCalledWith("mcp-read:u1", 60, 1);
+    expect(fakeRunB).not.toHaveBeenCalled();
+    expect(result.isError).toBe(true);
+    expect(result.content?.[0]?.text).toMatch(/read rate limit/i);
+  });
+
+  it("get-shared-timetable consumes the read budget (share-token spray mitigation)", async () => {
+    // A readOnly tool on the viewless/register path (where token-guessing
+    // spray would land) draws from the mcp-read: bucket — not the write
+    // bucket, and never unbounded.
+    const run = vi.fn().mockResolvedValue(okText("shared-ok"));
+    const original = [...(allTools as unknown[])];
+    (allTools as unknown as unknown[]).push({
+      name: "get-shared-timetable",
+      description: "View a timetable shared via a share-link token.",
+      inputSchema: {},
+      readOnly: true,
+      run,
+    });
+    try {
+      type CapturedHandler = (
+        args: Record<string, unknown>,
+        mcpCtx?: unknown,
+      ) => Promise<{
+        isError?: boolean;
+        content: Array<{ type: string; text?: string }>;
+      }>;
+      const captured: CapturedHandler[] = [];
+      const tool = vi.fn((_opts: object, handler: CapturedHandler) => {
+        captured.push(handler);
+      });
+      registerViewlessTools({ tool } as never);
+      const handler = captured[captured.length - 1]!;
+      checkAndIncrementMock.mockClear();
+      run.mockClear();
+      const result = await handler(
+        { token: "tok123" },
+        { auth: { user: { id: "u1" } } },
+      );
+      expect(checkAndIncrementMock).toHaveBeenCalledWith("mcp-read:u1", 60, 1);
+      expect(checkAndIncrementMock).not.toHaveBeenCalledWith(
+        "mcp-write:u1",
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(run).toHaveBeenCalledTimes(1);
+      expect(result).toMatchObject({
+        content: [{ type: "text", text: "shared-ok" }],
+      });
+    } finally {
+      (allTools as unknown as unknown[]).length = 0;
+      for (const t of original) (allTools as unknown as unknown[]).push(t);
+    }
   });
 
   it("returns Unauthorized when buildToolContext returns undefined", async () => {
@@ -289,10 +363,10 @@ describe("registerViewlessTools", () => {
       content: Array<{ type: string; text?: string }>;
     }>;
 
-    function withDestructiveTool(run: Mock) {
+    function withDestructiveTool(run: Mock, name = "remove-timetable") {
       const original = [...(allTools as unknown[])];
       (allTools as unknown as unknown[]).push({
-        name: "remove-timetable",
+        name,
         description: "Delete one of the user's timetables.",
         inputSchema: {},
         run,
@@ -321,7 +395,10 @@ describe("registerViewlessTools", () => {
       try {
         const captured = captureHandlers();
         const remove = captured[captured.length - 1]!;
-        const result = await remove({ timetableId: "tt1" }, { auth: { user: { id: "u1" } } });
+        const result = await remove(
+          { timetableId: "tt1" },
+          { auth: { user: { id: "u1" } } },
+        );
         expect(result.isError).toBe(true);
         expect(result.content?.[0]?.text).toMatch(/confirm/i);
         expect(run).not.toHaveBeenCalled();
@@ -342,7 +419,9 @@ describe("registerViewlessTools", () => {
           { auth: { user: { id: "u1" } } },
         );
         expect(run).toHaveBeenCalledTimes(1);
-        expect(result).toMatchObject({ content: [{ type: "text", text: "deleted" }] });
+        expect(result).toMatchObject({
+          content: [{ type: "text", text: "deleted" }],
+        });
       } finally {
         restore();
       }
@@ -351,21 +430,53 @@ describe("registerViewlessTools", () => {
     it("does not gate constructive writes (tool-a runs without confirm)", async () => {
       fakeRunA.mockResolvedValue(okText("created"));
       const captured = captureHandlers();
-      const result = await captured[0]!({ name: "x" }, { auth: { user: { id: "u1" } } });
+      const result = await captured[0]!(
+        { name: "x" },
+        { auth: { user: { id: "u1" } } },
+      );
       expect(fakeRunA).toHaveBeenCalledTimes(1);
-      expect(result).toMatchObject({ content: [{ type: "text", text: "created" }] });
+      expect(result).toMatchObject({
+        content: [{ type: "text", text: "created" }],
+      });
     });
 
-    it("dev bypass skips the confirm gate (local Inspector testing)", async () => {
+    it("dev bypass skips the confirm gate in development (local Inspector testing)", async () => {
       vi.stubEnv("MCP_DEV_BYPASS", "true");
+      vi.stubEnv("NODE_ENV", "development");
       const run = vi.fn().mockResolvedValue(okText("deleted"));
       const restore = withDestructiveTool(run);
       try {
         const captured = captureHandlers();
         const remove = captured[captured.length - 1]!;
-        const result = await remove({ timetableId: "tt1" }, { auth: { user: { id: "u1" } } });
+        const result = await remove(
+          { timetableId: "tt1" },
+          { auth: { user: { id: "u1" } } },
+        );
         expect(run).toHaveBeenCalledTimes(1);
-        expect(result).toMatchObject({ content: [{ type: "text", text: "deleted" }] });
+        expect(result).toMatchObject({
+          content: [{ type: "text", text: "deleted" }],
+        });
+      } finally {
+        restore();
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it("test env does NOT get the dev bypass (confirm gate still applies)", async () => {
+      vi.stubEnv("MCP_DEV_BYPASS", "true");
+      vi.stubEnv("NODE_ENV", "test");
+      const run = vi.fn().mockResolvedValue(okText("deleted"));
+      const restore = withDestructiveTool(run);
+      try {
+        const captured = captureHandlers();
+        const remove = captured[captured.length - 1]!;
+        const result = await remove(
+          { timetableId: "tt1" },
+          { auth: { user: { id: "u1" } } },
+        );
+        expect(result.isError).toBe(true);
+        expect(result.content?.[0]?.text).toMatch(/confirm/i);
+        expect(run).not.toHaveBeenCalled();
       } finally {
         restore();
         vi.unstubAllEnvs();
@@ -380,7 +491,10 @@ describe("registerViewlessTools", () => {
       try {
         const captured = captureHandlers();
         const remove = captured[captured.length - 1]!;
-        const result = await remove({ timetableId: "tt1" }, { auth: { user: { id: "u1" } } });
+        const result = await remove(
+          { timetableId: "tt1" },
+          { auth: { user: { id: "u1" } } },
+        );
         expect(result.isError).toBe(true);
         expect(result.content?.[0]?.text).toMatch(/confirm/i);
         expect(run).not.toHaveBeenCalled();
@@ -388,6 +502,71 @@ describe("registerViewlessTools", () => {
         restore();
         vi.unstubAllEnvs();
       }
+    });
+
+    it.each([
+      "save-roadmap-entries", // full-replace: entries:[] wipes the roadmap
+      "save-bids", // bulk overwrite of bid state
+      "set-bid-status", // flips financial status
+      "set-bid-budget", // rewrites spendable e-credits
+      "set-timetable-visibility", // publishes/hides user data
+      "set-roadmap-visibility", // publishes/hides user data
+    ])(
+      "blocks %s without confirm:true and does not run the tool",
+      async (name) => {
+        vi.stubEnv("MCP_DEV_BYPASS", "");
+        const run = vi.fn().mockResolvedValue(okText("written"));
+        const restore = withDestructiveTool(run, name);
+        try {
+          const captured = captureHandlers();
+          const handler = captured[captured.length - 1]!;
+          const result = await handler({}, { auth: { user: { id: "u1" } } });
+          expect(result.isError).toBe(true);
+          expect(result.content?.[0]?.text).toContain("confirm:true");
+          expect(run).not.toHaveBeenCalled();
+        } finally {
+          restore();
+        }
+      },
+    );
+
+    it.each([
+      "save-roadmap-entries",
+      "save-bids",
+      "set-bid-status",
+      "set-bid-budget",
+      "set-timetable-visibility",
+      "set-roadmap-visibility",
+    ])("runs %s with confirm:true", async (name) => {
+      vi.stubEnv("MCP_DEV_BYPASS", "");
+      const run = vi.fn().mockResolvedValue(okText("written"));
+      const restore = withDestructiveTool(run, name);
+      try {
+        const captured = captureHandlers();
+        const handler = captured[captured.length - 1]!;
+        const result = await handler(
+          { confirm: true },
+          { auth: { user: { id: "u1" } } },
+        );
+        expect(run).toHaveBeenCalledTimes(1);
+        expect(result).toMatchObject({
+          content: [{ type: "text", text: "written" }],
+        });
+      } finally {
+        restore();
+      }
+    });
+
+    it.each([
+      "save-roadmap-entries",
+      "save-bids",
+      "set-bid-status",
+      "set-bid-budget",
+      "set-timetable-visibility",
+      "set-roadmap-visibility",
+    ])("checkDestructiveConfirm requires confirm:true for %s", (name) => {
+      expect(checkDestructiveConfirm(name, {})).toContain("confirm:true");
+      expect(checkDestructiveConfirm(name, { confirm: true })).toBeNull();
     });
   });
 });

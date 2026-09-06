@@ -76,8 +76,10 @@ export const setStatus = protectedProcedure
 
     const runTx = () =>
       ctx.db.$transaction(async (tx) => {
+        // TOCTOU hardening: requireOwnedBid checked ownership above; the
+        // in-tx update is also scoped to the caller's row.
         const updatedBid = await tx.userBid.update({
-          where: { id: input.id },
+          where: { id: input.id, userId: ctx.session.user.id },
           data: { status: input.status },
         });
 

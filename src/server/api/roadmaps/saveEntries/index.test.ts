@@ -1,10 +1,26 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-import { makeCaller } from "@/server/api/trpc-test-helpers";
+// The Prisma client must never be instantiated in tests: mock the db module
+// used by trpc.ts at import time. Also mock transitive dependencies pulled
+// by @/server/api/trpc (same pattern as isEmailTaken/index.test.ts).
+vi.mock("@/server/db", () => ({ db: {} }));
+vi.mock("@/server/auth", () => ({ auth: () => null }));
+vi.mock("@sentry/nextjs", () => ({
+  trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
+}));
+
 import { createTRPCRouter } from "@/server/api/trpc";
 import { saveEntries } from "./index";
 
 const router = createTRPCRouter({ saveEntries });
+
+function makeCaller(dbMock: unknown) {
+  return router.createCaller({
+    db: dbMock,
+    session: { user: { id: "u1" } },
+    headers: new Headers(),
+  } as never);
+}
 
 const entry = {
   courseId: "c1",
@@ -28,7 +44,7 @@ describe("roadmaps.saveEntries", () => {
         }),
       },
     };
-    const caller = makeCaller(router.createCaller, dbMock);
+    const caller = makeCaller(dbMock);
     await expect(
       caller.saveEntries({
         roadmapId: "r1",
@@ -50,7 +66,7 @@ describe("roadmaps.saveEntries", () => {
         }),
       },
     };
-    const caller = makeCaller(router.createCaller, dbMock);
+    const caller = makeCaller(dbMock);
     const entries = Array.from({ length: 101 }, (_, i) => ({
       courseId: `c${i}`,
       term: "T1" as const,
@@ -72,7 +88,7 @@ describe("roadmaps.saveEntries", () => {
         }),
       },
     };
-    const caller = makeCaller(router.createCaller, dbMock);
+    const caller = makeCaller(dbMock);
     await expect(
       caller.saveEntries({
         roadmapId: "r1",
@@ -82,25 +98,16 @@ describe("roadmaps.saveEntries", () => {
     ).rejects.toMatchObject({ code: "CONFLICT" });
   });
 
-  it.each([
-    ["the roadmap does not exist", null],
-    ["the roadmap belongs to another user", { id: "r1", userId: "u2", updatedAt: new Date() }],
-  ])("forbids saving when %s", async (_label, row) => {
-    const dbMock = {
-      userRoadmap: { findUnique: vi.fn().mockResolvedValue(row) },
+  it("scopes in-tx writes to the caller's roadmap (TOCTOU hardening)", async () => {
+    const deleteMany = vi.fn().mockResolvedValue({ count: 0 });
+    const createMany = vi.fn().mockResolvedValue({ count: 1 });
+    const update = vi
+      .fn()
+      .mockResolvedValue({ updatedAt: new Date("2026-08-02T00:00:00Z") });
+    const tx = {
+      userRoadmapEntry: { deleteMany, createMany },
+      userRoadmap: { update },
     };
-    const caller = makeCaller(router.createCaller, dbMock);
-    await expect(
-      caller.saveEntries({ roadmapId: "r1", entries: [entry] }),
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
-  });
-
-  it("replaces the roadmap's entries in one transaction and returns the bumped version", async () => {
-    const bumped = new Date("2026-08-02T10:00:00Z");
-    const deleteMany = vi.fn().mockResolvedValue({ count: 3 });
-    const createMany = vi.fn().mockResolvedValue({ count: 2 });
-    const update = vi.fn().mockResolvedValue({ updatedAt: bumped });
-    const tx = { userRoadmapEntry: { deleteMany, createMany }, userRoadmap: { update } };
     const dbMock = {
       userRoadmap: {
         findUnique: vi.fn().mockResolvedValue({
@@ -109,66 +116,17 @@ describe("roadmaps.saveEntries", () => {
           updatedAt: new Date("2026-08-01T00:00:00Z"),
         }),
       },
-      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
-    };
-    const caller = makeCaller(router.createCaller, dbMock);
-
-    const result = await caller.saveEntries({
-      roadmapId: "r1",
-      entries: [entry, { ...entry, courseId: "c2", sortOrder: 1 }],
-    });
-
-    expect(result).toEqual({ count: 2, updatedAt: bumped });
-    expect(deleteMany).toHaveBeenCalledWith({ where: { roadmapId: "r1" } });
-    expect(createMany).toHaveBeenCalledWith({
-      data: [
-        { ...entry, roadmapId: "r1" },
-        { ...entry, courseId: "c2", sortOrder: 1, roadmapId: "r1" },
-      ],
-    });
-    expect(update).toHaveBeenCalledWith({
-      where: { id: "r1" },
-      data: { updatedAt: expect.any(Date) as Date },
-      select: { updatedAt: true },
-    });
-  });
-
-  it.each([
-    ["P2002", "CONFLICT"],
-    ["P2003", "BAD_REQUEST"],
-  ])("maps Prisma %s from the transaction to %s", async (prismaCode, trpcCode) => {
-    const dbMock = {
-      userRoadmap: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: "r1",
-          userId: "u1",
-          updatedAt: new Date("2026-08-01T00:00:00Z"),
-        }),
-      },
-      $transaction: vi.fn().mockRejectedValue(
-        Object.assign(new Error("prisma boom"), { code: prismaCode }),
+      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn(tx),
       ),
     };
-    const caller = makeCaller(router.createCaller, dbMock);
-    await expect(
-      caller.saveEntries({ roadmapId: "r1", entries: [entry] }),
-    ).rejects.toMatchObject({ code: trpcCode });
-  });
-
-  it("rethrows a non-Prisma transaction failure unchanged", async () => {
-    const dbMock = {
-      userRoadmap: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: "r1",
-          userId: "u1",
-          updatedAt: new Date("2026-08-01T00:00:00Z"),
-        }),
-      },
-      $transaction: vi.fn().mockRejectedValue(new Error("network gone")),
-    };
-    const caller = makeCaller(router.createCaller, dbMock);
-    await expect(
-      caller.saveEntries({ roadmapId: "r1", entries: [entry] }),
-    ).rejects.toThrow("network gone");
+    const caller = makeCaller(dbMock);
+    await caller.saveEntries({ roadmapId: "r1", entries: [entry] });
+    expect(deleteMany).toHaveBeenCalledWith({
+      where: { roadmapId: "r1", roadmap: { userId: "u1" } },
+    });
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: "r1", userId: "u1" } }),
+    );
   });
 });

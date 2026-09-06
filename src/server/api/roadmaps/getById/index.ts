@@ -17,7 +17,6 @@ export const getById = publicProcedure
         id: true,
         name: true,
         description: true,
-        userId: true,
         facultyId: true,
         publishedAt: true,
         viewCount: true,

@@ -3,7 +3,13 @@ import { z } from "zod";
 import { env } from "@/env";
 import { buildCalendarLinks } from "@/modules/timetable/functions/calendar-links";
 
-import { errText, errorMessage, okText, type McpTool } from "../../types";
+import {
+  confirmField,
+  errText,
+  errorMessage,
+  okText,
+  type McpTool,
+} from "../../types";
 
 const getTimetableCalendarLinkSchema = z.object({
   timetableId: z.string().describe("Timetable id from my-timetables"),
@@ -13,30 +19,46 @@ const getTimetableCalendarLinkSchema = z.object({
     .describe(
       "Set true ONLY after the user explicitly agrees to make this timetable link-shareable (UNLISTED). Required when the timetable is still private.",
     ),
+  ...confirmField,
 });
 
-export const getTimetableCalendarLinkTool: McpTool<typeof getTimetableCalendarLinkSchema> = {
+export const getTimetableCalendarLinkTool: McpTool<
+  typeof getTimetableCalendarLinkSchema
+> = {
   name: "get-timetable-calendar-link",
   description:
     "Get calendar subscribe links (Google / Apple / Outlook + ICS feed) for one of the user's timetables, so their calendar stays in sync automatically. If the timetable is private, the user must first agree to link-sharing (enableLinkSharing=true). Links render in a widget; never ask the user for tokens.",
   inputSchema: getTimetableCalendarLinkSchema,
   readOnly: false,
-  run: async ({ caller }, { timetableId, enableLinkSharing }) => {
+  run: async ({ caller }, { timetableId, enableLinkSharing, confirm }) => {
     try {
       let madeLinkShareable = false;
       try {
         await caller.timetable.getOrCreateIcalToken({ timetableId });
       } catch (e) {
         // PRIVATE timetables refuse to mint a token — flip to UNLISTED only
-        // when the user explicitly opted in, then retry the mint.
-        // Narrow to the private-visibility error so random failures (network
-        // etc.) don't over-eagerly escalate visibility.
+        // when the user explicitly opted in AND confirmed the visibility
+        // escalation. Narrow to the private-visibility error so random
+        // failures (network etc.) don't over-eagerly escalate visibility.
         if (!enableLinkSharing) throw e;
+        if (confirm !== true) {
+          return errText(
+            "Set your timetable to link-sharing before creating a calendar link. " +
+              "Making it link-shareable changes its visibility to UNLISTED — " +
+              "call again with enableLinkSharing:true AND confirm:true to confirm.",
+          );
+        }
         if (!errorMessage(e).includes("link-sharing")) throw e;
-        await caller.sharing.setVisibility({ entity: "timetable", id: timetableId, visibility: "UNLISTED" });
+        await caller.sharing.setVisibility({
+          entity: "timetable",
+          id: timetableId,
+          visibility: "UNLISTED",
+        });
         madeLinkShareable = true;
       }
-      const { icalToken } = await caller.timetable.getOrCreateIcalToken({ timetableId });
+      const { icalToken } = await caller.timetable.getOrCreateIcalToken({
+        timetableId,
+      });
       const links = buildCalendarLinks(env.NEXT_PUBLIC_SITE_URL, icalToken);
       return {
         // Model sees NO token-bearing URLs — they go to the widget only.

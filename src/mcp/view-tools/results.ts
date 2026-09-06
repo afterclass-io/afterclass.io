@@ -1,16 +1,39 @@
 import type { ToolResult } from "@/server/mcp/types";
 import type { ZodType } from "zod";
 import { buildToolContext } from "../user";
+import { checkReadBudget } from "../rate-limit";
 
-export function textResult(text: string): { content: Array<{ type: "text"; text: string }>; isError?: boolean } {
-  return { content: [{ type: "text" as const, text }] as Array<{ type: "text"; text: string }> };
+export function textResult(text: string): {
+  content: Array<{ type: "text"; text: string }>;
+  isError?: boolean;
+} {
+  return {
+    content: [{ type: "text" as const, text }] as Array<{
+      type: "text";
+      text: string;
+    }>,
+  };
 }
 
-export function errorResult(text: string): { content: Array<{ type: "text"; text: string }>; isError: true } {
-  return { isError: true as const, content: [{ type: "text" as const, text }] as Array<{ type: "text"; text: string }> };
+export function errorResult(text: string): {
+  content: Array<{ type: "text"; text: string }>;
+  isError: true;
+} {
+  return {
+    isError: true as const,
+    content: [{ type: "text" as const, text }] as Array<{
+      type: "text";
+      text: string;
+    }>,
+  };
 }
 
-export type UnwrapOk = { ok: true; data: unknown; text: string; widgetProps?: Record<string, unknown> };
+export type UnwrapOk = {
+  ok: true;
+  data: unknown;
+  text: string;
+  widgetProps?: Record<string, unknown>;
+};
 export type UnwrapErr = { ok: false; error: string; text: string };
 
 /**
@@ -28,7 +51,9 @@ export function unwrapResultData(
 ): UnwrapOk | UnwrapErr {
   const text = result.content[0]?.text ?? "";
   const widgetProps = result.widgetProps;
-  let data: unknown = widgetProps ?? (tool?.toWidgetProps ? (tool.toWidgetProps(result)) : undefined);
+  let data: unknown =
+    widgetProps ??
+    (tool?.toWidgetProps ? tool.toWidgetProps(result) : undefined);
   if (data !== undefined) {
     return { ok: true, data, text, widgetProps };
   }
@@ -42,7 +67,10 @@ export function unwrapResultData(
   }
 }
 
-export function guardedParse(schema: ZodType, data: unknown): { ok: true } | { ok: false; error: string } {
+export function guardedParse(
+  schema: ZodType,
+  data: unknown,
+): { ok: true } | { ok: false; error: string } {
   try {
     schema.parse(data);
     return { ok: true };
@@ -54,19 +82,29 @@ export function guardedParse(schema: ZodType, data: unknown): { ok: true } | { o
 }
 
 export function isRawPayload(data: unknown): boolean {
-  return !!data && typeof data === "object" && "raw" in (data as Record<string, unknown>);
+  return (
+    !!data &&
+    typeof data === "object" &&
+    "raw" in (data as Record<string, unknown>)
+  );
 }
 
 /** What an object-shaped view-tool adapter returns to mcp-use. */
 export type ViewToolOutcome =
-  | { content: Array<{ type: "text"; text: string }>; structuredContent: unknown }
+  | {
+      content: Array<{ type: "text"; text: string }>;
+      structuredContent: unknown;
+    }
   | { content: Array<{ type: "text"; text: string }>; isError: true };
 
 export interface RunViewToolOptions {
   ctx: unknown;
   params: unknown;
   /** The catalog tool backing this adapter (its toWidgetProps participates in unwrapping). */
-  tool: { run(ctx: unknown, input: unknown): Promise<ToolResult>; toWidgetProps?: (result: ToolResult) => unknown };
+  tool: {
+    run(ctx: unknown, input: unknown): Promise<ToolResult>;
+    toWidgetProps?: (result: ToolResult) => unknown;
+  };
   schema: ZodType;
   /** Default "{}" — pass "" for array-shaped/recommend tools where missing content must fail. */
   fallbackJson?: string;
@@ -83,22 +121,33 @@ export interface RunViewToolOptions {
  * historical messages exactly ("Unauthorized: ...", "Tool failed", "Invalid JSON
  * from catalog", rawPayloadMessage, "Output schema validation failed").
  */
-export async function runViewTool(opts: RunViewToolOptions): Promise<ViewToolOutcome> {
+export async function runViewTool(
+  opts: RunViewToolOptions,
+): Promise<ViewToolOutcome> {
   const toolCtx = await buildToolContext(opts.ctx as never);
   if (!toolCtx)
     return errorResult(
       "Unauthorized: no verified identity and dev bypass is off. For local Inspector use `bun run mcp:dev` with MCP_DEV_BYPASS=true (see MCP.md).",
     );
+  // Read-only view tools draw from the same per-user read bucket as the
+  // viewless read path (`src/mcp/register.ts`) — each call consumes exactly
+  // one token, so token-spray reads are throttled everywhere.
+  const limited = await checkReadBudget(toolCtx);
+  if (limited) return errorResult(limited);
   const result = await opts.tool.run(toolCtx, opts.params);
-  if (result.isError) return errorResult(result.content[0]?.text ?? "Tool failed");
+  if (result.isError)
+    return errorResult(result.content[0]?.text ?? "Tool failed");
   const unwrapped = unwrapResultData(result, opts.tool, opts.fallbackJson);
   if (!unwrapped.ok) return errorResult("Invalid JSON from catalog");
   const structuredContent: unknown = unwrapped.data;
-  if (isRawPayload(structuredContent)) return errorResult(opts.rawPayloadMessage);
+  if (isRawPayload(structuredContent))
+    return errorResult(opts.rawPayloadMessage);
   const parsed = guardedParse(opts.schema, structuredContent);
   if (!parsed.ok) return errorResult("Output schema validation failed");
   return {
-    content: [{ type: "text" as const, text: opts.summarize(structuredContent) }],
+    content: [
+      { type: "text" as const, text: opts.summarize(structuredContent) },
+    ],
     structuredContent,
   };
 }

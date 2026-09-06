@@ -3,16 +3,33 @@ import { getChatConfig, getRateLimitWindowMinutes } from "@/server/ecfg/chat";
 import type { ToolContext } from "@/server/mcp/types";
 
 /**
- * Tools that permanently delete user data. A call to one of these must carry
- * an explicit `confirm:true` param (checked in `register.ts` before the tool
- * runs), so an agent "testing all tools" cannot wipe data unconfirmed.
- * Constructive writes (create/upsert/rename) are intentionally NOT gated.
+ * Tools that permanently delete user data — plus full-replace writes that can
+ * wipe state just as thoroughly (an empty payload overwrites instead of
+ * deleting row-by-row). A call to one of these must carry an explicit
+ * `confirm:true` param (checked in `register.ts` before the tool runs, and in
+ * the chat path's `buildAssistantTools`), so an agent "testing all tools"
+ * cannot wipe data unconfirmed. Constructive writes (create/upsert/rename)
+ * are intentionally NOT gated.
+ *
+ * `confirm` must also be declared as an optional field in each gated tool's
+ * zod inputSchema: both dispatch layers validate args against the schema
+ * before the handler runs, and unknown keys (like an undeclared `confirm`)
+ * are stripped — without the declaration, even a confirmed call could never
+ * satisfy the gate.
  */
 export const destructiveTools = new Set([
   "remove-timetable",
   "remove-class-from-timetable",
   "remove-bid",
   "remove-roadmap",
+  "save-roadmap-entries", // full-replace: entries:[] wipes the roadmap
+  "save-bids", // bulk overwrite of bid state
+  "set-bid-status", // flips financial status
+  // Financial/sharing impact: a budget rewrite changes spendable e-credits;
+  // a visibility flip publishes (or hides) user data.
+  "set-bid-budget",
+  "set-timetable-visibility",
+  "set-roadmap-visibility",
 ]);
 
 /**
@@ -20,7 +37,10 @@ export const destructiveTools = new Set([
  * (non-destructive tool, or `confirm:true` present), or an error message when
  * a destructive tool was called without explicit confirmation.
  */
-export function checkDestructiveConfirm(toolName: string, params: unknown): string | null {
+export function checkDestructiveConfirm(
+  toolName: string,
+  params: unknown,
+): string | null {
   if (!destructiveTools.has(toolName)) return null;
   if (
     params !== null &&
@@ -40,13 +60,48 @@ export function checkDestructiveConfirm(toolName: string, params: unknown): stri
  * Returns null when within budget, or an error message when rate-limited.
  * Each tool call must invoke this exactly once (do not double-charge).
  */
-export async function checkWriteBudget(ctx: ToolContext): Promise<string | null> {
+export async function checkWriteBudget(
+  ctx: ToolContext,
+): Promise<string | null> {
   const chat = await getChatConfig();
   const limit = chat.mcpRateLimitPerMinute;
   const windowMinutes = getRateLimitWindowMinutes();
-  const res = await checkAndIncrement(`mcp-write:${ctx.user.id}`, limit, windowMinutes);
+  const res = await checkAndIncrement(
+    `mcp-write:${ctx.user.id}`,
+    limit,
+    windowMinutes,
+  );
   if (!res.ok) {
     return `Write rate limit exceeded: at most ${limit} write operations per minute are allowed. Please wait ~${res.retryAfterSeconds}s before trying again.`;
+  }
+  return null;
+}
+
+/**
+ * Shared read-budget guard for readOnly MCP tools (share-token spray
+ * mitigation: unauthenticated-adjacent token-guessing calls against
+ * get-shared-timetable etc. are throttled per user).
+ *
+ * Reuses `mcpRateLimitPerMinute` with the separate `mcp-read:` key prefix —
+ * reads share the configured ceiling but draw from their own bucket, so a
+ * burst of reads can never starve writes (and vice versa). Read volume is
+ * legitimately higher than write volume, so sharing the write ceiling here is
+ * the conservative choice (a dedicated higher read limit can be split out in
+ * ecfg later if reads hit the ceiling in normal use).
+ */
+export async function checkReadBudget(
+  ctx: ToolContext,
+): Promise<string | null> {
+  const chat = await getChatConfig();
+  const limit = chat.mcpRateLimitPerMinute;
+  const windowMinutes = getRateLimitWindowMinutes();
+  const res = await checkAndIncrement(
+    `mcp-read:${ctx.user.id}`,
+    limit,
+    windowMinutes,
+  );
+  if (!res.ok) {
+    return `Read rate limit exceeded: at most ${limit} read operations per minute are allowed. Please wait ~${res.retryAfterSeconds}s before trying again.`;
   }
   return null;
 }
