@@ -1,6 +1,11 @@
 import type React from "react";
 import type { ViewConfig } from "mcp-use/react";
-import { useDynamicTool, useHostContext, useToolContext, useViewTheme } from "mcp-use/react";
+import {
+  useDynamicTool,
+  useHostContext,
+  useToolContext,
+  useViewTheme,
+} from "mcp-use/react";
 import type { RoadmapViewData } from "../../src/mcp/view-tools/schemas";
 import { useCtaFeedback } from "../shared/use-cta-feedback";
 import { TOKENS, Skeleton } from "../shared/tokens";
@@ -66,6 +71,18 @@ const RoadmapView: React.FC = () => {
   const entries = props?.entries ?? [];
   const name = props?.name ?? "";
   const isPublic = props?.isPublic === true;
+  const progress = props?.progress;
+  const showProgress =
+    progress !== undefined &&
+    typeof progress.completed === "number" &&
+    typeof progress.total === "number" &&
+    progress.total > 0;
+  const progressPct = showProgress
+    ? Math.min(
+        100,
+        Math.max(0, Math.round((progress.completed / progress.total) * 100)),
+      )
+    : 0;
 
   const years = [...new Set(entries.map((e) => e.yearNumber))].sort(
     (a, b) => a - b,
@@ -94,6 +111,35 @@ const RoadmapView: React.FC = () => {
           {props.voteCount !== null && ` · ${props.voteCount} upvotes`}
         </div>
       )}
+      {showProgress && (
+        <div style={{ marginTop: 8 }}>
+          <div style={{ fontSize: 12, color: c.mutedFg }}>
+            {progress.completed} of {progress.total} courses completed
+          </div>
+          <div
+            role="progressbar"
+            aria-valuenow={progress.completed}
+            aria-valuemin={0}
+            aria-valuemax={progress.total}
+            style={{
+              marginTop: 4,
+              height: 6,
+              borderRadius: 9999,
+              background: c.border,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${progressPct}%`,
+                height: "100%",
+                borderRadius: 9999,
+                background: c.primary,
+              }}
+            />
+          </div>
+        </div>
+      )}
       {/* Body: one section per year, term columns in fixed order */}
       {years.length === 0 ? (
         <p style={{ margin: "12px 0 0", fontSize: 12, color: c.mutedFg }}>
@@ -107,9 +153,7 @@ const RoadmapView: React.FC = () => {
           );
           return (
             <div key={year} style={{ marginTop: 12 }}>
-              <div style={{ fontSize: 12, fontWeight: 600 }}>
-                Year {year}
-              </div>
+              <div style={{ fontSize: 12, fontWeight: 600 }}>Year {year}</div>
               <div
                 style={{
                   display: "grid",
@@ -182,7 +226,13 @@ const RoadmapView: React.FC = () => {
       {isPublic && isAvailable && props?.roadmapId && (
         <button
           type="button"
-          aria-label={feedback === "saved" ? "Copied \u2713" : feedback === "error" ? "Copy failed" : "Copy this roadmap"}
+          aria-label={
+            feedback === "saved"
+              ? "Copied \u2713"
+              : feedback === "error"
+                ? "Copy failed"
+                : "Copy this roadmap"
+          }
           aria-live="polite"
           onClick={() => {
             // props.roadmapId truthy above — narrow to string for the call.

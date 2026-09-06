@@ -6,6 +6,7 @@ export const courseSearchOutput = z.object({
       id: z.string().optional(),
       code: z.string(),
       name: z.string(),
+      description: z.string().optional(),
       creditUnits: z.number().optional(),
       sections: z
         .array(
@@ -70,6 +71,7 @@ export const roadmapOutput = z.object({
   isPublic: z.boolean(),
   owner: z.string().nullable(),
   voteCount: z.number().nullable(),
+  progress: z.object({ completed: z.number(), total: z.number() }).optional(),
   entries: z.array(
     z.object({
       yearNumber: z.number(),
@@ -114,25 +116,64 @@ export const bidExplorerOutput = z.object({
     .object({
       medianPredicted: z.number(),
       minPredicted: z.number().nullable(),
-      bidWindow: z.object({ id: z.number(), round: z.string(), window: z.number() }),
+      bidWindow: z.object({
+        id: z.number(),
+        round: z.string(),
+        window: z.number(),
+      }),
     })
     .nullable(),
-  safetyFactors: z.array(z.object({ beatsPercentage: z.number(), multiplier: z.number() })),
-});
-
-export const bidRecommendationOutput = z.object({
-  classId: z.string(),
-  acadTermId: z.string(),
-  bidWindow: z.object({ id: z.number(), round: z.string(), window: z.number() }).optional(),
-  predictedMedian: z.number(),
-  suggestedBidAmount: z.number(),
-  multiplierUsed: z.object({ beatsPercentage: z.number(), multiplier: z.number() }).nullable().optional(),
-  rationale: z.string().optional(),
+  safetyFactors: z.array(
+    z.object({ beatsPercentage: z.number(), multiplier: z.number() }),
+  ),
 });
 
 export const calendarLinksOutput = z.object({
   timetableId: z.string(),
   madeLinkShareable: z.boolean().optional(),
+});
+
+/**
+ * get-my-timetable-detail output — mirrors the catalog tool's `toDetail`
+ * shape (src/server/mcp/tools/read/timetable-detail.ts): one flat entry per
+ * weekly class timing (day/startTime/endTime/venue) plus per-class exam
+ * timings. isActive/termId are optional because the tool only emits them when
+ * a listMine lookup resolved the timetable's metadata. Exam `date` is a
+ * string (never z.date()) — the runtime JSON-round-trips Prisma Date -> ISO
+ * string before guardedParse, and z.date() would throw "Date cannot be
+ * represented in JSON Schema" in tools/list (see courseSearchOutput above).
+ */
+export const timetableDetailOutput = z.object({
+  timetableId: z.string(),
+  name: z.string(),
+  isActive: z.boolean().optional(),
+  termId: z.string().optional(),
+  slots: z.array(
+    z.object({
+      classId: z.string(),
+      courseCode: z.string(),
+      courseName: z.string(),
+      section: z.string(),
+      day: z.string().nullable(),
+      startTime: z.string(),
+      endTime: z.string(),
+      venue: z.string().nullable(),
+      professor: z.string().nullable(),
+      creditUnits: z.number(),
+    }),
+  ),
+  examTimings: z.array(
+    z.object({
+      classId: z.string(),
+      courseCode: z.string(),
+      section: z.string(),
+      date: z.string().nullable(),
+      dayOfWeek: z.string().nullable(),
+      startTime: z.string(),
+      endTime: z.string(),
+      venue: z.string().nullable(),
+    }),
+  ),
 });
 
 // _meta for calendar-links (View-only URLs) — keep unvalidated, typed separately:
@@ -151,4 +192,4 @@ export type BidPlan = z.infer<typeof bidPlanOutput>;
 export type RoadmapViewData = z.infer<typeof roadmapOutput>;
 export type ReviewCardsData = z.infer<typeof reviewCardsOutput>;
 export type BidExplorerData = z.infer<typeof bidExplorerOutput>;
-export type BidRecommendationData = z.infer<typeof bidRecommendationOutput>;
+export type TimetableViewData = z.infer<typeof timetableDetailOutput>;

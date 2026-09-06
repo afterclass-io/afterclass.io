@@ -1,4 +1,8 @@
-import { createUIMessageStream, createUIMessageStreamResponse, type UIMessage } from "ai";
+import {
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  type UIMessage,
+} from "ai";
 import { nanoid } from "nanoid";
 
 // Canonical (normalized) prompt -> canned answer. Only genuinely static,
@@ -30,10 +34,18 @@ const CANNED: Record<string, string> = {
   // free without resorting to substring matching. See
   // src/modules/assistant/suggestions.tsx: WELCOME_SUGGESTIONS[0].prompt
   "what are your capabilities what can you help me with": CAPABILITIES_ANSWER,
+  // Exact-match-only off-topic redirect: free-typed questions that merely
+  // contain this phrase still reach the model (no substring matching).
+  "reverse a linked list":
+    "I'm the afterclass.io assistant for SMU students — I can't help with that here. Try asking about courses, timetables, bids, or roadmaps instead.",
 };
 
 export function normalizePrompt(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export function findCannedAnswer(messages: UIMessage[]): string | null {

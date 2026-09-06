@@ -16,23 +16,47 @@ const sampleResults = {
   results: [
     {
       id: "c1",
-      code: "ACC101",
-      name: "Financial Accounting",
-      creditUnits: 3,
+      code: "IS215",
+      name: "Digital Business - Technologies and Transformation",
+      creditUnits: 1,
+      description:
+        "This course introduces students to the fundamentals of digital business, technologies and the principles and practices that lead to successful digital transformation.",
       sections: [
         {
-          classId: "cl1",
+          classId: "seed-ay202627t1-is215-g1",
           section: "G1",
-          professorName: "Prof Lim",
+          professorName: "Yixin CAO",
           timings: [
-            { dayOfWeek: "MON", startTime: "10:00", endTime: "12:00", venue: "SR 3-1" },
+            {
+              dayOfWeek: "Mon",
+              startTime: "08:15",
+              endTime: "11:30",
+              venue: "SOE/SCIS2 Seminar Room 2-1",
+            },
           ],
         },
-        { classId: "cl2", section: "G2", professorName: null, timings: [] },
+        {
+          classId: "seed-ay202627t1-is215-g2",
+          section: "G2",
+          professorName: null,
+          timings: [],
+        },
       ],
     },
-    { id: "c2", code: "ACC102", name: "Managerial Accounting", creditUnits: 3, sections: [] },
-    { id: "c3", code: "COR-STAT1202", name: "Intro Statistics", creditUnits: 1, sections: [] },
+    {
+      id: "c2",
+      code: "ACCT102",
+      name: "Management Accounting",
+      creditUnits: 1,
+      sections: [],
+    },
+    {
+      id: "c3",
+      code: "COR-IS1702",
+      name: "Computational Thinking",
+      creditUnits: 1,
+      sections: [],
+    },
   ],
 };
 
@@ -48,7 +72,7 @@ export const Default: Story = {
   decorators: [
     withMcpView({
       status: "ready",
-      toolInput: { query: "ACC" },
+      toolInput: { query: "IS215" },
       toolOutput: sampleResults,
     }),
   ],
@@ -58,7 +82,7 @@ export const Dark: Story = {
   decorators: [
     withMcpView({
       status: "ready",
-      toolInput: { query: "ACC" },
+      toolInput: { query: "IS215" },
       toolOutput: sampleResults,
       theme: "dark",
     }),
@@ -67,7 +91,7 @@ export const Dark: Story = {
 
 export const Loading: Story = {
   decorators: [
-    withMcpView({ status: "pending", toolInput: { query: "ACC" } }),
+    withMcpView({ status: "pending", toolInput: { query: "IS215" } }),
   ],
 };
 
@@ -85,7 +109,7 @@ export const ErrorState: Story = {
   decorators: [
     withMcpView({
       status: "error",
-      toolInput: { query: "ACC" },
+      toolInput: { query: "IS215" },
       error: { message: "Unauthorized" },
     }),
   ],
@@ -99,9 +123,38 @@ export const UnavailableHost: Story = {
   decorators: [
     withMcpView({
       status: "ready",
-      toolInput: { query: "ACC" },
+      toolInput: { query: "IS215" },
       toolOutput: sampleResults,
       isAvailable: false,
+    }),
+  ],
+};
+
+export const WithDescriptions: Story = {
+  decorators: [
+    withMcpView({
+      status: "ready",
+      toolInput: { query: "business" },
+      toolOutput: {
+        results: [
+          {
+            id: "c1",
+            code: "IS215",
+            name: "Digital Business - Technologies and Transformation",
+            creditUnits: 1,
+            description:
+              "This course introduces students to the fundamentals of digital business, technologies and the principles and practices that lead to successful digital transformation.",
+            sections: [],
+          },
+          {
+            id: "c3",
+            code: "COR-IS1702",
+            name: "Computational Thinking",
+            creditUnits: 1,
+            sections: [],
+          },
+        ],
+      },
     }),
   ],
 };

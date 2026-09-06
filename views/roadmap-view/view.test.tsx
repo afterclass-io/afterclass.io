@@ -13,7 +13,12 @@ vi.mock("mcp-use/react", () => ({
 }));
 
 import RoadmapView, { viewConfig } from "./view";
-import { useDynamicTool, useHostContext, useToolContext, useViewTheme } from "mcp-use/react";
+import {
+  useDynamicTool,
+  useHostContext,
+  useToolContext,
+  useViewTheme,
+} from "mcp-use/react";
 
 const mockedUseToolContext = vi.mocked(useToolContext);
 const mockedUseViewTheme = vi.mocked(useViewTheme);
@@ -27,9 +32,27 @@ const publicProps = {
   owner: "senior123",
   voteCount: 42,
   entries: [
-    { yearNumber: 1, term: "T1", courseCode: "CS101", courseName: "Intro to CS", creditUnits: 1 },
-    { yearNumber: 1, term: "T2", courseCode: "CS102", courseName: "Data Structures", creditUnits: 1 },
-    { yearNumber: 2, term: "T1", courseCode: "CS201", courseName: "Algorithms", creditUnits: 1 },
+    {
+      yearNumber: 1,
+      term: "T1",
+      courseCode: "COR-IS1702",
+      courseName: "Computational Thinking",
+      creditUnits: 1,
+    },
+    {
+      yearNumber: 1,
+      term: "T2",
+      courseCode: "ACCT102",
+      courseName: "Management Accounting",
+      creditUnits: 1,
+    },
+    {
+      yearNumber: 2,
+      term: "T1",
+      courseCode: "STAT203",
+      courseName: "Financial Mathematics",
+      creditUnits: 1,
+    },
   ],
 };
 
@@ -73,7 +96,9 @@ describe("RoadmapView (v2)", () => {
   it("shows the skeleton while pending (no toolOutput yet)", () => {
     seedContext({ status: "pending", toolInput: {} });
     const { container } = render(<RoadmapView />);
-    expect(container.querySelector("[aria-label='Loading']")).toBeInTheDocument();
+    expect(
+      container.querySelector("[aria-label='Loading']"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
@@ -84,9 +109,9 @@ describe("RoadmapView (v2)", () => {
     expect(screen.getByText("Year 2")).toBeInTheDocument();
     expect(screen.getAllByText("T1").length).toBe(2);
     expect(screen.getByText("T2")).toBeInTheDocument();
-    expect(screen.getByText("CS101")).toBeInTheDocument();
-    expect(screen.getByText("CS102")).toBeInTheDocument();
-    expect(screen.getByText("CS201")).toBeInTheDocument();
+    expect(screen.getByText("COR-IS1702")).toBeInTheDocument();
+    expect(screen.getByText("ACCT102")).toBeInTheDocument();
+    expect(screen.getByText("STAT203")).toBeInTheDocument();
   });
 
   it("public: renders owner and vote count", () => {
@@ -110,7 +135,9 @@ describe("RoadmapView (v2)", () => {
       toolOutput: { ...privateProps, entries: [] },
     });
     render(<RoadmapView />);
-    expect(screen.getByText("No courses in this roadmap yet.")).toBeInTheDocument();
+    expect(
+      screen.getByText("No courses in this roadmap yet."),
+    ).toBeInTheDocument();
   });
 
   it("renders a post-mutation roadmap (buildRoadmapView shape) with new entries", () => {
@@ -123,21 +150,122 @@ describe("RoadmapView (v2)", () => {
       owner: null,
       voteCount: null,
       entries: [
-        { yearNumber: 1, term: "T1", courseCode: "COR-STAT1202", courseName: "Stats", creditUnits: 1 },
-        { yearNumber: 1, term: "T2", courseCode: "CS102", courseName: "Data Structures", creditUnits: 1 },
+        {
+          yearNumber: 1,
+          term: "T1",
+          courseCode: "STAT203",
+          courseName: "Financial Mathematics",
+          creditUnits: 1,
+        },
+        {
+          yearNumber: 1,
+          term: "T2",
+          courseCode: "ACCT102",
+          courseName: "Management Accounting",
+          creditUnits: 1,
+        },
       ],
     };
     seedContext({ status: "ready", toolInput: {}, toolOutput: mutatedProps });
     render(<RoadmapView />);
     expect(screen.getByText("Senior Plan (copy)")).toBeInTheDocument();
-    expect(screen.getByText("COR-STAT1202")).toBeInTheDocument();
-    expect(screen.getByText("CS102")).toBeInTheDocument();
+    expect(screen.getByText("STAT203")).toBeInTheDocument();
+    expect(screen.getByText("ACCT102")).toBeInTheDocument();
+  });
+
+  it("renders an entry with creditUnits:null (no CU badge, code still shown)", () => {
+    seedContext({
+      status: "ready",
+      toolInput: {},
+      toolOutput: {
+        ...privateProps,
+        entries: [
+          {
+            yearNumber: 1,
+            term: "T1",
+            courseCode: "COR-IS1702",
+            courseName: "Computational Thinking",
+            creditUnits: null,
+          },
+        ],
+      },
+    });
+    render(<RoadmapView />);
+    expect(screen.getByText("COR-IS1702")).toBeInTheDocument();
+    expect(screen.queryByText(/CU/)).toBeNull();
+  });
+
+  it("public roadmap with owner:null and voteCount:null renders no subline and no crash", () => {
+    seedContext({
+      status: "ready",
+      toolInput: {},
+      toolOutput: { ...publicProps, owner: null, voteCount: null },
+    });
+    render(<RoadmapView />);
+    expect(screen.getByText("BSc IS (Community)")).toBeInTheDocument();
+    expect(screen.queryByText(/by /)).toBeNull();
+    expect(screen.queryByText(/upvotes/)).toBeNull();
+    expect(screen.queryByText("null")).toBeNull();
+    // Entries + copy CTA still render for the public roadmap.
+    expect(screen.getByText("COR-IS1702")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Copy this roadmap/i }),
+    ).toBeInTheDocument();
   });
 
   it("renders an error alert when the tool fails", () => {
     seedContext({ status: "error", toolInput: {}, error: { message: "boom" } });
     render(<RoadmapView />);
     expect(screen.getByRole("alert")).toHaveTextContent("boom");
+  });
+
+  it("renders the progress row when progress is present", () => {
+    seedContext({
+      status: "ready",
+      toolInput: {},
+      toolOutput: {
+        ...privateProps,
+        roadmapId: "r2",
+        name: "My Plan",
+        progress: { completed: 3, total: 10 },
+        entries: [
+          {
+            yearNumber: 1,
+            term: "T1",
+            courseCode: "STAT203",
+            courseName: "Financial Mathematics",
+            creditUnits: 1,
+          },
+          {
+            yearNumber: 1,
+            term: "T1",
+            courseCode: "ACCT102",
+            courseName: "Management Accounting",
+            creditUnits: 1,
+          },
+          {
+            yearNumber: 1,
+            term: "T1",
+            courseCode: "IS215",
+            courseName: "Digital Business - Technologies and Transformation",
+            creditUnits: 1,
+          },
+        ],
+      },
+    });
+    render(<RoadmapView />);
+    expect(screen.getByText("3 of 10 courses completed")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toHaveAttribute(
+      "aria-valuenow",
+      "3",
+    );
+  });
+
+  it("hides the progress row when progress is absent", () => {
+    seedContext({ status: "ready", toolInput: {}, toolOutput: privateProps });
+    render(<RoadmapView />);
+    expect(screen.queryByRole("progressbar")).toBeNull();
+    expect(screen.queryByText(/courses completed/)).toBeNull();
   });
 });
 
@@ -155,14 +283,18 @@ describe("RoadmapView copy CTA (v2 useDynamicTool)", () => {
   it("does not render CTA for private roadmaps", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: privateProps });
     render(<RoadmapView />);
-    expect(screen.queryByRole("button", { name: /Copy this roadmap/i })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /Copy this roadmap/i }),
+    ).toBeNull();
   });
 
   it("does not render CTA when the host bridge is unavailable", () => {
     mockedUseHostContext.mockReturnValue({ isAvailable: false } as never);
     seedContext({ status: "ready", toolInput: {}, toolOutput: publicProps });
     render(<RoadmapView />);
-    expect(screen.queryByRole("button", { name: /Copy this roadmap/i })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /Copy this roadmap/i }),
+    ).toBeNull();
   });
 
   it("shows Copied feedback after successful copy-public-roadmap", async () => {
@@ -172,7 +304,9 @@ describe("RoadmapView copy CTA (v2 useDynamicTool)", () => {
     render(<RoadmapView />);
     fireEvent.click(screen.getByRole("button", { name: /Copy this roadmap/i }));
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: /Copied/ })).toBeInTheDocument(),
+      expect(
+        screen.getByRole("button", { name: /Copied/ }),
+      ).toBeInTheDocument(),
     );
   });
 
@@ -183,7 +317,9 @@ describe("RoadmapView copy CTA (v2 useDynamicTool)", () => {
     render(<RoadmapView />);
     fireEvent.click(screen.getByRole("button", { name: /Copy this roadmap/i }));
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: /Copy failed/ })).toBeInTheDocument(),
+      expect(
+        screen.getByRole("button", { name: /Copy failed/ }),
+      ).toBeInTheDocument(),
     );
   });
 });

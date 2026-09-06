@@ -15,7 +15,12 @@ vi.mock("mcp-use/react", () => ({
 }));
 
 import CourseSearchView, { viewConfig } from "./view";
-import { useDynamicTool, useHostContext, useToolContext, useViewTheme } from "mcp-use/react";
+import {
+  useDynamicTool,
+  useHostContext,
+  useToolContext,
+  useViewTheme,
+} from "mcp-use/react";
 
 const mockedUseToolContext = vi.mocked(useToolContext);
 const mockedUseViewTheme = vi.mocked(useViewTheme);
@@ -24,24 +29,29 @@ const mockedUseDynamicTool = vi.mocked(useDynamicTool);
 
 const sampleResult = {
   id: "c1",
-  code: "ACC101",
-  name: "Financial Accounting",
-  creditUnits: 3,
+  code: "IS215",
+  name: "Digital Business - Technologies and Transformation",
+  creditUnits: 1,
   sections: [
     {
-      classId: "cl1",
+      classId: "seed-ay202627t1-is215-g1",
       section: "G1",
-      professorName: "Prof Lim",
+      professorName: "Yixin CAO",
       timings: [
         {
-          dayOfWeek: "MON",
-          startTime: "10:00",
-          endTime: "12:00",
-          venue: "SR 3-1",
+          dayOfWeek: "Mon",
+          startTime: "08:15",
+          endTime: "11:30",
+          venue: "SOE/SCIS2 Seminar Room 2-1",
         },
       ],
     },
-    { classId: "cl2", section: "G2", professorName: null, timings: [] },
+    {
+      classId: "seed-ay202627t1-is215-g2",
+      section: "G2",
+      professorName: null,
+      timings: [],
+    },
   ],
 };
 
@@ -76,41 +86,102 @@ describe("CourseSearchView (v2)", () => {
   });
 
   it("shows the skeleton while pending (no toolOutput yet)", () => {
-    seedContext({ status: "pending", toolInput: { query: "ACC" } });
+    seedContext({ status: "pending", toolInput: { query: "IS215" } });
     const { container } = render(<CourseSearchView />);
-    expect(container.querySelector("[aria-label='Loading']")).toBeInTheDocument();
+    expect(
+      container.querySelector("[aria-label='Loading']"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
   it("renders the result count and each course when ready", () => {
     seedContext({
       status: "ready",
-      toolInput: { query: "ACC" },
+      toolInput: { query: "IS215" },
       toolOutput: { results: [sampleResult] },
     });
     render(<CourseSearchView />);
     expect(screen.getByText("1 course(s) found")).toBeInTheDocument();
-    expect(screen.getByText(/ACC101/)).toBeInTheDocument();
-    expect(screen.getByText(/Financial Accounting/)).toBeInTheDocument();
-    expect(screen.getByText(/3 CU/)).toBeInTheDocument();
+    expect(screen.getByText(/IS215/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Digital Business - Technologies and Transformation/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/1 CU/)).toBeInTheDocument();
   });
 
   it("renders sections, professor names and TBA fallbacks", () => {
     seedContext({
       status: "ready",
-      toolInput: { query: "ACC" },
+      toolInput: { query: "IS215" },
       toolOutput: { results: [sampleResult] },
     });
     render(<CourseSearchView />);
     expect(screen.getAllByText(/G1/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Prof Lim/)).toBeInTheDocument();
+    expect(screen.getByText(/Yixin CAO/)).toBeInTheDocument();
     expect(screen.getAllByText(/G2/).length).toBeGreaterThan(0);
     expect(screen.getByText(/TBA/)).toBeInTheDocument();
-    expect(screen.getByText(/MON 10:00–12:00 @ SR 3-1/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Mon 08:15–11:30 @ SOE\/SCIS2 Seminar Room 2-1/),
+    ).toBeInTheDocument();
+  });
+
+  it.each(["Mon", "MON", "monday"])(
+    "normalizes day casing %s to Mon",
+    (dayOfWeek) => {
+      seedContext({
+        status: "ready",
+        toolInput: { query: "IS215" },
+        toolOutput: {
+          results: [
+            {
+              ...sampleResult,
+              sections: [
+                {
+                  classId: "seed-ay202627t1-is215-g3",
+                  section: "G3",
+                  professorName: "FANG Bingxu",
+                  timings: [
+                    {
+                      dayOfWeek,
+                      startTime: "15:30",
+                      endTime: "18:45",
+                      venue: "SCIS1 Seminar Room 3-4",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      });
+      render(<CourseSearchView />);
+      expect(
+        screen.getByText(/Mon 15:30–18:45 @ SCIS1 Seminar Room 3-4/),
+      ).toBeInTheDocument();
+    },
+  );
+
+  it("omits the CU badge when creditUnits is undefined (no crash, no 'undefined' text)", () => {
+    const noCuResult = { ...sampleResult };
+    delete (noCuResult as { creditUnits?: number }).creditUnits;
+    seedContext({
+      status: "ready",
+      toolInput: { query: "IS215" },
+      toolOutput: { results: [noCuResult] },
+    });
+    render(<CourseSearchView />);
+    expect(screen.getByText("1 course(s) found")).toBeInTheDocument();
+    expect(screen.getByText(/IS215/)).toBeInTheDocument();
+    expect(screen.queryByText(/CU/)).toBeNull();
+    expect(screen.queryByText("undefined")).toBeNull();
   });
 
   it("renders an empty state for zero results", () => {
-    seedContext({ status: "ready", toolInput: { query: "ZZZ" }, toolOutput: { results: [] } });
+    seedContext({
+      status: "ready",
+      toolInput: { query: "ZZZ" },
+      toolOutput: { results: [] },
+    });
     render(<CourseSearchView />);
     expect(screen.getByText("No courses found")).toBeInTheDocument();
   });
@@ -121,10 +192,41 @@ describe("CourseSearchView (v2)", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("boom");
   });
 
+  it("renders the description paragraph when present", () => {
+    seedContext({
+      status: "ready",
+      toolInput: { query: "digital" },
+      toolOutput: {
+        results: [
+          {
+            ...sampleResult,
+            code: "IS215",
+            name: "Digital Business - Technologies and Transformation",
+            description: "What is taught in this course.",
+          },
+        ],
+      },
+    });
+    render(<CourseSearchView />);
+    expect(
+      screen.getByText("What is taught in this course."),
+    ).toBeInTheDocument();
+  });
+
+  it("hides the description block when absent", () => {
+    seedContext({
+      status: "ready",
+      toolInput: { query: "IS215" },
+      toolOutput: { results: [sampleResult] },
+    });
+    const { container } = render(<CourseSearchView />);
+    expect(container.querySelector("p")).toBeNull();
+  });
+
   it("root container fills host width (no maxWidth cap)", () => {
     seedContext({
       status: "ready",
-      toolInput: { query: "ACC" },
+      toolInput: { query: "IS215" },
       toolOutput: { results: [sampleResult] },
     });
     const { container } = render(<CourseSearchView />);
@@ -135,28 +237,30 @@ describe("CourseSearchView (v2)", () => {
 });
 
 describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
-  it("Add G1 button calls add-class-to-timetable with classId cl1", async () => {
+  it("Add G1 button calls add-class-to-timetable with classId seed-ay202627t1-is215-g1", async () => {
     const callTool = vi.fn().mockResolvedValue({ structuredContent: {} });
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({
       status: "ready",
-      toolInput: { query: "ACC" },
+      toolInput: { query: "IS215" },
       toolOutput: { results: [sampleResult] },
     });
     render(<CourseSearchView />);
     fireEvent.click(screen.getByRole("button", { name: "Add G1" }));
     await waitFor(() => expect(callTool).toHaveBeenCalledTimes(1));
-    expect(callTool).toHaveBeenCalledWith({ classId: "cl1" });
+    expect(callTool).toHaveBeenCalledWith({
+      classId: "seed-ay202627t1-is215-g1",
+    });
   });
 
   it("does not render an Add button when classId is missing", () => {
     const noIdResult = {
       ...sampleResult,
-      sections: [{ section: "G3", professorName: "Prof Tan", timings: [] }],
+      sections: [{ section: "G3", professorName: "FANG Bingxu", timings: [] }],
     };
     seedContext({
       status: "ready",
-      toolInput: { query: "ACC" },
+      toolInput: { query: "IS215" },
       toolOutput: { results: [noIdResult] },
     });
     render(<CourseSearchView />);
@@ -167,7 +271,7 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
     mockedUseHostContext.mockReturnValue({ isAvailable: false } as never);
     seedContext({
       status: "ready",
-      toolInput: { query: "ACC" },
+      toolInput: { query: "IS215" },
       toolOutput: { results: [sampleResult] },
     });
     render(<CourseSearchView />);
@@ -179,7 +283,7 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({
       status: "ready",
-      toolInput: { query: "ACC" },
+      toolInput: { query: "IS215" },
       toolOutput: { results: [sampleResult] },
     });
     render(<CourseSearchView />);
@@ -194,13 +298,15 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({
       status: "ready",
-      toolInput: { query: "ACC" },
+      toolInput: { query: "IS215" },
       toolOutput: { results: [sampleResult] },
     });
     render(<CourseSearchView />);
     fireEvent.click(screen.getByRole("button", { name: "Add G1" }));
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: /Failed/ })).toBeInTheDocument(),
+      expect(
+        screen.getByRole("button", { name: /Failed/ }),
+      ).toBeInTheDocument(),
     );
   });
 });

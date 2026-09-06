@@ -7,6 +7,9 @@ import {
   useViewTheme,
 } from "mcp-use/react";
 import { useKeyedCtaFeedback } from "../shared/use-cta-feedback";
+import { TOKENS, Skeleton } from "../shared/tokens";
+import { normalizeDay } from "../shared/day";
+import { formatExamDate } from "../shared/format";
 
 /**
  * MCP App View (mcp-use v2) for the `search-courses` tool — the pilot of the
@@ -35,6 +38,7 @@ type CourseResult = {
   id?: string;
   code: string;
   name: string;
+  description?: string;
   creditUnits?: number;
   sections?: Array<{
     classId?: string;
@@ -55,28 +59,10 @@ type CourseResult = {
   }>;
 };
 
-const STOKENS = {
-  light: {
-    card: "oklch(0.99 0 0)",
-    cardFg: "oklch(0.141 0.005 285.823)",
-    mutedFg: "oklch(0.552 0.016 285.938)",
-    border: "oklch(0.92 0.004 286.32)",
-    muted: "oklch(0.967 0.001 286.375)",
-    primary: "oklch(0.48 0.2229 280.55)",
-    primaryFg: "oklch(0.969 0.016 293.756)",
-    radius: "0.75rem",
-  },
-  dark: {
-    card: "oklch(0.21 0.006 285.885)",
-    cardFg: "oklch(0.985 0 0)",
-    mutedFg: "oklch(0.705 0.015 286.067)",
-    border: "oklch(1 0 0 / 10%)",
-    muted: "oklch(0.274 0.006 286.033)",
-    primary: "oklch(0.585 0.233 277.117)",
-    primaryFg: "oklch(0.969 0.016 293.756)",
-    radius: "0.75rem",
-  },
-} as const;
+// NOTE: tokens, Skeleton, and normalizeDay live in `../shared/*` now
+// (relative imports above) — do NOT reintroduce local STOKENS/SearchSkeleton
+// or DAY_NORMALIZE copies here. normalizeDay's unknown→null contract means
+// formatTiming applies the raw fallback itself (`?? t.dayOfWeek ?? ""`).
 
 function formatTiming(t: {
   dayOfWeek?: string | null;
@@ -84,7 +70,7 @@ function formatTiming(t: {
   endTime?: string;
   venue?: string | null;
 }): string {
-  const day = t.dayOfWeek ?? "";
+  const day = normalizeDay(t.dayOfWeek) ?? t.dayOfWeek ?? "";
   const time =
     t.startTime && t.endTime
       ? `${t.startTime}–${t.endTime}`
@@ -93,44 +79,11 @@ function formatTiming(t: {
   return [day, time].filter(Boolean).join(" ") + venue;
 }
 
-const SearchSkeleton: React.FC<{ dark: boolean }> = ({ dark }) => {
-  const c = dark ? STOKENS.dark : STOKENS.light;
-  return (
-    <div
-      style={{ display: "flex", flexDirection: "column", gap: 8 }}
-      aria-label="Loading"
-    >
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          style={{
-            height: 72,
-            borderRadius: c.radius,
-            background: c.muted,
-            animation: "pulse 1.5s ease-in-out infinite",
-          }}
-        />
-      ))}
-      <span
-        style={{
-          position: "absolute",
-          width: 1,
-          height: 1,
-          overflow: "hidden",
-          clip: "rect(0,0,0,0)",
-        }}
-      >
-        Loading...
-      </span>
-    </div>
-  );
-};
-
 const CourseSearchView: React.FC = () => {
   const { status, toolOutput, error } = useToolContext<"search-courses">();
   const theme = useViewTheme();
   const dark = theme === "dark";
-  const c = dark ? STOKENS.dark : STOKENS.light;
+  const c = dark ? TOKENS.dark : TOKENS.light;
   // `toolOutput` is `{results: Course[]}` from the tool's outputSchema. The
   // tool adapter currently passes its schemas `as never` (Task 9 candidate to
   // tighten), so read defensively exactly like the v1 widget read `props`.
@@ -145,7 +98,7 @@ const CourseSearchView: React.FC = () => {
   );
   const { isAvailable } = useHostContext();
 
-  if (status === "pending") return <SearchSkeleton dark={dark} />;
+  if (status === "pending") return <Skeleton dark={dark} />;
   if (status === "error") {
     return (
       <div
@@ -252,6 +205,18 @@ const CourseSearchView: React.FC = () => {
             )}
           </div>
           <div style={{ fontSize: 13, marginTop: 2 }}>{r.name}</div>
+          {r.description !== undefined && r.description.length > 0 && (
+            <p
+              style={{
+                fontSize: 12,
+                marginTop: 4,
+                marginBottom: 0,
+                color: c.mutedFg,
+              }}
+            >
+              {r.description}
+            </p>
+          )}
           {r.sections !== undefined && r.sections.length > 0 && (
             <div
               style={{
@@ -307,53 +272,55 @@ const CourseSearchView: React.FC = () => {
                         {s.examTimings
                           .map(
                             (e) =>
-                              `${String(e.date ?? "").slice(0, 10)} ${e.startTime ?? ""}–${e.endTime ?? ""}${e.venue ? ` @ ${e.venue}` : ""}`,
+                              `${formatExamDate(e.date)} ${e.startTime ?? ""}–${e.endTime ?? ""}${e.venue ? ` @ ${e.venue}` : ""}`,
                           )
                           .join(" · ")}
                       </span>
                     )}
                   </span>
-                  {s.classId && isAvailable && (() => {
-                    // s.classId truthy above — narrow to string for map key
-                    const classId: string = s.classId;
-                    const fb = feedback[classId];
-                    const label =
-                      fb === "saved"
-                        ? "Saved \u2713"
-                        : fb === "error"
-                          ? "Failed"
-                          : `Add ${s.section}`;
-                    return (
-                      <button
-                        type="button"
-                        aria-live="polite"
-                        onClick={() =>
-                          // v2: tool errors reject (ToolError) instead of
-                          // resolving isError:true, so "Failed" moves to catch.
-                          addClass
-                            .callTool({ classId })
-                            .then(() => showFeedback(classId, "saved"))
-                            .catch(() => showFeedback(classId, "error"))
-                        }
-                        style={
-                          {
-                            shrink: 0,
-                            padding: "2px 10px",
-                            borderRadius: 9999,
-                            border: `1px solid ${c.primary}`,
-                            background: c.primary,
-                            color: fb === "error" ? "white" : c.primaryFg,
-                            fontSize: 11,
-                            fontWeight: 600,
-                            cursor: "pointer",
-                            whiteSpace: "nowrap",
-                          } as unknown as React.CSSProperties
-                        }
-                      >
-                        {label}
-                      </button>
-                    );
-                  })()}
+                  {s.classId &&
+                    isAvailable &&
+                    (() => {
+                      // s.classId truthy above — narrow to string for map key
+                      const classId: string = s.classId;
+                      const fb = feedback[classId];
+                      const label =
+                        fb === "saved"
+                          ? "Saved \u2713"
+                          : fb === "error"
+                            ? "Failed"
+                            : `Add ${s.section}`;
+                      return (
+                        <button
+                          type="button"
+                          aria-live="polite"
+                          onClick={() =>
+                            // v2: tool errors reject (ToolError) instead of
+                            // resolving isError:true, so "Failed" moves to catch.
+                            addClass
+                              .callTool({ classId })
+                              .then(() => showFeedback(classId, "saved"))
+                              .catch(() => showFeedback(classId, "error"))
+                          }
+                          style={
+                            {
+                              shrink: 0,
+                              padding: "2px 10px",
+                              borderRadius: 9999,
+                              border: `1px solid ${c.primary}`,
+                              background: c.primary,
+                              color: fb === "error" ? "white" : c.primaryFg,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              whiteSpace: "nowrap",
+                            } as unknown as React.CSSProperties
+                          }
+                        >
+                          {label}
+                        </button>
+                      );
+                    })()}
                 </div>
               ))}
             </div>
