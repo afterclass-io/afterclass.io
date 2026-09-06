@@ -29,7 +29,10 @@ export const searchCourses = server.tool(
       tool: searchCoursesTool as never,
       params,
       ctx,
-      policy: { confirm: false, budget: "read", shape: "view" },
+      // No budget: the historical bespoke adapter went buildToolContext → run
+      // with no budget charge (R1 budget-semantics parity; read-budget policy
+      // for view tools is owned by a later task).
+      policy: { confirm: false, budget: "none", shape: "view" },
     });
     if ("error" in out) return errorResult(out.error);
     if (out.isError) return errorResult(out.content[0]?.text ?? "Tool failed");

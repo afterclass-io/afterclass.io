@@ -1,12 +1,12 @@
 import type { ToolContext, ToolResult } from "@/server/mcp/types";
 
+import { errorResult, textResult } from "./envelopes";
 import { buildToolContext } from "./user";
 import {
   checkDestructiveConfirm,
   checkReadBudget,
   checkWriteBudget,
 } from "./rate-limit";
-import { errorResult, textResult } from "./view-tools/results";
 
 /**
  * Single tool-call pipeline shared by every transport: auth → confirm-gate →
@@ -41,6 +41,14 @@ export interface DispatchPolicy {
   truncationNote?: string;
   /** Dev-bypass override for tests (defaults to the env-derived value). */
   devBypass?: boolean;
+  /**
+   * What happens when `tool.run` throws. `"capture"` (default) converts the
+   * throw into `{ error: "Internal error in tool X" }` — the documented MCP /
+   * view contract (handlers must never throw; matches the register "never
+   * throws" test). `"propagate"` rethrows the ORIGINAL error object verbatim —
+   * the chat path's historical contract, where `t.run` throws bubbled raw.
+   */
+  throwBehavior?: "capture" | "propagate";
 }
 
 export interface DispatchableTool {
@@ -88,24 +96,27 @@ function isDevBypassActive(devBypassOverride?: boolean): boolean {
   );
 }
 
+/** Historical model-visible text extraction: first `type: "text"` block. */
+function extractText(content: ToolResult["content"]): string | undefined {
+  return content.find((c) => c.type === "text")?.text;
+}
+
 /**
- * Run one tool call through the shared pipeline. Never throws: failures are
- * returned as `{ error }` (auth/confirm/budget rejections and thrown runs) or
- * as an error-shaped `{ content, isError: true }` for catalog `isError`
- * results — mirroring the historical per-transport envelopes exactly.
+ * Run one tool call through the shared pipeline. With the default
+ * `throwBehavior: "capture"` it never throws: failures are returned as
+ * `{ error }` (auth/confirm/budget rejections and thrown runs) or as an
+ * error-shaped `{ content, isError: true }` for catalog `isError` results —
+ * mirroring the historical per-transport envelopes exactly. With
+ * `throwBehavior: "propagate"` the original `tool.run` throw bubbles verbatim
+ * (chat path's historical contract).
  */
 export async function dispatchToolCall(opts: {
   tool: DispatchableTool;
   params: unknown;
   ctx: unknown;
-  policy?: DispatchPolicy;
+  policy: DispatchPolicy;
 }): Promise<DispatchSuccess | DispatchFailure> {
-  const { tool, params, ctx } = opts;
-  const policy: DispatchPolicy = opts.policy ?? {
-    confirm: false,
-    budget: "none",
-    shape: "text",
-  };
+  const { tool, params, ctx, policy } = opts;
 
   // The chat transport passes an already-authenticated ToolContext (no
   // request auth envelope); accept it as-is so the pipeline stays single
@@ -135,28 +146,23 @@ export async function dispatchToolCall(opts: {
   let result: ToolResult;
   try {
     result = await tool.run(toolCtx, params as never);
-  } catch {
+  } catch (e) {
+    if (policy.throwBehavior === "propagate") throw e;
     return { error: `Internal error in tool ${tool.name}` };
   }
 
   if (policy.shape === "view") {
-    if (result.isError)
+    if (result.isError) {
+      const text = extractText(result.content) ?? "Tool failed";
       return {
-        content: [
-          {
-            type: "text" as const,
-            text: result.content[0]?.text ?? "Tool failed",
-          },
-        ],
+        content: [{ type: "text" as const, text }],
         isError: true as const,
         // Pass the raw catalog content through: the view tail
         // (`finishViewTool`) must see the original isError text, not a
         // re-shaped envelope, to preserve adapter error propagation.
-        structuredContent: {
-          __catalogError: true,
-          text: result.content[0]?.text ?? "Tool failed",
-        },
+        structuredContent: { __catalogError: true, text },
       };
+    }
     const widgetProps = result.widgetProps ?? tool.toWidgetProps?.(result);
     return {
       content: result.content,
@@ -165,8 +171,8 @@ export async function dispatchToolCall(opts: {
   }
 
   if (result.isError)
-    return errorResult(result.content[0]?.text ?? "Tool failed");
-  const text = result.content[0]?.text ?? "";
+    return errorResult(extractText(result.content) ?? "Tool failed");
+  const text = extractText(result.content) ?? "";
   if (policy.truncateAt !== undefined && text.length > policy.truncateAt)
     return textResult(
       text.slice(0, policy.truncateAt) + (policy.truncationNote ?? ""),

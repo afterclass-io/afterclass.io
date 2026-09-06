@@ -1,31 +1,9 @@
 import type { ToolResult } from "@/server/mcp/types";
 import type { ZodType } from "zod";
+import { errorResult, textResult } from "../envelopes";
 import { dispatchToolCall, isDispatchCatalogError } from "../dispatch";
 
-export function textResult(text: string): {
-  content: Array<{ type: "text"; text: string }>;
-  isError?: boolean;
-} {
-  return {
-    content: [{ type: "text" as const, text }] as Array<{
-      type: "text";
-      text: string;
-    }>,
-  };
-}
-
-export function errorResult(text: string): {
-  content: Array<{ type: "text"; text: string }>;
-  isError: true;
-} {
-  return {
-    isError: true as const,
-    content: [{ type: "text" as const, text }] as Array<{
-      type: "text";
-      text: string;
-    }>,
-  };
-}
+export { errorResult, textResult };
 
 export type UnwrapOk = {
   ok: true;

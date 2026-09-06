@@ -1,6 +1,7 @@
 import { tool, type ToolSet } from "ai";
 
 import { dispatchToolCall } from "@/mcp/dispatch";
+import { checkDestructiveConfirm } from "@/mcp/rate-limit";
 import { allTools } from "@/server/mcp/tools";
 import type { ToolContext } from "@/server/mcp/types";
 import { checkAndIncrement } from "@/server/assistant/ratelimit";
@@ -38,82 +39,53 @@ export function buildAssistantTools(
       description: t.description,
       inputSchema: t.inputSchema,
       execute: async (args) => {
-        // Single shared pipeline via dispatchToolCall. Policy preserves this
-        // path's historical semantics exactly: the caller's ToolContext is
-        // passed straight through (dispatch accepts it as-is — no
-        // DB re-resolve, no ctx-shape mocking needed in tests);
-        // destructive/full-replace writes need explicit confirm:true (checked
-        // before the write budget so rejected calls are not charged; no dev
-        // bypass — chat always requires a signed-in user); writes draw from
-        // the caller's per-user `chat-write:<userId>` bucket via the explicit
-        // limit args (not ecfg); oversized results are clamped.
-        // Dispatch's own budget step stays off (`budget: "none"`); the write
-        // charge below is exactly-once with the historical key/limit source.
+        // Historical order, preserved exactly: destructive/full-replace
+        // writes need explicit confirm:true (checked before the write budget
+        // so rejected calls are not charged), then the write-budget charge,
+        // then a single dispatch (auth + run + shape, no dev bypass — chat
+        // always requires a signed-in user). The caller's ToolContext is
+        // passed straight through (dispatch accepts it as-is — no DB
+        // re-resolve, no ctx-shape mocking needed in tests). On budget
+        // exhaustion return the slow-down text directly WITHOUT calling
+        // dispatch at all; `t.run` throws propagate verbatim via
+        // `throwBehavior: "propagate"`.
+        const gate = checkDestructiveConfirm(t.name, args);
+        if (gate) return gate;
+        if (!t.readOnly) {
+          const { ok, retryAfterSeconds } = await checkAndIncrement(
+            `chat-write:${ctx.user.id}`,
+            writeRateLimitPerMinute,
+            windowMinutes,
+          );
+          if (!ok) {
+            return (
+              `You're making changes too quickly - at most ${writeRateLimitPerMinute} ` +
+              `write actions per minute are allowed. Please wait ~${retryAfterSeconds}s ` +
+              `and ask me to try again.`
+            );
+          }
+        }
         const out = await dispatchToolCall({
-          tool: {
-            name: t.name,
-            readOnly: t.readOnly,
-            run: async (c, input) => {
-              if (!t.readOnly) {
-                const { ok, retryAfterSeconds } = await checkAndIncrement(
-                  `chat-write:${c.user.id}`,
-                  writeRateLimitPerMinute,
-                  windowMinutes,
-                );
-                if (!ok) {
-                  return {
-                    content: [
-                      {
-                        type: "text",
-                        text:
-                          `You're making changes too quickly - at most ${writeRateLimitPerMinute} ` +
-                          `write actions per minute are allowed. Please wait ~${retryAfterSeconds}s ` +
-                          `and ask me to try again.`,
-                      },
-                    ],
-                    // Marker so the dispatch-result mapping below relays the
-                    // slow-down as plain model text instead of throwing.
-                    widgetProps: { __chatSlowDown: true },
-                  };
-                }
-              }
-              return t.run(c, input);
-            },
-          },
+          tool: t as never,
           params: args,
           ctx,
           policy: {
-            confirm: !t.readOnly,
+            confirm: false,
             budget: "none",
             shape: "text",
             truncateAt: MAX_TOOL_RESULT_CHARS,
             truncationNote: TRUNCATION_NOTE,
             devBypass: false,
+            throwBehavior: "propagate",
           },
         });
         // The chat path surfaces pipeline rejections as plain model-relayed
-        // text (no error envelope) — except thrown runs and catalog isError
-        // results, which throw to break the stream exactly as before.
-        if ("error" in out) {
-          if (out.error.startsWith("Internal error in tool "))
-            throw new Error(
-              out.error.replace(
-                `Internal error in tool ${t.name}`,
-                `${t.name} failed`,
-              ),
-            );
-          return out.error;
-        }
-        if (out.isError) {
-          if (
-            out.structuredContent &&
-            typeof out.structuredContent === "object" &&
-            (out.structuredContent as { __chatSlowDown?: unknown })
-              .__chatSlowDown === true
-          )
-            return out.content[0]?.text ?? "";
+        // text (no error envelope). Catalog isError results throw to break
+        // the stream; thrown runs propagate natively via dispatch — exactly
+        // as before.
+        if ("error" in out) return out.error;
+        if (out.isError)
           throw new Error(out.content[0]?.text || `${t.name} failed`);
-        }
         return out.content[0]?.text ?? "";
       },
     });
