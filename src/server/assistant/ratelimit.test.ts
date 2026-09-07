@@ -10,21 +10,25 @@ const { txRateLimitFindUnique, txRateLimitUpsert, txRateLimitUpdateMany } = vi.h
   txRateLimitUpdateMany: vi.fn() as Mock,
 }));
 
+const { mockRateLimitDeleteMany } = vi.hoisted(() => ({
+  mockRateLimitDeleteMany: vi.fn() as Mock,
+}));
+
 const tx = {
   rateLimit: { findUnique: txRateLimitFindUnique, upsert: txRateLimitUpsert, updateMany: txRateLimitUpdateMany },
 };
 
 vi.mock("@/server/db", () => ({
   db: {
-    rateLimit: { findUnique: txRateLimitFindUnique, upsert: txRateLimitUpsert, updateMany: txRateLimitUpdateMany },
+    rateLimit: { findUnique: txRateLimitFindUnique, upsert: txRateLimitUpsert, updateMany: txRateLimitUpdateMany, deleteMany: mockRateLimitDeleteMany },
     $transaction: (fn: (tx: Record<string, unknown>) => unknown) => fn(tx),
   },
 }));
 
-import { checkAndIncrement } from "./ratelimit";
+import { checkAndIncrement, pruneRateLimits } from "./ratelimit";
 
 describe("checkAndIncrement", () => {
-  beforeEach(() => { txRateLimitFindUnique.mockReset(); txRateLimitUpsert.mockReset(); txRateLimitUpdateMany.mockReset(); });
+  beforeEach(() => { txRateLimitFindUnique.mockReset(); txRateLimitUpsert.mockReset(); txRateLimitUpdateMany.mockReset(); mockRateLimitDeleteMany.mockReset(); });
 
   it("allows within the limit via atomic conditional increment", async () => {
     txRateLimitUpsert.mockResolvedValue(undefined);
@@ -105,5 +109,25 @@ describe("checkAndIncrement", () => {
     expect(r2).toEqual({ ok: true, retryAfterSeconds: 0 });
     expect(txRateLimitUpdateMany).toHaveBeenCalledTimes(2);
     expect(txRateLimitUpsert).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("pruneRateLimits", () => {
+  it("deletes windows older than the retention cutoff and returns the count", async () => {
+    mockRateLimitDeleteMany.mockResolvedValue({ count: 7 });
+    const r = await pruneRateLimits();
+    expect(r).toEqual({ deleted: 7 });
+    expect(mockRateLimitDeleteMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { windowStart: { lt: expect.any(BigInt) as bigint } },
+      }) as Record<string, unknown>,
+    );
+    // Cutoff is in the past (retention keeps ~24h of windows).
+    const cutoff = (
+      mockRateLimitDeleteMany.mock.calls[0]?.[0] as {
+        where: { windowStart: { lt: bigint } };
+      }
+    ).where.windowStart.lt;
+    expect(cutoff < BigInt(Date.now())).toBe(true);
   });
 });
