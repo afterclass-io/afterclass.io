@@ -158,8 +158,8 @@ const getClassesSchema = z.object({
     .describe("Max rows to return (capped at 20).")
     .default(20),
   // Optional cursor into the class page (opaque item id from a previous
-  // page's nextCursor). Additive only: unknown keys are declined by default
-  // in the dispatch paths, so declare it here; unknown cursors restart.
+  // page's nextCursor). Additive only: declared here so dispatch validation
+  // keeps it; unknown cursors restart.
   cursor: z.string().optional(),
 });
 
@@ -171,6 +171,8 @@ export const getClassesTool: McpTool<typeof getClassesSchema> = {
   readOnly: true,
   run: async ({ caller }, input) => {
     try {
+      // The cursor is declared on the input schema (so dispatch validation
+      // keeps it) but must never reach the router — sliced in-memory below.
       const { cursor: _cursor, ...filters } = input as typeof input & {
         cursor?: unknown;
       };
