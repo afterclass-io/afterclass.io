@@ -73,6 +73,16 @@ vi.mock("@/server/assistant/trim", () => ({
 vi.mock("@/server/mcp/caller", () => ({
   createCallerForUser: mockCreateCallerForUser,
 }));
+// Task 9: route.ts schedules settlement via after() (Vercel waitUntil
+// semantics). In tests there is no request scope, so run the work inline —
+// the failure-fallback path (real after() throwing) is covered by the
+// try/catch in the route itself.
+vi.mock("next/server", () => ({
+  after: (task: unknown) => {
+    if (typeof task === "function") void (task as () => unknown)();
+    else void (task as Promise<unknown>);
+  },
+}));
 
 // stored onEnd callback so the test can invoke it
 let capturedOnEnd:

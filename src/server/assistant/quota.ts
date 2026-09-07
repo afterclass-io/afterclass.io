@@ -1,4 +1,4 @@
-import { db } from "@/server/db";
+import { db, txDb } from "@/server/db";
 import { getChatConfigAsync as getCanonicalChatConfig } from "@/server/config/chat-config";
 import type { ChatConfig } from "@/server/ecfg/config";
 import { criticalFloorFor } from "@/modules/assistant/quota-meter/logic";
@@ -108,7 +108,9 @@ export async function reserveMessage(
   const chat = await getQuotaChat();
   const period = currentMonthPeriod();
   const quota = chat.quotaPerMonth;
-  return db.$transaction(async (tx) => {
+  // Interactive transaction → direct (non-pooled) client: pooled 6543
+  // pgbouncer breaks interactive $transaction (Task 9).
+  return txDb.$transaction(async (tx) => {
     // Ensure a row exists for this period; the no-op update avoids touching the
     // row when it already exists (keeps the statement idempotent).
     await tx.chatUsage.upsert({
@@ -167,7 +169,8 @@ export async function settleUsage(
   const period = currentMonthPeriod();
   const spendUsd = tokensToUsd(chat, tokens);
   const cachedInput = tokens.cachedInput ?? 0;
-  await db.$transaction(async (tx) => {
+  // Interactive transaction → direct (non-pooled) client (Task 9).
+  await txDb.$transaction(async (tx) => {
     // Ensure the spend row exists so the conditional increment has a target.
     await tx.chatSpend.upsert({
       where: { period },

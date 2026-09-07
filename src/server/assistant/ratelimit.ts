@@ -1,4 +1,4 @@
-import { db } from "@/server/db";
+import { db, txDb } from "@/server/db";
 
 /**
  * Fixed-window per-key counter with atomic check+increment (Task 7 notes).
@@ -32,7 +32,9 @@ export async function checkAndIncrement(
   const windowStart = Math.floor(Date.now() / windowMs) * windowMs;
   const rowKey = `${key}:${windowStart}`;
 
-  return db.$transaction(async (tx) => {
+  // Interactive transaction → direct (non-pooled) client: pooled 6543
+  // pgbouncer breaks interactive $transaction (Task 9).
+  return txDb.$transaction(async (tx) => {
     // Ensure a row exists for this window (idempotent no-op if present).
     await tx.rateLimit.upsert({
       where: { key: rowKey },

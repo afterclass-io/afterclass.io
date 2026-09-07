@@ -33,6 +33,10 @@ vi.mock("@/server/db", () => ({
     },
     $transaction: (fn: (tx: Record<string, unknown>) => unknown) => fn(tx),
   },
+  // checkAndIncrement runs its interactive $transaction on txDb (Task 9).
+  txDb: {
+    $transaction: (fn: (tx: Record<string, unknown>) => unknown) => fn(tx),
+  },
 }));
 
 import { checkAndIncrement, pruneRateLimits } from "./ratelimit";

@@ -47,6 +47,10 @@ vi.mock("@/server/db", () => ({
     },
     $transaction: (fn: (tx: Record<string, unknown>) => unknown) => fn(tx),
   },
+  // reserveMessage/settleUsage run interactive $transactions on txDb (Task 9).
+  txDb: {
+    $transaction: (fn: (tx: Record<string, unknown>) => unknown) => fn(tx),
+  },
 }));
 // Task 8: quota.ts reads the canonical chat-config (mocked here); the
 // ecfg shim mock stays for modules that still import it transitively.

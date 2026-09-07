@@ -173,6 +173,36 @@ The consent route requires a signed-in session whose Auth.js JWT carries a Supab
 
 > **Prerequisite (prod):** enable the `pg_trgm` extension in Supabase (Dashboard -> Database -> Extensions). The fuzzy/typo-tolerant course search (`search-courses`) depends on it.
 
+### Split topology (Task 9): Next.js on Vercel, MCP on Manufact/Fly
+
+The two processes never co-locate — the long-lived `MCPServer` cannot run
+on Vercel serverless (cold starts + 300s cap would kill SSE/streamable
+sessions), so:
+
+- **Next.js web app → Vercel (Pro).** `src/app`, tRPC, `/api/chat`
+  (`maxDuration = 300`, the Pro ceiling — pinned literal, synced with
+  `chatMaxDurationSec` in `src/server/config/chat-config.ts`). Env on
+  Vercel: `DATABASE_URL` (pooled `:6543?pgbouncer=true&connection_limit=1`),
+  `DIRECT_URL` (**required in prod**, direct `:5432` no pgbouncer flag —
+  interactive `$transaction` breaks on pooled 6543), `EDGE_CONFIG`
+  (optional), `LLM_*`, `CRON_SECRET` (for the `vercel.json`
+  `/api/cron/prune-rate-limits` schedule), plus the `NEXT_PUBLIC_*` vars.
+  Install command: `bun install` (repo pins `bun.lock`; `package.json`
+  `engines` = `node 22.x` for the runtime). Migrations run on `DIRECT_URL`
+  (`prisma migrate deploy`).
+- **MCP server → Manufact (primary) / Fly (fallback).** Full app env (see
+  [table above](#environment-variables)) — it imports `@/env` via the tRPC
+  caller, so the host needs the same server vars as the web app.
+- **OAuth verify after deploy:** `curl` the MCP origin's
+  `/.well-known/oauth-protected-resource` and
+  `/.well-known/oauth-authorization-server` (proxied Supabase metadata) —
+  both must return JSON with the Supabase issuer; tokens are JWKS-verified
+  by `oauthSupabaseProvider()` (RS256 default; `MCP_USE_OAUTH_SUPABASE_JWT_SECRET`
+  only for legacy HS256).
+- **Then** set `NEXT_PUBLIC_MCP_PUBLIC_URL` on Vercel to the deployed MCP
+  URL (read by `connect-links.ts` → `MCP_PUBLIC_URL` for the Settings →
+  Agents deep links).
+
 ### Primary: Manufact Cloud
 
 From the repo root:

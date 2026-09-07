@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import {
   createUIMessageStreamResponse,
   isStepCount,
@@ -36,13 +37,13 @@ import { extractCachedInputTokens } from "@/server/assistant/usage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-// Multi-step chains (12 rounds) need more than 60s. 300 is the Vercel Node.js
-// ceiling — VERIFY against the actual deploy plan before going live (Hobby
-// non-Fluid caps at 60); flagged human-pending. Canonical value lives in
-// `src/server/config/chat-config.ts` (`chatMaxDurationSec`); this export is
-// the sync-mirror (Next.js requires a static export) — keep both at 300.
-// Task 9 consumes getChatConfig() for this; validation of DIRECT_URL +
-// EDGE_CONFIG lands in Task 8's env.ts (done).
+// Multi-step chains (12 rounds) need more than 60s. Pinned to the canonical
+// `chatMaxDurationSec` (300, Vercel Pro ceiling without Fluid — the Hobby-60
+// cap does NOT apply to our Pro plan; Task 9). Next.js requires a LITERAL
+// here (it extracts maxDuration by static analysis, so
+// `getChatConfig().chatMaxDurationSec` would silently deploy as undefined);
+// keep this in sync with `src/server/config/chat-config.ts` (there is a
+// source comment there pointing back here).
 export const maxDuration = 300;
 
 // Input-token count above which a settlement HARD-BLOCKS the turn's spend
@@ -287,51 +288,74 @@ export async function POST(req: Request) {
       // consumed on abort (see guardAgainstFailedStream.cancel).
       abortSignal: req.signal,
       // NOTE: The message slot was pre-reserved by reserveMessage(), so quota
-      // cannot be bypassed by disconnecting. Token/spend settlement remains
-      // best-effort on disconnect (onEnd may not fire) - this is a documented,
-      // accepted trade-off since the spend cap is already enforced atomically
-      // in settleUsage and the primary abuse vector (free messages) is closed.
+      // cannot be bypassed by disconnecting. Token/spend settlement is
+      // scheduled via after() in onEnd (Vercel waitUntil semantics: the
+      // function keeps running after the response closes); where after() is
+      // unavailable it runs inline. The remaining best-effort case (crash
+      // before the promise settles) is accepted: the spend cap is already
+      // enforced atomically in settleUsage and the primary abuse vector
+      // (free messages) is closed.
       // On failure, guardAgainstFailedStream below refunds the reserved slot.
       onEnd: async ({ usage }) => {
         if (quotaSettled.value) return; // already refunded - never settle after a refund
         quotaSettled.value = true; // claim the turn for settlement
-        try {
-          // Cache reads: normalised field first, then the provider's raw
-          // prompt_cache_hit_tokens (see usage.ts - the SDK does not map it).
-          const cachedInput = extractCachedInputTokens(usage);
-          // One-time diagnostic: CHAT_LOG_USAGE=1 logs the raw usage payload so the
-          // provider field mapping can be re-verified after provider/SDK upgrades.
-          // Allowlisted raw read (diagnostic flag only — not config; the ban
-          // covers config reads outside env.ts/env-gate.ts/chat-config.ts).
-          if (process.env.CHAT_LOG_USAGE === "1") {
-            // intentional: one-time opt-in diagnostic for provider field mapping
-            console.log("[assistant:usage]", JSON.stringify(usage));
-          }
-          const spikeThreshold = Math.floor(
-            Math.min(
-              chat.maxInputTokens * SETTLEMENT_SPIKE_FRACTION,
-              chat.settlementSpikeTokens,
-            ),
-          );
-          if ((usage.inputTokens ?? 0) > spikeThreshold) {
-            // Settlement spike: usually a huge tool result re-sent across loop
-            // steps or a broken cached prefix. HARD-BLOCK: skip settleUsage so
-            // a runaway turn cannot record unbounded spend (the message slot
-            // stays consumed — the turn happened — but the token/spend write
-            // is dropped). Loud enough to catch cost regressions.
-            // intentional: cost-regression signal, keep loud
-            console.warn(
-              `[assistant] settlement spike blocked: input=${usage.inputTokens} cached=${cachedInput} threshold=${spikeThreshold}`,
+        const settle = async () => {
+          try {
+            // Cache reads: normalised field first, then the provider's raw
+            // prompt_cache_hit_tokens (see usage.ts - the SDK does not map it).
+            const cachedInput = extractCachedInputTokens(usage);
+            // One-time diagnostic: CHAT_LOG_USAGE=1 logs the raw usage payload so the
+            // provider field mapping can be re-verified after provider/SDK upgrades.
+            // Allowlisted raw read (diagnostic flag only — not config; the ban
+            // covers config reads outside env.ts/env-gate.ts/chat-config.ts).
+            if (process.env.CHAT_LOG_USAGE === "1") {
+              // intentional: one-time opt-in diagnostic for provider field mapping
+              console.log("[assistant:usage]", JSON.stringify(usage));
+            }
+            const spikeThreshold = Math.floor(
+              Math.min(
+                chat.maxInputTokens * SETTLEMENT_SPIKE_FRACTION,
+                chat.settlementSpikeTokens,
+              ),
             );
-            return;
+            if ((usage.inputTokens ?? 0) > spikeThreshold) {
+              // Settlement spike: usually a huge tool result re-sent across loop
+              // steps or a broken cached prefix. HARD-BLOCK: skip settleUsage so
+              // a runaway turn cannot record unbounded spend (the message slot
+              // stays consumed — the turn happened — but the token/spend write
+              // is dropped). Loud enough to catch cost regressions.
+              // intentional: cost-regression signal, keep loud
+              console.warn(
+                `[assistant] settlement spike blocked: input=${usage.inputTokens} cached=${cachedInput} threshold=${spikeThreshold}`,
+              );
+              return;
+            }
+            await settleUsage(userId, {
+              input: usage.inputTokens ?? 0,
+              output: usage.outputTokens ?? 0,
+              cachedInput,
+            });
+          } catch (error) {
+            // Settlement must never fail silently: onEnd runs post-response
+            // (inside after()), so an unhandled rejection is invisible to the
+            // client — record it loudly.
+            // intentional: settlement-failure signal, keep loud
+            console.error("[assistant] settleUsage failed:", error);
+          } finally {
+            endTurn(userId);
           }
-          await settleUsage(userId, {
-            input: usage.inputTokens ?? 0,
-            output: usage.outputTokens ?? 0,
-            cachedInput,
-          });
-        } finally {
-          endTurn(userId);
+        };
+        // after() (Vercel waitUntil semantics) keeps this settlement alive
+        // past client disconnect — MUST be called synchronously in the
+        // request scope. Falls back to inline execution where after() is
+        // unavailable (tests, non-Vercel runtimes). A crash before the work
+        // settles stays best-effort (accepted: the spend cap is enforced
+        // atomically in settleUsage and free messages are closed by the
+        // pre-reserved slot).
+        try {
+          after(settle);
+        } catch {
+          void settle();
         }
       },
     });

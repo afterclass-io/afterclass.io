@@ -42,7 +42,7 @@
  * | rateLimitRetentionWindows | 1440 | ratelimit.ts pruneRateLimits default 1440 |
  * | llmBaseUrl | https://api.deepseek.com | providers.ts DEFAULT_LLM_BASE_URL |
  * | llmModel | deepseek-v4-flash | providers.ts DEFAULT_LLM_MODEL |
- * | chatMaxDurationSec | 300 | route.ts `maxDuration = 300` (Vercel Pro ceiling; Task 9 consumes) |
+ * | chatMaxDurationSec | 300 | route.ts `maxDuration = 300` (Vercel Pro ceiling; Task 9 pins via sync-mirror) |
  */
 import { z } from "zod";
 

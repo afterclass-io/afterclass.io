@@ -100,6 +100,10 @@ const config = withSentryConfig(
     // This can increase your server load as well as your hosting bill.
     // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
     // side errors will fail.
+    // Task 9 cost note: the /monitoring tunnel routes every browser error +
+    // envelope through a Vercel serverless invocation (egress + duration on
+    // our bill). Kept for ad-blocker circumvention; if Sentry volume spikes,
+    // drop tunnelRoute and send directly to the ingest DSN instead.
     tunnelRoute: "/monitoring",
 
     bundleSizeOptimizations: {
