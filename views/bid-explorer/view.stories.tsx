@@ -13,7 +13,7 @@ import { withMcpView } from "../../.storybook/withMcpView";
  */
 
 // Safety factors mirror the real seed data
-// (`prisma/data/22_safety_factors.json`, EMPIRICAL/MEDIAN):
+// (`prisma/data/22_safety_factors.json`, AY202627T1 EMPIRICAL/MEDIAN):
 // 50/60/70/80/90/95 with ascending multipliers. The
 // explore-bid-options tool filters to the prediction term's MEDIAN
 // factors, so fixtures carry all six rates.
@@ -21,7 +21,7 @@ const fullProps = {
   classId: "cl1",
   history: [
     {
-      acadTermId: "AY2024/25-T1",
+      acadTermId: "AY202425T1",
       round: "1",
       window: 1,
       min: 10,
@@ -29,7 +29,7 @@ const fullProps = {
       vacancy: 45,
     },
     {
-      acadTermId: "AY2025/26-T1",
+      acadTermId: "AY202526T1",
       round: "1",
       window: 1,
       min: 14,
@@ -65,7 +65,7 @@ const multiRoundProps = {
   ...fullProps,
   history: [
     {
-      acadTermId: "AY2024/25-T1",
+      acadTermId: "AY202425T1",
       round: "1",
       window: 1,
       min: 10,
@@ -73,7 +73,7 @@ const multiRoundProps = {
       vacancy: 45,
     },
     {
-      acadTermId: "AY2024/25-T1",
+      acadTermId: "AY202425T1",
       round: "1A",
       window: 2,
       min: 12,
@@ -81,7 +81,7 @@ const multiRoundProps = {
       vacancy: 40,
     },
     {
-      acadTermId: "AY2025/26-T1",
+      acadTermId: "AY202526T1",
       round: "1",
       window: 1,
       min: 14,
@@ -93,12 +93,12 @@ const multiRoundProps = {
 
 // Four history terms exercise the staggered x-axis labels (>2
 // points get alternating two-row labels plus shortened
-// "25/26-T1" forms).
+// "26-27 T1" compact forms via shortTermLabel).
 const manyTermsProps = {
   ...fullProps,
   history: [
     {
-      acadTermId: "AY2023/24-T1",
+      acadTermId: "AY202324T1",
       round: "1",
       window: 1,
       min: 12.24,
@@ -106,7 +106,7 @@ const manyTermsProps = {
       vacancy: 50,
     },
     {
-      acadTermId: "AY2024/25-T1",
+      acadTermId: "AY202425T1",
       round: "1",
       window: 1,
       min: 10,
@@ -114,7 +114,7 @@ const manyTermsProps = {
       vacancy: 45,
     },
     {
-      acadTermId: "AY2024/25-T1",
+      acadTermId: "AY202425T1",
       round: "1A",
       window: 2,
       min: 12,
@@ -122,7 +122,7 @@ const manyTermsProps = {
       vacancy: 40,
     },
     {
-      acadTermId: "AY2025/26-T1",
+      acadTermId: "AY202526T1",
       round: "1",
       window: 1,
       min: 14,
@@ -130,7 +130,7 @@ const manyTermsProps = {
       vacancy: 38,
     },
     {
-      acadTermId: "AY2026/27-T1",
+      acadTermId: "AY202627T1",
       round: "1",
       window: 1,
       min: 16,
@@ -207,5 +207,42 @@ export const Loading: Story = {
 export const ErrorState: Story = {
   decorators: [
     withMcpView({ status: "error", error: { message: "Unauthorized" } }),
+  ],
+};
+
+/**
+ * UpsertBidFailure: the upsert-bid CTA's callTool rejected (rate-limited) —
+ * exercises the view's "Failed to save" feedback via the injectable
+ * useDynamicTool mock (`.storybook/mocks/mcp-use-react.ts` `ctaError`).
+ * Seed with `parameters: { mcpCta: { mode: "error", message: "rate limited" } }`.
+ */
+export const UpsertBidFailure: Story = {
+  decorators: [withMcpView({ status: "ready", toolOutput: fullProps })],
+  parameters: { mcpCta: { mode: "error", message: "rate limited" } },
+};
+
+/** UpsertBidConfirmRequired: CTA blocked by the destructive confirm:true gate. */
+export const UpsertBidConfirmRequired: Story = {
+  decorators: [withMcpView({ status: "ready", toolOutput: fullProps })],
+  parameters: {
+    mcpCta: {
+      mode: "error",
+      message:
+        'Destructive tool "upsert-bid" requires explicit confirmation: call again with confirm:true after showing the user what will be deleted.',
+    },
+  },
+};
+
+/**
+ * UnavailableHost: the bridge cannot call tools — the upsert-bid CTA stays
+ * hidden (see view.tsx `isAvailable` guard).
+ */
+export const UnavailableHost: Story = {
+  decorators: [
+    withMcpView({
+      status: "ready",
+      toolOutput: fullProps,
+      isAvailable: false,
+    }),
   ],
 };
