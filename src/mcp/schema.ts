@@ -19,7 +19,9 @@ import type { z } from "zod";
  * `bunx mcp-use typecheck` / `z.toJSONSchema` — non-serializable schemas
  * (e.g. `z.date()`) fail `tools/list` with `-32603`.
  */
-export function asSchema<T extends z.ZodType>(schema: T): StandardSchemaWithJSON {
+export function asSchema<T extends z.ZodType>(
+  schema: T,
+): StandardSchemaWithJSON {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- keeps `as never` out of 8 call sites
   return schema as unknown as StandardSchemaWithJSON;
 }

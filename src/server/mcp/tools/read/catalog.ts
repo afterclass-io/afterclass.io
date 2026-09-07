@@ -3,7 +3,13 @@ import { z } from "zod";
 import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
 
 import { resolveTermId } from "../../current";
-import { errText, errorMessage, jsonText, type McpTool, type ToolResult } from "../../types";
+import {
+  errText,
+  errorMessage,
+  jsonText,
+  type McpTool,
+  type ToolResult,
+} from "../../types";
 
 /** Flat review-card shape consumed by the review-cards view. */
 interface ReviewCard {
@@ -111,7 +117,9 @@ function reviewCardsProps(text: string): Record<string, unknown> {
   }
 }
 
-const reviewCardsToViewProps = (result: ToolResult): Record<string, unknown> => {
+const reviewCardsToViewProps = (
+  result: ToolResult,
+): Record<string, unknown> => {
   const text = result.content.find((c) => c.type === "text")?.text ?? "";
   return reviewCardsProps(text);
 };
@@ -159,7 +167,9 @@ const getProfessorReviewsSchema = z.object({
   cursor: z.string().optional(),
 });
 
-export const getProfessorReviewsTool: McpTool<typeof getProfessorReviewsSchema> = {
+export const getProfessorReviewsTool: McpTool<
+  typeof getProfessorReviewsSchema
+> = {
   name: "get-professor-reviews",
   description:
     "Read student reviews for a professor, including full review text. Use when the user asks what students say about a professor or wants concrete review examples. Read-only: NEVER write, edit, or create reviews.",
@@ -191,13 +201,15 @@ const getBidPredictionSchema = z.object({
 
 export const getBidPredictionTool: McpTool<typeof getBidPredictionSchema> = {
   name: "get-bid-prediction",
-  description: "Get the latest bid prediction (expected median and minimum clearing price) for a class.",
+  description:
+    "Get the latest bid prediction (expected median and minimum clearing price) for a class.",
   inputSchema: getBidPredictionSchema,
   readOnly: true,
   run: async ({ caller }, { classId }) => {
     try {
       const prediction = await caller.bidPredictions.getBy({ classId });
-      if (!prediction) return errText(`No prediction available for class ${classId}`);
+      if (!prediction)
+        return errText(`No prediction available for class ${classId}`);
       return jsonText(prediction);
     } catch (e) {
       return errText(errorMessage(e));
@@ -291,7 +303,9 @@ export const getBidWindowsTool: McpTool<typeof getBidWindowsSchema> = {
       // falls back to the current term (friendly error when none exists).
       const term = await resolveTermId(caller, acadTermId);
       if (!term.ok) return errText(term.errText);
-      const windows = await caller.bidWindows.getByAcadTerm({ acadTermId: term.value });
+      const windows = await caller.bidWindows.getByAcadTerm({
+        acadTermId: term.value,
+      });
       let currentWindowId: number | null = null;
       try {
         const current = await caller.bidWindows.getCurrentWindow();

@@ -19,7 +19,11 @@ export const exploreBidOptions = server.tool(
     inputSchema: asSchema(tool.inputSchema),
     outputSchema: asSchema(bidExplorerOutput),
     annotations: registration.annotations,
-    view: { name: "bid-explorer", description: "Bid explorer", prefersBorder: true },
+    view: {
+      name: "bid-explorer",
+      description: "Bid explorer",
+      prefersBorder: true,
+    },
   },
   async (params, ctx) =>
     runViewTool({
@@ -46,16 +50,25 @@ export const exploreBidOptions = server.tool(
           } | null;
         };
         const history = Array.isArray(sc.history) ? sc.history : [];
-        const head = `Bid options for class ${sc.classId ?? ""} — ${history.length} history rows`.trim();
+        const head =
+          `Bid options for class ${sc.classId ?? ""} — ${history.length} history rows`.trim();
         const lines = history.map((h) => {
-          const vacancy = typeof h.vacancy === "number" ? `, vacancy ${h.vacancy}` : "";
+          const vacancy =
+            typeof h.vacancy === "number" ? `, vacancy ${h.vacancy}` : "";
           return `${h.acadTermId} R${h.round}W${h.window}: min ${h.min}, median ${h.median}${vacancy}`;
         });
         if (sc.prediction) {
           const p = sc.prediction;
-          const minPart = typeof p.minPredicted === "number" ? ` (min ${p.minPredicted})` : "";
-          const winPart = p.bidWindow ? ` for round ${p.bidWindow.round} window ${p.bidWindow.window}` : "";
-          lines.push(`Prediction: median ${p.medianPredicted}${minPart}${winPart}`);
+          const minPart =
+            typeof p.minPredicted === "number"
+              ? ` (min ${p.minPredicted})`
+              : "";
+          const winPart = p.bidWindow
+            ? ` for round ${p.bidWindow.round} window ${p.bidWindow.window}`
+            : "";
+          lines.push(
+            `Prediction: median ${p.medianPredicted}${minPart}${winPart}`,
+          );
         }
         const body = lines.length > 0 ? `${head}:\n${lines.join("\n")}` : head;
         // Inputs first (courseCode/section from adapter params), resolved

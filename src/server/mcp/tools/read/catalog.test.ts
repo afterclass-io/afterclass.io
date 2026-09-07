@@ -85,7 +85,10 @@ describe("catalog read tools", () => {
       user: fakeUser,
       caller: makeCaller({ getByCourseCodeProtected: fn }),
     };
-    const result = await getCourseReviewsTool.run(ctx, { code: "ACC101", limit: 10 });
+    const result = await getCourseReviewsTool.run(ctx, {
+      code: "ACC101",
+      limit: 10,
+    });
     expect(fn).toHaveBeenCalledWith({
       code: "ACC101",
       limit: 10,
@@ -102,7 +105,10 @@ describe("catalog read tools", () => {
       user: fakeUser,
       caller: makeCaller({ getByProfSlugProtected: fn }),
     };
-    const result = await getProfessorReviewsTool.run(ctx, { slug: "prof-x", limit: 5 });
+    const result = await getProfessorReviewsTool.run(ctx, {
+      slug: "prof-x",
+      limit: 5,
+    });
     expect(fn).toHaveBeenCalledWith({
       slug: "prof-x",
       limit: 5,
@@ -121,9 +127,16 @@ describe("catalog read tools", () => {
       user: fakeUser,
       caller: makeCaller({ getByCourseCodeProtected: fn }),
     };
-    const result = await getCourseReviewsTool.run(ctx, { code: "COR-MGMT1202", limit: 20 });
+    const result = await getCourseReviewsTool.run(ctx, {
+      code: "COR-MGMT1202",
+      limit: 20,
+    });
     const props = getCourseReviewsTool.toViewProps?.(result);
-    expect(props).toEqual({ context: "COR-MGMT1202", reviews: [expectedCard], nextCursor: "rv2" });
+    expect(props).toEqual({
+      context: "COR-MGMT1202",
+      reviews: [expectedCard],
+      nextCursor: "rv2",
+    });
   });
 
   it("get-course-reviews threads an optional cursor to the procedure and keeps it absent when unset", async () => {
@@ -151,12 +164,17 @@ describe("catalog read tools", () => {
     });
     // No cursor passed → procedure sees no cursor key; props omit nextCursor
     // when the procedure leaves it unset.
-    const fnUnset = vi.fn().mockResolvedValue({ items: [], nextCursor: undefined });
+    const fnUnset = vi
+      .fn()
+      .mockResolvedValue({ items: [], nextCursor: undefined });
     const ctxUnset: ToolContext = {
       user: fakeUser,
       caller: makeCaller({ getByCourseCodeProtected: fnUnset }),
     };
-    const resultUnset = await getCourseReviewsTool.run(ctxUnset, { code: "CS101", limit: 20 });
+    const resultUnset = await getCourseReviewsTool.run(ctxUnset, {
+      code: "CS101",
+      limit: 20,
+    });
     expect(fnUnset).toHaveBeenCalledWith({
       code: "CS101",
       limit: 20,
@@ -177,7 +195,10 @@ describe("catalog read tools", () => {
       user: fakeUser,
       caller: makeCaller({ getByProfSlugProtected: fn }),
     };
-    const result = await getProfessorReviewsTool.run(ctx, { slug: "prof-x", limit: 20 });
+    const result = await getProfessorReviewsTool.run(ctx, {
+      slug: "prof-x",
+      limit: 20,
+    });
     const props = getProfessorReviewsTool.toViewProps?.(result);
     expect(props).toEqual({ context: "prof-x", reviews: [expectedCard] });
   });
@@ -225,7 +246,10 @@ describe("catalog read tools", () => {
       user: fakeUser,
       caller: makeCaller({ getByCourseCodeProtected: fn }),
     };
-    const result = await getCourseReviewsTool.run(ctx, { code: "CS101", limit: 20 });
+    const result = await getCourseReviewsTool.run(ctx, {
+      code: "CS101",
+      limit: 20,
+    });
     const props = getCourseReviewsTool.toViewProps?.(result);
     expect(props).toEqual({
       context: "CS101",
@@ -246,8 +270,12 @@ describe("catalog read tools", () => {
   });
 
   it("toViewProps keeps context on empty results", async () => {
-    const courseFn = vi.fn().mockResolvedValue({ items: [], nextCursor: undefined });
-    const profFn = vi.fn().mockResolvedValue({ items: [], nextCursor: undefined });
+    const courseFn = vi
+      .fn()
+      .mockResolvedValue({ items: [], nextCursor: undefined });
+    const profFn = vi
+      .fn()
+      .mockResolvedValue({ items: [], nextCursor: undefined });
     const courseCtx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({ getByCourseCodeProtected: courseFn }),
@@ -256,12 +284,18 @@ describe("catalog read tools", () => {
       user: fakeUser,
       caller: makeCaller({ getByProfSlugProtected: profFn }),
     };
-    const courseResult = await getCourseReviewsTool.run(courseCtx, { code: "CS101", limit: 20 });
+    const courseResult = await getCourseReviewsTool.run(courseCtx, {
+      code: "CS101",
+      limit: 20,
+    });
     expect(getCourseReviewsTool.toViewProps?.(courseResult)).toEqual({
       context: "CS101",
       reviews: [],
     });
-    const profResult = await getProfessorReviewsTool.run(profCtx, { slug: "prof-x", limit: 20 });
+    const profResult = await getProfessorReviewsTool.run(profCtx, {
+      slug: "prof-x",
+      limit: 20,
+    });
     expect(getProfessorReviewsTool.toViewProps?.(profResult)).toEqual({
       context: "prof-x",
       reviews: [],
@@ -278,41 +312,76 @@ describe("catalog read tools", () => {
         getByProfSlugProtected: profFn,
       }),
     };
-    const courseResult = await getCourseReviewsTool.run(ctx, { code: "ACC101", limit: 10 });
+    const courseResult = await getCourseReviewsTool.run(ctx, {
+      code: "ACC101",
+      limit: 10,
+    });
     expect(courseResult.isError).toBe(true);
     expect(courseResult.content[0]?.text).toContain("db down");
-    const profResult = await getProfessorReviewsTool.run(ctx, { slug: "prof-x", limit: 10 });
+    const profResult = await getProfessorReviewsTool.run(ctx, {
+      slug: "prof-x",
+      limit: 10,
+    });
     expect(profResult.isError).toBe(true);
     expect(profResult.content[0]?.text).toContain("db down");
   });
 
   it("get-bid-prediction calls bidPredictions.getBy with classId", async () => {
     const fn = vi.fn().mockResolvedValue(null);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getBy: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getBy: fn }),
+    };
     await getBidPredictionTool.run(ctx, { classId: "cl1" });
     expect(fn).toHaveBeenCalledWith({ classId: "cl1" });
   });
 
   it("get-bid-results passes filters to bidResults.getBy", async () => {
     const fn = vi.fn().mockResolvedValue([]);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getBy: fn }) };
-    await getBidResultsTool.run(ctx, getBidResultsTool.inputSchema.parse({ courseCode: "ACC101", section: "G1" }));
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getBy: fn }),
+    };
+    await getBidResultsTool.run(
+      ctx,
+      getBidResultsTool.inputSchema.parse({
+        courseCode: "ACC101",
+        section: "G1",
+      }),
+    );
     expect(fn).toHaveBeenCalledWith({ courseCode: "ACC101", section: "G1" });
   });
 
   it("get-bid-results clamps results to limit and defaults to 20", async () => {
-    const makeRows = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `r${i}` }));
+    const makeRows = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({ id: `r${i}` }));
     // Default: no limit passed → 20
     const fnDefault = vi.fn().mockResolvedValue(makeRows(30));
-    const ctxDefault: ToolContext = { user: fakeUser, caller: makeCaller({ getBy: fnDefault }) };
-    const resultDefault = await getBidResultsTool.run(ctxDefault, { classId: "cl1" } as Parameters<typeof getBidResultsTool.run>[1]);
-    const parsedDefault = JSON.parse(resultDefault.content[0]!.text) as unknown[];
+    const ctxDefault: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getBy: fnDefault }),
+    };
+    const resultDefault = await getBidResultsTool.run(ctxDefault, {
+      classId: "cl1",
+    } as Parameters<typeof getBidResultsTool.run>[1]);
+    const parsedDefault = JSON.parse(
+      resultDefault.content[0]!.text,
+    ) as unknown[];
     expect(parsedDefault).toHaveLength(20);
 
     // Explicit limit 5
     const fn5 = vi.fn().mockResolvedValue(makeRows(30));
-    const ctx5: ToolContext = { user: fakeUser, caller: makeCaller({ getBy: fn5 }) };
-    const result5 = await getBidResultsTool.run(ctx5, { courseCode: "ACC101", section: "G1", limit: 5 } as Record<string, unknown> as Parameters<typeof getBidResultsTool.run>[1]);
+    const ctx5: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getBy: fn5 }),
+    };
+    const result5 = await getBidResultsTool.run(ctx5, {
+      courseCode: "ACC101",
+      section: "G1",
+      limit: 5,
+    } as Record<string, unknown> as Parameters<
+      typeof getBidResultsTool.run
+    >[1]);
     const parsed5 = JSON.parse(result5.content[0]!.text) as unknown[];
     expect(parsed5).toHaveLength(5);
 
@@ -322,27 +391,51 @@ describe("catalog read tools", () => {
 
   it("get-bid-results also clamps an { items } envelope without mutating other keys", async () => {
     const items = Array.from({ length: 30 }, (_, i) => ({ id: `r${i}` }));
-    const fn = vi
-      .fn()
-      .mockResolvedValue({ items, total: 30, extra: "keep" });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getBy: fn }) };
-    const result = await getBidResultsTool.run(ctx, { classId: "cl1", limit: 5 } as Record<string, unknown> as Parameters<typeof getBidResultsTool.run>[1]);
-    const parsed = JSON.parse(result.content[0]!.text) as { items: unknown[]; total: number; extra: string };
+    const fn = vi.fn().mockResolvedValue({ items, total: 30, extra: "keep" });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getBy: fn }),
+    };
+    const result = await getBidResultsTool.run(ctx, {
+      classId: "cl1",
+      limit: 5,
+    } as Record<string, unknown> as Parameters<
+      typeof getBidResultsTool.run
+    >[1]);
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      items: unknown[];
+      total: number;
+      extra: string;
+    };
     expect(parsed.items).toHaveLength(5);
     expect(parsed.total).toBe(30);
     expect(parsed.extra).toBe("keep");
   });
 
   it("get-bid-results rejects limit > 50 and limit 0", () => {
-    expect(getBidResultsTool.inputSchema.safeParse({ classId: "cl1", limit: 51 }).success).toBe(false);
-    expect(getBidResultsTool.inputSchema.safeParse({ classId: "cl1", limit: 0 }).success).toBe(false);
-    expect(getBidResultsTool.inputSchema.safeParse({ classId: "cl1", limit: 50 }).success).toBe(true);
-    expect(getBidResultsTool.inputSchema.safeParse({ classId: "cl1", limit: 1 }).success).toBe(true);
+    expect(
+      getBidResultsTool.inputSchema.safeParse({ classId: "cl1", limit: 51 })
+        .success,
+    ).toBe(false);
+    expect(
+      getBidResultsTool.inputSchema.safeParse({ classId: "cl1", limit: 0 })
+        .success,
+    ).toBe(false);
+    expect(
+      getBidResultsTool.inputSchema.safeParse({ classId: "cl1", limit: 50 })
+        .success,
+    ).toBe(true);
+    expect(
+      getBidResultsTool.inputSchema.safeParse({ classId: "cl1", limit: 1 })
+        .success,
+    ).toBe(true);
   });
 
   it("get-bid-results requires classId OR (courseCode + section) with a guided error", () => {
     // courseCode alone (no section, no classId) must fail with guidance
-    const alone = getBidResultsTool.inputSchema.safeParse({ courseCode: "ACC101" });
+    const alone = getBidResultsTool.inputSchema.safeParse({
+      courseCode: "ACC101",
+    });
     expect(alone.success).toBe(false);
     if (!alone.success) {
       const msg = alone.error.issues.map((i) => i.message).join(" ");
@@ -361,23 +454,51 @@ describe("catalog read tools", () => {
       getBidResultsTool.inputSchema.safeParse({ classId: "cl1" }).success,
     ).toBe(true);
     expect(
-      getBidResultsTool.inputSchema.safeParse({ courseCode: "ACC101", section: "G1" })
-        .success,
+      getBidResultsTool.inputSchema.safeParse({
+        courseCode: "ACC101",
+        section: "G1",
+      }).success,
     ).toBe(true);
   });
 
   it("review tools have tightened defaults (10) and max 20", () => {
-    expect(getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101", limit: 51 }).success).toBe(false);
-    expect(getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101", limit: 21 }).success).toBe(false);
-    expect(getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101", limit: 20 }).success).toBe(true);
-    expect(getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101", limit: 0 }).success).toBe(false);
-    const parsedCourse = getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101" });
+    expect(
+      getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101", limit: 51 })
+        .success,
+    ).toBe(false);
+    expect(
+      getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101", limit: 21 })
+        .success,
+    ).toBe(false);
+    expect(
+      getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101", limit: 20 })
+        .success,
+    ).toBe(true);
+    expect(
+      getCourseReviewsTool.inputSchema.safeParse({ code: "ACC101", limit: 0 })
+        .success,
+    ).toBe(false);
+    const parsedCourse = getCourseReviewsTool.inputSchema.safeParse({
+      code: "ACC101",
+    });
     expect(parsedCourse.success).toBe(true);
     if (parsedCourse.success) expect(parsedCourse.data.limit).toBe(10);
 
-    expect(getProfessorReviewsTool.inputSchema.safeParse({ slug: "prof-x", limit: 21 }).success).toBe(false);
-    expect(getProfessorReviewsTool.inputSchema.safeParse({ slug: "prof-x", limit: 20 }).success).toBe(true);
-    const parsedProf = getProfessorReviewsTool.inputSchema.safeParse({ slug: "prof-x" });
+    expect(
+      getProfessorReviewsTool.inputSchema.safeParse({
+        slug: "prof-x",
+        limit: 21,
+      }).success,
+    ).toBe(false);
+    expect(
+      getProfessorReviewsTool.inputSchema.safeParse({
+        slug: "prof-x",
+        limit: 20,
+      }).success,
+    ).toBe(true);
+    const parsedProf = getProfessorReviewsTool.inputSchema.safeParse({
+      slug: "prof-x",
+    });
     expect(parsedProf.success).toBe(true);
     if (parsedProf.success) expect(parsedProf.data.limit).toBe(10);
   });
@@ -388,7 +509,9 @@ describe("catalog read tools", () => {
       { id: "t2", label: "AY2026/27 T2" },
     ];
     const list = vi.fn().mockResolvedValue(terms);
-    const current = vi.fn().mockResolvedValue({ id: "t1", label: "AY2026/27 T1" });
+    const current = vi
+      .fn()
+      .mockResolvedValue({ id: "t1", label: "AY2026/27 T1" });
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({ list, current }),
@@ -404,7 +527,9 @@ describe("catalog read tools", () => {
   });
 
   it("list-acad-terms returns currentTermId null when there is no current term", async () => {
-    const list = vi.fn().mockResolvedValue([{ id: "t1", label: "AY2026/27 T1" }]);
+    const list = vi
+      .fn()
+      .mockResolvedValue([{ id: "t1", label: "AY2026/27 T1" }]);
     const current = vi.fn().mockResolvedValue(null);
     const ctx: ToolContext = {
       user: fakeUser,
@@ -427,7 +552,9 @@ describe("catalog read tools", () => {
     ];
     const currentTerm = vi.fn().mockResolvedValue({ id: "t1" });
     const byTerm = vi.fn().mockResolvedValue(windows);
-    const currentWindow = vi.fn().mockResolvedValue({ id: 2, acadTermId: "t1" });
+    const currentWindow = vi
+      .fn()
+      .mockResolvedValue({ id: 2, acadTermId: "t1" });
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({
@@ -450,10 +577,15 @@ describe("catalog read tools", () => {
   it("get-bid-windows({ acadTermId }) returns { windows, currentWindowId } for that term", async () => {
     const windows = [{ id: 7, acadTermId: "t2", round: "2", window: 1 }];
     const byTerm = vi.fn().mockResolvedValue(windows);
-    const currentWindow = vi.fn().mockResolvedValue({ id: 2, acadTermId: "t1" });
+    const currentWindow = vi
+      .fn()
+      .mockResolvedValue({ id: 2, acadTermId: "t1" });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ getByAcadTerm: byTerm, getCurrentWindow: currentWindow }),
+      caller: makeCaller({
+        getByAcadTerm: byTerm,
+        getCurrentWindow: currentWindow,
+      }),
     };
     const result = await getBidWindowsTool.run(ctx, { acadTermId: "t2" });
     expect(result.isError).toBeUndefined();
@@ -470,7 +602,9 @@ describe("catalog read tools", () => {
     const windows = [{ id: 1, acadTermId: "t1", round: "1", window: 1 }];
     const currentTerm = vi.fn().mockResolvedValue({ id: "t1" });
     const byTerm = vi.fn().mockResolvedValue(windows);
-    const currentWindow = vi.fn().mockResolvedValue({ id: 1, acadTermId: "t1" });
+    const currentWindow = vi
+      .fn()
+      .mockResolvedValue({ id: 1, acadTermId: "t1" });
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({
@@ -482,7 +616,9 @@ describe("catalog read tools", () => {
     const result = await getBidWindowsTool.run(ctx, { acadTermId: "   " });
     expect(result.isError).toBeUndefined();
     expect(byTerm).toHaveBeenCalledWith({ acadTermId: "t1" });
-    const parsed = JSON.parse(result.content[0]!.text) as { windows: unknown[] };
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      windows: unknown[];
+    };
     expect(parsed.windows).toEqual(windows);
   });
 

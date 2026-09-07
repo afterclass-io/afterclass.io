@@ -485,34 +485,35 @@ const BidExplorerView: React.FC = () => {
             type="button"
             aria-live="polite"
             onClick={() => {
-            // classId truthy above — narrow to string for the call contract.
-            const cid: string = classId;
-            const bidWindowId = prediction.bidWindow.id;
-            // v2: tool errors reject (ToolError) instead of resolving
-            // isError:true, so "Failed to save" moves to catch.
-            upsertBid
-              .callTool({ classId: cid, bidAmount: suggested, bidWindowId })
-              .then(() => showFeedback("saved"))
-              .catch(() => showFeedback("error"));
-          }}
-          style={{
-            width: "100%",
-            padding: "8px 16px",
-            borderRadius: 9999,
-            border: "none",
-            background: feedback === "error" ? "oklch(0.6 0.2 20)" : c.primary,
-            color: c.primaryFg,
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          {feedback === "saved"
-            ? "Saved \u2713"
-            : feedback === "error"
-              ? "Failed to save"
-              : `Confirm: set bid to $${suggested}`}
-        </button>
+              // classId truthy above — narrow to string for the call contract.
+              const cid: string = classId;
+              const bidWindowId = prediction.bidWindow.id;
+              // v2: tool errors reject (ToolError) instead of resolving
+              // isError:true, so "Failed to save" moves to catch.
+              upsertBid
+                .callTool({ classId: cid, bidAmount: suggested, bidWindowId })
+                .then(() => showFeedback("saved"))
+                .catch(() => showFeedback("error"));
+            }}
+            style={{
+              width: "100%",
+              padding: "8px 16px",
+              borderRadius: 9999,
+              border: "none",
+              background:
+                feedback === "error" ? "oklch(0.6 0.2 20)" : c.primary,
+              color: c.primaryFg,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            {feedback === "saved"
+              ? "Saved \u2713"
+              : feedback === "error"
+                ? "Failed to save"
+                : `Confirm: set bid to $${suggested}`}
+          </button>
         </div>
       )}
     </div>

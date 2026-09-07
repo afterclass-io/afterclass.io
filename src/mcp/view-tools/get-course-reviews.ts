@@ -19,7 +19,11 @@ export const getCourseReviews = server.tool(
     inputSchema: asSchema(tool.inputSchema),
     outputSchema: asSchema(reviewCardsOutput),
     annotations: registration.annotations,
-    view: { name: "review-cards", description: "Course reviews", prefersBorder: true },
+    view: {
+      name: "review-cards",
+      description: "Course reviews",
+      prefersBorder: true,
+    },
   },
   async (params, ctx) =>
     runViewTool({
@@ -43,13 +47,19 @@ export const getCourseReviews = server.tool(
         const head = `Reviews for ${sc.context ?? ""} — ${reviews.length} reviews`;
         // Page link from own output only (context echoes the queried code) —
         // never invented; omitted when context is absent.
-        const link = typeof sc.context === "string" && sc.context.length > 0 ? `\nFull reviews: ${coursePage(sc.context)}` : "";
+        const link =
+          typeof sc.context === "string" && sc.context.length > 0
+            ? `\nFull reviews: ${coursePage(sc.context)}`
+            : "";
         if (reviews.length === 0) return `${head}${link}`;
         // One line per review: rating, labels, professor, body-or-tips
         // snippet (truncated so a 20-review payload stays compact).
         const lines = reviews.map((r) => {
           const stars = typeof r.rating === "number" ? `★${r.rating}` : "★?";
-          const labels = Array.isArray(r.labels) && r.labels.length > 0 ? ` [${r.labels.join(", ")}]` : "";
+          const labels =
+            Array.isArray(r.labels) && r.labels.length > 0
+              ? ` [${r.labels.join(", ")}]`
+              : "";
           const prof = r.professorName ? ` ${r.professorName}` : "";
           const snippet = (r.body ?? r.tips ?? "").slice(0, 120);
           return `${stars}${labels}${prof} — ${snippet}`.trim();

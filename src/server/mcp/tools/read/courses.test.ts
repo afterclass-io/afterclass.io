@@ -451,9 +451,7 @@ describe("get-classes", () => {
   });
 
   it("returns an { items, nextCursor } envelope without a cursor", async () => {
-    const fn = vi
-      .fn()
-      .mockResolvedValue([{ id: "c1" }, { id: "c2" }]);
+    const fn = vi.fn().mockResolvedValue([{ id: "c1" }, { id: "c2" }]);
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({ getAll: fn }),

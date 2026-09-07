@@ -187,7 +187,9 @@ describe("BidExplorerView (v2)", () => {
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
-    fireEvent.click(screen.getByRole("button", { name: "Confirm: set bid to $16.2" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Confirm: set bid to $16.2" }),
+    );
     await waitFor(() => expect(callTool).toHaveBeenCalledTimes(1));
     expect(callTool).toHaveBeenCalledWith({
       classId: "cl1",
@@ -239,7 +241,9 @@ describe("BidExplorerView (v2)", () => {
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
-    fireEvent.click(screen.getByRole("button", { name: "Confirm: set bid to $16.2" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Confirm: set bid to $16.2" }),
+    );
     await waitFor(() =>
       expect(screen.getByRole("button", { name: /Saved/ })).toBeInTheDocument(),
     );
@@ -250,7 +254,9 @@ describe("BidExplorerView (v2)", () => {
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
-    fireEvent.click(screen.getByRole("button", { name: "Confirm: set bid to $16.2" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Confirm: set bid to $16.2" }),
+    );
     await waitFor(() =>
       expect(
         screen.getByRole("button", { name: /Failed to save/ }),

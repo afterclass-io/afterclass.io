@@ -33,7 +33,10 @@ function makeCaller(procs: Record<string, unknown>) {
   return {
     timetable: { listMine: procs.timetableListMine },
     userBids: { listMine: procs.userBidsListMine, getBudget: procs.getBudget },
-    roadmaps: { listMine: procs.roadmapsListMine, listPublic: procs.listPublic },
+    roadmaps: {
+      listMine: procs.roadmapsListMine,
+      listPublic: procs.listPublic,
+    },
     sharing: { getSharedTimetable: procs.getSharedTimetable },
     acadTerms: { current: procs.acadTermsGetCurrent },
   } as unknown as ToolContext["caller"];
@@ -42,18 +45,34 @@ function makeCaller(procs: Record<string, unknown>) {
 describe("my-data read tools", () => {
   it("my-timetables calls timetable.listMine with the user's acadTermId", async () => {
     const fn = vi.fn().mockResolvedValue([]);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ timetableListMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ timetableListMine: fn }),
+    };
     await myTimetablesTool.run(ctx, { acadTermId: "t1" });
     expect(fn).toHaveBeenCalledWith({ acadTermId: "t1" });
   });
 
   it("my-timetables strips shareToken and icalToken bearer tokens from the output", async () => {
-    const fn = vi.fn().mockResolvedValue([
-      { id: "tt1", name: "A", shareToken: "tok", icalToken: "ical", visibility: "UNLISTED" },
-    ]);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ timetableListMine: fn }) };
+    const fn = vi
+      .fn()
+      .mockResolvedValue([
+        {
+          id: "tt1",
+          name: "A",
+          shareToken: "tok",
+          icalToken: "ical",
+          visibility: "UNLISTED",
+        },
+      ]);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ timetableListMine: fn }),
+    };
     const result = await myTimetablesTool.run(ctx, { acadTermId: "t1" });
-    const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
+    const parsed = JSON.parse(result.content[0]!.text) as Array<
+      Record<string, unknown>
+    >;
     expect(parsed[0]!.shareToken).toBeUndefined();
     expect(parsed[0]!.icalToken).toBeUndefined();
     expect(parsed[0]!.id).toBe("tt1");
@@ -61,7 +80,10 @@ describe("my-data read tools", () => {
 
   it("my-timetables returns errText when timetable.listMine rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ timetableListMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ timetableListMine: fn }),
+    };
     const result = await myTimetablesTool.run(ctx, { acadTermId: "t1" });
     expect(result.isError).toBe(true);
   });
@@ -145,18 +167,39 @@ describe("my-data read tools", () => {
 
   it("my-bids returns errText when userBids.listMine rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ userBidsListMine: fn }),
+    };
     const result = await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({}));
     expect(result.isError).toBe(true);
   });
 
   it("my-bids filters by acadTermId when provided", async () => {
     const fn = vi.fn().mockResolvedValue([
-      { id: "b1", bidAmount: 25, status: "PLANNED", bidWindow: { acadTermId: "t1" }, courseCode: "ACC101" },
-      { id: "b2", bidAmount: 30, status: "SECURED", bidWindow: { acadTermId: "t2" }, courseCode: "FIN201" },
+      {
+        id: "b1",
+        bidAmount: 25,
+        status: "PLANNED",
+        bidWindow: { acadTermId: "t1" },
+        courseCode: "ACC101",
+      },
+      {
+        id: "b2",
+        bidAmount: 30,
+        status: "SECURED",
+        bidWindow: { acadTermId: "t2" },
+        courseCode: "FIN201",
+      },
     ]);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
-    const result = await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({ acadTermId: "t1" }));
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ userBidsListMine: fn }),
+    };
+    const result = await myBidsTool.run(
+      ctx,
+      myBidsTool.inputSchema.parse({ acadTermId: "t1" }),
+    );
     const parsed = JSON.parse(result.content[0]!.text) as {
       items: Array<Record<string, unknown>>;
       nextCursor: string | null;
@@ -221,7 +264,10 @@ describe("my-data read tools", () => {
         acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t1" }),
       }),
     };
-    const resultDefault = await myBidsTool.run(ctxDefault, myBidsTool.inputSchema.parse({}));
+    const resultDefault = await myBidsTool.run(
+      ctxDefault,
+      myBidsTool.inputSchema.parse({}),
+    );
     const parsedDefault = JSON.parse(resultDefault.content[0]!.text) as {
       items: unknown[];
       nextCursor: string | null;
@@ -232,8 +278,14 @@ describe("my-data read tools", () => {
 
     // Explicit limit 5 with acadTermId
     const fn5 = vi.fn().mockResolvedValue(makeBids(30));
-    const ctx5: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn5 }) };
-    const result5 = await myBidsTool.run(ctx5, myBidsTool.inputSchema.parse({ acadTermId: "t1", limit: 5 }));
+    const ctx5: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ userBidsListMine: fn5 }),
+    };
+    const result5 = await myBidsTool.run(
+      ctx5,
+      myBidsTool.inputSchema.parse({ acadTermId: "t1", limit: 5 }),
+    );
     const parsed5 = JSON.parse(result5.content[0]!.text) as {
       items: unknown[];
       nextCursor: string | null;
@@ -249,10 +301,17 @@ describe("my-data read tools", () => {
         bidWindow: { acadTermId: "t1" },
       }));
     const fn = vi.fn().mockResolvedValue(makeBids(8));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ userBidsListMine: fn }),
+    };
     const second = await myBidsTool.run(
       ctx,
-      myBidsTool.inputSchema.parse({ acadTermId: "t1", limit: 5, cursor: "b4" }),
+      myBidsTool.inputSchema.parse({
+        acadTermId: "t1",
+        limit: 5,
+        cursor: "b4",
+      }),
     );
     const parsedSecond = JSON.parse(second.content[0]!.text) as {
       items: Array<{ id: string }>;
@@ -268,13 +327,23 @@ describe("my-data read tools", () => {
     };
     const restart = await myBidsTool.run(
       ctxRestart,
-      myBidsTool.inputSchema.parse({ acadTermId: "t1", limit: 5, cursor: "nope" }),
+      myBidsTool.inputSchema.parse({
+        acadTermId: "t1",
+        limit: 5,
+        cursor: "nope",
+      }),
     );
     const parsedRestart = JSON.parse(restart.content[0]!.text) as {
       items: Array<{ id: string }>;
       nextCursor: string | null;
     };
-    expect(parsedRestart.items.map((b) => b.id)).toEqual(["b0", "b1", "b2", "b3", "b4"]);
+    expect(parsedRestart.items.map((b) => b.id)).toEqual([
+      "b0",
+      "b1",
+      "b2",
+      "b3",
+      "b4",
+    ]);
     expect(parsedRestart.nextCursor).toBe("b4");
   });
 
@@ -295,9 +364,15 @@ describe("my-data read tools", () => {
         courseCode: `X${i}`,
       })),
     ]);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ userBidsListMine: fn }),
+    };
     // Filtered to t1 → 25 rows → clamped to 20 default (no explicit limit)
-    const result = await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({ acadTermId: "t1" }));
+    const result = await myBidsTool.run(
+      ctx,
+      myBidsTool.inputSchema.parse({ acadTermId: "t1" }),
+    );
     const parsed = JSON.parse(result.content[0]!.text) as {
       items: Array<Record<string, unknown>>;
       nextCursor: string | null;
@@ -313,25 +388,40 @@ describe("my-data read tools", () => {
 
   it("my-bids rejects limit > 50 and limit 0", () => {
     expect(myBidsTool.inputSchema.safeParse({ limit: 51 }).success).toBe(false);
-    expect(myBidsTool.inputSchema.safeParse({ acadTermId: "t1", limit: 51 }).success).toBe(false);
-    expect(myBidsTool.inputSchema.safeParse({ acadTermId: "t1", limit: 0 }).success).toBe(false);
-    expect(myBidsTool.inputSchema.safeParse({ acadTermId: "t1", limit: 50 }).success).toBe(true);
-    expect(myBidsTool.inputSchema.safeParse({ acadTermId: "t1", limit: 1 }).success).toBe(true);
+    expect(
+      myBidsTool.inputSchema.safeParse({ acadTermId: "t1", limit: 51 }).success,
+    ).toBe(false);
+    expect(
+      myBidsTool.inputSchema.safeParse({ acadTermId: "t1", limit: 0 }).success,
+    ).toBe(false);
+    expect(
+      myBidsTool.inputSchema.safeParse({ acadTermId: "t1", limit: 50 }).success,
+    ).toBe(true);
+    expect(
+      myBidsTool.inputSchema.safeParse({ acadTermId: "t1", limit: 1 }).success,
+    ).toBe(true);
     const parsedDefault = myBidsTool.inputSchema.safeParse({});
     expect(parsedDefault.success).toBe(true);
-    if (parsedDefault.success) expect((parsedDefault.data as { limit: number }).limit).toBe(20);
+    if (parsedDefault.success)
+      expect((parsedDefault.data as { limit: number }).limit).toBe(20);
   });
 
   it("my-bid-budget calls userBids.getBudget", async () => {
     const fn = vi.fn().mockResolvedValue(null);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getBudget: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getBudget: fn }),
+    };
     await myBudgetTool.run(ctx, { acadTermId: "t1" });
     expect(fn).toHaveBeenCalledWith({ acadTermId: "t1" });
   });
 
   it("my-bid-budget returns errText when userBids.getBudget rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getBudget: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getBudget: fn }),
+    };
     const result = await myBudgetTool.run(ctx, { acadTermId: "t1" });
     expect(result.isError).toBe(true);
   });
@@ -365,51 +455,81 @@ describe("my-data read tools", () => {
 
   it("my-roadmaps calls roadmaps.listMine()", async () => {
     const fn = vi.fn().mockResolvedValue([]);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsListMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsListMine: fn }),
+    };
     await myRoadmapsTool.run(ctx, {});
     expect(fn).toHaveBeenCalledWith();
   });
 
   it("my-roadmaps strips shareToken bearer token from the output", async () => {
-    const fn = vi.fn().mockResolvedValue([{ id: "r1", name: "A", shareToken: "tok", visibility: "PRIVATE" }]);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsListMine: fn }) };
+    const fn = vi
+      .fn()
+      .mockResolvedValue([
+        { id: "r1", name: "A", shareToken: "tok", visibility: "PRIVATE" },
+      ]);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsListMine: fn }),
+    };
     const result = await myRoadmapsTool.run(ctx, {});
-    const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
+    const parsed = JSON.parse(result.content[0]!.text) as Array<
+      Record<string, unknown>
+    >;
     expect(parsed[0]!.shareToken).toBeUndefined();
     expect(parsed[0]!.id).toBe("r1");
   });
 
   it("my-roadmaps returns errText when roadmaps.listMine rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsListMine: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsListMine: fn }),
+    };
     const result = await myRoadmapsTool.run(ctx, {});
     expect(result.isError).toBe(true);
   });
 
   it("browse-public-roadmaps calls roadmaps.listPublic with filters", async () => {
     const fn = vi.fn().mockResolvedValue({ items: [], nextCursor: null });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ listPublic: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ listPublic: fn }),
+    };
     await browsePublicRoadmapsTool.run(ctx, { query: "finance", limit: 10 });
     expect(fn).toHaveBeenCalledWith({ query: "finance", limit: 10 });
   });
 
   it("browse-public-roadmaps returns errText when roadmaps.listPublic rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ listPublic: fn }) };
-    const result = await browsePublicRoadmapsTool.run(ctx, { query: "finance", limit: 10 });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ listPublic: fn }),
+    };
+    const result = await browsePublicRoadmapsTool.run(ctx, {
+      query: "finance",
+      limit: 10,
+    });
     expect(result.isError).toBe(true);
   });
 
   it("get-shared-timetable calls sharing.getSharedTimetable with the token", async () => {
     const fn = vi.fn().mockResolvedValue({ timetable: {}, slots: [] });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getSharedTimetable: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getSharedTimetable: fn }),
+    };
     await getSharedTimetableTool.run(ctx, { token: "tok123" });
     expect(fn).toHaveBeenCalledWith({ token: "tok123" });
   });
 
   it("get-shared-timetable returns errText when sharing.getSharedTimetable rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ getSharedTimetable: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getSharedTimetable: fn }),
+    };
     const result = await getSharedTimetableTool.run(ctx, { token: "tok123" });
     expect(result.isError).toBe(true);
   });

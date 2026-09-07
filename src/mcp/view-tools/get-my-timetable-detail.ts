@@ -19,7 +19,11 @@ export const getMyTimetableDetail = server.tool(
     inputSchema: asSchema(tool.inputSchema),
     outputSchema: asSchema(timetableDetailOutput),
     annotations: registration.annotations,
-    view: { name: "timetable", description: "Weekly class timetable grid", prefersBorder: true },
+    view: {
+      name: "timetable",
+      description: "Weekly class timetable grid",
+      prefersBorder: true,
+    },
   },
   async (params, ctx) =>
     runViewTool({

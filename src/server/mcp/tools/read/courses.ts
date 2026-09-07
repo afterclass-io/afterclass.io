@@ -202,9 +202,7 @@ export const getClassesTool: McpTool<typeof getClassesSchema> = {
               : null,
         });
       }
-      const idx = rows.findIndex(
-        (r) => (r as { id?: unknown }).id === cursor,
-      );
+      const idx = rows.findIndex((r) => (r as { id?: unknown }).id === cursor);
       const page = idx === -1 ? rows : rows.slice(idx + 1);
       const lastId =
         page.length > 0
