@@ -4,7 +4,7 @@ import { dispatchToolCall } from "@/mcp/dispatch";
 import { checkDestructiveConfirm } from "@/mcp/rate-limit";
 import { allTools } from "@/server/mcp/tools";
 import type { ToolContext } from "@/server/mcp/types";
-import { checkAndIncrement } from "@/server/assistant/ratelimit";
+import { checkBudget } from "@/server/assistant/budget";
 
 /** ~6k tokens at the chars/4 heuristic. Caps the per-call miss region AND the
  * within-loop amplification (a result is re-sent at miss in every remaining
@@ -53,11 +53,14 @@ export function buildAssistantTools(
         const gate = checkDestructiveConfirm(t.name, args);
         if (gate) return gate;
         if (!t.readOnly) {
-          const { ok, retryAfterSeconds } = await checkAndIncrement(
-            `chat-write:${ctx.user.id}`,
-            writeRateLimitPerMinute,
-            windowMinutes,
-          );
+          // Single budget primitive (Task 7): same `chat-write:<userId>`
+          // bucket, same limit source, same window — validation/delegation
+          // moved into checkBudget.
+          const { ok, retryAfterSeconds } = await checkBudget(ctx, "write", {
+            prefix: "chat-write",
+            limit: writeRateLimitPerMinute,
+            windowMs: windowMinutes * 60_000,
+          });
           if (!ok) {
             return (
               `You're making changes too quickly - at most ${writeRateLimitPerMinute} ` +

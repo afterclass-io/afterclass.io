@@ -7,8 +7,8 @@ const { mockCheckAndIncrement } = vi.hoisted(() => ({
   mockCheckAndIncrement: vi.fn() as Mock,
 }));
 
-vi.mock("@/server/assistant/ratelimit", () => ({
-  checkAndIncrement: mockCheckAndIncrement,
+vi.mock("@/server/assistant/budget", () => ({
+  checkBudget: mockCheckAndIncrement,
 }));
 
 // `server-only` throws outside a Next.js server bundle — stub as no-op
@@ -126,9 +126,9 @@ describe("buildAssistantTools", () => {
       confirm: true,
     } as never);
     expect(mockCheckAndIncrement).toHaveBeenCalledWith(
-      "chat-write:u1",
-      WRITE_LIMIT,
-      1,
+      ctx,
+      "write",
+      { prefix: "chat-write", limit: WRITE_LIMIT, windowMs: 60_000 },
     );
     expect(result).toContain("b1");
     const setStatus = (

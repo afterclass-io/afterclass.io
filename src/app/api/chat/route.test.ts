@@ -648,8 +648,36 @@ describe("POST /api/chat", () => {
     expect(withCtx.length).toBeGreaterThan(plain.length);
   });
 
-  it("ignores invalid pageContext without failing the turn", async () => {
+  // -- scope gate (cheap refusal before rate limit / quota) --
+  it("refuses off-topic turns without touching the rate limiter, quota, or LLM", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    const res = await POST(
+      buildReq({
+        messages: [
+          {
+            role: "user",
+            content: "reverse a linked list",
+            parts: [{ type: "text", text: "reverse a linked list" }],
+          },
+        ],
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(mockCheckAndIncrement).not.toHaveBeenCalled();
+    expect(mockReserveMessage).not.toHaveBeenCalled();
+    expect(mockStreamText).not.toHaveBeenCalled();
+  });
+
+  it("does not scope-refuse legacy content-only messages (fail-open to normal gates)", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
+    expect(res.status).toBe(200);
+    expect(mockStreamText).toHaveBeenCalled();
+  });
+
+  it("ignores invalid pageContext without failing the turn", async () => {    mockAuth.mockResolvedValue({ user: { id: "u1" } });
     const res = await POST(
       buildReq({
         messages: [{ role: "user", content: "hi" }],

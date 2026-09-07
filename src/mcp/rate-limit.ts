@@ -1,4 +1,4 @@
-import { checkAndIncrement } from "@/server/assistant/ratelimit";
+import { checkBudget } from "@/server/assistant/budget";
 import { getChatConfig, getRateLimitWindowMinutes } from "@/server/ecfg/chat";
 import type { ToolContext } from "@/server/mcp/types";
 
@@ -86,11 +86,13 @@ export async function checkWriteBudget(
   const chat = await getChatConfig();
   const limit = chat.mcpRateLimitPerMinute;
   const windowMinutes = getRateLimitWindowMinutes();
-  const res = await checkAndIncrement(
-    `${keyPrefix}:${ctx.user.id}`,
+  // Single budget primitive (Task 7): same key prefix, same limit source,
+  // same window — only the validation/delegation moved into checkBudget.
+  const res = await checkBudget(ctx, "write", {
+    prefix: keyPrefix,
     limit,
-    windowMinutes,
-  );
+    windowMs: windowMinutes * 60_000,
+  });
   if (!res.ok) {
     return `Write rate limit exceeded: at most ${limit} write operations per minute are allowed. Please wait ~${res.retryAfterSeconds}s before trying again.`;
   }
@@ -116,11 +118,13 @@ export async function checkReadBudget(
   const chat = await getChatConfig();
   const limit = chat.mcpRateLimitPerMinute;
   const windowMinutes = getRateLimitWindowMinutes();
-  const res = await checkAndIncrement(
-    `${keyPrefix}:${ctx.user.id}`,
+  // Single budget primitive (Task 7): same key prefix, same limit source,
+  // same window — only the validation/delegation moved into checkBudget.
+  const res = await checkBudget(ctx, "read", {
+    prefix: keyPrefix,
     limit,
-    windowMinutes,
-  );
+    windowMs: windowMinutes * 60_000,
+  });
   if (!res.ok) {
     return `Read rate limit exceeded: at most ${limit} read operations per minute are allowed. Please wait ~${res.retryAfterSeconds}s before trying again.`;
   }

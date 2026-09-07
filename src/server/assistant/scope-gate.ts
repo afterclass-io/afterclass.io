@@ -1,0 +1,118 @@
+/**
+ * Cheap pre-LLM scope gate for `/api/chat` (Task 7).
+ *
+ * `isInScope(text)` is a substring/keyword allowlist over the last user
+ * message. The route calls it BEFORE `reserveMessage`, so off-topic turns
+ * (e.g. "reverse a linked list") get a static refusal with no LLM call and
+ * no quota consumed. It is a coarse pre-filter only — the SYSTEM_PROMPT's
+ * scope rule remains the authoritative behavioral guard, so anything the
+ * gate lets through (greetings, follow-ups, "help me ...") is still refused
+ * or redirected by the model when genuinely off-topic.
+ *
+ * Fail-open: empty/unextractable text returns true (never break a turn we
+ * cannot judge). Fail-closed only on text that clearly matches nothing.
+ */
+
+/**
+ * Long domain keywords matched as substrings of the lowercased text. Every
+ * entry was checked against the negative verbatim case ("reverse a linked
+ * list please") and against common off-topic vocabulary (code, homework,
+ * essay, python, weather, ...). NOTE: "list" is deliberately ABSENT — it
+ * appears in "linked list" and would flip the negative case.
+ */
+const SUBSTRING_KEYWORDS: readonly string[] = [
+  "timetable",
+  "course",
+  "professor",
+  "review",
+  "roadmap",
+  "bidding",
+  "semester",
+  "module",
+  "section",
+  "budget",
+  "studies",
+  "schedule",
+  "recommend",
+  "matric",
+  "syllabus",
+  "prereq",
+  "enrol",
+  "credit",
+  "exam",
+  "plan",
+  "school",
+  "acad",
+  "window",
+  "faculty",
+  "faculties",
+  "lecture",
+  "tutorial",
+  "seminar",
+  "venue",
+  "smu",
+  "gpa",
+];
+
+/**
+ * Short/generic words matched as EXACT tokens (never substrings: "ok" is in
+ * "smoke", "hi" is in "which", "yes" is in "eyes"). Covers domain nouns that
+ * collide as substrings ("bid" in "forbid", "term" in "determine", "class"
+ * in "classic", "prof" in "profile") plus conversational continuations
+ * (greetings, acks, follow-up suggestion prompts like "explain that" /
+ * "concrete example" / "what next") that carry no domain noun but are
+ * legitimate turns. Deliberately absent: "list", "please", "help", "how",
+ * "what", "why" — all appear in natural off-topic phrasings.
+ */
+const WORD_KEYWORDS: ReadonlySet<string> = new Set([
+  "bid",
+  "bids",
+  "class",
+  "classes",
+  "prof",
+  "profs",
+  "term",
+  "terms",
+  "study",
+  "grade",
+  "grades",
+  "explain",
+  "example",
+  "examples",
+  "detail",
+  "details",
+  "next",
+  "continue",
+  "elaborate",
+  "thanks",
+  "thank",
+  "yes",
+  "yeah",
+  "yep",
+  "okay",
+  "ok",
+  "hello",
+  "hey",
+  "hi",
+]);
+
+function tokensOf(lower: string): string[] {
+  return lower.split(/[^a-z0-9]+/).filter((t) => t.length > 0);
+}
+
+export function isInScope(text: string): boolean {
+  const lower = text.toLowerCase();
+  if (lower.trim().length === 0) return true; // fail-open: nothing to judge
+  for (const k of SUBSTRING_KEYWORDS) {
+    if (lower.includes(k)) return true;
+  }
+  for (const t of tokensOf(lower)) {
+    if (WORD_KEYWORDS.has(t)) return true;
+  }
+  return false;
+}
+
+/** Static cheap-refusal body served with no LLM call and no quota consumed. */
+export const SCOPE_REFUSAL =
+  "I'm the afterclass.io assistant for SMU students — I can't help with that here. " +
+  "Try asking about courses, timetables, bids, roadmaps, or reviews instead.";
