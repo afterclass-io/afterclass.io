@@ -2,7 +2,7 @@ import type { ToolContext, ToolResult } from "@/server/mcp/types";
 
 import { errorResult, textResult } from "./envelopes";
 import { isDevBypass } from "./env-gate";
-import { stripSecrets, truncate } from "./output-policy";
+import { stripSecrets, truncate, wrapToolOutput } from "./output-policy";
 import { buildToolContext } from "./user";
 import {
   checkDestructiveConfirm,
@@ -177,11 +177,13 @@ export async function dispatchToolCall(opts: {
   // Central secret-strip on the model-visible text path: bearer tokens
   // (`shareToken`, `icalToken`) and private `notes` never reach model text,
   // even from a catalog tool that forgot its own per-row strip. Then the
-  // central truncate (policy-supplied limit, unchanged semantics).
+  // central truncate (policy-supplied limit, unchanged semantics), then the
+  // `<tool_output>` injection-boundary delimiters (Task 7, R5: success text
+  // only — error envelopes are our own control messages and stay verbatim).
   const text = stripSecrets(rawText);
   if (policy.truncateAt !== undefined && text.length > policy.truncateAt)
     return textResult(
-      truncate(text, policy.truncateAt, policy.truncationNote ?? ""),
+      wrapToolOutput(truncate(text, policy.truncateAt, policy.truncationNote ?? "")),
     );
-  return textResult(text);
+  return textResult(wrapToolOutput(text));
 }

@@ -176,10 +176,15 @@ describe("buildAssistantTools", () => {
       args: never,
     ) => Promise<string>;
     const out = await execute({ acadTermId: "t1", query: "acc" } as never);
+    // Task 7: dispatch wraps success text in <tool_output> delimiters, so
+    // the bound gains the delimiter overhead on top of chars + note.
     expect(out.length).toBeLessThanOrEqual(
-      MAX_TOOL_RESULT_CHARS + TRUNCATION_NOTE.length,
+      MAX_TOOL_RESULT_CHARS +
+        TRUNCATION_NOTE.length +
+        "<tool_output>\n\n</tool_output>".length,
     );
     expect(out).toMatch(/\[truncated/);
+    expect(out).toContain("<tool_output>");
   });
 
   it("passes small tool results through untouched", async () => {

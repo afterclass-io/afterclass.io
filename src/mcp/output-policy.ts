@@ -242,3 +242,18 @@ export function truncate(
   if (text.length <= maxChars) return text;
   return text.slice(0, maxChars) + note;
 }
+
+export const TOOL_OUTPUT_OPEN = "<tool_output>";
+export const TOOL_OUTPUT_CLOSE = "</tool_output>";
+
+/**
+ * Wrap model-visible tool OUTPUT text in `<tool_output>` delimiters (Task 7,
+ * R5). Applied once at the dispatch text-shape success path, so both
+ * transports (MCP `register.ts`, chat `tools.ts`) inherit it. Prompts,
+ * pageContext, error envelopes, and view-shape summaries are NOT wrapped:
+ * the delimiter marks the injection boundary for untrusted tool-output data
+ * only.
+ */
+export function wrapToolOutput(text: string): string {
+  return `${TOOL_OUTPUT_OPEN}\n${text}\n${TOOL_OUTPUT_CLOSE}`;
+}

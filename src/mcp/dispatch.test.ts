@@ -103,7 +103,9 @@ describe("dispatchToolCall", () => {
       },
     });
     expect(checkAndIncrementMock).toHaveBeenCalledWith("custom:u1", 60, 1);
-    expect("error" in res ? res.error : res.content[0]?.text).toBe("ok");
+    expect("error" in res ? res.error : res.content[0]?.text).toBe(
+      "<tool_output>\nok\n</tool_output>",
+    );
     expect(tool.run).toHaveBeenCalledTimes(1);
   });
 
@@ -121,7 +123,9 @@ describe("dispatchToolCall", () => {
         truncationNote: "…",
       },
     });
-    expect("error" in res ? res.error : res.content[0]?.text).toBe("abcd…");
+    expect("error" in res ? res.error : res.content[0]?.text).toBe(
+      "<tool_output>\nabcd…\n</tool_output>",
+    );
   });
 
   it("passes catalog isError text through on the view shape with the catalog-error marker", async () => {

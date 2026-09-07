@@ -7,6 +7,7 @@ import {
   stripSecrets,
   stripSecretsFromValue,
   truncate,
+  wrapToolOutput,
 } from "./output-policy";
 describe("stripSecrets", () => {
   it("removes shareToken, icalToken, and notes from JSON payloads", () => {
@@ -108,5 +109,13 @@ describe("appendLinks", () => {
       "base\n/course/A\n/timetable",
     );
     expect(appendLinks("base", [null, undefined, ""])).toBe("base");
+  });
+});
+
+describe("wrapToolOutput", () => {
+  it("wraps tool output text in <tool_output> delimiters", () => {
+    expect(wrapToolOutput("hello")).toBe(
+      "<tool_output>\nhello\n</tool_output>",
+    );
   });
 });

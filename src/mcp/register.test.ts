@@ -213,7 +213,7 @@ describe("registerViewlessTools", () => {
     });
     registerViewlessTools({ tool } as never);
     const ra = await captured[0]!({});
-    expect(ra.content).toMatchObject([{ type: "text", text: "result-a" }]);
+    expect(ra.content).toMatchObject([{ type: "text", text: "<tool_output>\nresult-a\n</tool_output>" }]);
     expect(ra.isError).toBeUndefined();
     const rb = await captured[1]!({});
     expect(rb.isError).toBe(true);
@@ -266,7 +266,7 @@ describe("registerViewlessTools", () => {
     expect(checkAndIncrementMock).toHaveBeenCalledWith("mcp-read:u1", 60, 1);
     expect(fakeRunB).toHaveBeenCalledTimes(1);
     expect(readResult).toMatchObject({
-      content: [{ type: "text", text: "b-ok" }],
+      content: [{ type: "text", text: "<tool_output>\nb-ok\n</tool_output>" }],
     });
   });
 
@@ -341,7 +341,7 @@ describe("registerViewlessTools", () => {
       );
       expect(run).toHaveBeenCalledTimes(1);
       expect(result).toMatchObject({
-        content: [{ type: "text", text: "shared-ok" }],
+        content: [{ type: "text", text: "<tool_output>\nshared-ok\n</tool_output>" }],
       });
     } finally {
       (allTools as unknown as unknown[]).length = 0;
@@ -410,7 +410,11 @@ describe("registerViewlessTools", () => {
     });
     registerViewlessTools({ tool } as never);
     const result = await captured[0]!({}, { auth: { user: { id: "u1" } } });
-    expect(result.content?.[0]?.text).toBe(JSON.stringify({ foo: "bar" }));
+    // Task 7: dispatch wraps success text in <tool_output> delimiters; the
+    // envelope stays raw text (no structuredContent/_meta).
+    expect(result.content?.[0]?.text).toBe(
+      `<tool_output>\n${JSON.stringify({ foo: "bar" })}\n</tool_output>`,
+    );
     expect(result.structuredContent).toBeUndefined();
     expect(result._meta).toBeUndefined();
   });
@@ -534,7 +538,7 @@ describe("registerViewlessTools", () => {
         );
         expect(run).toHaveBeenCalledTimes(1);
         expect(result).toMatchObject({
-          content: [{ type: "text", text: "deleted" }],
+          content: [{ type: "text", text: "<tool_output>\ndeleted\n</tool_output>" }],
         });
       } finally {
         restore();
@@ -550,7 +554,7 @@ describe("registerViewlessTools", () => {
       );
       expect(fakeRunA).toHaveBeenCalledTimes(1);
       expect(result).toMatchObject({
-        content: [{ type: "text", text: "created" }],
+        content: [{ type: "text", text: "<tool_output>\ncreated\n</tool_output>" }],
       });
     });
 
@@ -568,7 +572,7 @@ describe("registerViewlessTools", () => {
         );
         expect(run).toHaveBeenCalledTimes(1);
         expect(result).toMatchObject({
-          content: [{ type: "text", text: "deleted" }],
+          content: [{ type: "text", text: "<tool_output>\ndeleted\n</tool_output>" }],
         });
       } finally {
         restore();
@@ -691,7 +695,7 @@ describe("registerViewlessTools", () => {
         );
         expect(run).toHaveBeenCalledTimes(1);
         expect(result).toMatchObject({
-          content: [{ type: "text", text: "written" }],
+          content: [{ type: "text", text: "<tool_output>\nwritten\n</tool_output>" }],
         });
       } finally {
         restore();
