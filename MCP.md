@@ -291,7 +291,7 @@ Destructive `confirm:true` retry (Inspector console):
    `{"classId": "cl1", "bidWindowId": 53, "bidAmount": 25}`.
 2. Expect the gate text: `Destructive tool "upsert-bid" requires explicit
 confirmation: call again with confirm:true after showing the user what
-will change.`
+will be deleted.`
 3. Retry WITH `"confirm": true` — the write runs and returns
    `{ updated, plan }` (bid writes) or the updated roadmap.
 4. Same gate on the chat path (`buildAssistantTools` → same message);

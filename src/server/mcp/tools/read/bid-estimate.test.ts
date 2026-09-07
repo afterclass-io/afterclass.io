@@ -323,7 +323,7 @@ describe("bid-estimate", () => {
     const now = new Date();
     const target = {
       id: 99,
-      acadTermId: "AY2026/27-T1",
+      acadTermId: "AY202627T1",
       round: "2A",
       window: 3,
       opensAt: new Date(now.getTime() - 120_000),

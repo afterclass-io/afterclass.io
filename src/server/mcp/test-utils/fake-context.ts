@@ -146,10 +146,10 @@ function stubbedRouter(
       value: (...args: unknown[]) => plain.apply({}, args),
     };
   };
+  // (Third conjunct dropped as redundant: `_def === undefined` already
+  // implies `typeof _def !== "object"`, so it could never change the result.)
   const isLiveReflective = (v: unknown): boolean =>
-    typeof v === "function" &&
-    (v as { _def?: unknown })._def === undefined &&
-    typeof (v as { _def?: unknown })._def !== "object";
+    typeof v === "function" && (v as { _def?: unknown })._def === undefined;
   return new Proxy({} as Record<string, unknown>, {
     get: (_target, prop) => {
       if (typeof prop !== "string") return Reflect.get(source, prop);

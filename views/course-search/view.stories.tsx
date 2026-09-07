@@ -174,3 +174,20 @@ export const AddClassFailure: Story = {
   ],
   parameters: { mcpCta: { mode: "error", message: "rate limited" } },
 };
+
+/**
+ * AddClassPending: the add-class-to-timetable CTA's callTool never settles
+ * — exercises the mock's pending mode via `parameters.mcpCta`. No button
+ * label changes (course-search has no pending-aware button); the story pins
+ * the seed wiring so the mode stays covered.
+ */
+export const AddClassPending: Story = {
+  decorators: [
+    withMcpView({
+      status: "ready",
+      toolInput: { query: "IS215" },
+      toolOutput: sampleResults,
+    }),
+  ],
+  parameters: { mcpCta: { mode: "pending" } },
+};

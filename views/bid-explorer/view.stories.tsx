@@ -213,7 +213,8 @@ export const ErrorState: Story = {
 /**
  * UpsertBidFailure: the upsert-bid CTA's callTool rejected (rate-limited) —
  * exercises the view's "Failed to save" feedback via the injectable
- * useDynamicTool mock (`.storybook/mocks/mcp-use-react.ts` `ctaError`).
+ * useDynamicTool mock (`.storybook/mocks/mcp-use-react.ts` seeded via
+ * `parameters.mcpCta`).
  * Seed with `parameters: { mcpCta: { mode: "error", message: "rate limited" } }`.
  */
 export const UpsertBidFailure: Story = {
