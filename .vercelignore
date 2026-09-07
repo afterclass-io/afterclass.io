@@ -1,7 +1,8 @@
-# Vercel upload exclusions (Task 9: keep the serverless bundle lean).
+# Vercel upload exclusions (Task 9: keep the upload lean).
 # The MCP server (src/mcp + views) NEVER deploys to Vercel serverless — it
 # runs on Manufact/Fly (see MCP.md "Deploy"). views/ is still excluded here
-# so a stray import cannot bloat the web bundle.
+# to keep web-only uploads small (a stray import would fail the build, not
+# bloat it — the bundler, not this file, guards that).
 views/
 storybook-static/
 cypress/
