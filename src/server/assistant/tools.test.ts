@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
-import type { ToolContext } from "@/server/mcp/types";
-import type { SessionUser } from "@/server/auth/config";
+import { makeFakeToolContext } from "@/server/mcp/test-utils/fake-context";
 
 const { mockCheckAndIncrement } = vi.hoisted(() => ({
   mockCheckAndIncrement: vi.fn() as Mock,
@@ -24,51 +23,49 @@ import { allTools } from "@/server/mcp/tools";
 
 const WRITE_LIMIT = 10;
 
-const fakeUser: SessionUser = {
-  id: "u1",
-  email: "a@smu.edu.sg",
-  username: "u1",
-  isVerified: true,
-  universityId: 1,
-  firstName: null,
-  lastName: null,
-  telegramId: null,
-  photoUrl: null,
-  facultyId: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
-
-function makeContext(): ToolContext {
-  const caller = {
-    timetable: { searchCourses: vi.fn().mockResolvedValue([{ id: "c1" }]) },
-    userBids: {
-      setStatus: vi.fn().mockResolvedValue({
-        id: "b1",
-        status: "SECURED",
-        acadTermId: "AY2026/27-T1",
-      }),
-      listMine: vi.fn().mockResolvedValue([]),
-      getBudget: vi.fn().mockResolvedValue(null),
-      upsert: vi
-        .fn()
-        .mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 53 }),
-      remove: vi
-        .fn()
-        .mockResolvedValue({ success: true, acadTermId: "AY2026/27-T1" }),
-      upsertBudget: vi.fn().mockResolvedValue({ balance: 100 }),
+// Shared RouterCaller-backed fake context (Task 10 factory): per-router
+// procedure stubs win over the real procedures. The stubs below are the
+// precise procedure mocks these tests pin exact assertions against — kept
+// here (not replaced by a generic helper) so each test controls the values
+// its assertions read back. What the factory replaces is the hand-built
+// caller OBJECT + fake user: one shared default instead of per-file copies.
+//
+// NOTE: stub-everything-on-the-path is REQUIRED, not optional: unstubbed
+// procedures are live against the test DB (same test-session caller the
+// chat route builds — probe-verified). The chat path never touches term
+// resolution for these tools (explicit acadTermId / no term-scoped call),
+// so the stubs below fully cover every procedure invoked.
+function makeContext() {
+  return makeFakeToolContext({
+    caller: {
+      timetable: { searchCourses: vi.fn().mockResolvedValue([{ id: "c1" }]) },
+      userBids: {
+        setStatus: vi.fn().mockResolvedValue({
+          id: "b1",
+          status: "SECURED",
+          acadTermId: "AY202627T1",
+        }),
+        listMine: vi.fn().mockResolvedValue([]),
+        getBudget: vi.fn().mockResolvedValue(null),
+        upsert: vi
+          .fn()
+          .mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 53 }),
+        remove: vi
+          .fn()
+          .mockResolvedValue({ success: true, acadTermId: "AY202627T1" }),
+        upsertBudget: vi.fn().mockResolvedValue({ balance: 100 }),
+      },
+      roadmaps: {
+        getMine: vi.fn().mockResolvedValue({
+          roadmap: { id: "r1", name: "My Plan" },
+          entries: [],
+        }),
+        copyPublic: vi.fn().mockResolvedValue({ id: "r2", name: "Copy" }),
+        create: vi.fn().mockResolvedValue({ id: "r1" }),
+        saveEntries: vi.fn().mockResolvedValue({ count: 1 }),
+      },
     },
-    roadmaps: {
-      getMine: vi.fn().mockResolvedValue({
-        roadmap: { id: "r1", name: "My Plan" },
-        entries: [],
-      }),
-      copyPublic: vi.fn().mockResolvedValue({ id: "r2", name: "Copy" }),
-      create: vi.fn().mockResolvedValue({ id: "r1" }),
-      saveEntries: vi.fn().mockResolvedValue({ count: 1 }),
-    },
-  } as unknown as ToolContext["caller"];
-  return { user: fakeUser, caller };
+  });
 }
 
 describe("buildAssistantTools", () => {
@@ -77,13 +74,13 @@ describe("buildAssistantTools", () => {
     mockCheckAndIncrement.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
   });
 
-  it("exposes every catalog tool", () => {
-    const tools = buildAssistantTools(makeContext(), WRITE_LIMIT);
+  it("exposes every catalog tool", async () => {
+    const tools = buildAssistantTools(await makeContext(), WRITE_LIMIT);
     for (const t of allTools) expect(tools[t.name]).toBeDefined();
   });
 
   it("executes a tool and returns the text content", async () => {
-    const tools = buildAssistantTools(makeContext(), WRITE_LIMIT);
+    const tools = buildAssistantTools(await makeContext(), WRITE_LIMIT);
     const execute = tools["search-courses"]!.execute as unknown as (
       args: never,
     ) => Promise<string>;
@@ -92,7 +89,7 @@ describe("buildAssistantTools", () => {
   });
 
   it("throws when a tool returns isError", async () => {
-    const ctx = makeContext();
+    const ctx = await makeContext();
     (
       ctx.caller as unknown as { timetable: { searchCourses: unknown } }
     ).timetable.searchCourses = vi.fn().mockRejectedValue(new Error("boom"));
@@ -106,7 +103,7 @@ describe("buildAssistantTools", () => {
   });
 
   it("does not rate-limit read-only tools", async () => {
-    const tools = buildAssistantTools(makeContext(), WRITE_LIMIT);
+    const tools = buildAssistantTools(await makeContext(), WRITE_LIMIT);
     const execute = tools["search-courses"]!.execute as unknown as (
       args: never,
     ) => Promise<string>;
@@ -115,7 +112,7 @@ describe("buildAssistantTools", () => {
   });
 
   it("runs a write tool when under the write rate limit", async () => {
-    const ctx = makeContext();
+    const ctx = await makeContext();
     const tools = buildAssistantTools(ctx, WRITE_LIMIT);
     const execute = tools["set-bid-status"]!.execute as unknown as (
       args: never,
@@ -125,11 +122,22 @@ describe("buildAssistantTools", () => {
       status: "SECURED",
       confirm: true,
     } as never);
-    expect(mockCheckAndIncrement).toHaveBeenCalledWith(ctx, "write", {
-      prefix: "chat-write",
-      limit: WRITE_LIMIT,
-      windowMs: 60_000,
-    });
+    // NOTE: asserted via objectContaining, not the raw ctx: the factory's
+    // caller namespaces are Proxies over live tRPC path functions, and
+    // vitest's diff-printer calls toString/valueOf on them when the
+    // assertion formats its argument list (see fake-context.ts
+    // PRINTER_SAFE) — matching on the identity shape avoids the walk.
+    expect(mockCheckAndIncrement).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user: expect.objectContaining({ id: "u1" }),
+      }),
+      "write",
+      {
+        prefix: "chat-write",
+        limit: WRITE_LIMIT,
+        windowMs: 60_000,
+      },
+    );
     expect(result).toContain("b1");
     const setStatus = (
       ctx.caller as unknown as { userBids: { setStatus: Mock } }
@@ -142,7 +150,7 @@ describe("buildAssistantTools", () => {
       ok: false,
       retryAfterSeconds: 42,
     });
-    const ctx = makeContext();
+    const ctx = await makeContext();
     const tools = buildAssistantTools(ctx, WRITE_LIMIT);
     const execute = tools["set-bid-status"]!.execute as unknown as (
       args: never,
@@ -168,7 +176,7 @@ describe("buildAssistantTools", () => {
       name: "x".repeat(60),
       sections: [],
     }));
-    const ctx = makeContext();
+    const ctx = await makeContext();
     (ctx.caller.timetable as unknown as { searchCourses: Mock }).searchCourses =
       vi.fn().mockResolvedValue(hugeRows);
     const tools = buildAssistantTools(ctx, WRITE_LIMIT);
@@ -188,7 +196,7 @@ describe("buildAssistantTools", () => {
   });
 
   it("passes small tool results through untouched", async () => {
-    const tools = buildAssistantTools(makeContext(), WRITE_LIMIT);
+    const tools = buildAssistantTools(await makeContext(), WRITE_LIMIT);
     const execute = tools["search-courses"]!.execute as unknown as (
       args: never,
     ) => Promise<string>;
@@ -230,7 +238,7 @@ describe("buildAssistantTools", () => {
   ])(
     "chat execute blocks %s without confirm:true (same message as MCP dispatch)",
     async (name) => {
-      const ctx = makeContext();
+      const ctx = await makeContext();
       const tools = buildAssistantTools(ctx, WRITE_LIMIT);
       const execute = tools[name]!.execute as unknown as (
         args: never,
@@ -243,7 +251,7 @@ describe("buildAssistantTools", () => {
   );
 
   it("chat execute runs a gated tool with confirm:true", async () => {
-    const ctx = makeContext();
+    const ctx = await makeContext();
     const tools = buildAssistantTools(ctx, WRITE_LIMIT);
     const execute = tools["set-bid-status"]!.execute as unknown as (
       args: never,
@@ -291,8 +299,8 @@ describe("buildAssistantTools", () => {
     ["copy-public-roadmap", { roadmapId: "r1" }],
   ])(
     "chat schema for %s declares optional confirm so confirm:true survives validation",
-    (name, baseArgs) => {
-      const tools = buildAssistantTools(makeContext(), WRITE_LIMIT);
+    async (name, baseArgs) => {
+      const tools = buildAssistantTools(await makeContext(), WRITE_LIMIT);
       const inputSchema = tools[name]!.inputSchema;
       const parsed = (
         inputSchema as unknown as {
