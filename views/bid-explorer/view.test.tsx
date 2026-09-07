@@ -173,12 +173,12 @@ describe("BidExplorerView (v2)", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
     expect(
-      screen.getByRole("button", { name: "Set bid to $16.2" }),
+      screen.getByRole("button", { name: "Confirm: set bid to $16.2" }),
     ).toBeInTheDocument();
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
     fireEvent.change(slider, { target: { value: "4" } });
     expect(
-      screen.getByRole("button", { name: "Set bid to $41.1" }),
+      screen.getByRole("button", { name: "Confirm: set bid to $41.1" }),
     ).toBeInTheDocument();
   });
 
@@ -187,7 +187,7 @@ describe("BidExplorerView (v2)", () => {
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
-    fireEvent.click(screen.getByRole("button", { name: "Set bid to $16.2" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm: set bid to $16.2" }));
     await waitFor(() => expect(callTool).toHaveBeenCalledTimes(1));
     expect(callTool).toHaveBeenCalledWith({
       classId: "cl1",
@@ -217,7 +217,7 @@ describe("BidExplorerView (v2)", () => {
     render(<BidExplorerView />);
     // no slider without factors, but the CTA offers the bare median
     expect(screen.queryByRole("slider")).toBeNull();
-    const cta = screen.getByRole("button", { name: "Set bid to $30" });
+    const cta = screen.getByRole("button", { name: "Confirm: set bid to $30" });
     fireEvent.click(cta);
     await waitFor(() => expect(callTool).toHaveBeenCalledTimes(1));
     expect(callTool).toHaveBeenCalledWith({
@@ -239,7 +239,7 @@ describe("BidExplorerView (v2)", () => {
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
-    fireEvent.click(screen.getByRole("button", { name: "Set bid to $16.2" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm: set bid to $16.2" }));
     await waitFor(() =>
       expect(screen.getByRole("button", { name: /Saved/ })).toBeInTheDocument(),
     );
@@ -250,7 +250,7 @@ describe("BidExplorerView (v2)", () => {
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
-    fireEvent.click(screen.getByRole("button", { name: "Set bid to $16.2" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm: set bid to $16.2" }));
     await waitFor(() =>
       expect(
         screen.getByRole("button", { name: /Failed to save/ }),
@@ -695,7 +695,7 @@ describe("BidExplorerView (v2)", () => {
         screen.getByText("Predicted median 30 × multiplier 0.54 (beats 70%)"),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: "Set bid to $16.2" }),
+        screen.getByRole("button", { name: "Confirm: set bid to $16.2" }),
       ).toBeInTheDocument();
       expect(screen.queryByText("null")).toBeNull();
     });
@@ -718,7 +718,7 @@ describe("BidExplorerView (v2)", () => {
       expect(screen.queryByRole("table")).toBeNull();
       expect(screen.queryByRole("img", { name: /bid trend/i })).toBeNull();
       expect(
-        screen.getByRole("button", { name: "Set bid to $16.2" }),
+        screen.getByRole("button", { name: "Confirm: set bid to $16.2" }),
       ).toBeInTheDocument();
     });
   });

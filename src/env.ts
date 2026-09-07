@@ -110,6 +110,11 @@ export const env = createEnv({
     MCP_USE_OAUTH_SUPABASE_PROJECT_ID: z.string().min(1).optional(),
     MCP_USE_OAUTH_SUPABASE_URL: z.string().url().optional(),
     MCP_USE_OAUTH_SUPABASE_JWT_SECRET: z.string().min(1).optional(),
+    // MCP transport hardening (validated here so typos fail loudly;
+    // src/mcp/server.ts owns the semantics — comma-separated allowlists,
+    // unset by default for local dev).
+    MCP_ALLOWED_HOSTS: z.string().optional(),
+    MCP_ALLOWED_ORIGINS: z.string().optional(),
   },
 
   /**
@@ -207,6 +212,8 @@ export const env = createEnv({
     MCP_USE_OAUTH_SUPABASE_URL: process.env.MCP_USE_OAUTH_SUPABASE_URL,
     MCP_USE_OAUTH_SUPABASE_JWT_SECRET:
       process.env.MCP_USE_OAUTH_SUPABASE_JWT_SECRET,
+    MCP_ALLOWED_HOSTS: process.env.MCP_ALLOWED_HOSTS,
+    MCP_ALLOWED_ORIGINS: process.env.MCP_ALLOWED_ORIGINS,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_OLD_SITE_URL: process.env.NEXT_PUBLIC_OLD_SITE_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,

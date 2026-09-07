@@ -283,6 +283,26 @@ export async function POST(req: Request) {
       tools,
       stopWhen: isStepCount(chat.maxToolRounds),
       maxOutputTokens: chat.maxOutputTokens,
+      // Structured per-step usage log (Task 11): one JSON line per agent-loop
+      // step so cost/abuse regressions are visible in the server log pipeline
+      // without turning on the CHAT_LOG_USAGE=1 raw-usage probe below. Never
+      // throws — observability must not break the turn.
+      onStepFinish: async ({ usage }) => {
+        try {
+          // intentional: per-step structured usage signal, keep loud
+          console.log(
+            "[assistant:step-usage]",
+            JSON.stringify({
+              userId,
+              inputTokens: usage.inputTokens ?? 0,
+              outputTokens: usage.outputTokens ?? 0,
+              cachedInputTokens: extractCachedInputTokens(usage),
+            }),
+          );
+        } catch {
+          // Never break the turn for a logging failure.
+        }
+      },
       // Stop paying output tokens when the client disconnects (Stop button /
       // navigation). Does NOT change quota semantics: the reserved slot stays
       // consumed on abort (see guardAgainstFailedStream.cancel).

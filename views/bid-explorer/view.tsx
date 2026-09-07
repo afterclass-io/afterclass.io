@@ -475,10 +475,16 @@ const BidExplorerView: React.FC = () => {
         )}
       {/* CTA */}
       {isAvailable && classId && prediction && suggested !== null && (
-        <button
-          type="button"
-          aria-live="polite"
-          onClick={() => {
+        <div style={{ marginTop: 12 }}>
+          <div style={{ fontSize: 11, color: c.mutedFg, marginBottom: 6 }}>
+            Bids use real SMU BOSS e-credits and are binding once the window
+            closes. Confirm the amount before saving — you can change it again
+            before the window closes.
+          </div>
+          <button
+            type="button"
+            aria-live="polite"
+            onClick={() => {
             // classId truthy above — narrow to string for the call contract.
             const cid: string = classId;
             const bidWindowId = prediction.bidWindow.id;
@@ -490,7 +496,6 @@ const BidExplorerView: React.FC = () => {
               .catch(() => showFeedback("error"));
           }}
           style={{
-            marginTop: 12,
             width: "100%",
             padding: "8px 16px",
             borderRadius: 9999,
@@ -506,8 +511,9 @@ const BidExplorerView: React.FC = () => {
             ? "Saved \u2713"
             : feedback === "error"
               ? "Failed to save"
-              : `Set bid to $${suggested}`}
+              : `Confirm: set bid to $${suggested}`}
         </button>
+        </div>
       )}
     </div>
   );

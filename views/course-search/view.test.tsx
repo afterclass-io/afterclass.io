@@ -246,7 +246,7 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
       toolOutput: { results: [sampleResult] },
     });
     render(<CourseSearchView />);
-    fireEvent.click(screen.getByRole("button", { name: "Add G1" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add G1 — confirm to enroll" }));
     await waitFor(() => expect(callTool).toHaveBeenCalledTimes(1));
     expect(callTool).toHaveBeenCalledWith({
       classId: "seed-ay202627t1-is215-g1",
@@ -264,7 +264,7 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
       toolOutput: { results: [noIdResult] },
     });
     render(<CourseSearchView />);
-    expect(screen.queryByRole("button", { name: "Add G3" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Add G3 — confirm to enroll" })).toBeNull();
   });
 
   it("does not render Add buttons when the host bridge is unavailable", () => {
@@ -275,7 +275,7 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
       toolOutput: { results: [sampleResult] },
     });
     render(<CourseSearchView />);
-    expect(screen.queryByRole("button", { name: "Add G1" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Add G1 — confirm to enroll" })).toBeNull();
   });
 
   it("shows Saved feedback after a successful add-class-to-timetable", async () => {
@@ -287,7 +287,7 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
       toolOutput: { results: [sampleResult] },
     });
     render(<CourseSearchView />);
-    fireEvent.click(screen.getByRole("button", { name: "Add G1" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add G1 — confirm to enroll" }));
     await waitFor(() =>
       expect(screen.getByRole("button", { name: /Saved/ })).toBeInTheDocument(),
     );
@@ -302,7 +302,7 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
       toolOutput: { results: [sampleResult] },
     });
     render(<CourseSearchView />);
-    fireEvent.click(screen.getByRole("button", { name: "Add G1" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add G1 — confirm to enroll" }));
     await waitFor(() =>
       expect(
         screen.getByRole("button", { name: /Failed/ }),

@@ -56,20 +56,52 @@ function supabaseOAuth(): SupabaseOAuthProvider | undefined {
 
 const oauth = supabaseOAuth();
 
+/**
+ * Production Host/Origin allowlists for DNS-rebinding protection.
+ *
+ * Read from env (comma-separated) so deploys configure them without a code
+ * change; unset by default so local dev (`mcp:dev` on localhost-class binds)
+ * keeps working unmodified. Both are additive per the mcp-use contract:
+ * localhost-class hostnames/origins stay allowed, and requests without an
+ * `Origin` header always pass (non-browser MCP clients don't send one).
+ * - `MCP_ALLOWED_HOSTS`: extra Host values, e.g. the Manufact/Fly hostname
+ *   serving the MCP endpoint (the OAuth protected-resource URL must use the
+ *   same host + the `/mcp` basePath).
+ * - `MCP_ALLOWED_ORIGINS`: extra Origin hostnames for browser clients on
+ *   non-GET/HEAD requests (the MCP wire is POST). Sandboxed view iframes
+ *   send `Origin: null` on asset GETs — unaffected (GETs are never checked).
+ */
+function csvEnv(name: string): string[] {
+  const raw = process.env[name];
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
 const SERVER_META = {
   name: "afterclass",
-  version: "0.2.0",
+  version: "0.1.7",
   description:
     "afterclass.io MCP server - courses, professors, timetables, bids, roadmaps.",
 } as const;
 
 function createServer(): MCPServer {
+  const allowedHosts = csvEnv("MCP_ALLOWED_HOSTS");
+  const allowedOrigins = csvEnv("MCP_ALLOWED_ORIGINS");
   if (oauth)
     return new MCPServer<SupabaseOAuthUser>({
       ...SERVER_META,
       oauth,
+      ...(allowedHosts.length > 0 ? { allowedHosts } : {}),
+      ...(allowedOrigins.length > 0 ? { allowedOrigins } : {}),
     }) as unknown as MCPServer;
-  return new MCPServer(SERVER_META);
+  return new MCPServer({
+    ...SERVER_META,
+    ...(allowedHosts.length > 0 ? { allowedHosts } : {}),
+    ...(allowedOrigins.length > 0 ? { allowedOrigins } : {}),
+  });
 }
 
 export const server: MCPServer = createServer();
