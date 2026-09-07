@@ -5,6 +5,9 @@ import type { Mock } from "vitest";
 const {
   mockAuth,
   mockCheckSpendGuard,
+  mockCheckUserSpendCap,
+  mockBeginTurn,
+  mockEndTurn,
   mockReserveMessage,
   mockSettleUsage,
   mockRefundMessage,
@@ -17,6 +20,9 @@ const {
 } = vi.hoisted(() => ({
   mockAuth: vi.fn() as Mock,
   mockCheckSpendGuard: vi.fn() as Mock,
+  mockCheckUserSpendCap: vi.fn() as Mock,
+  mockBeginTurn: vi.fn() as Mock,
+  mockEndTurn: vi.fn() as Mock,
   mockReserveMessage: vi.fn() as Mock,
   mockSettleUsage: vi.fn() as Mock,
   mockRefundMessage: vi.fn() as Mock,
@@ -32,6 +38,9 @@ const {
 vi.mock("@/server/auth", () => ({ auth: mockAuth }));
 vi.mock("@/server/assistant/quota", () => ({
   checkSpendGuard: mockCheckSpendGuard,
+  checkUserSpendCap: mockCheckUserSpendCap,
+  beginTurn: mockBeginTurn,
+  endTurn: mockEndTurn,
   reserveMessage: mockReserveMessage,
   settleUsage: mockSettleUsage,
   refundMessage: mockRefundMessage,
@@ -128,6 +137,9 @@ describe("POST /api/chat", () => {
     capturedOnEnd = null;
     mockAuth.mockReset();
     mockCheckSpendGuard.mockReset();
+    mockCheckUserSpendCap.mockReset();
+    mockBeginTurn.mockReset();
+    mockEndTurn.mockReset();
     mockReserveMessage.mockReset();
     mockSettleUsage.mockReset();
     mockRefundMessage.mockReset();
@@ -146,6 +158,12 @@ describe("POST /api/chat", () => {
     // defaults: everything passing
     mockGetChatConfig.mockResolvedValue(DEFAULT_CHAT_CONFIG);
     mockCheckSpendGuard.mockResolvedValue(true);
+    mockCheckUserSpendCap.mockResolvedValue({
+      ok: true,
+      spendUsd: 0,
+      capUsd: 20,
+    });
+    mockBeginTurn.mockReturnValue(true);
     mockReserveMessage.mockResolvedValue({
       ok: true,
       remaining: 49,
@@ -646,6 +664,78 @@ describe("POST /api/chat", () => {
     const withCtx = mockStreamText.mock.calls[0]?.[0]?.instructions as string;
     expect(withCtx.startsWith(plain)).toBe(true);
     expect(withCtx.length).toBeGreaterThan(plain.length);
+  });
+
+  // -- 403 spend (per-user cap) --
+  it("returns 403 {gate:'spend'} when the per-user spend cap is hit; reserveMessage NOT called", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    mockCheckUserSpendCap.mockResolvedValue({
+      ok: false,
+      spendUsd: 20,
+      capUsd: 20,
+    });
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
+    expect(res.status).toBe(403);
+    const body = (await res.json()) as { gate: string };
+    expect(body.gate).toBe("spend");
+    expect(mockReserveMessage).not.toHaveBeenCalled();
+  });
+
+  // -- 429 in-flight --
+  it("returns 429 when a previous turn is still in flight; reserveMessage NOT called", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    mockBeginTurn.mockReturnValue(false);
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
+    expect(res.status).toBe(429);
+    expect(mockReserveMessage).not.toHaveBeenCalled();
+    expect(mockStreamText).not.toHaveBeenCalled();
+  });
+
+  // -- spike hard-block --
+  it("skips settleUsage on a settlement spike (input over half maxInputTokens)", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    // Restore the default capture-only streamText implementation: an earlier
+    // test leaves one that fires onEnd during POST (claiming the turn, so an
+    // explicit second onEnd call would hit the quotaSettled guard).
+    mockStreamText.mockImplementation(((opts: {
+      onEnd?: typeof capturedOnEnd;
+    }) => {
+      capturedOnEnd = opts.onEnd ?? null;
+      return { stream: new ReadableStream() };
+    }) as unknown as typeof streamText);
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
+    expect(res.status).toBe(200);
+    expect(capturedOnEnd).not.toBeNull();
+    // DEFAULT_CHAT_CONFIG.maxInputTokens is 16000 → threshold 8000.
+    // eslint-disable-next-line @typescript-eslint/await-thenable -- onEnd returns void|Promise<void>
+    await capturedOnEnd!({ usage: { inputTokens: 9000, outputTokens: 5 } });
+    expect(mockSettleUsage).not.toHaveBeenCalled();
+    expect(mockEndTurn).toHaveBeenCalledWith("u1");
+  });
+
+  it("releases the in-flight turn when settlement succeeds", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    // Same capture-only reset as above (see spike test note).
+    mockStreamText.mockImplementation(((opts: {
+      onEnd?: typeof capturedOnEnd;
+    }) => {
+      capturedOnEnd = opts.onEnd ?? null;
+      return { stream: new ReadableStream() };
+    }) as unknown as typeof streamText);
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
+    expect(res.status).toBe(200);
+    // eslint-disable-next-line @typescript-eslint/await-thenable -- onEnd returns void|Promise<void>
+    await capturedOnEnd!({ usage: { inputTokens: 10, outputTokens: 5 } });
+    expect(mockSettleUsage).toHaveBeenCalled();
+    expect(mockEndTurn).toHaveBeenCalledWith("u1");
   });
 
   // -- scope gate (cheap refusal before rate limit / quota) --

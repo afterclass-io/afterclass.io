@@ -201,3 +201,53 @@ export async function checkSpendGuard(): Promise<boolean> {
   const row = await db.chatSpend.findUnique({ where: { period } });
   return (row?.totalSpendUsd ?? 0) < chat.spendCapPerMonthUsd;
 }
+
+/**
+ * Per-user spend cap (Task 7): hard-block a turn whose current-period spend
+ * already reached the per-user share of the monthly cap. Reuses the existing
+ * `spendCapPerMonthUsd` tunable (R7: no new numbers — Task 8 centralizes):
+ * the per-user ceiling is the global monthly cap itself, enforced per
+ * `ChatUsage.spendUsd`, so no single user can burn the whole account budget.
+ * Returns `{ ok: false }` when the user is at/over the cap — the route
+ * hard-blocks (403 spend gate) instead of warning.
+ */
+export async function checkUserSpendCap(
+  userId: string,
+): Promise<{ ok: boolean; spendUsd: number; capUsd: number }> {
+  const chat = await getChatConfig();
+  const period = currentMonthPeriod();
+  const row = await db.chatUsage.findUnique({
+    where: { userId_period: { userId, period } },
+  });
+  const spendUsd = row?.spendUsd ?? 0;
+  const capUsd = chat.spendCapPerMonthUsd;
+  return { ok: spendUsd < capUsd, spendUsd, capUsd };
+}
+
+/**
+ * In-flight turn tracking (Task 7): closes the concurrent-expensive-turns
+ * overshoot window. The route calls `beginTurn(userId)` after the spend-cap
+ * check and `endTurn(userId)` in settlement/refund paths; while a turn is
+ * in flight for a user, a second concurrent `beginTurn` is rejected so two
+ * expensive turns cannot both pass the cap check and then both settle.
+ * Best-effort in-process guard (single-server; Vercel may run multiple
+ * instances — the atomic DB settle in `settleUsage` remains the hard
+ * backstop). Always pair with `endTurn` in a finally path; stale entries
+ * are treated as expired after `STALE_MS` so a crashed turn cannot lock
+ * the user out forever.
+ */
+const inFlightTurns = new Map<string, number>();
+const IN_FLIGHT_STALE_MS = 5 * 60_000;
+
+export function beginTurn(userId: string): boolean {
+  const now = Date.now();
+  const started = inFlightTurns.get(userId);
+  if (started !== undefined && now - started < IN_FLIGHT_STALE_MS)
+    return false;
+  inFlightTurns.set(userId, now);
+  return true;
+}
+
+export function endTurn(userId: string): void {
+  inFlightTurns.delete(userId);
+}

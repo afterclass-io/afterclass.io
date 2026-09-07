@@ -40,7 +40,7 @@ vi.mock("@/server/ecfg/chat", () => ({
   }),
 }));
 
-import { checkQuota, checkSpendGuard, getQuotaState, refundMessage, reserveMessage, settleUsage, tokensToUsd } from "./quota";
+import { beginTurn, checkQuota, checkSpendGuard, checkUserSpendCap, endTurn, getQuotaState, refundMessage, reserveMessage, settleUsage, tokensToUsd } from "./quota";
 import { DEFAULT_CHAT_CONFIG } from "@/server/ecfg/config";
 
 describe("quota", () => {
@@ -316,5 +316,40 @@ describe("quota", () => {
   it("spend guard allows when no row exists", async () => {
     txChatSpendFindUnique.mockResolvedValue(null);
     expect(await checkSpendGuard()).toBe(true);
+  });
+
+  // ---- checkUserSpendCap (per-user cap reuses spendCapPerMonthUsd) ----
+  it("user spend cap blocks when the user already reached the cap", async () => {
+    txChatUsageFindUnique.mockResolvedValue({ messageCount: 50, spendUsd: 20 });
+    const r = await checkUserSpendCap("u1");
+    expect(r.ok).toBe(false);
+    expect(r.spendUsd).toBe(20);
+    expect(r.capUsd).toBe(20);
+  });
+
+  it("user spend cap allows when under the cap", async () => {
+    txChatUsageFindUnique.mockResolvedValue({ messageCount: 3, spendUsd: 0.5 });
+    const r = await checkUserSpendCap("u1");
+    expect(r.ok).toBe(true);
+  });
+
+  it("user spend cap allows when no row exists (fresh user)", async () => {
+    txChatUsageFindUnique.mockResolvedValue(null);
+    const r = await checkUserSpendCap("u1");
+    expect(r).toEqual({ ok: true, spendUsd: 0, capUsd: 20 });
+  });
+
+  // ---- beginTurn/endTurn (in-flight guard) ----
+  it("beginTurn rejects a second concurrent turn and endTurn releases it", () => {
+    const id = "inflight-u1";
+    expect(beginTurn(id)).toBe(true);
+    expect(beginTurn(id)).toBe(false);
+    endTurn(id);
+    expect(beginTurn(id)).toBe(true);
+    endTurn(id);
+  });
+
+  it("endTurn on an unknown user is a no-op", () => {
+    expect(() => endTurn("never-started")).not.toThrow();
   });
 });

@@ -21,6 +21,9 @@ import {
   settleUsage,
   refundMessage,
   checkSpendGuard,
+  checkUserSpendCap,
+  beginTurn,
+  endTurn,
 } from "@/server/assistant/quota";
 import { checkAndIncrement } from "@/server/assistant/ratelimit";
 import {
@@ -36,12 +39,13 @@ export const dynamic = "force-dynamic";
 // Multi-step chains (12 rounds) need more than 60s. 300 is the Vercel Node.js ceiling — VERIFY against the actual deploy plan before going live (Hobby non-Fluid caps at 60); flagged human-pending.
 export const maxDuration = 300;
 
-// Input-token count above which a settlement logs a loud spike warning
-// (usually a huge tool result re-sent across loop steps or a broken cached
-// prefix). Module-local const (not exported): route-module exports are
-// constrained by Next.js route-type validation. Named so the threshold is
-// greppable, not a magic literal.
-const SETTLEMENT_SPIKE_INPUT_TOKENS = 30_000;
+// Input-token count above which a settlement HARD-BLOCKS the turn's spend
+// recording (usually a huge tool result re-sent across loop steps or a broken
+// cached prefix). Named so the threshold is greppable, not a magic literal.
+// R7 (no new tunables): derived from `chat.maxInputTokens` (default 64000) —
+// half the max-input budget in one settlement is never legitimate. Task 8
+// centralizes this into a named CHAT_SETTLEMENT_SPIKE_TOKENS tunable.
+const SETTLEMENT_SPIKE_FRACTION = 0.5;
 
 // CACHE-CRITICAL: this prompt + the tool catalog are the shared account-wide
 // cached prefix for the LLM provider. Any byte change (wording, tool order,
@@ -105,14 +109,19 @@ function guardAgainstFailedStream<T>(
   stream: ReadableStream<T>,
   onFailure: () => Promise<void>,
   quotaSettled: { value: boolean },
+  onRelease?: () => void,
 ): ReadableStream<T> {
   let failed = false;
   const refund = () => {
     if (quotaSettled.value) return; // onEnd already settled - the slot is kept
     quotaSettled.value = true; // claim the turn; onEnd can never settle after a refund
-    void onFailure().catch(() => {
-      // best-effort: a refund DB error must never break the response stream
-    });
+    try {
+      onRelease?.();
+    } finally {
+      void onFailure().catch(() => {
+        // best-effort: a refund DB error must never break the response stream
+      });
+    }
   };
   const reader = stream.getReader();
   return new ReadableStream({
@@ -152,6 +161,7 @@ function guardAgainstFailedStream<T>(
       // spend. Settlement (onEnd) will still account token usage best-effort; if the
       // stream is torn down before it can fire, the slot remains consumed - intentional.
       if (!quotaSettled.value) quotaSettled.value = true;
+      onRelease?.();
       void reader.cancel().catch(() => {
         // best-effort: propagate the downstream cancel to the source
       });
@@ -213,12 +223,21 @@ export async function POST(req: Request) {
 
   const chat = await getChatConfig();
   const windowMinutes = getRateLimitWindowMinutes();
-  const [spendOk, rate] = await Promise.all([
+  // Per-user spend cap (Task 7): checked alongside the global kill-switch,
+  // before any quota is reserved. Both hard-block (403 spend gate).
+  const [spendOk, userSpend, rate] = await Promise.all([
     checkSpendGuard(),
+    checkUserSpendCap(userId),
     checkAndIncrement(`chat:${userId}`, chat.rateLimitPerMinute, windowMinutes),
   ]);
   if (!rate.ok) return new Response("Rate limit exceeded", { status: 429 });
-  if (!spendOk) return GATE("spend");
+  if (!spendOk || !userSpend.ok) return GATE("spend");
+  // In-flight guard: a second concurrent turn for the same user is rejected
+  // (429) so two expensive turns cannot both pass the cap check and then
+  // both settle past it. Best-effort (single-instance); the atomic DB settle
+  // remains the hard backstop.
+  if (!beginTurn(userId))
+    return new Response("A previous turn is still running", { status: 429 });
 
   // Everything below reserves a quota slot, so any failure must refund it.
   // `reserved` tracks whether the slot was taken; the stream itself is also
@@ -263,37 +282,50 @@ export async function POST(req: Request) {
       onEnd: async ({ usage }) => {
         if (quotaSettled.value) return; // already refunded - never settle after a refund
         quotaSettled.value = true; // claim the turn for settlement
-        // Cache reads: normalised field first, then the provider's raw
-        // prompt_cache_hit_tokens (see usage.ts - the SDK does not map it).
-        const cachedInput = extractCachedInputTokens(usage);
-        // One-time diagnostic: CHAT_LOG_USAGE=1 logs the raw usage payload so the
-        // provider field mapping can be re-verified after provider/SDK upgrades.
-        if (process.env.CHAT_LOG_USAGE === "1") {
-          // intentional: one-time opt-in diagnostic for provider field mapping
-          console.log("[assistant:usage]", JSON.stringify(usage));
-        }
-        if ((usage.inputTokens ?? 0) > SETTLEMENT_SPIKE_INPUT_TOKENS) {
-          // Settlement spike: usually a huge tool result re-sent across loop steps
-          // or a broken cached prefix. Loud enough to catch cost regressions.
-          // intentional: cost-regression signal, keep loud
-          console.warn(
-            `[assistant] large settlement: input=${usage.inputTokens} cached=${cachedInput}`,
+        try {
+          // Cache reads: normalised field first, then the provider's raw
+          // prompt_cache_hit_tokens (see usage.ts - the SDK does not map it).
+          const cachedInput = extractCachedInputTokens(usage);
+          // One-time diagnostic: CHAT_LOG_USAGE=1 logs the raw usage payload so the
+          // provider field mapping can be re-verified after provider/SDK upgrades.
+          if (process.env.CHAT_LOG_USAGE === "1") {
+            // intentional: one-time opt-in diagnostic for provider field mapping
+            console.log("[assistant:usage]", JSON.stringify(usage));
+          }
+          const spikeThreshold = Math.floor(
+            chat.maxInputTokens * SETTLEMENT_SPIKE_FRACTION,
           );
+          if ((usage.inputTokens ?? 0) > spikeThreshold) {
+            // Settlement spike: usually a huge tool result re-sent across loop
+            // steps or a broken cached prefix. HARD-BLOCK: skip settleUsage so
+            // a runaway turn cannot record unbounded spend (the message slot
+            // stays consumed — the turn happened — but the token/spend write
+            // is dropped). Loud enough to catch cost regressions.
+            // intentional: cost-regression signal, keep loud
+            console.warn(
+              `[assistant] settlement spike blocked: input=${usage.inputTokens} cached=${cachedInput} threshold=${spikeThreshold}`,
+            );
+            return;
+          }
+          await settleUsage(userId, {
+            input: usage.inputTokens ?? 0,
+            output: usage.outputTokens ?? 0,
+            cachedInput,
+          });
+        } finally {
+          endTurn(userId);
         }
-        await settleUsage(userId, {
-          input: usage.inputTokens ?? 0,
-          output: usage.outputTokens ?? 0,
-          cachedInput,
-        });
       },
     });
 
     // Refund the reserved slot when the stream errors or is aborted before it
     // can settle (onEnd). Successful/partial streams still settle via onEnd.
+    // endTurn releases the in-flight slot on refund AND on abort-cancel.
     const guarded = guardAgainstFailedStream(
       result.stream,
       () => refundMessage(userId),
       quotaSettled,
+      () => endTurn(userId),
     );
 
     return createUIMessageStreamResponse({
@@ -302,7 +334,8 @@ export async function POST(req: Request) {
   } catch (error) {
     // Synchronous failure after reservation (e.g. model/config error) - the
     // client sees a 500 and the reserved slot is rolled back so the failed
-    // send never burns quota.
+    // send never burns quota. The in-flight turn is always released.
+    endTurn(userId);
     if (reserved) {
       await refundMessage(userId).catch(() => {
         // best-effort refund
