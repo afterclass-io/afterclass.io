@@ -95,6 +95,17 @@ let capturedOnEnd:
     }) => void)
   | null = null;
 
+// stored onStepFinish callback so the test can invoke it
+let capturedOnStepFinish:
+  | ((event: {
+      usage: {
+        inputTokens?: number;
+        outputTokens?: number;
+        inputTokenDetails?: { cacheReadTokens?: number };
+      };
+    }) => void)
+  | null = null;
+
 vi.mock("ai", () => ({
   streamText: vi.fn().mockImplementation(
     (opts: {
@@ -105,8 +116,16 @@ vi.mock("ai", () => ({
           inputTokenDetails?: { cacheReadTokens?: number };
         };
       }) => void;
+      onStepFinish?: (event: {
+        usage: {
+          inputTokens?: number;
+          outputTokens?: number;
+          inputTokenDetails?: { cacheReadTokens?: number };
+        };
+      }) => void;
     }) => {
       capturedOnEnd = opts.onEnd ?? null;
+      capturedOnStepFinish = opts.onStepFinish ?? null;
       return { stream: new ReadableStream() };
     },
   ),
@@ -156,6 +175,7 @@ function buildReq(body: unknown) {
 describe("POST /api/chat", () => {
   beforeEach(() => {
     capturedOnEnd = null;
+    capturedOnStepFinish = null;
     mockAuth.mockReset();
     mockCheckSpendGuard.mockReset();
     mockCheckUserSpendCap.mockReset();
@@ -320,6 +340,33 @@ describe("POST /api/chat", () => {
     });
     // a successful stream must never refund the reserved slot
     expect(mockRefundMessage).not.toHaveBeenCalled();
+  });
+
+  it("wires onStepFinish and emits a structured per-step usage log", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    try {
+      const res = await POST(
+        buildReq({ messages: [{ role: "user", content: "hi" }] }),
+      );
+      expect(res.status).toBe(200);
+      // The structured usage log rides onStepFinish (the CHAT_LOG_USAGE=1
+      // raw-usage probe inside onEnd stays untouched).
+      expect(capturedOnStepFinish).not.toBeNull();
+      await capturedOnStepFinish!({
+        usage: { inputTokens: 11, outputTokens: 6 },
+      });
+      expect(logSpy).toHaveBeenCalledWith(
+        "[assistant:step-usage]",
+        expect.stringContaining('"inputTokens":11'),
+      );
+      expect(logSpy).toHaveBeenCalledWith(
+        "[assistant:step-usage]",
+        expect.stringContaining('"outputTokens":6'),
+      );
+    } finally {
+      logSpy.mockRestore();
+    }
   });
 
   // -- 500 + refund (synchronous failure after reservation) --
