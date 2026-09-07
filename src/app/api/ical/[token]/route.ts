@@ -42,8 +42,7 @@ export async function GET(
 ): Promise<Response> {
   // Per-IP throttle BEFORE the token lookup so spray never reaches the DB.
   const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    "unknown";
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const { ok } = await checkAndIncrement(`ical:${ip}`, 60, 1);
   if (!ok) return new Response("Too many requests", { status: 429 });
 
@@ -59,7 +58,9 @@ export async function GET(
 
   const ics = buildIcal(feedData);
 
-  const safe = feedData.timetableName.replace(/[^a-zA-Z0-9_\- ]/g, "").trim() || "timetable";
+  const safe =
+    feedData.timetableName.replace(/[^a-zA-Z0-9_\- ]/g, "").trim() ||
+    "timetable";
   const filename = `${safe}.ics`;
 
   return new Response(ics, {

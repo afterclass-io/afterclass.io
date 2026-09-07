@@ -196,7 +196,9 @@ export async function dispatchToolCall(opts: {
   const text = stripSecrets(rawText);
   if (policy.truncateAt !== undefined && text.length > policy.truncateAt)
     return textResult(
-      wrapToolOutput(truncate(text, policy.truncateAt, policy.truncationNote ?? "")),
+      wrapToolOutput(
+        truncate(text, policy.truncateAt, policy.truncationNote ?? ""),
+      ),
     );
   return textResult(wrapToolOutput(text));
 }

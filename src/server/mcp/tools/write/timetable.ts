@@ -146,7 +146,10 @@ export const addClassToTimetableTool: McpTool<
       }
       return jsonText(
         stripSecretsFromValue(
-          await caller.timetable.addSlot({ timetableId, classId: input.classId }),
+          await caller.timetable.addSlot({
+            timetableId,
+            classId: input.classId,
+          }),
         ),
       );
     } catch (e) {

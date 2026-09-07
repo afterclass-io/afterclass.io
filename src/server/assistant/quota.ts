@@ -242,8 +242,7 @@ const IN_FLIGHT_STALE_MS = 5 * 60_000;
 export function beginTurn(userId: string): boolean {
   const now = Date.now();
   const started = inFlightTurns.get(userId);
-  if (started !== undefined && now - started < IN_FLIGHT_STALE_MS)
-    return false;
+  if (started !== undefined && now - started < IN_FLIGHT_STALE_MS) return false;
   inFlightTurns.set(userId, now);
   return true;
 }

@@ -169,9 +169,7 @@ export const upsertRoadmapEntryTool: McpTool<typeof upsertRoadmapEntrySchema> =
           feasibility = null;
         }
 
-        return jsonText(
-          stripSecretsFromValue({ roadmapView, feasibility }),
-        );
+        return jsonText(stripSecretsFromValue({ roadmapView, feasibility }));
       } catch (e) {
         return errText(errorMessage(e));
       }

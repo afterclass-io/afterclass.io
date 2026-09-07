@@ -47,7 +47,10 @@ export async function checkAndIncrement(
       data: { count: { increment: 1 } },
     });
     if (result.count === 0) {
-      const retryAfterSeconds = Math.max(1, Math.ceil((windowStart + windowMs - Date.now()) / 1000));
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil((windowStart + windowMs - Date.now()) / 1000),
+      );
       return { ok: false, retryAfterSeconds };
     }
     return { ok: true, retryAfterSeconds: 0 };
@@ -67,7 +70,9 @@ export async function pruneRateLimits(
   windowMinutes = 1,
 ): Promise<{ deleted: number }> {
   const windowMs = windowMinutes * 60_000;
-  const cutoff = BigInt(Math.floor(Date.now() / windowMs) * windowMs - retentionWindows * windowMs);
+  const cutoff = BigInt(
+    Math.floor(Date.now() / windowMs) * windowMs - retentionWindows * windowMs,
+  );
   const res = await db.rateLimit.deleteMany({
     where: { windowStart: { lt: cutoff } },
   });

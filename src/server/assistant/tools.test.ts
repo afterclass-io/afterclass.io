@@ -125,11 +125,11 @@ describe("buildAssistantTools", () => {
       status: "SECURED",
       confirm: true,
     } as never);
-    expect(mockCheckAndIncrement).toHaveBeenCalledWith(
-      ctx,
-      "write",
-      { prefix: "chat-write", limit: WRITE_LIMIT, windowMs: 60_000 },
-    );
+    expect(mockCheckAndIncrement).toHaveBeenCalledWith(ctx, "write", {
+      prefix: "chat-write",
+      limit: WRITE_LIMIT,
+      windowMs: 60_000,
+    });
     expect(result).toContain("b1");
     const setStatus = (
       ctx.caller as unknown as { userBids: { setStatus: Mock } }

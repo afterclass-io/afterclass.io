@@ -216,7 +216,9 @@ describe("dispatchToolCall", () => {
     try {
       const writeTool = {
         name: "upsert-bid",
-        run: vi.fn().mockResolvedValue({ content: [{ type: "text", text: "ok" }] }),
+        run: vi
+          .fn()
+          .mockResolvedValue({ content: [{ type: "text", text: "ok" }] }),
       };
       await dispatchToolCall({
         tool: writeTool as never,
@@ -246,7 +248,10 @@ describe("dispatchToolCall", () => {
         name: "remove-bid",
         run: vi
           .fn()
-          .mockResolvedValue({ content: [{ type: "text", text: "no" }], isError: true }),
+          .mockResolvedValue({
+            content: [{ type: "text", text: "no" }],
+            isError: true,
+          }),
       };
       await dispatchToolCall({
         tool: failingWrite as never,

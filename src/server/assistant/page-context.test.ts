@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  buildPageContextSuffix,
-  escapePageContextValue,
-} from "./page-context";
+import { buildPageContextSuffix, escapePageContextValue } from "./page-context";
 
 describe("escapePageContextValue", () => {
   it("collapses newlines and escapes angle brackets", () => {

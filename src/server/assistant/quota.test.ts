@@ -21,38 +21,80 @@ const {
 }));
 
 const tx = {
-  chatUsage: { findUnique: txChatUsageFindUnique, upsert: txChatUsageUpsert, updateMany: txChatUsageUpdateMany },
-  chatSpend: { findUnique: txChatSpendFindUnique, upsert: txChatSpendUpsert, updateMany: txChatSpendUpdateMany },
+  chatUsage: {
+    findUnique: txChatUsageFindUnique,
+    upsert: txChatUsageUpsert,
+    updateMany: txChatUsageUpdateMany,
+  },
+  chatSpend: {
+    findUnique: txChatSpendFindUnique,
+    upsert: txChatSpendUpsert,
+    updateMany: txChatSpendUpdateMany,
+  },
 };
 
 vi.mock("@/server/db", () => ({
   db: {
-    chatUsage: { findUnique: txChatUsageFindUnique, upsert: txChatUsageUpsert, updateMany: txChatUsageUpdateMany },
-    chatSpend: { findUnique: txChatSpendFindUnique, upsert: txChatSpendUpsert, updateMany: txChatSpendUpdateMany },
+    chatUsage: {
+      findUnique: txChatUsageFindUnique,
+      upsert: txChatUsageUpsert,
+      updateMany: txChatUsageUpdateMany,
+    },
+    chatSpend: {
+      findUnique: txChatSpendFindUnique,
+      upsert: txChatSpendUpsert,
+      updateMany: txChatSpendUpdateMany,
+    },
     $transaction: (fn: (tx: Record<string, unknown>) => unknown) => fn(tx),
   },
 }));
 vi.mock("@/server/ecfg/chat", () => ({
   getChatConfig: async () => ({
-    quotaPerMonth: 50, nudgeAt: 40, rateLimitPerMinute: 10, mcpRateLimitPerMinute: 60,
-    spendCapPerMonthUsd: 20, maxInputTokens: 16000, maxOutputTokens: 1024, maxToolRounds: 6,
-    priceInputPerM: 0.14, priceCachedInputPerM: 0.014, priceOutputPerM: 0.28,
+    quotaPerMonth: 50,
+    nudgeAt: 40,
+    rateLimitPerMinute: 10,
+    mcpRateLimitPerMinute: 60,
+    spendCapPerMonthUsd: 20,
+    maxInputTokens: 16000,
+    maxOutputTokens: 1024,
+    maxToolRounds: 6,
+    priceInputPerM: 0.14,
+    priceCachedInputPerM: 0.014,
+    priceOutputPerM: 0.28,
   }),
 }));
 
-import { beginTurn, checkQuota, checkSpendGuard, checkUserSpendCap, endTurn, getQuotaState, refundMessage, reserveMessage, settleUsage, tokensToUsd } from "./quota";
+import {
+  beginTurn,
+  checkQuota,
+  checkSpendGuard,
+  checkUserSpendCap,
+  endTurn,
+  getQuotaState,
+  refundMessage,
+  reserveMessage,
+  settleUsage,
+  tokensToUsd,
+} from "./quota";
 import { DEFAULT_CHAT_CONFIG } from "@/server/ecfg/config";
 
 describe("quota", () => {
   beforeEach(() => {
-    txChatUsageFindUnique.mockReset(); txChatUsageUpsert.mockReset();
+    txChatUsageFindUnique.mockReset();
+    txChatUsageUpsert.mockReset();
     txChatUsageUpdateMany.mockReset();
-    txChatSpendFindUnique.mockReset(); txChatSpendUpsert.mockReset(); txChatSpendUpdateMany.mockReset();
+    txChatSpendFindUnique.mockReset();
+    txChatSpendUpsert.mockReset();
+    txChatSpendUpdateMany.mockReset();
   });
 
   // ---- getQuotaState token totals ----
   it("returns token totals from the usage row", async () => {
-    txChatUsageFindUnique.mockResolvedValue({ messageCount: 3, inputTokens: 1000, cachedInputTokens: 800 });
+    txChatUsageFindUnique.mockResolvedValue({
+      messageCount: 3,
+      inputTokens: 1000,
+      cachedInputTokens: 800,
+    });
     const state = await getQuotaState("u1");
     expect(state.inputTokens).toBe(1000);
     expect(state.cachedInputTokens).toBe(800);
@@ -75,7 +117,11 @@ describe("quota", () => {
   // ---- checkQuota ----
   it("allows when under quota", async () => {
     txChatUsageFindUnique.mockResolvedValue({ messageCount: 10 });
-    expect(await checkQuota("u1")).toEqual({ ok: true, remaining: 40, quota: 50 });
+    expect(await checkQuota("u1")).toEqual({
+      ok: true,
+      remaining: 40,
+      quota: 50,
+    });
   });
 
   it("blocks at the quota boundary", async () => {
@@ -85,24 +131,42 @@ describe("quota", () => {
 
   it("starts a fresh month when no row exists (lazy reset)", async () => {
     txChatUsageFindUnique.mockResolvedValue(null);
-    expect(await checkQuota("u1")).toEqual({ ok: true, remaining: 50, quota: 50 });
+    expect(await checkQuota("u1")).toEqual({
+      ok: true,
+      remaining: 50,
+      quota: 50,
+    });
   });
 
   // ---- tokensToUsd ----
   it("computes spend from token counts", () => {
     // 10000*0.14 + 1000*0.28 over 1e6 is 0.0016800000000000003 (not exactly
     // 0.00168), so use toBeCloseTo with 5 dp for discrimination.
-    expect(tokensToUsd(DEFAULT_CHAT_CONFIG, { input: 10_000, output: 1_000 })).toBeCloseTo(0.00168, 5);
+    expect(
+      tokensToUsd(DEFAULT_CHAT_CONFIG, { input: 10_000, output: 1_000 }),
+    ).toBeCloseTo(0.00168, 5);
   });
 
   it("computes spend with cached input at 10x discount", () => {
     // (8000*0.14 + 2000*0.014 + 1000*0.28)/1e6 = (1120+28+280)/1e6 = 0.001428
-    expect(tokensToUsd(DEFAULT_CHAT_CONFIG, { input: 10_000, output: 1_000, cachedInput: 2_000 })).toBeCloseTo(0.001428, 5);
+    expect(
+      tokensToUsd(DEFAULT_CHAT_CONFIG, {
+        input: 10_000,
+        output: 1_000,
+        cachedInput: 2_000,
+      }),
+    ).toBeCloseTo(0.001428, 5);
   });
 
   it("clamps cachedInput exceeding input to 0 non-cached", () => {
     // cachedInput > input => nonCached = 0, cost = cached*0.014 + output*0.28
-    expect(tokensToUsd(DEFAULT_CHAT_CONFIG, { input: 1_000, output: 0, cachedInput: 5_000 })).toBeCloseTo(5000 * 0.014 / 1_000_000, 5);
+    expect(
+      tokensToUsd(DEFAULT_CHAT_CONFIG, {
+        input: 1_000,
+        output: 0,
+        cachedInput: 5_000,
+      }),
+    ).toBeCloseTo((5000 * 0.014) / 1_000_000, 5);
   });
 
   // ---- reserveMessage (atomic conditional update) ----
@@ -115,14 +179,27 @@ describe("quota", () => {
     // Ensure row path: upsert with 0 then conditional updateMany with lt quota
     expect(txChatUsageUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { userId_period: { userId: "u1", period: expect.any(String) as string } },
-        create: expect.objectContaining({ userId: "u1", messageCount: 0, inputTokens: 0, outputTokens: 0, cachedInputTokens: 0, spendUsd: 0 }) as Record<string, unknown>,
+        where: {
+          userId_period: { userId: "u1", period: expect.any(String) as string },
+        },
+        create: expect.objectContaining({
+          userId: "u1",
+          messageCount: 0,
+          inputTokens: 0,
+          outputTokens: 0,
+          cachedInputTokens: 0,
+          spendUsd: 0,
+        }) as Record<string, unknown>,
         update: {},
       }) as Record<string, unknown>,
     );
     expect(txChatUsageUpdateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { userId: "u1", period: expect.any(String) as string, messageCount: { lt: 50 } },
+        where: {
+          userId: "u1",
+          period: expect.any(String) as string,
+          messageCount: { lt: 50 },
+        },
         data: { messageCount: { increment: 1 } },
       }) as Record<string, unknown>,
     );
@@ -135,7 +212,12 @@ describe("quota", () => {
     const result = await reserveMessage("u1");
     expect(result).toEqual({ ok: true, remaining: 39, quota: 50 });
     expect(txChatUsageUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ messageCount: { lt: 50 } }) as Record<string, unknown> }) as Record<string, unknown>,
+      expect.objectContaining({
+        where: expect.objectContaining({ messageCount: { lt: 50 } }) as Record<
+          string,
+          unknown
+        >,
+      }) as Record<string, unknown>,
     );
   });
 
@@ -169,7 +251,12 @@ describe("quota", () => {
     expect(result.ok).toBe(false);
     expect(result.remaining).toBe(0);
     expect(txChatUsageUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ messageCount: { lt: 50 } }) as Record<string, unknown> }) as Record<string, unknown>,
+      expect.objectContaining({
+        where: expect.objectContaining({ messageCount: { lt: 50 } }) as Record<
+          string,
+          unknown
+        >,
+      }) as Record<string, unknown>,
     );
   });
 
@@ -205,7 +292,10 @@ describe("quota", () => {
     expect(txChatUsageUpdateMany).toHaveBeenCalledTimes(1);
     expect(txChatUsageUpdateMany.mock.calls[0]?.[0]).toEqual(
       expect.objectContaining({
-        where: expect.objectContaining({ messageCount: { gt: 0 } }) as Record<string, unknown>,
+        where: expect.objectContaining({ messageCount: { gt: 0 } }) as Record<
+          string,
+          unknown
+        >,
       }) as Record<string, unknown>,
     );
   });
@@ -227,8 +317,13 @@ describe("quota", () => {
     // Conditional increment under cap
     expect(txChatSpendUpdateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { period: expect.any(String) as string, totalSpendUsd: { lt: 20 } },
-        data: { totalSpendUsd: { increment: expect.closeTo(0.00168, 5) as number } },
+        where: {
+          period: expect.any(String) as string,
+          totalSpendUsd: { lt: 20 },
+        },
+        data: {
+          totalSpendUsd: { increment: expect.closeTo(0.00168, 5) as number },
+        },
       }) as Record<string, unknown>,
     );
     // ChatUsage upsert should be called with messageCount: 0 (not incremented)
@@ -256,8 +351,13 @@ describe("quota", () => {
     txChatSpendUpsert.mockResolvedValue(undefined);
     txChatSpendUpdateMany.mockResolvedValue({ count: 1 });
     txChatUsageUpsert.mockResolvedValue(undefined);
-    await settleUsage("u1", { input: 10_000, output: 1_000, cachedInput: 2_000 });
-    const expectedSpend = ((8000 * 0.14 + 2000 * 0.014 + 1000 * 0.28) / 1_000_000);
+    await settleUsage("u1", {
+      input: 10_000,
+      output: 1_000,
+      cachedInput: 2_000,
+    });
+    const expectedSpend =
+      (8000 * 0.14 + 2000 * 0.014 + 1000 * 0.28) / 1_000_000;
     expect(txChatUsageUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
         create: expect.objectContaining({
@@ -283,7 +383,12 @@ describe("quota", () => {
     await settleUsage("u1", { input: 5_000, output: 500 });
     expect(txChatSpendUpsert).toHaveBeenCalled();
     expect(txChatSpendUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ totalSpendUsd: { lt: 20 } }) as Record<string, unknown> }) as Record<string, unknown>,
+      expect.objectContaining({
+        where: expect.objectContaining({ totalSpendUsd: { lt: 20 } }) as Record<
+          string,
+          unknown
+        >,
+      }) as Record<string, unknown>,
     );
     // ChatUsage upsert is still called (usage accounting independent of spend cap)
     expect(txChatUsageUpsert).toHaveBeenCalled();
@@ -295,11 +400,18 @@ describe("quota", () => {
     txChatUsageUpsert.mockResolvedValue(undefined);
     await settleUsage("u1", { input: 1_000, output: 500 });
     expect(txChatSpendUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { totalSpendUsd: { increment: expect.any(Number) as number } } }) as Record<string, unknown>,
+      expect.objectContaining({
+        data: { totalSpendUsd: { increment: expect.any(Number) as number } },
+      }) as Record<string, unknown>,
     );
     // increment is additive, not a read-then-write overwrite
-    const call = txChatSpendUpdateMany.mock.calls[0]?.[0] as Record<string, unknown>;
-    expect((call.data as Record<string, unknown>).totalSpendUsd).toEqual(expect.objectContaining({ increment: expect.any(Number) as number }));
+    const call = txChatSpendUpdateMany.mock.calls[0]?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect((call.data as Record<string, unknown>).totalSpendUsd).toEqual(
+      expect.objectContaining({ increment: expect.any(Number) as number }),
+    );
   });
 
   // ---- checkSpendGuard ----

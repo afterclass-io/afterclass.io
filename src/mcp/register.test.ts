@@ -213,7 +213,9 @@ describe("registerViewlessTools", () => {
     });
     registerViewlessTools({ tool } as never);
     const ra = await captured[0]!({});
-    expect(ra.content).toMatchObject([{ type: "text", text: "<tool_output>\nresult-a\n</tool_output>" }]);
+    expect(ra.content).toMatchObject([
+      { type: "text", text: "<tool_output>\nresult-a\n</tool_output>" },
+    ]);
     expect(ra.isError).toBeUndefined();
     const rb = await captured[1]!({});
     expect(rb.isError).toBe(true);
@@ -341,7 +343,9 @@ describe("registerViewlessTools", () => {
       );
       expect(run).toHaveBeenCalledTimes(1);
       expect(result).toMatchObject({
-        content: [{ type: "text", text: "<tool_output>\nshared-ok\n</tool_output>" }],
+        content: [
+          { type: "text", text: "<tool_output>\nshared-ok\n</tool_output>" },
+        ],
       });
     } finally {
       (allTools as unknown as unknown[]).length = 0;
@@ -538,7 +542,9 @@ describe("registerViewlessTools", () => {
         );
         expect(run).toHaveBeenCalledTimes(1);
         expect(result).toMatchObject({
-          content: [{ type: "text", text: "<tool_output>\ndeleted\n</tool_output>" }],
+          content: [
+            { type: "text", text: "<tool_output>\ndeleted\n</tool_output>" },
+          ],
         });
       } finally {
         restore();
@@ -554,7 +560,9 @@ describe("registerViewlessTools", () => {
       );
       expect(fakeRunA).toHaveBeenCalledTimes(1);
       expect(result).toMatchObject({
-        content: [{ type: "text", text: "<tool_output>\ncreated\n</tool_output>" }],
+        content: [
+          { type: "text", text: "<tool_output>\ncreated\n</tool_output>" },
+        ],
       });
     });
 
@@ -572,7 +580,9 @@ describe("registerViewlessTools", () => {
         );
         expect(run).toHaveBeenCalledTimes(1);
         expect(result).toMatchObject({
-          content: [{ type: "text", text: "<tool_output>\ndeleted\n</tool_output>" }],
+          content: [
+            { type: "text", text: "<tool_output>\ndeleted\n</tool_output>" },
+          ],
         });
       } finally {
         restore();
@@ -695,7 +705,9 @@ describe("registerViewlessTools", () => {
         );
         expect(run).toHaveBeenCalledTimes(1);
         expect(result).toMatchObject({
-          content: [{ type: "text", text: "<tool_output>\nwritten\n</tool_output>" }],
+          content: [
+            { type: "text", text: "<tool_output>\nwritten\n</tool_output>" },
+          ],
         });
       } finally {
         restore();

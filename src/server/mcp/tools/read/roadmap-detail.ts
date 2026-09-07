@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 import { stripSecretsFromValue } from "@/mcp/output-policy";
-import { buildRoadmapView, roadmapViewToViewProps } from "../roadmap-view-shared";
+import {
+  buildRoadmapView,
+  roadmapViewToViewProps,
+} from "../roadmap-view-shared";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 const roadmapViewExtractor = roadmapViewToViewProps;

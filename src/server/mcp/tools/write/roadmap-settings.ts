@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-import { buildRoadmapView, roadmapViewToViewProps } from "../roadmap-view-shared";
+import {
+  buildRoadmapView,
+  roadmapViewToViewProps,
+} from "../roadmap-view-shared";
 import { stripSecretsFromValue } from "@/mcp/output-policy";
 import {
   confirmField,
@@ -67,25 +70,26 @@ const syncRoadmapProgressSchema = z.object({
   ...confirmField,
 });
 
-export const syncRoadmapProgressTool: McpTool<typeof syncRoadmapProgressSchema> =
-  {
-    name: "sync-roadmap-progress",
-    description:
-      "Sync the user's course history into a roadmap: for every academic term from the roadmap's matriculation term up to the current term, courses from the user's active timetable for that term are added to the matching roadmap year/term. Add-only - never deletes or duplicates courses. Requires the roadmap to be active and to have a matriculation term (see set-matric-term). Returns { synced, courseIds }.",
-    inputSchema: syncRoadmapProgressSchema,
-    run: async ({ caller }, { roadmapId }) => {
-      try {
-        // Canonical output policy: bearer tokens must not reach the LLM.
-        return jsonText(
-          stripSecretsFromValue(
-            await caller.roadmaps.syncProgress({ roadmapId }),
-          ),
-        );
-      } catch (e) {
-        return errText(errorMessage(e));
-      }
-    },
-  };
+export const syncRoadmapProgressTool: McpTool<
+  typeof syncRoadmapProgressSchema
+> = {
+  name: "sync-roadmap-progress",
+  description:
+    "Sync the user's course history into a roadmap: for every academic term from the roadmap's matriculation term up to the current term, courses from the user's active timetable for that term are added to the matching roadmap year/term. Add-only - never deletes or duplicates courses. Requires the roadmap to be active and to have a matriculation term (see set-matric-term). Returns { synced, courseIds }.",
+  inputSchema: syncRoadmapProgressSchema,
+  run: async ({ caller }, { roadmapId }) => {
+    try {
+      // Canonical output policy: bearer tokens must not reach the LLM.
+      return jsonText(
+        stripSecretsFromValue(
+          await caller.roadmaps.syncProgress({ roadmapId }),
+        ),
+      );
+    } catch (e) {
+      return errText(errorMessage(e));
+    }
+  },
+};
 
 const copyPublicRoadmapSchema = z.object({
   roadmapId: z.string(),

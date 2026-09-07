@@ -64,7 +64,9 @@ export const renameRoadmapTool: McpTool<typeof renameRoadmapSchema> = {
   run: async ({ caller }, input) => {
     try {
       // Canonical output policy: bearer tokens must not reach the LLM.
-      return jsonText(stripSecretsFromValue(await caller.roadmaps.rename(input)));
+      return jsonText(
+        stripSecretsFromValue(await caller.roadmaps.rename(input)),
+      );
     } catch (e) {
       return errText(errorMessage(e));
     }

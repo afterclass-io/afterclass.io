@@ -767,7 +767,8 @@ describe("POST /api/chat", () => {
     expect(mockStreamText).toHaveBeenCalled();
   });
 
-  it("ignores invalid pageContext without failing the turn", async () => {    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+  it("ignores invalid pageContext without failing the turn", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
     const res = await POST(
       buildReq({
         messages: [{ role: "user", content: "hi" }],

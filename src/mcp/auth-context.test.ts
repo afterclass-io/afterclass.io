@@ -102,7 +102,9 @@ describe("tool handler auth resolution", () => {
         {},
         { auth: { user: { id: "supa-1", email: "a@x.com" } as never } },
       ),
-    ).resolves.toMatchObject({ content: [{ type: "text", text: "<tool_output>\nok\n</tool_output>" }] });
+    ).resolves.toMatchObject({
+      content: [{ type: "text", text: "<tool_output>\nok\n</tool_output>" }],
+    });
     // buildToolContext is now called with the ctx object (which contains auth.user)
     expect(buildToolContext).toHaveBeenCalledWith({
       auth: { user: { id: "supa-1", email: "a@x.com" } },
@@ -153,7 +155,9 @@ describe("tool handler auth resolution", () => {
           },
         },
       ),
-    ).resolves.toMatchObject({ content: [{ type: "text", text: "<tool_output>\nok\n</tool_output>" }] });
+    ).resolves.toMatchObject({
+      content: [{ type: "text", text: "<tool_output>\nok\n</tool_output>" }],
+    });
     expect(buildToolContext).toHaveBeenCalledWith({
       auth: { user: { id: "supa-1", email: "a@x.com", amr: [] } },
     });

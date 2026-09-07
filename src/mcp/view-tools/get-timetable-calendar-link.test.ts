@@ -9,10 +9,14 @@ import type { Mock } from "vitest";
  * the adapter level.
  */
 
-const { buildToolContext } = vi.hoisted(() => ({ buildToolContext: vi.fn() as Mock }));
+const { buildToolContext } = vi.hoisted(() => ({
+  buildToolContext: vi.fn() as Mock,
+}));
 const { toolRun } = vi.hoisted(() => ({ toolRun: vi.fn() as Mock }));
 const { serverTool } = vi.hoisted(() => ({ serverTool: vi.fn() as Mock }));
-const { checkAndIncrement } = vi.hoisted(() => ({ checkAndIncrement: vi.fn() as Mock }));
+const { checkAndIncrement } = vi.hoisted(() => ({
+  checkAndIncrement: vi.fn() as Mock,
+}));
 
 // `server-only` throws outside a Next.js server bundle — stub as no-op
 // (established pattern: user.test.ts, register.test.ts, auth-context.test.ts).
@@ -21,7 +25,13 @@ vi.mock("../server", () => ({ server: { tool: serverTool } }));
 vi.mock("../user", () => ({ buildToolContext }));
 vi.mock("@/server/mcp/tools", () => ({
   allTools: [
-    { name: "get-timetable-calendar-link", description: "D", inputSchema: {}, readOnly: false, run: toolRun },
+    {
+      name: "get-timetable-calendar-link",
+      description: "D",
+      inputSchema: {},
+      readOnly: false,
+      run: toolRun,
+    },
   ],
 }));
 vi.mock("@/server/assistant/ratelimit", () => ({ checkAndIncrement }));
@@ -49,12 +59,18 @@ type AdapterResult = {
   _meta?: Record<string, unknown>;
 };
 
-function captured(): { definition: { name: string; view?: { name: string } }; handler: (params: unknown, ctx: unknown) => Promise<AdapterResult> } {
+function captured(): {
+  definition: { name: string; view?: { name: string } };
+  handler: (params: unknown, ctx: unknown) => Promise<AdapterResult>;
+} {
   const call = serverTool.mock.calls.at(-1);
   if (!call) throw new Error("adapter did not register on server.tool");
   return {
     definition: call[0] as { name: string; view?: { name: string } },
-    handler: call[1] as (params: unknown, ctx: unknown) => Promise<AdapterResult>,
+    handler: call[1] as (
+      params: unknown,
+      ctx: unknown,
+    ) => Promise<AdapterResult>,
   };
 }
 
@@ -89,14 +105,24 @@ describe("get-timetable-calendar-link adapter", () => {
       "Calendar subscribe links are shown in the View. The feed stays in sync automatically when the timetable changes.";
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: catalogText }],
-      viewProps: { timetableId: "tt1", madeLinkShareable: false, ...SECRET_URLS },
+      viewProps: {
+        timetableId: "tt1",
+        madeLinkShareable: false,
+        ...SECRET_URLS,
+      },
     });
-    const res = await captured().handler({ timetableId: "tt1", confirm: true }, {});
+    const res = await captured().handler(
+      { timetableId: "tt1", confirm: true },
+      {},
+    );
     expect(res.isError).toBeUndefined();
 
     // Poison assertions: structuredContent carries ZERO URL-shaped data.
     const scJson = JSON.stringify(res.structuredContent);
-    expect(res.structuredContent).toEqual({ timetableId: "tt1", madeLinkShareable: false });
+    expect(res.structuredContent).toEqual({
+      timetableId: "tt1",
+      madeLinkShareable: false,
+    });
     expect(scJson).not.toContain("http");
     expect(scJson).not.toContain("webcal");
     expect(scJson).not.toContain("tok123");
@@ -111,8 +137,14 @@ describe("get-timetable-calendar-link adapter", () => {
   });
 
   it("returns an error result when the catalog tool fails", async () => {
-    toolRun.mockResolvedValue({ content: [{ type: "text", text: "boom" }], isError: true });
-    const res = await captured().handler({ timetableId: "tt1", confirm: true }, {});
+    toolRun.mockResolvedValue({
+      content: [{ type: "text", text: "boom" }],
+      isError: true,
+    });
+    const res = await captured().handler(
+      { timetableId: "tt1", confirm: true },
+      {},
+    );
     expect(res.isError).toBe(true);
     expect(res.content[0]?.text).toBe("boom");
   });
@@ -122,7 +154,10 @@ describe("get-timetable-calendar-link adapter", () => {
       content: [{ type: "text", text: "ok" }],
       viewProps: { feedUrl: "https://x.test/f.ics" },
     });
-    const res = await captured().handler({ timetableId: "tt1", confirm: true }, {});
+    const res = await captured().handler(
+      { timetableId: "tt1", confirm: true },
+      {},
+    );
     expect(res.isError).toBe(true);
     expect(res.content[0]?.text).toMatch(/Missing timetableId/);
   });
@@ -136,8 +171,12 @@ describe("get-timetable-calendar-link adapter", () => {
     const { allTools } = (await import("@/server/mcp/tools")) as {
       allTools: Array<{ toViewProps?: (r: unknown) => unknown }>;
     };
-    (allTools[0] as { toViewProps?: (r: unknown) => unknown }).toViewProps = () => props;
-    const res = await captured().handler({ timetableId: "tt9", confirm: true }, {});
+    (allTools[0] as { toViewProps?: (r: unknown) => unknown }).toViewProps =
+      () => props;
+    const res = await captured().handler(
+      { timetableId: "tt9", confirm: true },
+      {},
+    );
     expect(res.isError).toBeUndefined();
     expect(res.structuredContent).toEqual({ timetableId: "tt9" });
     expect(res._meta).toEqual(SECRET_URLS);
@@ -146,9 +185,19 @@ describe("get-timetable-calendar-link adapter", () => {
   it("omits _meta entirely when every URL is empty", async () => {
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: "ok" }],
-      viewProps: { timetableId: "tt1", feedUrl: "", subscribeUrl: "", googleSubscribeUrl: "", appleSubscribeUrl: "", outlookSubscribeUrl: "" },
+      viewProps: {
+        timetableId: "tt1",
+        feedUrl: "",
+        subscribeUrl: "",
+        googleSubscribeUrl: "",
+        appleSubscribeUrl: "",
+        outlookSubscribeUrl: "",
+      },
     });
-    const res = await captured().handler({ timetableId: "tt1", confirm: true }, {});
+    const res = await captured().handler(
+      { timetableId: "tt1", confirm: true },
+      {},
+    );
     expect(res.isError).toBeUndefined();
     expect(res._meta).toBeUndefined();
   });
@@ -156,22 +205,42 @@ describe("get-timetable-calendar-link adapter", () => {
   it("only includes madeLinkShareable when it is a boolean", async () => {
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: "ok" }],
-      viewProps: { timetableId: "tt1", madeLinkShareable: true, feedUrl: "https://x.test/f.ics" },
+      viewProps: {
+        timetableId: "tt1",
+        madeLinkShareable: true,
+        feedUrl: "https://x.test/f.ics",
+      },
     });
-    const withFlag = await captured().handler({ timetableId: "tt1", confirm: true }, {});
-    expect(withFlag.structuredContent).toEqual({ timetableId: "tt1", madeLinkShareable: true });
+    const withFlag = await captured().handler(
+      { timetableId: "tt1", confirm: true },
+      {},
+    );
+    expect(withFlag.structuredContent).toEqual({
+      timetableId: "tt1",
+      madeLinkShareable: true,
+    });
 
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: "ok" }],
-      viewProps: { timetableId: "tt1", madeLinkShareable: "yes", feedUrl: "https://x.test/f.ics" },
+      viewProps: {
+        timetableId: "tt1",
+        madeLinkShareable: "yes",
+        feedUrl: "https://x.test/f.ics",
+      },
     });
-    const withoutFlag = await captured().handler({ timetableId: "tt1", confirm: true }, {});
+    const withoutFlag = await captured().handler(
+      { timetableId: "tt1", confirm: true },
+      {},
+    );
     expect(withoutFlag.structuredContent).toEqual({ timetableId: "tt1" });
   });
 
   it("returns Unauthorized when buildToolContext resolves nothing", async () => {
     buildToolContext.mockResolvedValue(undefined);
-    const res = await captured().handler({ timetableId: "tt1", confirm: true }, {});
+    const res = await captured().handler(
+      { timetableId: "tt1", confirm: true },
+      {},
+    );
     expect(res.isError).toBe(true);
     expect(res.content[0]?.text).toMatch(/Unauthorized/);
     expect(toolRun).not.toHaveBeenCalled();
@@ -179,7 +248,10 @@ describe("get-timetable-calendar-link adapter", () => {
 
   it("honours the write budget before running the tool", async () => {
     checkAndIncrement.mockResolvedValue({ ok: false, retryAfterSeconds: 12 });
-    const res = await captured().handler({ timetableId: "tt1", confirm: true }, {});
+    const res = await captured().handler(
+      { timetableId: "tt1", confirm: true },
+      {},
+    );
     expect(res.isError).toBe(true);
     expect(res.content[0]?.text).toMatch(/Write rate limit exceeded/);
     expect(toolRun).not.toHaveBeenCalled();
