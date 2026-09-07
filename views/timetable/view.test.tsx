@@ -133,7 +133,7 @@ describe("TimetableView (v2)", () => {
     ]);
   });
 
-  it("stacks overlapping Monday blocks side by side (no full overlap)", () => {
+  it("labels the clash story: overlapping Monday blocks stack side by side (no full overlap)", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     const { container } = render(<TimetableView />);
     const cards = container.querySelectorAll(

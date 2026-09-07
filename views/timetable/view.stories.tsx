@@ -97,6 +97,15 @@ export const Empty: Story = {
   decorators: [withMcpView({ status: "ready", toolOutput: emptyProps })],
 };
 
+/**
+ * Clash: ACCT102 G1 (Mon 08:15–11:30) overlaps COR-IS1702 G2
+ * (Mon 09:00–10:00) — the two Monday blocks stack side-by-side
+ * (data-overlap-count=2, half width) instead of fully overlapping.
+ */
+export const Clash: Story = {
+  decorators: [withMcpView({ status: "ready", toolOutput: fullProps })],
+};
+
 export const Exams: Story = {
   decorators: [
     withMcpView({

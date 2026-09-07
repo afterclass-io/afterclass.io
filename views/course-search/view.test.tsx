@@ -31,7 +31,7 @@ const sampleResult = {
   id: "c1",
   code: "IS215",
   name: "Digital Business - Technologies and Transformation",
-  creditUnits: 1,
+  creditUnits: 4,
   sections: [
     {
       classId: "seed-ay202627t1-is215-g1",
@@ -106,7 +106,7 @@ describe("CourseSearchView (v2)", () => {
     expect(
       screen.getByText(/Digital Business - Technologies and Transformation/),
     ).toBeInTheDocument();
-    expect(screen.getByText(/1 CU/)).toBeInTheDocument();
+    expect(screen.getByText(/4 CU/)).toBeInTheDocument();
   });
 
   it("renders sections, professor names and TBA fallbacks", () => {

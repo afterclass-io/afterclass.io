@@ -80,3 +80,29 @@ export const ErrorState: Story = {
     withMcpView({ status: "error", error: { message: "Unauthorized" } }),
   ],
 };
+
+/** QuotaExceeded: the write budget is exhausted — friendly slow-down. */
+export const QuotaExceeded: Story = {
+  decorators: [
+    withMcpView({
+      status: "error",
+      error: {
+        message:
+          "Write rate limit exceeded: at most 60 write operations per minute are allowed. Please wait ~12s before trying again.",
+      },
+    }),
+  ],
+};
+
+/** ConfirmRequired: the confirm:true gate rejects the unconfirmed call. */
+export const ConfirmRequired: Story = {
+  decorators: [
+    withMcpView({
+      status: "error",
+      error: {
+        message:
+          'Destructive tool "get-timetable-calendar-link" requires explicit confirmation: call again with confirm:true after showing the user what will be deleted.',
+      },
+    }),
+  ],
+};

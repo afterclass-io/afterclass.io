@@ -114,3 +114,16 @@ export const ErrorState: Story = {
     withMcpView({ status: "error", error: { message: "Unauthorized" } }),
   ],
 };
+
+/** QuotaExceeded: the read budget is exhausted — friendly slow-down. */
+export const QuotaExceeded: Story = {
+  decorators: [
+    withMcpView({
+      status: "error",
+      error: {
+        message:
+          "Read rate limit exceeded: at most 60 read operations per minute are allowed. Please wait ~7s before trying again.",
+      },
+    }),
+  ],
+};

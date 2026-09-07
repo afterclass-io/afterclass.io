@@ -18,7 +18,7 @@ const sampleResults = {
       id: "c1",
       code: "IS215",
       name: "Digital Business - Technologies and Transformation",
-      creditUnits: 1,
+      creditUnits: 4,
       description:
         "This course introduces students to the fundamentals of digital business, technologies and the principles and practices that lead to successful digital transformation.",
       sections: [
@@ -47,14 +47,14 @@ const sampleResults = {
       id: "c2",
       code: "ACCT102",
       name: "Management Accounting",
-      creditUnits: 1,
+      creditUnits: 4,
       sections: [],
     },
     {
       id: "c3",
       code: "COR-IS1702",
       name: "Computational Thinking",
-      creditUnits: 1,
+      creditUnits: 4,
       sections: [],
     },
   ],
@@ -141,7 +141,7 @@ export const WithDescriptions: Story = {
             id: "c1",
             code: "IS215",
             name: "Digital Business - Technologies and Transformation",
-            creditUnits: 1,
+            creditUnits: 4,
             description:
               "This course introduces students to the fundamentals of digital business, technologies and the principles and practices that lead to successful digital transformation.",
             sections: [],
@@ -150,11 +150,27 @@ export const WithDescriptions: Story = {
             id: "c3",
             code: "COR-IS1702",
             name: "Computational Thinking",
-            creditUnits: 1,
+            creditUnits: 4,
             sections: [],
           },
         ],
       },
     }),
   ],
+};
+
+/**
+ * AddClassFailure: the add-class-to-timetable CTA's callTool rejected
+ * (rate-limited) — exercises the per-row "Failed" feedback via the
+ * injectable useDynamicTool mock (`parameters.mcpCta`).
+ */
+export const AddClassFailure: Story = {
+  decorators: [
+    withMcpView({
+      status: "ready",
+      toolInput: { query: "IS215" },
+      toolOutput: sampleResults,
+    }),
+  ],
+  parameters: { mcpCta: { mode: "error", message: "rate limited" } },
 };

@@ -24,21 +24,21 @@ const publicProps = {
       term: "T1",
       courseCode: "COR-IS1702",
       courseName: "Computational Thinking",
-      creditUnits: 1,
+      creditUnits: 4,
     },
     {
       yearNumber: 1,
       term: "T2",
       courseCode: "ACCT102",
       courseName: "Management Accounting",
-      creditUnits: 1,
+      creditUnits: 4,
     },
     {
       yearNumber: 2,
       term: "T1",
       courseCode: "STAT203",
       courseName: "Financial Mathematics",
-      creditUnits: 1,
+      creditUnits: 4,
     },
   ],
 };
@@ -108,6 +108,26 @@ export const ErrorState: Story = {
   ],
 };
 
+/** CopyRoadmapFailure: the copy-public-roadmap CTA's callTool rejected. */
+export const CopyRoadmapFailure: Story = {
+  decorators: [withMcpView({ status: "ready", toolOutput: publicProps })],
+  parameters: { mcpCta: { mode: "error", message: "Copy failed" } },
+};
+
+/**
+ * UnavailableHost: the bridge cannot call tools — the copy CTA stays
+ * hidden (see view.tsx `isAvailable` guard).
+ */
+export const UnavailableHost: Story = {
+  decorators: [
+    withMcpView({
+      status: "ready",
+      toolOutput: publicProps,
+      isAvailable: false,
+    }),
+  ],
+};
+
 export const WithProgress: Story = {
   decorators: [
     withMcpView({
@@ -125,21 +145,21 @@ export const WithProgress: Story = {
             term: "T1",
             courseCode: "STAT203",
             courseName: "Financial Mathematics",
-            creditUnits: 1,
+            creditUnits: 4,
           },
           {
             yearNumber: 1,
             term: "T1",
             courseCode: "ACCT102",
             courseName: "Management Accounting",
-            creditUnits: 1,
+            creditUnits: 4,
           },
           {
             yearNumber: 1,
             term: "T1",
             courseCode: "IS215",
             courseName: "Digital Business - Technologies and Transformation",
-            creditUnits: 1,
+            creditUnits: 4,
           },
         ],
       },
