@@ -1,5 +1,6 @@
 import type { Decorator } from "@storybook/react";
 import { McpViewSeedContext } from "./mocks/mcp-use-react";
+import type { McpCtaSeed } from "./mocks/mcp-use-react";
 
 /**
  * Shared Storybook decorator for MCP App View stories (mcp-use v2).
@@ -12,10 +13,23 @@ import { McpViewSeedContext } from "./mocks/mcp-use-react";
  * `McpViewSeedContext.Provider`, so each story (and each sibling story in a
  * mounted Docs page) reads its own snapshot with no cross-story bleed.
  *
+ * CTA injection: stories exercising write-CTA feedback (e.g. bid-explorer
+ * `UpsertBidFailure`, roadmap-view `CopyRoadmapFailure`, course-search
+ * `AddClassFailure`) pass `parameters: { mcpCta: { mode: "error", ... } }`.
+ * The decorator merges that story parameter into the seed, so the mocked
+ * `useDynamicTool().callTool` resolves/rejects/pends per story. Default is
+ * immediate success (`mode: "success"`), preserving every existing story's
+ * behavior. See `.storybook/mocks/mcp-use-react.ts` for the `McpCtaSeed`
+ * contract.
+ *
  * Usage:
  *   import { withMcpView, type McpViewParams } from "../../../.storybook/withMcpView";
  *   export const Default: Story = {
  *     decorators: [withMcpView({ status: "ready", toolOutput: {...} })],
+ *   };
+ *   export const UpsertBidFailure: Story = {
+ *     decorators: [withMcpView({ status: "ready", toolOutput: {...} })],
+ *     parameters: { mcpCta: { mode: "error", message: "rate limited" } },
  *   };
  */
 export interface McpViewParams {
@@ -28,23 +42,37 @@ export interface McpViewParams {
   theme?: "light" | "dark";
   /** Whether the host bridge can call tools (hides write CTAs when false). */
   isAvailable?: boolean;
+  /**
+   * Write-CTA seed for the mocked `useDynamicTool().callTool`. Wins over
+   * the story's `parameters.mcpCta` when both are given; both default to
+   * immediate success.
+   */
+  cta?: McpCtaSeed;
 }
 
 export const withMcpView =
   (params: McpViewParams): Decorator =>
   // eslint-disable-next-line react/display-name -- Storybook decorator, not a reusable component
-  (Story) => (
-    <McpViewSeedContext.Provider
-      value={{
-        status: params.status ?? "ready",
-        toolInput: params.toolInput,
-        toolOutput: params.toolOutput,
-        meta: params.meta,
-        error: params.error,
-        theme: params.theme ?? "light",
-        isAvailable: params.isAvailable ?? true,
-      }}
-    >
-      <Story />
-    </McpViewSeedContext.Provider>
-  );
+  (Story, context) => {
+    const storyCta =
+      (context?.parameters?.mcpCta as McpCtaSeed | undefined) ?? {};
+    // `cta` inside decorator params wins (explicit seed at the call site);
+    // otherwise the story's `parameters.mcpCta` applies; default success.
+    const cta: McpCtaSeed = { mode: "success", ...storyCta, ...params.cta };
+    return (
+      <McpViewSeedContext.Provider
+        value={{
+          status: params.status ?? "ready",
+          toolInput: params.toolInput,
+          toolOutput: params.toolOutput,
+          meta: params.meta,
+          error: params.error,
+          theme: params.theme ?? "light",
+          isAvailable: params.isAvailable ?? true,
+          cta,
+        }}
+      >
+        <Story />
+      </McpViewSeedContext.Provider>
+    );
+  };

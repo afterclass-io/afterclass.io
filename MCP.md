@@ -241,6 +241,78 @@ When an MCP call arrives with no identity, `src/mcp/user.ts` falls back to the *
 
 All calls run as the single dev user (`test_hash_pwd@smu.edu.sg`), so the per-user write budget still applies to that user.
 
+### Inspector matrix (Task 10)
+
+Copy-paste argument examples for every view-bound tool, the resource, one
+prompt per type, the destructive `confirm:true` retry, and the chat-route
+manual path. Term ids are canonical compact `AY<YYYY><YY>T<term>`
+(normalized server-side by `normalizeAcadTermId` — display forms like
+`AY2026/27-T1` also work); `bidWindowId: 53` is the seeded open window
+(`bun run db:reset` seeds it).
+
+| View (dir) | Bound tool + arg example | View check |
+| --- | --- | --- |
+| `course-search` | `search-courses` `{"acadTermId": "AY202627T1", "query": "IS215"}` | result cards + CU badges + Add CTA |
+| `bid-plan` | `my-bid-plan` `{"acadTermId": "AY202627T1"}` | term chip, budget row (`NoBudget` story = bids with `budget: null`), bids list |
+| `bid-explorer` | `explore-bid-options` `{"courseCode": "COR-IS1702", "section": "G1"}` (or `{"classId": "cl1"}`) | history table, prediction + safety slider, upsert-bid CTA with `bidWindowId: 53` |
+| `review-cards` | `get-course-reviews` `{"code": "ACCT102"}` | review cards (`get-professor-reviews` is viewless — same cards, professor context) |
+| `roadmap-view` | `get-my-roadmap` `{"roadmapId": "r1"}` | year/term grid + copy CTA when `isPublic` |
+| `calendar-links` | `get-timetable-calendar-link` `{"timetableId": "tt1", "confirm": true}` | subscribe links (URLs ride `_meta`, never model text) |
+| `timetable` | `get-my-timetable-detail` `{"timetableId": "tt1"}` (or `{"acadTermId": "AY202627T1"}`) | grid + `Clash` story overlap + exam rows |
+
+Resource:
+
+- `catalog://acad-terms` — no args. Returns `{ terms, currentTermId }`
+  (`id` = the `acadTermId` the term-scoped tools above take). Backs only
+  public procedures, so an unresolved identity falls back to an anonymous
+  caller instead of failing closed (see `src/mcp/resources.ts`).
+
+Prompts (one per type — `prompts/list`, then `prompts/get` with args):
+
+- `plan-semester` (term planning): `{"goal": "data engineering"}` — ranked
+  senior-informed candidates, `fallback-catalog` contracted behavior.
+- `plan-roadmap` (multi-year): `{"goal": "become a data analyst"}` —
+  year-by-year plan verified with `check-roadmap-feasibility`.
+- `plan-bidding` (budget-gated writes): `{"acadTermId": "AY202627T1"}` —
+  STOPS at `budget: null` ("offer set-bid-budget first", cf. the bid-plan
+  `NoBudget` story) before suggesting amounts.
+- `find-courses` (interest search): `{"interest": "machine learning"}` —
+  maps common names to codes via search first (e.g. Statistics →
+  COR-STAT1202), never invents codes.
+- `review-timetable` (clash review): `{"acadTermId": "AY202627T1"}` —
+  clashes first, then day-by-day, with the `/timetable` link.
+- `plan-term` (end-to-end): `{"goal": "this term"}` — discover → vet →
+  bid → commit (`upsert-bid` single / `save-bids` bulk with `confirm:true`)
+  → timetable/calendar → roadmap check.
+
+Destructive `confirm:true` retry (Inspector console):
+
+1. Call a destructive write WITHOUT `confirm`, e.g. `upsert-bid`
+   `{"classId": "cl1", "bidWindowId": 53, "bidAmount": 25}`.
+2. Expect the gate text: `Destructive tool "upsert-bid" requires explicit
+   confirmation: call again with confirm:true after showing the user what
+   will change.`
+3. Retry WITH `"confirm": true` — the write runs and returns
+   `{ updated, plan }` (bid writes) or the updated roadmap.
+4. Same gate on the chat path (`buildAssistantTools` → same message);
+   first call is rejected BEFORE the write budget is charged. The
+   calendar-links `ConfirmRequired` story pins the gate text for
+   `get-timetable-calendar-link`.
+
+Chat-route manual path (no MCP transport — same catalog, same tools):
+
+- `POST /api/chat` with `{ "messages": [...], "pageContext": {...} }`
+  (`pageContext` is optional, zod-validated, never 400s; newlines/tags are
+  escaped before the `<page_context>` instructions suffix).
+- Scope gate runs BEFORE quota: off-topic ("reverse a linked list") gets a
+  cheap refusal without consuming a message slot.
+- Writes go through `buildAssistantTools` → `dispatchToolCall` with the
+  `chat-write:<userId>` budget; oversized results truncate at 24k chars
+  with the `[truncated ...]` note inside `<tool_output>` delimiters.
+- Quota/budget surfaces to pin in stories: review-cards `QuotaExceeded`
+  (read limit), calendar-links `QuotaExceeded` (write limit), bid-plan
+  `RateLimited` (write limit).
+
 ## Local commands
 
 | Command                  | What it does                                                                                                  |

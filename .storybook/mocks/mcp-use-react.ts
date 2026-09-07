@@ -30,6 +30,24 @@ export interface McpViewSeed {
   error: { message: string } | undefined;
   theme: "light" | "dark";
   isAvailable: boolean;
+  /**
+   * Write-CTA seed for the mocked `useDynamicTool().callTool` (Task 10):
+   * - `{ mode: "success" }` (default) — resolves `{ content: [],
+   *   structuredContent: {} }`, the pre-Task-10 always-success behavior.
+   * - `{ mode: "error", message }` — rejects with `Error(message)`,
+   *   exercising the views' "Failed to save" / "Copy failed" / "Failed"
+   *   feedback (v2 tool errors reject instead of resolving isError:true).
+   * - `{ mode: "pending" }` — returns a never-settling promise, so the CTA
+   *   stays in its pressed state (views with pending-aware buttons).
+   * Seeded per story via `parameters.mcpCta` (merged by `withMcpView`).
+   */
+  cta: McpCtaSeed;
+}
+
+export interface McpCtaSeed {
+  mode?: "success" | "error" | "pending";
+  /** Rejection message for `mode: "error"` (default "callTool failed"). */
+  message?: string;
 }
 
 const DEFAULT_SEED: McpViewSeed = {
@@ -40,6 +58,7 @@ const DEFAULT_SEED: McpViewSeed = {
   error: undefined,
   theme: "light",
   isAvailable: true,
+  cta: { mode: "success" },
 };
 
 export const McpViewSeedContext = createContext<McpViewSeed | null>(null);
@@ -54,7 +73,9 @@ function useSeed(): McpViewSeed {
         "Add `decorators: [withMcpView({ ... })]` to the story or meta.",
     );
   }
-  return seed;
+  // CTA seed is optional at decorator call sites (older stories omit it) —
+  // default to immediate success, the pre-Task-10 always-success behavior.
+  return { ...DEFAULT_SEED, ...seed, cta: seed.cta ?? DEFAULT_SEED.cta };
 }
 
 /**
@@ -124,9 +145,14 @@ export function useDynamicTool<
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- name accepted for signature parity; stories don't round-trip tool calls
   _name: string,
 ): CallToolHandle<Args, Result> {
+  const seed = useSeed();
+  const mode = seed.cta.mode ?? "success";
   return {
-    callTool: async () =>
-      ({ content: [], structuredContent: {} }) as CallToolSuccess<Result>,
+    callTool: async () => {
+      if (mode === "error") throw new Error(seed.cta.message ?? "callTool failed");
+      if (mode === "pending") await new Promise<never>(() => {});
+      return { content: [], structuredContent: {} } as CallToolSuccess<Result>;
+    },
     data: undefined,
     error: undefined,
     isPending: false,
