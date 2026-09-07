@@ -37,6 +37,18 @@ function reviewCardsProps(text: string): Record<string, unknown> {
       : Array.isArray((data as { items?: unknown[] } | null)?.items)
         ? (data as { items: unknown[] }).items
         : [];
+    // The restored nextCursor (review procedure's { items, nextCursor } page)
+    // rides the payload so the review-cards view can page forward; absent
+    // (bare array, unset cursor) stays absent — never null-filled — so the
+    // optional view schema keeps parsing.
+    const nextCursor =
+      !Array.isArray(data) &&
+      data !== null &&
+      typeof data === "object" &&
+      "nextCursor" in (data as Record<string, unknown>) &&
+      typeof (data as Record<string, unknown>).nextCursor === "string"
+        ? ((data as Record<string, unknown>).nextCursor as string)
+        : undefined;
     const context =
       !Array.isArray(data) &&
       data !== null &&
@@ -89,7 +101,11 @@ function reviewCardsProps(text: string): Record<string, unknown> {
           null,
       };
     });
-    return { context, reviews };
+    return {
+      context,
+      reviews,
+      ...(nextCursor !== undefined ? { nextCursor } : {}),
+    };
   } catch {
     return { raw: text };
   }
@@ -103,6 +119,11 @@ const reviewCardsToViewProps = (result: ToolResult): Record<string, unknown> => 
 const getCourseReviewsSchema = z.object({
   code: z.string().describe("Exact course code"),
   limit: z.number().int().min(1).max(20).default(10),
+  // Optional cursor into the procedure's { items, nextCursor } page. When
+  // omitted the first page is returned and `nextCursor` is embedded in the
+  // payload alongside `context` (additive only — existing callers that pass
+  // just { code, limit } see identical behavior plus the extra key).
+  cursor: z.string().optional(),
 });
 
 export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
@@ -112,11 +133,12 @@ export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
   inputSchema: getCourseReviewsSchema,
   readOnly: true,
   toViewProps: reviewCardsToViewProps,
-  run: async ({ caller }, { code, limit }) => {
+  run: async ({ caller }, { code, limit, cursor }) => {
     try {
       const data = await caller.reviews.getByCourseCodeProtected({
         code,
         limit,
+        ...(cursor !== undefined ? { cursor } : {}),
         filterFor: ReviewsFilterFor.ALL,
         sortBy: ReviewsSortBy.LATEST,
       });
@@ -133,6 +155,8 @@ export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
 const getProfessorReviewsSchema = z.object({
   slug: z.string().describe("Professor slug, e.g. from get-professor"),
   limit: z.number().int().min(1).max(20).default(10),
+  // Optional cursor — same contract as get-course-reviews above.
+  cursor: z.string().optional(),
 });
 
 export const getProfessorReviewsTool: McpTool<typeof getProfessorReviewsSchema> = {
@@ -142,11 +166,12 @@ export const getProfessorReviewsTool: McpTool<typeof getProfessorReviewsSchema> 
   inputSchema: getProfessorReviewsSchema,
   readOnly: true,
   toViewProps: reviewCardsToViewProps,
-  run: async ({ caller }, { slug, limit }) => {
+  run: async ({ caller }, { slug, limit, cursor }) => {
     try {
       const data = await caller.reviews.getByProfSlugProtected({
         slug,
         limit,
+        ...(cursor !== undefined ? { cursor } : {}),
         filterFor: ReviewsFilterFor.ALL,
         sortBy: ReviewsSortBy.LATEST,
       });

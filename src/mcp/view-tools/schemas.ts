@@ -85,6 +85,11 @@ export const roadmapOutput = z.object({
 
 export const reviewCardsOutput = z.object({
   context: z.string(),
+  // Restored from the review procedure's { items, nextCursor } page
+  // (Task 11): the catalog tool embeds nextCursor in its payload and
+  // reviewCardsProps forwards it, so the view can page forward. Optional —
+  // absent on bare-array payloads and unset cursors.
+  nextCursor: z.string().optional(),
   reviews: z.array(
     z.object({
       id: z.string(),

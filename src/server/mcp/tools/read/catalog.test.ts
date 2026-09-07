@@ -123,7 +123,50 @@ describe("catalog read tools", () => {
     };
     const result = await getCourseReviewsTool.run(ctx, { code: "COR-MGMT1202", limit: 20 });
     const props = getCourseReviewsTool.toViewProps?.(result);
-    expect(props).toEqual({ context: "COR-MGMT1202", reviews: [expectedCard] });
+    expect(props).toEqual({ context: "COR-MGMT1202", reviews: [expectedCard], nextCursor: "rv2" });
+  });
+
+  it("get-course-reviews threads an optional cursor to the procedure and keeps it absent when unset", async () => {
+    const fn = vi
+      .fn()
+      .mockResolvedValue({ items: [protectedReview], nextCursor: "rv2" });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getByCourseCodeProtected: fn }),
+    };
+    const result = await getCourseReviewsTool.run(ctx, {
+      code: "COR-MGMT1202",
+      limit: 20,
+      cursor: "rv1",
+    });
+    expect(fn).toHaveBeenCalledWith({
+      code: "COR-MGMT1202",
+      limit: 20,
+      cursor: "rv1",
+      filterFor: ReviewsFilterFor.ALL,
+      sortBy: ReviewsSortBy.LATEST,
+    });
+    expect(getCourseReviewsTool.toViewProps?.(result)).toMatchObject({
+      nextCursor: "rv2",
+    });
+    // No cursor passed → procedure sees no cursor key; props omit nextCursor
+    // when the procedure leaves it unset.
+    const fnUnset = vi.fn().mockResolvedValue({ items: [], nextCursor: undefined });
+    const ctxUnset: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getByCourseCodeProtected: fnUnset }),
+    };
+    const resultUnset = await getCourseReviewsTool.run(ctxUnset, { code: "CS101", limit: 20 });
+    expect(fnUnset).toHaveBeenCalledWith({
+      code: "CS101",
+      limit: 20,
+      filterFor: ReviewsFilterFor.ALL,
+      sortBy: ReviewsSortBy.LATEST,
+    });
+    expect(getCourseReviewsTool.toViewProps?.(resultUnset)).toEqual({
+      context: "CS101",
+      reviews: [],
+    });
   });
 
   it("get-professor-reviews toViewProps normalizes the { items, nextCursor } envelope", async () => {
@@ -137,6 +180,31 @@ describe("catalog read tools", () => {
     const result = await getProfessorReviewsTool.run(ctx, { slug: "prof-x", limit: 20 });
     const props = getProfessorReviewsTool.toViewProps?.(result);
     expect(props).toEqual({ context: "prof-x", reviews: [expectedCard] });
+  });
+
+  it("get-professor-reviews threads an optional cursor to the procedure", async () => {
+    const fn = vi
+      .fn()
+      .mockResolvedValue({ items: [protectedReview], nextCursor: "rv3" });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getByProfSlugProtected: fn }),
+    };
+    const result = await getProfessorReviewsTool.run(ctx, {
+      slug: "prof-x",
+      limit: 20,
+      cursor: "rv2",
+    });
+    expect(fn).toHaveBeenCalledWith({
+      slug: "prof-x",
+      limit: 20,
+      cursor: "rv2",
+      filterFor: ReviewsFilterFor.ALL,
+      sortBy: ReviewsSortBy.LATEST,
+    });
+    expect(getProfessorReviewsTool.toViewProps?.(result)).toMatchObject({
+      nextCursor: "rv3",
+    });
   });
 
   it("toViewProps also handles a bare array with raw prisma-shaped rows", async () => {

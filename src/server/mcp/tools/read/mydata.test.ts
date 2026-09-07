@@ -132,12 +132,15 @@ describe("my-data read tools", () => {
     };
     const result = await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({}));
     expect(result.isError).toBeUndefined();
-    const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
-    expect(parsed).toHaveLength(1);
-    expect(parsed[0]!.notes).toBeUndefined();
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      items: Array<Record<string, unknown>>;
+      nextCursor: string | null;
+    };
+    expect(parsed.items).toHaveLength(1);
+    expect(parsed.items[0]!.notes).toBeUndefined();
     // Non-PII metadata survives the scrub.
-    expect(parsed[0]!.bidAmount).toBe(25.5);
-    expect(parsed[0]!.courseCode).toBe("ACC101");
+    expect(parsed.items[0]!.bidAmount).toBe(25.5);
+    expect(parsed.items[0]!.courseCode).toBe("ACC101");
   });
 
   it("my-bids returns errText when userBids.listMine rejects", async () => {
@@ -154,9 +157,12 @@ describe("my-data read tools", () => {
     ]);
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
     const result = await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({ acadTermId: "t1" }));
-    const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
-    expect(parsed).toHaveLength(1);
-    expect(parsed[0]!.id).toBe("b1");
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      items: Array<Record<string, unknown>>;
+      nextCursor: string | null;
+    };
+    expect(parsed.items).toHaveLength(1);
+    expect(parsed.items[0]!.id).toBe("b1");
   });
 
   it("my-bids without acadTermId defaults to the current term (includes all windows in it)", async () => {
@@ -174,10 +180,13 @@ describe("my-data read tools", () => {
     };
     const result = await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({}));
     expect(result.isError).toBeUndefined();
-    const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      items: Array<Record<string, unknown>>;
+      nextCursor: string | null;
+    };
     // Both windows within the current term are kept; the other term's bid is not.
-    expect(parsed).toHaveLength(2);
-    expect(parsed.map((b) => b.id)).toEqual(["b1", "b2"]);
+    expect(parsed.items).toHaveLength(2);
+    expect(parsed.items.map((b) => b.id)).toEqual(["b1", "b2"]);
   });
 
   it("my-bids returns a friendly error when acadTermId is omitted and there is no current term", async () => {
@@ -213,15 +222,60 @@ describe("my-data read tools", () => {
       }),
     };
     const resultDefault = await myBidsTool.run(ctxDefault, myBidsTool.inputSchema.parse({}));
-    const parsedDefault = JSON.parse(resultDefault.content[0]!.text) as unknown[];
-    expect(parsedDefault).toHaveLength(20);
+    const parsedDefault = JSON.parse(resultDefault.content[0]!.text) as {
+      items: unknown[];
+      nextCursor: string | null;
+    };
+    expect(parsedDefault.items).toHaveLength(20);
+    // First page of 30 → nextCursor is the last item's id.
+    expect(parsedDefault.nextCursor).toBe("b19");
 
     // Explicit limit 5 with acadTermId
     const fn5 = vi.fn().mockResolvedValue(makeBids(30));
     const ctx5: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn5 }) };
     const result5 = await myBidsTool.run(ctx5, myBidsTool.inputSchema.parse({ acadTermId: "t1", limit: 5 }));
-    const parsed5 = JSON.parse(result5.content[0]!.text) as unknown[];
-    expect(parsed5).toHaveLength(5);
+    const parsed5 = JSON.parse(result5.content[0]!.text) as {
+      items: unknown[];
+      nextCursor: string | null;
+    };
+    expect(parsed5.items).toHaveLength(5);
+    expect(parsed5.nextCursor).toBe("b4");
+  });
+
+  it("my-bids pages forward with cursor and reports null nextCursor on the last page", async () => {
+    const makeBids = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        id: `b${i}`,
+        bidWindow: { acadTermId: "t1" },
+      }));
+    const fn = vi.fn().mockResolvedValue(makeBids(8));
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
+    const second = await myBidsTool.run(
+      ctx,
+      myBidsTool.inputSchema.parse({ acadTermId: "t1", limit: 5, cursor: "b4" }),
+    );
+    const parsedSecond = JSON.parse(second.content[0]!.text) as {
+      items: Array<{ id: string }>;
+      nextCursor: string | null;
+    };
+    expect(parsedSecond.items.map((b) => b.id)).toEqual(["b5", "b6", "b7"]);
+    expect(parsedSecond.nextCursor).toBeNull();
+    // Unknown cursor restarts from the first page.
+    const fnRestart = vi.fn().mockResolvedValue(makeBids(8));
+    const ctxRestart: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ userBidsListMine: fnRestart }),
+    };
+    const restart = await myBidsTool.run(
+      ctxRestart,
+      myBidsTool.inputSchema.parse({ acadTermId: "t1", limit: 5, cursor: "nope" }),
+    );
+    const parsedRestart = JSON.parse(restart.content[0]!.text) as {
+      items: Array<{ id: string }>;
+      nextCursor: string | null;
+    };
+    expect(parsedRestart.items.map((b) => b.id)).toEqual(["b0", "b1", "b2", "b3", "b4"]);
+    expect(parsedRestart.nextCursor).toBe("b4");
   });
 
   it("my-bids clamps after term filtering and widget-compatible shape is preserved", async () => {
@@ -244,9 +298,13 @@ describe("my-data read tools", () => {
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsListMine: fn }) };
     // Filtered to t1 → 25 rows → clamped to 20 default (no explicit limit)
     const result = await myBidsTool.run(ctx, myBidsTool.inputSchema.parse({ acadTermId: "t1" }));
-    const parsed = JSON.parse(result.content[0]!.text) as Array<Record<string, unknown>>;
-    expect(parsed).toHaveLength(20);
-    for (const b of parsed) {
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      items: Array<Record<string, unknown>>;
+      nextCursor: string | null;
+    };
+    expect(parsed.items).toHaveLength(20);
+    expect(parsed.nextCursor).toBe("b19");
+    for (const b of parsed.items) {
       expect(b.notes).toBeUndefined();
       expect(b.bidAmount).toBeDefined();
       expect(b.courseCode).toBeDefined();

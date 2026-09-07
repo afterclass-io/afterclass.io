@@ -37,6 +37,10 @@ const myBidsSchema = z.object({
       "Filter to one academic term; omit to use the current academic term — includes all bid windows",
     ),
   limit: z.number().int().min(1).max(50).default(20),
+  // Optional cursor into the filtered bid page (opaque item id from a
+  // previous page's nextCursor). Additive only: when omitted the first page
+  // is returned and the payload gains a nextCursor key.
+  cursor: z.string().optional(),
 });
 
 export const myBidsTool: McpTool<typeof myBidsSchema> = {
@@ -47,9 +51,10 @@ export const myBidsTool: McpTool<typeof myBidsSchema> = {
   run: async ({ caller }, input) => {
     // Central pagination policy: clamp through `capPage` (defaults match
     // this schema: limit default 20, max 50) so the clamp lives in one place.
-    const { acadTermId, limit } = capPage(
-      input as { acadTermId?: string; limit?: number },
-    );
+    const { acadTermId, limit, cursor } = {
+      ...capPage(input as { acadTermId?: string; limit?: number }),
+      cursor: (input as { cursor?: string }).cursor,
+    };
     try {
       // Omitted/empty acadTermId defaults to the current term (all bid windows
       // within that term are kept via the bidWindow.acadTermId filter below).
@@ -65,7 +70,28 @@ export const myBidsTool: McpTool<typeof myBidsSchema> = {
           (b as { bidWindow?: { acadTermId?: string } }).bidWindow
             ?.acadTermId === term.value,
       );
-      return jsonText(filtered.slice(0, limit));
+      // Cursor pagination over the in-memory term-filtered page (listMine has
+      // no cursor support at the router): cursor is the previous page's last
+      // item id; unknown cursors restart from the first page. nextCursor is
+      // always present (null on the last page) so clients can page forward.
+      const startAt =
+        cursor === undefined
+          ? 0
+          : (() => {
+              const idx = filtered.findIndex(
+                (b) => (b as { id?: string }).id === cursor,
+              );
+              return idx === -1 ? 0 : idx + 1;
+            })();
+      const page = filtered.slice(startAt, startAt + limit);
+      const lastId = page.length
+        ? (page[page.length - 1] as { id?: string }).id
+        : undefined;
+      const nextCursor =
+        lastId !== undefined && startAt + limit < filtered.length
+          ? (lastId ?? null)
+          : null;
+      return jsonText({ items: page, nextCursor });
     } catch (e) {
       return errText(errorMessage(e));
     }

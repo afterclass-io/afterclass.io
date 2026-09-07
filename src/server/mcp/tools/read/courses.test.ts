@@ -449,6 +449,53 @@ describe("get-classes", () => {
     expect(getClassesTool.description).toContain("startsAfter");
     expect(getClassesTool.description).toContain("endsBefore");
   });
+
+  it("returns an { items, nextCursor } envelope without a cursor", async () => {
+    const fn = vi
+      .fn()
+      .mockResolvedValue([{ id: "c1" }, { id: "c2" }]);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getAll: fn }),
+    };
+    const result = await getClassesTool.run(ctx, { limit: 2 });
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      items: Array<{ id: string }>;
+      nextCursor: string | null;
+    };
+    expect(parsed.items.map((r) => r.id)).toEqual(["c1", "c2"]);
+    expect(parsed.nextCursor).toBe("c2");
+    // The cursor never reaches the router — it is declared on the tool
+    // schema (so dispatch validation keeps it) and sliced in-memory.
+    expect(fn).toHaveBeenCalledWith({ limit: 2 });
+  });
+
+  it("slices in-memory from the cursor id and restarts on unknown cursors", async () => {
+    const rows = [{ id: "c1" }, { id: "c2" }, { id: "c3" }];
+    const fn = vi.fn().mockResolvedValue(rows);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getAll: fn }),
+    };
+    const next = await getClassesTool.run(
+      ctx,
+      getClassesTool.inputSchema.parse({ limit: 10, cursor: "c1" }),
+    );
+    const parsedNext = JSON.parse(next.content[0]!.text) as {
+      items: Array<{ id: string }>;
+      nextCursor: string | null;
+    };
+    expect(parsedNext.items.map((r) => r.id)).toEqual(["c2", "c3"]);
+    const restart = await getClassesTool.run(
+      ctx,
+      getClassesTool.inputSchema.parse({ limit: 10, cursor: "nope" }),
+    );
+    const parsedRestart = JSON.parse(restart.content[0]!.text) as {
+      items: Array<{ id: string }>;
+    };
+    expect(parsedRestart.items.map((r) => r.id)).toEqual(["c1", "c2", "c3"]);
+  });
 });
 
 describe("get-professor", () => {
