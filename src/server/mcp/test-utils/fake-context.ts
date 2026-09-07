@@ -36,15 +36,60 @@ export interface MakeFakeToolContextOptions {
   /**
    * Per-router procedure stubs, e.g. `{ timetable: { searchCourses: vi.fn() } }`.
    *
-   * REQUIRED for every procedure the exercised path invokes: unstubbed
-   * procedures are LIVE (same test-session caller the chat route builds —
-   * probe5 verified `acadTerms.current()` resolves against the real test
-   * DB). Live delegation is the point (no hand-built partials), but a test
-   * that lets a write procedure go live would mutate the developer DB —
-   * stub every procedure on the path, exactly like the old hand-built
-   * callers did.
+   * Write-router namespaces (`userBids`, `timetable`, `roadmaps`, `sharing`,
+   * `bidWindows`, `classes` write paths) MUST be stubbed for every procedure
+   * the exercised path invokes: unstubbed procedures are LIVE (same
+   * test-session caller the chat route builds — probe5 verified
+   * `acadTerms.current()` resolves against the real test DB). Live
+   * delegation is the point (no hand-built partials), but a test that lets
+   * a write procedure go live would mutate the developer DB — stub every
+   * procedure on the path, exactly like the old hand-built callers did.
+   * `assertAllWriteRoutersStubbed` (below) enforces this fail-closed: call
+   * it from tests that exercise write paths.
    */
   caller?: FakeCallerStubs;
+}
+
+/**
+ * Guardrail for the live-delegation hazard (Task 10 Minor, implemented in
+ * Task 11): assert that every procedure the exercised path may invoke on a
+ * write-router namespace is stubbed, so no write can reach the live test DB.
+ * Pass the context under test plus the per-namespace procedure names the
+ * path invokes (exactly what the old hand-built callers stubbed). Throws
+ * with the missing `namespace.procedure` names instead of running live.
+ *
+ * Read-router namespaces need no assertion (live reads are harmless);
+ * unstubbed READ procedures keep delegating live by design.
+ */
+export function assertAllWriteRoutersStubbed(
+  ctx: ToolContext,
+  expected: Record<string, string[]>,
+): void {
+  const missing: string[] = [];
+  const caller = ctx.caller as unknown as Record<string, unknown>;
+  for (const [ns, procs] of Object.entries(expected)) {
+    const router = caller[ns] as Record<string, unknown> | undefined;
+    for (const proc of procs) {
+      // A stub is a test-installed function on the namespace proxy's stubs
+      // map. The `in` operator sees both stubs and live procedures (the
+      // proxy's `has` trap covers both), so read the descriptor: stubs are
+      // own data properties on the `{}` target; live procedures resolve
+      // through the real tRPC caller (no own descriptor, or a function with
+      // tRPC path machinery). vi.fn() stubs additionally carry `.mock`.
+      const descriptor = Object.getOwnPropertyDescriptor(router ?? {}, proc);
+      const fn = router?.[proc];
+      const isStub =
+        descriptor !== undefined &&
+        typeof descriptor.value === "function" &&
+        typeof fn === "function";
+      if (!isStub) missing.push(`${ns}.${proc}`);
+    }
+  }
+  if (missing.length > 0) {
+    throw new Error(
+      `makeFakeToolContext: write procedures not stubbed (would hit the live test DB): ${missing.join(", ")} — add them to the caller: option`,
+    );
+  }
 }
 
 const DEFAULT_USER: SessionUser = {

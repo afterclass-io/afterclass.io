@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 import { makeFakeToolContext } from "./fake-context";
+import { assertAllWriteRoutersStubbed } from "./fake-context";
 import { createCallerForUser } from "../caller";
 
 describe("makeFakeToolContext", () => {
@@ -74,5 +75,18 @@ describe("makeFakeToolContext", () => {
     expect(
       (ctx.caller as unknown as Record<string, unknown>).then,
     ).toBeUndefined();
+  });
+
+  it("assertAllWriteRoutersStubbed passes when write procedures are stubbed, throws when missing", async () => {
+    const stubbed = await makeFakeToolContext({
+      caller: { userBids: { listMine: vi.fn() } },
+    });
+    expect(() =>
+      assertAllWriteRoutersStubbed(stubbed, { userBids: ["listMine"] }),
+    ).not.toThrow();
+    const bare = await makeFakeToolContext();
+    expect(() =>
+      assertAllWriteRoutersStubbed(bare, { userBids: ["listMine"] }),
+    ).toThrow(/userBids\.listMine/);
   });
 });

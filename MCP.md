@@ -123,7 +123,7 @@ Shared View styling lives in `views/shared/` (`tokens.tsx` = `TOKENS` light/dark
 - **Fail-closed auth.** Every tool resolves the caller from `ctx.auth.user` (`src/mcp/user.ts`); unauthenticated calls return an error instead of running. The only exception is the explicit local dev bypass (`NODE_ENV=development` + `MCP_DEV_BYPASS=true`), which resolves a fixed seeded dev user — never active in production.
 - **Transport security is mcp-use built-in (v2).** The server is mounted at `basePath` (default `/mcp`) — that same prefix serves the Inspector (`/mcp/inspector`) and view assets (`/mcp/_mcp-use/views/...`). Localhost-class binds get DNS-rebinding protection (Host validation on every request, Origin validation on non-GET/HEAD) automatically; `allowedHosts` / `allowedOrigins` extend the allowlists for production hosts. Set them via `MCP_ALLOWED_HOSTS` / `MCP_ALLOWED_ORIGINS` (comma-separated, in `src/mcp/server.ts` — unset by default so local dev keeps working). `MCP_URL` overrides the public origin behind proxies/tunnels (origin only — a path suffix is ignored; set `MCP_ASSETS_URL` only if view JS/CSS are served from a CDN — the repo does not set it). See `.env.example` for the exact keys.
 - **Per-user write rate limit (DB-backed).** Every non-read-only tool shares one per-user write budget of `mcpRateLimitPerMinute` calls/minute (from `getChatConfig()`, default 60), keyed `mcp-write:<userId>`. Exhausted budget → a friendly error. Read tools are unaffected.
-- **Destructive tools require `confirm:true`.** `remove-timetable`, `remove-class-from-timetable`, `remove-bid`, `remove-roadmap`, `save-roadmap-entries` (full-replace — `entries: []` wipes the roadmap), `save-bids` (bulk overwrite), and `set-bid-status` (flips financial status) are blocked at the dispatch layer (`src/mcp/register.ts` for MCP, `buildAssistantTools` in `src/server/assistant/tools.ts` for chat → `checkDestructiveConfirm` in `src/mcp/rate-limit.ts`) unless the call carries an explicit `confirm:true` param — the model must first show the user what will be deleted. `confirm` is a declared optional field on each gated tool's schema (otherwise SDK validation would strip it before the gate sees it); handlers ignore it downstream. Constructive writes (create/upsert/rename) are not gated. The gate is skipped only under the local dev bypass (same `NODE_ENV` + `MCP_DEV_BYPASS=true` boundary as auth — production keeps the gate even if the flag is set; the chat path has no bypass) so Inspector testing can still exercise deletes.
+- **Destructive tools require `confirm:true`.** `remove-timetable`, `remove-class-from-timetable`, `remove-bid`, `remove-roadmap`, `save-roadmap-entries` (full-replace — `entries: []` wipes the roadmap), `save-bids` (bulk overwrite), and `set-bid-status` (flips financial status) are blocked at the dispatch layer (`src/mcp/register.ts` for MCP, `buildAssistantTools` in `src/server/assistant/tools.ts` for chat → `checkDestructiveConfirm` in `src/mcp/rate-limit.ts`) unless the call carries an explicit `confirm:true` param — the model must first show the user what will be deleted. `confirm` is a declared optional field on each gated tool's schema (otherwise SDK validation would strip it before the gate sees it); handlers ignore it downstream. Confirm-all-writes (Task 7): constructive writes (create/upsert/rename/copy/sync/set-active/set-matric-term, plus `get-timetable-calendar-link`'s PRIVATE → UNLISTED escalation) are gated too — single-write loops replicate bulk wipes. The gate is skipped only under the local dev bypass (same `NODE_ENV` + `MCP_DEV_BYPASS=true` boundary as auth — production keeps the gate even if the flag is set; the chat path has no bypass) so Inspector testing can still exercise deletes.
 - **`my-bids` scrubs `notes`.** Each bid's free-text `notes` field (user PII / private bidding strategy) is dropped from the JSON returned to the model; bid metadata is preserved.
 - **`get-classes` caps at 20 rows.** Any `limit > 20` is clamped to 20 before querying (larger values still accepted for backward compatibility).
 - **iCal bearer URLs stay out of model context.** `get-timetable-calendar-link` delivers bearer iCal URLs via the result's `_meta` (View-only channel, read by the View via `useToolContext().meta`); `my-timetables` / `my-roadmaps` scrub `shareToken` / `icalToken`.
@@ -322,4 +322,27 @@ Chat-route manual path (no MCP transport — same catalog, same tools):
 | `bun run mcp:start`      | Start the production server (`mcp-use start --mcp-dir src/mcp`) — OAuth required                              |
 | `bunx mcp-use typecheck` | Refreshes `mcp-env.d.ts` (generated from the exported ToolRefs in `src/mcp/index.ts`) and runs `tsc --noEmit` |
 
-Versions: `mcp-use@^2` (server) with `@mcp-use/cli@^4` (the v2-compatible CLI).
+Versions: `mcp-use@2.3.4` (server, pinned) with `@mcp-use/cli@4.1.8` (the v2-compatible CLI, pinned) and `zod@4.5.4` (pinned exactly — `package.json` dependencies + `overrides`, single `bun.lock` entry; the SDK's bundled zod copy is separate, so `src/mcp/schema.ts:asSchema` keeps its `unknown` hop). `SERVER_META` version (`src/mcp/server.ts`) tracks the app version in `package.json` (the app version is the truth — `SERVER_META` follows it, not vice versa).
+
+## Write audit log
+
+Every successful write-tool execution on every transport is recorded via `appendAuditLog` (`src/server/mcp/audit-log.ts`), called once in the shared dispatch pipeline (`src/mcp/dispatch.ts`) — reads are never logged, failed writes (`isError`) are not logged. Transport today is a single-line `[audit:write]` JSON record on stdout (secret-scrubbed via `stripSecretsFromValue`, never throws), picked up by the server log pipeline. DB persistence is intentionally deferred (no migration): stdout is the durable store until a product decision scopes the audit table.
+
+## Cursor pagination
+
+List-style reads paginate with `{ items, nextCursor }` (additive only — new cursor params are optional; when no cursor is passed, behavior is identical plus a `nextCursor` key):
+
+- `get-course-reviews` / `get-professor-reviews`: optional `cursor` threaded to the review procedure (which already returns `{ items, nextCursor }`); the review-cards view schema gains optional `nextCursor`.
+- `get-classes`: optional `cursor` (item id from a previous `nextCursor`); sliced in-memory since the router has no cursor support (bounded by the 20-row cap).
+- `my-bids`: optional `cursor` over the term-filtered page (same in-memory slice; `listMine` has no cursor support); unknown cursors restart from the first page; `nextCursor: null` marks the last page.
+- `browse-public-roadmaps`: already cursor-native (forwards `cursor` to `roadmaps.listPublic`).
+
+## Tool deprecation policy
+
+Tools are never removed without a deprecation window:
+
+1. Mark the tool deprecated in its catalog `description` (`DEPRECATED: use X instead`) and in `MCP.md` — the tool keeps working unchanged.
+2. Keep the deprecated tool for at least one minor version bump (`package.json` version, mirrored by `SERVER_META`).
+3. Removal lands with the version bump noted in the commit message; `tools/list` consumers discover removals via the listing diff, not a separate channel.
+
+No deprecation machinery (headers, sunset dates, dual-registration) is built — the description marker plus this policy is the whole mechanism until a real deprecation forces more.
