@@ -210,4 +210,55 @@ describe("dispatchToolCall", () => {
     if ("error" in res) throw new Error("expected text success envelope");
     expect(res.content[0]?.text).not.toContain("sekret");
   });
+
+  it("audit-logs successful writes but not reads or failures", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    try {
+      const writeTool = {
+        name: "upsert-bid",
+        run: vi.fn().mockResolvedValue({ content: [{ type: "text", text: "ok" }] }),
+      };
+      await dispatchToolCall({
+        tool: writeTool as never,
+        params: { classId: "cl1" },
+        ctx: fakeCtx,
+        policy: { confirm: false, budget: "none", shape: "text" },
+      });
+      expect(
+        log.mock.calls.some((c) =>
+          String(c[0]).includes('"tool":"upsert-bid"'),
+        ),
+      ).toBe(true);
+
+      log.mockClear();
+      await dispatchToolCall({
+        tool: okTool("read-ok") as never,
+        params: {},
+        ctx: fakeCtx,
+        policy: { confirm: false, budget: "none", shape: "text" },
+      });
+      expect(
+        log.mock.calls.some((c) => String(c[0]).includes("[audit:write]")),
+      ).toBe(false);
+
+      log.mockClear();
+      const failingWrite = {
+        name: "remove-bid",
+        run: vi
+          .fn()
+          .mockResolvedValue({ content: [{ type: "text", text: "no" }], isError: true }),
+      };
+      await dispatchToolCall({
+        tool: failingWrite as never,
+        params: {},
+        ctx: fakeCtx,
+        policy: { confirm: false, budget: "none", shape: "text" },
+      });
+      expect(
+        log.mock.calls.some((c) => String(c[0]).includes("[audit:write]")),
+      ).toBe(false);
+    } finally {
+      log.mockRestore();
+    }
+  });
 });

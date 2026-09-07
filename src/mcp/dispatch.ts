@@ -3,6 +3,7 @@ import type { ToolContext, ToolResult } from "@/server/mcp/types";
 import { errorResult, textResult } from "./envelopes";
 import { isDevBypass } from "./env-gate";
 import { stripSecrets, truncate, wrapToolOutput } from "./output-policy";
+import { appendAuditLog } from "@/server/mcp/audit-log";
 import { buildToolContext } from "./user";
 import {
   checkDestructiveConfirm,
@@ -148,6 +149,18 @@ export async function dispatchToolCall(opts: {
   } catch (e) {
     if (policy.throwBehavior === "propagate") throw e;
     return { error: `Internal error in tool ${tool.name}` };
+  }
+
+  // Write audit (Task 7): every successful write-tool execution on every
+  // transport is recorded. Reads are never logged. Failures (isError) are
+  // not logged — nothing changed. Best-effort and never throws.
+  if (tool.readOnly !== true && !result.isError) {
+    appendAuditLog({
+      userId: toolCtx.user.id,
+      tool: tool.name,
+      args: params,
+      result: "ok",
+    });
   }
 
   if (policy.shape === "view") {
