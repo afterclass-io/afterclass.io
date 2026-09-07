@@ -30,7 +30,7 @@ export const upsert = protectedProcedure
     z.object({
       classId: z.string(),
       bidWindowId: z.number().int().positive(),
-      bidAmount: z.number().positive().max(99999),
+      bidAmount: z.number().positive().max(99999), // sync-mirror of canonical maxBidAmount (chat-config.ts)
       notes: z.string().max(500).optional(),
     }),
   )

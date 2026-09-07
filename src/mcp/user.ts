@@ -64,6 +64,8 @@ export async function resolveMcpUser(
  */
 async function resolveDevBypassUser(): Promise<SessionUser | undefined> {
   if (!isDevBypass()) return undefined;
+  // Allowlisted raw read (dev-bypass identity, gated by isDevBypass() above —
+  // never active in production or tests; validated shape via env.ts).
   const email = process.env.MCP_DEV_USER_EMAIL ?? "test_hash_pwd@smu.edu.sg";
   const user = await db.users.findUnique({ where: { email } });
   return user ? toSessionUser(user) : undefined;

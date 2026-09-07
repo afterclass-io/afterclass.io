@@ -1,4 +1,6 @@
-/** SMU BOSS floor: no bid below e$10 can clear. */
+/** SMU BOSS floor: no bid below e$10 can clear. Canonical value lives in
+ * `src/server/config/chat-config.ts` (`minBid`); this literal is the
+ * sync-mirror so the hot bid path stays dependency-free — keep the two at 10. */
 export const MIN_BID = 10;
 export function clampBidFloor(amount: number): number {
   return Math.max(MIN_BID, amount);
@@ -37,7 +39,9 @@ export function rationaleFor(
     : `No safety factor for beats ${beatsPercentage}%; suggested = predicted median ${median} x 1.0.`;
 }
 
-/** Default confidence level: the suggested amount beats this % of bids. */
+/** Default confidence level: the suggested amount beats this % of bids.
+ * Canonical value lives in `src/server/config/chat-config.ts`
+ * (`defaultBeatsPct`); this literal is the sync-mirror — keep both at 70. */
 export const DEFAULT_BEATS_PERCENTAGE = 70;
 
 type SafetyFactorRow = {

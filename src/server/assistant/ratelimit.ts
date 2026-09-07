@@ -59,7 +59,10 @@ export async function checkAndIncrement(
 
 /**
  * GC for `RateLimit` rows (Task 7). Deletes windows older than
- * `retentionWindows` (default 1440 = ~24h of 1-minute windows). Returns the
+ * `retentionWindows` (default 1440 = ~24h of 1-minute windows; canonical
+ * value lives in `src/server/config/chat-config.ts` as
+ * `rateLimitRetentionWindows` — this default is the sync-mirror, keep both
+ * at 1440). Returns the
  * deleted count. Idempotent and safe to run on any schedule — live windows
  * are always newer than the cutoff, so pruning can never touch an active
  * bucket. Cron wiring (Vercel Cron / pg_cron / job runner) is a deploy

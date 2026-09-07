@@ -9,6 +9,7 @@ export const MCP_PUBLIC_URL =
 
 if (
   typeof process !== "undefined" &&
+  // Allowlisted raw read (deploy-mismatch warning branch, not config).
   process.env.NODE_ENV === "production" &&
   MCP_PUBLIC_URL.includes("<slug>")
 ) {

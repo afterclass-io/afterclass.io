@@ -1,5 +1,8 @@
 import { TZDate } from "@date-fns/tz";
 
+// Sync-mirror of canonical `appTimezone` in `src/server/config/chat-config.ts`
+// — keep both at Asia/Singapore. (Static const: the config getter is sync but
+// this module must stay import-light for quota/period callers.)
 const TZ = "Asia/Singapore";
 
 /** "YYYY-MM" for the user's month, computed in Singapore time (~86% of users). */

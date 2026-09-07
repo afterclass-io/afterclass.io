@@ -1,5 +1,7 @@
 import { checkSpendGuard, getQuotaState } from "./quota";
-import { getChatConfig } from "@/server/ecfg/chat";
+// Task 8: nudgeAt comes from the canonical chat-config (env > EdgeConfig >
+// config.json > defaults) — same value, centralized source.
+import { getChatConfigAsync as getChatConfig } from "@/server/config/chat-config";
 import { hasConnectedAgent } from "./connected";
 
 export type AssistantStatus = {
@@ -21,7 +23,9 @@ export async function getAssistantStatus(
   userId: string,
   supabaseAccessToken?: string | null,
 ): Promise<AssistantStatus> {
-  const connected = hasConnectedAgent(userId, supabaseAccessToken).catch(() => false);
+  const connected = hasConnectedAgent(userId, supabaseAccessToken).catch(
+    () => false,
+  );
   const [quota, spendPaused, chat] = await Promise.all([
     getQuotaState(userId),
     checkSpendGuard().then((ok) => !ok),
@@ -35,6 +39,9 @@ export async function getAssistantStatus(
     spendPaused,
     hasConnectedAgent: await connected,
     nudgeAt: chat.nudgeAt,
-    cacheHitRate: quota.inputTokens > 0 ? quota.cachedInputTokens / quota.inputTokens : null,
+    cacheHitRate:
+      quota.inputTokens > 0
+        ? quota.cachedInputTokens / quota.inputTokens
+        : null,
   };
 }

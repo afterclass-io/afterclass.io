@@ -19,6 +19,12 @@ export const env = createEnv({
    */
   server: {
     DATABASE_URL: z.url(),
+    // Direct (non-pooled) connection, used for migrations and interactive
+    // transactions (Task 9 consumes this; validation lands here in Task 8).
+    // NOTE (T1 rebase): kept feat's key but on main's z.url() shape (T4 owns Zod-4 sweep).
+    DIRECT_URL: z.url().optional(),
+    // Vercel Edge Config connection string (live config layer).
+    EDGE_CONFIG: z.string().min(1).optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -37,15 +43,58 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
     // LLM provider (OpenAI-compatible) - any endpoint that speaks the OpenAI chat API.
-    LLM_API_KEY: z.string(),
-    LLM_BASE_URL: z.string().optional(),
-    LLM_MODEL: z.string().optional(),
+    // Fail-closed (Task 8): empty strings are already treated as undefined
+    // (emptyStringAsUndefined), and a missing key throws at import — the old
+    // `?? ""` fallback in providers.ts is removed.
+    LLM_API_KEY: z.string().min(1),
+    LLM_BASE_URL: z.string().min(1).optional(),
+    LLM_MODEL: z.string().min(1).optional(),
     // Optional rate-limit overrides (per minute, fixed window). When set they
     // override the defaults in src/server/ecfg/config.json.
-    CHAT_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).max(1000).optional(),
-    CHAT_MCP_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).max(10000).optional(),
-    CHAT_WRITE_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).max(1000).optional(),
-    CHAT_RATE_LIMIT_WINDOW_MINUTES: z.coerce.number().int().min(1).max(60).optional(),
+    CHAT_QUOTA_PER_MONTH: z.coerce.number().int().min(1).max(10000).optional(),
+    CHAT_NUDGE_AT: z.coerce.number().int().min(0).max(10000).optional(),
+    CHAT_RATE_LIMIT_PER_MINUTE: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(1000)
+      .optional(),
+    CHAT_MCP_RATE_LIMIT_PER_MINUTE: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(10000)
+      .optional(),
+    CHAT_WRITE_RATE_LIMIT_PER_MINUTE: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(1000)
+      .optional(),
+    CHAT_RATE_LIMIT_WINDOW_MINUTES: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(60)
+      .optional(),
+    CHAT_MAX_INPUT_TOKENS: z.coerce.number().int().min(1).optional(),
+    CHAT_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(1).optional(),
+    CHAT_MAX_TOOL_ROUNDS: z.coerce.number().int().min(1).max(100).optional(),
+    CHAT_SPEND_CAP_USD: z.coerce.number().min(0).optional(),
+    CHAT_SETTLEMENT_SPIKE_TOKENS: z.coerce.number().int().min(1).optional(),
+    CHAT_MAX_TOOL_RESULT_CHARS: z.coerce.number().int().min(1).optional(),
+    BID_MIN_AMOUNT: z.coerce.number().min(0).optional(),
+    BID_MAX_BUDGET: z.coerce.number().min(0).optional(),
+    BID_DEFAULT_BEATS_PCT: z.coerce.number().int().min(1).max(100).optional(),
+    BID_MAX_AMOUNT: z.coerce.number().min(0).optional(),
+    APP_TIMEZONE: z.string().min(1).optional(),
+    // MCP dev-bypass knobs (validated here so typos fail loudly; the single
+    // isDevBypass() gate in src/mcp/env-gate.ts owns the semantics).
+    MCP_DEV_BYPASS: z.string().optional(),
+    MCP_DEV_USER_EMAIL: z.string().email().optional(),
+    MCP_USE_OAUTH_SUPABASE_PROJECT_ID: z.string().min(1).optional(),
+    MCP_USE_OAUTH_SUPABASE_URL: z.string().url().optional(),
+    MCP_USE_OAUTH_SUPABASE_JWT_SECRET: z.string().min(1).optional(),
   },
 
   /**
@@ -103,6 +152,8 @@ export const env = createEnv({
    */
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
+    DIRECT_URL: process.env.DIRECT_URL,
+    EDGE_CONFIG: process.env.EDGE_CONFIG,
     NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? process.env.VERCEL_URL,
@@ -111,10 +162,31 @@ export const env = createEnv({
     LLM_API_KEY: process.env.LLM_API_KEY,
     LLM_BASE_URL: process.env.LLM_BASE_URL,
     LLM_MODEL: process.env.LLM_MODEL,
+    CHAT_QUOTA_PER_MONTH: process.env.CHAT_QUOTA_PER_MONTH,
+    CHAT_NUDGE_AT: process.env.CHAT_NUDGE_AT,
     CHAT_RATE_LIMIT_PER_MINUTE: process.env.CHAT_RATE_LIMIT_PER_MINUTE,
     CHAT_MCP_RATE_LIMIT_PER_MINUTE: process.env.CHAT_MCP_RATE_LIMIT_PER_MINUTE,
-    CHAT_WRITE_RATE_LIMIT_PER_MINUTE: process.env.CHAT_WRITE_RATE_LIMIT_PER_MINUTE,
+    CHAT_WRITE_RATE_LIMIT_PER_MINUTE:
+      process.env.CHAT_WRITE_RATE_LIMIT_PER_MINUTE,
     CHAT_RATE_LIMIT_WINDOW_MINUTES: process.env.CHAT_RATE_LIMIT_WINDOW_MINUTES,
+    CHAT_MAX_INPUT_TOKENS: process.env.CHAT_MAX_INPUT_TOKENS,
+    CHAT_MAX_OUTPUT_TOKENS: process.env.CHAT_MAX_OUTPUT_TOKENS,
+    CHAT_MAX_TOOL_ROUNDS: process.env.CHAT_MAX_TOOL_ROUNDS,
+    CHAT_SPEND_CAP_USD: process.env.CHAT_SPEND_CAP_USD,
+    CHAT_SETTLEMENT_SPIKE_TOKENS: process.env.CHAT_SETTLEMENT_SPIKE_TOKENS,
+    CHAT_MAX_TOOL_RESULT_CHARS: process.env.CHAT_MAX_TOOL_RESULT_CHARS,
+    BID_MIN_AMOUNT: process.env.BID_MIN_AMOUNT,
+    BID_MAX_BUDGET: process.env.BID_MAX_BUDGET,
+    BID_DEFAULT_BEATS_PCT: process.env.BID_DEFAULT_BEATS_PCT,
+    BID_MAX_AMOUNT: process.env.BID_MAX_AMOUNT,
+    APP_TIMEZONE: process.env.APP_TIMEZONE,
+    MCP_DEV_BYPASS: process.env.MCP_DEV_BYPASS,
+    MCP_DEV_USER_EMAIL: process.env.MCP_DEV_USER_EMAIL,
+    MCP_USE_OAUTH_SUPABASE_PROJECT_ID:
+      process.env.MCP_USE_OAUTH_SUPABASE_PROJECT_ID,
+    MCP_USE_OAUTH_SUPABASE_URL: process.env.MCP_USE_OAUTH_SUPABASE_URL,
+    MCP_USE_OAUTH_SUPABASE_JWT_SECRET:
+      process.env.MCP_USE_OAUTH_SUPABASE_JWT_SECRET,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_OLD_SITE_URL: process.env.NEXT_PUBLIC_OLD_SITE_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,

@@ -22,6 +22,8 @@ type SupabaseOAuthProvider = ReturnType<typeof oauthSupabaseProvider>;
 // Explicit env read — the repo's env vars are MCP_USE_OAUTH_SUPABASE_* (see
 // .env.example). They are passed explicitly because v2 docs state env names
 // belong to the application; do NOT rely on undocumented env auto-read.
+// Allowlisted raw reads (OAuth provider wiring, keys validated in env.ts;
+// the dev-bypass branch itself delegates to isDevBypass()).
 function supabaseOAuth(): SupabaseOAuthProvider | undefined {
   const projectId = process.env.MCP_USE_OAUTH_SUPABASE_PROJECT_ID;
   const supabaseUrl = process.env.MCP_USE_OAUTH_SUPABASE_URL;

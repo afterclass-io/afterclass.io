@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { chatConfigSchema, DEFAULT_CHAT_CONFIG, edgeConfigSchema } from "./config";
+import {
+  chatConfigSchema,
+  DEFAULT_CHAT_CONFIG,
+  edgeConfigSchema,
+} from "./config";
+// Task 8: ecfg/chat.ts is a delegation shim over the canonical chat-config.
+// The env-override behaviors below now execute in the canonical module with
+// fail-closed semantics; these tests pin the shim end-to-end (env > Edge >
+// file > defaults) plus the preserved C2 write-limit precedence.
 
 describe("chat config schema", () => {
   it("applies defaults when the chat object is missing", () => {
@@ -94,21 +102,39 @@ describe("getChatConfig env overrides", () => {
     expect(cfg.maxInputTokens).toBe(Number(overrideTokens));
   });
 
-  it("getChatWriteRateLimit respects CHAT_WRITE_RATE_LIMIT_PER_MINUTE", async () => {
+  it("getChatWriteRateLimit respects CHAT_WRITE_RATE_LIMIT_PER_MINUTE (C2: env-override-then-fallback)", async () => {
     process.env.CHAT_WRITE_RATE_LIMIT_PER_MINUTE = "7";
-    const { getChatWriteRateLimit } = await import("./chat");
-    expect(getChatWriteRateLimit(DEFAULT_CHAT_CONFIG)).toBe(7);
+    const { getChatWriteRateLimit: get1 } = await import(
+      "@/server/config/chat-config"
+    );
+    expect(get1(DEFAULT_CHAT_CONFIG)).toBe(7);
     delete process.env.CHAT_WRITE_RATE_LIMIT_PER_MINUTE;
     // re-import to pick up cleared env
     vi.resetModules();
-    const { getChatWriteRateLimit: get2 } = await import("./chat");
-    expect(get2(DEFAULT_CHAT_CONFIG)).toBe(DEFAULT_CHAT_CONFIG.rateLimitPerMinute);
+    const { getChatWriteRateLimit: get2 } = await import(
+      "@/server/config/chat-config"
+    );
+    expect(get2(DEFAULT_CHAT_CONFIG)).toBe(
+      DEFAULT_CHAT_CONFIG.rateLimitPerMinute,
+    );
   });
 
-  it("getRateLimitWindowMinutes defaults to 1 and respects env", async () => {
-    const { getRateLimitWindowMinutes } = await import("./chat");
-    expect(getRateLimitWindowMinutes()).toBe(1);
+  it("getChatWriteRateLimit throws fail-closed on non-positive env (no silent misconfig)", async () => {
+    process.env.CHAT_WRITE_RATE_LIMIT_PER_MINUTE = "-1";
+    const { getChatWriteRateLimit: get1 } = await import(
+      "@/server/config/chat-config"
+    );
+    expect(() => get1(DEFAULT_CHAT_CONFIG)).toThrow(/rate/i);
+  });
+
+  it("getRateLimitWindowMinutes defaults to 1 and respects env (throws on out-of-range)", async () => {
+    const { getRateLimitWindowMinutes: get1 } = await import(
+      "@/server/config/chat-config"
+    );
+    expect(get1()).toBe(1);
     process.env.CHAT_RATE_LIMIT_WINDOW_MINUTES = "5";
-    expect(getRateLimitWindowMinutes()).toBe(5);
+    expect(get1()).toBe(5);
+    process.env.CHAT_RATE_LIMIT_WINDOW_MINUTES = "0";
+    expect(() => get1()).toThrow(/window/i);
   });
 });

@@ -1,8 +1,33 @@
 import { db } from "@/server/db";
-import { getChatConfig } from "@/server/ecfg/chat";
+import { getChatConfigAsync as getCanonicalChatConfig } from "@/server/config/chat-config";
 import type { ChatConfig } from "@/server/ecfg/config";
 import { criticalFloorFor } from "@/modules/assistant/quota-meter/logic";
 import { currentMonthPeriod } from "./month";
+
+/**
+ * Legacy-shape adapter (Task 8): quota.ts keeps consuming the ecfg
+ * `ChatConfig` field names (`spendCapPerMonthUsd`, `quotaPerMonth`, prices)
+ * while the VALUES now come from the canonical chat-config (env >
+ * EdgeConfig > config.json > defaults). Prices are not env-tunable today —
+ * they stay at the compiled 0.14/0.014/0.28 (same numbers as
+ * DEFAULT_CHAT_CONFIG before Task 8).
+ */
+async function getQuotaChat(): Promise<ChatConfig> {
+  const c = await getCanonicalChatConfig();
+  return {
+    quotaPerMonth: c.quotaPerMonth,
+    nudgeAt: c.nudgeAt,
+    rateLimitPerMinute: c.rateLimitPerMinute,
+    mcpRateLimitPerMinute: c.mcpRateLimitPerMinute,
+    spendCapPerMonthUsd: c.spendCapPerMonthUsd,
+    maxInputTokens: c.maxInputTokens,
+    maxOutputTokens: c.maxOutputTokens,
+    maxToolRounds: c.maxToolRounds,
+    priceInputPerM: 0.14,
+    priceCachedInputPerM: 0.014,
+    priceOutputPerM: 0.28,
+  };
+}
 
 export function tokensToUsd(
   chat: ChatConfig,
@@ -33,7 +58,7 @@ export async function getQuotaState(userId: string): Promise<{
   inputTokens: number;
   cachedInputTokens: number;
 }> {
-  const chat = await getChatConfig();
+  const chat = await getQuotaChat();
   const period = currentMonthPeriod();
   const row = await db.chatUsage.findUnique({
     where: { userId_period: { userId, period } },
@@ -80,7 +105,7 @@ export async function checkQuota(
 export async function reserveMessage(
   userId: string,
 ): Promise<{ ok: boolean; remaining: number; quota: number }> {
-  const chat = await getChatConfig();
+  const chat = await getQuotaChat();
   const period = currentMonthPeriod();
   const quota = chat.quotaPerMonth;
   return db.$transaction(async (tx) => {
@@ -138,7 +163,7 @@ export async function settleUsage(
   userId: string,
   tokens: { input: number; output: number; cachedInput?: number },
 ): Promise<void> {
-  const chat = await getChatConfig();
+  const chat = await getQuotaChat();
   const period = currentMonthPeriod();
   const spendUsd = tokensToUsd(chat, tokens);
   const cachedInput = tokens.cachedInput ?? 0;
@@ -196,7 +221,7 @@ export async function refundMessage(userId: string): Promise<void> {
 
 /** true = the spend kill-switch is not tripped (chat allowed). */
 export async function checkSpendGuard(): Promise<boolean> {
-  const chat = await getChatConfig();
+  const chat = await getQuotaChat();
   const period = currentMonthPeriod();
   const row = await db.chatSpend.findUnique({ where: { period } });
   return (row?.totalSpendUsd ?? 0) < chat.spendCapPerMonthUsd;
@@ -214,7 +239,7 @@ export async function checkSpendGuard(): Promise<boolean> {
 export async function checkUserSpendCap(
   userId: string,
 ): Promise<{ ok: boolean; spendUsd: number; capUsd: number }> {
-  const chat = await getChatConfig();
+  const chat = await getQuotaChat();
   const period = currentMonthPeriod();
   const row = await db.chatUsage.findUnique({
     where: { userId_period: { userId, period } },
@@ -234,7 +259,9 @@ export async function checkUserSpendCap(
  * instances — the atomic DB settle in `settleUsage` remains the hard
  * backstop). Always pair with `endTurn` in a finally path; stale entries
  * are treated as expired after `STALE_MS` so a crashed turn cannot lock
- * the user out forever.
+ * the user out forever. Canonical value lives in
+ * `src/server/config/chat-config.ts` (`inFlightStaleMs`); this literal is
+ * the sync-mirror (module-level const read per-call) — keep both at 5min.
  */
 const inFlightTurns = new Map<string, number>();
 const IN_FLIGHT_STALE_MS = 5 * 60_000;

@@ -24,13 +24,18 @@ export async function getSupabaseAccessToken(): Promise<string | null> {
   const store = await cookies();
   const secure = store.get("__Secure-authjs.session-token")?.value;
   const plain = store.get("authjs.session-token")?.value;
-  // In production, refuse the non-__Secure- cookie.
+  // In production, refuse the non-__Secure- cookie. Allowlisted raw read
+  // (request-security branch, not config — the ban covers config reads
+  // outside env.ts/env-gate.ts/chat-config.ts).
   if (process.env.NODE_ENV === "production" && !secure) return null;
   const raw = secure ?? plain;
   if (!raw) return null;
-  const salt = secure ? "__Secure-authjs.session-token" : "authjs.session-token";
+  const salt = secure
+    ? "__Secure-authjs.session-token"
+    : "authjs.session-token";
   // Mirror Auth.js's secret resolution (NEXTAUTH_SECRET is optional outside
   // production in the env schema; Auth.js falls back to AUTH_SECRET).
+  // Allowlisted raw read (third-party fallback secret, not app config).
   const secret = env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
   if (!secret) return null;
   const token = await decode({

@@ -104,6 +104,7 @@ export const createTRPCRouter = t.router;
 const timingMiddleware = t.middleware(async ({ next, path }) => {
   const start = Date.now();
 
+  // Allowlisted raw reads (dev-only logging flags, not config).
   if (process.env.DEBUG_TRPC === "1" && t._config.isDev) {
     // artificial delay in dev
     const waitMs = Math.floor(Math.random() * 400) + 100;
@@ -113,6 +114,7 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
   const result = await next();
 
   const end = Date.now();
+  // Allowlisted raw read (dev-only timing log, not config).
   if (process.env.NODE_ENV === "development") {
     console.debug(`[TRPC] ${path} took ${end - start}ms to execute`);
   }

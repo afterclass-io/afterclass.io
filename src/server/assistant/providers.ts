@@ -11,9 +11,22 @@ export type LlmEnvLike = {
   LLM_MODEL?: string;
 };
 
-export function resolveLlmEnv(e: LlmEnvLike): { apiKey: string; baseURL: string; model: string } {
+export function resolveLlmEnv(e: LlmEnvLike): {
+  apiKey: string;
+  baseURL: string;
+  model: string;
+} {
+  const apiKey = e.LLM_API_KEY;
+  // Fail-closed (Task 8): a missing/empty key used to silently become "" and
+  // surface as a cryptic 401 on the first turn. Throw here instead so the
+  // misconfiguration is loud at the call site.
+  if (apiKey === undefined || apiKey === "") {
+    throw new Error(
+      "resolveLlmEnv: missing LLM_API_KEY — set it in the environment (see .env.example)",
+    );
+  }
   return {
-    apiKey: e.LLM_API_KEY ?? "",
+    apiKey,
     baseURL: e.LLM_BASE_URL ?? DEFAULT_LLM_BASE_URL,
     model: e.LLM_MODEL ?? DEFAULT_LLM_MODEL,
   };

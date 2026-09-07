@@ -47,7 +47,7 @@ export const update = protectedProcedure
       id: z.string(),
       classId: z.string().optional(),
       bidWindowId: z.number().int().positive().optional(),
-      bidAmount: z.number().positive().max(99999).optional(),
+      bidAmount: z.number().positive().max(99999).optional(), // sync-mirror of canonical maxBidAmount (chat-config.ts)
       notes: z.string().max(500).nullable().optional(),
     }),
   )

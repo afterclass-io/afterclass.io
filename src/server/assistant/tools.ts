@@ -8,7 +8,10 @@ import { checkBudget } from "@/server/assistant/budget";
 
 /** ~6k tokens at the chars/4 heuristic. Caps the per-call miss region AND the
  * within-loop amplification (a result is re-sent at miss in every remaining
- * agent-loop step of the same turn). */
+ * agent-loop step of the same turn). Canonical value lives in
+ * `src/server/config/chat-config.ts` (`maxToolResultChars`); this literal is
+ * the sync-mirror (imported at module scope by route/dispatch paths) — keep
+ * both at 24000. */
 export const MAX_TOOL_RESULT_CHARS = 24_000;
 
 export const TRUNCATION_NOTE =

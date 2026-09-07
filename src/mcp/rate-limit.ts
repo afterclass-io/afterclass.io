@@ -1,10 +1,18 @@
 import { checkBudget } from "@/server/assistant/budget";
+// Task 8: limit/window values come from the canonical chat-config via this
+// shim (same numbers, centralized source + fail-closed range checks).
 import { getChatConfig, getRateLimitWindowMinutes } from "@/server/ecfg/chat";
 import type { ToolContext } from "@/server/mcp/types";
 
 /**
  * Budget matrix (Task 5 — documentation only, no limit changes; Task 7/8 own
  * the numbers).
+ *
+ * C2 precedence (Task 8, preserved): the chat-write effective limit is
+ * env-override-then-fallback — `getChatWriteRateLimit(chat)` returns
+ * `CHAT_WRITE_RATE_LIMIT_PER_MINUTE` when set (fail-closed: throws on
+ * non-positive/non-finite instead of silently 429ing), else
+ * `chat.rateLimitPerMinute`. The matrix below matches the implementation.
  *
  * Three per-user buckets, keyed `<prefix>:<userId>` in the shared
  * `checkAndIncrement` store (`src/server/assistant/ratelimit.ts`), all with

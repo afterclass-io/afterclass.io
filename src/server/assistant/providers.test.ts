@@ -1,16 +1,48 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_LLM_BASE_URL, DEFAULT_LLM_MODEL, resolveLlmEnv } from "./providers";
+import {
+  DEFAULT_LLM_BASE_URL,
+  DEFAULT_LLM_MODEL,
+  resolveLlmEnv,
+} from "./providers";
 
 describe("resolveLlmEnv", () => {
-  it("falls back to defaults when LLM_* is unset", () => {
-    expect(resolveLlmEnv({ LLM_API_KEY: undefined, LLM_BASE_URL: undefined, LLM_MODEL: undefined })).toEqual({
-      apiKey: "",
+  it("throws fail-closed when LLM_API_KEY is missing (no empty-string fallback)", () => {
+    expect(() =>
+      resolveLlmEnv({
+        LLM_API_KEY: undefined,
+        LLM_BASE_URL: undefined,
+        LLM_MODEL: undefined,
+      }),
+    ).toThrow(/LLM_API_KEY/);
+    expect(() =>
+      resolveLlmEnv({
+        LLM_API_KEY: "",
+        LLM_BASE_URL: undefined,
+        LLM_MODEL: undefined,
+      }),
+    ).toThrow(/LLM_API_KEY/);
+  });
+  it("falls back to baseURL/model defaults when only the key is set", () => {
+    expect(
+      resolveLlmEnv({
+        LLM_API_KEY: "k",
+        LLM_BASE_URL: undefined,
+        LLM_MODEL: undefined,
+      }),
+    ).toEqual({
+      apiKey: "k",
       baseURL: DEFAULT_LLM_BASE_URL,
       model: DEFAULT_LLM_MODEL,
     });
   });
   it("prefers LLM_* when set", () => {
-    expect(resolveLlmEnv({ LLM_API_KEY: "custom", LLM_BASE_URL: "https://x.com", LLM_MODEL: "m1" })).toEqual({
+    expect(
+      resolveLlmEnv({
+        LLM_API_KEY: "custom",
+        LLM_BASE_URL: "https://x.com",
+        LLM_MODEL: "m1",
+      }),
+    ).toEqual({
       apiKey: "custom",
       baseURL: "https://x.com",
       model: "m1",

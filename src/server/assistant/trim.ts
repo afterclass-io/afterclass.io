@@ -103,12 +103,13 @@ export function stripStalePageContext(messages: UIMessage[]): UIMessage[] {
   });
 }
 
-/** Convert UI messages, prune reasoning/tool-call bloat, then enforce the token budget. */
+/** Convert UI messages, prune reasoning/tool-call bloat, then enforce the token budget.
+ * Task 8: maxInputTokens comes from the canonical chat-config. */
 export async function trimToBudget(
   messages: UIMessage[],
 ): Promise<ModelMessage[]> {
-  const chat = await import("@/server/ecfg/chat").then((m) =>
-    m.getChatConfig(),
+  const chat = await import("@/server/config/chat-config").then((m) =>
+    m.getChatConfigAsync(),
   );
   const modelMessages = await convertToModelMessages(
     stripStalePageContext(messages),

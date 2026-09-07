@@ -2,6 +2,8 @@ import { type NextRequest } from "next/server";
 import { getFeedData } from "@/server/api/timetable/getFeedData";
 import { buildIcal } from "@/modules/timetable/functions/build-ical";
 import { checkAndIncrement } from "@/server/assistant/ratelimit";
+import { checkBudget } from "@/server/assistant/budget";
+import { getChatConfigAsync } from "@/server/config/chat-config";
 
 // ---------------------------------------------------------------------------
 // GET /api/ical/[token].ics
@@ -41,9 +43,17 @@ export async function GET(
   { params }: { params: Promise<{ token: string }> },
 ): Promise<Response> {
   // Per-IP throttle BEFORE the token lookup so spray never reaches the DB.
+  // Limit comes from the canonical chat-config (`icalThrottlePerMinute`,
+  // default 60 — same number as the old literal, centralized source).
+  // Fail-closed: checkBudget throws on a misconfigured limit instead of
+  // silently 429ing the whole world.
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  const { ok } = await checkAndIncrement(`ical:${ip}`, 60, 1);
+  const { icalThrottlePerMinute } = await getChatConfigAsync();
+  const { ok } = await checkBudget(
+    { key: `ical:${ip}`, limit: icalThrottlePerMinute, windowMs: 60_000 },
+    "read",
+  );
   if (!ok) return new Response("Too many requests", { status: 429 });
 
   const { token } = await params;

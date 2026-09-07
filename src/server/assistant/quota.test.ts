@@ -48,6 +48,25 @@ vi.mock("@/server/db", () => ({
     $transaction: (fn: (tx: Record<string, unknown>) => unknown) => fn(tx),
   },
 }));
+// Task 8: quota.ts reads the canonical chat-config (mocked here); the
+// ecfg shim mock stays for modules that still import it transitively.
+vi.mock("@/server/config/chat-config", () => ({
+  getChatConfigAsync: async () => ({
+    quotaPerMonth: 50,
+    nudgeAt: 40,
+    rateLimitPerMinute: 10,
+    mcpRateLimitPerMinute: 60,
+    spendCapPerMonthUsd: 20,
+    spendCapUsd: 20,
+    maxInputTokens: 16000,
+    maxOutputTokens: 1024,
+    maxToolRounds: 6,
+    settlementSpikeTokens: 30000,
+    priceInputPerM: 0.14,
+    priceCachedInputPerM: 0.014,
+    priceOutputPerM: 0.28,
+  }),
+}));
 vi.mock("@/server/ecfg/chat", () => ({
   getChatConfig: async () => ({
     quotaPerMonth: 50,

@@ -8,7 +8,7 @@ import {
   type McpTool,
 } from "../../types";
 import {
-  DEFAULT_BEATS_PERCENTAGE,
+  DEFAULT_BEATS_PERCENTAGE, // sync-mirror of canonical defaultBeatsPct (chat-config.ts)
   findSafetyFactor,
   rationaleFor,
   suggestBidAmount,

@@ -54,6 +54,13 @@ vi.mock("@/server/ecfg/chat", () => ({
     c.rateLimitPerMinute,
   getRateLimitWindowMinutes: () => 1,
 }));
+// Task 8: route.ts now reads the canonical chat-config directly.
+vi.mock("@/server/config/chat-config", () => ({
+  getChatConfigAsync: mockGetChatConfig,
+  getChatWriteRateLimit: (c: { rateLimitPerMinute: number }) =>
+    c.rateLimitPerMinute,
+  getRateLimitWindowMinutes: () => 1,
+}));
 vi.mock("@/server/assistant/providers", () => ({
   getModel: mockGetModel,
 }));
@@ -116,10 +123,14 @@ const DEFAULT_CHAT_CONFIG = {
   nudgeAt: 40,
   rateLimitPerMinute: 10,
   mcpRateLimitPerMinute: 60,
+  writeRateLimitPerMinute: 10,
+  rateLimitWindowMinutes: 1,
   spendCapPerMonthUsd: 20,
+  spendCapUsd: 20,
   maxInputTokens: 16000,
   maxOutputTokens: 4096,
   maxToolRounds: 12,
+  settlementSpikeTokens: 30000,
   priceInputPerM: 0.14,
   priceCachedInputPerM: 0.014,
   priceOutputPerM: 0.28,
@@ -715,7 +726,7 @@ describe("POST /api/chat", () => {
     );
     expect(res.status).toBe(200);
     expect(capturedOnEnd).not.toBeNull();
-    // DEFAULT_CHAT_CONFIG.maxInputTokens is 16000 → threshold 8000.
+    // DEFAULT_CHAT_CONFIG.maxInputTokens is 16000 → min(16000*0.5, 30000)=8000.
     // eslint-disable-next-line @typescript-eslint/await-thenable -- onEnd returns void|Promise<void>
     await capturedOnEnd!({ usage: { inputTokens: 9000, outputTokens: 5 } });
     expect(mockSettleUsage).not.toHaveBeenCalled();

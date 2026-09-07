@@ -41,4 +41,23 @@ describe("isDevBypass", () => {
     vi.stubEnv("MCP_DEV_BYPASS", "true");
     expect(isDevBypass()).toBe(false);
   });
+
+  it("is false when NODE_ENV is missing/invalid even with the flag (fail closed → prod)", () => {
+    vi.stubEnv("NODE_ENV", "staging");
+    vi.stubEnv("MCP_DEV_BYPASS", "true");
+    expect(isDevBypass()).toBe(false);
+    vi.stubEnv("NODE_ENV", "PRODUCTION");
+    vi.stubEnv("MCP_DEV_BYPASS", "true");
+    expect(isDevBypass()).toBe(false);
+  });
+
+  it("rejects truthy-but-inexact bypass flags (only exactly 'true' passes)", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    for (const flag of ["1", "TRUE", "True", "yes"]) {
+      vi.stubEnv("MCP_DEV_BYPASS", flag);
+      expect(isDevBypass()).toBe(false);
+    }
+    vi.stubEnv("MCP_DEV_BYPASS", "true");
+    expect(isDevBypass()).toBe(true);
+  });
 });

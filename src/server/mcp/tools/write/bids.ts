@@ -11,10 +11,14 @@ import {
   type McpTool,
 } from "../../types";
 
+// Canonical values live in `src/server/config/chat-config.ts` (`maxBidAmount`
+// 99999, `maxBidBudget` 10000); these literals are sync-mirrors so the zod
+// schemas stay static — keep all three in agreement.
+const MAX_BID_AMOUNT = 99999;
 const upsertBidSchema = z.object({
   classId: z.string(),
   bidWindowId: z.number().int().positive().optional(),
-  bidAmount: z.number().positive().max(99999),
+  bidAmount: z.number().positive().max(MAX_BID_AMOUNT),
   notes: z.string().max(500).optional(),
   ...confirmField,
 });
@@ -95,6 +99,7 @@ export const removeBidTool: McpTool<typeof removeBidSchema> = {
   },
 };
 
+/** Sync-mirror of canonical `maxBidBudget` in `src/server/config/chat-config.ts` — keep both at 10000. */
 export const MAX_BUDGET = 10000;
 
 const setBidBudgetSchema = z.object({

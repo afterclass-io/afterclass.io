@@ -9,7 +9,6 @@ import {
   jsonText,
   type McpTool,
 } from "../../types";
-import { stripShareToken } from "../bid-shared";
 
 const visibilitySchema = z.enum(["PRIVATE", "UNLISTED", "PUBLIC"]);
 
@@ -201,9 +200,9 @@ export const setTimetableVisibilityTool: McpTool<
       })) as Record<string, unknown>;
       // Canonical output policy: bearer tokens must not reach the LLM.
       // `stripSecretsFromValue` covers shareToken + icalToken (setVisibility
-      // can return both for timetables); the per-row `stripShareToken` legacy
-      // helper is kept in the chain for diff-reviewability.
-      return jsonText(stripSecretsFromValue(stripShareToken(res)));
+      // can return both for timetables); the legacy per-row strip inner call
+      // is dropped — the canonical strip subsumes it.
+      return jsonText(stripSecretsFromValue(res));
     } catch (e) {
       return errText(errorMessage(e));
     }

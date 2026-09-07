@@ -7,6 +7,10 @@ vi.mock("@/server/assistant/quota", () => ({
 vi.mock("@/server/ecfg/chat", () => ({
   getChatConfig: async () => ({ quotaPerMonth: 50, nudgeAt: 40 }),
 }));
+// Task 8: status.ts reads the canonical chat-config directly.
+vi.mock("@/server/config/chat-config", () => ({
+  getChatConfigAsync: async () => ({ quotaPerMonth: 50, nudgeAt: 40 }),
+}));
 vi.mock("./connected", () => ({ hasConnectedAgent: vi.fn() }));
 
 import { checkSpendGuard, getQuotaState } from "./quota";
@@ -19,10 +23,18 @@ const mockedConnected = vi.mocked(hasConnectedAgent);
 
 describe("getAssistantStatus", () => {
   beforeEach(() => {
-    mockedQuotaState.mockReset(); mockedSpend.mockReset(); mockedConnected.mockReset();
+    mockedQuotaState.mockReset();
+    mockedSpend.mockReset();
+    mockedConnected.mockReset();
     mockedQuotaState.mockResolvedValue({
-      used: 20, quota: 50, criticalFloor: 10, remaining: 30, isCritical: false,
-      period: "2026-09", inputTokens: 0, cachedInputTokens: 0,
+      used: 20,
+      quota: 50,
+      criticalFloor: 10,
+      remaining: 30,
+      isCritical: false,
+      period: "2026-09",
+      inputTokens: 0,
+      cachedInputTokens: 0,
     });
     mockedSpend.mockResolvedValue(true);
     mockedConnected.mockResolvedValue(false);
@@ -44,8 +56,14 @@ describe("getAssistantStatus", () => {
 
   it("reports quota exhausted when remaining is 0", async () => {
     mockedQuotaState.mockResolvedValue({
-      used: 50, quota: 50, criticalFloor: 10, remaining: 0, isCritical: true,
-      period: "2026-09", inputTokens: 0, cachedInputTokens: 0,
+      used: 50,
+      quota: 50,
+      criticalFloor: 10,
+      remaining: 0,
+      isCritical: true,
+      period: "2026-09",
+      inputTokens: 0,
+      cachedInputTokens: 0,
     });
     const s = await getAssistantStatus("u1");
     expect(s.spendPaused).toBe(false);
@@ -69,8 +87,14 @@ describe("getAssistantStatus", () => {
 
   it("exposes cacheHitRate as cachedInputTokens / inputTokens", async () => {
     mockedQuotaState.mockResolvedValue({
-      used: 5, quota: 50, criticalFloor: 10, remaining: 45, isCritical: false,
-      period: "2026-09", inputTokens: 1000, cachedInputTokens: 800,
+      used: 5,
+      quota: 50,
+      criticalFloor: 10,
+      remaining: 45,
+      isCritical: false,
+      period: "2026-09",
+      inputTokens: 1000,
+      cachedInputTokens: 800,
     });
     const s = await getAssistantStatus("u1");
     expect(s.cacheHitRate).toBeCloseTo(0.8);
@@ -78,8 +102,14 @@ describe("getAssistantStatus", () => {
 
   it("cacheHitRate is null when no input tokens yet", async () => {
     mockedQuotaState.mockResolvedValue({
-      used: 1, quota: 50, criticalFloor: 10, remaining: 49, isCritical: false,
-      period: "2026-09", inputTokens: 0, cachedInputTokens: 0,
+      used: 1,
+      quota: 50,
+      criticalFloor: 10,
+      remaining: 49,
+      isCritical: false,
+      period: "2026-09",
+      inputTokens: 0,
+      cachedInputTokens: 0,
     });
     const s = await getAssistantStatus("u1");
     expect(s.cacheHitRate).toBeNull();

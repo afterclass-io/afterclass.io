@@ -19,6 +19,14 @@
  * auth-context/serialization tests probe OAuth wiring per-NODE_ENV. `mcp:dev`
  * ergonomics are preserved because scripts/mcp-dev.ts sets
  * NODE_ENV=development + MCP_DEV_BYPASS=true explicitly.
+ *
+ * Task 8: semantics UNCHANGED (R4 amended: undefined|development + flag).
+ * This helper is already fail-closed — missing/invalid NODE_ENV returns
+ * false (prod). No raw NODE_ENV/MCP_DEV_BYPASS reads remain outside this
+ * file + env.ts (validated schema) + scripts/mcp-dev.ts (explicit setter)
+ * + tests (vi.stubEnv stubs). Route-level config reads go through
+ * getChatConfig(); the CHAT_LOG_USAGE diagnostic flag in route.ts is the
+ * single allowlisted raw read (diagnostic, not config).
  */
 export function isDevBypass(): boolean {
   // NOTE: read process.env.NODE_ENV directly (no `?? ""`): under vitest,

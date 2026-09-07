@@ -27,24 +27,31 @@ import {
 } from "@/server/assistant/quota";
 import { checkAndIncrement } from "@/server/assistant/ratelimit";
 import {
-  getChatConfig,
-  getChatWriteRateLimit,
-  getRateLimitWindowMinutes,
-} from "@/server/ecfg/chat";
+  getChatConfigAsync as getCanonicalChatConfig,
+  getChatWriteRateLimit as getCanonicalChatWriteRateLimit,
+  getRateLimitWindowMinutes as getCanonicalRateLimitWindowMinutes,
+} from "@/server/config/chat-config";
 import { getModel } from "@/server/assistant/providers";
 import { extractCachedInputTokens } from "@/server/assistant/usage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-// Multi-step chains (12 rounds) need more than 60s. 300 is the Vercel Node.js ceiling — VERIFY against the actual deploy plan before going live (Hobby non-Fluid caps at 60); flagged human-pending.
+// Multi-step chains (12 rounds) need more than 60s. 300 is the Vercel Node.js
+// ceiling — VERIFY against the actual deploy plan before going live (Hobby
+// non-Fluid caps at 60); flagged human-pending. Canonical value lives in
+// `src/server/config/chat-config.ts` (`chatMaxDurationSec`); this export is
+// the sync-mirror (Next.js requires a static export) — keep both at 300.
+// Task 9 consumes getChatConfig() for this; validation of DIRECT_URL +
+// EDGE_CONFIG lands in Task 8's env.ts (done).
 export const maxDuration = 300;
 
 // Input-token count above which a settlement HARD-BLOCKS the turn's spend
 // recording (usually a huge tool result re-sent across loop steps or a broken
-// cached prefix). Named so the threshold is greppable, not a magic literal.
-// R7 (no new tunables): derived from `chat.maxInputTokens` (default 64000) —
-// half the max-input budget in one settlement is never legitimate. Task 8
-// centralizes this into a named CHAT_SETTLEMENT_SPIKE_TOKENS tunable.
+// cached prefix). Canonical value lives in `src/server/config/chat-config.ts`
+// (`settlementSpikeTokens` = 30000); this fraction is the sync-mirror of the
+// derivation (0.5 × maxInputTokens 64000 ≈ 32000 → pinned 30000 per brief):
+// derive per-turn from the live config so an env override moves the
+// threshold with the budget, and clamp to the canonical floor.
 const SETTLEMENT_SPIKE_FRACTION = 0.5;
 
 // CACHE-CRITICAL: this prompt + the tool catalog are the shared account-wide
@@ -221,8 +228,8 @@ export async function POST(req: Request) {
     }
   }
 
-  const chat = await getChatConfig();
-  const windowMinutes = getRateLimitWindowMinutes();
+  const chat = await getCanonicalChatConfig();
+  const windowMinutes = getCanonicalRateLimitWindowMinutes();
   // Per-user spend cap (Task 7): checked alongside the global kill-switch,
   // before any quota is reserved. Both hard-block (403 spend gate).
   const [spendOk, userSpend, rate] = await Promise.all([
@@ -257,7 +264,7 @@ export async function POST(req: Request) {
     const ctx = createCallerForUser(session.user);
     const tools = buildAssistantTools(
       ctx,
-      getChatWriteRateLimit(chat),
+      getCanonicalChatWriteRateLimit(chat),
       windowMinutes,
     );
     const modelMessages = await trimToBudget(messages);
@@ -294,12 +301,17 @@ export async function POST(req: Request) {
           const cachedInput = extractCachedInputTokens(usage);
           // One-time diagnostic: CHAT_LOG_USAGE=1 logs the raw usage payload so the
           // provider field mapping can be re-verified after provider/SDK upgrades.
+          // Allowlisted raw read (diagnostic flag only — not config; the ban
+          // covers config reads outside env.ts/env-gate.ts/chat-config.ts).
           if (process.env.CHAT_LOG_USAGE === "1") {
             // intentional: one-time opt-in diagnostic for provider field mapping
             console.log("[assistant:usage]", JSON.stringify(usage));
           }
           const spikeThreshold = Math.floor(
-            chat.maxInputTokens * SETTLEMENT_SPIKE_FRACTION,
+            Math.min(
+              chat.maxInputTokens * SETTLEMENT_SPIKE_FRACTION,
+              chat.settlementSpikeTokens,
+            ),
           );
           if ((usage.inputTokens ?? 0) > spikeThreshold) {
             // Settlement spike: usually a huge tool result re-sent across loop

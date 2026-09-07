@@ -1,56 +1,55 @@
-import { getEdgeConfig } from "@/common/providers/EdgeConfig/EdgeConfigProvider";
-import { DEFAULT_CHAT_CONFIG, type ChatConfig } from "./config";
+import type { ChatConfig as LegacyChatConfig } from "./config";
+import {
+  getChatConfigAsync as getCanonicalChatConfig,
+  getChatWriteRateLimit as getCanonicalChatWriteRateLimit,
+  getRateLimitWindowMinutes as getCanonicalRateLimitWindowMinutes,
+} from "@/server/config/chat-config";
 
 /**
  * Server-side chat config: live Edge Config with local JSON fallback.
  *
- * getEdgeConfig() never throws - it uses safeParse and catches fetch errors,
- * falling back to the local config.json. So if the remote Edge Config is
- * unavailable in dev (e.g. "Unauthorized"), we still get a valid config
- * object from the local JSON, and `cfg?.chat` will be present.
- * If for any reason `chat` is missing, we fall back to DEFAULT_CHAT_CONFIG.
+ * Task 8: this module is now a thin delegation shim over the canonical
+ * `src/server/config/chat-config.ts`. Precedence (env > EdgeConfig >
+ * config.json > defaults) and fail-closed range checks live there; the raw
+ * `process.env` reads that used to live here (fail-open `Number(env)` that
+ * swallowed NaN/0/negatives) are gone. The async signature is preserved so
+ * the ~15 existing call sites (quota.ts, status.ts, rate-limit.ts,
+ * route.ts, trim.ts, view-tools, tests) keep working unchanged.
  *
- * Environment overrides: CHAT_* env vars win over config.json defaults so
- * limits can be changed on redeploy without a code change.
+ * The legacy `ChatConfig` shape (camelCase ecfg keys incl.
+ * `spendCapPerMonthUsd`, `maxInputTokens`, `maxOutputTokens`,
+ * `maxToolRounds`) is a SUBSET of the canonical config: quota/rate/spend/
+ * token fields map 1:1, and the canonical extra fields (bid floors, spike
+ * tokens, retention windows, llm, timezone, duration) ride along
+ * harmlessly. `getChatWriteRateLimit(chat)` keeps its C2 precedence
+ * (env-override-then-fallback) — see the budget matrix in
+ * `src/mcp/rate-limit.ts`, which still describes the three buckets.
  */
-export async function getChatConfig(): Promise<ChatConfig> {
-  const cfg = await getEdgeConfig();
-  const base: ChatConfig = cfg?.chat ?? DEFAULT_CHAT_CONFIG;
-  let out: ChatConfig = { ...base };
-  const envRate = process.env.CHAT_RATE_LIMIT_PER_MINUTE;
-  if (envRate !== undefined && envRate !== "") {
-    const n = Number(envRate);
-    if (Number.isFinite(n)) out = { ...out, rateLimitPerMinute: n };
-  }
-  const envMcpRate = process.env.CHAT_MCP_RATE_LIMIT_PER_MINUTE;
-  if (envMcpRate !== undefined && envMcpRate !== "") {
-    const n = Number(envMcpRate);
-    if (Number.isFinite(n)) out = { ...out, mcpRateLimitPerMinute: n };
-  }
-  const envMaxInput = process.env.CHAT_MAX_INPUT_TOKENS;
-  if (envMaxInput !== undefined && envMaxInput !== "") {
-    const n = Number(envMaxInput);
-    if (Number.isFinite(n) && n > 0) out = { ...out, maxInputTokens: n };
-  }
-  return out;
+export async function getChatConfig(): Promise<LegacyChatConfig> {
+  const canonical = await getCanonicalChatConfig();
+  return {
+    quotaPerMonth: canonical.quotaPerMonth,
+    nudgeAt: canonical.nudgeAt,
+    rateLimitPerMinute: canonical.rateLimitPerMinute,
+    mcpRateLimitPerMinute: canonical.mcpRateLimitPerMinute,
+    spendCapPerMonthUsd: canonical.spendCapPerMonthUsd,
+    maxInputTokens: canonical.maxInputTokens,
+    maxOutputTokens: canonical.maxOutputTokens,
+    maxToolRounds: canonical.maxToolRounds,
+    priceInputPerM: 0.14,
+    priceCachedInputPerM: 0.014,
+    priceOutputPerM: 0.28,
+  };
 }
 
 /** Effective per-minute limit for chat write-tool executions (chat-write: budget). */
-export function getChatWriteRateLimit(chat: ChatConfig): number {
-  const v = process.env.CHAT_WRITE_RATE_LIMIT_PER_MINUTE;
-  if (v !== undefined && v !== "") {
-    const n = Number(v);
-    if (Number.isFinite(n)) return n;
-  }
-  return chat.rateLimitPerMinute;
+export function getChatWriteRateLimit(chat: {
+  rateLimitPerMinute: number;
+}): number {
+  return getCanonicalChatWriteRateLimit(chat);
 }
 
 /** Effective fixed-window size in minutes for rate limiting. */
 export function getRateLimitWindowMinutes(): number {
-  const v = process.env.CHAT_RATE_LIMIT_WINDOW_MINUTES;
-  if (v !== undefined && v !== "") {
-    const n = Number(v);
-    if (Number.isFinite(n) && n >= 1 && n <= 60) return n;
-  }
-  return 1;
+  return getCanonicalRateLimitWindowMinutes();
 }
