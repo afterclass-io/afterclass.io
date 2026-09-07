@@ -330,7 +330,7 @@ Every successful write-tool execution on every transport is recorded via `append
 
 ## Cursor pagination
 
-List-style reads paginate with `{ items, nextCursor }` (additive only — new cursor params are optional; when no cursor is passed, behavior is identical plus a `nextCursor` key):
+List-style reads paginate with `{ items, nextCursor }`. Reviews/roadmaps are additive-only (new cursor params are optional; when no cursor is passed, behavior is identical plus a `nextCursor` key). `my-bids` and `get-classes` changed bare-array → `{ items, nextCursor }` envelope per the cleanup mandate — parse the envelope, not a bare array:
 
 - `get-course-reviews` / `get-professor-reviews`: optional `cursor` threaded to the review procedure (which already returns `{ items, nextCursor }`); the review-cards view schema gains optional `nextCursor`.
 - `get-classes`: optional `cursor` (item id from a previous `nextCursor`); sliced in-memory since the router has no cursor support (bounded by the 20-row cap).

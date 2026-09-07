@@ -485,14 +485,38 @@ describe("get-classes", () => {
       nextCursor: string | null;
     };
     expect(parsedNext.items.map((r) => r.id)).toEqual(["c2", "c3"]);
+    // Short cursor page (2 rows < limit 10) means the dataset is exhausted.
+    expect(parsedNext.nextCursor).toBeNull();
     const restart = await getClassesTool.run(
       ctx,
       getClassesTool.inputSchema.parse({ limit: 10, cursor: "nope" }),
     );
     const parsedRestart = JSON.parse(restart.content[0]!.text) as {
       items: Array<{ id: string }>;
+      nextCursor: string | null;
     };
     expect(parsedRestart.items.map((r) => r.id)).toEqual(["c1", "c2", "c3"]);
+    // Restarted full page is also short (3 < 10) → exhausted.
+    expect(parsedRestart.nextCursor).toBeNull();
+  });
+
+  it("reports a non-null cursor-branch nextCursor only on full pages", async () => {
+    const rows = [{ id: "c1" }, { id: "c2" }, { id: "c3" }];
+    const fn = vi.fn().mockResolvedValue(rows);
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getAll: fn }),
+    };
+    const next = await getClassesTool.run(
+      ctx,
+      getClassesTool.inputSchema.parse({ limit: 2, cursor: "c1" }),
+    );
+    const parsed = JSON.parse(next.content[0]!.text) as {
+      items: Array<{ id: string }>;
+      nextCursor: string | null;
+    };
+    expect(parsed.items.map((r) => r.id)).toEqual(["c2", "c3"]);
+    expect(parsed.nextCursor).toBe("c3");
   });
 });
 

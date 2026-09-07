@@ -166,7 +166,7 @@ const getClassesSchema = z.object({
 export const getClassesTool: McpTool<typeof getClassesSchema> = {
   name: "get-classes",
   description:
-    "Get class sections with timings, venue, and professor for a course and term. All filters are optional. Supports time filters day/startsAfter/endsBefore (e.g. day=Mon, startsAfter=18:00 for night classes). Returns at most 20 rows. Paginates with an opaque cursor: pass the previous page's nextCursor to fetch the next page (cursor is mutually exclusive with day/startsAfter/endsBefore/acadTermId/courseCode/section/professorId filters — the cursor already encodes them).",
+    "Get class sections with timings, venue, and professor for a course and term. All filters are optional. Supports time filters day/startsAfter/endsBefore (e.g. day=Mon, startsAfter=18:00 for night classes). Returns at most 20 rows. Paginates with an opaque cursor: pass the previous page's nextCursor to fetch the next page. For stable paging pass the cursor alone — filters are still applied when combined.",
   inputSchema: getClassesSchema,
   readOnly: true,
   run: async ({ caller }, input) => {
@@ -210,9 +210,14 @@ export const getClassesTool: McpTool<typeof getClassesSchema> = {
         page.length > 0
           ? (page[page.length - 1] as { id?: unknown }).id
           : undefined;
+      // Same exhaustion rule as the first page: a short page means the
+      // dataset is exhausted, so nextCursor is null regardless of cursor.
       return jsonText({
         items: page,
-        nextCursor: typeof lastId === "string" ? lastId : null,
+        nextCursor:
+          typeof lastId === "string" && page.length >= clamped.limit
+            ? lastId
+            : null,
       });
     } catch (e) {
       return errText(errorMessage(e));
