@@ -200,12 +200,28 @@ describe("buildAssistantTools", () => {
   });
 
   it.each([
+    "remove-timetable",
+    "remove-class-from-timetable",
+    "remove-bid",
+    "remove-roadmap",
     "save-roadmap-entries",
     "save-bids",
     "set-bid-status",
     "set-bid-budget",
     "set-timetable-visibility",
     "set-roadmap-visibility",
+    "upsert-bid",
+    "create-timetable",
+    "rename-timetable",
+    "add-class-to-timetable",
+    "get-timetable-calendar-link",
+    "create-roadmap",
+    "rename-roadmap",
+    "upsert-roadmap-entry",
+    "set-matric-term",
+    "set-active-roadmap",
+    "sync-roadmap-progress",
+    "copy-public-roadmap",
   ])(
     "chat execute blocks %s without confirm:true (same message as MCP dispatch)",
     async (name) => {
@@ -235,6 +251,15 @@ describe("buildAssistantTools", () => {
     expect(result).toContain("b1");
   });
 
+  it("confirm-all-writes: the destructive set equals every non-readOnly catalog tool (reads never gated)", async () => {
+    const { destructiveTools } = await import("@/mcp/rate-limit");
+    const writeNames = allTools.filter((t) => !t.readOnly).map((t) => t.name);
+    expect(new Set(writeNames)).toEqual(destructiveTools);
+    for (const t of allTools.filter((t) => t.readOnly)) {
+      expect(destructiveTools.has(t.name)).toBe(false);
+    }
+  });
+
   it.each([
     ["save-roadmap-entries", { roadmapId: "r1", entries: [] }],
     [
@@ -245,6 +270,20 @@ describe("buildAssistantTools", () => {
     ["set-bid-budget", { balance: 100 }],
     ["set-timetable-visibility", { timetableId: "tt1", visibility: "PUBLIC" }],
     ["set-roadmap-visibility", { roadmapId: "r1", visibility: "PUBLIC" }],
+    ["upsert-bid", { classId: "cl1", bidAmount: 10 }],
+    ["create-timetable", {}],
+    ["rename-timetable", { timetableId: "tt1", name: "New" }],
+    ["add-class-to-timetable", { classId: "cl1" }],
+    ["create-roadmap", { name: "Plan" }],
+    ["rename-roadmap", { roadmapId: "r1", name: "New" }],
+    [
+      "upsert-roadmap-entry",
+      { courseCode: "ACCT102", yearNumber: 1, term: "T1" },
+    ],
+    ["set-matric-term", { roadmapId: "r1", matricTermId: null }],
+    ["set-active-roadmap", { roadmapId: "r1" }],
+    ["sync-roadmap-progress", { roadmapId: "r1" }],
+    ["copy-public-roadmap", { roadmapId: "r1" }],
   ])(
     "chat schema for %s declares optional confirm so confirm:true survives validation",
     (name, baseArgs) => {

@@ -1,7 +1,13 @@
 import { z } from "zod";
 
 import { buildRoadmapView, roadmapViewToViewProps } from "../roadmap-view-shared";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import {
+  confirmField,
+  errText,
+  errorMessage,
+  jsonText,
+  type McpTool,
+} from "../../types";
 
 const setMatricTermSchema = z.object({
   roadmapId: z.string(),
@@ -11,6 +17,7 @@ const setMatricTermSchema = z.object({
     .describe(
       "Academic term id of the user's Y1T1 (see list-acad-terms). Pass null to clear the declaration.",
     ),
+  ...confirmField,
 });
 
 export const setMatricTermTool: McpTool<typeof setMatricTermSchema> = {
@@ -29,7 +36,10 @@ export const setMatricTermTool: McpTool<typeof setMatricTermSchema> = {
   },
 };
 
-const setActiveRoadmapSchema = z.object({ roadmapId: z.string() });
+const setActiveRoadmapSchema = z.object({
+  roadmapId: z.string(),
+  ...confirmField,
+});
 
 export const setActiveRoadmapTool: McpTool<typeof setActiveRoadmapSchema> = {
   name: "set-active-roadmap",
@@ -45,7 +55,10 @@ export const setActiveRoadmapTool: McpTool<typeof setActiveRoadmapSchema> = {
   },
 };
 
-const syncRoadmapProgressSchema = z.object({ roadmapId: z.string() });
+const syncRoadmapProgressSchema = z.object({
+  roadmapId: z.string(),
+  ...confirmField,
+});
 
 export const syncRoadmapProgressTool: McpTool<typeof syncRoadmapProgressSchema> =
   {
@@ -62,7 +75,10 @@ export const syncRoadmapProgressTool: McpTool<typeof syncRoadmapProgressSchema> 
     },
   };
 
-const copyPublicRoadmapSchema = z.object({ roadmapId: z.string() });
+const copyPublicRoadmapSchema = z.object({
+  roadmapId: z.string(),
+  ...confirmField,
+});
 
 export const copyPublicRoadmapTool: McpTool<typeof copyPublicRoadmapSchema> = {
   name: "copy-public-roadmap",

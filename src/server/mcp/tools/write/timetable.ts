@@ -16,6 +16,7 @@ const visibilitySchema = z.enum(["PRIVATE", "UNLISTED", "PUBLIC"]);
 const createTimetableSchema = z.object({
   acadTermId: z.string().optional(),
   name: z.string().max(100).optional(),
+  ...confirmField,
 });
 
 export const createTimetableTool: McpTool<typeof createTimetableSchema> = {
@@ -39,6 +40,7 @@ export const createTimetableTool: McpTool<typeof createTimetableSchema> = {
 const renameTimetableSchema = z.object({
   timetableId: z.string(),
   name: z.string().min(1).max(100),
+  ...confirmField,
 });
 
 export const renameTimetableTool: McpTool<typeof renameTimetableSchema> = {
@@ -80,6 +82,7 @@ const addClassToTimetableSchema = z.object({
       "Optional: the id of one of the user's timetables (from my-timetables). Omit to add to the active timetable for the class's term automatically.",
     ),
   classId: z.string(),
+  ...confirmField,
 });
 
 export const addClassToTimetableTool: McpTool<

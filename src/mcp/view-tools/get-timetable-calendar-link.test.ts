@@ -91,7 +91,7 @@ describe("get-timetable-calendar-link adapter", () => {
       content: [{ type: "text", text: catalogText }],
       viewProps: { timetableId: "tt1", madeLinkShareable: false, ...SECRET_URLS },
     });
-    const res = await captured().handler({ timetableId: "tt1" }, {});
+    const res = await captured().handler({ timetableId: "tt1", confirm: true }, {});
     expect(res.isError).toBeUndefined();
 
     // Poison assertions: structuredContent carries ZERO URL-shaped data.
@@ -112,7 +112,7 @@ describe("get-timetable-calendar-link adapter", () => {
 
   it("returns an error result when the catalog tool fails", async () => {
     toolRun.mockResolvedValue({ content: [{ type: "text", text: "boom" }], isError: true });
-    const res = await captured().handler({ timetableId: "tt1" }, {});
+    const res = await captured().handler({ timetableId: "tt1", confirm: true }, {});
     expect(res.isError).toBe(true);
     expect(res.content[0]?.text).toBe("boom");
   });
@@ -122,7 +122,7 @@ describe("get-timetable-calendar-link adapter", () => {
       content: [{ type: "text", text: "ok" }],
       viewProps: { feedUrl: "https://x.test/f.ics" },
     });
-    const res = await captured().handler({ timetableId: "tt1" }, {});
+    const res = await captured().handler({ timetableId: "tt1", confirm: true }, {});
     expect(res.isError).toBe(true);
     expect(res.content[0]?.text).toMatch(/Missing timetableId/);
   });
@@ -137,7 +137,7 @@ describe("get-timetable-calendar-link adapter", () => {
       allTools: Array<{ toViewProps?: (r: unknown) => unknown }>;
     };
     (allTools[0] as { toViewProps?: (r: unknown) => unknown }).toViewProps = () => props;
-    const res = await captured().handler({ timetableId: "tt9" }, {});
+    const res = await captured().handler({ timetableId: "tt9", confirm: true }, {});
     expect(res.isError).toBeUndefined();
     expect(res.structuredContent).toEqual({ timetableId: "tt9" });
     expect(res._meta).toEqual(SECRET_URLS);
@@ -148,7 +148,7 @@ describe("get-timetable-calendar-link adapter", () => {
       content: [{ type: "text", text: "ok" }],
       viewProps: { timetableId: "tt1", feedUrl: "", subscribeUrl: "", googleSubscribeUrl: "", appleSubscribeUrl: "", outlookSubscribeUrl: "" },
     });
-    const res = await captured().handler({ timetableId: "tt1" }, {});
+    const res = await captured().handler({ timetableId: "tt1", confirm: true }, {});
     expect(res.isError).toBeUndefined();
     expect(res._meta).toBeUndefined();
   });
@@ -158,20 +158,20 @@ describe("get-timetable-calendar-link adapter", () => {
       content: [{ type: "text", text: "ok" }],
       viewProps: { timetableId: "tt1", madeLinkShareable: true, feedUrl: "https://x.test/f.ics" },
     });
-    const withFlag = await captured().handler({ timetableId: "tt1" }, {});
+    const withFlag = await captured().handler({ timetableId: "tt1", confirm: true }, {});
     expect(withFlag.structuredContent).toEqual({ timetableId: "tt1", madeLinkShareable: true });
 
     toolRun.mockResolvedValue({
       content: [{ type: "text", text: "ok" }],
       viewProps: { timetableId: "tt1", madeLinkShareable: "yes", feedUrl: "https://x.test/f.ics" },
     });
-    const withoutFlag = await captured().handler({ timetableId: "tt1" }, {});
+    const withoutFlag = await captured().handler({ timetableId: "tt1", confirm: true }, {});
     expect(withoutFlag.structuredContent).toEqual({ timetableId: "tt1" });
   });
 
   it("returns Unauthorized when buildToolContext resolves nothing", async () => {
     buildToolContext.mockResolvedValue(undefined);
-    const res = await captured().handler({ timetableId: "tt1" }, {});
+    const res = await captured().handler({ timetableId: "tt1", confirm: true }, {});
     expect(res.isError).toBe(true);
     expect(res.content[0]?.text).toMatch(/Unauthorized/);
     expect(toolRun).not.toHaveBeenCalled();
@@ -179,9 +179,16 @@ describe("get-timetable-calendar-link adapter", () => {
 
   it("honours the write budget before running the tool", async () => {
     checkAndIncrement.mockResolvedValue({ ok: false, retryAfterSeconds: 12 });
-    const res = await captured().handler({ timetableId: "tt1" }, {});
+    const res = await captured().handler({ timetableId: "tt1", confirm: true }, {});
     expect(res.isError).toBe(true);
     expect(res.content[0]?.text).toMatch(/Write rate limit exceeded/);
+    expect(toolRun).not.toHaveBeenCalled();
+  });
+
+  it("requires confirm:true (confirm-all-writes) before running the tool", async () => {
+    const res = await captured().handler({ timetableId: "tt1" }, {});
+    expect(res.isError).toBe(true);
+    expect(res.content[0]?.text).toContain("confirm:true");
     expect(toolRun).not.toHaveBeenCalled();
   });
 });

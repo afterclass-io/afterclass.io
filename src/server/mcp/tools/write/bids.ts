@@ -16,6 +16,7 @@ const upsertBidSchema = z.object({
   bidWindowId: z.number().int().positive().optional(),
   bidAmount: z.number().positive().max(99999),
   notes: z.string().max(500).optional(),
+  ...confirmField,
 });
 
 export const upsertBidTool: McpTool<typeof upsertBidSchema> = {

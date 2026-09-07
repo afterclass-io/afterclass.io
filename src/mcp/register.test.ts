@@ -618,6 +618,11 @@ describe("registerViewlessTools", () => {
       }
     });
 
+    // NOTE: get-timetable-calendar-link is view-bound (registered by its
+    // adapter, skipped by registerViewlessTools), so it is NOT covered by
+    // these two handler-based blocks — its gate is pinned at the adapter
+    // level in get-timetable-calendar-link.test.ts. It IS in the
+    // checkDestructiveConfirm list below.
     it.each([
       "save-roadmap-entries", // full-replace: entries:[] wipes the roadmap
       "save-bids", // bulk overwrite of bid state
@@ -625,6 +630,17 @@ describe("registerViewlessTools", () => {
       "set-bid-budget", // rewrites spendable e-credits
       "set-timetable-visibility", // publishes/hides user data
       "set-roadmap-visibility", // publishes/hides user data
+      "upsert-bid", // single-write loop replicates bulk wipes
+      "create-timetable",
+      "rename-timetable",
+      "add-class-to-timetable",
+      "create-roadmap",
+      "rename-roadmap",
+      "upsert-roadmap-entry",
+      "set-matric-term",
+      "set-active-roadmap",
+      "sync-roadmap-progress",
+      "copy-public-roadmap",
     ])(
       "blocks %s without confirm:true and does not run the tool",
       async (name) => {
@@ -651,6 +667,17 @@ describe("registerViewlessTools", () => {
       "set-bid-budget",
       "set-timetable-visibility",
       "set-roadmap-visibility",
+      "upsert-bid",
+      "create-timetable",
+      "rename-timetable",
+      "add-class-to-timetable",
+      "create-roadmap",
+      "rename-roadmap",
+      "upsert-roadmap-entry",
+      "set-matric-term",
+      "set-active-roadmap",
+      "sync-roadmap-progress",
+      "copy-public-roadmap",
     ])("runs %s with confirm:true", async (name) => {
       vi.stubEnv("MCP_DEV_BYPASS", "");
       const run = vi.fn().mockResolvedValue(okText("written"));
@@ -678,6 +705,18 @@ describe("registerViewlessTools", () => {
       "set-bid-budget",
       "set-timetable-visibility",
       "set-roadmap-visibility",
+      "upsert-bid",
+      "create-timetable",
+      "rename-timetable",
+      "add-class-to-timetable",
+      "get-timetable-calendar-link",
+      "create-roadmap",
+      "rename-roadmap",
+      "upsert-roadmap-entry",
+      "set-matric-term",
+      "set-active-roadmap",
+      "sync-roadmap-progress",
+      "copy-public-roadmap",
     ])("checkDestructiveConfirm requires confirm:true for %s", (name) => {
       expect(checkDestructiveConfirm(name, {})).toContain("confirm:true");
       expect(checkDestructiveConfirm(name, { confirm: true })).toBeNull();

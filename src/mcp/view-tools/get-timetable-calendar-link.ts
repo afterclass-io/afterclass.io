@@ -24,11 +24,15 @@ export const getTimetableCalendarLink = server.tool(
     // "view"` preserves the viewProps channel; this bespoke adapter keeps
     // its secret-splitting tail: secret URLs stay in `_meta`, only the safe
     // `{ timetableId, madeLinkShareable? }` enters `structuredContent`).
+    // Confirm-all-writes (Task 7): the dispatch confirm-gate applies
+    // (get-timetable-calendar-link is in `destructiveTools` — it can escalate
+    // PRIVATE → UNLISTED); the schema declares `confirm`, so confirm:true
+    // survives validation, and the tool's own escalation logic is unchanged.
     const out = await dispatchToolCall({
       tool: tool as never,
       params,
       ctx,
-      policy: { confirm: false, budget: "write", shape: "view" },
+      policy: { confirm: true, budget: "write", shape: "view" },
     });
     if ("error" in out) return errorResult(out.error);
     if (out.isError) return errorResult(out.content[0]?.text ?? "Tool failed");

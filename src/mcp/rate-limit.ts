@@ -27,8 +27,15 @@ import type { ToolContext } from "@/server/mcp/types";
  * deleting row-by-row). A call to one of these must carry an explicit
  * `confirm:true` param (checked in `register.ts` before the tool runs, and in
  * the chat path's `buildAssistantTools`), so an agent "testing all tools"
- * cannot wipe data unconfirmed. Constructive writes (create/upsert/rename)
- * are intentionally NOT gated.
+ * cannot wipe data unconfirmed.
+ *
+ * Confirm-all-writes (Task 7): the set covers EVERY non-readOnly catalog
+ * tool, not just the destructive ones. Constructive writes
+ * (create/upsert/rename/copy/sync/set-active/set-matric-term) are gated too:
+ * single-write loops can replicate bulk wipes (upsert-bid × N ≈ save-bids),
+ * and ungated creates let an agent spam user state unconfirmed. Read-only
+ * tools are NEVER gated. The parity test in
+ * `src/server/assistant/tools.test.ts` pins set == all non-readOnly names.
  *
  * `confirm` must also be declared as an optional field in each gated tool's
  * zod inputSchema: both dispatch layers validate args against the schema
@@ -49,6 +56,20 @@ export const destructiveTools = new Set([
   "set-bid-budget",
   "set-timetable-visibility",
   "set-roadmap-visibility",
+  // Constructive writes (Task 7 confirm-all-writes): single-write loops
+  // replicate bulk wipes, and unconfirmed creates spam user state.
+  "upsert-bid",
+  "create-timetable",
+  "rename-timetable",
+  "add-class-to-timetable",
+  "get-timetable-calendar-link", // escalates PRIVATE → UNLISTED on opt-in
+  "create-roadmap",
+  "rename-roadmap",
+  "upsert-roadmap-entry", // additive, but repeated calls rewrite placement
+  "set-matric-term", // rewrites seniority basis for the whole roadmap
+  "set-active-roadmap", // flips the singleton active roadmap
+  "sync-roadmap-progress", // bulk-adds courses across all terms
+  "copy-public-roadmap", // creates a full roadmap copy
 ]);
 
 /**

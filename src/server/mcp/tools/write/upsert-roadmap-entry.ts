@@ -16,7 +16,13 @@ import {
   buildRoadmapView,
   roadmapViewToViewProps,
 } from "../roadmap-view-shared";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import {
+  confirmField,
+  errText,
+  errorMessage,
+  jsonText,
+  type McpTool,
+} from "../../types";
 
 const termSchema = roadmapTermSchema;
 
@@ -40,6 +46,7 @@ const upsertRoadmapEntrySchema = z.object({
     .describe(
       "Optional sort order within the term (0..99); defaults to next slot in that year/term",
     ),
+  ...confirmField,
 });
 
 export const upsertRoadmapEntryTool: McpTool<typeof upsertRoadmapEntrySchema> =
