@@ -60,7 +60,13 @@ type AdapterResult = {
 };
 
 function captured(): {
-  definition: { name: string; view?: { name: string } };
+  definition: {
+    name: string;
+    title?: string;
+    description?: string;
+    annotations?: Record<string, unknown>;
+    view?: { name: string };
+  };
   handler: (params: unknown, ctx: unknown) => Promise<AdapterResult>;
 } {
   const call = serverTool.mock.calls.at(-1);
@@ -98,6 +104,19 @@ describe("get-timetable-calendar-link adapter", () => {
   it("binds the calendar-links view", () => {
     expect(captured().definition.name).toBe("get-timetable-calendar-link");
     expect(captured().definition.view?.name).toBe("calendar-links");
+  });
+
+  it("registers with derived destructive title/annotations + confirm surfaced in description", () => {
+    const def = captured().definition;
+    expect(def.title).toBe("Get Timetable Calendar Link");
+    expect(def.annotations).toEqual({
+      title: "Get Timetable Calendar Link",
+      readOnlyHint: false,
+      destructiveHint: true,
+      openWorldHint: false,
+      idempotentHint: false,
+    });
+    expect(def.description).toContain("confirm:true");
   });
 
   it("keeps secret URLs out of structuredContent and text; _meta carries them", async () => {

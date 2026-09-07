@@ -1,19 +1,24 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
 import { timetablePage } from "@/server/mcp/tools/page-links";
+import { getToolRegistration } from "../annotations";
 import { asSchema } from "../schema";
 import { bidPlanOutput } from "./schemas";
 import { runViewTool } from "./results";
 
 const tool = allTools.find((t) => t.name === "my-bid-plan")!;
 
+// Routed through the shared derivation (Task 11) — see search-courses.ts.
+const registration = getToolRegistration("my-bid-plan");
+
 export const myBidPlan = server.tool(
   {
     name: "my-bid-plan",
-    description: tool.description,
+    title: registration.title,
+    description: registration.description,
     inputSchema: asSchema(tool.inputSchema),
     outputSchema: asSchema(bidPlanOutput),
-    annotations: { readOnlyHint: true },
+    annotations: registration.annotations,
     view: {
       name: "bid-plan",
       description: "Bidding plan",

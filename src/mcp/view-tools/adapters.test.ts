@@ -267,9 +267,20 @@ const LINKS: Record<string, string> = {
 
 describe("object-shaped view-tool adapters", () => {
   for (const [name] of ADAPTERS) {
-    it(`${name}: registers with readOnlyHint, a view, and the shared schemas' outputSchema`, () => {
+    it(`${name}: registers with derived title/annotations, a view, and the shared schemas' outputSchema`, () => {
       const { definition } = registration(name);
-      expect(definition.annotations).toEqual({ readOnlyHint: true });
+      const title = (name as string)
+        .split("-")
+        .map((w) => (w.length > 0 ? w[0]!.toUpperCase() + w.slice(1) : w))
+        .join(" ");
+      expect(definition.title).toBe(title);
+      expect(definition.annotations).toEqual({
+        title,
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+        idempotentHint: true,
+      });
       expect(definition.view).toMatchObject({ prefersBorder: true });
       expect(definition.outputSchema).toBeDefined();
     });

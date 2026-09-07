@@ -112,6 +112,7 @@ describe("registerViewlessTools", () => {
       expect.objectContaining({
         name: "tool-b",
         annotations: {
+          title: "Tool B",
           readOnlyHint: true,
           destructiveHint: false,
           openWorldHint: false,
@@ -428,6 +429,20 @@ describe("registerViewlessTools", () => {
       expect(getToolAnnotations("remove-timetable").destructiveHint).toBe(true);
     });
 
+    it("hardens idempotentHint: destructive tools are never idempotent", () => {
+      // No catalog tool today is both readOnly and destructive, but the
+      // conjunction keeps the claim honest if one ever appears (a
+      // destructiveHint:true tool must never advertise idempotentHint:true).
+      expect(getToolAnnotations("remove-timetable")).toMatchObject({
+        destructiveHint: true,
+        idempotentHint: false,
+      });
+      expect(getToolAnnotations("get-timetable-calendar-link")).toMatchObject({
+        destructiveHint: true,
+        idempotentHint: false,
+      });
+    });
+
     it("marks readOnly tools readOnly+idempotent, never destructive", () => {
       // tool-b is the mocked readOnly tool (not in the destructive set).
       expect(getToolAnnotations("tool-b")).toMatchObject({
@@ -465,6 +480,7 @@ describe("registerViewlessTools", () => {
           name: "tool-b",
           title: "Tool B",
           annotations: {
+            title: "Tool B",
             readOnlyHint: true,
             destructiveHint: false,
             openWorldHint: false,

@@ -100,9 +100,16 @@ beforeEach(() => {
 });
 
 describe("search-courses adapter", () => {
-  it("registers with readOnlyHint, the course-search view, and courseSearchOutput", () => {
+  it("registers with derived title/annotations, the course-search view, and courseSearchOutput", () => {
     const { definition } = registration("search-courses");
-    expect(definition.annotations).toEqual({ readOnlyHint: true });
+    expect(definition.title).toBe("Search Courses");
+    expect(definition.annotations).toEqual({
+      title: "Search Courses",
+      readOnlyHint: true,
+      destructiveHint: false,
+      openWorldHint: false,
+      idempotentHint: true,
+    });
     expect(definition.view).toMatchObject({
       name: "course-search",
       prefersBorder: true,

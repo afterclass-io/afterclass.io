@@ -1,6 +1,7 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
 import { coursePage, searchPage } from "@/server/mcp/tools/page-links";
+import { getToolRegistration } from "../annotations";
 import { asSchema } from "../schema";
 import { dispatchToolCall } from "../dispatch";
 import { courseSearchOutput } from "./schemas";
@@ -8,13 +9,20 @@ import { errorResult, guardedParse } from "./results";
 
 const searchCoursesTool = allTools.find((t) => t.name === "search-courses")!;
 
+// Routed through the shared derivation (Task 11): same title/annotations/
+// confirm-suffix as every viewless registration, so tools/list shows one
+// consistent annotation story. View key stays local (view binding is not
+// part of the shared derivation).
+const registration = getToolRegistration("search-courses");
+
 export const searchCourses = server.tool(
   {
     name: "search-courses",
-    description: searchCoursesTool.description,
+    title: registration.title,
+    description: registration.description,
     inputSchema: asSchema(searchCoursesTool.inputSchema),
     outputSchema: asSchema(courseSearchOutput),
-    annotations: { readOnlyHint: true },
+    annotations: registration.annotations,
     view: {
       name: "course-search",
       description: "Course search results",

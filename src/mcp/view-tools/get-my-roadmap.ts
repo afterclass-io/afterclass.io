@@ -1,19 +1,24 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
 import { roadmapsMinePage } from "@/server/mcp/tools/page-links";
+import { getToolRegistration } from "../annotations";
 import { asSchema } from "../schema";
 import { roadmapOutput } from "./schemas";
 import { runViewTool } from "./results";
 
 const tool = allTools.find((t) => t.name === "get-my-roadmap")!;
 
+// Routed through the shared derivation (Task 11) — see search-courses.ts.
+const registration = getToolRegistration("get-my-roadmap");
+
 export const getMyRoadmap = server.tool(
   {
     name: "get-my-roadmap",
-    description: tool.description,
+    title: registration.title,
+    description: registration.description,
     inputSchema: asSchema(tool.inputSchema),
     outputSchema: asSchema(roadmapOutput),
-    annotations: { readOnlyHint: true },
+    annotations: registration.annotations,
     view: {
       name: "roadmap-view",
       description: "Study roadmap",

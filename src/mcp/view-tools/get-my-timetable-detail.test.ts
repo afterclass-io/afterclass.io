@@ -134,9 +134,16 @@ const SUMMARY =
   'Timetable "My Timetable" — 2 classes:\nMon 08:15-11:30: ACCT102 G1 (FANG Bingxu)\nTue 12:00-15:15: COR-IS1702 G2\nOpen timetable: /timetable';
 
 describe("get-my-timetable-detail adapter", () => {
-  it("registers with readOnlyHint, a timetable view, and the shared schemas' outputSchema", () => {
+  it("registers with derived title/annotations, a timetable view, and the shared schemas' outputSchema", () => {
     const { definition } = registration("get-my-timetable-detail");
-    expect(definition.annotations).toEqual({ readOnlyHint: true });
+    expect(definition.title).toBe("Get My Timetable Detail");
+    expect(definition.annotations).toEqual({
+      title: "Get My Timetable Detail",
+      readOnlyHint: true,
+      destructiveHint: false,
+      openWorldHint: false,
+      idempotentHint: true,
+    });
     expect(definition.view).toMatchObject({
       name: "timetable",
       prefersBorder: true,

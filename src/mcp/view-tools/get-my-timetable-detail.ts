@@ -1,19 +1,24 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
 import { timetablePage } from "@/server/mcp/tools/page-links";
+import { getToolRegistration } from "../annotations";
 import { asSchema } from "../schema";
 import { timetableDetailOutput } from "./schemas";
 import { runViewTool } from "./results";
 
 const tool = allTools.find((t) => t.name === "get-my-timetable-detail")!;
 
+// Routed through the shared derivation (Task 11) — see search-courses.ts.
+const registration = getToolRegistration("get-my-timetable-detail");
+
 export const getMyTimetableDetail = server.tool(
   {
     name: "get-my-timetable-detail",
-    description: tool.description,
+    title: registration.title,
+    description: registration.description,
     inputSchema: asSchema(tool.inputSchema),
     outputSchema: asSchema(timetableDetailOutput),
-    annotations: { readOnlyHint: true },
+    annotations: registration.annotations,
     view: { name: "timetable", description: "Weekly class timetable grid", prefersBorder: true },
   },
   async (params, ctx) =>

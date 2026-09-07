@@ -1,5 +1,6 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
+import { getToolRegistration } from "../annotations";
 import { asSchema } from "../schema";
 import { dispatchToolCall } from "../dispatch";
 import { calendarLinksOutput } from "./schemas";
@@ -7,12 +8,19 @@ import { errorResult, guardedParse } from "./results";
 
 const tool = allTools.find((t) => t.name === "get-timetable-calendar-link")!;
 
+// Routed through the shared derivation (Task 11) — see search-courses.ts.
+// This adapter is destructive (PRIVATE → UNLISTED escalation), so the
+// derivation also surfaces the confirm:true requirement in tools/list.
+const registration = getToolRegistration("get-timetable-calendar-link");
+
 export const getTimetableCalendarLink = server.tool(
   {
     name: "get-timetable-calendar-link",
-    description: tool.description,
+    title: registration.title,
+    description: registration.description,
     inputSchema: asSchema(tool.inputSchema),
     outputSchema: asSchema(calendarLinksOutput),
+    annotations: registration.annotations,
     view: {
       name: "calendar-links",
       description: "Calendar subscribe links",

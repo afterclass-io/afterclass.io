@@ -1,19 +1,24 @@
 import { server } from "../server";
 import { allTools } from "@/server/mcp/tools";
 import { exploreLinkFor } from "@/server/mcp/tools/page-links";
+import { getToolRegistration } from "../annotations";
 import { asSchema } from "../schema";
 import { bidExplorerOutput } from "./schemas";
 import { runViewTool } from "./results";
 
 const tool = allTools.find((t) => t.name === "explore-bid-options")!;
 
+// Routed through the shared derivation (Task 11) — see search-courses.ts.
+const registration = getToolRegistration("explore-bid-options");
+
 export const exploreBidOptions = server.tool(
   {
     name: "explore-bid-options",
-    description: tool.description,
+    title: registration.title,
+    description: registration.description,
     inputSchema: asSchema(tool.inputSchema),
     outputSchema: asSchema(bidExplorerOutput),
-    annotations: { readOnlyHint: true },
+    annotations: registration.annotations,
     view: { name: "bid-explorer", description: "Bid explorer", prefersBorder: true },
   },
   async (params, ctx) =>
