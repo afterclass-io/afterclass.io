@@ -127,6 +127,7 @@ Shared View styling lives in `views/shared/` (`tokens.tsx` = `TOKENS` light/dark
 - **`my-bids` scrubs `notes`.** Each bid's free-text `notes` field (user PII / private bidding strategy) is dropped from the JSON returned to the model; bid metadata is preserved.
 - **`get-classes` caps at 20 rows.** Any `limit > 20` is clamped to 20 before querying (larger values still accepted for backward compatibility).
 - **iCal bearer URLs stay out of model context.** `get-timetable-calendar-link` delivers bearer iCal URLs via the result's `_meta` (View-only channel, read by the View via `useToolContext().meta`); `my-timetables` / `my-roadmaps` scrub `shareToken` / `icalToken`.
+- **DEPRECATED: `stripShareToken` (`src/server/mcp/tools/bid-shared.ts`).** Use `stripSecretsFromValue` from `@/mcp/output-policy` instead (deep-strip superset: `shareToken` / `icalToken` / `notes` at every nesting level). Kept only for `mydata.ts`, whose per-row shape the existing tests pin — do not use in new code.
 - **`set-bid-budget` capped at `MAX_BUDGET` (10000).** Balances above `MAX_BUDGET` are rejected with a clear error.
 - **Visibility tooling consolidated on `set-roadmap-visibility`.** PRIVATE / UNLISTED / PUBLIC; PUBLIC requires a verified account, and PRIVATE unpublishes from the public gallery (`sharing.setVisibility` implements both).
 

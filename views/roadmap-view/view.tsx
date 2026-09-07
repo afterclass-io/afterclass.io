@@ -41,7 +41,7 @@ const RoadmapView: React.FC = () => {
   const dark = theme === "dark";
   const c = dark ? TOKENS.dark : TOKENS.light;
   const { feedback, showFeedback } = useCtaFeedback();
-  const copyRoadmap = useDynamicTool<{ roadmapId: string }>(
+  const copyRoadmap = useDynamicTool<{ roadmapId: string; confirm: true }>(
     "copy-public-roadmap",
   );
   const { isAvailable } = useHostContext();
@@ -240,7 +240,7 @@ const RoadmapView: React.FC = () => {
             // v2: tool errors reject (ToolError) instead of resolving
             // isError:true, so "Copy failed" moves to catch.
             copyRoadmap
-              .callTool({ roadmapId })
+              .callTool({ roadmapId, confirm: true })
               .then(() => showFeedback("saved"))
               .catch(() => showFeedback("error"));
           }}

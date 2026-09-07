@@ -93,7 +93,7 @@ const CourseSearchView: React.FC = () => {
   // v1 called `callTool("add-class-to-timetable", { classId })` from
   // useWidget. add-class-to-timetable is viewless (not an exported ToolRef),
   // so the v2 escape hatch is useDynamicTool with an explicit contract.
-  const addClass = useDynamicTool<{ classId: string }>(
+  const addClass = useDynamicTool<{ classId: string; confirm: true }>(
     "add-class-to-timetable",
   );
   const { isAvailable } = useHostContext();
@@ -298,7 +298,7 @@ const CourseSearchView: React.FC = () => {
                             // v2: tool errors reject (ToolError) instead of
                             // resolving isError:true, so "Failed" moves to catch.
                             addClass
-                              .callTool({ classId })
+                              .callTool({ classId, confirm: true })
                               .then(() => showFeedback(classId, "saved"))
                               .catch(() => showFeedback(classId, "error"))
                           }

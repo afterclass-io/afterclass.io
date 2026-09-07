@@ -195,6 +195,7 @@ describe("BidExplorerView (v2)", () => {
       classId: "cl1",
       bidAmount: 16.2,
       bidWindowId: 53,
+      confirm: true,
     });
   });
 
@@ -226,6 +227,7 @@ describe("BidExplorerView (v2)", () => {
       classId: "cl1",
       bidAmount: 30,
       bidWindowId: 53,
+      confirm: true,
     });
   });
 

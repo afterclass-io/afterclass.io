@@ -72,6 +72,11 @@ export function findSafetyFactor(
 /**
  * Strip bearer-token keys (shareToken / icalToken) so they never reach the
  * LLM-visible output. Generic over the row type minus the dropped keys.
+ *
+ * @deprecated Use `stripSecretsFromValue` from `@/mcp/output-policy` — it is
+ * the deep-strip superset (removes shareToken / icalToken / notes at every
+ * nesting level). Kept only for `mydata.ts`, whose per-row shape the
+ * existing tests pin.
  */
 export function stripShareToken<T extends object>(
   row: T,

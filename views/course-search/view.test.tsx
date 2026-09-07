@@ -252,6 +252,7 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
     await waitFor(() => expect(callTool).toHaveBeenCalledTimes(1));
     expect(callTool).toHaveBeenCalledWith({
       classId: "seed-ay202627t1-is215-g1",
+      confirm: true,
     });
   });
 

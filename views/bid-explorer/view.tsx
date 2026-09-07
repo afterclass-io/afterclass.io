@@ -75,6 +75,7 @@ const BidExplorerView: React.FC = () => {
     classId: string;
     bidAmount: number;
     bidWindowId: number;
+    confirm: true;
   }>("upsert-bid");
   const { isAvailable } = useHostContext();
 
@@ -491,7 +492,12 @@ const BidExplorerView: React.FC = () => {
               // v2: tool errors reject (ToolError) instead of resolving
               // isError:true, so "Failed to save" moves to catch.
               upsertBid
-                .callTool({ classId: cid, bidAmount: suggested, bidWindowId })
+                .callTool({
+                  classId: cid,
+                  bidAmount: suggested,
+                  bidWindowId,
+                  confirm: true,
+                })
                 .then(() => showFeedback("saved"))
                 .catch(() => showFeedback("error"));
             }}

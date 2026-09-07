@@ -29,12 +29,15 @@ export interface BudgetOptions {
 }
 
 /**
- * Single budget primitive. Two call shapes are supported for migration
- * convenience:
+ * Single budget primitive. Two call shapes are supported (both live — the
+ * ical throttle and this file's test use the bare form, R15):
  * - `checkBudget({ key, limit, windowMs }, kind?)` — explicit full key
  * - `checkBudget(ctx, kind, { prefix, limit, windowMs })` — key derived as
  *   `<prefix>:<ctx.user.id>`
  *
+ * `kind` is an intent label only (no behavioral effect — the bucket key
+ * derives from the explicit `key` / `prefix` alone); it is accepted in both
+ * shapes so call sites declare read-vs-write intent.
  * Returns `{ ok, retryAfterSeconds }` from `checkAndIncrement`. Throws on a
  * non-positive or non-finite limit.
  */

@@ -42,7 +42,6 @@ async function resolveResourceCaller(
 export function registerResources(
   server: MCPServer,
   caller?: AcadTermsCaller,
-  opts?: { ctx?: unknown },
 ): void {
   server.resource(
     {
@@ -60,7 +59,7 @@ export function registerResources(
       // per-user data), so and ONLY so, an unresolved identity falls back to
       // an anonymous caller instead of failing closed. Non-public resources
       // must NOT reuse this fallback — require identity there.
-      const resolved = await resolveResourceCaller(caller, opts?.ctx ?? reqCtx);
+      const resolved = await resolveResourceCaller(caller, reqCtx);
       const acadTerms = resolved ?? (await defaultCaller());
       // listAcadTerms() already falls back to a direct DB fetch outside the
       // Next.js runtime, but surface a clean empty-terms payload (not a 500)

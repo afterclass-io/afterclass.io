@@ -277,7 +277,7 @@ describe("RoadmapView copy CTA (v2 useDynamicTool)", () => {
     render(<RoadmapView />);
     fireEvent.click(screen.getByRole("button", { name: /Copy this roadmap/i }));
     await waitFor(() => expect(callTool).toHaveBeenCalledTimes(1));
-    expect(callTool).toHaveBeenCalledWith({ roadmapId: "r1" });
+    expect(callTool).toHaveBeenCalledWith({ roadmapId: "r1", confirm: true });
   });
 
   it("does not render CTA for private roadmaps", () => {
