@@ -245,7 +245,13 @@ export async function POST(req: Request) {
   let reserved = false;
   try {
     const reservedResult = await reserveMessage(userId);
-    if (!reservedResult.ok) return GATE("quota");
+    if (!reservedResult.ok) {
+      // Release the in-flight slot: quota rejection must not convert into
+      // spurious 429s until the stale-slot expiry (every other post-beginTurn
+      // path releases too).
+      endTurn(userId);
+      return GATE("quota");
+    }
     reserved = true;
 
     const ctx = createCallerForUser(session.user);

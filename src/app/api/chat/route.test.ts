@@ -228,6 +228,9 @@ describe("POST /api/chat", () => {
     const body = (await res.json()) as { gate: string };
     expect(body.gate).toBe("quota");
     expect(mockReserveMessage).toHaveBeenCalledWith("u1");
+    // The in-flight slot must be released too (else one quota rejection
+    // converts into spurious 429s until the stale-slot expiry).
+    expect(mockEndTurn).toHaveBeenCalledWith("u1");
   });
 
   // -- 403 quota gate must NOT refund (nothing was reserved) --
