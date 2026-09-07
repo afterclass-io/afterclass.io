@@ -37,7 +37,7 @@ function mkCaller(opts: {
       ? opts.openWindow
       : {
           id: 77,
-          acadTermId: "AY2026/27-T1",
+          acadTermId: "AY202627T1",
           round: "1",
           window: 1,
           opensAt: new Date(now.getTime() - 60_000),
@@ -80,7 +80,7 @@ function mkCaller(opts: {
               minPredicted: 18,
               bidWindow: {
                 id: 77,
-                acadTermId: "AY2026/27-T1",
+                acadTermId: "AY202627T1",
                 round: "1",
                 window: 1,
               },
@@ -102,7 +102,7 @@ function mkCaller(opts: {
           ? opts.safetyFactors
           : [
               {
-                acadTermId: "AY2026/27-T1",
+                acadTermId: "AY202627T1",
                 predictionType: "MEDIAN",
                 beatsPercentage: 70,
                 multiplier: 1.05,
@@ -133,7 +133,7 @@ describe("bid-estimate", () => {
         minPredicted: 18,
         bidWindow: {
           id: 77,
-          acadTermId: "AY2026/27-T1",
+          acadTermId: "AY202627T1",
           round: "1",
           window: 1,
         },
@@ -240,7 +240,7 @@ describe("bid-estimate", () => {
     const now = new Date();
     const latest = {
       id: 99,
-      acadTermId: "AY2026/27-T1",
+      acadTermId: "AY202627T1",
       round: "2A",
       window: 3,
       opensAt: new Date(now.getTime() - 120_000),
@@ -249,7 +249,7 @@ describe("bid-estimate", () => {
     const caller = mkCaller({
       openWindow: {
         id: 88,
-        acadTermId: "AY2026/27-T1",
+        acadTermId: "AY202627T1",
         round: "1",
         window: 1,
         opensAt: new Date(now.getTime() + 60_000),
@@ -260,7 +260,7 @@ describe("bid-estimate", () => {
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await bidEstimateTool.run(ctx, {
       courseCode: "COR-IS1702",
-      acadTermId: "AY2026/27-T1",
+      acadTermId: "AY202627T1",
     });
     expect(res.isError).toBeFalsy();
     const parsed = JSON.parse(res.content[0]!.text) as {
@@ -332,14 +332,14 @@ describe("bid-estimate", () => {
     const caller = mkCaller({
       openWindow: null,
       windowsByTerm: [
-        { id: 77, acadTermId: "AY2026/27-T1", round: "1", window: 1 },
+        { id: 77, acadTermId: "AY202627T1", round: "1", window: 1 },
         target,
       ],
     });
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await bidEstimateTool.run(ctx, {
       courseCode: "COR-IS1702",
-      acadTermId: "AY2026/27-T1",
+      acadTermId: "AY202627T1",
       bidWindow: "r2aw3",
     });
     expect(res.isError).toBeFalsy();
@@ -359,7 +359,7 @@ describe("bid-estimate", () => {
         minPredicted: 18,
         bidWindow: {
           id: 77,
-          acadTermId: "AY2026/27-T1",
+          acadTermId: "AY202627T1",
           round: "1",
           window: 1,
         },
@@ -414,7 +414,7 @@ describe("bid-estimate", () => {
       bidWindows: {
         getCurrentWindow: vi.fn().mockResolvedValue({
           id: 77,
-          acadTermId: "AY2026/27-T1",
+          acadTermId: "AY202627T1",
           round: "1",
           window: 1,
           opensAt: new Date(Date.now() - 60_000),
@@ -439,7 +439,7 @@ describe("bid-estimate", () => {
     const caller = mkCaller({
       safetyFactors: [
         {
-          acadTermId: "AY2026/27-T1",
+          acadTermId: "AY202627T1",
           predictionType: "MEDIAN",
           beatsPercentage: 70,
           multiplier: 1.05,
@@ -450,7 +450,7 @@ describe("bid-estimate", () => {
         minPredicted: 5,
         bidWindow: {
           id: 77,
-          acadTermId: "AY2026/27-T1",
+          acadTermId: "AY202627T1",
           round: "1",
           window: 1,
         },
@@ -473,7 +473,7 @@ describe("bid-estimate", () => {
         minPredicted: 4,
         bidWindow: {
           id: 77,
-          acadTermId: "AY2026/27-T1",
+          acadTermId: "AY202627T1",
           round: "1",
           window: 1,
         },

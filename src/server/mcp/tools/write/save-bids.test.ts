@@ -27,7 +27,7 @@ function mkBid(overrides: Record<string, unknown> = {}) {
     notes: "private strategy",
     status: "PLANNED",
     createdAt: new Date().toISOString(),
-    bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 },
+    bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
     courseCode: "COR-IS1702",
     courseName: "Computational Thinking",
     section: "G1",
@@ -53,7 +53,7 @@ function openWindow() {
   const now = new Date();
   return {
     id: 77,
-    acadTermId: "AY2026/27-T1",
+    acadTermId: "AY202627T1",
     round: "1",
     window: 1,
     opensAt: new Date(now.getTime() - 60_000),
@@ -92,12 +92,12 @@ describe("save-bids", () => {
       mkBid({
         classId: "cl-g1",
         bidWindowId: 77,
-        bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 },
+        bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
       }),
       mkBid({
         classId: "cl-g2",
         bidWindowId: 77,
-        bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 },
+        bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
         section: "G2",
         courseCode: "ACCT102",
       }),
@@ -137,7 +137,7 @@ describe("save-bids", () => {
     };
     expect(parsed.updated).toHaveLength(2);
     expect(parsed.updated[0]!.ok).toBe(true);
-    expect(parsed.plan.acadTermId).toBe("AY2026/27-T1");
+    expect(parsed.plan.acadTermId).toBe("AY202627T1");
     expect(parsed.plan.bids[0]!.notes).toBeUndefined();
   });
 
@@ -325,7 +325,7 @@ describe("save-bids", () => {
       bids: [{ courseCode: "COR-IS1702", section: "G1", bidAmount: 25 }],
     });
     const props = saveBidsTool.toViewProps!(res);
-    expect(props.acadTermId).toBe("AY2026/27-T1");
+    expect(props.acadTermId).toBe("AY202627T1");
   });
 
   it("passes a sub-floor bidAmount through unclamped (the e$10 floor is suggestion-only)", async () => {

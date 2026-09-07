@@ -37,7 +37,7 @@ function mkBid(overrides: Record<string, unknown> = {}) {
     notes: "private strategy",
     status: "PLANNED",
     createdAt: new Date().toISOString(),
-    bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 },
+    bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
     courseCode: "ACC101",
     courseName: "Financial Accounting",
     section: "G1",
@@ -48,7 +48,7 @@ function mkBid(overrides: Record<string, unknown> = {}) {
 
 describe("bid-status write tool", () => {
   it("set-bid-status calls userBids.setStatus with the bid id and status", async () => {
-    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", acadTermId: "AY2026/27-T1" });
+    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", acadTermId: "AY202627T1" });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {
@@ -83,7 +83,7 @@ describe("bid-status write tool", () => {
   });
 
   it("forwards PARTICIPATED to the procedure (5-value union)", async () => {
-    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "PARTICIPATED", classId: "cl1", acadTermId: "AY2026/27-T1" });
+    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "PARTICIPATED", classId: "cl1", acadTermId: "AY202627T1" });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {
@@ -103,7 +103,7 @@ describe("bid-status write tool", () => {
   });
 
   it("set-bid-status response carries no notes key", async () => {
-    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", notes: "secret plan", acadTermId: "AY2026/27-T1" });
+    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", notes: "secret plan", acadTermId: "AY202627T1" });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {
@@ -116,7 +116,7 @@ describe("bid-status write tool", () => {
   });
 
   it("set-bid-status returns { updated, plan } with notes stripped", async () => {
-    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", acadTermId: "AY2026/27-T1" });
+    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", acadTermId: "AY202627T1" });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {
@@ -132,7 +132,7 @@ describe("bid-status write tool", () => {
 
   it("set-bid-status exposes toViewProps that unwraps the plan", async () => {
     expect(setBidStatusTool.toViewProps).toBeDefined();
-    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", acadTermId: "AY2026/27-T1" });
+    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", acadTermId: "AY202627T1" });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {

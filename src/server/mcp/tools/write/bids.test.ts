@@ -41,7 +41,7 @@ function mkBid(overrides: Record<string, unknown> = {}) {
     notes: "private strategy",
     status: "PLANNED",
     createdAt: new Date().toISOString(),
-    bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 },
+    bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
     courseCode: "ACC101",
     courseName: "Financial Accounting",
     section: "G1",
@@ -52,7 +52,7 @@ function mkBid(overrides: Record<string, unknown> = {}) {
 }
 
 describe("bid write tools", () => {
-  function defaultPlanMocks(acadTermId = "AY2026/27-T1") {
+  function defaultPlanMocks(acadTermId = "AY202627T1") {
     return {
       listMine: vi.fn().mockResolvedValue([mkBid({ bidWindow: { acadTermId, round: "1", window: 1 } })]),
       getBudget: vi.fn().mockResolvedValue({ balance: 100 }),
@@ -133,7 +133,7 @@ describe("bid write tools", () => {
   });
 
   it("remove-bid calls userBids.remove with the bid id and returns { updated, plan }", async () => {
-    const fn = vi.fn().mockResolvedValue({ success: true, acadTermId: "AY2026/27-T1" });
+    const fn = vi.fn().mockResolvedValue({ success: true, acadTermId: "AY202627T1" });
     const { listMine, getBudget } = defaultPlanMocks();
     const ctx: ToolContext = {
       user: fakeUser,
@@ -241,7 +241,7 @@ describe("bid write tools", () => {
   it("upsert-bid returns { updated, plan } with notes stripped", async () => {
     const fn = vi.fn().mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 53 });
     const listMine = vi.fn().mockResolvedValue([
-      mkBid({ id: "b1", classId: "cl1", bidWindowId: 53, bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 } }),
+      mkBid({ id: "b1", classId: "cl1", bidWindowId: 53, bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 } }),
     ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {
@@ -254,8 +254,8 @@ describe("bid write tools", () => {
   });
 
   it("remove-bid returns { updated, plan } with notes stripped", async () => {
-    const fn = vi.fn().mockResolvedValue({ success: true, acadTermId: "AY2026/27-T1" });
-    const getMine = vi.fn().mockResolvedValue([mkBid({ id: "b1", bidWindow: { acadTermId: "AY2026/27-T1", round: "1", window: 1 } })]);
+    const fn = vi.fn().mockResolvedValue({ success: true, acadTermId: "AY202627T1" });
+    const getMine = vi.fn().mockResolvedValue([mkBid({ id: "b1", bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 } })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 50 });
     const ctx: ToolContext = {
       user: fakeUser,
