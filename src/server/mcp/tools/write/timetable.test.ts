@@ -219,4 +219,14 @@ describe("timetable write tools", () => {
     expect(parsed.shareToken).toBeUndefined();
     expect(parsed.visibility).toBe("UNLISTED");
   });
+
+  it("create-timetable strips shareToken + icalToken bearer tokens from the output", async () => {
+    const fn = vi.fn().mockResolvedValue({ id: "tt1", shareToken: "s", icalToken: "i" });
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ timetableCreate: fn }) };
+    const result = await createTimetableTool.run(ctx, { acadTermId: "t1", name: "Plan A" });
+    const parsed = JSON.parse(result.content[0]!.text) as Record<string, unknown>;
+    expect(parsed.shareToken).toBeUndefined();
+    expect(parsed.icalToken).toBeUndefined();
+    expect(parsed.id).toBe("tt1");
+  });
 });

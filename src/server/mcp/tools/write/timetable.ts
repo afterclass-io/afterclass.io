@@ -28,8 +28,11 @@ export const createTimetableTool: McpTool<typeof createTimetableSchema> = {
     try {
       const term = await resolveTermId(caller, input.acadTermId);
       if (!term.ok) return errText(term.errText);
+      // Canonical output policy: bearer tokens must not reach the LLM.
       return jsonText(
-        await caller.timetable.create({ ...input, acadTermId: term.value }),
+        stripSecretsFromValue(
+          await caller.timetable.create({ ...input, acadTermId: term.value }),
+        ),
       );
     } catch (e) {
       return errText(errorMessage(e));
@@ -49,7 +52,10 @@ export const renameTimetableTool: McpTool<typeof renameTimetableSchema> = {
   inputSchema: renameTimetableSchema,
   run: async ({ caller }, input) => {
     try {
-      return jsonText(await caller.timetable.rename(input));
+      // Canonical output policy: bearer tokens must not reach the LLM.
+      return jsonText(
+        stripSecretsFromValue(await caller.timetable.rename(input)),
+      );
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -95,11 +101,14 @@ export const addClassToTimetableTool: McpTool<
   run: async ({ caller }, input) => {
     try {
       if (input.timetableId?.trim()) {
+        // Canonical output policy: bearer tokens must not reach the LLM.
         return jsonText(
-          await caller.timetable.addSlot({
-            timetableId: input.timetableId.trim(),
-            classId: input.classId,
-          }),
+          stripSecretsFromValue(
+            await caller.timetable.addSlot({
+              timetableId: input.timetableId.trim(),
+              classId: input.classId,
+            }),
+          ),
         );
       }
       // Resolve the class's term, then the user's active timetable for it.
@@ -136,7 +145,9 @@ export const addClassToTimetableTool: McpTool<
         );
       }
       return jsonText(
-        await caller.timetable.addSlot({ timetableId, classId: input.classId }),
+        stripSecretsFromValue(
+          await caller.timetable.addSlot({ timetableId, classId: input.classId }),
+        ),
       );
     } catch (e) {
       return errText(errorMessage(e));

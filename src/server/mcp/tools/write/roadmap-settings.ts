@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { buildRoadmapView, roadmapViewToViewProps } from "../roadmap-view-shared";
+import { stripSecretsFromValue } from "@/mcp/output-policy";
 import {
   confirmField,
   errText,
@@ -27,8 +28,11 @@ export const setMatricTermTool: McpTool<typeof setMatricTermSchema> = {
   inputSchema: setMatricTermSchema,
   run: async ({ caller }, { roadmapId, matricTermId }) => {
     try {
+      // Canonical output policy: bearer tokens must not reach the LLM.
       return jsonText(
-        await caller.roadmaps.setMatricTerm({ roadmapId, matricTermId }),
+        stripSecretsFromValue(
+          await caller.roadmaps.setMatricTerm({ roadmapId, matricTermId }),
+        ),
       );
     } catch (e) {
       return errText(errorMessage(e));
@@ -48,7 +52,10 @@ export const setActiveRoadmapTool: McpTool<typeof setActiveRoadmapSchema> = {
   inputSchema: setActiveRoadmapSchema,
   run: async ({ caller }, { roadmapId }) => {
     try {
-      return jsonText(await caller.roadmaps.setActive({ roadmapId }));
+      // Canonical output policy: bearer tokens must not reach the LLM.
+      return jsonText(
+        stripSecretsFromValue(await caller.roadmaps.setActive({ roadmapId })),
+      );
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -68,7 +75,12 @@ export const syncRoadmapProgressTool: McpTool<typeof syncRoadmapProgressSchema> 
     inputSchema: syncRoadmapProgressSchema,
     run: async ({ caller }, { roadmapId }) => {
       try {
-        return jsonText(await caller.roadmaps.syncProgress({ roadmapId }));
+        // Canonical output policy: bearer tokens must not reach the LLM.
+        return jsonText(
+          stripSecretsFromValue(
+            await caller.roadmaps.syncProgress({ roadmapId }),
+          ),
+        );
       } catch (e) {
         return errText(errorMessage(e));
       }
@@ -90,7 +102,8 @@ export const copyPublicRoadmapTool: McpTool<typeof copyPublicRoadmapSchema> = {
     try {
       const created = await caller.roadmaps.copyPublic({ roadmapId });
       const view = await buildRoadmapView(caller, created.id);
-      return jsonText(view);
+      // Canonical output policy: bearer tokens must not reach the LLM.
+      return jsonText(stripSecretsFromValue(view));
     } catch (e) {
       return errText(errorMessage(e));
     }

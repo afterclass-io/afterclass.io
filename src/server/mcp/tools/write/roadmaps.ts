@@ -42,7 +42,8 @@ export const createRoadmapTool: McpTool<typeof createRoadmapSchema> = {
         id: string;
       };
       const view = await buildRoadmapView(caller, created.id);
-      return jsonText(view);
+      // Canonical output policy: bearer tokens must not reach the LLM.
+      return jsonText(stripSecretsFromValue(view));
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -62,7 +63,8 @@ export const renameRoadmapTool: McpTool<typeof renameRoadmapSchema> = {
   inputSchema: renameRoadmapSchema,
   run: async ({ caller }, input) => {
     try {
-      return jsonText(await caller.roadmaps.rename(input));
+      // Canonical output policy: bearer tokens must not reach the LLM.
+      return jsonText(stripSecretsFromValue(await caller.roadmaps.rename(input)));
     } catch (e) {
       return errText(errorMessage(e));
     }
@@ -104,7 +106,8 @@ export const saveRoadmapEntriesTool: McpTool<typeof saveRoadmapEntriesSchema> =
       try {
         await caller.roadmaps.saveEntries(input);
         const view = await buildRoadmapView(caller, input.roadmapId);
-        return jsonText(view);
+        // Canonical output policy: bearer tokens must not reach the LLM.
+        return jsonText(stripSecretsFromValue(view));
       } catch (e) {
         return errText(errorMessage(e));
       }

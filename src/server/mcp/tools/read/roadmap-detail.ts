@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { stripSecretsFromValue } from "@/mcp/output-policy";
 import { buildRoadmapView, roadmapViewToViewProps } from "../roadmap-view-shared";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
@@ -38,7 +39,11 @@ export const getPublicRoadmapTool: McpTool<typeof getPublicRoadmapSchema> = {
   toViewProps: roadmapViewExtractor(true),
   run: async ({ caller }, { roadmapId }) => {
     try {
-      return jsonText(await caller.roadmaps.getById({ id: roadmapId }));
+      // Canonical output policy: bearer tokens must not reach the LLM
+      // (public payloads can still carry the owner's shareToken).
+      return jsonText(
+        stripSecretsFromValue(await caller.roadmaps.getById({ id: roadmapId })),
+      );
     } catch (e) {
       return errText(errorMessage(e));
     }

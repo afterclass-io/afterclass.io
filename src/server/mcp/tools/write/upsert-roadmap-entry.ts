@@ -23,6 +23,7 @@ import {
   jsonText,
   type McpTool,
 } from "../../types";
+import { stripSecretsFromValue } from "@/mcp/output-policy";
 
 const termSchema = roadmapTermSchema;
 
@@ -168,7 +169,9 @@ export const upsertRoadmapEntryTool: McpTool<typeof upsertRoadmapEntrySchema> =
           feasibility = null;
         }
 
-        return jsonText({ roadmapView, feasibility });
+        return jsonText(
+          stripSecretsFromValue({ roadmapView, feasibility }),
+        );
       } catch (e) {
         return errText(errorMessage(e));
       }

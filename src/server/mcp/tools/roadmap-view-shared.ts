@@ -1,5 +1,6 @@
 import type { RouterCaller } from "../types";
 import { parseViewJson } from "../types";
+import { stripSecretsFromValue } from "@/mcp/output-policy";
 
 export interface RoadmapEntryView {
   yearNumber: number;
@@ -84,11 +85,13 @@ export async function buildRoadmapView(
     roadmapId,
   })) as unknown as Record<string, unknown>;
   const roadmapSrc = data.roadmap as Record<string, unknown> | undefined;
+  // Canonical output policy (Task 7, R8): bearer tokens must not reach the
+  // LLM. `stripSecretsFromValue` covers shareToken + icalToken + notes;
+  // roadmaps only carry shareToken today, but the helper keeps this
+  // future-proof without a second implementation.
   const roadmapRest: Record<string, unknown> = roadmapSrc
-    ? { ...roadmapSrc }
+    ? stripSecretsFromValue({ ...roadmapSrc })
     : {};
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- deliberate PII stripping
-  delete roadmapRest.shareToken;
   return { roadmap: roadmapRest, entries: data.entries };
 }
 
