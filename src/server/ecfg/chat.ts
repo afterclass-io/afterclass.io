@@ -42,14 +42,21 @@ export async function getChatConfig(): Promise<LegacyChatConfig> {
   };
 }
 
-/** Effective per-minute limit for chat write-tool executions (chat-write: budget). */
+/** Effective per-minute limit for chat write-tool executions (chat-write: budget).
+ * Accepts the canonical write limit when the caller resolved it (Edge/file
+ * honored); otherwise falls back to the env read inside the canonical helper. */
 export function getChatWriteRateLimit(chat: {
   rateLimitPerMinute: number;
+  writeRateLimitPerMinute?: number;
 }): number {
   return getCanonicalChatWriteRateLimit(chat);
 }
 
-/** Effective fixed-window size in minutes for rate limiting. */
-export function getRateLimitWindowMinutes(): number {
-  return getCanonicalRateLimitWindowMinutes();
+/** Effective fixed-window size in minutes for rate limiting.
+ * Accepts the canonical window when the caller resolved it (Edge/file
+ * honored); otherwise falls back to the env read inside the canonical helper. */
+export function getRateLimitWindowMinutes(canonical?: {
+  rateLimitWindowMinutes?: number;
+}): number {
+  return getCanonicalRateLimitWindowMinutes(canonical);
 }

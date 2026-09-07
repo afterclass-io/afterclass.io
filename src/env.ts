@@ -81,12 +81,27 @@ export const env = createEnv({
     CHAT_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(1).optional(),
     CHAT_MAX_TOOL_ROUNDS: z.coerce.number().int().min(1).max(100).optional(),
     CHAT_SPEND_CAP_USD: z.coerce.number().min(0).optional(),
+    CHAT_SPEND_CAP_PER_MONTH_USD: z.coerce.number().min(0).optional(),
     CHAT_SETTLEMENT_SPIKE_TOKENS: z.coerce.number().int().min(1).optional(),
     CHAT_MAX_TOOL_RESULT_CHARS: z.coerce.number().int().min(1).optional(),
-    BID_MIN_AMOUNT: z.coerce.number().min(0).optional(),
-    BID_MAX_BUDGET: z.coerce.number().min(0).optional(),
+    CHAT_ICAL_THROTTLE_PER_MINUTE: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(10000)
+      .optional(),
+    CHAT_IN_FLIGHT_STALE_MS: z.coerce.number().int().min(1).optional(),
+    CHAT_RATE_LIMIT_RETENTION_WINDOWS: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .optional(),
+    // Canonical schema demands positive (>0); env.ts fails fast here too so
+    // misconfig surfaces at boot with a clear field error.
+    BID_MIN_AMOUNT: z.coerce.number().int().min(1).optional(),
+    BID_MAX_BUDGET: z.coerce.number().int().min(1).optional(),
     BID_DEFAULT_BEATS_PCT: z.coerce.number().int().min(1).max(100).optional(),
-    BID_MAX_AMOUNT: z.coerce.number().min(0).optional(),
+    BID_MAX_AMOUNT: z.coerce.number().int().min(1).optional(),
     APP_TIMEZONE: z.string().min(1).optional(),
     // MCP dev-bypass knobs (validated here so typos fail loudly; the single
     // isDevBypass() gate in src/mcp/env-gate.ts owns the semantics).
@@ -173,8 +188,13 @@ export const env = createEnv({
     CHAT_MAX_OUTPUT_TOKENS: process.env.CHAT_MAX_OUTPUT_TOKENS,
     CHAT_MAX_TOOL_ROUNDS: process.env.CHAT_MAX_TOOL_ROUNDS,
     CHAT_SPEND_CAP_USD: process.env.CHAT_SPEND_CAP_USD,
+    CHAT_SPEND_CAP_PER_MONTH_USD: process.env.CHAT_SPEND_CAP_PER_MONTH_USD,
     CHAT_SETTLEMENT_SPIKE_TOKENS: process.env.CHAT_SETTLEMENT_SPIKE_TOKENS,
     CHAT_MAX_TOOL_RESULT_CHARS: process.env.CHAT_MAX_TOOL_RESULT_CHARS,
+    CHAT_ICAL_THROTTLE_PER_MINUTE: process.env.CHAT_ICAL_THROTTLE_PER_MINUTE,
+    CHAT_IN_FLIGHT_STALE_MS: process.env.CHAT_IN_FLIGHT_STALE_MS,
+    CHAT_RATE_LIMIT_RETENTION_WINDOWS:
+      process.env.CHAT_RATE_LIMIT_RETENTION_WINDOWS,
     BID_MIN_AMOUNT: process.env.BID_MIN_AMOUNT,
     BID_MAX_BUDGET: process.env.BID_MAX_BUDGET,
     BID_DEFAULT_BEATS_PCT: process.env.BID_DEFAULT_BEATS_PCT,

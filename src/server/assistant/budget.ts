@@ -12,6 +12,9 @@ import { checkAndIncrement } from "./ratelimit";
  * limit sources stay identical (no number changes — Task 8 owns numbers).
  */
 export type BudgetKind = "read" | "write";
+// NOTE (Task 8/R15): `kind` is currently a pass-through label with no
+// behavioral effect — the bucket key derives from `prefix` alone. Kept so
+// call sites declare intent; a future pass may assert kind↔prefix family.
 
 export interface BudgetContext {
   key: string;

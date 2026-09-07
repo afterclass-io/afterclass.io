@@ -250,10 +250,26 @@ export async function getChatConfigAsync(): Promise<ChatConfigWithAliases> {
  * Central config read (allowlisted): this module IS the single place raw
  * CHAT_* env reads live, alongside env.ts (schema) and env-gate.ts (gate).
  * C2 precedence preserved: env-override-then-fallback; fail-closed throws
- * on non-positive/non-finite instead of silently 429ing. */
+ * on non-positive/non-finite instead of silently 429ing.
+ * An explicit `writeRateLimitPerMinute` (e.g. from the canonical config)
+ * takes precedence over the env read so Edge/file layers are honored when
+ * the caller already resolved them; the env read is the fallback. */
 export function getChatWriteRateLimit(chat: {
   rateLimitPerMinute: number;
+  writeRateLimitPerMinute?: number;
 }): number {
+  if (
+    chat.writeRateLimitPerMinute !== undefined &&
+    chat.writeRateLimitPerMinute !== null
+  ) {
+    const n = chat.writeRateLimitPerMinute;
+    if (!Number.isFinite(n) || !Number.isInteger(n) || n <= 0) {
+      throw new Error(
+        `getChatWriteRateLimit: invalid writeRateLimitPerMinute ${JSON.stringify(n)} — must be a finite integer > 0`,
+      );
+    }
+    return n;
+  }
   const raw = process.env.CHAT_WRITE_RATE_LIMIT_PER_MINUTE;
   if (raw !== undefined && raw !== "") {
     const n = Number(raw);
@@ -268,8 +284,25 @@ export function getChatWriteRateLimit(chat: {
 }
 
 /** Effective fixed-window size in minutes for rate limiting.
- * Central config read (allowlisted — see getChatWriteRateLimit above). */
-export function getRateLimitWindowMinutes(): number {
+ * Central config read (allowlisted — see getChatWriteRateLimit above).
+ * An explicit `rateLimitWindowMinutes` (e.g. from the canonical config)
+ * takes precedence over the env read so Edge/file layers are honored when
+ * the caller already resolved them; the env read is the fallback. */
+export function getRateLimitWindowMinutes(canonical?: {
+  rateLimitWindowMinutes?: number;
+}): number {
+  if (
+    canonical?.rateLimitWindowMinutes !== undefined &&
+    canonical?.rateLimitWindowMinutes !== null
+  ) {
+    const n = canonical.rateLimitWindowMinutes;
+    if (!Number.isFinite(n) || !Number.isInteger(n) || n < 1 || n > 60) {
+      throw new Error(
+        `getRateLimitWindowMinutes: invalid rateLimitWindowMinutes ${JSON.stringify(n)} — must be an int in [1, 60]`,
+      );
+    }
+    return n;
+  }
   const raw = process.env.CHAT_RATE_LIMIT_WINDOW_MINUTES;
   if (raw !== undefined && raw !== "") {
     const n = Number(raw);
