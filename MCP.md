@@ -250,15 +250,15 @@ manual path. Term ids are canonical compact `AY<YYYY><YY>T<term>`
 `AY2026/27-T1` also work); `bidWindowId: 53` is the seeded open window
 (`bun run db:reset` seeds it).
 
-| View (dir) | Bound tool + arg example | View check |
-| --- | --- | --- |
-| `course-search` | `search-courses` `{"acadTermId": "AY202627T1", "query": "IS215"}` | result cards + CU badges + Add CTA |
-| `bid-plan` | `my-bid-plan` `{"acadTermId": "AY202627T1"}` | term chip, budget row (`NoBudget` story = bids with `budget: null`), bids list |
-| `bid-explorer` | `explore-bid-options` `{"courseCode": "COR-IS1702", "section": "G1"}` (or `{"classId": "cl1"}`) | history table, prediction + safety slider, upsert-bid CTA with `bidWindowId: 53` |
-| `review-cards` | `get-course-reviews` `{"code": "ACCT102"}` | review cards (`get-professor-reviews` is viewless — same cards, professor context) |
-| `roadmap-view` | `get-my-roadmap` `{"roadmapId": "r1"}` | year/term grid + copy CTA when `isPublic` |
-| `calendar-links` | `get-timetable-calendar-link` `{"timetableId": "tt1", "confirm": true}` | subscribe links (URLs ride `_meta`, never model text) |
-| `timetable` | `get-my-timetable-detail` `{"timetableId": "tt1"}` (or `{"acadTermId": "AY202627T1"}`) | grid + `Clash` story overlap + exam rows |
+| View (dir)       | Bound tool + arg example                                                                        | View check                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `course-search`  | `search-courses` `{"acadTermId": "AY202627T1", "query": "IS215"}`                               | result cards + CU badges + Add CTA                                                 |
+| `bid-plan`       | `my-bid-plan` `{"acadTermId": "AY202627T1"}`                                                    | term chip, budget row (`NoBudget` story = bids with `budget: null`), bids list     |
+| `bid-explorer`   | `explore-bid-options` `{"courseCode": "COR-IS1702", "section": "G1"}` (or `{"classId": "cl1"}`) | history table, prediction + safety slider, upsert-bid CTA with `bidWindowId: 53`   |
+| `review-cards`   | `get-course-reviews` `{"code": "ACCT102"}`                                                      | review cards (`get-professor-reviews` is viewless — same cards, professor context) |
+| `roadmap-view`   | `get-my-roadmap` `{"roadmapId": "r1"}`                                                          | year/term grid + copy CTA when `isPublic`                                          |
+| `calendar-links` | `get-timetable-calendar-link` `{"timetableId": "tt1", "confirm": true}`                         | subscribe links (URLs ride `_meta`, never model text)                              |
+| `timetable`      | `get-my-timetable-detail` `{"timetableId": "tt1"}` (or `{"acadTermId": "AY202627T1"}`)          | grid + `Clash` story overlap + exam rows                                           |
 
 Resource:
 
@@ -290,8 +290,8 @@ Destructive `confirm:true` retry (Inspector console):
 1. Call a destructive write WITHOUT `confirm`, e.g. `upsert-bid`
    `{"classId": "cl1", "bidWindowId": 53, "bidAmount": 25}`.
 2. Expect the gate text: `Destructive tool "upsert-bid" requires explicit
-   confirmation: call again with confirm:true after showing the user what
-   will change.`
+confirmation: call again with confirm:true after showing the user what
+will change.`
 3. Retry WITH `"confirm": true` — the write runs and returns
    `{ updated, plan }` (bid writes) or the updated roadmap.
 4. Same gate on the chat path (`buildAssistantTools` → same message);

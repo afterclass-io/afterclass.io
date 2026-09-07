@@ -18,7 +18,12 @@
 // `McpViewSeedContext` is scoped to the decorator's subtree, so each story —
 // and each sibling story in Docs mode — reads its own snapshot.
 import { createContext, useContext } from "react";
-import type { CallToolHandle, CallToolSuccess, DisplayMode, HostContextHandle } from "mcp-use/react";
+import type {
+  CallToolHandle,
+  CallToolSuccess,
+  DisplayMode,
+  HostContextHandle,
+} from "mcp-use/react";
 import type { McpViewParams } from "../withMcpView";
 
 /** Snapshot carried by the seed provider; every field defaulted. */
@@ -149,7 +154,8 @@ export function useDynamicTool<
   const mode = seed.cta.mode ?? "success";
   return {
     callTool: async () => {
-      if (mode === "error") throw new Error(seed.cta.message ?? "callTool failed");
+      if (mode === "error")
+        throw new Error(seed.cta.message ?? "callTool failed");
       if (mode === "pending") await new Promise<never>(() => {});
       return { content: [], structuredContent: {} } as CallToolSuccess<Result>;
     },
@@ -176,10 +182,15 @@ export function useDisplayMode(): {
 // never persist view state, so the mock keeps the parameter for signature
 // parity but returns a null-backed tuple (divergence from the real non-null
 // `T` return — nothing type-checks against it).
-export function useViewState<State extends Record<string, unknown> = Record<string, unknown>>(
+export function useViewState<
+  State extends Record<string, unknown> = Record<string, unknown>,
+>(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- defaultState accepted for signature parity with the real hook
   _defaultState?: State | (() => State),
-): readonly [State | null, (updater: (prev: State | null) => State | null) => void] {
+): readonly [
+  State | null,
+  (updater: (prev: State | null) => State | null) => void,
+] {
   return [null, () => undefined];
 }
 

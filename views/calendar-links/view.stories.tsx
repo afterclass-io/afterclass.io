@@ -37,9 +37,7 @@ export default meta;
 type Story = StoryObj<typeof View>;
 
 export const Default: Story = {
-  decorators: [
-    withMcpView({ status: "ready", toolOutput, meta: metaUrls }),
-  ],
+  decorators: [withMcpView({ status: "ready", toolOutput, meta: metaUrls })],
 };
 
 export const Dark: Story = {

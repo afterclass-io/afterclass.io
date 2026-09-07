@@ -133,7 +133,10 @@ function stubbedRouter(
   ): PropertyDescriptor | undefined => {
     if (!PRINTER_SAFE.has(prop)) return undefined;
     const plain = (
-      Object.prototype as unknown as Record<string, (...a: unknown[]) => unknown>
+      Object.prototype as unknown as Record<
+        string,
+        (...a: unknown[]) => unknown
+      >
     )[prop];
     if (typeof plain !== "function") return undefined;
     return {

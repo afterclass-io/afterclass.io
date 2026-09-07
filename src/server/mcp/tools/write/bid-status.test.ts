@@ -48,12 +48,23 @@ function mkBid(overrides: Record<string, unknown> = {}) {
 
 describe("bid-status write tool", () => {
   it("set-bid-status calls userBids.setStatus with the bid id and status", async () => {
-    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", acadTermId: "AY202627T1" });
+    const fn = vi
+      .fn()
+      .mockResolvedValue({
+        id: "b1",
+        status: "SECURED",
+        classId: "cl1",
+        acadTermId: "AY202627T1",
+      });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ userBidsSetStatus: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
+      caller: makeCaller({
+        userBidsSetStatus: fn,
+        userBidsListMine: listMine,
+        userBidsGetBudget: getBudget,
+      }),
     };
     await setBidStatusTool.run(ctx, { id: "b1", status: "SECURED" });
     expect(fn).toHaveBeenCalledWith({ id: "b1", status: "SECURED" });
@@ -65,7 +76,10 @@ describe("bid-status write tool", () => {
       user: fakeUser,
       caller: makeCaller({ userBidsSetStatus: fn }),
     };
-    const result = await setBidStatusTool.run(ctx, { id: "b1", status: "DROPPED" });
+    const result = await setBidStatusTool.run(ctx, {
+      id: "b1",
+      status: "DROPPED",
+    });
     expect(result.isError).toBe(true);
   });
 
@@ -77,18 +91,32 @@ describe("bid-status write tool", () => {
       "CANCELLED",
       "PARTICIPATED",
     ]) {
-      const parsed = setBidStatusTool.inputSchema.safeParse({ id: "b1", status });
+      const parsed = setBidStatusTool.inputSchema.safeParse({
+        id: "b1",
+        status,
+      });
       expect(parsed.success).toBe(true);
     }
   });
 
   it("forwards PARTICIPATED to the procedure (5-value union)", async () => {
-    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "PARTICIPATED", classId: "cl1", acadTermId: "AY202627T1" });
+    const fn = vi
+      .fn()
+      .mockResolvedValue({
+        id: "b1",
+        status: "PARTICIPATED",
+        classId: "cl1",
+        acadTermId: "AY202627T1",
+      });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ userBidsSetStatus: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
+      caller: makeCaller({
+        userBidsSetStatus: fn,
+        userBidsListMine: listMine,
+        userBidsGetBudget: getBudget,
+      }),
     };
     await setBidStatusTool.run(ctx, { id: "b1", status: "PARTICIPATED" });
     expect(fn).toHaveBeenCalledWith({ id: "b1", status: "PARTICIPATED" });
@@ -103,43 +131,88 @@ describe("bid-status write tool", () => {
   });
 
   it("set-bid-status response carries no notes key", async () => {
-    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", notes: "secret plan", acadTermId: "AY202627T1" });
+    const fn = vi
+      .fn()
+      .mockResolvedValue({
+        id: "b1",
+        status: "SECURED",
+        classId: "cl1",
+        notes: "secret plan",
+        acadTermId: "AY202627T1",
+      });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ userBidsSetStatus: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
+      caller: makeCaller({
+        userBidsSetStatus: fn,
+        userBidsListMine: listMine,
+        userBidsGetBudget: getBudget,
+      }),
     };
-    const out = await setBidStatusTool.run(ctx, { id: "b1", status: "SECURED" });
+    const out = await setBidStatusTool.run(ctx, {
+      id: "b1",
+      status: "SECURED",
+    });
     const text = out.content.find((c) => c.type === "text")?.text ?? "";
-    expect(text).not.toContain("\"notes\"");
+    expect(text).not.toContain('"notes"');
   });
 
   it("set-bid-status returns { updated, plan } with notes stripped", async () => {
-    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", acadTermId: "AY202627T1" });
+    const fn = vi
+      .fn()
+      .mockResolvedValue({
+        id: "b1",
+        status: "SECURED",
+        classId: "cl1",
+        acadTermId: "AY202627T1",
+      });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ userBidsSetStatus: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
+      caller: makeCaller({
+        userBidsSetStatus: fn,
+        userBidsListMine: listMine,
+        userBidsGetBudget: getBudget,
+      }),
     };
-    const result = await setBidStatusTool.run(ctx, { id: "b1", status: "SECURED" });
+    const result = await setBidStatusTool.run(ctx, {
+      id: "b1",
+      status: "SECURED",
+    });
     expect(result.isError).toBeUndefined();
-    const parsed = JSON.parse(result.content[0]!.text) as { plan: { bids: Array<Record<string, unknown>> } };
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      plan: { bids: Array<Record<string, unknown>> };
+    };
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- typed envelope
     expect(parsed.plan.bids[0]!.notes).toBeUndefined();
   });
 
   it("set-bid-status exposes toViewProps that unwraps the plan", async () => {
     expect(setBidStatusTool.toViewProps).toBeDefined();
-    const fn = vi.fn().mockResolvedValue({ id: "b1", status: "SECURED", classId: "cl1", acadTermId: "AY202627T1" });
+    const fn = vi
+      .fn()
+      .mockResolvedValue({
+        id: "b1",
+        status: "SECURED",
+        classId: "cl1",
+        acadTermId: "AY202627T1",
+      });
     const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1" })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ userBidsSetStatus: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
+      caller: makeCaller({
+        userBidsSetStatus: fn,
+        userBidsListMine: listMine,
+        userBidsGetBudget: getBudget,
+      }),
     };
-    const result = await setBidStatusTool.run(ctx, { id: "b1", status: "SECURED" });
+    const result = await setBidStatusTool.run(ctx, {
+      id: "b1",
+      status: "SECURED",
+    });
     const props = setBidStatusTool.toViewProps!(result);
     expect(props.acadTermId).toBeDefined();
   });

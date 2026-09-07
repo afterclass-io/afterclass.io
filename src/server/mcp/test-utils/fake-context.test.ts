@@ -11,7 +11,9 @@ describe("makeFakeToolContext", () => {
   it("builds a full RouterCaller-backed context", async () => {
     const ctx = await makeFakeToolContext();
     expect(ctx.user?.id).toBeTruthy();
-    expect(typeof (ctx.caller as Record<string, unknown>).reviews).toBe("object");
+    expect(typeof (ctx.caller as Record<string, unknown>).reviews).toBe(
+      "object",
+    );
   });
 
   it("wraps createCallerForUser with the default fake user (id u1)", async () => {

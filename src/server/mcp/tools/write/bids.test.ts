@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ToolContext } from "../../types";
 import type { SessionUser } from "@/server/auth/config";
-import { MAX_BUDGET, removeBidTool, setBidBudgetTool, upsertBidTool } from "./bids";
+import {
+  MAX_BUDGET,
+  removeBidTool,
+  setBidBudgetTool,
+  upsertBidTool,
+} from "./bids";
 
 const fakeUser: SessionUser = {
   id: "u1",
@@ -54,26 +59,58 @@ function mkBid(overrides: Record<string, unknown> = {}) {
 describe("bid write tools", () => {
   function defaultPlanMocks(acadTermId = "AY202627T1") {
     return {
-      listMine: vi.fn().mockResolvedValue([mkBid({ bidWindow: { acadTermId, round: "1", window: 1 } })]),
+      listMine: vi
+        .fn()
+        .mockResolvedValue([
+          mkBid({ bidWindow: { acadTermId, round: "1", window: 1 } }),
+        ]),
       getBudget: vi.fn().mockResolvedValue({ balance: 100 }),
     };
   }
 
   it("upsert-bid calls userBids.upsert with classId/bidWindowId/bidAmount", async () => {
-    const fn = vi.fn().mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 53, bidAmount: 25.5 });
+    const fn = vi
+      .fn()
+      .mockResolvedValue({
+        id: "b1",
+        classId: "cl1",
+        bidWindowId: 53,
+        bidAmount: 25.5,
+      });
     const { listMine, getBudget } = defaultPlanMocks();
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ userBidsUpsert: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
+      caller: makeCaller({
+        userBidsUpsert: fn,
+        userBidsListMine: listMine,
+        userBidsGetBudget: getBudget,
+      }),
     };
-    await upsertBidTool.run(ctx, { classId: "cl1", bidWindowId: 53, bidAmount: 25.5, notes: "safety" });
-    expect(fn).toHaveBeenCalledWith({ classId: "cl1", bidWindowId: 53, bidAmount: 25.5, notes: "safety" });
+    await upsertBidTool.run(ctx, {
+      classId: "cl1",
+      bidWindowId: 53,
+      bidAmount: 25.5,
+      notes: "safety",
+    });
+    expect(fn).toHaveBeenCalledWith({
+      classId: "cl1",
+      bidWindowId: 53,
+      bidAmount: 25.5,
+      notes: "safety",
+    });
   });
 
   it("upsert-bid returns errText when userBids.upsert rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsUpsert: fn }) };
-    const result = await upsertBidTool.run(ctx, { classId: "cl1", bidWindowId: 53, bidAmount: 25.5 });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ userBidsUpsert: fn }),
+    };
+    const result = await upsertBidTool.run(ctx, {
+      classId: "cl1",
+      bidWindowId: 53,
+      bidAmount: 25.5,
+    });
     expect(result.isError).toBe(true);
   });
 
@@ -93,7 +130,11 @@ describe("bid write tools", () => {
       }),
     };
     await upsertBidTool.run(ctx, { classId: "cl1", bidAmount: 25.5 });
-    expect(fn).toHaveBeenCalledWith({ classId: "cl1", bidWindowId: 77, bidAmount: 25.5 });
+    expect(fn).toHaveBeenCalledWith({
+      classId: "cl1",
+      bidWindowId: 77,
+      bidAmount: 25.5,
+    });
   });
 
   it("upsert-bid returns a friendly 'ask the user for round + window' error when no window is open", async () => {
@@ -111,7 +152,10 @@ describe("bid write tools", () => {
         }),
       }),
     };
-    const result = await upsertBidTool.run(ctx, { classId: "cl1", bidAmount: 25.5 });
+    const result = await upsertBidTool.run(ctx, {
+      classId: "cl1",
+      bidAmount: 25.5,
+    });
     expect(result.isError).toBe(true);
     expect(result.content[0]!.text).toMatch(/ask the user/i);
     expect(fn).not.toHaveBeenCalled();
@@ -126,29 +170,44 @@ describe("bid write tools", () => {
         bidWindowsGetCurrentWindow: vi.fn().mockResolvedValue(null),
       }),
     };
-    const result = await upsertBidTool.run(ctx, { classId: "cl1", bidAmount: 25.5 });
+    const result = await upsertBidTool.run(ctx, {
+      classId: "cl1",
+      bidAmount: 25.5,
+    });
     expect(result.isError).toBe(true);
     expect(result.content[0]!.text).toMatch(/bid window/i);
     expect(fn).not.toHaveBeenCalled();
   });
 
   it("remove-bid calls userBids.remove with the bid id and returns { updated, plan }", async () => {
-    const fn = vi.fn().mockResolvedValue({ success: true, acadTermId: "AY202627T1" });
+    const fn = vi
+      .fn()
+      .mockResolvedValue({ success: true, acadTermId: "AY202627T1" });
     const { listMine, getBudget } = defaultPlanMocks();
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ userBidsRemove: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
+      caller: makeCaller({
+        userBidsRemove: fn,
+        userBidsListMine: listMine,
+        userBidsGetBudget: getBudget,
+      }),
     };
     const result = await removeBidTool.run(ctx, { id: "b1" });
     expect(fn).toHaveBeenCalledWith({ id: "b1" });
-    const parsed = JSON.parse(result.content[0]!.text) as { updated: { success: boolean }; plan: unknown };
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      updated: { success: boolean };
+      plan: unknown;
+    };
     expect(parsed.updated.success).toBe(true);
     expect(parsed.plan).toBeDefined();
   });
 
   it("remove-bid returns errText when userBids.remove rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsRemove: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ userBidsRemove: fn }),
+    };
     const result = await removeBidTool.run(ctx, { id: "b1" });
     expect(result.isError).toBe(true);
   });
@@ -158,19 +217,35 @@ describe("bid write tools", () => {
     const { listMine, getBudget } = defaultPlanMocks("t1");
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ userBidsUpsertBudget: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
+      caller: makeCaller({
+        userBidsUpsertBudget: fn,
+        userBidsListMine: listMine,
+        userBidsGetBudget: getBudget,
+      }),
     };
-    const result = await setBidBudgetTool.run(ctx, { acadTermId: "t1", balance: 1000 });
+    const result = await setBidBudgetTool.run(ctx, {
+      acadTermId: "t1",
+      balance: 1000,
+    });
     expect(fn).toHaveBeenCalledWith({ acadTermId: "t1", balance: 1000 });
-    const parsed = JSON.parse(result.content[0]!.text) as { updated: { balance: number }; plan: { acadTermId: string } };
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      updated: { balance: number };
+      plan: { acadTermId: string };
+    };
     expect(parsed.updated.balance).toBe(1000);
     expect(parsed.plan.acadTermId).toBe("t1");
   });
 
   it("set-bid-budget returns errText when userBids.upsertBudget rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsUpsertBudget: fn }) };
-    const result = await setBidBudgetTool.run(ctx, { acadTermId: "t1", balance: 1000 });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ userBidsUpsertBudget: fn }),
+    };
+    const result = await setBidBudgetTool.run(ctx, {
+      acadTermId: "t1",
+      balance: 1000,
+    });
     expect(result.isError).toBe(true);
   });
 
@@ -202,13 +277,19 @@ describe("bid write tools", () => {
   });
 
   it("set-bid-budget schema rejects a negative balance", () => {
-    const parsed = setBidBudgetTool.inputSchema.safeParse({ acadTermId: "t1", balance: -1 });
+    const parsed = setBidBudgetTool.inputSchema.safeParse({
+      acadTermId: "t1",
+      balance: -1,
+    });
     expect(parsed.success).toBe(false);
   });
 
   it("set-bid-budget rejects a balance above MAX_BUDGET without calling upsertBudget", async () => {
     const fn = vi.fn().mockResolvedValue({});
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ userBidsUpsertBudget: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ userBidsUpsertBudget: fn }),
+    };
     const result = await setBidBudgetTool.run(ctx, {
       acadTermId: "t1",
       balance: MAX_BUDGET + 1,
@@ -226,44 +307,95 @@ describe("bid write tools", () => {
   });
 
   it("upsert-bid response carries no notes key", async () => {
-    const fn = vi.fn().mockResolvedValue({ id: "b1", classId: "c1", bidWindowId: 53, bidAmount: 50, notes: "secret plan" });
+    const fn = vi
+      .fn()
+      .mockResolvedValue({
+        id: "b1",
+        classId: "c1",
+        bidWindowId: 53,
+        bidAmount: 50,
+        notes: "secret plan",
+      });
     const listMine = vi.fn().mockResolvedValue([]);
     const getBudget = vi.fn().mockResolvedValue(null);
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ userBidsUpsert: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
+      caller: makeCaller({
+        userBidsUpsert: fn,
+        userBidsListMine: listMine,
+        userBidsGetBudget: getBudget,
+      }),
     };
-    const out = await upsertBidTool.run(ctx, { classId: "c1", bidWindowId: 53, bidAmount: 50, notes: "secret plan" });
+    const out = await upsertBidTool.run(ctx, {
+      classId: "c1",
+      bidWindowId: 53,
+      bidAmount: 50,
+      notes: "secret plan",
+    });
     const text = out.content.find((c) => c.type === "text")?.text ?? "";
-    expect(text).not.toContain("\"notes\"");
+    expect(text).not.toContain('"notes"');
   });
 
   it("upsert-bid returns { updated, plan } with notes stripped", async () => {
-    const fn = vi.fn().mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 53 });
-    const listMine = vi.fn().mockResolvedValue([
-      mkBid({ id: "b1", classId: "cl1", bidWindowId: 53, bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 } }),
-    ]);
+    const fn = vi
+      .fn()
+      .mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 53 });
+    const listMine = vi
+      .fn()
+      .mockResolvedValue([
+        mkBid({
+          id: "b1",
+          classId: "cl1",
+          bidWindowId: 53,
+          bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
+        }),
+      ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ userBidsUpsert: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
+      caller: makeCaller({
+        userBidsUpsert: fn,
+        userBidsListMine: listMine,
+        userBidsGetBudget: getBudget,
+      }),
     };
-    const result = await upsertBidTool.run(ctx, { classId: "cl1", bidWindowId: 53, bidAmount: 25 });
-    const parsed = JSON.parse(result.content[0]!.text) as { plan: { bids: Array<Record<string, unknown>> } };
+    const result = await upsertBidTool.run(ctx, {
+      classId: "cl1",
+      bidWindowId: 53,
+      bidAmount: 25,
+    });
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      plan: { bids: Array<Record<string, unknown>> };
+    };
     expect(parsed.plan.bids[0]!.notes).toBeUndefined(); // eslint-disable-line @typescript-eslint/no-unsafe-member-access -- typed envelope
   });
 
   it("remove-bid returns { updated, plan } with notes stripped", async () => {
-    const fn = vi.fn().mockResolvedValue({ success: true, acadTermId: "AY202627T1" });
-    const getMine = vi.fn().mockResolvedValue([mkBid({ id: "b1", bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 } })]);
+    const fn = vi
+      .fn()
+      .mockResolvedValue({ success: true, acadTermId: "AY202627T1" });
+    const getMine = vi
+      .fn()
+      .mockResolvedValue([
+        mkBid({
+          id: "b1",
+          bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
+        }),
+      ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 50 });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ userBidsRemove: fn, userBidsListMine: getMine, userBidsGetBudget: getBudget }),
+      caller: makeCaller({
+        userBidsRemove: fn,
+        userBidsListMine: getMine,
+        userBidsGetBudget: getBudget,
+      }),
     };
     const result = await removeBidTool.run(ctx, { id: "b1" });
     expect(result.isError).toBeUndefined();
-    const parsed = JSON.parse(result.content[0]!.text) as { plan: { bids: Array<Record<string, unknown>> } };
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      plan: { bids: Array<Record<string, unknown>> };
+    };
     expect(parsed.plan.bids[0]!.notes).toBeUndefined(); // eslint-disable-line @typescript-eslint/no-unsafe-member-access -- typed envelope
   });
 
@@ -274,14 +406,28 @@ describe("bid write tools", () => {
   });
 
   it("bid write tool toViewProps unwraps { updated, plan } to plan props", async () => {
-    const fn = vi.fn().mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 53 });
-    const listMine = vi.fn().mockResolvedValue([mkBid({ id: "b1", classId: "cl1", bidWindowId: 53 })]);
+    const fn = vi
+      .fn()
+      .mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 53 });
+    const listMine = vi
+      .fn()
+      .mockResolvedValue([
+        mkBid({ id: "b1", classId: "cl1", bidWindowId: 53 }),
+      ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ userBidsUpsert: fn, userBidsListMine: listMine, userBidsGetBudget: getBudget }),
+      caller: makeCaller({
+        userBidsUpsert: fn,
+        userBidsListMine: listMine,
+        userBidsGetBudget: getBudget,
+      }),
     };
-    const result = await upsertBidTool.run(ctx, { classId: "cl1", bidWindowId: 53, bidAmount: 25 });
+    const result = await upsertBidTool.run(ctx, {
+      classId: "cl1",
+      bidWindowId: 53,
+      bidAmount: 25,
+    });
     const props = upsertBidTool.toViewProps!(result);
     expect(props.acadTermId).toBeDefined();
   });
