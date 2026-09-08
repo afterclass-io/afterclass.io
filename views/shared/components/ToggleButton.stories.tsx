@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ToggleButton } from "./ToggleButton";
 import { TOKENS } from "../tokens";
 

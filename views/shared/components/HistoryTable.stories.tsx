@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { HistoryTable } from "./HistoryTable";
 import { TOKENS } from "../tokens";
 import { buildChartPoints } from "../utils/chart-points";

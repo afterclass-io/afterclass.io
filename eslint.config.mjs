@@ -19,6 +19,8 @@ const config = [
     ignores: [
       "node_modules",
       ".next",
+      ".mcp-use",
+      ".superpowers",
       "storybook-static",
       "src/generated",
       "cypress/**/*.cy.js",

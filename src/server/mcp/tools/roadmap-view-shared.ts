@@ -50,9 +50,7 @@ function toRoadmapViewPropsShared(
     });
   }
   return {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- untyped JSON
     roadmapId: roadmap.id as string,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- untyped JSON
     name: roadmap.name as string,
     isPublic,
     owner: isPublic ? (data.ownerUsername as string | null) : null,
@@ -110,14 +108,12 @@ export function roadmapViewToViewProps(
     const parsed = parseViewJson(result);
     if (!("data" in parsed)) return { raw: parsed.raw };
     const data = parsed.data;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access -- untyped JSON
     const payload =
       data && typeof data === "object" && "roadmapView" in data
         ? (data.roadmapView as Record<string, unknown>)
         : data && typeof data === "object" && "roadmap" in data
           ? data
           : data;
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- keeps return typed as Record
     return toRoadmapViewPropsShared(payload, isPublic) as unknown as Record<
       string,
       unknown
@@ -129,7 +125,6 @@ export function toRoadmapViewProps(
   data: Record<string, unknown>,
   isPublic: boolean,
 ): Record<string, unknown> {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- keeps return typed as Record
   return toRoadmapViewPropsShared(data, isPublic) as unknown as Record<
     string,
     unknown

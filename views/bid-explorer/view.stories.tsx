@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import View from "./view";
 import { withMcpView } from "../../.storybook/withMcpView";
 

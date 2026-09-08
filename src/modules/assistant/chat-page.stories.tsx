@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ChatPage } from "./chat-page";
 import type { AssistantStatus } from "@/server/assistant/status";
 

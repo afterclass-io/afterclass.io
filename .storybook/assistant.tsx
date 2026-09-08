@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import type { Decorator } from "@storybook/react";
 import { useChatStore, type StoredSession } from "@/modules/assistant/chat-store";
-import { __setChatState } from "./mocks/ai-sdk-react";
+import { __setChatState, type ChatStateParam } from "./mocks/ai-sdk-react";
 import type { AssistantStatus } from "@/server/assistant/status";
 
 const NO_SESSIONS: StoredSession[] = [];
@@ -13,39 +13,42 @@ export const seedAssistantStore = (
   useChatStore.setState({ hydrated: true, sessions, activeSessionId });
 };
 
+type AssistantParameters = {
+  sessions?: StoredSession[];
+  activeSessionId?: string | null;
+  status?: AssistantStatus | null;
+};
+
 export const mockAssistantStatus = (status: AssistantStatus | null) => {
-  const originalFetch = window.fetch;
-  window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
-    if (String(input).includes("/api/assistant/status")) {
-      return Promise.resolve(new Response(JSON.stringify(status), {
+  const originalFetch: typeof window.fetch = (...args) =>
+    window.fetch(...args);
+  window.fetch = async (
+    ...args: Parameters<typeof window.fetch>
+  ): Promise<Response> => {
+    const [input] = args;
+    const url = input instanceof Request ? input.url : String(input);
+    if (url.includes("/api/assistant/status")) {
+      return new Response(JSON.stringify(status), {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }));
+      });
     }
-    return originalFetch(input, init);
+    return originalFetch(...args);
   };
 };
 
-export const withAssistant: Decorator = (Story, context) => {
-  const {
-    sessions = NO_SESSIONS,
-    activeSessionId = null,
-    status = undefined,
-  } = (context.parameters.assistant ?? {}) as {
-    sessions?: StoredSession[];
-    activeSessionId?: string | null;
-    status?: AssistantStatus | null;
-  };
-
-  // Hand the story's chatState to the ai-sdk-react mock before the story
-  // renders. Runs on every decorator re-render, so the mock always sees the
-  // current story's value; stories without chatState reset it to undefined
-  // (real useChat fall-through).
-  const chatState = context.parameters.chatState;
-  __setChatState(chatState);
-
+function WithAssistantEffects({
+  sessions,
+  activeSessionId,
+  status,
+}: {
+  sessions: StoredSession[];
+  activeSessionId: string | null;
+  status: AssistantStatus | null | undefined;
+}) {
   useEffect(() => {
-    const originalFetch = window.fetch;
+    const originalFetch: typeof window.fetch = (...args) =>
+      window.fetch(...args);
     seedAssistantStore(sessions, activeSessionId);
     if (status !== undefined) mockAssistantStatus(status);
     try {
@@ -59,5 +62,31 @@ export const withAssistant: Decorator = (Story, context) => {
     };
   }, [sessions, activeSessionId, status]);
 
-  return <Story />;
+  return null;
+}
+
+export const withAssistant: Decorator = (Story, context) => {
+  const {
+    sessions = NO_SESSIONS,
+    activeSessionId = null,
+    status = undefined,
+  } = (context.parameters.assistant ?? {}) as AssistantParameters;
+
+  // Hand the story's chatState to the ai-sdk-react mock before the story
+  // renders. Runs on every decorator re-render, so the mock always sees the
+  // current story's value; stories without chatState reset it to undefined
+  // (real useChat fall-through).
+  const chatState = context.parameters.chatState as ChatStateParam | undefined;
+  __setChatState(chatState);
+
+  return (
+    <>
+      <WithAssistantEffects
+        sessions={sessions}
+        activeSessionId={activeSessionId}
+        status={status}
+      />
+      <Story />
+    </>
+  );
 };

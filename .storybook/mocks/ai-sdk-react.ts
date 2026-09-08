@@ -38,7 +38,7 @@ type MockUseChatOptions<UI_MESSAGE extends UIMessage = UIMessage> =
   };
 
 /** Story parameter driving the mocked chat: `parameters: { chatState: {...} }`. */
-type ChatStateParam = {
+export type ChatStateParam = {
   messages?: UIMessage[];
   status?: ChatStatus;
   error?: Error;
