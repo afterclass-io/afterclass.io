@@ -21,7 +21,9 @@ import {
   errText,
   errorMessage,
   jsonText,
+  type CourseRow,
   type McpTool,
+  type RouterOutputs,
 } from "../../types";
 import { stripSecretsFromValue } from "@/mcp/output-policy";
 
@@ -68,10 +70,8 @@ export const upsertRoadmapEntryTool: McpTool<typeof upsertRoadmapEntrySchema> =
         // Resolve roadmap id: explicit, else active.
         let resolvedId = roadmapId?.trim() ?? "";
         if (!resolvedId) {
-          const mine = (await caller.roadmaps.listMine()) as unknown as Array<{
-            id: string;
-            isActive?: boolean;
-          }>;
+          const mine: RouterOutputs["roadmaps"]["listMine"] =
+            await caller.roadmaps.listMine();
           const active = pickActiveOrFirst(mine);
           if (!active) {
             return errText(
@@ -82,23 +82,17 @@ export const upsertRoadmapEntryTool: McpTool<typeof upsertRoadmapEntrySchema> =
         }
 
         // Resolve courseId from courseCode via existing procedure (thin wrapper).
-        const course = (await caller.courses.getByCourseCode({
+        const course: CourseRow = await caller.courses.getByCourseCode({
           code: trimmedCode,
-        })) as unknown as { id: string; code: string; name: string } | null;
-        if (!course) return errText(`Course ${trimmedCode} not found`);
+        });
+        if (!course || typeof course.code !== "string")
+          return errText(`Course ${trimmedCode} not found`);
 
         // Fetch current entries (existing tRPC procedure).
-        const current = (await caller.roadmaps.getMine({
-          roadmapId: resolvedId,
-        })) as unknown as {
-          roadmap: { id: string };
-          entries: Array<{
-            courseId: string;
-            yearNumber: number;
-            term: string;
-            sortOrder: number;
-          }>;
-        };
+        const current: RouterOutputs["roadmaps"]["getMine"] =
+          await caller.roadmaps.getMine({
+            roadmapId: resolvedId,
+          });
 
         // Build additive entries: keep all existing entries except any with the same courseId (moved/updated),
         // then append the new/updated placement. Handle sortOrder default: next slot in that year/term.

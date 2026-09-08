@@ -8,6 +8,7 @@ import {
   errorMessage,
   jsonText,
   type McpTool,
+  type RouterOutputs,
 } from "../../types";
 
 // Mirrors the UserBidStatus enum in prisma/schema.prisma
@@ -32,10 +33,11 @@ export const setBidStatusTool: McpTool<typeof setBidStatusSchema> = {
   toViewProps: bidPlanToViewProps,
   run: async ({ caller }, { id, status }) => {
     try {
-      const updated = (await caller.userBids.setStatus({
-        id,
-        status,
-      })) as unknown as Record<string, unknown> & { classId?: string };
+      const updated: RouterOutputs["userBids"]["setStatus"] =
+        await caller.userBids.setStatus({
+          id,
+          status,
+        });
       // M5: one listMine lookup (not two) for the term enrichment below.
       let bids: Array<{
         id: string;

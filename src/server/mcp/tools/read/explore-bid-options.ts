@@ -7,6 +7,7 @@ import {
   jsonText,
   parseViewJson,
   type McpTool,
+  type RouterOutputs,
 } from "../../types";
 
 /** Flat history shape consumed by the bid-explorer view. */
@@ -129,11 +130,8 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
         if (!trimmedSection) return errText("section must not be empty");
         let termId: string | undefined;
         try {
-          const cw =
-            (await caller.bidWindows.getCurrentWindow()) as unknown as {
-              id: number;
-              acadTermId: string;
-            } | null;
+          const cw: RouterOutputs["bidWindows"]["getCurrentWindow"] =
+            await caller.bidWindows.getCurrentWindow();
           termId = cw?.acadTermId ?? undefined;
         } catch {
           // leave termId undefined — the lookup below searches broadly

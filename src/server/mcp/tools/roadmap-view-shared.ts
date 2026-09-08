@@ -1,4 +1,4 @@
-import type { RouterCaller } from "../types";
+import type { RouterCaller, RouterOutputs } from "../types";
 import { parseViewJson } from "../types";
 import { stripSecretsFromValue } from "@/mcp/output-policy";
 
@@ -81,9 +81,10 @@ export async function buildRoadmapView(
   caller: RouterCaller,
   roadmapId: string,
 ): Promise<Record<string, unknown>> {
-  const data = (await caller.roadmaps.getMine({
-    roadmapId,
-  })) as unknown as Record<string, unknown>;
+  const data: RouterOutputs["roadmaps"]["getMine"] =
+    await caller.roadmaps.getMine({
+      roadmapId,
+    });
   const roadmapSrc = data.roadmap as Record<string, unknown> | undefined;
   // Canonical output policy (Task 7, R8): bearer tokens must not reach the
   // LLM. `stripSecretsFromValue` covers shareToken + icalToken + notes;

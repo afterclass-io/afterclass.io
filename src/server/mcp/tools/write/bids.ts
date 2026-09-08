@@ -10,6 +10,7 @@ import {
   errorMessage,
   jsonText,
   type McpTool,
+  type RouterOutputs,
 } from "../../types";
 
 // Canonical values live in `src/server/config/chat-config.ts` (`maxBidAmount`
@@ -81,10 +82,8 @@ export const removeBidTool: McpTool<typeof removeBidSchema> = {
       } catch {
         // Non-fatal — continue to delete even if term resolution failed pre-delete.
       }
-      const raw = (await caller.userBids.remove({ id })) as unknown as {
-        acadTermId?: string | null;
-        success?: boolean;
-      };
+      const raw: RouterOutputs["userBids"]["remove"] =
+        await caller.userBids.remove({ id });
       if (!acadTermId && raw && typeof raw.acadTermId === "string")
         acadTermId = raw.acadTermId;
       const updated = { success: raw?.success ?? true };

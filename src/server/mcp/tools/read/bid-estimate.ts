@@ -11,8 +11,10 @@ import {
   errText,
   errorMessage,
   jsonText,
+  type CourseRow,
   type McpTool,
   type RouterCaller,
+  type RouterOutputs,
 } from "../../types";
 import {
   DEFAULT_BEATS_PERCENTAGE,
@@ -79,25 +81,22 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
         return errText("Could not resolve a bid window for this estimate.");
 
       // Resolve course (canonical code/name)
-      const course = (await caller.courses.getByCourseCode({
+      const course: CourseRow = await caller.courses.getByCourseCode({
         code: trimmedCode,
-      })) as unknown as { id: string; code: string; name: string } | null;
-      if (!course) return errText(`Course ${trimmedCode} not found`);
+      });
+      if (!course || typeof course.code !== "string")
+        return errText(`Course ${trimmedCode} not found`);
 
       const acadTermId = bidWindow?.acadTermId;
       // Fetch classes for the course in the (open) term.
-      const rawClasses = (await caller.classes.getAll({
-        courseCode: course.code,
-        acadTermId: acadTermId ?? undefined,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentionally maps "" -> undefined
-        section: section?.trim() || undefined,
-        limit: 50,
-      })) as unknown as Array<{
-        id: string;
-        section: string;
-        professor?: { name: string; slug: string } | null;
-        professorId?: string | null;
-      }>;
+      const rawClasses: RouterOutputs["classes"]["getAll"] =
+        await caller.classes.getAll({
+          courseCode: course.code,
+          acadTermId: acadTermId ?? undefined,
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentionally maps "" -> undefined
+          section: section?.trim() || undefined,
+          limit: 50,
+        });
 
       let classes = rawClasses ?? [];
       // If a section filter was given, ensure exact match (getAll does exact, but be defensive).
@@ -112,11 +111,11 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
             section: sectionFilter,
           });
           if (fallbackId) {
-            const matched = (await caller.classes.getAll({
+            const matched: typeof rawClasses = await caller.classes.getAll({
               courseCode: course.code,
               section: sectionFilter,
               limit: 50,
-            })) as unknown as typeof rawClasses;
+            });
             classes = (matched ?? []).filter(
               (c) => c.section === sectionFilter,
             );
@@ -129,10 +128,10 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
       } else if (classes.length === 0 && acadTermId) {
         // Term-scoped lookup returned nothing (e.g. course not in that term);
         // try a term-agnostic lookup so the user still gets an estimate.
-        const fallback = (await caller.classes.getAll({
+        const fallback: typeof rawClasses = await caller.classes.getAll({
           courseCode: course.code,
           limit: 50,
-        })) as unknown as typeof rawClasses;
+        });
         classes = fallback ?? [];
       }
 
@@ -164,33 +163,17 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
 
       const estimates: Array<Record<string, unknown>> = [];
       for (const cls of classes) {
-        let prediction: {
-          medianPredicted: number | null;
-          minPredicted: number | null;
-          bidWindow: {
-            id: number;
-            acadTermId: string;
-            round: string;
-            window: number;
-          } | null;
-        } | null = null;
+        let prediction: RouterOutputs["bidPredictions"]["getBy"] = null;
         try {
-          const rawPred = (await caller.bidPredictions.getBy({
+          prediction = await caller.bidPredictions.getBy({
             classId: cls.id,
-          })) as unknown as typeof prediction;
-          prediction = rawPred;
+          });
         } catch {
           prediction = null;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- keeps typed after narrowing
-        const median =
-          (prediction as unknown as { medianPredicted: number | null } | null)
-            ?.medianPredicted ?? null;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- keeps typed after narrowing
-        const min =
-          (prediction as unknown as { minPredicted: number | null } | null)
-            ?.minPredicted ?? null;
+        const median = prediction?.medianPredicted ?? null;
+        const min = prediction?.minPredicted ?? null;
         let suggested: number | null = suggestBidAmount(median);
         let multiplierUsed: number | null = null;
         let rationale: string | null = null;
@@ -224,13 +207,10 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
         // Vacancy for the OPEN window: look up BidResult for this class filtered to the open window.
         let vacancy: number | null = null;
         try {
-          const results = (await caller.bidResults.getBy({
-            classId: cls.id,
-          })) as unknown as Array<{
-            bidWindowId: number;
-            vacancy: number | null;
-            bidWindow?: { id: number } | null;
-          }>;
+          const results: RouterOutputs["bidResults"]["getBy"] =
+            await caller.bidResults.getBy({
+              classId: cls.id,
+            });
           if (Array.isArray(results)) {
             const row = results.find(
               (r) =>

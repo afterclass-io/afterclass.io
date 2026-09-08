@@ -6,6 +6,38 @@ import type { createCaller } from "@/server/api/root";
 /** A tRPC server-side caller, typed like `createCaller(...)`. */
 export type RouterCaller = ReturnType<typeof createCaller>;
 
+/**
+ * Canonical result types derived from the router: `RouterOutputs[K][M]` is
+ * the awaited return of procedure `M` on namespace `K` (derive, don't
+ * duplicate — future procedure changes break the build, not runtime).
+ */
+export type RouterOutputs = {
+  [K in keyof RouterCaller]: {
+    [M in keyof RouterCaller[K]]: RouterCaller[K][M] extends (
+      ...a: never[]
+    ) => unknown
+      ? Awaited<ReturnType<RouterCaller[K][M]>>
+      : never;
+  };
+};
+
+/** Course row (courses.getByCourseCode return). */
+export type CourseRow = Awaited<
+  ReturnType<RouterCaller["courses"]["getByCourseCode"]>
+>;
+
+/** Runtime guard: narrows unknown caller results; returns friendly errText input. */
+export function assertCourseRow(
+  v: unknown,
+): asserts v is NonNullable<CourseRow> {
+  if (
+    !v ||
+    typeof v !== "object" ||
+    typeof (v as { code?: unknown }).code !== "string"
+  )
+    throw new Error("Course not found");
+}
+
 /** Everything a tool handler needs. `caller` is already scoped to `user`. */
 export interface ToolContext {
   user: SessionUser;

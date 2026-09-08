@@ -8,6 +8,7 @@ import {
   errorMessage,
   jsonText,
   type McpTool,
+  type RouterOutputs,
 } from "../../types";
 
 const visibilitySchema = z.enum(["PRIVATE", "UNLISTED", "PUBLIC"]);
@@ -113,10 +114,11 @@ export const addClassToTimetableTool: McpTool<
       // Resolve the class's term, then the user's active timetable for it.
       let acadTermId: string | undefined;
       try {
-        const classes = (await caller.classes.getAll({
-          id: input.classId,
-          limit: 1,
-        })) as unknown as Array<{ id: string; acadTermId?: string }>;
+        const classes: RouterOutputs["classes"]["getAll"] =
+          await caller.classes.getAll({
+            id: input.classId,
+            limit: 1,
+          });
         acadTermId = classes?.[0]?.acadTermId;
       } catch {
         acadTermId = undefined;
