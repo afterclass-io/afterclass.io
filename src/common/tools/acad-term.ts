@@ -154,7 +154,7 @@ export async function listAcadTerms(prisma: {
     // Narrow retry (Task 12): only the missing-incrementalCache shim error
     // falls back to a direct fetch — any other failure (DB down, etc.)
     // rethrows instead of silently bypassing the cache.
-    if (e instanceof Error && /incrementalCache/.test(e.message)) {
+    if (e instanceof Error && e.message.includes("incrementalCache")) {
       return _fetchAcadTerms(prisma);
     }
     throw e;

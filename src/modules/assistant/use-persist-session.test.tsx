@@ -131,6 +131,7 @@ describe("usePersistSession - widget session reuse (Task 4)", () => {
   });
 
   it("a persist failure warns (no unhandled rejection) and retries on the next run-end", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function -- silence warn for the retry assertion
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     try {
       const { idbPut } = await import("./idb");

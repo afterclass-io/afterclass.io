@@ -297,6 +297,7 @@ describe("listAcadTerms", () => {
     const mockDb = { acadTerm: { findMany } };
     await expect(
       listAcadTerms(
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- narrow mock to the delegate-only param
         mockDb as unknown as Parameters<typeof listAcadTerms>[0],
       ),
     ).rejects.toThrow("db down");
@@ -313,6 +314,7 @@ describe("listAcadTerms", () => {
       const findMany = vi.fn().mockResolvedValue(sampleRows);
       const mockDb = { acadTerm: { findMany } };
       const result = await listAcadTerms(
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- narrow mock to the delegate-only param
         mockDb as unknown as Parameters<typeof listAcadTerms>[0],
       );
       expect(result).toHaveLength(2);

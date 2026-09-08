@@ -45,11 +45,13 @@ async function resolveResourceCaller(
       ctx as never,
     );
     if (!toolCtx) return undefined;
-    const scoped = toolCtx.caller as unknown as {
-      acadTerms?: { list?: unknown };
-    };
-    if (typeof scoped?.acadTerms?.list !== "function") return undefined;
-    return toolCtx.caller as unknown as AcadTermsCaller;
+    const scoped: unknown = toolCtx.caller;
+    if (
+      typeof (scoped as { acadTerms?: { list?: unknown } }).acadTerms?.list !==
+      "function"
+    )
+      return undefined;
+    return scoped as AcadTermsCaller;
   }
   return { acadTerms: maybeCaller.acadTerms } as AcadTermsCaller;
 }
