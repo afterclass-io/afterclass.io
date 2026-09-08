@@ -3,18 +3,13 @@ import { z } from "zod";
 import { normalizeSearchQuery } from "@/common/tools/query-normalize";
 import { publicProcedure } from "@/server/api/trpc";
 
-type SearchRow = {
-  id: string;
-  code: string;
-  name: string;
-  creditUnits: number;
-};
+import { buildCourseSearchQuery, searchCoursesShared } from "./query";
 
 export const searchCourses = publicProcedure
   .input(
     z.object({
       acadTermId: z.string(),
-      query: z.string().min(1),
+      query: z.string().min(1).max(200),
       facultyId: z.number().int().optional(),
       // Same meeting-time semantics as classes.getAll: one class_timing row
       // must satisfy every provided condition (day equality, start >=, end <=).
@@ -30,116 +25,32 @@ export const searchCourses = publicProcedure
     // Return early, before SQL.
     if (q.length < 2) return [];
 
-    // Ranked fuzzy search: exact/prefix code first, then prefix FTS over
-    // code+name+description+courseArea (`:*` restores the pre-upgrade prefix
-    // behavior), then trigram name matching - word_similarity gives
-    // best-word typo tolerance ("statistics" matches "Statistical Analysis")
-    // + code similarity for spaced/dashed codes, then professor-name match
-    // in the same acad term (mirrors the pre-upgrade `classes.some({
-    // acadTermId, professor: { name: contains } })` branch). Offered-in-term
-    // filter via EXISTS on classes. Optional facultyId via c.belong_to_faculty
-    // and description/courseArea via word_similarity + FTS COALESCE.
-    // Parameterized - safe (prepared statement).
-    const hasFaculty = typeof input.facultyId === "number";
+    // Ranked fuzzy search through the shared builder (single ranked SQL for
+    // both course procedures — see ./query.ts). Ranking: exact/prefix code
+    // first, then prefix FTS over code+name+description+courseArea, then
+    // trigram name matching + code similarity, then professor-name match in
+    // the same acad term. Offered-in-term filter via EXISTS on classes;
+    // optional facultyId via c.belong_to_faculty. All parameterized (safe).
     // Timing gate flag: when no day/time filters are given the flag is false
     // and the class_timing EXISTS short-circuits, so courses whose classes
     // have no timings still match, exactly as before. Nulls stand in for
     // omitted filters (Prisma maps null to SQL NULL, unlike undefined).
     const hasTimingFilter =
       input.day !== undefined || input.startsAfter !== undefined || input.endsBefore !== undefined;
-    const day = input.day ?? null;
-    const startsAfter = input.startsAfter ?? null;
-    const endsBefore = input.endsBefore ?? null;
-    const rows = hasFaculty
-      ? await ctx.db.$queryRaw<SearchRow[]>`
-      SELECT c.id, c.code, c.name, c.credit_units AS "creditUnits"
-      FROM courses c
-      WHERE c.belong_to_faculty = ${input.facultyId}
-      AND EXISTS (
-        SELECT 1 FROM classes cl
-        WHERE cl.course_id = c.id AND cl.acad_term_id = ${input.acadTermId}
-      )
-      AND (
-        ${hasTimingFilter} = false
-        OR EXISTS (
-          SELECT 1 FROM classes clt
-          JOIN class_timing ct ON ct.class_id = clt.id
-          WHERE clt.course_id = c.id AND clt.acad_term_id = ${input.acadTermId}
-            AND (${day}::text IS NULL OR ct.day_of_week = ${day}::text)
-            AND (${startsAfter}::text IS NULL OR ct.start_time >= ${startsAfter}::text)
-            AND (${endsBefore}::text IS NULL OR ct.end_time <= ${endsBefore}::text)
-        )
-      )
-      AND (
-        c.code ILIKE ('%' || ${q} || '%')
-        OR to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description,'') || ' ' || COALESCE(c.course_area,''))
-           @@ plainto_tsquery('simple', ${q} || ':*')
-        OR word_similarity(c.name, ${q}) > 0.3
-        OR word_similarity(COALESCE(c.description,''), ${q}) > 0.3
-        OR word_similarity(COALESCE(c.course_area,''), ${q}) > 0.3
-        OR similarity(c.code, ${q}) > 0.3
-        OR EXISTS (
-          SELECT 1 FROM classes clp
-          JOIN professors p ON p.id = clp.professor_id
-          WHERE clp.course_id = c.id
-            AND clp.acad_term_id = ${input.acadTermId}
-            AND (
-              p.name ILIKE ('%' || ${q} || '%')
-              OR word_similarity(p.name, ${q}) > 0.3
-            )
-        )
-      )
-      ORDER BY
-        (c.code = UPPER(${q}))::int DESC,
-        (c.code ILIKE (${q} || '%'))::int DESC,
-        similarity(c.name, ${q}) DESC,
-        c.code
-      LIMIT 20;
-    `
-      : await ctx.db.$queryRaw<SearchRow[]>`
-      SELECT c.id, c.code, c.name, c.credit_units AS "creditUnits"
-      FROM courses c
-      WHERE EXISTS (
-        SELECT 1 FROM classes cl
-        WHERE cl.course_id = c.id AND cl.acad_term_id = ${input.acadTermId}
-      )
-      AND (
-        ${hasTimingFilter} = false
-        OR EXISTS (
-          SELECT 1 FROM classes clt
-          JOIN class_timing ct ON ct.class_id = clt.id
-          WHERE clt.course_id = c.id AND clt.acad_term_id = ${input.acadTermId}
-            AND (${day}::text IS NULL OR ct.day_of_week = ${day}::text)
-            AND (${startsAfter}::text IS NULL OR ct.start_time >= ${startsAfter}::text)
-            AND (${endsBefore}::text IS NULL OR ct.end_time <= ${endsBefore}::text)
-        )
-      )
-      AND (
-        c.code ILIKE ('%' || ${q} || '%')
-        OR to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description,'') || ' ' || COALESCE(c.course_area,''))
-           @@ plainto_tsquery('simple', ${q} || ':*')
-        OR word_similarity(c.name, ${q}) > 0.3
-        OR word_similarity(COALESCE(c.description,''), ${q}) > 0.3
-        OR word_similarity(COALESCE(c.course_area,''), ${q}) > 0.3
-        OR similarity(c.code, ${q}) > 0.3
-        OR EXISTS (
-          SELECT 1 FROM classes clp
-          JOIN professors p ON p.id = clp.professor_id
-          WHERE clp.course_id = c.id
-            AND clp.acad_term_id = ${input.acadTermId}
-            AND (
-              p.name ILIKE ('%' || ${q} || '%')
-              OR word_similarity(p.name, ${q}) > 0.3
-            )
-        )
-      )
-      ORDER BY
-        (c.code = UPPER(${q}))::int DESC,
-        (c.code ILIKE (${q} || '%'))::int DESC,
-        similarity(c.name, ${q}) DESC,
-        c.code
-      LIMIT 20;
-    `;
+    const rows = await searchCoursesShared(
+      ctx.db,
+      buildCourseSearchQuery({
+        acadTermId: input.acadTermId,
+        facultyId: input.facultyId,
+        hasTimingFilter,
+        timing: {
+          day: input.day ?? null,
+          startsAfter: input.startsAfter ?? null,
+          endsBefore: input.endsBefore ?? null,
+        },
+        q,
+      }),
+    );
 
     // Keep the pre-upgrade response shape (sections/timings/exam timings),
     // now fetched in ONE follow-up query instead of per-row.

@@ -1,39 +1,32 @@
 import { z } from "zod";
 
+import { normalizeSearchQuery } from "@/common/tools/query-normalize";
 import { publicProcedure } from "@/server/api/trpc";
 
-type SearchRow = {
-  id: string;
-  code: string;
-  name: string;
-  creditUnits: number;
-};
+import {
+  buildCourseSearchQuery,
+  searchCoursesShared,
+} from "@/server/api/timetable/searchCourses/query";
 
 export const searchCourses = publicProcedure
-  .input(z.object({ query: z.string().min(1) }))
+  .input(z.object({ query: z.string().min(1).max(200) }))
   .query(async ({ ctx, input }) => {
-    const q = input.query.trim();
-    if (!q) return [];
+    const q = normalizeSearchQuery(input.query);
+    // Min-length guard mirrors the timetable procedure: sub-2-char queries
+    // are too generic to be useful. Return early, before SQL.
+    if (q.length < 2) return [];
 
-    // Ranked fuzzy search: exact/prefix code first, then FTS over code+name,
-    // then trigram name similarity (typo-tolerant). Parameterized - safe
-    // (prepared statement). Same output shape as before ({ id, code, name,
-    // creditUnits }) so the roadmap planner UI contract is preserved.
-    const rows = await ctx.db.$queryRaw<SearchRow[]>`
-      SELECT c.id, c.code, c.name, c.credit_units AS "creditUnits"
-      FROM courses c
-      WHERE (
-        c.code ILIKE ('%' || ${q} || '%')
-        OR to_tsvector('simple', c.code || ' ' || c.name)
-           @@ plainto_tsquery('simple', ${q})
-        OR similarity(c.name, ${q}) > 0.3
-      )
-      ORDER BY
-        (c.code ILIKE (${q} || '%'))::int DESC,
-        similarity(c.name, ${q}) DESC,
-        c.code
-      LIMIT 20;
-    `;
-
-    return rows;
+    // Whole-catalog search through the SAME ranked SQL as the timetable
+    // procedure (no forked ranking). No acadTermId, so the offered-in-term
+    // and professor-term gates are skipped. Same output shape
+    // ({ id, code, name, creditUnits }) so the roadmap planner UI contract
+    // is preserved.
+    return searchCoursesShared(
+      ctx.db,
+      buildCourseSearchQuery({
+        hasTimingFilter: false,
+        timing: { day: null, startsAfter: null, endsBefore: null },
+        q,
+      }),
+    );
   });

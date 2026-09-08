@@ -17,9 +17,22 @@
  * dashed canonical code like `COR-STAT1202` won't match the collapsed
  * `CORSTAT1202` via the code ILIKE branch; the trigram
  * `similarity(c.code, q)` and FTS branches still catch it.
+ *
+ * Length cap: input is sliced to `MAX_QUERY_LEN` (200) BEFORE any other
+ * normalization, so an absurd 5000-char paste can never reach the SQL
+ * ILIKE/trigram branches. Slicing first (not truncating the normalized
+ * result) keeps the remaining pipeline byte-identical for normal queries.
  */
+/**
+ * Hard cap on free-text search input before normalization. Guards the SQL
+ * ILIKE/trigram branches against absurd (pasted/attack) payloads; the zod
+ * schemas on the three search procedures + the MCP courses tool pin the same
+ * bound at the API boundary, this slice is the defense-in-depth inner layer.
+ */
+export const MAX_QUERY_LEN = 200;
+
 export function normalizeSearchQuery(query: string): string {
-  const trimmed = query.trim();
+  const trimmed = query.slice(0, MAX_QUERY_LEN).trim();
   if (!trimmed) return "";
 
   // Comma/semicolon -> space (professor "GOH, Jing Rong").

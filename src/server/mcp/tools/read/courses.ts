@@ -12,6 +12,7 @@ const searchCoursesSchema = z.object({
   query: z
     .string()
     .min(1)
+    .max(200)
     .describe("Search text: course code, course name, or professor name"),
   facultyId: z
     .union([z.number().int(), z.string()])

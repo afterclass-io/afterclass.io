@@ -75,6 +75,26 @@ describe("professors.search", () => {
     expect(params).toContain(5);
   });
 
+  it("matches comma-stored names via the REPLACE branch ('Goh, Jing Rong')", async () => {
+    queryRawMock.mockResolvedValue([
+      { id: "p1", slug: "goh-jing-rong", name: "Goh, Jing Rong", count: 1n },
+    ]);
+
+    const result = await caller.professors.search({ query: "Goh, Jing Rong" });
+
+    expect(result).toEqual({
+      rows: [{ id: "p1", slug: "goh-jing-rong", name: "Goh, Jing Rong" }],
+      count: 1,
+    });
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const sql = rawCall[0].join("?");
+    const params = rawCall.slice(1);
+    // Normalized query has no comma; the REPLACE branch matches the
+    // comma-stored row deterministically (word_similarity alone is fuzzy).
+    expect(sql).toContain("REPLACE(p.name");
+    expect(params).toContain("Goh Jing Rong");
+  });
+
   it("returns empty { rows, count: 0 } for a single-char query without hitting the db", async () => {
     const result = await caller.professors.search({ query: "a" });
 

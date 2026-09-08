@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeSearchQuery } from "./query-normalize";
+import { MAX_QUERY_LEN, normalizeSearchQuery } from "./query-normalize";
 
 describe("normalizeSearchQuery", () => {
   it("trims leading and trailing whitespace", () => {
@@ -41,5 +41,11 @@ describe("normalizeSearchQuery", () => {
 
   it("keeps single-char queries as-is (min-length guard is the caller's job)", () => {
     expect(normalizeSearchQuery("a")).toBe("a");
+  });
+});
+
+describe("caps", () => {
+  it("truncates absurd queries", () => {
+    expect(normalizeSearchQuery("a".repeat(5000)).length).toBeLessThanOrEqual(MAX_QUERY_LEN);
   });
 });

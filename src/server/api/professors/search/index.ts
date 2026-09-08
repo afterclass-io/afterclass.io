@@ -13,7 +13,7 @@ type SearchRow = {
 export const search = publicProcedure
   .input(
     z.object({
-      query: z.string().min(1),
+      query: z.string().min(1).max(200),
       limit: z.number().int().min(1).max(50).default(10),
     }),
   )
@@ -26,6 +26,9 @@ export const search = publicProcedure
     // Fuzzy search over professor name / URL slug / boss aliases. ILIKE covers
     // substring + prefix, word_similarity gives best-word typo tolerance on
     // name, and the unnest(boss_aliases) branch searches each stored alias.
+    // The REPLACE branch is comma-tolerant: normalize() strips commas from
+    // the query, so "Goh Jing Rong" still matches a comma-stored row
+    // "Goh, Jing Rong" deterministically (word_similarity alone is fuzzy).
     // COUNT(*) OVER () runs before LIMIT, so `count` is the TRUE total number
     // of matches, not the page size. Parameterized - safe (prepared statement).
     const rows = await ctx.db.$queryRaw<SearchRow[]>`
@@ -33,6 +36,7 @@ export const search = publicProcedure
       FROM professors p
       WHERE
         p.name ILIKE ('%' || ${q} || '%')
+        OR REPLACE(p.name, ',', '') ILIKE ('%' || ${q} || '%')
         OR p.slug ILIKE ('%' || ${q} || '%')
         OR word_similarity(p.name, ${q}) > 0.3
         OR EXISTS (

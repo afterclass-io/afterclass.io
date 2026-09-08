@@ -71,6 +71,13 @@ describe("roadmaps.searchCourses", () => {
     expect(queryRawMock).not.toHaveBeenCalled();
   });
 
+  it("returns [] for a sub-2-char query without hitting the db", async () => {
+    const result = await caller.roadmaps.searchCourses({ query: "a" });
+
+    expect(result).toEqual([]);
+    expect(queryRawMock).not.toHaveBeenCalled();
+  });
+
   it("propagates an error when the raw query rejects", async () => {
     queryRawMock.mockRejectedValue(new Error("boom"));
 
