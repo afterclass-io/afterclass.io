@@ -1,15 +1,18 @@
 import { server } from "../server";
-import { allTools } from "@/server/mcp/tools";
 import { roadmapsMinePage } from "@/server/mcp/tools/page-links";
-import { getToolRegistration } from "../annotations";
 import { asSchema } from "../schema";
 import { roadmapOutput } from "./schemas";
 import { runViewTool } from "./results";
+import { makeViewTool } from "./make-view-tool";
 
-const tool = allTools.find((t) => t.name === "get-my-roadmap")!;
-
-// Routed through the shared derivation (Task 11) — see search-courses.ts.
-const registration = getToolRegistration("get-my-roadmap");
+// Shared lookup + named-throw + registration derivation (Task 11).
+const { tool, registration } = makeViewTool({
+  name: "get-my-roadmap",
+  view: { name: "roadmap-view", description: "Study roadmap" },
+  outputSchema: roadmapOutput,
+  summarize: () => "",
+  rawPayloadMessage: "Invalid roadmap payload",
+});
 
 export const getMyRoadmap = server.tool(
   {

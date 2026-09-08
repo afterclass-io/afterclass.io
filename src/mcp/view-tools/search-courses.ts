@@ -1,19 +1,24 @@
 import { server } from "../server";
-import { allTools } from "@/server/mcp/tools";
 import { coursePage, searchPage } from "@/server/mcp/tools/page-links";
-import { getToolRegistration } from "../annotations";
 import { asSchema } from "../schema";
 import { dispatchToolCall } from "../dispatch";
 import { courseSearchOutput } from "./schemas";
 import { errorResult, guardedParse } from "./results";
+import { catalogToolOrThrow, makeViewTool } from "./make-view-tool";
 
-const searchCoursesTool = allTools.find((t) => t.name === "search-courses")!;
-
-// Routed through the shared derivation (Task 11): same title/annotations/
+// Shared lookup + named-throw (Task 11): same title/annotations/
 // confirm-suffix as every viewless registration, so tools/list shows one
 // consistent annotation story. View key stays local (view binding is not
-// part of the shared derivation).
-const registration = getToolRegistration("search-courses");
+// part of the shared derivation). This bespoke adapter keeps its own
+// searchCoursesTool binding (array-tail below), so it uses the raw lookup.
+const searchCoursesTool = catalogToolOrThrow("search-courses");
+const registration = makeViewTool({
+  name: "search-courses",
+  view: { name: "course-search", description: "Course search results" },
+  outputSchema: courseSearchOutput,
+  summarize: () => "",
+  rawPayloadMessage: "Invalid course search payload",
+}).registration;
 
 export const searchCourses = server.tool(
   {

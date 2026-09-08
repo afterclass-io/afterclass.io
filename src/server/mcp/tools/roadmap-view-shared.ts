@@ -30,21 +30,25 @@ function toRoadmapViewPropsShared(
     : Array.isArray(roadmap.entries)
       ? (roadmap.entries as unknown[])
       : [];
-  const entries: RoadmapEntryView[] = rawEntries.map((e) => {
+  const entries: RoadmapEntryView[] = [];
+  // Validated entry mapping (Task 11): drop malformed rows, never cast
+  // blindly — a malformed entry is skipped, not surfaced as undefined props.
+  for (const e of rawEntries) {
     const entry = e as Record<string, unknown>;
     const course = (entry.course ?? {}) as Record<string, unknown>;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- untyped JSON
-    const yearNumber = entry.yearNumber as number;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- untyped JSON
-    const term = entry.term as string;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- untyped JSON
-    const courseCode = course.code as string;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- untyped JSON
-    const courseName = course.name as string;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- untyped JSON
-    const creditUnits = course.creditUnits as number | null;
-    return { yearNumber, term, courseCode, courseName, creditUnits };
-  });
+    if (typeof entry.yearNumber !== "number" || typeof entry.term !== "string")
+      continue;
+    if (typeof course.code !== "string" || typeof course.name !== "string")
+      continue;
+    entries.push({
+      yearNumber: entry.yearNumber,
+      term: entry.term,
+      courseCode: course.code,
+      courseName: course.name,
+      creditUnits:
+        typeof course.creditUnits === "number" ? course.creditUnits : null,
+    });
+  }
   return {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- untyped JSON
     roadmapId: roadmap.id as string,

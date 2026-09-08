@@ -22,7 +22,10 @@ export const getMyRoadmapTool: McpTool<typeof getMyRoadmapSchema> = {
   toViewProps: roadmapViewExtractor(false),
   run: async ({ caller }, { roadmapId }) => {
     try {
-      return jsonText(await buildRoadmapView(caller, roadmapId));
+      const view = await buildRoadmapView(caller, roadmapId);
+      // Direct viewProps writers (Task 11): no JSON round-trip — the view
+      // channel carries the typed view; the text envelope stays for the model.
+      return { ...jsonText(view), viewProps: view };
     } catch (e) {
       return errText(errorMessage(e));
     }

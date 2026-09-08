@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { capPage } from "@/mcp/output-policy";
+import { capPage, pageByCursor } from "@/mcp/output-policy";
 import { resolveTermId } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 import { stripBidNotes, stripShareToken } from "../bid-shared";
@@ -70,27 +70,17 @@ export const myBidsTool: McpTool<typeof myBidsSchema> = {
           (b as { bidWindow?: { acadTermId?: string } }).bidWindow
             ?.acadTermId === term.value,
       );
-      // Cursor pagination over the in-memory term-filtered page (listMine has
-      // no cursor support at the router): cursor is the previous page's last
-      // item id; unknown cursors restart from the first page. nextCursor is
-      // always present (null on the last page) so clients can page forward.
-      const startAt =
-        cursor === undefined
-          ? 0
-          : (() => {
-              const idx = filtered.findIndex(
-                (b) => (b as { id?: string }).id === cursor,
-              );
-              return idx === -1 ? 0 : idx + 1;
-            })();
-      const page = filtered.slice(startAt, startAt + limit);
-      const lastId = page.length
-        ? (page[page.length - 1] as { id?: string }).id
-        : undefined;
-      const nextCursor =
-        lastId !== undefined && startAt + limit < filtered.length
-          ? (lastId ?? null)
-          : null;
+      // Shared cursor pagination (Task 11: pageByCursor) over the in-memory
+      // term-filtered page (listMine has no cursor support at the router):
+      // cursor is the previous page's last item id; unknown cursors restart
+      // from the first page. nextCursor is always present (null on the last
+      // page) so clients can page forward.
+      const { items: page, nextCursor } = pageByCursor(
+        filtered,
+        (b) => (b as { id?: string }).id,
+        cursor,
+        limit,
+      );
       return jsonText({ items: page, nextCursor });
     } catch (e) {
       return errText(errorMessage(e));

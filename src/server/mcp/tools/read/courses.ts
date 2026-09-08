@@ -191,6 +191,11 @@ export const getClassesTool: McpTool<typeof getClassesSchema> = {
       // router has no cursor support, so the slice happens here — the cursor
       // is the previous page's last item id (stable enough for a 20-row
       // window; no new router surface needed for a 20-row cap).
+      // NOTE (Task 11 ruling): this stays inline instead of pageByCursor —
+      // the clamped router fetch needs the OPTIMISTIC rule (a full page
+      // reports its last id because a 21st row may exist beyond the fetch
+      // window), while pageByCursor is the EXACT rule (null when no known
+      // items remain). Two pinned tests pin the optimistic behavior here.
       const cursor = (input as { cursor?: unknown }).cursor;
       if (typeof cursor !== "string") {
         const lastId =

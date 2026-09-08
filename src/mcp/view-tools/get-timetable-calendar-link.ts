@@ -1,17 +1,20 @@
 import { server } from "../server";
-import { allTools } from "@/server/mcp/tools";
-import { getToolRegistration } from "../annotations";
 import { asSchema } from "../schema";
 import { dispatchToolCall } from "../dispatch";
 import { calendarLinksOutput } from "./schemas";
 import { errorResult, guardedParse } from "./results";
+import { makeViewTool } from "./make-view-tool";
 
-const tool = allTools.find((t) => t.name === "get-timetable-calendar-link")!;
-
-// Routed through the shared derivation (Task 11) — see search-courses.ts.
+// Shared lookup + named-throw + registration derivation (Task 11).
 // This adapter is destructive (PRIVATE → UNLISTED escalation), so the
 // derivation also surfaces the confirm:true requirement in tools/list.
-const registration = getToolRegistration("get-timetable-calendar-link");
+const { tool, registration } = makeViewTool({
+  name: "get-timetable-calendar-link",
+  view: { name: "calendar-links", description: "Calendar subscribe links" },
+  outputSchema: calendarLinksOutput,
+  summarize: () => "",
+  rawPayloadMessage: "Invalid calendar links payload",
+});
 
 export const getTimetableCalendarLink = server.tool(
   {
@@ -68,17 +71,17 @@ export const getTimetableCalendarLink = server.tool(
       structuredContent.madeLinkShareable = madeLinkShareable;
     const parsed = guardedParse(calendarLinksOutput, structuredContent);
     if (!parsed.ok) return errorResult("Output schema validation failed");
+    // Validated _meta construction (Task 11): only non-empty strings enter
+    // the secret-bearing URLs — never undefined/non-string casts.
+    const str = (v: unknown): string | undefined =>
+      typeof v === "string" && v.length > 0 ? v : undefined;
     const meta = viewProps
       ? {
-          feedUrl: viewProps.feedUrl as string | undefined,
-          subscribeUrl: viewProps.subscribeUrl as string | undefined,
-          googleSubscribeUrl: viewProps.googleSubscribeUrl as
-            | string
-            | undefined,
-          appleSubscribeUrl: viewProps.appleSubscribeUrl as string | undefined,
-          outlookSubscribeUrl: viewProps.outlookSubscribeUrl as
-            | string
-            | undefined,
+          feedUrl: str(viewProps.feedUrl),
+          subscribeUrl: str(viewProps.subscribeUrl),
+          googleSubscribeUrl: str(viewProps.googleSubscribeUrl),
+          appleSubscribeUrl: str(viewProps.appleSubscribeUrl),
+          outlookSubscribeUrl: str(viewProps.outlookSubscribeUrl),
         }
       : undefined;
     const hasMeta =

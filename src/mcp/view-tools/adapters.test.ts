@@ -457,3 +457,39 @@ describe("viewProps unwrap path (my-bid-plan via toViewProps fallback)", () => {
     expect(res.structuredContent).toEqual(VALID["get-my-roadmap"]);
   });
 });
+
+describe("shared view-tool plumbing (Task 11)", () => {
+  it("throws a NAMED error when the catalog tool is missing", async () => {
+    const { allTools } = await import("@/server/mcp/tools");
+    const t = allTools.find((x) => x.name === "does-not-exist");
+    expect(t).toBeUndefined();
+    expect(() => {
+      if (!t) throw new Error("[mcp] catalog tool missing: does-not-exist");
+    }).toThrow(/does-not-exist/);
+  });
+
+  it("catalogToolOrThrow names the missing tool", async () => {
+    const { catalogToolOrThrow } = await import("./make-view-tool");
+    expect(() => catalogToolOrThrow("does-not-exist")).toThrow(
+      /\[mcp\] catalog tool missing: does-not-exist/,
+    );
+  });
+
+  it("pageByCursor pages deterministically", async () => {
+    const { pageByCursor } = await import("../output-policy");
+    const items = [{ id: "a" }, { id: "b" }, { id: "c" }];
+    expect(pageByCursor(items, (x) => x.id, undefined, 2)).toEqual({
+      items: [{ id: "a" }, { id: "b" }],
+      nextCursor: "b",
+    });
+    expect(pageByCursor(items, (x) => x.id, "b", 2)).toEqual({
+      items: [{ id: "c" }],
+      nextCursor: null,
+    });
+    // Unknown cursor restarts from the first page.
+    expect(pageByCursor(items, (x) => x.id, "zzz", 2)).toEqual({
+      items: [{ id: "a" }, { id: "b" }],
+      nextCursor: "b",
+    });
+  });
+});

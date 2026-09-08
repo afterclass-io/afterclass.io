@@ -1,15 +1,18 @@
 import { server } from "../server";
-import { allTools } from "@/server/mcp/tools";
 import { timetablePage } from "@/server/mcp/tools/page-links";
-import { getToolRegistration } from "../annotations";
 import { asSchema } from "../schema";
 import { bidPlanOutput } from "./schemas";
 import { runViewTool } from "./results";
+import { makeViewTool } from "./make-view-tool";
 
-const tool = allTools.find((t) => t.name === "my-bid-plan")!;
-
-// Routed through the shared derivation (Task 11) — see search-courses.ts.
-const registration = getToolRegistration("my-bid-plan");
+// Shared lookup + named-throw + registration derivation (Task 11).
+const { tool, registration } = makeViewTool({
+  name: "my-bid-plan",
+  view: { name: "bid-plan", description: "Bidding plan" },
+  outputSchema: bidPlanOutput,
+  summarize: () => "",
+  rawPayloadMessage: "Invalid bid plan payload",
+});
 
 export const myBidPlan = server.tool(
   {

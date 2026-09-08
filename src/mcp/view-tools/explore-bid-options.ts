@@ -1,15 +1,18 @@
 import { server } from "../server";
-import { allTools } from "@/server/mcp/tools";
 import { exploreLinkFor } from "@/server/mcp/tools/page-links";
-import { getToolRegistration } from "../annotations";
 import { asSchema } from "../schema";
 import { bidExplorerOutput } from "./schemas";
 import { runViewTool } from "./results";
+import { makeViewTool } from "./make-view-tool";
 
-const tool = allTools.find((t) => t.name === "explore-bid-options")!;
-
-// Routed through the shared derivation (Task 11) — see search-courses.ts.
-const registration = getToolRegistration("explore-bid-options");
+// Shared lookup + named-throw + registration derivation (Task 11).
+const { tool, registration } = makeViewTool({
+  name: "explore-bid-options",
+  view: { name: "bid-explorer", description: "Bid explorer" },
+  outputSchema: bidExplorerOutput,
+  summarize: () => "",
+  rawPayloadMessage: "Invalid bid explorer payload",
+});
 
 export const exploreBidOptions = server.tool(
   {

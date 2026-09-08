@@ -211,6 +211,37 @@ export function capPage<T extends CapPageInput>(
 }
 
 /**
+ * Shared cursor pagination over an in-memory list (Task 11): the cursor is
+ * the previous page's last item id; unknown cursors restart from the first
+ * page. `nextCursor` is the last item's id when more items remain, else
+ * null. Replaces the per-tool inline slices in `my-bids` (mydata.ts) and
+ * `get-classes` (courses.ts) — one implementation, deterministic everywhere.
+ */
+export function pageByCursor<T>(
+  items: T[],
+  idFn: (x: T) => string | undefined,
+  cursor: string | undefined,
+  limit: number,
+): { items: T[]; nextCursor: string | null } {
+  const startAt =
+    cursor === undefined
+      ? 0
+      : (() => {
+          const i = items.findIndex((x) => idFn(x) === cursor);
+          return i === -1 ? 0 : i + 1;
+        })();
+  const page = items.slice(startAt, startAt + limit);
+  const last = page.length ? idFn(page[page.length - 1]!) : undefined;
+  return {
+    items: page,
+    nextCursor:
+      last !== undefined && startAt + limit < items.length
+        ? (last ?? null)
+        : null,
+  };
+}
+
+/**
  * Append page deep-links to model-visible text. One link per line; nullish or
  * empty links are skipped; when no links survive, the text is returned
  * unchanged. (Call sites add links only where outputs already carry them

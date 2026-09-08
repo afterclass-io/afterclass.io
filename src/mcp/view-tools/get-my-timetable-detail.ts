@@ -1,15 +1,18 @@
 import { server } from "../server";
-import { allTools } from "@/server/mcp/tools";
 import { timetablePage } from "@/server/mcp/tools/page-links";
-import { getToolRegistration } from "../annotations";
 import { asSchema } from "../schema";
 import { timetableDetailOutput } from "./schemas";
 import { runViewTool } from "./results";
+import { makeViewTool } from "./make-view-tool";
 
-const tool = allTools.find((t) => t.name === "get-my-timetable-detail")!;
-
-// Routed through the shared derivation (Task 11) — see search-courses.ts.
-const registration = getToolRegistration("get-my-timetable-detail");
+// Shared lookup + named-throw + registration derivation (Task 11).
+const { tool, registration } = makeViewTool({
+  name: "get-my-timetable-detail",
+  view: { name: "timetable", description: "Weekly class timetable grid" },
+  outputSchema: timetableDetailOutput,
+  summarize: () => "",
+  rawPayloadMessage: "Invalid timetable payload",
+});
 
 export const getMyTimetableDetail = server.tool(
   {
