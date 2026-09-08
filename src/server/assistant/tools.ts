@@ -68,6 +68,12 @@ export function buildAssistantTools(
             truncationNote: TRUNCATION_NOTE,
             devBypass: false,
             throwBehavior: "propagate",
+            // Token pass-through (Task 9): the model forwards a confirmToken
+            // issued out-of-band (Approve card follow-up); the gate binds it
+            // to user + tool + args. Secret mirrors supabase-access-token.ts
+            // (NEXTAUTH_SECRET, falling back to AUTH_SECRET).
+            confirmSecret:
+              process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
             onBudgetExceeded: ({ limit, retry }) =>
               `You're making changes too quickly - at most ${limit} write actions per minute are allowed. Please wait ~${retry}s and ask me to try again.`,
           },

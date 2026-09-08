@@ -71,6 +71,11 @@ export function registerViewlessTools(server: MCPServer): void {
             confirm: !tool.readOnly,
             budget: tool.readOnly ? "read" : "write",
             shape: "text",
+            // Token pass-through (Task 9): MCP hosts forward a confirmToken
+            // issued out-of-band; the gate verifies it against the same app
+            // secret the chat path uses.
+            confirmSecret:
+              process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
           },
         });
         if ("error" in out)

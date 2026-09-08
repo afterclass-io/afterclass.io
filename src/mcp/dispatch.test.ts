@@ -135,6 +135,98 @@ describe("dispatchToolCall", () => {
     expect(run).toHaveBeenCalledTimes(1);
   });
 
+  it("accepts a valid confirmToken for a Tier-1 tool without confirm:true", async () => {
+    const { hashConfirmArgs, mintConfirmToken } = await import(
+      "@/server/mcp/confirm-token"
+    );
+    const args = { timetableId: "tt1" };
+    const token = await mintConfirmToken({
+      userId: "u1",
+      tool: "remove-timetable",
+      argHash: hashConfirmArgs(args),
+      secret: "test-secret",
+    });
+    const run = vi.fn().mockResolvedValue({
+      content: [{ type: "text", text: "deleted" }],
+    });
+    const out = await dispatchToolCall({
+      tool: { name: "remove-timetable", run } as never,
+      params: { ...args, confirmToken: token },
+      ctx: fakeCtx,
+      policy: {
+        confirm: true,
+        budget: "write",
+        shape: "text",
+        confirmSecret: "test-secret",
+      },
+    });
+    expect("error" in out ? out.error : out.content[0]?.text).toMatch(
+      /deleted|rate limit/i,
+    );
+    expect(run).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a tampered confirmToken for a Tier-1 tool", async () => {
+    const { hashConfirmArgs, mintConfirmToken } = await import(
+      "@/server/mcp/confirm-token"
+    );
+    const args = { timetableId: "tt1" };
+    const token = await mintConfirmToken({
+      userId: "u1",
+      tool: "remove-timetable",
+      argHash: hashConfirmArgs(args),
+      secret: "test-secret",
+    });
+    const run = vi.fn().mockResolvedValue({
+      content: [{ type: "text", text: "should-not-reach" }],
+    });
+    const out = await dispatchToolCall({
+      tool: { name: "remove-timetable", run } as never,
+      // Tampered args: token binds the original argHash, params carry more.
+      params: { ...args, extra: "evil", confirmToken: token },
+      ctx: fakeCtx,
+      policy: {
+        confirm: true,
+        budget: "write",
+        shape: "text",
+        confirmSecret: "test-secret",
+      },
+    });
+    expect("error" in out ? out.error : "").toMatch(/confirm/i);
+    expect(run).not.toHaveBeenCalled();
+  });
+
+  it("rejects an expired confirmToken for a Tier-1 tool", async () => {
+    const { hashConfirmArgs, mintConfirmToken } = await import(
+      "@/server/mcp/confirm-token"
+    );
+    const args = { timetableId: "tt1" };
+    const token = await mintConfirmToken({
+      userId: "u1",
+      tool: "remove-timetable",
+      argHash: hashConfirmArgs(args),
+      secret: "test-secret",
+      ttlMs: 1,
+    });
+    await new Promise((r) => setTimeout(r, 5));
+    const run = vi.fn().mockResolvedValue({
+      content: [{ type: "text", text: "should-not-reach" }],
+    });
+    const out = await dispatchToolCall({
+      tool: { name: "remove-timetable", run } as never,
+      params: { ...args, confirmToken: token },
+      ctx: fakeCtx,
+      policy: {
+        confirm: true,
+        budget: "write",
+        shape: "text",
+        confirmSecret: "test-secret",
+      },
+    });
+    expect("error" in out ? out.error : "").toMatch(/confirm/i);
+    expect(run).not.toHaveBeenCalled();
+  });
+
   it("truncates oversized text results with the truncation note", async () => {
     const tool = okTool("abcdefghij");
     const res = await dispatchToolCall({

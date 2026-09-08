@@ -87,13 +87,43 @@ export const constructiveTools = new Set([
 
 /**
  * Confirm gate for destructive tools. Returns null when the call may proceed
- * (tool not in Tier 1, or `confirm:true` present), or an error message when
- * a Tier-1 tool was called without explicit confirmation.
+ * (tool not in Tier 1, or `confirm:true` present, or a valid single-use
+ * `confirmToken`), or an error message when a Tier-1 tool was called without
+ * explicit confirmation.
+ *
+ * Token form (Task 9): when `params.confirmToken` carries a string and
+ * `opts.verify` is provided, the gate verifies the HMAC token binding
+ * user + tool + argHash before falling back to the legacy `confirm:true`
+ * boolean. Model-attested `confirm:true` alone still authorizes Tier-1 tools
+ * until the Approve/Reject card UI ships (tracked follow-up) — this task
+ * ships verification alongside, not a flag flip.
  */
+export async function checkDestructiveConfirm(
+  toolName: string,
+  params: unknown,
+  opts?: {
+    userId?: string;
+    verify?: (
+      token: string,
+      parts: { userId: string; tool: string; argHash: string },
+    ) => Promise<boolean>;
+  },
+): Promise<string | null>;
 export function checkDestructiveConfirm(
   toolName: string,
   params: unknown,
-): string | null {
+): string | null;
+export function checkDestructiveConfirm(
+  toolName: string,
+  params: unknown,
+  opts?: {
+    userId?: string;
+    verify?: (
+      token: string,
+      parts: { userId: string; tool: string; argHash: string },
+    ) => Promise<boolean>;
+  },
+): string | null | Promise<string | null> {
   if (!destructiveTools.has(toolName)) return null;
   if (
     params !== null &&
@@ -102,6 +132,32 @@ export function checkDestructiveConfirm(
   ) {
     return null;
   }
+  const token =
+    params !== null && typeof params === "object"
+      ? (params as Record<string, unknown>).confirmToken
+      : undefined;
+  if (typeof token === "string" && opts?.verify && opts?.userId) {
+    const { confirmToken: _dropped, ...boundArgs } = params as Record<
+      string,
+      unknown
+    >;
+    void _dropped;
+    return (async () => {
+      const { hashConfirmArgs } = await import(
+        "@/server/mcp/confirm-token"
+      );
+      const ok = await opts.verify!(token, {
+        userId: opts.userId!,
+        tool: toolName,
+        argHash: hashConfirmArgs(boundArgs),
+      });
+      return ok ? null : confirmRejection(toolName);
+    })();
+  }
+  return confirmRejection(toolName);
+}
+
+function confirmRejection(toolName: string): string {
   return (
     `Tool "${toolName}" changes or publishes your data and requires explicit confirmation: ` +
     `call again with confirm:true after showing the user exactly what will change and getting explicit approval.`

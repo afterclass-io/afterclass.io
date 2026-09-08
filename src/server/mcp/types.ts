@@ -136,6 +136,14 @@ export const parseViewJson = (result: {
  * `destructiveTools` must spread this field into its inputSchema; handlers
  * ignore it (destructured away or stripped again by the downstream tRPC
  * procedure's own input schema) — it exists only to survive validation.
+ *
+ * Single-use token alternative (Task 9): `confirmToken` carries an
+ * HMAC-signed token (see `src/server/mcp/confirm-token.ts`) binding
+ * user + tool + argHash, verified by the gate when the dispatch policy
+ * carries `confirmSecret` (mirroring `supabase-access-token.ts:39` secret
+ * resolution: `NEXTAUTH_SECRET`, falling back to `AUTH_SECRET`). Model-
+ * attested `confirm:true` alone still authorizes Tier-1 tools until the
+ * Approve/Reject card UI ships (tracked follow-up).
  */
 export const confirmField = {
   confirm: z
@@ -143,5 +151,11 @@ export const confirmField = {
     .optional()
     .describe(
       "Required for this destructive/full-replace write: pass confirm:true only after showing the user exactly what will change and getting explicit approval. The first call without it is rejected with instructions.",
+    ),
+  confirmToken: z
+    .string()
+    .optional()
+    .describe(
+      "Single-use alternative to confirm:true: an HMAC-signed token binding this exact call (user + tool + args). The gate verifies it; tampered or expired tokens are rejected like a missing confirmation.",
     ),
 };

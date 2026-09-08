@@ -64,6 +64,13 @@ export interface DispatchPolicy {
   /** Dev-bypass override for tests (defaults to the env-derived value). */
   devBypass?: boolean;
   /**
+   * HMAC secret for verifying single-use `confirmToken`s on Tier-1 tools
+   * (Task 9). When set, `params.confirmToken` is verified (binding
+   * user + tool + argHash) as an alternative to legacy `confirm:true`.
+   * Transports pass the app secret; tests pass a fixture secret.
+   */
+  confirmSecret?: string;
+  /**
    * What happens when `tool.run` throws. `"capture"` (default) converts the
    * throw into `{ error: "Internal error in tool X" }` — the documented MCP /
    * view contract (handlers must never throw; matches the register "never
@@ -149,7 +156,23 @@ export async function dispatchToolCall(opts: {
     };
 
   if (policy.confirm && !isDevBypassActive(policy.devBypass)) {
-    const unconfirmed = checkDestructiveConfirm(tool.name, params);
+    const { confirmSecret } = policy;
+    const unconfirmed = await checkDestructiveConfirm(
+      tool.name,
+      params,
+      confirmSecret
+        ? {
+            userId: toolCtx.user.id,
+            verify: (token, parts) =>
+              import("@/server/mcp/confirm-token").then((m) =>
+                m.verifyConfirmToken(token, {
+                  ...parts,
+                  secret: confirmSecret,
+                }),
+              ),
+          }
+        : undefined,
+    );
     if (unconfirmed) return { error: unconfirmed };
   }
 

@@ -40,7 +40,12 @@ export const getTimetableCalendarLink = server.tool(
       tool: tool as never,
       params,
       ctx,
-      policy: { confirm: true, budget: "write", shape: "view" },
+      policy: {
+        confirm: true,
+        budget: "write",
+        shape: "view",
+        confirmSecret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
+      },
     });
     if ("error" in out) return errorResult(out.error);
     if (out.isError) return errorResult(out.content[0]?.text ?? "Tool failed");
