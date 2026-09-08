@@ -45,6 +45,9 @@ export function usePersistSession({
     );
     if (snapshot.length === 0) return;
 
+    // Unhandled rejection hardening (Task 12): a full/quota-blocked
+    // IndexedDB must never surface an unhandled rejection — warn and retry
+    // on the next run-end instead.
     void (async () => {
       const store = useChatStore.getState();
       let id: string;
@@ -55,6 +58,8 @@ export function usePersistSession({
         id = store.activeSessionId ?? (await store.createSession());
       }
       await store.saveSession(id, snapshot);
-    })();
+    })().catch(() =>
+      console.warn("[assistant] persist failed, will retry next run-end"),
+    );
   }, [status, messages, keepOwnSession]);
 }

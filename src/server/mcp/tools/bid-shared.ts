@@ -69,30 +69,6 @@ export function findSafetyFactor(
   );
 }
 
-/**
- * Strip bearer-token keys (shareToken / icalToken) so they never reach the
- * LLM-visible output. Generic over the row type minus the dropped keys.
- *
- * @deprecated Use `stripSecretsFromValue` from `@/mcp/output-policy` — it is
- * the deep-strip superset (removes shareToken / icalToken / notes at every
- * nesting level). Kept only for `mydata.ts`, whose per-row shape the
- * existing tests pin.
- */
-export function stripShareToken<T extends object>(
-  row: T,
-): Omit<T, "shareToken" | "icalToken"> {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- bearer tokens must not reach the LLM
-  const {
-    shareToken: _s,
-    icalToken: _i,
-    ...rest
-  } = row as T & {
-    shareToken?: unknown;
-    icalToken?: unknown;
-  };
-  return rest;
-}
-
 export function stripBidNotes<T extends object>(row: T): Omit<T, "notes"> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- notes is user PII, must not reach the LLM
   const { notes: _dropped, ...rest } = row as T & { notes?: unknown };

@@ -1,4 +1,6 @@
 // src/mcp/server.ts — the single MCPServer instance
+import "server-only";
+
 import { MCPServer } from "mcp-use";
 import {
   oauthSupabaseProvider,

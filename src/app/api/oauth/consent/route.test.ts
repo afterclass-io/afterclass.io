@@ -20,6 +20,9 @@ vi.mock("@/server/supabase-consent", () => ({
   approveConsent: mockApproveConsent,
   denyConsent: mockDenyConsent,
   getConsentDetails: mockGetConsentDetails,
+  resolveConsentCsrfSecret: () => undefined,
+  issueConsentCsrf: () => "test-csrf",
+  verifyConsentCsrf: () => true,
 }));
 
 import { GET, POST } from "./route";
@@ -98,6 +101,17 @@ describe("GET /api/oauth/consent", () => {
     const body = (await res.json()) as { error: string };
     expect(body.error).toBe("invalid authorization request");
     expect(body.error).not.toContain("supabase");
+  });
+
+  it("403s same-site fetch-site (only same-origin passes)", async () => {
+    mockGetToken.mockResolvedValue("tok");
+    const res = await GET(
+      req("http://localhost/api/oauth/consent?authorization_id=a", {
+        headers: { "sec-fetch-site": "same-site" },
+      }),
+    );
+    expect(res.status).toBe(403);
+    expect(mockGetConsentDetails).not.toHaveBeenCalled();
   });
 });
 
@@ -200,5 +214,29 @@ describe("POST /api/oauth/consent", () => {
     const body = (await res.json()) as { error: string };
     expect(body.error).toBe("failed");
     expect(body.error).not.toContain("supabase");
+  });
+
+  it("400s malformed JSON instead of 500", async () => {
+    const res = await POST(
+      req("http://localhost/api/oauth/consent", {
+        method: "POST",
+        body: "{bad",
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect(mockApproveConsent).not.toHaveBeenCalled();
+    expect(mockDenyConsent).not.toHaveBeenCalled();
+  });
+
+  it("403s same-site fetch-site on POST (only same-origin passes)", async () => {
+    const res = await POST(
+      req("http://localhost/api/oauth/consent", {
+        method: "POST",
+        headers: { "sec-fetch-site": "same-site" },
+        body: JSON.stringify({ authorization_id: "a1", decision: "approve" }),
+      }),
+    );
+    expect(res.status).toBe(403);
+    expect(mockApproveConsent).not.toHaveBeenCalled();
   });
 });

@@ -1,3 +1,5 @@
+import { createHmac, timingSafeEqual } from "crypto";
+
 import { createClient } from "@supabase/supabase-js";
 
 import { env } from "@/env";
@@ -97,6 +99,51 @@ export interface UserGrant {
   client_id: string;
   client_name?: string;
   scopes: string[];
+}
+
+/**
+ * HMAC synchronizer CSRF tokens for the OAuth consent round-trip (Task 12,
+ * no DB): GET issues a token binding the Supabase user id + expiry; POST
+ * verifies it before approve/deny. Same shape as the confirm-token helper
+ * (user-scoped HMAC, base64url, timing-safe compare). Secret mirrors
+ * `supabase-access-token.ts` (`NEXTAUTH_SECRET`, falling back to
+ * `AUTH_SECRET`).
+ */
+const CONSENT_CSRF_TTL_MS = 10 * 60_000;
+
+export function resolveConsentCsrfSecret(): string | undefined {
+  return process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+}
+
+export function issueConsentCsrf(userId: string, secret: string): string {
+  const exp = Date.now() + CONSENT_CSRF_TTL_MS;
+  const body = `${userId}.${exp}`;
+  const sig = createHmac("sha256", secret).update(body).digest("hex");
+  return Buffer.from(`${body}.${sig}`).toString("base64url");
+}
+
+export function verifyConsentCsrf(
+  token: string,
+  userId: string,
+  secret: string,
+): boolean {
+  try {
+    const raw = Buffer.from(token, "base64url").toString();
+    const [tokenUserId, expS, sig] = raw.split(".");
+    if (tokenUserId !== userId) return false;
+    if (sig === undefined || expS === undefined) return false;
+    if (!/^\d+$/.test(expS)) return false;
+    if (Date.now() > Number(expS)) return false;
+    const expect = createHmac("sha256", secret)
+      .update(`${tokenUserId}.${expS}`)
+      .digest("hex");
+    const sigBuf = Buffer.from(sig);
+    const expectBuf = Buffer.from(expect);
+    if (sigBuf.length !== expectBuf.length) return false;
+    return timingSafeEqual(sigBuf, expectBuf);
+  } catch {
+    return false;
+  }
 }
 
 export async function listUserGrants(accessToken: string): Promise<UserGrant[]> {

@@ -129,4 +129,52 @@ describe("usePersistSession - widget session reuse (Task 4)", () => {
     await waitFor(() => expect(useChatStore.getState().sessions).toHaveLength(1));
     expect(useChatStore.getState().activeSessionId).not.toBeNull();
   });
+
+  it("a persist failure warns (no unhandled rejection) and retries on the next run-end", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const { idbPut } = await import("./idb");
+      // Fail the first save, succeed after: the hook must warn (not throw
+      // unhandled) and the next run-end must persist.
+      vi.mocked(idbPut).mockRejectedValueOnce(new Error("quota exceeded"));
+      const { rerender } = renderPersist(true);
+      act(() => rerender({ status: "submitted", messages: [msg("user", "q1", "u1")] }));
+      act(() =>
+        rerender({
+          status: "ready",
+          messages: [msg("user", "q1", "u1"), msg("assistant", "a1", "a1")],
+        }),
+      );
+      await waitFor(() =>
+        expect(warn).toHaveBeenCalledWith(
+          expect.stringContaining("persist failed"),
+        ),
+      );
+      // Next run-end retries and persists.
+      act(() =>
+        rerender({
+          status: "submitted",
+          messages: [msg("user", "q1", "u1"), msg("assistant", "a1", "a1"), msg("user", "q2", "u2")],
+        }),
+      );
+      act(() =>
+        rerender({
+          status: "ready",
+          messages: [
+            msg("user", "q1", "u1"),
+            msg("assistant", "a1", "a1"),
+            msg("user", "q2", "u2"),
+            msg("assistant", "a2", "a2"),
+          ],
+        }),
+      );
+      await waitFor(() =>
+        expect(
+          useChatStore.getState().sessions[0]?.messages,
+        ).toHaveLength(4),
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
 });

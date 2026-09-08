@@ -20,7 +20,9 @@ export function getQuotaAlert(
   // nudgeAt (quota=50 → nudgeAt=40, i.e. remaining<=40): the bar is a cheap
   // client hint, the meter is the authoritative state. Zero remaining is
   // always critical regardless of quota.
-  const pct = Math.round((remaining / Math.max(1, quota)) * 100);
+  // Clamp 0–100 (Task 12): over-quota/negative arithmetic must never
+  // render a >100% or negative bar.
+  const pct = Math.min(100, Math.max(0, Math.round((remaining / Math.max(1, quota)) * 100)));
   if (remaining <= 0) return { level: "critical", pct: 0, remaining, quota };
   if (remaining <= criticalFloorFor(quota))
     return { level: "critical", pct, remaining, quota };

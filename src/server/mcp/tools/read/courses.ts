@@ -46,12 +46,17 @@ export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
   readOnly: true,
   toViewProps: (result) => {
     // The tool emits a JSON array of courses; wrap it as `{ results }` for the view.
+    // Fail loud on parse failure (Task 12): return { raw } so the adapter
+    // surfaces "Invalid JSON from catalog" instead of silently rendering an
+    // empty course list. A parsed non-array is still masked to [] (success
+    // path — the catalog contract guarantees an array; see search-courses
+    // adapter for the rationale).
     const text = result.content.find((c) => c.type === "text")?.text ?? "";
     try {
       const parsed: unknown = JSON.parse(text);
       return { results: Array.isArray(parsed) ? parsed : [] };
     } catch {
-      return { results: [] };
+      return { raw: text };
     }
   },
   run: async (

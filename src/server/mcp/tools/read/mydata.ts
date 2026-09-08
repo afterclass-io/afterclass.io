@@ -1,9 +1,13 @@
 import { z } from "zod";
 
-import { capPage, pageByCursor } from "@/mcp/output-policy";
+import {
+  capPage,
+  pageByCursor,
+  stripSecretsFromValue,
+} from "@/mcp/output-policy";
 import { resolveTermId } from "../../current";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
-import { stripBidNotes, stripShareToken } from "../bid-shared";
+import { stripBidNotes } from "../bid-shared";
 
 const myTimetablesSchema = z.object({ acadTermId: z.string().optional() });
 
@@ -20,8 +24,8 @@ export const myTimetablesTool: McpTool<typeof myTimetablesSchema> = {
       const timetables = (await caller.timetable.listMine({
         acadTermId: term.value,
       })) as Array<Record<string, unknown>>;
-      // stripShareToken: bearer tokens must not reach the LLM.
-      const scrubbed = timetables.map((t) => stripShareToken(t));
+      // Bearer tokens must not reach the LLM (canonical deep-strip).
+      const scrubbed = timetables.map((t) => stripSecretsFromValue(t));
       return jsonText(scrubbed);
     } catch (e) {
       return errText(errorMessage(e));
@@ -121,8 +125,8 @@ export const myRoadmapsTool: McpTool<typeof myRoadmapsSchema> = {
       const roadmaps = (await caller.roadmaps.listMine()) as Array<
         Record<string, unknown>
       >;
-      // stripShareToken: the bearer shareToken must not reach the LLM.
-      const scrubbed = roadmaps.map((r) => stripShareToken(r));
+      // Bearer tokens must not reach the LLM (canonical deep-strip).
+      const scrubbed = roadmaps.map((r) => stripSecretsFromValue(r));
       return jsonText(scrubbed);
     } catch (e) {
       return errText(errorMessage(e));

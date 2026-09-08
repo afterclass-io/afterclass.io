@@ -289,6 +289,38 @@ describe("listAcadTerms", () => {
     expect(result[0]!.label).toBe("AY2025/26 T2");
     expect(result[1]!.label).toBe("AY2025/26 T1");
   });
+
+  it("rethrows non-cache errors instead of silently bypassing the cache", async () => {
+    // A DB failure inside the cached path must surface — only the
+    // missing-incrementalCache shim error falls back to a direct fetch.
+    const findMany = vi.fn().mockRejectedValue(new Error("db down"));
+    const mockDb = { acadTerm: { findMany } };
+    await expect(
+      listAcadTerms(
+        mockDb as unknown as Parameters<typeof listAcadTerms>[0],
+      ),
+    ).rejects.toThrow("db down");
+  });
+
+  it("still falls back to a direct fetch on the incrementalCache shim error", async () => {
+    const cache = await import("next/cache");
+    const throwingCache = vi
+      .spyOn(cache, "unstable_cache")
+      .mockImplementationOnce(() => {
+        throw new Error("incrementalCache missing");
+      });
+    try {
+      const findMany = vi.fn().mockResolvedValue(sampleRows);
+      const mockDb = { acadTerm: { findMany } };
+      const result = await listAcadTerms(
+        mockDb as unknown as Parameters<typeof listAcadTerms>[0],
+      );
+      expect(result).toHaveLength(2);
+      expect(findMany).toHaveBeenCalled();
+    } finally {
+      throwingCache.mockRestore();
+    }
+  });
 });
 
 describe("getCurrentAcadTerm", () => {

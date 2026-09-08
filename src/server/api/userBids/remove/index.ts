@@ -10,7 +10,11 @@ export const remove = protectedProcedure
       bidWindow: { select: { acadTermId: true } },
     });
 
-    await ctx.db.userBid.delete({ where: { id: input.id } });
+    // Ownership already verified by requireOwnedBid above; scope the
+    // in-statement where too (uniformity: the write itself is owner-scoped).
+    await ctx.db.userBid.delete({
+      where: { id: input.id, userId: ctx.session.user.id },
+    });
 
     return {
       success: true,

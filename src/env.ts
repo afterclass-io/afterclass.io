@@ -117,6 +117,10 @@ export const env = createEnv({
     // unset by default for local dev).
     MCP_ALLOWED_HOSTS: z.string().optional(),
     MCP_ALLOWED_ORIGINS: z.string().optional(),
+    // Cron bearer secret (Task 12): cron routes read env.CRON_SECRET with a
+    // raw-process fallback + loud 500 when unset. Optional here so
+    // secret-less dev boots; prod must set it on Vercel (Task 14 gate).
+    CRON_SECRET: z.string().min(1).optional(),
   },
 
   /**
@@ -216,6 +220,7 @@ export const env = createEnv({
       process.env.MCP_USE_OAUTH_SUPABASE_JWT_SECRET,
     MCP_ALLOWED_HOSTS: process.env.MCP_ALLOWED_HOSTS,
     MCP_ALLOWED_ORIGINS: process.env.MCP_ALLOWED_ORIGINS,
+    CRON_SECRET: process.env.CRON_SECRET,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_OLD_SITE_URL: process.env.NEXT_PUBLIC_OLD_SITE_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,

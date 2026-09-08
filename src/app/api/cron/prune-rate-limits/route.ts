@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { env } from "@/env";
 import { pruneRateLimits } from "@/server/assistant/ratelimit";
 import { getChatConfig } from "@/server/config/chat-config";
 
@@ -20,7 +21,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  const secret = process.env.CRON_SECRET;
+  // Canonical env first (Task 12: CRON_SECRET in the env schema), raw-process
+  // fallback for secret-less contexts; loud 500 when unset (never unguarded).
+  const secret = env.CRON_SECRET ?? process.env.CRON_SECRET;
   if (!secret) {
     // intentional: fail LOUD — running GC unguarded would expose a
     // DB-writing endpoint to the open internet.

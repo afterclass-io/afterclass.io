@@ -66,8 +66,10 @@ export const update = protectedProcedure
       await validateClassWindowPair(ctx.db, nextClassId, nextBidWindowId);
     }
 
+    // Ownership already verified by requireOwnedBid above; scope the
+    // in-statement where too (uniformity: the write itself is owner-scoped).
     return ctx.db.userBid.update({
-      where: { id: input.id },
+      where: { id: input.id, userId: ctx.session.user.id },
       data: {
         ...(input.classId !== undefined && { classId: input.classId }),
         ...(input.bidWindowId !== undefined && {

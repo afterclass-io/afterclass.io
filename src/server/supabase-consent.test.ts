@@ -39,8 +39,10 @@ import {
   approveConsent,
   denyConsent,
   getConsentDetails,
+  issueConsentCsrf,
   listUserGrants,
   revokeUserGrant,
+  verifyConsentCsrf,
 } from "./supabase-consent";
 
 describe("supabase-consent", () => {
@@ -136,5 +138,18 @@ describe("supabase-consent", () => {
   it("throws when fetching consent details fails", async () => {
     getAuthorizationDetails.mockResolvedValue({ data: null, error: { message: "bad auth" } });
     await expect(getConsentDetails("auth-1", "tok")).rejects.toThrow("bad auth");
+  });
+
+  it("issues a CSRF token that verifies for the same session token", () => {
+    const t = issueConsentCsrf("tok", "secret");
+    expect(verifyConsentCsrf(t, "tok", "secret")).toBe(true);
+  });
+
+  it("rejects wrong session, wrong secret, tampered, and malformed CSRF tokens", () => {
+    const t = issueConsentCsrf("tok", "secret");
+    expect(verifyConsentCsrf(t, "other", "secret")).toBe(false);
+    expect(verifyConsentCsrf(t, "tok", "wrong")).toBe(false);
+    expect(verifyConsentCsrf("not-a-token", "tok", "secret")).toBe(false);
+    expect(verifyConsentCsrf("", "tok", "secret")).toBe(false);
   });
 });

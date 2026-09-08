@@ -25,6 +25,10 @@ type ChatStore = {
   setActive: (id: string | null) => void;
 };
 
+// In-flight hydrate guard (Task 12, module scope): concurrent hydrate()
+// calls share one promise instead of racing two idbGetAll reads.
+let hydrating: Promise<void> | null = null;
+
 export const useChatStore = create<ChatStore>((set, get) => ({
   hydrated: false,
   sessions: [],
@@ -32,9 +36,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   hydrate: async () => {
     if (get().hydrated) return;
-    const sessions = await idbGetAll<StoredSession>();
-    sessions.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
-    set({ sessions, hydrated: true });
+    hydrating ??= (async () => {
+      const sessions = await idbGetAll<StoredSession>();
+      sessions.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
+      set({ sessions, hydrated: true });
+    })().finally(() => {
+      hydrating = null;
+    });
+    await hydrating;
   },
 
   createSession: async () => {

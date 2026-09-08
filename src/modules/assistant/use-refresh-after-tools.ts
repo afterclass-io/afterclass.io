@@ -30,6 +30,8 @@ export function useRefreshAfterTools(
     const running = status === "streaming" || status === "submitted";
     prev.current = status;
     if (!wasRunning || running) return;
+    // Error turns changed nothing server-side — skip invalidation (Task 12).
+    if (status === "error") return;
 
     const targets = refreshTargets(messages);
     const jobs: Array<Promise<unknown>> = [];
@@ -73,7 +75,9 @@ export function refreshTargets(messages: UIMessage[]): RefreshTargets {
       haystacks.push(toolLabel(toolPart));
       if ("output" in toolPart && toolPart.output !== undefined) {
         try {
-          haystacks.push(JSON.stringify(toolPart.output));
+          // Haystack cap (Task 12): a huge tool result must not blow up
+          // the regex scan — 2k chars carry every naming root we match.
+          haystacks.push(JSON.stringify(toolPart.output).slice(0, 2000));
         } catch {
           // Circular BigInt-style payloads are uninspectable — the name
           // haystack above still applies.

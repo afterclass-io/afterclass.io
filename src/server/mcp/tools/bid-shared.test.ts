@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { stripSecretsFromValue } from "@/mcp/output-policy";
 import {
   clampBidFloor,
   DEFAULT_BEATS_PERCENTAGE,
   findSafetyFactor,
   MIN_BID,
   rationaleFor,
-  stripShareToken,
   suggestBidAmount,
 } from "./bid-shared";
 
@@ -87,9 +87,9 @@ describe("findSafetyFactor", () => {
   });
 });
 
-describe("stripShareToken", () => {
+describe("secret stripping (canonical stripSecretsFromValue)", () => {
   it("drops shareToken and icalToken keys, keeps the rest", () => {
-    const out = stripShareToken({
+    const out = stripSecretsFromValue({
       id: "x",
       name: "A",
       shareToken: "s",

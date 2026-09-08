@@ -9,6 +9,7 @@ type Details = {
   client_id?: string;
   scope?: string;
   redirect_uri?: string;
+  csrfToken?: string;
 };
 
 type AlreadyConsented = {
@@ -67,7 +68,13 @@ function ConsentForm() {
       const res = await fetch("/api/oauth/consent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ authorization_id: authorizationId, decision }),
+        // CSRF synchronizer token from the GET payload (Task 12) — the
+        // route verifies it before approve/deny.
+        body: JSON.stringify({
+          authorization_id: authorizationId,
+          decision,
+          csrfToken: details?.csrfToken,
+        }),
       });
       const data = (await res.json()) as { redirectUrl?: string; error?: string };
       if (!res.ok || data.error) throw new Error(data.error ?? "Consent request failed.");

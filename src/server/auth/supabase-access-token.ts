@@ -38,10 +38,15 @@ export async function getSupabaseAccessToken(): Promise<string | null> {
   // Allowlisted raw read (third-party fallback secret, not app config).
   const secret = env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
   if (!secret) return null;
-  const token = await decode({
-    token: raw,
-    secret,
-    salt,
-  });
-  return token?.supabaseAccessToken ?? null;
+  // Malformed/tampered cookies decode-throw — map to null (401), not 500.
+  try {
+    const token = await decode({
+      token: raw,
+      secret,
+      salt,
+    });
+    return token?.supabaseAccessToken ?? null;
+  } catch {
+    return null;
+  }
 }

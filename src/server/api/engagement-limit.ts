@@ -21,7 +21,13 @@ function pruneExpired(now: number): void {
   }
 }
 
-export function checkAndIncrement(
+/**
+ * Engagement-budget guard (renamed Task 12: the old `checkAndIncrement`
+ * name shadowed the DB-backed limiter in `src/server/assistant/ratelimit`.
+ * The old name stays as a deprecated alias for one PR — migrate callers to
+ * `checkEngagementBudget`, then delete the alias.
+ */
+export function checkEngagementBudget(
   key: string,
   limit: number,
   windowMs: number,
@@ -47,6 +53,9 @@ export function checkAndIncrement(
   bucket.count += 1;
   return true;
 }
+
+/** Deprecated alias for `checkEngagementBudget` — migrate callers, then delete. */
+export const checkAndIncrement = checkEngagementBudget;
 
 export function resetLimits(): void {
   buckets.clear();

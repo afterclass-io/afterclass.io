@@ -20,4 +20,10 @@ describe("getQuotaAlert", () => {
     expect(getQuotaAlert(0, 50)?.level).toBe("critical");
     expect(getQuotaAlert(0, 50)?.remaining).toBe(0);
   });
+  it("clamps pct to 0–100 (never negative, never above 100)", () => {
+    // Over-quota arithmetic (remaining > quota) clamps at 100…
+    expect(getQuotaAlert(60, 50)).toBeNull(); // 120% → no alert anyway
+    // …and degenerate inputs never render a negative bar.
+    expect(getQuotaAlert(-5, 50)?.pct).toBe(0);
+  });
 });

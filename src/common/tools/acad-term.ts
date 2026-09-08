@@ -150,8 +150,14 @@ export async function listAcadTerms(prisma: {
       startDt: new Date(t.startDt),
       endDt: new Date(t.endDt),
     }));
-  } catch {
-    return _fetchAcadTerms(prisma);
+  } catch (e) {
+    // Narrow retry (Task 12): only the missing-incrementalCache shim error
+    // falls back to a direct fetch — any other failure (DB down, etc.)
+    // rethrows instead of silently bypassing the cache.
+    if (e instanceof Error && /incrementalCache/.test(e.message)) {
+      return _fetchAcadTerms(prisma);
+    }
+    throw e;
   }
 }
 

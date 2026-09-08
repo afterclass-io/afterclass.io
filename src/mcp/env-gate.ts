@@ -1,3 +1,5 @@
+import "server-only";
+
 /**
  * Single dev-bypass gate for the MCP layer.
  *

@@ -34,9 +34,24 @@ async function resolveResourceCaller(
 ): Promise<AcadTermsCaller | undefined> {
   if (caller) return caller;
   if (ctx === undefined) return undefined;
-  const toolCtx: ToolContext | undefined = await buildToolContext(ctx as never);
-  if (!toolCtx) return undefined;
-  return toolCtx.caller as unknown as AcadTermsCaller;
+  // Structural guard (Task 12): only accept the dispatch-shaped ctx (an
+  // object carrying a caller with acadTerms.list). Anything else falls back
+  // to the anonymous caller below instead of throwing deep in tRPC.
+  const maybeCaller = (ctx as { caller?: unknown }).caller as
+    | { acadTerms?: { list?: unknown } }
+    | undefined;
+  if (typeof maybeCaller?.acadTerms?.list !== "function") {
+    const toolCtx: ToolContext | undefined = await buildToolContext(
+      ctx as never,
+    );
+    if (!toolCtx) return undefined;
+    const scoped = toolCtx.caller as unknown as {
+      acadTerms?: { list?: unknown };
+    };
+    if (typeof scoped?.acadTerms?.list !== "function") return undefined;
+    return toolCtx.caller as unknown as AcadTermsCaller;
+  }
+  return { acadTerms: maybeCaller.acadTerms } as AcadTermsCaller;
 }
 
 export function registerResources(
