@@ -22,7 +22,7 @@ import type { ToolContext } from "@/server/mcp/types";
  * |---------------|-------------------------------------------------------|-----------------------------------------------|
  * | `mcp-read:`   | MCP transport (`src/mcp/register.ts`, viewless reads; view-bound adapters) via `checkReadBudget` below | `chat.mcpRateLimitPerMinute` (`getChatConfig`) |
  * | `mcp-write:`  | MCP transport (viewless writes) via `checkWriteBudget` below; `dispatchToolCall` with `budget: "read"|"write"` + default prefixes | same `chat.mcpRateLimitPerMinute` ceiling, separate bucket |
- * | `chat-write:` | Chat transport (`src/server/assistant/tools.ts` `buildAssistantTools`, inline `checkAndIncrement` — NOT via the helpers below) | `getChatWriteRateLimit(chat)` (env `CHAT_WRITE_RATE_LIMIT_PER_MINUTE`, falls back to `chat.rateLimitPerMinute`) |
+ * | `chat-write:` | Chat transport (`src/server/assistant/tools.ts` via the dispatch policy formatter + limit, NOT via the helpers below) | `getChatWriteRateLimit(chat)` (env `CHAT_WRITE_RATE_LIMIT_PER_MINUTE`, falls back to `chat.rateLimitPerMinute`) |
  *
  * Why they don't share: reads are legitimately higher-volume than writes, so
  * `mcp-read:` and `mcp-write:` share the configured ceiling but draw from
@@ -34,16 +34,19 @@ import type { ToolContext } from "@/server/mcp/types";
  * wipe state just as thoroughly (an empty payload overwrites instead of
  * deleting row-by-row). A call to one of these must carry an explicit
  * `confirm:true` param (checked in `register.ts` before the tool runs, and in
- * the chat path's `buildAssistantTools`), so an agent "testing all tools"
+ * the chat path's dispatch policy), so an agent "testing all tools"
  * cannot wipe data unconfirmed.
  *
- * Confirm-all-writes (Task 7): the set covers EVERY non-readOnly catalog
- * tool, not just the destructive ones. Constructive writes
- * (create/upsert/rename/copy/sync/set-active/set-matric-term) are gated too:
- * single-write loops can replicate bulk wipes (upsert-bid × N ≈ save-bids),
- * and ungated creates let an agent spam user state unconfirmed. Read-only
- * tools are NEVER gated. The parity test in
- * `src/server/assistant/tools.test.ts` pins set == all non-readOnly names.
+ * Two-tier gate (Task 7, owner decision — confirm ONLY destructive +
+ * high-impact): the old confirm-all-writes 22-name set is split into Tier 1
+ * (11 confirm-required names below) and Tier 2 (11 constructive writes in
+ * `constructiveTools`, budget-only, NEVER confirm-gated). Loop-equivalence
+ * note (why this is safe enough): single-write loops CAN replicate bulk
+ * effects, but every constructive call still draws from the
+ * `mcp-write:`/`chat-write:` fixed-window budget (default 60/10 per minute),
+ * so a runaway loop is throttled within one window; bulk wipes stay behind
+ * the confirm wall. Revisit if abuse review shows budget-only creates being
+ * spammed.
  *
  * `confirm` must also be declared as an optional field in each gated tool's
  * zod inputSchema: both dispatch layers validate args against the schema
@@ -64,26 +67,28 @@ export const destructiveTools = new Set([
   "set-bid-budget",
   "set-timetable-visibility",
   "set-roadmap-visibility",
-  // Constructive writes (Task 7 confirm-all-writes): single-write loops
-  // replicate bulk wipes, and unconfirmed creates spam user state.
+  "get-timetable-calendar-link", // escalates PRIVATE → UNLISTED on opt-in
+]);
+// Tier 2 — budget-only (constructive writes; throttled by mcp-write:/
+// chat-write: buckets, never confirm-gated):
+export const constructiveTools = new Set([
   "upsert-bid",
   "create-timetable",
   "rename-timetable",
   "add-class-to-timetable",
-  "get-timetable-calendar-link", // escalates PRIVATE → UNLISTED on opt-in
   "create-roadmap",
   "rename-roadmap",
   "upsert-roadmap-entry", // additive, but repeated calls rewrite placement
   "set-matric-term", // rewrites seniority basis for the whole roadmap
   "set-active-roadmap", // flips the singleton active roadmap
   "sync-roadmap-progress", // bulk-adds courses across all terms
-  "copy-public-roadmap", // creates a full roadmap copy
+  "copy-public-roadmap", // additive copy into own account — deletes nothing
 ]);
 
 /**
  * Confirm gate for destructive tools. Returns null when the call may proceed
- * (non-destructive tool, or `confirm:true` present), or an error message when
- * a destructive tool was called without explicit confirmation.
+ * (tool not in Tier 1, or `confirm:true` present), or an error message when
+ * a Tier-1 tool was called without explicit confirmation.
  */
 export function checkDestructiveConfirm(
   toolName: string,
@@ -98,8 +103,8 @@ export function checkDestructiveConfirm(
     return null;
   }
   return (
-    `Destructive tool "${toolName}" requires explicit confirmation: ` +
-    `call again with confirm:true after showing the user what will be deleted.`
+    `Tool "${toolName}" changes or publishes your data and requires explicit confirmation: ` +
+    `call again with confirm:true after showing the user exactly what will change and getting explicit approval.`
   );
 }
 
@@ -117,10 +122,11 @@ export async function checkWriteBudget(
   const windowMinutes = getRateLimitWindowMinutes();
   // Single budget primitive (Task 7): same key prefix, same limit source,
   // same window — only the validation/delegation moved into checkBudget.
-  const res = await checkBudget(ctx, "write", {
+  const res = await checkBudget(ctx, {
     prefix: keyPrefix,
     limit,
     windowMs: windowMinutes * 60_000,
+    kind: "write",
   });
   if (!res.ok) {
     return `Write rate limit exceeded: at most ${limit} write operations per minute are allowed. Please wait ~${res.retryAfterSeconds}s before trying again.`;
@@ -149,10 +155,11 @@ export async function checkReadBudget(
   const windowMinutes = getRateLimitWindowMinutes();
   // Single budget primitive (Task 7): same key prefix, same limit source,
   // same window — only the validation/delegation moved into checkBudget.
-  const res = await checkBudget(ctx, "read", {
+  const res = await checkBudget(ctx, {
     prefix: keyPrefix,
     limit,
     windowMs: windowMinutes * 60_000,
+    kind: "read",
   });
   if (!res.ok) {
     return `Read rate limit exceeded: at most ${limit} read operations per minute are allowed. Please wait ~${res.retryAfterSeconds}s before trying again.`;

@@ -17,7 +17,6 @@ import {
   roadmapViewToViewProps,
 } from "../roadmap-view-shared";
 import {
-  confirmField,
   errText,
   errorMessage,
   jsonText,
@@ -49,8 +48,9 @@ const upsertRoadmapEntrySchema = z.object({
     .describe(
       "Optional sort order within the term (0..99); defaults to next slot in that year/term",
     ),
-  ...confirmField,
 });
+// Tier 2 (Task 7, budget-only): no confirmField — confirm:true is not
+// advertised for constructive writes (the Tier-1 gate never sees it).
 
 export const upsertRoadmapEntryTool: McpTool<typeof upsertRoadmapEntrySchema> =
   {

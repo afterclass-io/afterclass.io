@@ -114,7 +114,7 @@ export const ConfirmRequired: Story = {
       status: "error",
       error: {
         message:
-          'Destructive tool "save-bids" requires explicit confirmation: call again with confirm:true after showing the user what will be deleted.',
+          'Tool "save-bids" changes or publishes your data and requires explicit confirmation: call again with confirm:true after showing the user exactly what will change and getting explicit approval.',
       },
     }),
   ],

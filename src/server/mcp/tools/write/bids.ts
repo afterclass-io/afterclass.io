@@ -12,17 +12,19 @@ import {
   type McpTool,
   type RouterOutputs,
 } from "../../types";
+// (confirmField kept: remove-bid + set-bid-budget are Tier-1 confirm-gated.)
 
 // Canonical values live in `src/server/config/chat-config.ts` (`maxBidAmount`
 // 99999, `maxBidBudget` 10000); these literals are sync-mirrors so the zod
 // schemas stay static — keep all three in agreement.
 const MAX_BID_AMOUNT = 99999;
+// Tier 2 (Task 7, budget-only): no confirmField — confirm:true is not
+// advertised for constructive writes (the Tier-1 gate never sees them).
 const upsertBidSchema = z.object({
   classId: z.string(),
   bidWindowId: z.number().int().positive().optional(),
   bidAmount: z.number().positive().max(MAX_BID_AMOUNT),
   notes: z.string().max(500).optional(),
-  ...confirmField,
 });
 
 export const upsertBidTool: McpTool<typeof upsertBidSchema> = {

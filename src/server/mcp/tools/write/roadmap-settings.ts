@@ -6,13 +6,15 @@ import {
 } from "../roadmap-view-shared";
 import { stripSecretsFromValue } from "@/mcp/output-policy";
 import {
-  confirmField,
   errText,
   errorMessage,
   jsonText,
   type McpTool,
 } from "../../types";
 
+// Tier 2 (Task 7, budget-only): no confirmField on any schema in this
+// file — confirm:true is not advertised for constructive writes (the
+// Tier-1 gate never sees them).
 const setMatricTermSchema = z.object({
   roadmapId: z.string(),
   matricTermId: z
@@ -21,7 +23,6 @@ const setMatricTermSchema = z.object({
     .describe(
       "Academic term id of the user's Y1T1 (see list-acad-terms). Pass null to clear the declaration.",
     ),
-  ...confirmField,
 });
 
 export const setMatricTermTool: McpTool<typeof setMatricTermSchema> = {
@@ -45,7 +46,6 @@ export const setMatricTermTool: McpTool<typeof setMatricTermSchema> = {
 
 const setActiveRoadmapSchema = z.object({
   roadmapId: z.string(),
-  ...confirmField,
 });
 
 export const setActiveRoadmapTool: McpTool<typeof setActiveRoadmapSchema> = {
@@ -67,7 +67,6 @@ export const setActiveRoadmapTool: McpTool<typeof setActiveRoadmapSchema> = {
 
 const syncRoadmapProgressSchema = z.object({
   roadmapId: z.string(),
-  ...confirmField,
 });
 
 export const syncRoadmapProgressTool: McpTool<
@@ -93,7 +92,6 @@ export const syncRoadmapProgressTool: McpTool<
 
 const copyPublicRoadmapSchema = z.object({
   roadmapId: z.string(),
-  ...confirmField,
 });
 
 export const copyPublicRoadmapTool: McpTool<typeof copyPublicRoadmapSchema> = {

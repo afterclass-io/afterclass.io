@@ -222,14 +222,14 @@ export const UpsertBidFailure: Story = {
   parameters: { mcpCta: { mode: "error", message: "rate limited" } },
 };
 
-/** UpsertBidConfirmRequired: CTA blocked by the destructive confirm:true gate. */
-export const UpsertBidConfirmRequired: Story = {
+/** UpsertBidRateLimited: CTA blocked by the chat-write budget (upsert-bid is Tier-2 budget-only, never confirm-gated). */
+export const UpsertBidRateLimited: Story = {
   decorators: [withMcpView({ status: "ready", toolOutput: fullProps })],
   parameters: {
     mcpCta: {
       mode: "error",
       message:
-        'Destructive tool "upsert-bid" requires explicit confirmation: call again with confirm:true after showing the user what will be deleted.',
+        "You're making changes too quickly - at most 10 write actions per minute are allowed. Please wait ~12s and ask me to try again.",
     },
   },
 };

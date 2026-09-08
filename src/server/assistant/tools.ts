@@ -1,10 +1,8 @@
 import { tool, type ToolSet } from "ai";
 
 import { dispatchToolCall } from "@/mcp/dispatch";
-import { checkDestructiveConfirm } from "@/mcp/rate-limit";
 import { allTools } from "@/server/mcp/tools";
 import type { ToolContext } from "@/server/mcp/types";
-import { checkBudget } from "@/server/assistant/budget";
 
 /** ~6k tokens at the chars/4 heuristic. Caps the per-call miss region AND the
  * within-loop amplification (a result is re-sent at miss in every remaining
@@ -21,15 +19,17 @@ export const TRUNCATION_NOTE =
  * Convert the shared MCP skill catalog into AI SDK tools for the chat route.
  *
  * Single shared pipeline: each execution delegates to `dispatchToolCall`
- * (`src/mcp/dispatch.ts`) with a policy preserving this path's historical
- * semantics. Write-path hardening: every non-readOnly tool execution first
- * consumes the caller's per-user write budget (`chat-write:<userId>`,
- * DB-backed fixed window via `checkAndIncrement`, limit = effective write
- * limit). On exhaustion the tool returns a friendly "slow down" result instead
- * of running - the model relays it and the stream is not broken by a throw.
- * Read-only tools have no budget and pass through untouched. (The MCP path
- * has its own limiter in `src/mcp/register.ts`; this one is separate and
- * does not share its budget — see the budget matrix in
+ * (`src/mcp/dispatch.ts`) — the single owner of the confirm gate AND the
+ * budget charge. No pre-checks live here: dispatch checks `confirm:true`
+ * for Tier-1 (destructive/high-impact) tools before charging the caller's
+ * per-user write budget (`chat-write:<userId>`, DB-backed fixed window via
+ * `checkBudget`, limit = effective write limit) and before running the
+ * tool, so rejected calls are never charged and never reach the procedure.
+ * On exhaustion dispatch returns the friendly "slow down" text below instead
+ * of running — the model relays it and the stream is not broken by a throw.
+ * Read-only tools pass `budget: "none"` and run untouched. (The MCP path
+ * has its own limiter in `src/mcp/dispatch.ts` with `mcp-write:`/`mcp-read:`
+ * prefixes — same single owner, separate buckets — see the budget matrix in
  * `src/mcp/rate-limit.ts` for the three buckets and why.)
  */
 export function buildAssistantTools(
@@ -43,47 +43,33 @@ export function buildAssistantTools(
       description: t.description,
       inputSchema: t.inputSchema,
       execute: async (args) => {
-        // Historical order, preserved exactly: destructive/full-replace
-        // writes need explicit confirm:true (checked before the write budget
-        // so rejected calls are not charged), then the write-budget charge,
-        // then a single dispatch (auth + run + shape, no dev bypass — chat
-        // always requires a signed-in user). The caller's ToolContext is
-        // passed straight through (dispatch accepts it as-is — no DB
-        // re-resolve, no ctx-shape mocking needed in tests). On budget
-        // exhaustion return the slow-down text directly WITHOUT calling
-        // dispatch at all; `t.run` throws propagate verbatim via
+        // Single dispatch (auth + confirm-gate + budget + run + shape, no
+        // dev bypass — chat always requires a signed-in user). The caller's
+        // ToolContext is passed straight through (dispatch accepts it as-is
+        // — no DB re-resolve, no ctx-shape mocking needed in tests).
+        // `confirm: true` arms the Tier-1 gate for destructive/high-impact
+        // writes (constructive Tier-2 writes are budget-only); the budget
+        // prefix + effective write limit + first-person slow-down
+        // formatter below are this path's policy contribution.
+        // `t.run` throws propagate verbatim via
         // `throwBehavior: "propagate"`.
-        const gate = checkDestructiveConfirm(t.name, args);
-        if (gate) return gate;
-        if (!t.readOnly) {
-          // Single budget primitive (Task 7): same `chat-write:<userId>`
-          // bucket, same limit source, same window — validation/delegation
-          // moved into checkBudget.
-          const { ok, retryAfterSeconds } = await checkBudget(ctx, "write", {
-            prefix: "chat-write",
-            limit: writeRateLimitPerMinute,
-            windowMs: windowMinutes * 60_000,
-          });
-          if (!ok) {
-            return (
-              `You're making changes too quickly - at most ${writeRateLimitPerMinute} ` +
-              `write actions per minute are allowed. Please wait ~${retryAfterSeconds}s ` +
-              `and ask me to try again.`
-            );
-          }
-        }
         const out = await dispatchToolCall({
           tool: t as never,
           params: args,
           ctx,
           policy: {
-            confirm: false,
-            budget: "none",
+            confirm: true,
+            budget: t.readOnly ? "none" : "write",
+            budgetPrefix: "chat-write",
+            limit: writeRateLimitPerMinute,
+            windowMs: windowMinutes * 60_000,
             shape: "text",
             truncateAt: MAX_TOOL_RESULT_CHARS,
             truncationNote: TRUNCATION_NOTE,
             devBypass: false,
             throwBehavior: "propagate",
+            onBudgetExceeded: ({ limit, retry }) =>
+              `You're making changes too quickly - at most ${limit} write actions per minute are allowed. Please wait ~${retry}s and ask me to try again.`,
           },
         });
         // The chat path surfaces pipeline rejections as plain model-relayed

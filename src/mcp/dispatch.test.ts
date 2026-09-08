@@ -109,6 +109,32 @@ describe("dispatchToolCall", () => {
     expect(tool.run).toHaveBeenCalledTimes(1);
   });
 
+  it("charges the chat-write bucket with custom limit when policy carries it", async () => {
+    // Gated (Tier-1) write with its own policy limit: dispatch charges the
+    // chat-write: bucket with the carried limit, not the MCP ceiling.
+    const run = vi.fn().mockResolvedValue({
+      content: [{ type: "text", text: "ok" }],
+    });
+    const out = await dispatchToolCall({
+      tool: { name: "set-bid-status", run } as never,
+      params: { confirm: true },
+      ctx: fakeCtx,
+      policy: {
+        confirm: true,
+        budget: "write",
+        budgetPrefix: "chat-write",
+        limit: 10,
+        windowMs: 60_000,
+        shape: "text",
+      },
+    });
+    expect("error" in out ? out.error : out.content[0]?.text).toMatch(
+      /ok|rate limit/i,
+    );
+    expect(checkAndIncrementMock).toHaveBeenCalledWith("chat-write:u1", 10, 1);
+    expect(run).toHaveBeenCalledTimes(1);
+  });
+
   it("truncates oversized text results with the truncation note", async () => {
     const tool = okTool("abcdefghij");
     const res = await dispatchToolCall({

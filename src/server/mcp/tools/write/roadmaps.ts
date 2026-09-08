@@ -24,9 +24,10 @@ const roadmapEntrySchema = z.object({
   sortOrder: z.number().int().min(0).max(99),
 });
 
+// Tier 2 (Task 7, budget-only): no confirmField — confirm:true is not
+// advertised for constructive writes (the Tier-1 gate never sees them).
 const createRoadmapSchema = z.object({
   name: z.string().min(1).max(100),
-  ...confirmField,
 });
 
 export const createRoadmapTool: McpTool<typeof createRoadmapSchema> = {
@@ -53,7 +54,6 @@ const renameRoadmapSchema = z.object({
   roadmapId: z.string(),
   name: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
-  ...confirmField,
 });
 
 export const renameRoadmapTool: McpTool<typeof renameRoadmapSchema> = {

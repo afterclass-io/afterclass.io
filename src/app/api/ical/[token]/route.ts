@@ -1,7 +1,6 @@
 import { type NextRequest } from "next/server";
 import { getFeedData } from "@/server/api/timetable/getFeedData";
 import { buildIcal } from "@/modules/timetable/functions/build-ical";
-import { checkAndIncrement } from "@/server/assistant/ratelimit";
 import { checkBudget } from "@/server/assistant/budget";
 import { getChatConfigAsync } from "@/server/config/chat-config";
 
@@ -50,9 +49,17 @@ export async function GET(
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const { icalThrottlePerMinute } = await getChatConfigAsync();
+  // Single budget primitive (Task 7): `checkBudget` composes the bucket as
+  // `<prefix>:<user.id>`, so prefix "ical" + the raw IP keeps the
+  // historical `ical:<ip>` bucket, same limit source, same window.
   const { ok } = await checkBudget(
-    { key: `ical:${ip}`, limit: icalThrottlePerMinute, windowMs: 60_000 },
-    "read",
+    { user: { id: ip } },
+    {
+      prefix: "ical",
+      limit: icalThrottlePerMinute,
+      windowMs: 60_000,
+      kind: "read",
+    },
   );
   if (!ok) return new Response("Too many requests", { status: 429 });
 

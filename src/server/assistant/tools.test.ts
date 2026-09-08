@@ -6,8 +6,13 @@ const { mockCheckAndIncrement } = vi.hoisted(() => ({
   mockCheckAndIncrement: vi.fn() as Mock,
 }));
 
-vi.mock("@/server/assistant/budget", () => ({
-  checkBudget: mockCheckAndIncrement,
+// Single-owner budget (Task 7): dispatch owns the `checkAndIncrement` call
+// (via `checkBudget`), so the mock sits at the store — tools.ts no longer
+// imports the budget module directly. `getChatConfig` is unmocked, so the
+// policy-carried `limit`/`windowMs` decide the charge (limit =
+// WRITE_LIMIT, window = 60_000 → windowMinutes 1).
+vi.mock("@/server/assistant/ratelimit", () => ({
+  checkAndIncrement: mockCheckAndIncrement,
 }));
 
 // `server-only` throws outside a Next.js server bundle — stub as no-op
@@ -55,11 +60,19 @@ function makeContext() {
           .mockResolvedValue({ success: true, acadTermId: "AY202627T1" }),
         upsertBudget: vi.fn().mockResolvedValue({ balance: 100 }),
       },
+      bidWindows: {
+        getCurrentWindow: vi.fn().mockResolvedValue({
+          id: 53,
+          opensAt: new Date(Date.now() - 60_000),
+          resultsAt: new Date(Date.now() + 60_000),
+        }),
+      },
       roadmaps: {
         getMine: vi.fn().mockResolvedValue({
           roadmap: { id: "r1", name: "My Plan" },
           entries: [],
         }),
+        listMine: vi.fn().mockResolvedValue([]),
         copyPublic: vi.fn().mockResolvedValue({ id: "r2", name: "Copy" }),
         create: vi.fn().mockResolvedValue({ id: "r1" }),
         saveEntries: vi.fn().mockResolvedValue({ count: 1 }),
@@ -122,21 +135,13 @@ describe("buildAssistantTools", () => {
       status: "SECURED",
       confirm: true,
     } as never);
-    // NOTE: asserted via objectContaining, not the raw ctx: the factory's
-    // caller namespaces are Proxies over live tRPC path functions, and
-    // vitest's diff-printer calls toString/valueOf on them when the
-    // assertion formats its argument list (see fake-context.ts
-    // PRINTER_SAFE) — matching on the identity shape avoids the walk.
+    // Single-owner budget (Task 7): dispatch charges the store directly —
+    // key `<prefix>:<userId>`, policy-carried limit, windowMs 60_000 → 1
+    // window-minute.
     expect(mockCheckAndIncrement).toHaveBeenCalledWith(
-      expect.objectContaining({
-        user: expect.objectContaining({ id: "u1" }),
-      }),
-      "write",
-      {
-        prefix: "chat-write",
-        limit: WRITE_LIMIT,
-        windowMs: 60_000,
-      },
+      "chat-write:u1",
+      WRITE_LIMIT,
+      1,
     );
     expect(result).toContain("b1");
     const setStatus = (
@@ -223,18 +228,7 @@ describe("buildAssistantTools", () => {
     "set-bid-budget",
     "set-timetable-visibility",
     "set-roadmap-visibility",
-    "upsert-bid",
-    "create-timetable",
-    "rename-timetable",
-    "add-class-to-timetable",
     "get-timetable-calendar-link",
-    "create-roadmap",
-    "rename-roadmap",
-    "upsert-roadmap-entry",
-    "set-matric-term",
-    "set-active-roadmap",
-    "sync-roadmap-progress",
-    "copy-public-roadmap",
   ])(
     "chat execute blocks %s without confirm:true (same message as MCP dispatch)",
     async (name) => {
@@ -264,13 +258,62 @@ describe("buildAssistantTools", () => {
     expect(result).toContain("b1");
   });
 
-  it("confirm-all-writes: the destructive set equals every non-readOnly catalog tool (reads never gated)", async () => {
-    const { destructiveTools } = await import("@/mcp/rate-limit");
-    const writeNames = allTools.filter((t) => !t.readOnly).map((t) => t.name);
-    expect(new Set(writeNames)).toEqual(destructiveTools);
+  it("two-tier gate: destructive set is exactly the 11 confirm-required tools; constructive writes are budget-only", async () => {
+    const { destructiveTools, constructiveTools } = await import(
+      "@/mcp/rate-limit"
+    );
+    expect([...destructiveTools].sort()).toEqual([
+      "get-timetable-calendar-link",
+      "remove-bid",
+      "remove-class-from-timetable",
+      "remove-roadmap",
+      "remove-timetable",
+      "save-bids",
+      "save-roadmap-entries",
+      "set-bid-budget",
+      "set-bid-status",
+      "set-roadmap-visibility",
+      "set-timetable-visibility",
+    ]);
+    expect([...constructiveTools].sort()).toEqual([
+      "add-class-to-timetable",
+      "copy-public-roadmap",
+      "create-roadmap",
+      "create-timetable",
+      "rename-roadmap",
+      "rename-timetable",
+      "set-active-roadmap",
+      "set-matric-term",
+      "sync-roadmap-progress",
+      "upsert-bid",
+      "upsert-roadmap-entry",
+    ]);
+    // Every non-readOnly catalog tool is in exactly one tier; reads in neither.
+    const writeNames = allTools
+      .filter((t) => !t.readOnly)
+      .map((t) => t.name)
+      .sort();
+    expect([...destructiveTools, ...constructiveTools].sort()).toEqual(
+      writeNames,
+    );
     for (const t of allTools.filter((t) => t.readOnly)) {
       expect(destructiveTools.has(t.name)).toBe(false);
+      expect(constructiveTools.has(t.name)).toBe(false);
     }
+  });
+
+  it.each([
+    ["copy-public-roadmap", { roadmapId: "r1" }],
+    ["create-roadmap", { name: "Plan" }],
+    ["upsert-bid", { classId: "cl1", bidAmount: 10 }],
+  ])("constructive tool %s runs WITHOUT confirm:true", async (name, args) => {
+    const ctx = await makeContext();
+    const tools = buildAssistantTools(ctx, WRITE_LIMIT);
+    const execute = tools[name]!.execute as unknown as (
+      args: never,
+    ) => Promise<string>;
+    const result = await execute(args as never);
+    expect(result).not.toMatch(/requires explicit confirmation/);
   });
 
   it.each([
@@ -283,20 +326,7 @@ describe("buildAssistantTools", () => {
     ["set-bid-budget", { balance: 100 }],
     ["set-timetable-visibility", { timetableId: "tt1", visibility: "PUBLIC" }],
     ["set-roadmap-visibility", { roadmapId: "r1", visibility: "PUBLIC" }],
-    ["upsert-bid", { classId: "cl1", bidAmount: 10 }],
-    ["create-timetable", {}],
-    ["rename-timetable", { timetableId: "tt1", name: "New" }],
-    ["add-class-to-timetable", { classId: "cl1" }],
-    ["create-roadmap", { name: "Plan" }],
-    ["rename-roadmap", { roadmapId: "r1", name: "New" }],
-    [
-      "upsert-roadmap-entry",
-      { courseCode: "ACCT102", yearNumber: 1, term: "T1" },
-    ],
-    ["set-matric-term", { roadmapId: "r1", matricTermId: null }],
-    ["set-active-roadmap", { roadmapId: "r1" }],
-    ["sync-roadmap-progress", { roadmapId: "r1" }],
-    ["copy-public-roadmap", { roadmapId: "r1" }],
+    ["get-timetable-calendar-link", { timetableId: "tt1" }],
   ])(
     "chat schema for %s declares optional confirm so confirm:true survives validation",
     async (name, baseArgs) => {

@@ -99,7 +99,7 @@ export const ConfirmRequired: Story = {
       status: "error",
       error: {
         message:
-          'Destructive tool "get-timetable-calendar-link" requires explicit confirmation: call again with confirm:true after showing the user what will be deleted.',
+          'Tool "get-timetable-calendar-link" changes or publishes your data and requires explicit confirmation: call again with confirm:true after showing the user exactly what will change and getting explicit approval.',
       },
     }),
   ],

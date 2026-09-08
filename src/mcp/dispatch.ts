@@ -1,15 +1,13 @@
 import type { ToolContext, ToolResult } from "@/server/mcp/types";
 
+import { checkBudget, type BudgetKind } from "@/server/assistant/budget";
 import { errorResult, textResult } from "./envelopes";
 import { isDevBypass } from "./env-gate";
 import { stripSecrets, truncate, wrapToolOutput } from "./output-policy";
 import { appendAuditLog } from "@/server/mcp/audit-log";
+import { getChatConfig, getRateLimitWindowMinutes } from "@/server/ecfg/chat";
 import { buildToolContext } from "./user";
-import {
-  checkDestructiveConfirm,
-  checkReadBudget,
-  checkWriteBudget,
-} from "./rate-limit";
+import { checkDestructiveConfirm } from "./rate-limit";
 
 /**
  * Single tool-call pipeline shared by every transport: auth → confirm-gate →
@@ -39,6 +37,26 @@ export interface DispatchPolicy {
   shape: "text" | "view";
   /** DB key prefix for the budget bucket (e.g. `"mcp-write"`, `"chat-write"`). */
   budgetPrefix?: string;
+  /**
+   * Custom per-call limit for the budget bucket. Defaults to the transport
+   * ceiling (`mcp-write:`/`mcp-read:` limit from `getChatConfig`) — the chat
+   * transport passes its own effective write limit here (same value it
+   * reports in its friendly over-budget message).
+   */
+  limit?: number;
+  /** Custom window in ms for the budget bucket (default 1 minute). */
+  windowMs?: number;
+  /**
+   * Friendly over-budget message formatter. Receives the charged `limit` and
+   * the `retryAfterSeconds` from the bucket; defaults to the MCP
+   * read/write-rate-limit wording. The chat transport passes its own
+   * slow-down text so the model relays a first-person message.
+   */
+  onBudgetExceeded?: (args: {
+    limit: number;
+    retry: number;
+    kind: BudgetKind;
+  }) => string;
   /** Max chars before truncation (text shape only). Defaults to no truncation. */
   truncateAt?: number;
   /** Note appended when truncation fires (text shape only). */
@@ -136,11 +154,41 @@ export async function dispatchToolCall(opts: {
   }
 
   if (policy.budget !== "none") {
-    const limited =
-      policy.budget === "write"
-        ? await checkWriteBudget(toolCtx, policy.budgetPrefix)
-        : await checkReadBudget(toolCtx, policy.budgetPrefix);
-    if (limited) return { error: limited };
+    // Single-owner budget (Task 7): dispatch owns the charge via the single
+    // `checkBudget` shape — `limit`/`windowMs` override the transport
+    // ceiling when the policy carries them (the chat transport passes its
+    // effective write limit; MCP viewless/view-bound paths omit them and
+    // get the canonical `mcp-write:`/`mcp-read:` limit from
+    // `getChatConfig`). Confirm runs BEFORE the charge, so rejected calls
+    // are never charged. `onBudgetExceeded` lets the caller supply its own
+    // friendly over-budget text (chat); otherwise the MCP wording applies.
+    const chat = await getChatConfig();
+    const limit = policy.limit ?? chat.mcpRateLimitPerMinute;
+    const windowMs =
+      policy.windowMs ?? getRateLimitWindowMinutes() * 60_000;
+    const { ok, retryAfterSeconds } = await checkBudget(toolCtx, {
+      prefix:
+        policy.budgetPrefix ?? (policy.budget === "write" ? "mcp-write" : "mcp-read"),
+      limit,
+      windowMs,
+      kind: policy.budget,
+    });
+    if (!ok) {
+      if (policy.onBudgetExceeded)
+        return {
+          error: policy.onBudgetExceeded({
+            limit,
+            retry: retryAfterSeconds,
+            kind: policy.budget,
+          }),
+        };
+      return {
+        error:
+          policy.budget === "write"
+            ? `Write rate limit exceeded: at most ${limit} write operations per minute are allowed. Please wait ~${retryAfterSeconds}s before trying again.`
+            : `Read rate limit exceeded: at most ${limit} read operations per minute are allowed. Please wait ~${retryAfterSeconds}s before trying again.`,
+      };
+    }
   }
 
   let result: ToolResult;
