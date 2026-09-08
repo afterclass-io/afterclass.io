@@ -59,6 +59,12 @@ export function CourseSearchPanel({
 
   const results = useMemo(() => searchQuery.data ?? [], [searchQuery.data]);
 
+  // Gate on `isFetching` (not `isPending`): a disabled query — no term, or
+  // nothing typed yet — reports `isPending: true` while `isFetching` stays
+  // false, so `isPending` alone paints the loading skeletons under the
+  // get-started hint. Same guard as the roadmaps CourseSearchSidebar.
+  const isSearching = searchQuery.isFetching && debouncedQuery.length >= 1;
+
   const handleExpand = useCallback((courseId: string) => {
     setExpandedCourseId((prev) => (prev === courseId ? null : courseId));
   }, []);
@@ -122,7 +128,7 @@ export function CourseSearchPanel({
         )}
 
         {/* Loading skeleton */}
-        {searchQuery.isPending && (
+        {isSearching && (
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-16 w-full rounded-md" />
@@ -181,7 +187,7 @@ export function CourseSearchPanel({
         )}
 
         {/* No results */}
-        {debouncedQuery && !searchQuery.isPending && results.length === 0 && (
+        {debouncedQuery && !isSearching && results.length === 0 && (
           <p className="text-muted-foreground py-8 text-center text-sm">
             No courses found for &quot;{debouncedQuery}&quot;.
           </p>
