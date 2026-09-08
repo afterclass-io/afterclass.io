@@ -122,7 +122,8 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
       } else if (section && !professorSlug) {
         // courseCode + section path: resolve the classId via the shared
         // code+section resolver (term-scoped, term-agnostic fallback).
-        const trimmedCode = courseCode!.trim();
+        if (!courseCode?.trim()) return errText("courseCode must not be empty");
+        const trimmedCode = courseCode.trim();
         const trimmedSection = section.trim();
         if (!trimmedCode) return errText("courseCode must not be empty");
         if (!trimmedSection) return errText("section must not be empty");
@@ -150,12 +151,14 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
         results = await caller.bidResults.getBy({ classId: resolvedClassId });
       } else {
         // getByCourseProfessor keys on professorId, so resolve the slug first.
+        if (!professorSlug?.trim()) return errText("professorSlug must not be empty");
+        if (!courseCode?.trim()) return errText("courseCode must not be empty");
         const professor = await caller.professors.getBySlug({
-          slug: professorSlug!,
+          slug: professorSlug.trim(),
         });
         if (!professor) return errText(`Professor ${professorSlug} not found.`);
         results = await caller.bidResults.getByCourseProfessor({
-          courseCode: courseCode!,
+          courseCode: courseCode.trim(),
           professorId: professor.id,
         });
       }

@@ -383,4 +383,13 @@ describe("explore-bid-options", () => {
       { acadTermId: "t1", round: "1", window: 2, min: 5.5, median: 17.25, vacancy: 30 },
     ]);
   });
+
+  it("returns friendly errText for section-without-courseCode (no TypeError)", async () => {
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller() };
+    const res = await exploreBidOptionsTool.run(ctx, { section: "G1" } as never);
+    const text = res.content[0]?.text ?? "";
+    expect(res.isError).toBe(true);
+    expect(text).toMatch(/courseCode must not be empty/);
+    expect(text).not.toMatch(/Cannot read properties/);
+  });
 });
