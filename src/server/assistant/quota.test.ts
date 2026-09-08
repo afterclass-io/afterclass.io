@@ -54,7 +54,9 @@ vi.mock("@/server/db", () => ({
 }));
 // Task 8: quota.ts reads the canonical chat-config (mocked here); the
 // ecfg shim mock stays for modules that still import it transitively.
+// Task 13: beginTurn reads the sync getter for inFlightStaleMs — mocked too.
 vi.mock("@/server/config/chat-config", () => ({
+  getChatConfig: () => ({ inFlightStaleMs: 5 * 60_000 }),
   getChatConfigAsync: async () => ({
     quotaPerMonth: 50,
     nudgeAt: 40,

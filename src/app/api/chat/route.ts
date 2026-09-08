@@ -56,11 +56,11 @@ const MAX_CHAT_BODY_BYTES = 512_000;
 
 // Input-token count above which a settlement HARD-BLOCKS the turn's spend
 // recording (usually a huge tool result re-sent across loop steps or a broken
-// cached prefix). Canonical value lives in `src/server/config/chat-config.ts`
-// (`settlementSpikeTokens` = 30000); this fraction is the sync-mirror of the
-// derivation (0.5 × maxInputTokens 64000 ≈ 32000 → pinned 30000 per brief):
-// derive per-turn from the live config so an env override moves the
-// threshold with the budget, and clamp to the canonical floor.
+// cached prefix). Canonical threshold lives in `src/server/config/chat-config.ts`
+// (`settlementSpikeTokens` = 30000, read as `chat.settlementSpikeTokens`
+// below); the 0.5 × maxInputTokens derivation is the legacy sync-mirror kept
+// as the ceiling via Math.min — an env override lowering settlementSpikeTokens
+// moves the threshold with the budget.
 const SETTLEMENT_SPIKE_FRACTION = 0.5;
 
 // CACHE-CRITICAL: this prompt + the tool catalog are the shared account-wide

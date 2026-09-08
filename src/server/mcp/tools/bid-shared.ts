@@ -1,9 +1,12 @@
+import { getBidLimits } from "@/server/config/chat-config";
+
 /** SMU BOSS floor: no bid below e$10 can clear. Canonical value lives in
- * `src/server/config/chat-config.ts` (`minBid`); this literal is the
- * sync-mirror so the hot bid path stays dependency-free — keep the two at 10. */
-export const MIN_BID = 10;
+ * `src/server/config/chat-config.ts` (`minBid`); read through the getter
+ * so env/file overrides move every consumer at once. Kept as an exported
+ * const (module-scope getter call) so existing `MIN_BID` imports keep working. */
+export const MIN_BID: number = getBidLimits().minBid;
 export function clampBidFloor(amount: number): number {
-  return Math.max(MIN_BID, amount);
+  return Math.max(getBidLimits().minBid, amount);
 }
 
 /**
@@ -41,8 +44,10 @@ export function rationaleFor(
 
 /** Default confidence level: the suggested amount beats this % of bids.
  * Canonical value lives in `src/server/config/chat-config.ts`
- * (`defaultBeatsPct`); this literal is the sync-mirror — keep both at 70. */
-export const DEFAULT_BEATS_PERCENTAGE = 70;
+ * (`defaultBeatsPct`); read through the getter. Kept as an exported const
+ * (module-scope getter call) so existing imports keep working. */
+export const DEFAULT_BEATS_PERCENTAGE: number =
+  getBidLimits().defaultBeatsPct;
 
 type SafetyFactorRow = {
   acadTermId: string;

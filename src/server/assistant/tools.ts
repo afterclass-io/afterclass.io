@@ -3,17 +3,17 @@ import { tool, type ToolSet } from "ai";
 import { dispatchToolCall } from "@/mcp/dispatch";
 import { allTools } from "@/server/mcp/tools";
 import type { ToolContext } from "@/server/mcp/types";
+import { getToolOutputBudget } from "@/server/config/chat-config";
 
 /** ~6k tokens at the chars/4 heuristic. Caps the per-call miss region AND the
  * within-loop amplification (a result is re-sent at miss in every remaining
  * agent-loop step of the same turn). Canonical value lives in
- * `src/server/config/chat-config.ts` (`maxToolResultChars`); this literal is
- * the sync-mirror (imported at module scope by route/dispatch paths) — keep
- * both at 24000. */
-export const MAX_TOOL_RESULT_CHARS = 24_000;
+ * `src/server/config/chat-config.ts` (`maxToolResultChars`), read through
+ * the getter (Task 13). Kept exported (module-scope getter calls) so
+ * existing imports keep working. */
+export const MAX_TOOL_RESULT_CHARS: number = getToolOutputBudget().maxChars;
 
-export const TRUNCATION_NOTE =
-  "\n[truncated - result too large; refine your query or request fewer items]";
+export const TRUNCATION_NOTE: string = getToolOutputBudget().note;
 
 /**
  * Convert the shared MCP skill catalog into AI SDK tools for the chat route.

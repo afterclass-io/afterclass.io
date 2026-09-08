@@ -1,5 +1,8 @@
 import { db, txDb } from "@/server/db";
-import { getChatConfigAsync as getCanonicalChatConfig } from "@/server/config/chat-config";
+import {
+  getChatConfigAsync as getCanonicalChatConfig,
+  getChatConfig as getCanonicalChatConfigSync,
+} from "@/server/config/chat-config";
 import type { ChatConfig } from "@/server/ecfg/config";
 import { criticalFloorFor } from "@/modules/assistant/quota-meter/logic";
 import { currentMonthPeriod } from "./month";
@@ -263,16 +266,16 @@ export async function checkUserSpendCap(
  * backstop). Always pair with `endTurn` in a finally path; stale entries
  * are treated as expired after `STALE_MS` so a crashed turn cannot lock
  * the user out forever. Canonical value lives in
- * `src/server/config/chat-config.ts` (`inFlightStaleMs`); this literal is
- * the sync-mirror (module-level const read per-call) — keep both at 5min.
+ * `src/server/config/chat-config.ts` (`inFlightStaleMs`), read through the
+ * getter per call (Task 13) so env/file overrides move the window.
  */
 const inFlightTurns = new Map<string, number>();
-const IN_FLIGHT_STALE_MS = 5 * 60_000;
 
 export function beginTurn(userId: string): boolean {
   const now = Date.now();
   const started = inFlightTurns.get(userId);
-  if (started !== undefined && now - started < IN_FLIGHT_STALE_MS) return false;
+  const staleMs = getCanonicalChatConfigSync().inFlightStaleMs;
+  if (started !== undefined && now - started < staleMs) return false;
   inFlightTurns.set(userId, now);
   return true;
 }

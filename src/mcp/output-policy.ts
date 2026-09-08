@@ -11,16 +11,19 @@
  * tools (`my-bids` clamps via `capPage`), `page-links.ts` link builders.
  */
 
-/**
- * ~6k tokens at the chars/4 heuristic. Parity with `MAX_TOOL_RESULT_CHARS`
- * in `src/server/assistant/tools.ts` (kept as a literal here on purpose:
- * `tools.ts` imports `dispatch.ts`, so importing the constant from there
- * would cycle `tools.ts → dispatch.ts → output-policy.ts → tools.ts`).
- */
-export const DEFAULT_MAX_OUTPUT_CHARS = 24_000;
+import { getToolOutputBudget } from "@/server/config/chat-config";
 
-export const DEFAULT_TRUNCATION_NOTE =
-  "\n[truncated - result too large; refine your query or request fewer items]";
+/**
+ * ~6k tokens at the chars/4 heuristic. Canonical value lives in
+ * `src/server/config/chat-config.ts` (`maxToolResultChars`), read through
+ * the getter (Task 13) — the old literal is gone, so `tools.ts` and
+ * output-policy can never drift apart again. (No import cycle: chat-config
+ * imports no MCP modules.)
+ */
+export const DEFAULT_MAX_OUTPUT_CHARS: number =
+  getToolOutputBudget().maxChars;
+
+export const DEFAULT_TRUNCATION_NOTE: string = getToolOutputBudget().note;
 
 /** Pagination defaults matching the `my-bids` schema (limit default 20, max 50). */
 export const DEFAULT_PAGE_LIMIT = 20;

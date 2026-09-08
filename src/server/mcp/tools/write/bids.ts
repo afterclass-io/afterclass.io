@@ -14,10 +14,12 @@ import {
 } from "../../types";
 // (confirmField kept: remove-bid + set-bid-budget are Tier-1 confirm-gated.)
 
+import { getBidLimits } from "@/server/config/chat-config";
+
 // Canonical values live in `src/server/config/chat-config.ts` (`maxBidAmount`
-// 99999, `maxBidBudget` 10000); these literals are sync-mirrors so the zod
-// schemas stay static — keep all three in agreement.
-const MAX_BID_AMOUNT = 99999;
+// 99999, `maxBidBudget` 10000); read through the getter (zod schemas can
+// reference function calls — static schemas stay valid).
+const MAX_BID_AMOUNT: number = getBidLimits().maxBidAmount;
 // Tier 2 (Task 7, budget-only): no confirmField — confirm:true is not
 // advertised for constructive writes (the Tier-1 gate never sees them).
 const upsertBidSchema = z.object({
@@ -98,8 +100,8 @@ export const removeBidTool: McpTool<typeof removeBidSchema> = {
   },
 };
 
-/** Sync-mirror of canonical `maxBidBudget` in `src/server/config/chat-config.ts` — keep both at 10000. */
-export const MAX_BUDGET = 10000;
+/** Canonical `maxBidBudget` in `src/server/config/chat-config.ts`, read through the getter. Kept exported (module-scope getter call) so existing `MAX_BUDGET` imports keep working. */
+export const MAX_BUDGET: number = getBidLimits().maxBidBudget;
 
 const setBidBudgetSchema = z.object({
   acadTermId: z.string().optional(),

@@ -246,6 +246,41 @@ export async function getChatConfigAsync(): Promise<ChatConfigWithAliases> {
   return { ...parsed, spendCapUsd: parsed.spendCapPerMonthUsd };
 }
 
+/**
+ * Canonical bid floors for zod schemas and hot paths (Task 13): the
+ * sync-mirror literals in `bid-shared.ts` / `write/bids.ts` /
+ * `write/recommend.ts` read through here, so env/file overrides move every
+ * consumer at once. Sync path (env > file > defaults); zod schemas can call
+ * functions at module scope, so static schemas stay valid.
+ */
+export function getBidLimits(): {
+  minBid: number;
+  maxBidBudget: number;
+  defaultBeatsPct: number;
+  maxBidAmount: number;
+} {
+  const c = getChatConfig();
+  return {
+    minBid: c.minBid,
+    maxBidBudget: c.maxBidBudget,
+    defaultBeatsPct: c.defaultBeatsPct,
+    maxBidAmount: c.maxBidAmount,
+  };
+}
+
+/**
+ * Canonical tool-output budget (Task 13): maxChars + truncation note for
+ * the dispatch text shape and output-policy truncation. Single source so
+ * `tools.ts` and `output-policy.ts` can never drift apart again.
+ */
+export function getToolOutputBudget(): { maxChars: number; note: string } {
+  const c = getChatConfig();
+  return {
+    maxChars: c.maxToolResultChars,
+    note: "\n[truncated - result too large; refine your query or request fewer items]",
+  };
+}
+
 /** Effective per-minute limit for chat write-tool executions (chat-write: budget).
  * Central config read (allowlisted): this module IS the single place raw
  * CHAT_* env reads live, alongside env.ts (schema) and env-gate.ts (gate).
