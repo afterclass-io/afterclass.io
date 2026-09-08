@@ -54,7 +54,7 @@ export function TermPicker({ className }: TermPickerProps) {
   useEffect(() => {
     if (selectedTermId) return;
     // Wait for the terms list so the deep link can be validated.
-    if (termsQuery.isLoading) return;
+    if (termsQuery.isPending) return;
     if (deepLinkTermId && terms.some((t) => t.id === deepLinkTermId)) {
       setSelectedTermId(deepLinkTermId);
       return;
@@ -67,7 +67,7 @@ export function TermPicker({ className }: TermPickerProps) {
     }
   }, [
     selectedTermId,
-    termsQuery.isLoading,
+    termsQuery.isPending,
     deepLinkTermId,
     terms,
     currentWindowQuery.data,
@@ -76,7 +76,7 @@ export function TermPicker({ className }: TermPickerProps) {
     setSelectedTermId,
   ]);
 
-  const isLoading = termsQuery.isLoading || currentWindowQuery.isLoading;
+  const isLoading = termsQuery.isPending || currentWindowQuery.isPending;
 
   if (isLoading) {
     return <Skeleton className={cn("h-9 w-48", className)} />;

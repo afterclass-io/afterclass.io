@@ -312,7 +312,7 @@ export function BidsTable() {
   };
 
   // ---- Render ----
-  if (bidsQuery.isLoading) {
+  if (bidsQuery.isPending) {
     return (
       <div className="space-y-3">
         <Skeleton className="h-24 w-full rounded-lg" />

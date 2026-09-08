@@ -17,6 +17,9 @@ jobs:
         with:
           bun-version: "latest"
 
+      - name: copy .env file
+        run: cp .env.example .env
+
       - run: bun install
 
       - name: Apply all pending migrations to the database

@@ -66,13 +66,13 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
   const pathname = usePathname();
 
   // prettier-ignore
-  const filterFor = z.nativeEnum(ReviewsFilterFor)
+  const filterFor = z.enum(ReviewsFilterFor)
                     .safeParse(searchParams?.get("filter"))
                     ?.data 
                   ?? ReviewsFilterFor.ALL;
 
   // prettier-ignore
-  const sortBy = z.nativeEnum(ReviewsSortBy)
+  const sortBy = z.enum(ReviewsSortBy)
                   .safeParse(searchParams?.get("sort"))
                     ?.data
                 ?? ReviewsSortBy.LATEST;

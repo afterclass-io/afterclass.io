@@ -1,4 +1,4 @@
-import type { Prisma, PrismaClient } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@/generated/prisma/client";
 
 /** Hard cap on bid results per request (was duplicated in getBy / getByCourseProfessor). */
 export const BID_RESULTS_HARD_LIMIT = 200;

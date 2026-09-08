@@ -16,8 +16,13 @@ export const size = {
 
 export const contentType = "image/png";
 
-export default async function Image({ params }: { params: { code: string } }) {
-  const courseCode = params.code.toUpperCase();
+export default async function Image({
+  params,
+}: {
+  params: Promise<{ code: string }>;
+}) {
+  const { code } = await params;
+  const courseCode = code.toUpperCase();
 
   const course = await api.courses.getByCourseCode({ code: courseCode });
   if (!course) return null;

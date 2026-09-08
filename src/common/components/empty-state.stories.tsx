@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { EmptyState } from "./empty-state";
 import { Search } from "lucide-react";
 import { Button } from "./button";

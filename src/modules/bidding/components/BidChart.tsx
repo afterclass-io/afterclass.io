@@ -139,7 +139,6 @@ export const BidChart = ({
   return (
     <ChartContainer ref={containerRef} config={chartConfig}>
       <LineChart
-        accessibilityLayer
         data={sorted}
         margin={CHART_MARGIN}
       >
@@ -264,8 +263,8 @@ export const BidChart = ({
         <ChartTooltip
           content={
             <ChartTooltipContent
-              labelFormatter={(value: string) => {
-                const [acadTerm, round, window] = value.split("/");
+              labelFormatter={(value) => {
+                const [acadTerm, round, window] = String(value).split("/");
                 const { term, displayYear } = inferAcadTerm(acadTerm!);
                 return (
                   <div className="flex flex-col">

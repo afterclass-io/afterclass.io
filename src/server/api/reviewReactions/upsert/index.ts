@@ -1,13 +1,13 @@
 import { z } from "zod";
 
 import { protectedProcedure } from "@/server/api/trpc";
-import { ReviewReactionType } from "@prisma/client";
+import { ReviewReactionType } from "@/generated/prisma/enums";
 
 export const upsert = protectedProcedure
   .input(
     z.object({
       reviewId: z.string(),
-      reaction: z.nativeEnum(ReviewReactionType).optional(),
+      reaction: z.enum(ReviewReactionType).optional(),
     }),
   )
   .mutation(async ({ input, ctx }) => {

@@ -10,7 +10,7 @@ const siteUrlValidator = (vercelUrlEnv?: string) =>
       url = url.startsWith("http") ? url : `https://${url}`;
       return url;
     })
-    .pipe(z.string().url());
+    .pipe(z.url());
 
 export const env = createEnv({
   /**
@@ -18,7 +18,7 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    DATABASE_URL: z.string().url(),
+    DATABASE_URL: z.url(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -54,7 +54,6 @@ export const env = createEnv({
         : process.env.NEXT_PUBLIC_VERCEL_URL,
     ),
     NEXT_PUBLIC_OLD_SITE_URL: z
-      .string()
       .url()
       .default("https://old.afterclass.io"),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
@@ -70,18 +69,17 @@ export const env = createEnv({
             val.map((v) => {
               if (!validator.isFQDN(v)) {
                 ctx.addIssue({
-                  code: z.ZodIssueCode.custom,
+                  code: "custom",
                   message: `Invalid FQDN: ${v}`,
-                  fatal: true,
                 });
                 return z.NEVER;
               }
             });
           }),
       ),
-    NEXT_PUBLIC_AC_CHANNEL_LINK: z.string().url(),
-    NEXT_PUBLIC_AC_HELPDESK_LINK: z.string().url(),
-    NEXT_PUBLIC_AC_GITHUB_LINK: z.string().url(),
+    NEXT_PUBLIC_AC_CHANNEL_LINK: z.url(),
+    NEXT_PUBLIC_AC_HELPDESK_LINK: z.url(),
+    NEXT_PUBLIC_AC_GITHUB_LINK: z.url(),
   },
 
   /**

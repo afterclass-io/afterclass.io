@@ -28,7 +28,10 @@ jobs:
         with:
           bun-version: "latest"
 
+      - name: copy .env file
+        run: cp .env.example .env
+
       - run: bun install
 
-      - name: Run unit tests
-        run: bun run test
+      - name: Run unit tests with coverage gate
+        run: bun run test:coverage

@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useState, type ReactNode } from "react";
-import { Visibility } from "@prisma/client";
+import { Visibility } from "@/generated/prisma/enums";
 
 import { api, type RouterOutputs } from "@/common/tools/trpc/react";
 import { PublicRoadmapsGallery } from "./PublicRoadmapsGallery";

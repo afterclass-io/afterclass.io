@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@/generated/prisma/client";
 
 /** Sum of SECURED bid amounts for a user+term, optionally excluding one bid. */
 export async function spentForTerm(

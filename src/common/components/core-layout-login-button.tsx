@@ -5,12 +5,13 @@ import { ProgressLink } from "@/common/components/progress-link";
 
 export const CoreLayoutLoginButton = () => {
   const pathname = usePathname();
+  const href = pathname
+    ? `/account/auth/login?callbackUrl=${encodeURIComponent(pathname)}`
+    : "/account/auth/login";
+
   return (
     <ProgressLink
-      href={{
-        pathname: "/account/auth/login",
-        query: { callbackUrl: pathname },
-      }}
+      href={href}
       data-test="login"
     >
       Login

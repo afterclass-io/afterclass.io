@@ -285,4 +285,10 @@ context("Reviews: Course", function () {
       cy.get("[data-test=review]", { timeout: 20000 }).should("have.length.at.least", 20);
     });
   });
+
+  describe("OpenGraph image", function () {
+    it("should serve og:image with 200", function () {
+      cy.checkOgImage();
+    });
+  });
 });

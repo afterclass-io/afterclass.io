@@ -1,4 +1,5 @@
 export * from "./cn";
+export * from "./debounce";
 export * from "./formatNumberShortScale";
 export * from "./formatPercentage";
 export * from "./getHumanReadableTimestampDelta";

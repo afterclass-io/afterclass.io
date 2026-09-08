@@ -2,3 +2,6 @@
 f3076d0e7e375d8fd3a99339541ffef398e56532
 # refactor: clean up modules and rearrange components (#323)
 0e270ad33c688283b0b16c6f75e0eef70da586e8
+# chore(deps): upgrade deps to latest versions (#509)
+5a344c01ada976d4115ed2625f8ea8f985074724
+

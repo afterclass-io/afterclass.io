@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 
 /** Auto-name a new plan: Plan A, Plan B, … (falls back to the count). */
 export function autoName(plansCount: number): string {

@@ -1,4 +1,4 @@
-import { ReviewEventType } from "@prisma/client";
+import { ReviewEventType } from "@/generated/prisma/enums";
 import { z } from "zod";
 
 import { rotatingSaltStartOfHour, uuid } from "@/common/functions/crypto";
@@ -9,7 +9,7 @@ export const track = protectedProcedure
   .input(
     z.object({
       reviewId: z.string(),
-      eventType: z.nativeEnum(ReviewEventType),
+      eventType: z.enum(ReviewEventType),
     }),
   )
   .mutation(async ({ input, ctx }) => {

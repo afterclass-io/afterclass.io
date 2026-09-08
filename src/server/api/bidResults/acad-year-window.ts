@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@/generated/prisma/client";
 
 /** Number of distinct academic years of bid history to expose. */
 export const MAX_HISTORY_YEARS = 5;

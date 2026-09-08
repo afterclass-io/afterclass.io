@@ -1,4 +1,4 @@
-import { ReviewReactionType } from "@prisma/client";
+import { ReviewReactionType } from "@/generated/prisma/enums";
 import { z } from "zod";
 
 import { publicProcedure } from "@/server/api/trpc";
@@ -7,7 +7,7 @@ export const getByRoadmapId = publicProcedure
   .input(
     z.object({
       roadmapId: z.string(),
-      eventType: z.nativeEnum(ReviewReactionType).optional(),
+      eventType: z.enum(ReviewReactionType).optional(),
     }),
   )
   .query(async ({ ctx, input }) => {

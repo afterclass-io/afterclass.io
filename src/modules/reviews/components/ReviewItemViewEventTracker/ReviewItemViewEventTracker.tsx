@@ -1,5 +1,5 @@
 "use client";
-import { ReviewEventType } from "@prisma/client";
+import { ReviewEventType } from "@/generated/prisma/enums";
 
 import { useEdgeConfigs } from "@/common/hooks";
 import { api } from "@/common/tools/trpc/react";

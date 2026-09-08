@@ -1,19 +1,5 @@
-import type { DefaultSession, Session } from "next-auth";
-import { type Users } from "@prisma/client";
-
-type SessionUser = Omit<Users, "deprecatedPasswordDigest">;
-
-/**
- * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
- * object and keep type safety.
- *
- * @see https://authjs.dev/getting-started/typescript#module-augmentation
- */
-declare module "next-auth" {
-  interface Session extends DefaultSession {
-    user: SessionUser;
-  }
-}
+import type { Session } from "next-auth";
+import { type SessionUser } from "@/server/auth/config";
 
 type AuthState = {
   session: {
@@ -31,7 +17,10 @@ export type MockAuthStates = {
 
 export const mockAuthStates: MockAuthStates = {
   unknown: {
-    session: null,
+    session: {
+      data: null,
+      status: "unauthenticated",
+    },
   },
   loading: {
     session: {

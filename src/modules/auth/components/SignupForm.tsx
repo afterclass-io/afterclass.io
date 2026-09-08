@@ -38,15 +38,15 @@ const signupFormInputsSchema = z
     email: emailValidationSchema,
     password: z
       .string()
-      .min(8, { message: "Passwords must be at least 8 characters long" }),
+      .min(8, { error: "Passwords must be at least 8 characters long" }),
     confirmPassword: z
       .string()
-      .min(8, { message: "Passwords must be at least 8 characters long" }),
+      .min(8, { error: "Passwords must be at least 8 characters long" }),
   })
   .superRefine(({ password, confirmPassword }, ctx) => {
     if (confirmPassword === password) return;
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: "custom",
       path: ["confirmPassword"],
       message: "Passwords did not match",
     });

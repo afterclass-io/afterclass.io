@@ -1,4 +1,4 @@
-import type { PrismaClient, BidWindow, AcadTerm } from "@prisma/client";
+import type { PrismaClient, BidWindow, AcadTerm } from "@/generated/prisma/client";
 
 export type CurrentWindowResult = (BidWindow & { acadTerm: AcadTerm }) | null;
 

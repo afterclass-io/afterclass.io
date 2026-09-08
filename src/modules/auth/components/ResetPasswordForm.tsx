@@ -29,7 +29,7 @@ import { useProgress } from "@/common/providers/ProgressProvider";
 const resetPwdFormInputsSchema = z.object({
   password: z
     .string()
-    .min(8, { message: "Passwords must be at least 8 characters long" }),
+    .min(8, { error: "Passwords must be at least 8 characters long" }),
 });
 type ResetPwdFormInputs = z.infer<typeof resetPwdFormInputsSchema>;
 

@@ -14,7 +14,7 @@ import { formatBidCurrencyCompact } from "@/common/functions/format-bid-currency
 import { formatPercentage } from "@/common/functions";
 import { BidPredictionFormula } from "@/modules/bidding/components/BidPredictionFormula";
 import { multiplierAt } from "@/modules/bidding/utils/bid-prediction";
-import { type SafetyFactor } from "@prisma/client";
+import { type SafetyFactor } from "@/generated/prisma/client";
 import { useState } from "react";
 import { Info } from "lucide-react";
 

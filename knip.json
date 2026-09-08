@@ -1,0 +1,23 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreDependencies": [
+    "@ctrl/tinycolor",
+    "@prisma/client",
+    "@stepperize/react",
+    "@tailwindcss/oxide-win32-x64-msvc",
+    "@trpc/next",
+    "deepmerge",
+    "dotenv",
+    "jiti",
+    "js-cookie",
+    "pg",
+    "sharp",
+    "tailwind-variants",
+    "tw-animate-css"
+  ],
+  "rules": {
+    "files": "off",
+    "exports": "off",
+    "types": "off"
+  }
+}

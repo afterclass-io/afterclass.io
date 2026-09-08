@@ -1,6 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { ReviewEventType } from "@prisma/client";
+import { ReviewEventType } from "@/generated/prisma/enums";
 
 import { env } from "@/env";
 import { api } from "@/common/tools/trpc/react";
@@ -36,7 +36,7 @@ export const ReviewShareButton = ({
       size="sm"
       aria-label="Share"
       data-umami-event="review-share"
-      disabled={shareCountQuery.isLoading}
+      disabled={shareCountQuery.isPending}
       className="h-8 rounded-full"
       onClick={async (e: React.MouseEvent) => {
         e.preventDefault();
@@ -53,7 +53,7 @@ export const ReviewShareButton = ({
       }}
       {...props}
     >
-      {shareCountQuery.isLoading ? (
+      {shareCountQuery.isPending ? (
         <Loader2 className="animate-spin" />
       ) : (
         <>

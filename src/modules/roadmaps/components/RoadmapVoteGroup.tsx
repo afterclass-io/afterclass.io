@@ -5,8 +5,7 @@ import { useSession } from "next-auth/react";
 import { api, type RouterInputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { VoteGroup } from "@/common/components/vote-group";
-
-import { debounce } from "lodash";
+import { debounce } from "@/common/functions/debounce";
 
 export const RoadmapVoteGroup = ({
   roadmapId,

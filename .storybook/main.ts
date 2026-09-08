@@ -1,14 +1,41 @@
+import { createRequire } from "node:module";
 import type { StorybookConfig } from "@storybook/nextjs";
 
+const require = createRequire(import.meta.url);
+const { loadEnvConfig } = require("@next/env");
+
+loadEnvConfig(process.cwd());
+
+const defaultEnv: Record<string, string> = {
+  NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: "dummy-key",
+  NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS: "smu.edu.sg",
+  NEXT_PUBLIC_AC_CHANNEL_LINK: "https://t.me/example",
+  NEXT_PUBLIC_AC_HELPDESK_LINK: "https://t.me/example",
+  NEXT_PUBLIC_AC_GITHUB_LINK: "https://github.com/example",
+};
+
 const config: StorybookConfig = {
-  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
-  addons: ["@storybook/addon-essentials", "@storybook/addon-themes"],
+  stories: ["../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
+  addons: ["@storybook/addon-themes"],
   framework: {
     name: "@storybook/nextjs",
     options: {},
   },
-  docs: {
-    autodocs: true,
+  env: (config) => {
+    const nextPublicEnvs = Object.fromEntries(
+      Object.entries(process.env).filter(([key]) =>
+        key.startsWith("NEXT_PUBLIC_"),
+      ),
+    ) as Record<string, string>;
+    return {
+      ...config,
+      ...defaultEnv,
+      ...nextPublicEnvs,
+      ...(process.env.SKIP_ENV_VALIDATION
+        ? { SKIP_ENV_VALIDATION: process.env.SKIP_ENV_VALIDATION }
+        : {}),
+    };
   },
   staticDirs: [
     {
@@ -26,7 +53,6 @@ const config: StorybookConfig = {
     config.resolve ??= {};
     config.resolve.alias = {
       ...config.resolve.alias,
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       obscenity$: require.resolve("obscenity"),
     };
     return config;

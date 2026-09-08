@@ -1,4 +1,4 @@
-import { ReviewReactionType } from "@prisma/client";
+import { ReviewReactionType } from "@/generated/prisma/enums";
 import { z } from "zod";
 
 import { protectedProcedure } from "@/server/api/trpc";
@@ -7,7 +7,7 @@ export const getByReviewId = protectedProcedure
   .input(
     z.object({
       reviewId: z.string(),
-      eventType: z.nativeEnum(ReviewReactionType).optional(),
+      eventType: z.enum(ReviewReactionType).optional(),
     }),
   )
   .query(

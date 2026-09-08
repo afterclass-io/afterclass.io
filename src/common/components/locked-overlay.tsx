@@ -16,15 +16,15 @@ export type LockedOverlayProps = {
 
 export const LockedOverlay = ({ ctaType = "rating" }: LockedOverlayProps) => {
   const pathname = usePathname();
+  const href = pathname
+    ? `/account/auth/login?callbackUrl=${encodeURIComponent(pathname)}`
+    : "/account/auth/login";
 
   return (
     <>
       <div className="bg-card absolute top-0 left-0 h-full w-full shrink-0 rounded-[inherit] opacity-95 backdrop-blur-[100px]"></div>
       <ProgressLink
-        href={{
-          pathname: "/account/auth/login",
-          query: { callbackUrl: pathname },
-        }}
+        href={href}
         className="text-muted-foreground hover:text-primary absolute top-0 left-0 z-10 inline-flex h-full w-full items-center justify-center"
         variant="ghost"
         data-test="lock-cta-overlay"
