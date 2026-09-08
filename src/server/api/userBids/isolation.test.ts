@@ -45,14 +45,12 @@ describe("userBids cross-user isolation (A=u1 cannot touch B=u2 rows)", () => {
     const update = vi.fn();
     const dbMock = {
       userBid: {
-        findUnique: vi
-          .fn()
-          .mockResolvedValue({
-            id: "b-of-B",
-            classId: "c1",
-            bidAmount: 10,
-            userId: "u2",
-          }),
+        findUnique: vi.fn().mockResolvedValue({
+          id: "b-of-B",
+          classId: "c1",
+          bidAmount: 10,
+          userId: "u2",
+        }),
         update,
       },
       classes: { findUnique: vi.fn() },

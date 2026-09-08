@@ -14,8 +14,16 @@ export function clamp(value: number, min: number, max: number): number {
 
 export function clampPosition(pos: Point, size: Size, viewport: Size): Point {
   return {
-    x: clamp(pos.x, WIDGET_MARGIN, Math.max(WIDGET_MARGIN, viewport.width - size.width - WIDGET_MARGIN)),
-    y: clamp(pos.y, WIDGET_MARGIN, Math.max(WIDGET_MARGIN, viewport.height - size.height - WIDGET_MARGIN)),
+    x: clamp(
+      pos.x,
+      WIDGET_MARGIN,
+      Math.max(WIDGET_MARGIN, viewport.width - size.width - WIDGET_MARGIN),
+    ),
+    y: clamp(
+      pos.y,
+      WIDGET_MARGIN,
+      Math.max(WIDGET_MARGIN, viewport.height - size.height - WIDGET_MARGIN),
+    ),
   };
 }
 
@@ -30,7 +38,10 @@ export function clampSize(size: Size): Size {
 // corner of the viewport (the launcher is 56x56, so this is bottom-right).
 export function defaultPosition(viewport: Size): Point {
   return clampPosition(
-    { x: viewport.width - LAUNCHER_SIZE - 16, y: viewport.height - LAUNCHER_SIZE - 16 },
+    {
+      x: viewport.width - LAUNCHER_SIZE - 16,
+      y: viewport.height - LAUNCHER_SIZE - 16,
+    },
     { width: LAUNCHER_SIZE, height: LAUNCHER_SIZE },
     viewport,
   );
@@ -66,7 +77,11 @@ export function toOffsets(pos: Point, viewport: Size): LauncherOffsets {
   };
 }
 
-export function fromOffsets(offsets: LauncherOffsets, viewport: Size, launcherSize: Size = { width: LAUNCHER_SIZE, height: LAUNCHER_SIZE }): Point {
+export function fromOffsets(
+  offsets: LauncherOffsets,
+  viewport: Size,
+  launcherSize: Size = { width: LAUNCHER_SIZE, height: LAUNCHER_SIZE },
+): Point {
   const raw: Point = {
     x: viewport.width - offsets.right - LAUNCHER_SIZE,
     y: viewport.height - offsets.bottom - LAUNCHER_SIZE,
@@ -74,15 +89,30 @@ export function fromOffsets(offsets: LauncherOffsets, viewport: Size, launcherSi
   return clampPosition(raw, launcherSize, viewport);
 }
 
-export function clampOffsets(offsets: LauncherOffsets, viewport: Size): LauncherOffsets {
+export function clampOffsets(
+  offsets: LauncherOffsets,
+  viewport: Size,
+): LauncherOffsets {
   const pos = fromOffsets(offsets, viewport);
   return toOffsets(pos, viewport);
 }
 
-export function applyDrag(start: Point, delta: Point, size: Size, viewport: Size): Point {
-  return clampPosition({ x: start.x + delta.x, y: start.y + delta.y }, size, viewport);
+export function applyDrag(
+  start: Point,
+  delta: Point,
+  size: Size,
+  viewport: Size,
+): Point {
+  return clampPosition(
+    { x: start.x + delta.x, y: start.y + delta.y },
+    size,
+    viewport,
+  );
 }
 
 export function applyResize(start: Size, delta: Point): Size {
-  return clampSize({ width: start.width + delta.x, height: start.height + delta.y });
+  return clampSize({
+    width: start.width + delta.x,
+    height: start.height + delta.y,
+  });
 }

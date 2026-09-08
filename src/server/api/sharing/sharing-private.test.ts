@@ -52,8 +52,7 @@ describe("sharing PRIVATE refusal", () => {
     // PRIVATE row with a lingering token is invisible, not just refused).
     const where = (
       findUniqueTimetableMock.mock.calls[0]?.[0] as
-        | { where?: unknown }
-        | undefined
+        { where?: unknown } | undefined
     )?.where;
     expect(where).toMatchObject({
       shareToken: "tok-private",
@@ -68,8 +67,7 @@ describe("sharing PRIVATE refusal", () => {
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
     const where = (
       findUniqueRoadmapMock.mock.calls[0]?.[0] as
-        | { where?: unknown }
-        | undefined
+        { where?: unknown } | undefined
     )?.where;
     expect(where).toMatchObject({
       shareToken: "tok-private",

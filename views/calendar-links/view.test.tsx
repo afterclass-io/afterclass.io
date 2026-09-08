@@ -58,7 +58,9 @@ describe("CalendarLinksView (v2)", () => {
   it("shows the skeleton while pending (no toolOutput yet)", () => {
     seedContext({ status: "pending", toolInput: {} });
     const { container } = render(<CalendarLinksView />);
-    expect(container.querySelector("[aria-label='Loading']")).toBeInTheDocument();
+    expect(
+      container.querySelector("[aria-label='Loading']"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
@@ -66,10 +68,14 @@ describe("CalendarLinksView (v2)", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput, meta: fullMeta });
     render(<CalendarLinksView />);
     expect(
-      screen.getByRole("link", { name: /Google Calendar/i }).getAttribute("href"),
+      screen
+        .getByRole("link", { name: /Google Calendar/i })
+        .getAttribute("href"),
     ).toBe(fullMeta.googleSubscribeUrl);
     expect(
-      screen.getByRole("link", { name: /Apple Calendar/i }).getAttribute("href"),
+      screen
+        .getByRole("link", { name: /Apple Calendar/i })
+        .getAttribute("href"),
     ).toBe(fullMeta.appleSubscribeUrl);
     expect(
       screen.getByRole("link", { name: /Outlook/i }).getAttribute("href"),
@@ -110,7 +116,9 @@ describe("CalendarLinksView (v2)", () => {
     render(<CalendarLinksView />);
     expect(screen.getByDisplayValue(fullMeta.feedUrl)).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /Google Calendar/i }).getAttribute("href"),
+      screen
+        .getByRole("link", { name: /Google Calendar/i })
+        .getAttribute("href"),
     ).toBe(fullMeta.googleSubscribeUrl);
     expect(screen.queryByDisplayValue(/LEAKED/)).toBeNull();
     const hrefs = screen
@@ -154,20 +162,20 @@ describe("CalendarLinksView (v2)", () => {
     render(<CalendarLinksView />);
     // Present: feed input + copy button; absent: no empty subscribe links.
     expect(screen.getByDisplayValue(fullMeta.feedUrl)).toBeInTheDocument();
-    expect(
-      screen.queryByRole("link", { name: /Google Calendar/i }),
-    ).toBeNull();
-    expect(
-      screen.queryByRole("link", { name: /Apple Calendar/i }),
-    ).toBeNull();
+    expect(screen.queryByRole("link", { name: /Google Calendar/i })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Apple Calendar/i })).toBeNull();
     expect(screen.queryByRole("link", { name: /Outlook/i })).toBeNull();
     const hrefs = screen
       .queryAllByRole("link")
       .map((a) => a.getAttribute("href"));
     expect(hrefs.every((h) => h && h !== "")).toBe(true);
     // Fallback note names the missing subscribe links.
-    expect(screen.getByText(/Google Calendar link unavailable/)).toBeInTheDocument();
-    expect(screen.getByText(/Apple Calendar link unavailable/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Google Calendar link unavailable/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Apple Calendar link unavailable/),
+    ).toBeInTheDocument();
   });
 
   it("partial meta (missing one URL) still renders the available subscribe link", () => {
@@ -179,11 +187,11 @@ describe("CalendarLinksView (v2)", () => {
     });
     render(<CalendarLinksView />);
     expect(
-      screen.getByRole("link", { name: /Google Calendar/i }).getAttribute("href"),
+      screen
+        .getByRole("link", { name: /Google Calendar/i })
+        .getAttribute("href"),
     ).toBe(fullMeta.googleSubscribeUrl);
-    expect(
-      screen.queryByRole("link", { name: /Outlook/i }),
-    ).toBeNull();
+    expect(screen.queryByRole("link", { name: /Outlook/i })).toBeNull();
     expect(screen.getByText(/Outlook link unavailable/)).toBeInTheDocument();
   });
 
@@ -208,7 +216,12 @@ describe("CalendarLinksView copy action", () => {
       configurable: true,
     });
     try {
-      seedContext({ status: "ready", toolInput: {}, toolOutput, meta: fullMeta });
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput,
+        meta: fullMeta,
+      });
       render(<CalendarLinksView />);
       const btn = screen.getByRole("button", { name: /Copy/i });
       expect(btn.textContent).toBe("Copy");

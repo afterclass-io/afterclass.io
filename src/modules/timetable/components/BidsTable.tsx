@@ -447,8 +447,7 @@ export function BidsTable() {
                   addSlotMutation.isPending
                     ? ((
                         addSlotMutation.variables as
-                          | { classId: string }
-                          | undefined
+                          { classId: string } | undefined
                       )?.classId ?? null)
                     : null
                 }
@@ -607,10 +606,7 @@ function BidTableRow({
               <Button
                 variant="ghost"
                 size="sm"
-                className={cn(
-                  "h-7 px-2 text-xs",
-                  bidChipVariant(bid.status),
-                )}
+                className={cn("h-7 px-2 text-xs", bidChipVariant(bid.status))}
                 disabled={isBusy}
                 aria-label={`Change status for ${bid.courseCode} ${bid.section} bid`}
               >

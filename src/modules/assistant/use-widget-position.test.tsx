@@ -19,26 +19,44 @@ beforeEach(() => {
 describe("useWidgetPosition - restore path", () => {
   it("restores offsets that map to bottom-right on the stored viewport", () => {
     // Stored as right/bottom offsets: on 1000x800 with launcher at (928,728) => (16,16)
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ right: 16, bottom: 16, width: 400, height: 560 }));
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ right: 16, bottom: 16, width: 400, height: 560 }),
+    );
 
-    const { result } = renderHook(() => useWidgetPosition({ width: 1000, height: 800 }));
+    const { result } = renderHook(() =>
+      useWidgetPosition({ width: 1000, height: 800 }),
+    );
 
     expect(result.current.position).toEqual({ x: 928, y: 728 });
   });
 
   it("ignores legacy v2 absolute x/y shape and falls back to bottom-right default", () => {
-    window.localStorage.setItem("assistant-widget-geometry:v2", JSON.stringify({ x: 200, y: 200, width: 400, height: 560 }));
-    const { result } = renderHook(() => useWidgetPosition({ width: 1280, height: 800 }));
+    window.localStorage.setItem(
+      "assistant-widget-geometry:v2",
+      JSON.stringify({ x: 200, y: 200, width: 400, height: 560 }),
+    );
+    const { result } = renderHook(() =>
+      useWidgetPosition({ width: 1280, height: 800 }),
+    );
     // default bottom-right: (1280-56-16, 800-56-16) = (1208, 728)
-    expect(result.current.position).toEqual({ x: 1280 - 56 - 16, y: 800 - 56 - 16 });
+    expect(result.current.position).toEqual({
+      x: 1280 - 56 - 16,
+      y: 800 - 56 - 16,
+    });
   });
 
   it("restore on a WIDER viewport re-anchors to bottom-right (same 16px margin)", () => {
     // User last saved offsets on a narrow 1000x800 screen (launcher was bottom-right there).
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ right: 16, bottom: 16, width: 400, height: 560 }));
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ right: 16, bottom: 16, width: 400, height: 560 }),
+    );
 
     // Open on a wide 1600x900 monitor - must re-derive to that monitor's bottom-right.
-    const { result } = renderHook(() => useWidgetPosition({ width: 1600, height: 900 }));
+    const { result } = renderHook(() =>
+      useWidgetPosition({ width: 1600, height: 900 }),
+    );
 
     expect(result.current.position).toEqual({
       x: 1600 - LAUNCHER_SIZE - 16,
@@ -47,11 +65,21 @@ describe("useWidgetPosition - restore path", () => {
   });
 
   it("re-anchors on viewport resize (e.g. window grows)", () => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ right: 16, bottom: 16, width: 400, height: 560 }));
-    const { result, rerender } = renderHook(({ vw, vh }: { vw: number; vh: number }) => useWidgetPosition({ width: vw, height: vh }), {
-      initialProps: { vw: 1000, vh: 800 },
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ right: 16, bottom: 16, width: 400, height: 560 }),
+    );
+    const { result, rerender } = renderHook(
+      ({ vw, vh }: { vw: number; vh: number }) =>
+        useWidgetPosition({ width: vw, height: vh }),
+      {
+        initialProps: { vw: 1000, vh: 800 },
+      },
+    );
+    expect(result.current.position).toEqual({
+      x: 1000 - 56 - 16,
+      y: 800 - 56 - 16,
     });
-    expect(result.current.position).toEqual({ x: 1000 - 56 - 16, y: 800 - 56 - 16 });
 
     rerender({ vw: 1600, vh: 900 });
 
@@ -62,10 +90,17 @@ describe("useWidgetPosition - restore path", () => {
   });
 
   it("clamps offsets if viewport shrinks so launcher never goes off-screen", () => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ right: 16, bottom: 16, width: 400, height: 560 }));
-    const { result, rerender } = renderHook(({ vw, vh }: { vw: number; vh: number }) => useWidgetPosition({ width: vw, height: vh }), {
-      initialProps: { vw: 1600, vh: 900 },
-    });
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ right: 16, bottom: 16, width: 400, height: 560 }),
+    );
+    const { result, rerender } = renderHook(
+      ({ vw, vh }: { vw: number; vh: number }) =>
+        useWidgetPosition({ width: vw, height: vh }),
+      {
+        initialProps: { vw: 1600, vh: 900 },
+      },
+    );
     // Shrink to a tiny viewport - offsets clamp via clampPosition
     rerender({ vw: 200, vh: 200 });
     const pos = result.current.position!;
@@ -84,28 +119,44 @@ describe("useWidgetPosition - restore path", () => {
     target.setPointerCapture = capture;
 
     const pointer = (x: number, y: number, pointerId = 1) =>
-      ({ clientX: x, clientY: y, pointerId, currentTarget: target }) as unknown as ReactPointerEvent;
+      ({
+        clientX: x,
+        clientY: y,
+        pointerId,
+        currentTarget: target,
+      }) as unknown as ReactPointerEvent;
 
     const { result, rerender } = renderHook(
-      ({ vw, vh }: { vw: number; vh: number }) => useWidgetPosition({ width: vw, height: vh }),
+      ({ vw, vh }: { vw: number; vh: number }) =>
+        useWidgetPosition({ width: vw, height: vh }),
       { initialProps: { vw: 1600, vh: 900 } },
     );
 
     // Default position on 1600x900
-    const defaultPos = { x: 1600 - LAUNCHER_SIZE - 16, y: 900 - LAUNCHER_SIZE - 16 };
+    const defaultPos = {
+      x: 1600 - LAUNCHER_SIZE - 16,
+      y: 900 - LAUNCHER_SIZE - 16,
+    };
     expect(result.current.position).toEqual(defaultPos);
 
     // Drag off-center to (700, 300): delta = (700-1528, 300-828) = (-828, -528).
     // Use pointer origin (500,500) so coordinates stay in a plausible range.
     const startPointer = { x: 500, y: 500 };
     const offCenter = { x: 700, y: 300 };
-    const delta = { x: offCenter.x - defaultPos.x, y: offCenter.y - defaultPos.y };
+    const delta = {
+      x: offCenter.x - defaultPos.x,
+      y: offCenter.y - defaultPos.y,
+    };
 
     act(() => {
-      result.current.dragHandlers.onPointerDown(pointer(startPointer.x, startPointer.y));
+      result.current.dragHandlers.onPointerDown(
+        pointer(startPointer.x, startPointer.y),
+      );
     });
     act(() => {
-      result.current.dragHandlers.onPointerMove(pointer(startPointer.x + delta.x, startPointer.y + delta.y));
+      result.current.dragHandlers.onPointerMove(
+        pointer(startPointer.x + delta.x, startPointer.y + delta.y),
+      );
     });
     act(() => {
       result.current.dragHandlers.onPointerUp();
@@ -119,7 +170,10 @@ describe("useWidgetPosition - restore path", () => {
       right: 1600 - offCenter.x - LAUNCHER_SIZE,
       bottom: 900 - offCenter.y - LAUNCHER_SIZE,
     };
-    let stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY)!) as { right: number; bottom: number };
+    let stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY)!) as {
+      right: number;
+      bottom: number;
+    };
     expect(stored.right).toBe(offCenterOffsets.right);
     expect(stored.bottom).toBe(offCenterOffsets.bottom);
 
@@ -132,7 +186,10 @@ describe("useWidgetPosition - restore path", () => {
     expect(shrunk.y).toBeLessThanOrEqual(320 - LAUNCHER_SIZE - 8);
 
     // Persisted offsets must NOT have been overwritten with clamped display values.
-    stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY)!) as { right: number; bottom: number };
+    stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY)!) as {
+      right: number;
+      bottom: number;
+    };
     expect(stored.right).toBe(offCenterOffsets.right);
     expect(stored.bottom).toBe(offCenterOffsets.bottom);
 
@@ -155,7 +212,12 @@ describe("useWidgetPosition drag", () => {
   });
 
   const pointer = (x: number, y: number, pointerId = 1) =>
-    ({ clientX: x, clientY: y, pointerId, currentTarget: target }) as unknown as ReactPointerEvent;
+    ({
+      clientX: x,
+      clientY: y,
+      pointerId,
+      currentTarget: target,
+    }) as unknown as ReactPointerEvent;
 
   it("does not capture the pointer on a plain press (click must not be swallowed)", () => {
     const { result } = renderHook(() =>

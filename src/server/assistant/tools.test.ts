@@ -259,9 +259,8 @@ describe("buildAssistantTools", () => {
   });
 
   it("two-tier gate: destructive set is exactly the 11 confirm-required tools; constructive writes are budget-only", async () => {
-    const { destructiveTools, constructiveTools } = await import(
-      "@/mcp/rate-limit"
-    );
+    const { destructiveTools, constructiveTools } =
+      await import("@/mcp/rate-limit");
     expect([...destructiveTools].sort()).toEqual([
       "get-timetable-calendar-link",
       "remove-bid",

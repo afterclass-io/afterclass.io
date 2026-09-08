@@ -23,11 +23,13 @@ const fakeUser: SessionUser = {
 // tRPC `users.me` or quota procedure), so mock the underlying store modules the
 // same way `src/server/assistant/quota.test.ts` does - vi.hoisted fns so the
 // vi.mock factories can reference them without a TDZ error.
-const { facultyFindUnique, chatUsageFindUnique, getChatConfig } = vi.hoisted(() => ({
-  facultyFindUnique: vi.fn() as Mock,
-  chatUsageFindUnique: vi.fn() as Mock,
-  getChatConfig: vi.fn() as Mock,
-}));
+const { facultyFindUnique, chatUsageFindUnique, getChatConfig } = vi.hoisted(
+  () => ({
+    facultyFindUnique: vi.fn() as Mock,
+    chatUsageFindUnique: vi.fn() as Mock,
+    getChatConfig: vi.fn() as Mock,
+  }),
+);
 
 vi.mock("@/server/db", () => ({
   db: {
@@ -152,14 +154,14 @@ describe("account read tools", () => {
     chatUsageFindUnique.mockResolvedValue({ messageCount: 40 });
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller() };
     const result = await getUsageTool.run(ctx, {});
-    expect(
-      JSON.parse(textOf(result)) as Record<string, unknown>,
-    ).toMatchObject({
-      usedThisPeriod: 40,
-      criticalFloor: 10,
-      remaining: 10,
-      isCritical: true,
-    });
+    expect(JSON.parse(textOf(result)) as Record<string, unknown>).toMatchObject(
+      {
+        usedThisPeriod: 40,
+        criticalFloor: 10,
+        remaining: 10,
+        isCritical: true,
+      },
+    );
   });
 
   it("get-usage derives critical from the 20% floor, not the nudge threshold", async () => {
@@ -171,15 +173,15 @@ describe("account read tools", () => {
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller() };
     const result = await getUsageTool.run(ctx, {});
     expect(result.isError).toBeFalsy();
-    expect(
-      JSON.parse(textOf(result)) as Record<string, unknown>,
-    ).toMatchObject({
-      usedThisPeriod: 25,
-      periodLimit: 50,
-      criticalFloor: 10,
-      remaining: 25,
-      isCritical: false,
-    });
+    expect(JSON.parse(textOf(result)) as Record<string, unknown>).toMatchObject(
+      {
+        usedThisPeriod: 25,
+        periodLimit: 50,
+        criticalFloor: 10,
+        remaining: 25,
+        isCritical: false,
+      },
+    );
   });
 
   it("get-usage returns errText when the quota reader rejects", async () => {

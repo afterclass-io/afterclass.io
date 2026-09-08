@@ -99,9 +99,7 @@ export function dateKey(date: unknown): string {
 }
 
 export type FeasibilityIssueType =
-  | "PREREQ_MISSING"
-  | "EXAM_CLASH"
-  | "TERM_DUPLICATE";
+  "PREREQ_MISSING" | "EXAM_CLASH" | "TERM_DUPLICATE";
 
 export type FeasibilityIssue = {
   type: FeasibilityIssueType;

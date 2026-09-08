@@ -56,10 +56,15 @@ describe("get-review-summary", () => {
       user: fakeUser,
       caller: makeCaller({ getMetadataForCourse: fn }),
     };
-    const result = await getReviewSummaryTool.run(ctx, { code: "COR-STAT1202" });
+    const result = await getReviewSummaryTool.run(ctx, {
+      code: "COR-STAT1202",
+    });
     expect(fn).toHaveBeenCalledWith({ code: "COR-STAT1202" });
     expect(result.isError).toBeUndefined();
-    const parsed = JSON.parse(result.content[0]!.text) as Record<string, unknown>;
+    const parsed = JSON.parse(result.content[0]!.text) as Record<
+      string,
+      unknown
+    >;
     expect(parsed.kind).toBe("course");
     expect(parsed.code).toBe("COR-STAT1202");
     expect(parsed.reviewCount).toBe(15);
@@ -73,10 +78,15 @@ describe("get-review-summary", () => {
       user: fakeUser,
       caller: makeCaller({ getMetadataForProf: fn }),
     };
-    const result = await getReviewSummaryTool.run(ctx, { professorSlug: "john-doe" });
+    const result = await getReviewSummaryTool.run(ctx, {
+      professorSlug: "john-doe",
+    });
     expect(fn).toHaveBeenCalledWith({ slug: "john-doe" });
     expect(result.isError).toBeUndefined();
-    const parsed = JSON.parse(result.content[0]!.text) as Record<string, unknown>;
+    const parsed = JSON.parse(result.content[0]!.text) as Record<
+      string,
+      unknown
+    >;
     expect(parsed.kind).toBe("professor");
     expect(parsed.professorSlug).toBe("john-doe");
     expect(parsed.reviewCount).toBe(22);
@@ -109,7 +119,9 @@ describe("get-review-summary", () => {
       user: fakeUser,
       caller: makeCaller({ getMetadataForCourse: fn }),
     };
-    const result = await getReviewSummaryTool.run(ctx, { code: "COR-STAT1202" });
+    const result = await getReviewSummaryTool.run(ctx, {
+      code: "COR-STAT1202",
+    });
     expect(result.isError).toBe(true);
   });
 

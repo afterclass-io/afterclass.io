@@ -32,7 +32,10 @@ describe("search-professors", () => {
       rows: [{ id: "p1", slug: "goh-jing-rong", name: "GOH Jing Rong" }],
       count: 1,
     });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ search: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ search: fn }),
+    };
     const result = await searchProfessorsTool.run(ctx, {
       query: "Goh Jing Rong",
       limit: 5,
@@ -50,8 +53,14 @@ describe("search-professors", () => {
 
   it("returns jsonText([]) (not an error) when there are no matches", async () => {
     const fn = vi.fn().mockResolvedValue({ rows: [], count: 0 });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ search: fn }) };
-    const result = await searchProfessorsTool.run(ctx, { query: "zzzz", limit: 10 });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ search: fn }),
+    };
+    const result = await searchProfessorsTool.run(ctx, {
+      query: "zzzz",
+      limit: 10,
+    });
 
     expect(result.isError).toBeUndefined();
     const parsed = JSON.parse(result.content[0]!.text) as unknown[];
@@ -60,8 +69,14 @@ describe("search-professors", () => {
 
   it("returns errText when the procedure rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ search: fn }) };
-    const result = await searchProfessorsTool.run(ctx, { query: "goh", limit: 10 });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ search: fn }),
+    };
+    const result = await searchProfessorsTool.run(ctx, {
+      query: "goh",
+      limit: 10,
+    });
 
     expect(result.isError).toBe(true);
   });

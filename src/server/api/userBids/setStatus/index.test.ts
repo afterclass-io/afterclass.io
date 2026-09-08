@@ -31,14 +31,12 @@ describe("userBids.setStatus", () => {
     };
     const dbMock = {
       userBid: {
-        findUnique: vi
-          .fn()
-          .mockResolvedValue({
-            id: "b1",
-            classId: "c1",
-            bidAmount: 10,
-            userId: "u1",
-          }),
+        findUnique: vi.fn().mockResolvedValue({
+          id: "b1",
+          classId: "c1",
+          bidAmount: 10,
+          userId: "u1",
+        }),
       },
       classes: {
         findUnique: vi

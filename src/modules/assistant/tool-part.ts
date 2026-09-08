@@ -12,7 +12,12 @@ export type ToolStatus = "running" | "done" | "error";
 
 export function toolStatus(part: ToolPart): ToolStatus {
   const state = part.state;
-  if (state === "input-streaming" || state === "input-available" || state === "approval-requested" || state === "approval-responded") {
+  if (
+    state === "input-streaming" ||
+    state === "input-available" ||
+    state === "approval-requested" ||
+    state === "approval-responded"
+  ) {
     return "running";
   }
   if (state === "output-error") return "error";
@@ -20,5 +25,7 @@ export function toolStatus(part: ToolPart): ToolStatus {
 }
 
 export function toolLabel(part: ToolPart): string {
-  return part.type === "dynamic-tool" ? part.toolName : part.type.replace(/^tool-/, "");
+  return part.type === "dynamic-tool"
+    ? part.toolName
+    : part.type.replace(/^tool-/, "");
 }

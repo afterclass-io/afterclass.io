@@ -21,7 +21,9 @@ const runningPart = {
 
 describe("ToolCallCard", () => {
   it("renders finished calls collapsed with no output visible", () => {
-    const { container } = render(<ToolCallCard part={donePart} stepIndex={1} stepTotal={2} />);
+    const { container } = render(
+      <ToolCallCard part={donePart} stepIndex={1} stepTotal={2} />,
+    );
     expect(screen.getByRole("button", { expanded: false })).toBeDefined();
     // Output is rendered via JSON.stringify (with quotes); regex matches the substring.
     expect(screen.queryByText(/some result text/)).toBeNull();

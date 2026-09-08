@@ -21,7 +21,15 @@ function formatInput(input: unknown): string {
   }
 }
 
-export function ToolCallCard({ part, stepIndex, stepTotal }: { part: ToolPart; stepIndex: number; stepTotal: number }) {
+export function ToolCallCard({
+  part,
+  stepIndex,
+  stepTotal,
+}: {
+  part: ToolPart;
+  stepIndex: number;
+  stepTotal: number;
+}) {
   const status = toolStatus(part);
   const label = toolLabel(part);
   const input = "input" in part ? part.input : undefined;
@@ -30,7 +38,7 @@ export function ToolCallCard({ part, stepIndex, stepTotal }: { part: ToolPart; s
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="w-full max-w-[100%] overflow-hidden rounded-xl border border-border/60 bg-muted/30 text-xs">
+    <div className="border-border/60 bg-muted/30 w-full max-w-[100%] overflow-hidden rounded-xl border text-xs">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -38,25 +46,47 @@ export function ToolCallCard({ part, stepIndex, stepTotal }: { part: ToolPart; s
         className="flex w-full items-center gap-2 px-3 py-2 text-left"
       >
         {running ? (
-          <Loader2Icon className="size-3.5 shrink-0 animate-spin text-muted-foreground" aria-label="Running" />
+          <Loader2Icon
+            className="text-muted-foreground size-3.5 shrink-0 animate-spin"
+            aria-label="Running"
+          />
         ) : status === "error" ? (
-          <XIcon className="size-3.5 shrink-0 text-destructive" aria-label="Error" />
+          <XIcon
+            className="text-destructive size-3.5 shrink-0"
+            aria-label="Error"
+          />
         ) : (
-          <CheckIcon className="size-3.5 shrink-0 text-emerald-500" aria-label="Done" />
+          <CheckIcon
+            className="size-3.5 shrink-0 text-emerald-500"
+            aria-label="Done"
+          />
         )}
         <span className="flex-1 truncate font-medium">{label}</span>
-        <span className="text-muted-foreground">Step {stepIndex}/{stepTotal}</span>
-        <ChevronDownIcon className={cn("size-3.5 text-muted-foreground transition-transform", open && "rotate-180")} />
+        <span className="text-muted-foreground">
+          Step {stepIndex}/{stepTotal}
+        </span>
+        <ChevronDownIcon
+          className={cn(
+            "text-muted-foreground size-3.5 transition-transform",
+            open && "rotate-180",
+          )}
+        />
       </button>
       {open && (
-        <div className="border-t border-border/60 px-3 py-2">
+        <div className="border-border/60 border-t px-3 py-2">
           {running && typeof input === "object" && input !== null && (
-            <pre className="max-h-40 overflow-auto whitespace-pre-wrap text-[11px] text-muted-foreground">{formatInput(input)}</pre>
+            <pre className="text-muted-foreground max-h-40 overflow-auto text-[11px] whitespace-pre-wrap">
+              {formatInput(input)}
+            </pre>
           )}
           {!running && "output" in part && part.output !== undefined && (
-            <pre className="max-h-40 overflow-auto whitespace-pre-wrap text-[11px]">{formatInput(part.output)}</pre>
+            <pre className="max-h-40 overflow-auto text-[11px] whitespace-pre-wrap">
+              {formatInput(part.output)}
+            </pre>
           )}
-          {status === "error" && errorText && <p className="text-destructive">{errorText}</p>}
+          {status === "error" && errorText && (
+            <p className="text-destructive">{errorText}</p>
+          )}
         </div>
       )}
     </div>

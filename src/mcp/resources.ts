@@ -38,8 +38,7 @@ async function resolveResourceCaller(
   // object carrying a caller with acadTerms.list). Anything else falls back
   // to the anonymous caller below instead of throwing deep in tRPC.
   const maybeCaller = (ctx as { caller?: unknown }).caller as
-    | { acadTerms?: { list?: unknown } }
-    | undefined;
+    { acadTerms?: { list?: unknown } } | undefined;
   if (typeof maybeCaller?.acadTerms?.list !== "function") {
     const toolCtx: ToolContext | undefined = await buildToolContext(
       ctx as never,

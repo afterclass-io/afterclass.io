@@ -24,7 +24,8 @@ export function AssistantWidget({
 }) {
   const viewport = useViewport();
   const fallback = useWidgetPosition(viewport);
-  const { position, size, dragHandlers, resizeHandlers } = geometryProp ?? fallback;
+  const { position, size, dragHandlers, resizeHandlers } =
+    geometryProp ?? fallback;
 
   if (!position) return null;
 
@@ -41,22 +42,31 @@ export function AssistantWidget({
         onClick={() => onOpenChange(!open)}
         {...dragHandlers}
         className={cn(
-          "fixed z-50 flex size-14 cursor-grab items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 active:cursor-grabbing",
+          "bg-primary text-primary-foreground fixed z-50 flex size-14 cursor-grab items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 active:cursor-grabbing",
           open && "hidden",
         )}
         style={{ left: position.x, top: position.y, touchAction: "none" }}
       >
-        {open ? <ChevronDownIcon className="size-6" /> : <AfterclassIcon className="size-7" />}
+        {open ? (
+          <ChevronDownIcon className="size-6" />
+        ) : (
+          <AfterclassIcon className="size-7" />
+        )}
       </button>
 
       <div
         role="dialog"
         aria-label="AfterClass assistant"
         className={cn(
-          "fixed z-50 flex flex-col overflow-hidden rounded-2xl border bg-popover text-popover-foreground shadow-2xl",
+          "bg-popover text-popover-foreground fixed z-50 flex flex-col overflow-hidden rounded-2xl border shadow-2xl",
           !open && "hidden",
         )}
-        style={{ left: boxPos.x, top: boxPos.y, width: size.width, height: size.height }}
+        style={{
+          left: boxPos.x,
+          top: boxPos.y,
+          width: size.width,
+          height: size.height,
+        }}
       >
         {/* Drag header - Chatwoot-style: logo + title + open-full-chat + close */}
         <div
@@ -78,7 +88,12 @@ export function AssistantWidget({
             >
               Open full chat <ArrowUpRightIcon className="size-3" />
             </Link>
-            <button type="button" aria-label="Close assistant" onClick={() => onOpenChange(false)} className="rounded p-1 hover:bg-muted">
+            <button
+              type="button"
+              aria-label="Close assistant"
+              onClick={() => onOpenChange(false)}
+              className="hover:bg-muted rounded p-1"
+            >
               <XIcon className="size-4" />
             </button>
           </div>

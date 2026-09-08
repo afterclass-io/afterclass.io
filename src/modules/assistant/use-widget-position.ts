@@ -2,27 +2,48 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  applyDrag, applyResize, clampSize, DEFAULT_WIDGET_SIZE,
-  defaultPosition, fromOffsets, LAUNCHER_SIZE, toOffsets,
-  type LauncherOffsets, type Point, type Size,
+  applyDrag,
+  applyResize,
+  clampSize,
+  DEFAULT_WIDGET_SIZE,
+  defaultPosition,
+  fromOffsets,
+  LAUNCHER_SIZE,
+  toOffsets,
+  type LauncherOffsets,
+  type Point,
+  type Size,
 } from "./widget-geometry";
 
 const STORAGE_KEY = "assistant-widget-geometry:v3";
 
 const DRAG_THRESHOLD = 4; // px of pointer movement before a press becomes a drag
 
-type StoredV3 = { right: number; bottom: number; width: number; height: number };
+type StoredV3 = {
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+};
 
 function loadStored(): StoredV3 | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<StoredV3>;
-    if (typeof parsed.right !== "number" || typeof parsed.bottom !== "number") return null;
+    if (typeof parsed.right !== "number" || typeof parsed.bottom !== "number")
+      return null;
     return {
-      right: parsed.right, bottom: parsed.bottom,
-      width: typeof parsed.width === "number" ? parsed.width : DEFAULT_WIDGET_SIZE.width,
-      height: typeof parsed.height === "number" ? parsed.height : DEFAULT_WIDGET_SIZE.height,
+      right: parsed.right,
+      bottom: parsed.bottom,
+      width:
+        typeof parsed.width === "number"
+          ? parsed.width
+          : DEFAULT_WIDGET_SIZE.width,
+      height:
+        typeof parsed.height === "number"
+          ? parsed.height
+          : DEFAULT_WIDGET_SIZE.height,
     };
   } catch {
     return null;
@@ -43,18 +64,28 @@ export function useWidgetPosition(viewport: Size) {
   const positionRef = useRef(position);
   const offsetsRef = useRef<LauncherOffsets | null>(null);
   const initialisedRef = useRef(false);
-  useEffect(() => { sizeRef.current = size; }, [size]);
-  useEffect(() => { positionRef.current = position; }, [position]);
+  useEffect(() => {
+    sizeRef.current = size;
+  }, [size]);
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
 
   // Initialise once from storage onto the current viewport; ignore legacy v2 shape.
   useEffect(() => {
     const stored = loadStored();
     if (stored) {
-      const restoredSize = clampSize({ width: stored.width, height: stored.height });
+      const restoredSize = clampSize({
+        width: stored.width,
+        height: stored.height,
+      });
       setSize(restoredSize);
       // Persisted offsets are the user's intended (unclamped) offsets — clamp only for display.
       // fromOffsets will clamp the derived position on-screen; we never overwrite the stored offsets.
-      const off: LauncherOffsets = { right: stored.right, bottom: stored.bottom };
+      const off: LauncherOffsets = {
+        right: stored.right,
+        bottom: stored.bottom,
+      };
       offsetsRef.current = off;
       setPosition(fromOffsets(off, viewport));
     } else {
@@ -87,7 +118,11 @@ export function useWidgetPosition(viewport: Size) {
   useEffect(() => {
     if (!position || !offsetsRef.current) return;
     try {
-      const toStore: StoredV3 = { right: offsetsRef.current.right, bottom: offsetsRef.current.bottom, ...sizeRef.current };
+      const toStore: StoredV3 = {
+        right: offsetsRef.current.right,
+        bottom: offsetsRef.current.bottom,
+        ...sizeRef.current,
+      };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
     } catch {
       // storage unavailable (private mode) - non-fatal
@@ -98,9 +133,15 @@ export function useWidgetPosition(viewport: Size) {
   // deferred until the pointer actually moves past DRAG_THRESHOLD, so a plain
   // click (on the launcher, or on the X / "Open full chat" controls inside the
   // box header) is never swallowed by pointer-capture retargeting.
-  const pressStart = useRef<{ startPos: Point; startPointer: Point } | null>(null);
-  const dragStart = useRef<{ startPos: Point; startPointer: Point } | null>(null);
-  const resizeStart = useRef<{ startSize: Size; startPointer: Point } | null>(null);
+  const pressStart = useRef<{ startPos: Point; startPointer: Point } | null>(
+    null,
+  );
+  const dragStart = useRef<{ startPos: Point; startPointer: Point } | null>(
+    null,
+  );
+  const resizeStart = useRef<{ startSize: Size; startPointer: Point } | null>(
+    null,
+  );
 
   const dragHandlers: PointerHandlers = {
     onPointerDown: (e) => {
@@ -122,7 +163,10 @@ export function useWidgetPosition(viewport: Size) {
       }
       const next = applyDrag(
         dragStart.current.startPos,
-        { x: e.clientX - dragStart.current.startPointer.x, y: e.clientY - dragStart.current.startPointer.y },
+        {
+          x: e.clientX - dragStart.current.startPointer.x,
+          y: e.clientY - dragStart.current.startPointer.y,
+        },
         // Clamp the LAUNCHER (the stored position), not the box.
         { width: LAUNCHER_SIZE, height: LAUNCHER_SIZE },
         viewport,
@@ -138,15 +182,23 @@ export function useWidgetPosition(viewport: Size) {
 
   const resizeHandlers: PointerHandlers = {
     onPointerDown: (e) => {
-      resizeStart.current = { startSize: sizeRef.current, startPointer: { x: e.clientX, y: e.clientY } };
+      resizeStart.current = {
+        startSize: sizeRef.current,
+        startPointer: { x: e.clientX, y: e.clientY },
+      };
       e.currentTarget.setPointerCapture(e.pointerId);
     },
     onPointerMove: (e) => {
       if (!resizeStart.current) return;
-      const delta = { x: e.clientX - resizeStart.current.startPointer.x, y: e.clientY - resizeStart.current.startPointer.y };
+      const delta = {
+        x: e.clientX - resizeStart.current.startPointer.x,
+        y: e.clientY - resizeStart.current.startPointer.y,
+      };
       setSize(applyResize(resizeStart.current.startSize, delta));
     },
-    onPointerUp: () => { resizeStart.current = null; },
+    onPointerUp: () => {
+      resizeStart.current = null;
+    },
   };
 
   return { position, size, dragHandlers, resizeHandlers };

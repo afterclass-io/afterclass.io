@@ -137,9 +137,7 @@ export const env = createEnv({
         ? process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
         : process.env.NEXT_PUBLIC_VERCEL_URL,
     ),
-    NEXT_PUBLIC_OLD_SITE_URL: z
-      .url()
-      .default("https://old.afterclass.io"),
+    NEXT_PUBLIC_OLD_SITE_URL: z.url().default("https://old.afterclass.io"),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
     NEXT_PUBLIC_SUPABASE_URL: z.string(),
     NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS: z

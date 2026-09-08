@@ -140,21 +140,36 @@ const seniorEntries = [
     roadmapId: "srA",
     yearNumber: 2,
     term: "T3A",
-    course: { id: "c1", code: "ACCT101", name: "Financial Accounting", creditUnits: 1 },
+    course: {
+      id: "c1",
+      code: "ACCT101",
+      name: "Financial Accounting",
+      creditUnits: 1,
+    },
     roadmap: { name: "Alice's Plan", user: { username: "alice" } },
   },
   {
     roadmapId: "srB",
     yearNumber: 2,
     term: "T3A",
-    course: { id: "c1", code: "ACCT101", name: "Financial Accounting", creditUnits: 1 },
+    course: {
+      id: "c1",
+      code: "ACCT101",
+      name: "Financial Accounting",
+      creditUnits: 1,
+    },
     roadmap: { name: "Bob's Plan", user: { username: "bob" } },
   },
   {
     roadmapId: "srA",
     yearNumber: 2,
     term: "T3A",
-    course: { id: "c2", code: "STAT101", name: "Statistical Thinking", creditUnits: 1 },
+    course: {
+      id: "c2",
+      code: "STAT101",
+      name: "Statistical Thinking",
+      creditUnits: 1,
+    },
     roadmap: { name: "Alice's Plan", user: { username: "alice" } },
   },
 ];
@@ -181,14 +196,19 @@ describe("roadmaps.planSemester", () => {
 
     acadTermFindManyMock.mockResolvedValue(TERMS);
     bidWindowFindManyMock.mockResolvedValue([currentWindow]);
-    userRoadmapFindFirstMock.mockResolvedValue({ id: "myr1", matricTermId: "2024-T1" });
+    userRoadmapFindFirstMock.mockResolvedValue({
+      id: "myr1",
+      matricTermId: "2024-T1",
+    });
     usersFindUniqueMock.mockResolvedValue({ facultyId: 1 });
     userRoadmapFindManyMock.mockResolvedValue(seniorRoadmaps);
     userRoadmapEntryFindManyMock.mockImplementation(entryFindManyDefault);
   });
 
   it("resolves an explicit targetTermId and returns the full response shape", async () => {
-    const result = await caller.roadmaps.planSemester({ targetTermId: "2025-T3A" });
+    const result = await caller.roadmaps.planSemester({
+      targetTermId: "2025-T3A",
+    });
 
     expect(result).toEqual({
       targetTerm: { id: "2025-T3A", acadYearStart: 2025, term: "3A" },
@@ -218,13 +238,19 @@ describe("roadmaps.planSemester", () => {
   it("defaults targetTermId to the next acad term after the current one", async () => {
     // currentTermId = "2025-T2" (from the bid window); next chronological term is 2025-T3A.
     const result = await caller.roadmaps.planSemester({});
-    expect(result.targetTerm).toEqual({ id: "2025-T3A", acadYearStart: 2025, term: "3A" });
+    expect(result.targetTerm).toEqual({
+      id: "2025-T3A",
+      acadYearStart: 2025,
+      term: "3A",
+    });
   });
 
   it("returns userPosition null and still returns candidates when the user has no active roadmap", async () => {
     userRoadmapFindFirstMock.mockResolvedValue(null);
 
-    const result = await caller.roadmaps.planSemester({ targetTermId: "2025-T3A" });
+    const result = await caller.roadmaps.planSemester({
+      targetTermId: "2025-T3A",
+    });
     expect(result.userPosition).toBeNull();
     expect(result.candidates.length).toBeGreaterThan(0);
     expect(result.totalSeniors).toBe(2);
@@ -234,12 +260,15 @@ describe("roadmaps.planSemester", () => {
     // The user already took c1 (their active roadmap contains it).
     userRoadmapEntryFindManyMock.mockImplementation(
       (args?: { where?: { roadmapId?: string } }) => {
-        if (args?.where?.roadmapId) return Promise.resolve([{ courseId: "c1" }]);
+        if (args?.where?.roadmapId)
+          return Promise.resolve([{ courseId: "c1" }]);
         return Promise.resolve(seniorEntries);
       },
     );
 
-    const result = await caller.roadmaps.planSemester({ targetTermId: "2025-T3A" });
+    const result = await caller.roadmaps.planSemester({
+      targetTermId: "2025-T3A",
+    });
     expect(result.candidates.map((c) => c.courseId)).toEqual(["c2"]);
   });
 
@@ -248,7 +277,11 @@ describe("roadmaps.planSemester", () => {
 
     expect(userRoadmapFindManyMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { visibility: "PUBLIC", publishedAt: { not: null }, facultyId: 1 },
+        where: {
+          visibility: "PUBLIC",
+          publishedAt: { not: null },
+          facultyId: 1,
+        },
         take: 50,
       }),
     );

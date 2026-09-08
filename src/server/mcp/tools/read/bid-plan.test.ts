@@ -47,12 +47,23 @@ function mkBid(overrides: Record<string, unknown> = {}) {
 
 describe("my-bid-plan", () => {
   it("calls listMine and getBudget and returns filtered bids with notes stripped", async () => {
-    const listMine = vi.fn().mockResolvedValue([
-      mkBid({ id: "b1", bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 } }),
-      mkBid({ id: "b2", bidWindow: { acadTermId: "AY202627T2", round: "1", window: 1 } }),
-    ]);
+    const listMine = vi
+      .fn()
+      .mockResolvedValue([
+        mkBid({
+          id: "b1",
+          bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
+        }),
+        mkBid({
+          id: "b2",
+          bidWindow: { acadTermId: "AY202627T2", round: "1", window: 1 },
+        }),
+      ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 987.5 });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ listMine, getBudget }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ listMine, getBudget }),
+    };
 
     const result = await myBidPlanTool.run(ctx, { acadTermId: "AY2026/27-T1" });
 
@@ -74,12 +85,23 @@ describe("my-bid-plan", () => {
   });
 
   it("normalizes display-form acadTermId to compact before filtering bids", async () => {
-    const listMine = vi.fn().mockResolvedValue([
-      mkBid({ id: "b1", bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 } }),
-      mkBid({ id: "b2", bidWindow: { acadTermId: "AY202627T2", round: "1", window: 1 } }),
-    ]);
+    const listMine = vi
+      .fn()
+      .mockResolvedValue([
+        mkBid({
+          id: "b1",
+          bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
+        }),
+        mkBid({
+          id: "b2",
+          bidWindow: { acadTermId: "AY202627T2", round: "1", window: 1 },
+        }),
+      ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 987.5 });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ listMine, getBudget }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ listMine, getBudget }),
+    };
 
     const result = await myBidPlanTool.run(ctx, { acadTermId: "ay2026/27-t1" });
 
@@ -118,7 +140,10 @@ describe("my-bid-plan", () => {
       }),
     ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ listMine, getBudget }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ listMine, getBudget }),
+    };
 
     const result = await myBidPlanTool.run(ctx, { acadTermId: "AY202627T1" });
     const parsed = JSON.parse(result.content[0]!.text) as {
@@ -146,7 +171,10 @@ describe("my-bid-plan", () => {
   it("returns budget null when getBudget resolves null", async () => {
     const listMine = vi.fn().mockResolvedValue([]);
     const getBudget = vi.fn().mockResolvedValue(null);
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ listMine, getBudget }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ listMine, getBudget }),
+    };
 
     const result = await myBidPlanTool.run(ctx, { acadTermId: "AY202627T1" });
     expect(result.isError).toBeUndefined();
@@ -161,17 +189,28 @@ describe("my-bid-plan", () => {
   it("returns errText when listMine rejects", async () => {
     const listMine = vi.fn().mockRejectedValue(new Error("boom"));
     const getBudget = vi.fn().mockResolvedValue({ balance: 10 });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ listMine, getBudget }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ listMine, getBudget }),
+    };
 
     const result = await myBidPlanTool.run(ctx, { acadTermId: "AY202627T1" });
     expect(result.isError).toBe(true);
   });
 
   it("defaults acadTermId to the current term when omitted", async () => {
-    const listMine = vi.fn().mockResolvedValue([
-      mkBid({ id: "b1", bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 } }),
-      mkBid({ id: "b2", bidWindow: { acadTermId: "AY202627T2", round: "1", window: 1 } }),
-    ]);
+    const listMine = vi
+      .fn()
+      .mockResolvedValue([
+        mkBid({
+          id: "b1",
+          bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
+        }),
+        mkBid({
+          id: "b2",
+          bidWindow: { acadTermId: "AY202627T2", round: "1", window: 1 },
+        }),
+      ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 200 });
     const ctx: ToolContext = {
       user: fakeUser,

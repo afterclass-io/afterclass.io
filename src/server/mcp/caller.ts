@@ -15,7 +15,10 @@ export function createCallerForUser(user: SessionUser): ToolContext {
     user,
     caller: createCaller(async () => ({
       db,
-      session: { user, expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() },
+      session: {
+        user,
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      },
       headers: new Headers(),
     })),
   };

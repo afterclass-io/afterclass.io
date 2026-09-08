@@ -72,11 +72,7 @@ describe("plan-semester seed coverage (SCIS intake 2023)", () => {
       facultyId: s.facultyId,
       voteCount: 0,
     }));
-    const targets = computeSeniorTargets(
-      planSeniors,
-      termRows,
-      targetTermId,
-    );
+    const targets = computeSeniorTargets(planSeniors, termRows, targetTermId);
     const matched = [...targets.values()].filter(
       (t): t is { yearNumber: number; term: string } => t !== null,
     );
@@ -94,9 +90,7 @@ describe("plan-semester seed coverage (SCIS intake 2023)", () => {
     const planEntries = entries
       .filter((e) => {
         const target = targets.get(e.roadmapId);
-        return (
-          target?.yearNumber === e.yearNumber && target?.term === e.term
-        );
+        return target?.yearNumber === e.yearNumber && target?.term === e.term;
       })
       .map((e) => {
         const course = courseById.get(e.courseId);

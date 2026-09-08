@@ -18,21 +18,38 @@ const fakeUser: SessionUser = {
   updatedAt: new Date(),
 };
 
-type Issue = { type: string; courseCode: string; courseName: string; detail: string };
+type Issue = {
+  type: string;
+  courseCode: string;
+  courseName: string;
+  detail: string;
+};
 
 // Each tool calls a procedure on a specific sub-router, so place each mock under
 // the router namespace the tool actually uses. Distinct keys per sub-router so a
 // tool calling the wrong router cannot accidentally hit a mock present elsewhere.
 function makeCaller(procs: Record<string, unknown>) {
   return {
-    roadmaps: { getMine: procs.roadmapsGetMine, listMine: procs.roadmapsListMine },
+    roadmaps: {
+      getMine: procs.roadmapsGetMine,
+      listMine: procs.roadmapsListMine,
+    },
     courses: { getByCourseCode: procs.coursesGetByCourseCode },
-    timetable: { listMine: procs.timetableListMine, getArrangement: procs.timetableGetArrangement },
+    timetable: {
+      listMine: procs.timetableListMine,
+      getArrangement: procs.timetableGetArrangement,
+    },
     acadTerms: { current: procs.acadTermsGetCurrent },
   } as unknown as ToolContext["caller"];
 }
 
-function entry(code: string, name: string, yearNumber: number, term: string, id: string) {
+function entry(
+  code: string,
+  name: string,
+  yearNumber: number,
+  term: string,
+  id: string,
+) {
   return {
     id,
     roadmapId: "r1",
@@ -45,7 +62,10 @@ function entry(code: string, name: string, yearNumber: number, term: string, id:
 }
 
 function emptyRoadmap() {
-  return { roadmap: { id: "r1", name: "My Plan", matricTermId: "t1" }, entries: [] };
+  return {
+    roadmap: { id: "r1", name: "My Plan", matricTermId: "t1" },
+    entries: [],
+  };
 }
 
 describe("extractPrereqCodes", () => {
@@ -83,10 +103,20 @@ describe("check-roadmap-feasibility", () => {
     };
     const getByCourseCode = vi.fn(async ({ code }: { code: string }) => {
       if (code === "IS215") {
-        return { code: "IS215", name: "Digital Business", courseArea: null, enrolmentRequirements: "Pre-Requisite: COR-IS1702" };
+        return {
+          code: "IS215",
+          name: "Digital Business",
+          courseArea: null,
+          enrolmentRequirements: "Pre-Requisite: COR-IS1702",
+        };
       }
       if (code === "COR-STAT1202") {
-        return { code: "COR-STAT1202", name: "Stats", courseArea: null, enrolmentRequirements: null };
+        return {
+          code: "COR-STAT1202",
+          name: "Stats",
+          courseArea: null,
+          enrolmentRequirements: null,
+        };
       }
       return null;
     });
@@ -98,7 +128,10 @@ describe("check-roadmap-feasibility", () => {
       }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
-    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      issues: Issue[];
+      isFeasible: boolean;
+    };
     expect(parsed.isFeasible).toBe(false);
     const prereq = parsed.issues.find((i) => i.type === "PREREQ_MISSING");
     expect(prereq).toBeTruthy();
@@ -116,9 +149,19 @@ describe("check-roadmap-feasibility", () => {
     };
     const getByCourseCode = vi.fn(async ({ code }: { code: string }) => {
       if (code === "IS215") {
-        return { code: "IS215", name: "Digital Business", courseArea: null, enrolmentRequirements: "Pre-Requisite: COR-IS1702" };
+        return {
+          code: "IS215",
+          name: "Digital Business",
+          courseArea: null,
+          enrolmentRequirements: "Pre-Requisite: COR-IS1702",
+        };
       }
-      return { code, name: code, courseArea: null, enrolmentRequirements: null };
+      return {
+        code,
+        name: code,
+        courseArea: null,
+        enrolmentRequirements: null,
+      };
     });
     const ctx: ToolContext = {
       user: fakeUser,
@@ -128,7 +171,10 @@ describe("check-roadmap-feasibility", () => {
       }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
-    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      issues: Issue[];
+      isFeasible: boolean;
+    };
     expect(parsed.issues.some((i) => i.type === "PREREQ_MISSING")).toBe(false);
   });
 
@@ -150,7 +196,12 @@ describe("check-roadmap-feasibility", () => {
             "Pre-Requisite: COR-IS1702 Mutually Exclusive: EITHER ACCT102 OR ACCT104/112 Management Accounting",
         };
       }
-      return { code, name: code, courseArea: null, enrolmentRequirements: null };
+      return {
+        code,
+        name: code,
+        courseArea: null,
+        enrolmentRequirements: null,
+      };
     });
     const ctx: ToolContext = {
       user: fakeUser,
@@ -160,7 +211,10 @@ describe("check-roadmap-feasibility", () => {
       }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
-    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      issues: Issue[];
+      isFeasible: boolean;
+    };
     // ACCT102/ACCT112 come from the mutual-exclusion clause -> must NOT be PREREQ_MISSING.
     expect(parsed.issues.some((i) => i.type === "PREREQ_MISSING")).toBe(false);
     expect(parsed.isFeasible).toBe(true);
@@ -178,7 +232,16 @@ describe("check-roadmap-feasibility", () => {
           professorName: null,
           creditUnits: 1,
           timings: [],
-          examTimings: [{ id: "x1", date: "2026-04-12", dayOfWeek: "Sun", startTime: "09:00", endTime: "12:00", venue: null }],
+          examTimings: [
+            {
+              id: "x1",
+              date: "2026-04-12",
+              dayOfWeek: "Sun",
+              startTime: "09:00",
+              endTime: "12:00",
+              venue: null,
+            },
+          ],
         },
         {
           classId: "cl2",
@@ -188,7 +251,16 @@ describe("check-roadmap-feasibility", () => {
           professorName: null,
           creditUnits: 1,
           timings: [],
-          examTimings: [{ id: "x2", date: "2026-04-12", dayOfWeek: "Sun", startTime: "10:00", endTime: "13:00", venue: null }],
+          examTimings: [
+            {
+              id: "x2",
+              date: "2026-04-12",
+              dayOfWeek: "Sun",
+              startTime: "10:00",
+              endTime: "13:00",
+              venue: null,
+            },
+          ],
         },
       ],
     };
@@ -197,12 +269,22 @@ describe("check-roadmap-feasibility", () => {
       caller: makeCaller({
         roadmapsGetMine: vi.fn().mockResolvedValue(emptyRoadmap()),
         coursesGetByCourseCode: vi.fn().mockResolvedValue(null),
-        timetableListMine: vi.fn().mockResolvedValue([{ id: "tt1", name: "Term 2", isActive: true, acadTermId: "t2" }]),
+        timetableListMine: vi
+          .fn()
+          .mockResolvedValue([
+            { id: "tt1", name: "Term 2", isActive: true, acadTermId: "t2" },
+          ]),
         timetableGetArrangement: vi.fn().mockResolvedValue(arrangement),
       }),
     };
-    const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1", termId: "t2" });
-    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    const res = await checkRoadmapFeasibilityTool.run(ctx, {
+      roadmapId: "r1",
+      termId: "t2",
+    });
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      issues: Issue[];
+      isFeasible: boolean;
+    };
     expect(parsed.isFeasible).toBe(false);
     const clash = parsed.issues.find((i) => i.type === "EXAM_CLASH");
     expect(clash).toBeTruthy();
@@ -222,7 +304,16 @@ describe("check-roadmap-feasibility", () => {
           professorName: null,
           creditUnits: 1,
           timings: [],
-          examTimings: [{ id: "x1", date: "2026-04-12", dayOfWeek: "Sun", startTime: "09:00", endTime: "12:00", venue: null }],
+          examTimings: [
+            {
+              id: "x1",
+              date: "2026-04-12",
+              dayOfWeek: "Sun",
+              startTime: "09:00",
+              endTime: "12:00",
+              venue: null,
+            },
+          ],
         },
         {
           classId: "cl2",
@@ -232,7 +323,16 @@ describe("check-roadmap-feasibility", () => {
           professorName: null,
           creditUnits: 1,
           timings: [],
-          examTimings: [{ id: "x2", date: "2026-04-12", dayOfWeek: "Sun", startTime: "10:00", endTime: "13:00", venue: null }],
+          examTimings: [
+            {
+              id: "x2",
+              date: "2026-04-12",
+              dayOfWeek: "Sun",
+              startTime: "10:00",
+              endTime: "13:00",
+              venue: null,
+            },
+          ],
         },
         {
           classId: "cl3",
@@ -242,7 +342,16 @@ describe("check-roadmap-feasibility", () => {
           professorName: null,
           creditUnits: 1,
           timings: [],
-          examTimings: [{ id: "x3", date: "2026-04-12", dayOfWeek: "Sun", startTime: "11:00", endTime: "14:00", venue: null }],
+          examTimings: [
+            {
+              id: "x3",
+              date: "2026-04-12",
+              dayOfWeek: "Sun",
+              startTime: "11:00",
+              endTime: "14:00",
+              venue: null,
+            },
+          ],
         },
       ],
     };
@@ -251,12 +360,22 @@ describe("check-roadmap-feasibility", () => {
       caller: makeCaller({
         roadmapsGetMine: vi.fn().mockResolvedValue(emptyRoadmap()),
         coursesGetByCourseCode: vi.fn().mockResolvedValue(null),
-        timetableListMine: vi.fn().mockResolvedValue([{ id: "tt1", name: "Term 2", isActive: true, acadTermId: "t2" }]),
+        timetableListMine: vi
+          .fn()
+          .mockResolvedValue([
+            { id: "tt1", name: "Term 2", isActive: true, acadTermId: "t2" },
+          ]),
         timetableGetArrangement: vi.fn().mockResolvedValue(arrangement),
       }),
     };
-    const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1", termId: "t2" });
-    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    const res = await checkRoadmapFeasibilityTool.run(ctx, {
+      roadmapId: "r1",
+      termId: "t2",
+    });
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      issues: Issue[];
+      isFeasible: boolean;
+    };
     const clashes = parsed.issues.filter((i) => i.type === "EXAM_CLASH");
     // FIN202&MGMT1302, FIN202&ACCT102, MGMT1302&ACCT102 - all three pairs.
     expect(clashes).toHaveLength(3);
@@ -274,7 +393,16 @@ describe("check-roadmap-feasibility", () => {
           professorName: null,
           creditUnits: 1,
           timings: [],
-          examTimings: [{ id: "x1", date: "2026-04-12", dayOfWeek: "Sun", startTime: "09:00", endTime: "12:00", venue: null }],
+          examTimings: [
+            {
+              id: "x1",
+              date: "2026-04-12",
+              dayOfWeek: "Sun",
+              startTime: "09:00",
+              endTime: "12:00",
+              venue: null,
+            },
+          ],
         },
         {
           classId: "cl2",
@@ -284,7 +412,16 @@ describe("check-roadmap-feasibility", () => {
           professorName: null,
           creditUnits: 1,
           timings: [],
-          examTimings: [{ id: "x2", date: "2026-04-12", dayOfWeek: "Sun", startTime: "14:00", endTime: "17:00", venue: null }],
+          examTimings: [
+            {
+              id: "x2",
+              date: "2026-04-12",
+              dayOfWeek: "Sun",
+              startTime: "14:00",
+              endTime: "17:00",
+              venue: null,
+            },
+          ],
         },
       ],
     };
@@ -293,12 +430,22 @@ describe("check-roadmap-feasibility", () => {
       caller: makeCaller({
         roadmapsGetMine: vi.fn().mockResolvedValue(emptyRoadmap()),
         coursesGetByCourseCode: vi.fn().mockResolvedValue(null),
-        timetableListMine: vi.fn().mockResolvedValue([{ id: "tt1", name: "Term 2", isActive: true, acadTermId: "t2" }]),
+        timetableListMine: vi
+          .fn()
+          .mockResolvedValue([
+            { id: "tt1", name: "Term 2", isActive: true, acadTermId: "t2" },
+          ]),
         timetableGetArrangement: vi.fn().mockResolvedValue(arrangement),
       }),
     };
-    const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1", termId: "t2" });
-    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    const res = await checkRoadmapFeasibilityTool.run(ctx, {
+      roadmapId: "r1",
+      termId: "t2",
+    });
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      issues: Issue[];
+      isFeasible: boolean;
+    };
     expect(parsed.issues.some((i) => i.type === "EXAM_CLASH")).toBe(false);
   });
 
@@ -319,7 +466,10 @@ describe("check-roadmap-feasibility", () => {
       }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
-    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      issues: Issue[];
+      isFeasible: boolean;
+    };
     expect(parsed.isFeasible).toBe(false);
     const dups = parsed.issues.filter((i) => i.type === "TERM_DUPLICATE");
     expect(dups).toHaveLength(1);
@@ -346,7 +496,10 @@ describe("check-roadmap-feasibility", () => {
       }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
-    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      issues: Issue[];
+      isFeasible: boolean;
+    };
     const dups = parsed.issues.filter((i) => i.type === "TERM_DUPLICATE");
     expect(dups).toHaveLength(2);
     const details = dups.map((d) => d.detail).join(" ");
@@ -363,22 +516,30 @@ describe("check-roadmap-feasibility", () => {
       user: fakeUser,
       caller: makeCaller({
         roadmapsGetMine: vi.fn().mockResolvedValue(roadmap),
-        coursesGetByCourseCode: vi.fn().mockResolvedValue({ code: "COR-STAT1202", name: "Stats", courseArea: null, enrolmentRequirements: null }),
+        coursesGetByCourseCode: vi
+          .fn()
+          .mockResolvedValue({
+            code: "COR-STAT1202",
+            name: "Stats",
+            courseArea: null,
+            enrolmentRequirements: null,
+          }),
       }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
-    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      issues: Issue[];
+      isFeasible: boolean;
+    };
     expect(parsed.issues).toHaveLength(0);
     expect(parsed.isFeasible).toBe(true);
   });
 
   it("resolves the active roadmap when roadmapId is omitted", async () => {
-    const listMine = vi
-      .fn()
-      .mockResolvedValue([
-        { id: "r2", name: "Old", isActive: false },
-        { id: "r1", name: "Active", isActive: true },
-      ]);
+    const listMine = vi.fn().mockResolvedValue([
+      { id: "r2", name: "Old", isActive: false },
+      { id: "r1", name: "Active", isActive: true },
+    ]);
     const getMine = vi.fn().mockResolvedValue(emptyRoadmap());
     const ctx: ToolContext = {
       user: fakeUser,
@@ -406,7 +567,9 @@ describe("check-roadmap-feasibility", () => {
   it("returns errText when roadmaps.getMine throws", async () => {
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ roadmapsGetMine: vi.fn().mockRejectedValue(new Error("forbidden")) }),
+      caller: makeCaller({
+        roadmapsGetMine: vi.fn().mockRejectedValue(new Error("forbidden")),
+      }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
     expect(res.isError).toBe(true);
@@ -421,8 +584,14 @@ describe("check-roadmap-feasibility", () => {
         timetableListMine: vi.fn().mockResolvedValue([]),
       }),
     };
-    const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1", termId: "t2" });
-    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    const res = await checkRoadmapFeasibilityTool.run(ctx, {
+      roadmapId: "r1",
+      termId: "t2",
+    });
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      issues: Issue[];
+      isFeasible: boolean;
+    };
     expect(parsed.issues.some((i) => i.type === "EXAM_CLASH")).toBe(false);
     expect(parsed.isFeasible).toBe(true);
   });
@@ -439,7 +608,16 @@ describe("check-roadmap-feasibility", () => {
           professorName: null,
           creditUnits: 1,
           timings: [],
-          examTimings: [{ id: "x1", date: "2026-04-12", dayOfWeek: "Sun", startTime: "09:00", endTime: "12:00", venue: null }],
+          examTimings: [
+            {
+              id: "x1",
+              date: "2026-04-12",
+              dayOfWeek: "Sun",
+              startTime: "09:00",
+              endTime: "12:00",
+              venue: null,
+            },
+          ],
         },
         {
           classId: "cl2",
@@ -449,7 +627,16 @@ describe("check-roadmap-feasibility", () => {
           professorName: null,
           creditUnits: 1,
           timings: [],
-          examTimings: [{ id: "x2", date: "2026-04-12", dayOfWeek: "Sun", startTime: "10:00", endTime: "13:00", venue: null }],
+          examTimings: [
+            {
+              id: "x2",
+              date: "2026-04-12",
+              dayOfWeek: "Sun",
+              startTime: "10:00",
+              endTime: "13:00",
+              venue: null,
+            },
+          ],
         },
       ],
     };
@@ -460,13 +647,18 @@ describe("check-roadmap-feasibility", () => {
         coursesGetByCourseCode: vi.fn().mockResolvedValue(null),
         timetableListMine: vi
           .fn()
-          .mockResolvedValue([{ id: "tt1", name: "Term 2", isActive: true, acadTermId: "t2" }]),
+          .mockResolvedValue([
+            { id: "tt1", name: "Term 2", isActive: true, acadTermId: "t2" },
+          ]),
         timetableGetArrangement: vi.fn().mockResolvedValue(arrangement),
         acadTermsGetCurrent: vi.fn().mockResolvedValue({ id: "t2" }),
       }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
-    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      issues: Issue[];
+      isFeasible: boolean;
+    };
     expect(parsed.isFeasible).toBe(false);
     expect(parsed.issues.some((i) => i.type === "EXAM_CLASH")).toBe(true);
   });
@@ -481,13 +673,18 @@ describe("check-roadmap-feasibility", () => {
       }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
-    const parsed = JSON.parse(res.content[0]!.text) as { issues: Issue[]; isFeasible: boolean };
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      issues: Issue[];
+      isFeasible: boolean;
+    };
     expect(parsed.issues.some((i) => i.type === "EXAM_CLASH")).toBe(false);
     expect(parsed.isFeasible).toBe(true);
   });
 
   it("documents in the description that EXAM_CLASH is skipped when the term has no timetable", () => {
-    expect(checkRoadmapFeasibilityTool.description).toMatch(/no timetable exists/i);
+    expect(checkRoadmapFeasibilityTool.description).toMatch(
+      /no timetable exists/i,
+    );
     expect(checkRoadmapFeasibilityTool.description).toMatch(/skipped/i);
   });
 });

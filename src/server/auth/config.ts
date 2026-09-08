@@ -111,7 +111,10 @@ export const authConfig = {
           // Any object returned will be saved in `user` property of the JWT.
           // Carry the Supabase access token so the OAuth consent flow can
           // re-authenticate as the user against Supabase's OAuth server.
-          return { ...user, supabaseAccessToken: data.session?.access_token ?? null };
+          return {
+            ...user,
+            supabaseAccessToken: data.session?.access_token ?? null,
+          };
         }
 
         // user signed into supabase successfully, but user doesn't exist in our database
@@ -143,7 +146,10 @@ export const authConfig = {
             universityId: uniOfThisEmail.id,
           },
         });
-        return { ...newUser, supabaseAccessToken: data.session?.access_token ?? null };
+        return {
+          ...newUser,
+          supabaseAccessToken: data.session?.access_token ?? null,
+        };
       },
     }),
     /**
@@ -184,7 +190,8 @@ export const authConfig = {
         // Persist the Supabase access token in the JWT so the OAuth consent
         // flow can call Supabase's OAuth server as this user.
         token.supabaseAccessToken =
-          (user as { supabaseAccessToken?: string | null }).supabaseAccessToken ?? null;
+          (user as { supabaseAccessToken?: string | null })
+            .supabaseAccessToken ?? null;
       }
 
       if (account?.provider === "google") {

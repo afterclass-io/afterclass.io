@@ -335,7 +335,9 @@ export function BidDialog({
                     {
                       classId: initialClassId,
                       section:
-                        mode === "edit" ? (bid?.section ?? "") : (section ?? ""),
+                        mode === "edit"
+                          ? (bid?.section ?? "")
+                          : (section ?? ""),
                       professorName:
                         mode === "edit" ? (bid?.professorName ?? null) : null,
                       timings: [],
@@ -359,8 +361,7 @@ export function BidDialog({
 
   useEffect(() => {
     // Only replace the placeholder (id === ""), never a user choice.
-    if (!initialCourseCode || selectedCourse?.id !== "")
-      return;
+    if (!initialCourseCode || selectedCourse?.id !== "") return;
     const match = resolveCourseQuery.data?.find(
       (c) => c.code === initialCourseCode,
     );
@@ -392,7 +393,8 @@ export function BidDialog({
   const sectionLabel =
     activeSection?.section ?? (mode === "edit" ? bid?.section : section) ?? "";
   const professorName =
-    activeSection?.professorName ?? (mode === "edit" ? bid?.professorName : null);
+    activeSection?.professorName ??
+    (mode === "edit" ? bid?.professorName : null);
   const creditUnits = activeCourse?.creditUnits ?? 0;
   const timings = activeSection?.timings ?? [];
   const examTimings = activeSection?.examTimings ?? [];
@@ -427,7 +429,8 @@ export function BidDialog({
 
   // Add/class mode: default to the current/upcoming window once windows load.
   useEffect(() => {
-    if (mode === "edit" || selectedBidWindowId || bidWindows.length === 0) return;
+    if (mode === "edit" || selectedBidWindowId || bidWindows.length === 0)
+      return;
     const current = pickCurrentBidWindow(bidWindows);
     const fallback =
       current ??
@@ -469,8 +472,7 @@ export function BidDialog({
   // getByClassIds cache (which would wipe pre-filled notes in edit mode), and
   // in edit mode the notes pre-filled from `bid` are never overwritten.
   const [loadedNotesKey, setLoadedNotesKey] = useState<string | null>(null);
-  const classBidsSettled =
-    classBidsQuery.isFetched || classBidsQuery.isSuccess;
+  const classBidsSettled = classBidsQuery.isFetched || classBidsQuery.isSuccess;
   useEffect(() => {
     const result = resolveBidDialogNotes({
       mode,
@@ -995,7 +997,9 @@ export function BidDialog({
             </Button>
             <Button
               onClick={handleSave}
-              disabled={isSaving || !selectedBidWindowId || !bidAmountRaw.trim()}
+              disabled={
+                isSaving || !selectedBidWindowId || !bidAmountRaw.trim()
+              }
             >
               {isSaving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
               {mode === "edit" ? "Save changes" : "Save bid"}

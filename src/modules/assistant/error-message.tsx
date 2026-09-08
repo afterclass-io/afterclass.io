@@ -31,18 +31,24 @@ export type AssistantErrorMessageProps = {
   onRetry: () => void;
 };
 
-export function AssistantErrorMessage({ error, onRetry }: AssistantErrorMessageProps) {
+export function AssistantErrorMessage({
+  error,
+  onRetry,
+}: AssistantErrorMessageProps) {
   return (
     <div className="flex justify-start px-4 pb-1" role="alert">
-      <div className="w-fit max-w-[min(85%,56ch)] rounded-2xl rounded-bl-sm border border-destructive/40 bg-destructive/10 px-3.5 py-2 text-sm text-destructive">
+      <div className="border-destructive/40 bg-destructive/10 text-destructive w-fit max-w-[min(85%,56ch)] rounded-2xl rounded-bl-sm border px-3.5 py-2 text-sm">
         <div className="flex items-start gap-2">
-          <AlertTriangleIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <AlertTriangleIcon
+            className="mt-0.5 size-4 shrink-0"
+            aria-hidden="true"
+          />
           <span>{toFriendlyError(error)}</span>
         </div>
         <button
           type="button"
           onClick={onRetry}
-          className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
+          className="border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 mt-2 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors"
         >
           <RotateCwIcon className="size-3.5" aria-hidden="true" />
           Try again

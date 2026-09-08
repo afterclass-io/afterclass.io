@@ -94,8 +94,20 @@ const arrangement = {
       professorName: "Jane Doe",
       creditUnits: 4,
       timings: [
-        { id: 1, dayOfWeek: "Mon", startTime: "10:00", endTime: "12:00", venue: "SOE/SR3-1" },
-        { id: 2, dayOfWeek: "Wed", startTime: "10:00", endTime: "12:00", venue: "SOE/SR3-1" },
+        {
+          id: 1,
+          dayOfWeek: "Mon",
+          startTime: "10:00",
+          endTime: "12:00",
+          venue: "SOE/SR3-1",
+        },
+        {
+          id: 2,
+          dayOfWeek: "Wed",
+          startTime: "10:00",
+          endTime: "12:00",
+          venue: "SOE/SR3-1",
+        },
       ],
       examTimings: [],
     },
@@ -121,7 +133,9 @@ describe("get-my-timetable-detail read tool", () => {
       user: fakeUser,
       caller: makeCaller({ timetableGetArrangement: fn }),
     };
-    const result = await getMyTimetableDetailTool.run(ctx, { timetableId: "tt1" });
+    const result = await getMyTimetableDetailTool.run(ctx, {
+      timetableId: "tt1",
+    });
 
     expect(fn).toHaveBeenCalledWith({ timetableId: "tt1" });
     expect(result.isError).toBeUndefined();
@@ -156,12 +170,20 @@ describe("get-my-timetable-detail read tool", () => {
     ]);
     const getArr = vi
       .fn()
-      .mockResolvedValue({ timetable: { id: "tt2", name: "Current" }, slots: [] });
+      .mockResolvedValue({
+        timetable: { id: "tt2", name: "Current" },
+        slots: [],
+      });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ timetableListMine: listMine, timetableGetArrangement: getArr }),
+      caller: makeCaller({
+        timetableListMine: listMine,
+        timetableGetArrangement: getArr,
+      }),
     };
-    const result = await getMyTimetableDetailTool.run(ctx, { acadTermId: "t1" });
+    const result = await getMyTimetableDetailTool.run(ctx, {
+      acadTermId: "t1",
+    });
 
     expect(listMine).toHaveBeenCalledWith({ acadTermId: "t1" });
     expect(getArr).toHaveBeenCalledWith({ timetableId: "tt2" });
@@ -178,12 +200,21 @@ describe("get-my-timetable-detail read tool", () => {
     ]);
     const getArr = vi
       .fn()
-      .mockResolvedValue({ timetable: { id: "tt2", name: "Current" }, slots: [] });
+      .mockResolvedValue({
+        timetable: { id: "tt2", name: "Current" },
+        slots: [],
+      });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ timetableListMine: listMine, timetableGetArrangement: getArr }),
+      caller: makeCaller({
+        timetableListMine: listMine,
+        timetableGetArrangement: getArr,
+      }),
     };
-    const result = await getMyTimetableDetailTool.run(ctx, { timetableId: "tt2", acadTermId: "t1" });
+    const result = await getMyTimetableDetailTool.run(ctx, {
+      timetableId: "tt2",
+      acadTermId: "t1",
+    });
 
     expect(listMine).toHaveBeenCalledWith({ acadTermId: "t1" });
     expect(getArr).toHaveBeenCalledWith({ timetableId: "tt2" });
@@ -203,9 +234,15 @@ describe("get-my-timetable-detail read tool", () => {
       .mockResolvedValue({ timetable: { id: "tt1", name: "Old" }, slots: [] });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ timetableListMine: listMine, timetableGetArrangement: getArr }),
+      caller: makeCaller({
+        timetableListMine: listMine,
+        timetableGetArrangement: getArr,
+      }),
     };
-    const result = await getMyTimetableDetailTool.run(ctx, { timetableId: "tt1", acadTermId: "t1" });
+    const result = await getMyTimetableDetailTool.run(ctx, {
+      timetableId: "tt1",
+      acadTermId: "t1",
+    });
 
     const parsed = JSON.parse(textOf(result)) as ParsedDetail;
     // Real value from the listMine enrichment - this timetable genuinely
@@ -215,17 +252,28 @@ describe("get-my-timetable-detail read tool", () => {
   });
 
   it("omits isActive/termId when enrichment finds no match for the timetableId", async () => {
-    const listMine = vi.fn().mockResolvedValue([
-      { id: "tt1", name: "Old", isActive: false, acadTermId: "t1" },
-    ]);
+    const listMine = vi
+      .fn()
+      .mockResolvedValue([
+        { id: "tt1", name: "Old", isActive: false, acadTermId: "t1" },
+      ]);
     const getArr = vi
       .fn()
-      .mockResolvedValue({ timetable: { id: "ttX", name: "Unknown" }, slots: [] });
+      .mockResolvedValue({
+        timetable: { id: "ttX", name: "Unknown" },
+        slots: [],
+      });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ timetableListMine: listMine, timetableGetArrangement: getArr }),
+      caller: makeCaller({
+        timetableListMine: listMine,
+        timetableGetArrangement: getArr,
+      }),
     };
-    const result = await getMyTimetableDetailTool.run(ctx, { timetableId: "ttX", acadTermId: "t1" });
+    const result = await getMyTimetableDetailTool.run(ctx, {
+      timetableId: "ttX",
+      acadTermId: "t1",
+    });
 
     expect(listMine).toHaveBeenCalledWith({ acadTermId: "t1" });
     expect(getArr).toHaveBeenCalledWith({ timetableId: "ttX" });
@@ -244,9 +292,14 @@ describe("get-my-timetable-detail read tool", () => {
       .mockResolvedValue({ timetable: { id: "tt1", name: "Old" }, slots: [] });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ timetableListMine: listMine, timetableGetArrangement: getArr }),
+      caller: makeCaller({
+        timetableListMine: listMine,
+        timetableGetArrangement: getArr,
+      }),
     };
-    const result = await getMyTimetableDetailTool.run(ctx, { acadTermId: "t1" });
+    const result = await getMyTimetableDetailTool.run(ctx, {
+      acadTermId: "t1",
+    });
 
     expect(listMine).toHaveBeenCalledWith({ acadTermId: "t1" });
     expect(getArr).toHaveBeenCalledWith({ timetableId: "tt1" });
@@ -262,9 +315,14 @@ describe("get-my-timetable-detail read tool", () => {
     const getArr = vi.fn();
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ timetableListMine: listMine, timetableGetArrangement: getArr }),
+      caller: makeCaller({
+        timetableListMine: listMine,
+        timetableGetArrangement: getArr,
+      }),
     };
-    const result = await getMyTimetableDetailTool.run(ctx, { acadTermId: "t1" });
+    const result = await getMyTimetableDetailTool.run(ctx, {
+      acadTermId: "t1",
+    });
 
     expect(result.isError).toBe(true);
     expect(getArr).not.toHaveBeenCalled();
@@ -272,12 +330,17 @@ describe("get-my-timetable-detail read tool", () => {
   });
 
   it("defaults acadTermId to the current term when neither timetableId nor acadTermId is provided", async () => {
-    const listMine = vi.fn().mockResolvedValue([
-      { id: "tt1", name: "Current", isActive: true, acadTermId: "t1" },
-    ]);
+    const listMine = vi
+      .fn()
+      .mockResolvedValue([
+        { id: "tt1", name: "Current", isActive: true, acadTermId: "t1" },
+      ]);
     const getArr = vi
       .fn()
-      .mockResolvedValue({ timetable: { id: "tt1", name: "Current" }, slots: [] });
+      .mockResolvedValue({
+        timetable: { id: "tt1", name: "Current" },
+        slots: [],
+      });
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({
@@ -298,7 +361,9 @@ describe("get-my-timetable-detail read tool", () => {
   it("returns errText when both timetableId and acadTermId are omitted and there is no current term", async () => {
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ acadTermsGetCurrent: vi.fn().mockResolvedValue(null) }),
+      caller: makeCaller({
+        acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
+      }),
     };
     const result = await getMyTimetableDetailTool.run(ctx, {});
     expect(result.isError).toBe(true);
@@ -311,7 +376,9 @@ describe("get-my-timetable-detail read tool", () => {
       user: fakeUser,
       caller: makeCaller({ timetableGetArrangement: fn }),
     };
-    const result = await getMyTimetableDetailTool.run(ctx, { timetableId: "tt1" });
+    const result = await getMyTimetableDetailTool.run(ctx, {
+      timetableId: "tt1",
+    });
     expect(result.isError).toBe(true);
   });
 
@@ -332,7 +399,9 @@ describe("get-my-timetable-detail read tool", () => {
         timetableGetArrangement: vi.fn().mockResolvedValue(mainArrangement),
       }),
     };
-    const result = await getMyTimetableDetailTool.run(ctx, { timetableId: "tt1" });
+    const result = await getMyTimetableDetailTool.run(ctx, {
+      timetableId: "tt1",
+    });
     expect(result.isError).toBeUndefined();
     const parsed = JSON.parse(textOf(result)) as ParsedDetail;
     expect(parsed.timetableId).toBe("tt1");
@@ -346,9 +415,16 @@ describe("get-my-timetable-detail read tool", () => {
   });
 
   it("returns the real timetable name for the main {slots,bids} shape when both timetableId and acadTermId are given", async () => {
-    const listMine = vi.fn().mockResolvedValue([
-      { id: "tt1", name: "AY24 T2 - My Plan", isActive: true, acadTermId: "t1" },
-    ]);
+    const listMine = vi
+      .fn()
+      .mockResolvedValue([
+        {
+          id: "tt1",
+          name: "AY24 T2 - My Plan",
+          isActive: true,
+          acadTermId: "t1",
+        },
+      ]);
     // Main shape: getArrangement returns { slots, bids } - no timetable object.
     const mainArrangement = { slots: arrangement.slots, bids: [] };
 
@@ -385,7 +461,9 @@ describe("get-my-timetable-detail read tool", () => {
         timetableGetArrangement: vi.fn().mockResolvedValue(mainArrangement),
       }),
     };
-    const result = await getMyTimetableDetailTool.run(ctx, { acadTermId: "t1" });
+    const result = await getMyTimetableDetailTool.run(ctx, {
+      acadTermId: "t1",
+    });
     const parsed = JSON.parse(textOf(result)) as ParsedDetail;
     expect(parsed.timetableId).toBe("tt2");
     expect(parsed.name).toBe("Current - Honors");
@@ -405,10 +483,22 @@ describe("get-my-timetable-detail read tool", () => {
           professorName: "Jane Doe",
           creditUnits: 4,
           timings: [
-            { id: 1, dayOfWeek: "Mon", startTime: "10:00", endTime: "12:00", venue: "SOE/SR3-1" },
+            {
+              id: 1,
+              dayOfWeek: "Mon",
+              startTime: "10:00",
+              endTime: "12:00",
+              venue: "SOE/SR3-1",
+            },
           ],
           examTimings: [
-            { date: examDate, dayOfWeek: "Tue", startTime: "09:00", endTime: "11:00", venue: "MPSH" },
+            {
+              date: examDate,
+              dayOfWeek: "Tue",
+              startTime: "09:00",
+              endTime: "11:00",
+              venue: "MPSH",
+            },
           ],
         },
         {
@@ -418,7 +508,15 @@ describe("get-my-timetable-detail read tool", () => {
           section: "G2",
           professorName: "John Smith",
           creditUnits: 4,
-          timings: [{ id: 2, dayOfWeek: "Tue", startTime: "14:00", endTime: "16:00", venue: "SOE/SR2-1" }],
+          timings: [
+            {
+              id: 2,
+              dayOfWeek: "Tue",
+              startTime: "14:00",
+              endTime: "16:00",
+              venue: "SOE/SR2-1",
+            },
+          ],
           examTimings: [],
         },
       ],
@@ -428,7 +526,9 @@ describe("get-my-timetable-detail read tool", () => {
       user: fakeUser,
       caller: makeCaller({ timetableGetArrangement: fn }),
     };
-    const result = await getMyTimetableDetailTool.run(ctx, { timetableId: "tt1" });
+    const result = await getMyTimetableDetailTool.run(ctx, {
+      timetableId: "tt1",
+    });
     expect(result.isError).toBeUndefined();
     const parsed = JSON.parse(textOf(result)) as ParsedDetail;
     expect(parsed.examTimings).toHaveLength(1);
@@ -452,7 +552,9 @@ describe("get-my-timetable-detail read tool", () => {
       user: fakeUser,
       caller: makeCaller({ timetableGetArrangement: fn }),
     };
-    const result = await getMyTimetableDetailTool.run(ctx, { timetableId: "tt1" });
+    const result = await getMyTimetableDetailTool.run(ctx, {
+      timetableId: "tt1",
+    });
     const parsed = JSON.parse(textOf(result)) as ParsedDetail;
     expect(parsed.examTimings).toEqual([]);
   });

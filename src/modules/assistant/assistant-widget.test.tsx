@@ -8,8 +8,17 @@ configure({ testIdAttribute: "data-test" });
 
 // next/link renders a plain anchor under jsdom - mock it to keep navigation inert.
 vi.mock("next/link", () => ({
-  default: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
-    <a href={href} {...props}>{children}</a>
+  default: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string;
+    children: React.ReactNode;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 
@@ -53,7 +62,9 @@ describe("AssistantWidget", () => {
     // `display:none` in the real UI but still in the DOM) and the header's X
     // button share the accessible name, so disambiguate by DOM order: launcher
     // first, then the X inside the header.
-    fireEvent.click(screen.getAllByRole("button", { name: "Close assistant" })[1]!);
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "Close assistant" })[1]!,
+    );
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -74,9 +85,17 @@ describe("AssistantWidget", () => {
     HTMLElement.prototype.setPointerCapture = capture;
     renderWidget(false);
     const launcher = screen.getByTestId("assistant-widget-launcher");
-    fireEvent.pointerDown(launcher, { pointerId: 1, clientX: 100, clientY: 100 });
+    fireEvent.pointerDown(launcher, {
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    });
     expect(capture).not.toHaveBeenCalled();
-    fireEvent.pointerMove(launcher, { pointerId: 1, clientX: 140, clientY: 120 });
+    fireEvent.pointerMove(launcher, {
+      pointerId: 1,
+      clientX: 140,
+      clientY: 120,
+    });
     expect(capture).toHaveBeenCalled();
   });
 });

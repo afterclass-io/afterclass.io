@@ -34,8 +34,24 @@ const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
 const child = spawn(
   "bunx",
-  ["mcp-use", "dev", "--mcp-dir", "src/mcp", "--views-dir", "views", "--port", "3001", "--host", "127.0.0.1"],
-  { stdio: "inherit", shell: process.platform === "win32", env: env as NodeJS.ProcessEnv, cwd: repoRoot },
+  [
+    "mcp-use",
+    "dev",
+    "--mcp-dir",
+    "src/mcp",
+    "--views-dir",
+    "views",
+    "--port",
+    "3001",
+    "--host",
+    "127.0.0.1",
+  ],
+  {
+    stdio: "inherit",
+    shell: process.platform === "win32",
+    env: env as NodeJS.ProcessEnv,
+    cwd: repoRoot,
+  },
 );
 child.on("exit", (code) => process.exit(code ?? 0));
 child.on("error", (err) => {

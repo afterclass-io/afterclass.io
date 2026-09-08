@@ -154,7 +154,13 @@ describe("roadmap-settings write tools", () => {
     });
     const getMine = vi.fn().mockResolvedValue({
       roadmap: { id: "r2", name: "Senior Plan (copy)" },
-      entries: [{ course: { code: "CS101", name: "Intro", creditUnits: 1 }, yearNumber: 1, term: "T1" }],
+      entries: [
+        {
+          course: { code: "CS101", name: "Intro", creditUnits: 1 },
+          yearNumber: 1,
+          term: "T1",
+        },
+      ],
     });
     const ctx: ToolContext = {
       user: fakeUser,
@@ -162,7 +168,9 @@ describe("roadmap-settings write tools", () => {
     };
     const result = await copyPublicRoadmapTool.run(ctx, { roadmapId: "r1" });
     expect(result.isError).toBeUndefined();
-    const parsed = JSON.parse(result.content[0]!.text) as { roadmap: { id: string } };
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      roadmap: { id: string };
+    };
     expect(parsed.roadmap.id).toBe("r2");
     expect(getMine).toHaveBeenCalledWith({ roadmapId: "r2" });
   });

@@ -69,14 +69,12 @@ describe("bid write tools", () => {
   }
 
   it("upsert-bid calls userBids.upsert with classId/bidWindowId/bidAmount", async () => {
-    const fn = vi
-      .fn()
-      .mockResolvedValue({
-        id: "b1",
-        classId: "cl1",
-        bidWindowId: 53,
-        bidAmount: 25.5,
-      });
+    const fn = vi.fn().mockResolvedValue({
+      id: "b1",
+      classId: "cl1",
+      bidWindowId: 53,
+      bidAmount: 25.5,
+    });
     const { listMine, getBudget } = defaultPlanMocks();
     const ctx: ToolContext = {
       user: fakeUser,
@@ -307,15 +305,13 @@ describe("bid write tools", () => {
   });
 
   it("upsert-bid response carries no notes key", async () => {
-    const fn = vi
-      .fn()
-      .mockResolvedValue({
-        id: "b1",
-        classId: "c1",
-        bidWindowId: 53,
-        bidAmount: 50,
-        notes: "secret plan",
-      });
+    const fn = vi.fn().mockResolvedValue({
+      id: "b1",
+      classId: "c1",
+      bidWindowId: 53,
+      bidAmount: 50,
+      notes: "secret plan",
+    });
     const listMine = vi.fn().mockResolvedValue([]);
     const getBudget = vi.fn().mockResolvedValue(null);
     const ctx: ToolContext = {
@@ -340,16 +336,14 @@ describe("bid write tools", () => {
     const fn = vi
       .fn()
       .mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 53 });
-    const listMine = vi
-      .fn()
-      .mockResolvedValue([
-        mkBid({
-          id: "b1",
-          classId: "cl1",
-          bidWindowId: 53,
-          bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
-        }),
-      ]);
+    const listMine = vi.fn().mockResolvedValue([
+      mkBid({
+        id: "b1",
+        classId: "cl1",
+        bidWindowId: 53,
+        bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
+      }),
+    ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const ctx: ToolContext = {
       user: fakeUser,
@@ -367,21 +361,19 @@ describe("bid write tools", () => {
     const parsed = JSON.parse(result.content[0]!.text) as {
       plan: { bids: Array<Record<string, unknown>> };
     };
-    expect(parsed.plan.bids[0]!.notes).toBeUndefined(); // eslint-disable-line @typescript-eslint/no-unsafe-member-access -- typed envelope
+    expect(parsed.plan.bids[0]!.notes).toBeUndefined();
   });
 
   it("remove-bid returns { updated, plan } with notes stripped", async () => {
     const fn = vi
       .fn()
       .mockResolvedValue({ success: true, acadTermId: "AY202627T1" });
-    const getMine = vi
-      .fn()
-      .mockResolvedValue([
-        mkBid({
-          id: "b1",
-          bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
-        }),
-      ]);
+    const getMine = vi.fn().mockResolvedValue([
+      mkBid({
+        id: "b1",
+        bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
+      }),
+    ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 50 });
     const ctx: ToolContext = {
       user: fakeUser,
@@ -396,7 +388,7 @@ describe("bid write tools", () => {
     const parsed = JSON.parse(result.content[0]!.text) as {
       plan: { bids: Array<Record<string, unknown>> };
     };
-    expect(parsed.plan.bids[0]!.notes).toBeUndefined(); // eslint-disable-line @typescript-eslint/no-unsafe-member-access -- typed envelope
+    expect(parsed.plan.bids[0]!.notes).toBeUndefined();
   });
 
   it("bid write tools expose toViewProps unwrapping the plan", () => {

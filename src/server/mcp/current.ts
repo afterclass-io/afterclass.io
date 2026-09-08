@@ -6,8 +6,7 @@ import type { RouterCaller } from "./types";
  * caller should wrap in `errText(...)` (never a bare `[]`).
  */
 export type ResolveResult<T> =
-  | { ok: true; value: T }
-  | { ok: false; errText: string };
+  { ok: true; value: T } | { ok: false; errText: string };
 
 /**
  * Resolve the current academic term's id via the existing cached tRPC

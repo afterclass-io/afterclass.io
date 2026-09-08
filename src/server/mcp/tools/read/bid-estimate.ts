@@ -180,7 +180,6 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
         if (median !== null && bidWindow) {
           const factor = findSafetyFactor(
             safetyFactors,
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- bidWindow narrowed to non-null by outer guard
             bidWindow.acadTermId,
             DEFAULT_BEATS_PERCENTAGE,
           );
@@ -287,8 +286,7 @@ export async function resolveEstimateWindow(
   const current = (await caller.bidWindows
     .getCurrentWindow()
     .catch(() => null)) as
-    | (WindowDetails & { opensAt?: unknown; resultsAt?: unknown })
-    | null;
+    (WindowDetails & { opensAt?: unknown; resultsAt?: unknown }) | null;
 
   if (trimmedWindowInput) {
     const asId = Number(trimmedWindowInput);

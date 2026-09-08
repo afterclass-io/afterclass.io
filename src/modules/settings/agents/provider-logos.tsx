@@ -5,7 +5,11 @@
  * light and dark mode. Verify each glyph in both themes in dev.
  */
 export function ProviderLogo({ id }: { id: "claude" | "chatgpt" | "gemini" }) {
-  const common = { viewBox: "0 0 24 24", className: "size-6 fill-current", "aria-hidden": true } as const;
+  const common = {
+    viewBox: "0 0 24 24",
+    className: "size-6 fill-current",
+    "aria-hidden": true,
+  } as const;
   switch (id) {
     case "claude":
       return (

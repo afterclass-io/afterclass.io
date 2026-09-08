@@ -136,9 +136,8 @@ describe("dispatchToolCall", () => {
   });
 
   it("accepts a valid confirmToken for a Tier-1 tool without confirm:true", async () => {
-    const { hashConfirmArgs, mintConfirmToken } = await import(
-      "@/server/mcp/confirm-token"
-    );
+    const { hashConfirmArgs, mintConfirmToken } =
+      await import("@/server/mcp/confirm-token");
     const args = { timetableId: "tt1" };
     const token = await mintConfirmToken({
       userId: "u1",
@@ -167,9 +166,8 @@ describe("dispatchToolCall", () => {
   });
 
   it("rejects a tampered confirmToken for a Tier-1 tool", async () => {
-    const { hashConfirmArgs, mintConfirmToken } = await import(
-      "@/server/mcp/confirm-token"
-    );
+    const { hashConfirmArgs, mintConfirmToken } =
+      await import("@/server/mcp/confirm-token");
     const args = { timetableId: "tt1" };
     const token = await mintConfirmToken({
       userId: "u1",
@@ -197,9 +195,8 @@ describe("dispatchToolCall", () => {
   });
 
   it("rejects an expired confirmToken for a Tier-1 tool", async () => {
-    const { hashConfirmArgs, mintConfirmToken } = await import(
-      "@/server/mcp/confirm-token"
-    );
+    const { hashConfirmArgs, mintConfirmToken } =
+      await import("@/server/mcp/confirm-token");
     const args = { timetableId: "tt1" };
     const token = await mintConfirmToken({
       userId: "u1",

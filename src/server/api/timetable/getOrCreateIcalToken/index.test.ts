@@ -26,13 +26,11 @@ describe("timetable.getOrCreateIcalToken", () => {
     const update = vi.fn().mockResolvedValue({ icalToken: "tok" });
     const dbMock = {
       userTimetable: {
-        findUnique: vi
-          .fn()
-          .mockResolvedValue({
-            userId: "u1",
-            icalToken: null,
-            visibility: "UNLISTED",
-          }),
+        findUnique: vi.fn().mockResolvedValue({
+          userId: "u1",
+          icalToken: null,
+          visibility: "UNLISTED",
+        }),
         update,
       },
     };

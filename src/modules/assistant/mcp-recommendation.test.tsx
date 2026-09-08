@@ -11,7 +11,12 @@ beforeEach(() => {
 
 function renderCard(hasConnectedAgent = false) {
   const onDismiss = vi.fn();
-  render(<McpRecommendation hasConnectedAgent={hasConnectedAgent} onDismiss={onDismiss} />);
+  render(
+    <McpRecommendation
+      hasConnectedAgent={hasConnectedAgent}
+      onDismiss={onDismiss}
+    />,
+  );
   return { onDismiss };
 }
 
@@ -19,7 +24,9 @@ describe("McpRecommendation", () => {
   it("renders for unconnected users", () => {
     renderCard();
     expect(screen.getByText(/get unlimited/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /set up mcp/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /set up mcp/i }),
+    ).toBeInTheDocument();
   });
 
   it("is hidden when an agent is already connected", () => {

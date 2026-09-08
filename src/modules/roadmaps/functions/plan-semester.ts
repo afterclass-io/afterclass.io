@@ -71,7 +71,11 @@ export function computeSeniorTargets(
       out.set(senior.id, null);
       continue;
     }
-    const plan = buildProgressSyncPlan(terms, senior.matricTermId, targetTermId);
+    const plan = buildProgressSyncPlan(
+      terms,
+      senior.matricTermId,
+      targetTermId,
+    );
     const target = plan.length > 0 ? plan[plan.length - 1]! : null;
     out.set(
       senior.id,

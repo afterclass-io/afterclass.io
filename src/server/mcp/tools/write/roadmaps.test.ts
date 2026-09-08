@@ -39,7 +39,9 @@ function makeCaller(procs: Record<string, unknown>) {
   } as unknown as ToolContext["caller"];
 }
 
-const entries = [{ courseId: "c1", yearNumber: 1, term: "T1" as const, sortOrder: 0 }];
+const entries = [
+  { courseId: "c1", yearNumber: 1, term: "T1" as const, sortOrder: 0 },
+];
 
 describe("roadmap write tools", () => {
   it("create-roadmap calls roadmaps.create with name and returns the roadmap view", async () => {
@@ -54,42 +56,71 @@ describe("roadmap write tools", () => {
     };
     const result = await createRoadmapTool.run(ctx, { name: "My Plan" });
     expect(create).toHaveBeenCalledWith({ name: "My Plan" });
-    const parsed = JSON.parse(result.content[0]!.text) as { roadmap: { id: string } };
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      roadmap: { id: string };
+    };
     expect(parsed.roadmap.id).toBe("r1");
     expect(getMine).toHaveBeenCalledWith({ roadmapId: "r1" });
   });
 
   it("create-roadmap returns errText when roadmaps.create rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsCreate: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsCreate: fn }),
+    };
     const result = await createRoadmapTool.run(ctx, { name: "My Plan" });
     expect(result.isError).toBe(true);
   });
 
   it("rename-roadmap calls roadmaps.rename", async () => {
     const fn = vi.fn().mockResolvedValue({});
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsRename: fn }) };
-    await renameRoadmapTool.run(ctx, { roadmapId: "r1", name: "New", description: "d" });
-    expect(fn).toHaveBeenCalledWith({ roadmapId: "r1", name: "New", description: "d" });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsRename: fn }),
+    };
+    await renameRoadmapTool.run(ctx, {
+      roadmapId: "r1",
+      name: "New",
+      description: "d",
+    });
+    expect(fn).toHaveBeenCalledWith({
+      roadmapId: "r1",
+      name: "New",
+      description: "d",
+    });
   });
 
   it("rename-roadmap returns errText when roadmaps.rename rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsRename: fn }) };
-    const result = await renameRoadmapTool.run(ctx, { roadmapId: "r1", name: "New", description: "d" });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsRename: fn }),
+    };
+    const result = await renameRoadmapTool.run(ctx, {
+      roadmapId: "r1",
+      name: "New",
+      description: "d",
+    });
     expect(result.isError).toBe(true);
   });
 
   it("remove-roadmap calls roadmaps.remove", async () => {
     const fn = vi.fn().mockResolvedValue({});
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsRemove: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsRemove: fn }),
+    };
     await removeRoadmapTool.run(ctx, { roadmapId: "r1" });
     expect(fn).toHaveBeenCalledWith({ roadmapId: "r1" });
   });
 
   it("remove-roadmap returns errText when roadmaps.remove rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsRemove: fn }) };
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsRemove: fn }),
+    };
     const result = await removeRoadmapTool.run(ctx, { roadmapId: "r1" });
     expect(result.isError).toBe(true);
   });
@@ -102,41 +133,82 @@ describe("roadmap write tools", () => {
     });
     const ctx: ToolContext = {
       user: fakeUser,
-      caller: makeCaller({ roadmapsSaveEntries: saveEntries, roadmapsGetMine: getMine }),
+      caller: makeCaller({
+        roadmapsSaveEntries: saveEntries,
+        roadmapsGetMine: getMine,
+      }),
     };
-    const result = await saveRoadmapEntriesTool.run(ctx, { roadmapId: "r1", entries });
+    const result = await saveRoadmapEntriesTool.run(ctx, {
+      roadmapId: "r1",
+      entries,
+    });
     expect(saveEntries).toHaveBeenCalledWith({ roadmapId: "r1", entries });
-    const parsed = JSON.parse(result.content[0]!.text) as { roadmap: { id: string } };
+    const parsed = JSON.parse(result.content[0]!.text) as {
+      roadmap: { id: string };
+    };
     expect(parsed.roadmap.id).toBe("r1");
     expect(getMine).toHaveBeenCalledWith({ roadmapId: "r1" });
   });
 
   it("save-roadmap-entries returns errText when roadmaps.saveEntries rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ roadmapsSaveEntries: fn }) };
-    const result = await saveRoadmapEntriesTool.run(ctx, { roadmapId: "r1", entries });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsSaveEntries: fn }),
+    };
+    const result = await saveRoadmapEntriesTool.run(ctx, {
+      roadmapId: "r1",
+      entries,
+    });
     expect(result.isError).toBe(true);
   });
 
   it("set-roadmap-visibility calls sharing.setVisibility with entity=roadmap", async () => {
     const fn = vi.fn().mockResolvedValue({});
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ sharingSetVisibility: fn }) };
-    await setRoadmapVisibilityTool.run(ctx, { roadmapId: "r1", visibility: "PUBLIC" });
-    expect(fn).toHaveBeenCalledWith({ entity: "roadmap", id: "r1", visibility: "PUBLIC" });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ sharingSetVisibility: fn }),
+    };
+    await setRoadmapVisibilityTool.run(ctx, {
+      roadmapId: "r1",
+      visibility: "PUBLIC",
+    });
+    expect(fn).toHaveBeenCalledWith({
+      entity: "roadmap",
+      id: "r1",
+      visibility: "PUBLIC",
+    });
   });
 
   it("set-roadmap-visibility returns errText when sharing.setVisibility rejects", async () => {
     const fn = vi.fn().mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ sharingSetVisibility: fn }) };
-    const result = await setRoadmapVisibilityTool.run(ctx, { roadmapId: "r1", visibility: "PUBLIC" });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ sharingSetVisibility: fn }),
+    };
+    const result = await setRoadmapVisibilityTool.run(ctx, {
+      roadmapId: "r1",
+      visibility: "PUBLIC",
+    });
     expect(result.isError).toBe(true);
   });
 
   it("set-roadmap-visibility strips shareToken bearer token from the output", async () => {
-    const fn = vi.fn().mockResolvedValue({ visibility: "PUBLIC", shareToken: "secret-tok" });
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller({ sharingSetVisibility: fn }) };
-    const result = await setRoadmapVisibilityTool.run(ctx, { roadmapId: "r1", visibility: "PUBLIC" });
-    const parsed = JSON.parse(result.content[0]!.text) as Record<string, unknown>;
+    const fn = vi
+      .fn()
+      .mockResolvedValue({ visibility: "PUBLIC", shareToken: "secret-tok" });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ sharingSetVisibility: fn }),
+    };
+    const result = await setRoadmapVisibilityTool.run(ctx, {
+      roadmapId: "r1",
+      visibility: "PUBLIC",
+    });
+    const parsed = JSON.parse(result.content[0]!.text) as Record<
+      string,
+      unknown
+    >;
     expect(parsed.shareToken).toBeUndefined();
     expect(parsed.visibility).toBe("PUBLIC");
   });

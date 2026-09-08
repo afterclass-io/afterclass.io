@@ -40,26 +40,50 @@ function makeCaller(pred: unknown, factors: unknown[]) {
 describe("recommend-bid-amount", () => {
   it("is read-only and suggests median x matching safety multiplier", async () => {
     const factors = [
-      { acadTermId: "t1", predictionType: "MEDIAN", beatsPercentage: 70, multiplier: 1.05 },
+      {
+        acadTermId: "t1",
+        predictionType: "MEDIAN",
+        beatsPercentage: 70,
+        multiplier: 1.05,
+      },
     ];
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller(prediction, factors) };
-    const result = await recommendBidAmountTool.run(ctx, { classId: "cl1", beatsPercentage: 70 });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller(prediction, factors),
+    };
+    const result = await recommendBidAmountTool.run(ctx, {
+      classId: "cl1",
+      beatsPercentage: 70,
+    });
     expect(recommendBidAmountTool.readOnly).toBe(true);
     expect(result.isError).toBeUndefined();
     const text = (result.content[0] as { text: string }).text;
-    expect((JSON.parse(text) as { suggestedBidAmount: number }).suggestedBidAmount).toBe(26.25); // 25 x 1.05
+    expect(
+      (JSON.parse(text) as { suggestedBidAmount: number }).suggestedBidAmount,
+    ).toBe(26.25); // 25 x 1.05
   });
 
   it("defaults multiplier to 1.0 when no safety factor matches", async () => {
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller(prediction, []) };
-    const result = await recommendBidAmountTool.run(ctx, { classId: "cl1", beatsPercentage: 70 });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller(prediction, []),
+    };
+    const result = await recommendBidAmountTool.run(ctx, {
+      classId: "cl1",
+      beatsPercentage: 70,
+    });
     const text = (result.content[0] as { text: string }).text;
-    expect((JSON.parse(text) as { suggestedBidAmount: number }).suggestedBidAmount).toBe(25);
+    expect(
+      (JSON.parse(text) as { suggestedBidAmount: number }).suggestedBidAmount,
+    ).toBe(25);
   });
 
   it("returns errText when there is no prediction", async () => {
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller(null, []) };
-    const result = await recommendBidAmountTool.run(ctx, { classId: "cl1", beatsPercentage: 70 });
+    const result = await recommendBidAmountTool.run(ctx, {
+      classId: "cl1",
+      beatsPercentage: 70,
+    });
     expect(result.isError).toBe(true);
   });
 
@@ -71,15 +95,26 @@ describe("recommend-bid-amount", () => {
         safetyFactors: { getAll: vi.fn() },
       } as unknown as ToolContext["caller"],
     };
-    const result = await recommendBidAmountTool.run(ctx, { classId: "cl1", beatsPercentage: 70 });
+    const result = await recommendBidAmountTool.run(ctx, {
+      classId: "cl1",
+      beatsPercentage: 70,
+    });
     expect(result.isError).toBe(true);
   });
 
   it("exposes view props that parse from its JSON output", async () => {
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller(prediction, []) };
-    const result = await recommendBidAmountTool.run(ctx, { classId: "cl1", beatsPercentage: 70 });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller(prediction, []),
+    };
+    const result = await recommendBidAmountTool.run(ctx, {
+      classId: "cl1",
+      beatsPercentage: 70,
+    });
     const props = recommendBidAmountTool.toViewProps?.(result);
     expect(props).toMatchObject({ classId: "cl1" });
-    expect(typeof (props as { suggestedBidAmount?: number }).suggestedBidAmount).toBe("number");
+    expect(
+      typeof (props as { suggestedBidAmount?: number }).suggestedBidAmount,
+    ).toBe("number");
   });
 });

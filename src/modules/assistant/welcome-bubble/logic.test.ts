@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  ENGAGEMENT_MESSAGES, markShown, pickEngagementMessage, shouldShowWelcome,
-  WELCOME_INTERVAL_DAYS, WELCOME_MAX_SHOWS, type WelcomePrefs,
+  ENGAGEMENT_MESSAGES,
+  markShown,
+  pickEngagementMessage,
+  shouldShowWelcome,
+  WELCOME_INTERVAL_DAYS,
+  WELCOME_MAX_SHOWS,
+  type WelcomePrefs,
 } from "./logic";
 
 const DAY = 86_400_000;
@@ -13,14 +18,31 @@ describe("shouldShowWelcome", () => {
     expect(shouldShowWelcome(empty, now)).toBe(true);
   });
   it("hides within the interval", () => {
-    expect(shouldShowWelcome({ lastShownAt: new Date(now - DAY).toISOString(), shownCount: 1 }, now)).toBe(false);
+    expect(
+      shouldShowWelcome(
+        { lastShownAt: new Date(now - DAY).toISOString(), shownCount: 1 },
+        now,
+      ),
+    ).toBe(false);
   });
   it("shows again after the interval", () => {
     const last = new Date(now - WELCOME_INTERVAL_DAYS * DAY).toISOString();
-    expect(shouldShowWelcome({ lastShownAt: last, shownCount: 1 }, now)).toBe(true);
+    expect(shouldShowWelcome({ lastShownAt: last, shownCount: 1 }, now)).toBe(
+      true,
+    );
   });
   it("stops after the max number of shows", () => {
-    expect(shouldShowWelcome({ lastShownAt: new Date(now - WELCOME_INTERVAL_DAYS * DAY).toISOString(), shownCount: WELCOME_MAX_SHOWS }, now)).toBe(false);
+    expect(
+      shouldShowWelcome(
+        {
+          lastShownAt: new Date(
+            now - WELCOME_INTERVAL_DAYS * DAY,
+          ).toISOString(),
+          shownCount: WELCOME_MAX_SHOWS,
+        },
+        now,
+      ),
+    ).toBe(false);
   });
 });
 
@@ -34,7 +56,9 @@ describe("markShown", () => {
 
 describe("pickEngagementMessage", () => {
   it("returns the connected message when an agent is connected", () => {
-    expect(pickEngagementMessage(true, 50, 50)).toBe("Unlimited via your connected agent - ask me anything.");
+    expect(pickEngagementMessage(true, 50, 50)).toBe(
+      "Unlimited via your connected agent - ask me anything.",
+    );
   });
   it("returns a quota push when remaining is low", () => {
     expect(pickEngagementMessage(false, 3, 50)).toContain("connect your agent");

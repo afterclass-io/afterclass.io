@@ -1,5 +1,10 @@
 import type { CSSProperties } from "react";
-import { LAUNCHER_SIZE, WIDGET_MARGIN, type Point, type Size } from "../widget-geometry";
+import {
+  LAUNCHER_SIZE,
+  WIDGET_MARGIN,
+  type Point,
+  type Size,
+} from "../widget-geometry";
 
 export const BUBBLE_GAP = 12;
 export const BUBBLE_MAX_WIDTH = 288; // max-w-72
@@ -10,7 +15,10 @@ export function bubbleStyle(launcher: Point, viewport: Size): CSSProperties {
   const horizontal: CSSProperties =
     roomLeft >= WIDGET_MARGIN
       ? { right: viewport.width - launcher.x - LAUNCHER_SIZE }
-      : { left: launcher.x, maxWidth: viewport.width - launcher.x - WIDGET_MARGIN };
+      : {
+          left: launcher.x,
+          maxWidth: viewport.width - launcher.x - WIDGET_MARGIN,
+        };
   if (launcher.y >= BUBBLE_EST_HEIGHT + BUBBLE_GAP) {
     return { ...horizontal, bottom: viewport.height - launcher.y + BUBBLE_GAP };
   }

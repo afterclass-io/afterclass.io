@@ -3,7 +3,10 @@ import { Visibility } from "@/generated/prisma/enums";
 import { protectedProcedure } from "@/server/api/trpc";
 import { getCurrentWindowLogic } from "@/server/api/bidWindows/getCurrentWindow/helpers";
 import { getCurrentAcadTerm } from "@/common/tools/acad-term";
-import { buildProgressSyncPlan, type SyncTermRow } from "@/modules/roadmaps/functions/progress-sync";
+import {
+  buildProgressSyncPlan,
+  type SyncTermRow,
+} from "@/modules/roadmaps/functions/progress-sync";
 import {
   aggregateCandidates,
   computeSeniorTargets,
@@ -51,7 +54,12 @@ export const planSemester = protectedProcedure
     }
     const targetTerm = termRows.find((t) => t.id === targetTermId) ?? null;
     if (!targetTerm || !targetTermId) {
-      return { targetTerm: null, userPosition: null, candidates: [], totalSeniors: 0 };
+      return {
+        targetTerm: null,
+        userPosition: null,
+        candidates: [],
+        totalSeniors: 0,
+      };
     }
 
     // ---- 2. User's active roadmap -> userPosition at the target term ----
@@ -61,9 +69,15 @@ export const planSemester = protectedProcedure
     });
     let userPosition: { yearNumber: number; term: string } | null = null;
     if (mine?.matricTermId) {
-      const plan = buildProgressSyncPlan(termRows, mine.matricTermId, targetTermId);
+      const plan = buildProgressSyncPlan(
+        termRows,
+        mine.matricTermId,
+        targetTermId,
+      );
       const last = plan.at(-1);
-      userPosition = last ? { yearNumber: last.yearNumber, term: last.term } : null;
+      userPosition = last
+        ? { yearNumber: last.yearNumber, term: last.term }
+        : null;
     }
 
     // ---- 3. Candidate seniors: published public roadmaps, faculty filter ----
@@ -103,7 +117,11 @@ export const planSemester = protectedProcedure
 
     // ---- 4. Per-senior target at the SAME calendar term, then ONE batched
     //         entries query (the n+1 collapse - no per-roadmap round trips) ----
-    const targetByRoadmap = computeSeniorTargets(seniors, termRows, targetTermId);
+    const targetByRoadmap = computeSeniorTargets(
+      seniors,
+      termRows,
+      targetTermId,
+    );
     const pairs = [...targetByRoadmap.entries()]
       .filter(([, t]) => t !== null)
       .map(([roadmapId, t]) => ({

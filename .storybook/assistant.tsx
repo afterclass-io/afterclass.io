@@ -1,6 +1,9 @@
 import React, { useEffect } from "react";
 import type { Decorator } from "@storybook/react";
-import { useChatStore, type StoredSession } from "@/modules/assistant/chat-store";
+import {
+  useChatStore,
+  type StoredSession,
+} from "@/modules/assistant/chat-store";
 import { __setChatState, type ChatStateParam } from "./mocks/ai-sdk-react";
 import type { AssistantStatus } from "@/server/assistant/status";
 

@@ -16,13 +16,17 @@ export function extractCachedInputTokens(usage: unknown): number {
   if (typeof usage !== "object" || usage === null) return 0;
   const u = usage as Record<string, unknown>;
   const normalised = num(
-    (u.inputTokenDetails as Record<string, unknown> | undefined)?.cacheReadTokens,
+    (u.inputTokenDetails as Record<string, unknown> | undefined)
+      ?.cacheReadTokens,
   );
   if (normalised > 0) return normalised;
   const raw = u.raw as Record<string, unknown> | undefined;
   return (
     num(raw?.prompt_cache_hit_tokens) ||
-    num((raw?.prompt_tokens_details as Record<string, unknown> | undefined)?.cached_tokens) ||
+    num(
+      (raw?.prompt_tokens_details as Record<string, unknown> | undefined)
+        ?.cached_tokens,
+    ) ||
     num(u.prompt_cache_hit_tokens)
   );
 }

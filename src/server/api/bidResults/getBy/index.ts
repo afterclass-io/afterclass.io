@@ -16,9 +16,13 @@ export const getBy = publicProcedure
     const acadYearCutoff = await getAcadYearCutoff(ctx.db);
 
     if (input.courseCode && input.section) {
-      return findBidResults(ctx.db, {
-        class: { section: input.section, course: { code: input.courseCode } },
-      }, acadYearCutoff);
+      return findBidResults(
+        ctx.db,
+        {
+          class: { section: input.section, course: { code: input.courseCode } },
+        },
+        acadYearCutoff,
+      );
     }
 
     if (!input.classId) {
@@ -46,7 +50,14 @@ export const getBy = publicProcedure
       return [];
     }
 
-    return findBidResults(ctx.db, {
-      class: { section: _class.section, course: { code: _class.course.code } },
-    }, acadYearCutoff);
+    return findBidResults(
+      ctx.db,
+      {
+        class: {
+          section: _class.section,
+          course: { code: _class.course.code },
+        },
+      },
+      acadYearCutoff,
+    );
   });

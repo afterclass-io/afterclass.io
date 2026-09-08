@@ -136,8 +136,22 @@ describe("aggregateCandidates", () => {
     ]);
     const candidates = aggregateCandidates(
       [
-        entry("srA", "c1", "ACCT101", "Financial Accounting", "Alice's Plan", "alice"),
-        entry("srB", "c1", "ACCT101", "Financial Accounting", "Bob's Plan", "bob"),
+        entry(
+          "srA",
+          "c1",
+          "ACCT101",
+          "Financial Accounting",
+          "Alice's Plan",
+          "alice",
+        ),
+        entry(
+          "srB",
+          "c1",
+          "ACCT101",
+          "Financial Accounting",
+          "Bob's Plan",
+          "bob",
+        ),
       ],
       targetByRoadmap,
       seniorVotes,
@@ -166,9 +180,30 @@ describe("aggregateCandidates", () => {
     ]);
     const candidates = aggregateCandidates(
       [
-        entry("srA", "c1", "ACCT101", "Financial Accounting", "Alice's Plan", "alice"),
-        entry("srB", "c2", "STAT101", "Statistical Thinking", "Bob's Plan", "bob"),
-        entry("srA", "c2", "STAT101", "Statistical Thinking", "Alice's Plan", "alice"),
+        entry(
+          "srA",
+          "c1",
+          "ACCT101",
+          "Financial Accounting",
+          "Alice's Plan",
+          "alice",
+        ),
+        entry(
+          "srB",
+          "c2",
+          "STAT101",
+          "Statistical Thinking",
+          "Bob's Plan",
+          "bob",
+        ),
+        entry(
+          "srA",
+          "c2",
+          "STAT101",
+          "Statistical Thinking",
+          "Alice's Plan",
+          "alice",
+        ),
       ],
       targetByRoadmap,
       seniorVotes,
@@ -192,8 +227,22 @@ describe("aggregateCandidates", () => {
     ]);
     const candidates = aggregateCandidates(
       [
-        entry("srA", "c1", "ACCT101", "Financial Accounting", "Alice's Plan", "alice"),
-        entry("srB", "c2", "STAT101", "Statistical Thinking", "Bob's Plan", "bob"),
+        entry(
+          "srA",
+          "c1",
+          "ACCT101",
+          "Financial Accounting",
+          "Alice's Plan",
+          "alice",
+        ),
+        entry(
+          "srB",
+          "c2",
+          "STAT101",
+          "Statistical Thinking",
+          "Bob's Plan",
+          "bob",
+        ),
       ],
       targetByRoadmap,
       seniorVotes,
@@ -201,11 +250,26 @@ describe("aggregateCandidates", () => {
     );
     expect(candidates.map((c) => c.courseId)).toEqual(["c1"]);
 
-    const manyTargets = new Map<string, PlanSeniorTarget>([["srA", { yearNumber: 2, term: "T3A" }]]);
+    const manyTargets = new Map<string, PlanSeniorTarget>([
+      ["srA", { yearNumber: 2, term: "T3A" }],
+    ]);
     const manyEntries = Array.from({ length: 5 }, (_, i) =>
-      entry("srA", `c${i + 1}`, `CODE${i + 1}`, `Course ${i + 1}`, "Alice's Plan", "alice"),
+      entry(
+        "srA",
+        `c${i + 1}`,
+        `CODE${i + 1}`,
+        `Course ${i + 1}`,
+        "Alice's Plan",
+        "alice",
+      ),
     );
-    const truncated = aggregateCandidates(manyEntries, manyTargets, seniorVotes, new Set<string>(), 2);
+    const truncated = aggregateCandidates(
+      manyEntries,
+      manyTargets,
+      seniorVotes,
+      new Set<string>(),
+      2,
+    );
     expect(truncated).toHaveLength(2);
   });
 
@@ -215,7 +279,16 @@ describe("aggregateCandidates", () => {
     ]);
     const seniorVotes = new Map([["srA", 5]]);
     const candidates = aggregateCandidates(
-      [entry("srA", "c1", "ACCT101", "Financial Accounting", "Alice's Plan", "alice")],
+      [
+        entry(
+          "srA",
+          "c1",
+          "ACCT101",
+          "Financial Accounting",
+          "Alice's Plan",
+          "alice",
+        ),
+      ],
       targetByRoadmap,
       seniorVotes,
       new Set(["c1"]),

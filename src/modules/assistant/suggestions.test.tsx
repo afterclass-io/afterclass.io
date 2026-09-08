@@ -9,8 +9,16 @@ import {
   shouldShowFollowUps,
 } from "./suggestions";
 
-const userMsg = (text = "hello"): UIMessage => ({ id: "u1", role: "user", parts: [{ type: "text", text }] });
-const assistantMsg = (text = "hi there"): UIMessage => ({ id: "a1", role: "assistant", parts: [{ type: "text", text }] });
+const userMsg = (text = "hello"): UIMessage => ({
+  id: "u1",
+  role: "user",
+  parts: [{ type: "text", text }],
+});
+const assistantMsg = (text = "hi there"): UIMessage => ({
+  id: "a1",
+  role: "assistant",
+  parts: [{ type: "text", text }],
+});
 
 describe("suggestions", () => {
   it("exposes exactly 4 welcome suggestions", () => {
@@ -33,20 +41,28 @@ describe("suggestions", () => {
 
 describe("shouldShowFollowUps (follow-up gating)", () => {
   it("shows follow-ups after a successful assistant turn", () => {
-    expect(shouldShowFollowUps([userMsg(), assistantMsg()], false, false)).toBe(true);
+    expect(shouldShowFollowUps([userMsg(), assistantMsg()], false, false)).toBe(
+      true,
+    );
   });
 
   it("hides follow-ups when the last message is a user message (lone user / plain send)", () => {
     expect(shouldShowFollowUps([userMsg()], false, false)).toBe(false);
-    expect(shouldShowFollowUps([userMsg(), assistantMsg(), userMsg()], false, false)).toBe(false);
+    expect(
+      shouldShowFollowUps([userMsg(), assistantMsg(), userMsg()], false, false),
+    ).toBe(false);
   });
 
   it("hides follow-ups when the last turn failed", () => {
-    expect(shouldShowFollowUps([userMsg(), assistantMsg()], false, true)).toBe(false);
+    expect(shouldShowFollowUps([userMsg(), assistantMsg()], false, true)).toBe(
+      false,
+    );
   });
 
   it("hides follow-ups while a run is in flight", () => {
-    expect(shouldShowFollowUps([userMsg(), assistantMsg()], true, false)).toBe(false);
+    expect(shouldShowFollowUps([userMsg(), assistantMsg()], true, false)).toBe(
+      false,
+    );
   });
 
   it("hides follow-ups on an empty thread", () => {
@@ -57,7 +73,12 @@ describe("shouldShowFollowUps (follow-up gating)", () => {
 describe("FollowUpSuggestions", () => {
   it("does not render when the last message is a user message", () => {
     render(
-      <FollowUpSuggestions onPick={vi.fn()} messages={[userMsg()]} isRunning={false} lastTurnFailed={false} />,
+      <FollowUpSuggestions
+        onPick={vi.fn()}
+        messages={[userMsg()]}
+        isRunning={false}
+        lastTurnFailed={false}
+      />,
     );
     expect(screen.queryByText("Explain that")).toBeNull();
   });
@@ -76,14 +97,24 @@ describe("FollowUpSuggestions", () => {
 
   it("does not render while a run is in flight", () => {
     render(
-      <FollowUpSuggestions onPick={vi.fn()} messages={[userMsg(), assistantMsg()]} isRunning={true} lastTurnFailed={false} />,
+      <FollowUpSuggestions
+        onPick={vi.fn()}
+        messages={[userMsg(), assistantMsg()]}
+        isRunning={true}
+        lastTurnFailed={false}
+      />,
     );
     expect(screen.queryByText("Explain that")).toBeNull();
   });
 
   it("renders follow-up suggestions after a successful assistant message", () => {
     render(
-      <FollowUpSuggestions onPick={vi.fn()} messages={[userMsg(), assistantMsg()]} isRunning={false} lastTurnFailed={false} />,
+      <FollowUpSuggestions
+        onPick={vi.fn()}
+        messages={[userMsg(), assistantMsg()]}
+        isRunning={false}
+        lastTurnFailed={false}
+      />,
     );
     for (const s of FOLLOW_UP_SUGGESTIONS) {
       expect(screen.getByText(s.label)).toBeTruthy();
@@ -93,7 +124,12 @@ describe("FollowUpSuggestions", () => {
   it("calls onPick with the follow-up prompt when a chip is clicked", () => {
     const onPick = vi.fn();
     render(
-      <FollowUpSuggestions onPick={onPick} messages={[userMsg(), assistantMsg()]} isRunning={false} lastTurnFailed={false} />,
+      <FollowUpSuggestions
+        onPick={onPick}
+        messages={[userMsg(), assistantMsg()]}
+        isRunning={false}
+        lastTurnFailed={false}
+      />,
     );
     fireEvent.click(screen.getByText("Explain that"));
     expect(onPick).toHaveBeenCalledWith(FOLLOW_UP_SUGGESTIONS[0]!.prompt);

@@ -64,8 +64,7 @@ export const getTimetableCalendarLink = server.tool(
     if (!timetableId)
       return errorResult("Missing timetableId in calendar response");
     const madeLinkShareable = viewProps?.madeLinkShareable as
-      | boolean
-      | undefined;
+      boolean | undefined;
     const structuredContent: Record<string, unknown> = { timetableId };
     if (typeof madeLinkShareable === "boolean")
       structuredContent.madeLinkShareable = madeLinkShareable;

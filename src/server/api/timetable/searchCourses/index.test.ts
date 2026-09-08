@@ -184,7 +184,10 @@ describe("timetable.searchCourses", () => {
     queryRawMock.mockResolvedValue([statRow]);
     classesFindManyMock.mockResolvedValue([]);
 
-    await caller.timetable.searchCourses({ acadTermId: "t1", query: "ACCT 102" });
+    await caller.timetable.searchCourses({
+      acadTermId: "t1",
+      query: "ACCT 102",
+    });
 
     const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const params = rawCall.slice(1);
@@ -196,7 +199,10 @@ describe("timetable.searchCourses", () => {
     queryRawMock.mockResolvedValue([statRow]);
     classesFindManyMock.mockResolvedValue([]);
 
-    await caller.timetable.searchCourses({ acadTermId: "t1", query: "statistics" });
+    await caller.timetable.searchCourses({
+      acadTermId: "t1",
+      query: "statistics",
+    });
 
     const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const sql = rawCall[0].join("?");
@@ -205,7 +211,9 @@ describe("timetable.searchCourses", () => {
     expect(sql).toContain("word_similarity(c.name");
     expect(sql).toContain("word_similarity(COALESCE(c.description");
     expect(sql).toContain("word_similarity(COALESCE(c.course_area");
-    expect(sql).toContain("to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description");
+    expect(sql).toContain(
+      "to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description",
+    );
     expect(sql).toContain("similarity(c.code");
     expect(sql).toContain("word_similarity(p.name");
   });
@@ -214,7 +222,11 @@ describe("timetable.searchCourses", () => {
     queryRawMock.mockResolvedValue([statRow]);
     classesFindManyMock.mockResolvedValue([]);
 
-    await caller.timetable.searchCourses({ acadTermId: "t1", query: "tech", facultyId: 4 });
+    await caller.timetable.searchCourses({
+      acadTermId: "t1",
+      query: "tech",
+      facultyId: 4,
+    });
 
     const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const sql = rawCall[0].join("?");
@@ -258,7 +270,11 @@ describe("timetable.searchCourses", () => {
     queryRawMock.mockResolvedValue([statRow]);
     classesFindManyMock.mockResolvedValue([]);
 
-    await caller.timetable.searchCourses({ acadTermId: "t1", query: "Database", facultyId: 4 });
+    await caller.timetable.searchCourses({
+      acadTermId: "t1",
+      query: "Database",
+      facultyId: 4,
+    });
 
     const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const sql = rawCall[0].join("?");
@@ -331,10 +347,14 @@ describe("timetable.searchCourses", () => {
       .split("\n")
       .filter(
         (l) =>
-          l.includes("day_of_week") || l.includes("start_time >=") || l.includes("end_time <="),
+          l.includes("day_of_week") ||
+          l.includes("start_time >=") ||
+          l.includes("end_time <="),
       )) {
       expect(line).toMatch(/\?::text IS NULL OR/);
-      expect(line).toMatch(/(day_of_week = \?::text|start_time >= \?::text|end_time <= \?::text)/);
+      expect(line).toMatch(
+        /(day_of_week = \?::text|start_time >= \?::text|end_time <= \?::text)/,
+      );
     }
   });
 
@@ -351,7 +371,9 @@ describe("timetable.searchCourses", () => {
       .split("\n")
       .filter(
         (l) =>
-          l.includes("day_of_week") || l.includes("start_time >=") || l.includes("end_time <="),
+          l.includes("day_of_week") ||
+          l.includes("start_time >=") ||
+          l.includes("end_time <="),
       );
     expect(timingLines).toHaveLength(3);
     for (const line of timingLines) {

@@ -15,7 +15,10 @@ import { getSupabaseAccessToken } from "./supabase-access-token";
 import { authConfig } from "./config";
 
 function cookieStore(entries: Record<string, string>) {
-  return { get: (name: string) => (entries[name] ? { value: entries[name] } : undefined) };
+  return {
+    get: (name: string) =>
+      entries[name] ? { value: entries[name] } : undefined,
+  };
 }
 
 describe("getSupabaseAccessToken", () => {
@@ -31,12 +34,20 @@ describe("getSupabaseAccessToken", () => {
   });
 
   it("decodes the plain authjs cookie and returns the token from the JWT", async () => {
-    mockCookies.mockResolvedValue(cookieStore({ "authjs.session-token": "raw-jwe" }));
-    mockDecode.mockResolvedValue({ sub: "u1", supabaseAccessToken: "supa-tok" });
+    mockCookies.mockResolvedValue(
+      cookieStore({ "authjs.session-token": "raw-jwe" }),
+    );
+    mockDecode.mockResolvedValue({
+      sub: "u1",
+      supabaseAccessToken: "supa-tok",
+    });
     await expect(getSupabaseAccessToken()).resolves.toBe("supa-tok");
     // The salt must be the cookie name - Auth.js derives the JWE key from it.
     expect(mockDecode).toHaveBeenCalledWith(
-      expect.objectContaining({ token: "raw-jwe", salt: "authjs.session-token" }),
+      expect.objectContaining({
+        token: "raw-jwe",
+        salt: "authjs.session-token",
+      }),
     );
   });
 
@@ -47,15 +58,23 @@ describe("getSupabaseAccessToken", () => {
         "authjs.session-token": "raw-plain",
       }),
     );
-    mockDecode.mockResolvedValue({ sub: "u1", supabaseAccessToken: "supa-tok" });
+    mockDecode.mockResolvedValue({
+      sub: "u1",
+      supabaseAccessToken: "supa-tok",
+    });
     await expect(getSupabaseAccessToken()).resolves.toBe("supa-tok");
     expect(mockDecode).toHaveBeenCalledWith(
-      expect.objectContaining({ token: "raw-secure", salt: "__Secure-authjs.session-token" }),
+      expect.objectContaining({
+        token: "raw-secure",
+        salt: "__Secure-authjs.session-token",
+      }),
     );
   });
 
   it("returns null when the JWT carries no supabaseAccessToken (e.g. Google sign-in)", async () => {
-    mockCookies.mockResolvedValue(cookieStore({ "authjs.session-token": "raw-jwe" }));
+    mockCookies.mockResolvedValue(
+      cookieStore({ "authjs.session-token": "raw-jwe" }),
+    );
     mockDecode.mockResolvedValue({ sub: "u1" });
     await expect(getSupabaseAccessToken()).resolves.toBeNull();
   });
@@ -77,7 +96,9 @@ describe("authConfig session/JWT token handling (regression)", () => {
     const params = {
       session: { user: { ...user }, expires: "2099-01-01" },
       token: { sub: "u1", user, supabaseAccessToken: "supa-tok" },
-    } as unknown as Parameters<NonNullable<typeof authConfig.callbacks.session>>[0];
+    } as unknown as Parameters<
+      NonNullable<typeof authConfig.callbacks.session>
+    >[0];
     const session = authConfig.callbacks.session(params);
     // The session object is served verbatim by /api/auth/session to browser JS.
     expect(session.user).not.toHaveProperty("supabaseAccessToken");

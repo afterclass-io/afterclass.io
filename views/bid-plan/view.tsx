@@ -43,7 +43,9 @@ function statusStyle(status: string, dark: boolean): React.CSSProperties {
   }
   // DROPPED / CANCELLED / unknown — muted
   return {
-    background: dark ? "oklch(0.274 0.006 286.033)" : "oklch(0.967 0.001 286.375)",
+    background: dark
+      ? "oklch(0.274 0.006 286.033)"
+      : "oklch(0.967 0.001 286.375)",
     color: c.mutedFg,
     border: `1px solid ${c.border}`,
   };
@@ -97,7 +99,14 @@ const BidPlanView: React.FC = () => {
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          flexWrap: "wrap",
+        }}
+      >
         <span style={{ fontSize: 14, fontWeight: 600 }}>Your bid plan</span>
         <span
           style={{
@@ -105,8 +114,12 @@ const BidPlanView: React.FC = () => {
             fontWeight: 600,
             padding: "2px 8px",
             borderRadius: 9999,
-            background: dark ? "oklch(0.488 0.243 264.376 / 15%)" : "oklch(0.546 0.245 262.881 / 12%)",
-            color: dark ? "oklch(0.623 0.214 259.815)" : "oklch(0.488 0.243 264.376)",
+            background: dark
+              ? "oklch(0.488 0.243 264.376 / 15%)"
+              : "oklch(0.546 0.245 262.881 / 12%)",
+            color: dark
+              ? "oklch(0.623 0.214 259.815)"
+              : "oklch(0.488 0.243 264.376)",
             border: `1px solid ${c.border}`,
           }}
         >
@@ -124,12 +137,18 @@ const BidPlanView: React.FC = () => {
           padding: "8px 10px",
           borderRadius: 8,
           border: `1px solid ${c.border}`,
-          background: dark ? "oklch(0.274 0.006 286.033)" : "oklch(0.967 0.001 286.375)",
+          background: dark
+            ? "oklch(0.274 0.006 286.033)"
+            : "oklch(0.967 0.001 286.375)",
         }}
       >
-        <span style={{ fontSize: 12, fontWeight: 500, color: c.mutedFg }}>Budget balance</span>
+        <span style={{ fontSize: 12, fontWeight: 500, color: c.mutedFg }}>
+          Budget balance
+        </span>
         {budget ? (
-          <span style={{ fontSize: 14, fontWeight: 600 }}>${budget.balance}</span>
+          <span style={{ fontSize: 14, fontWeight: 600 }}>
+            ${budget.balance}
+          </span>
         ) : (
           <span style={{ fontSize: 12, color: c.mutedFg }}>No budget set</span>
         )}
@@ -137,11 +156,26 @@ const BidPlanView: React.FC = () => {
 
       {/* Bids */}
       {bids.length === 0 ? (
-        <div style={{ marginTop: 12, fontSize: 13, color: c.mutedFg, textAlign: "center", padding: "16px 0" }}>
+        <div
+          style={{
+            marginTop: 12,
+            fontSize: 13,
+            color: c.mutedFg,
+            textAlign: "center",
+            padding: "16px 0",
+          }}
+        >
           No bids planned for this term yet.
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            marginTop: 12,
+          }}
+        >
           {bids.map((bid) => (
             <div
               key={bid.id}
@@ -156,7 +190,14 @@ const BidPlanView: React.FC = () => {
               }}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    flexWrap: "wrap",
+                  }}
+                >
                   <span
                     style={{
                       fontFamily: "var(--font-geist-mono, ui-monospace)",
@@ -166,7 +207,9 @@ const BidPlanView: React.FC = () => {
                   >
                     {bid.courseCode}
                   </span>
-                  <span style={{ fontSize: 11, color: c.mutedFg }}>{bid.section}</span>
+                  <span style={{ fontSize: 11, color: c.mutedFg }}>
+                    {bid.section}
+                  </span>
                   <span
                     style={{
                       fontSize: 11,
@@ -194,7 +237,11 @@ const BidPlanView: React.FC = () => {
                   {` · Round ${bid.round} W${bid.window}`}
                 </div>
               </div>
-              <span style={{ fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}>${bid.bidAmount}</span>
+              <span
+                style={{ fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}
+              >
+                ${bid.bidAmount}
+              </span>
             </div>
           ))}
         </div>

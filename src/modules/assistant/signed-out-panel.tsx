@@ -18,7 +18,10 @@ export function SignedOutPanel() {
       </div>
       <div className="flex flex-wrap items-center justify-center gap-2">
         {WELCOME_SUGGESTIONS.map((s) => (
-          <span key={s.prompt} className="rounded-full border px-3.5 py-1.5 text-sm opacity-70">
+          <span
+            key={s.prompt}
+            className="rounded-full border px-3.5 py-1.5 text-sm opacity-70"
+          >
             {s.label}
           </span>
         ))}
@@ -32,14 +35,15 @@ export function SignedOutPanel() {
             // storage unavailable - non-fatal
           }
         }}
-        className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
+        className="bg-primary text-primary-foreground inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold"
         data-umami-event="assistant-login-cta"
       >
         <LogInIcon className="size-4" />
         Log in to chat
       </a>
       <p className="text-muted-foreground max-w-56 text-xs">
-        Free quota is 50 messages/month. Log in once - we&apos;ll bring you right back here.
+        Free quota is 50 messages/month. Log in once - we&apos;ll bring you
+        right back here.
       </p>
     </div>
   );

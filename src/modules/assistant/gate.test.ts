@@ -3,7 +3,9 @@ import { parseGateError } from "./gate";
 
 describe("parseGateError", () => {
   it("parses quota from an AI SDK APIError message", () => {
-    expect(parseGateError(new Error('[POST /api/chat] 403: {"gate":"quota"}'))).toBe("quota");
+    expect(
+      parseGateError(new Error('[POST /api/chat] 403: {"gate":"quota"}')),
+    ).toBe("quota");
   });
   it("parses spend from a bare JSON body", () => {
     expect(parseGateError(new Error('{"gate":"spend"}'))).toBe("spend");

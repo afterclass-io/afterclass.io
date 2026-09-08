@@ -7,7 +7,11 @@ import { useCtaFeedback, useKeyedCtaFeedback } from "./use-cta-feedback";
 function SingleHarness() {
   const { feedback, showFeedback } = useCtaFeedback(50);
   const label =
-    feedback === "saved" ? "Saved ✓" : feedback === "error" ? "Failed" : "Do it";
+    feedback === "saved"
+      ? "Saved ✓"
+      : feedback === "error"
+        ? "Failed"
+        : "Do it";
   return (
     <button
       type="button"

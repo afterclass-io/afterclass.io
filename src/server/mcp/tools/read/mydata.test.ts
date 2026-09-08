@@ -54,17 +54,15 @@ describe("my-data read tools", () => {
   });
 
   it("my-timetables strips shareToken and icalToken bearer tokens from the output", async () => {
-    const fn = vi
-      .fn()
-      .mockResolvedValue([
-        {
-          id: "tt1",
-          name: "A",
-          shareToken: "tok",
-          icalToken: "ical",
-          visibility: "UNLISTED",
-        },
-      ]);
+    const fn = vi.fn().mockResolvedValue([
+      {
+        id: "tt1",
+        name: "A",
+        shareToken: "tok",
+        icalToken: "ical",
+        visibility: "UNLISTED",
+      },
+    ]);
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({ timetableListMine: fn }),

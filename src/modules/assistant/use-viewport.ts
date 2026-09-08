@@ -10,7 +10,8 @@ export function useViewport(): Size {
       : { width: window.innerWidth, height: window.innerHeight },
   );
   useEffect(() => {
-    const onResize = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
+    const onResize = () =>
+      setViewport({ width: window.innerWidth, height: window.innerHeight });
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);

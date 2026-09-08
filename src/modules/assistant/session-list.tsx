@@ -1,7 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { MessageSquareIcon, PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
+import {
+  MessageSquareIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+} from "lucide-react";
 
 import { useChatStore } from "./chat-store";
 import { cn } from "@/common/functions/index";
@@ -56,10 +61,14 @@ export function SessionList({
     setConfirmingId(null);
   };
 
-  const confirmingSession = sessions?.find((s) => s.id === confirmingId) ?? null;
+  const confirmingSession =
+    sessions?.find((s) => s.id === confirmingId) ?? null;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-2" data-test="session-list">
+    <div
+      className="flex min-h-0 flex-1 flex-col gap-2"
+      data-test="session-list"
+    >
       <Button
         type="button"
         variant="default"
@@ -72,9 +81,13 @@ export function SessionList({
         New chat
       </Button>
       <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
-        {!hydrated && <p className="text-muted-foreground px-2 py-1 text-xs">Loading...</p>}
+        {!hydrated && (
+          <p className="text-muted-foreground px-2 py-1 text-xs">Loading...</p>
+        )}
         {hydrated && sessions.length === 0 && (
-          <p className="text-muted-foreground px-2 py-1 text-xs">No sessions yet - start a new chat.</p>
+          <p className="text-muted-foreground px-2 py-1 text-xs">
+            No sessions yet - start a new chat.
+          </p>
         )}
         {sessions.map((s) => (
           <div
@@ -106,7 +119,7 @@ export function SessionList({
                     }
                   }}
                   aria-label="Session title"
-                  className="min-w-0 flex-1 rounded border bg-background px-1.5 py-0.5 text-sm outline-none"
+                  className="bg-background min-w-0 flex-1 rounded border px-1.5 py-0.5 text-sm outline-none"
                 />
               </span>
             ) : (
@@ -114,7 +127,7 @@ export function SessionList({
                 type="button"
                 onClick={() => onSelect(s.id)}
                 aria-current={s.id === activeSessionId ? "true" : undefined}
-                className="flex min-w-0 flex-1 cursor-pointer items-center gap-1 rounded text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                className="focus-visible:ring-ring/40 flex min-w-0 flex-1 cursor-pointer items-center gap-1 rounded text-left outline-none focus-visible:ring-2"
               >
                 <MessageSquareIcon className="size-3.5 shrink-0" />
                 <span className="min-w-0 flex-1 truncate">{s.title}</span>
@@ -125,7 +138,7 @@ export function SessionList({
                 <button
                   type="button"
                   aria-label={`Rename ${s.title}`}
-                  className="opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+                  className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
                   onClick={() => {
                     escapedRef.current = false;
                     setEditingId(s.id);
@@ -137,7 +150,7 @@ export function SessionList({
                 <button
                   type="button"
                   aria-label={`Delete ${s.title}`}
-                  className="opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+                  className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
                   onClick={() => requestDelete(s.id)}
                 >
                   <TrashIcon className="size-3.5" />
@@ -161,7 +174,8 @@ export function SessionList({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete chat?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete &quot;{confirmingSession?.title}&quot;. This action cannot be undone.
+              This will permanently delete &quot;{confirmingSession?.title}
+              &quot;. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
