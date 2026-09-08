@@ -73,12 +73,12 @@ export const planSemesterTool: McpTool<typeof planSemesterSchema> = {
   run: async ({ caller }, input) => {
     try {
       // Students say "SCIS", not numeric ids: resolve acronyms via the
-      // faculties table (numbers pass through untouched). resolveFacultyId
-      // handles both shapes, so every input goes through it (aligns with
-      // search-courses, which resolves unconditionally).
+      // faculties list procedure (numbers pass through untouched).
+      // resolveFacultyId handles both shapes, so every input goes through it
+      // (aligns with search-courses, which resolves unconditionally).
       let facultyId = input.facultyId;
       if (facultyId !== undefined) {
-        const resolved = await resolveFacultyId(facultyId);
+        const resolved = await resolveFacultyId(caller, facultyId);
         if (!resolved.ok) return errText(resolved.errText);
         facultyId = resolved.value;
       }

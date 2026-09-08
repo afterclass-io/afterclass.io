@@ -1,6 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Mock } from "vitest";
-import type { ToolContext } from "../../types";
+import { describe, expect, it, vi } from "vitest";
+import type { RouterCaller, ToolContext } from "../../types";
 import type { SessionUser } from "@/server/auth/config";
 import { listFacultiesTool, resolveFacultyId } from "./faculties";
 
@@ -19,16 +18,8 @@ const fakeUser: SessionUser = {
   updatedAt: new Date(),
 };
 
-// list-faculties + resolveFacultyId read the faculties table directly (same
-// pattern as get-me in account.ts), so mock the store module with vi.hoisted
-// fns the same way account.test.ts does.
-const { facultiesFindMany } = vi.hoisted(() => ({
-  facultiesFindMany: vi.fn() as Mock,
-}));
-
-vi.mock("@/server/db", () => ({
-  db: { faculties: { findMany: facultiesFindMany } },
-}));
+// list-faculties + resolveFacultyId read through the RouterCaller seam
+// (caller.faculties.list), so tests stub the caller — no DB access.
 
 const ROWS = [
   { id: 1, name: "Lee Kong Chian School of Business", acronym: "LKCSB" },
@@ -42,15 +33,21 @@ const ROWS = [
   { id: 9, name: "Center for English Communication", acronym: "CEC" },
 ];
 
-function makeCaller() {
-  return {} as unknown as ToolContext["caller"];
+function makeCaller(listImpl?: () => unknown) {
+  return {
+    faculties: { list: listImpl ?? (async () => ROWS) },
+  } as unknown as ToolContext["caller"];
+}
+
+function stubCaller() {
+  const list = vi.fn().mockResolvedValue(ROWS);
+  const caller = {
+    faculties: { list },
+  } as unknown as RouterCaller;
+  return { caller, list };
 }
 
 describe("list-faculties", () => {
-  beforeEach(() => {
-    facultiesFindMany.mockReset();
-    facultiesFindMany.mockResolvedValue(ROWS);
-  });
 
   it("is named list-faculties and readOnly", () => {
     expect(listFacultiesTool.name).toBe("list-faculties");
@@ -77,40 +74,71 @@ describe("list-faculties", () => {
     }
   });
 
-  it("returns errText when the query rejects", async () => {
-    facultiesFindMany.mockRejectedValue(new Error("boom"));
-    const ctx: ToolContext = { user: fakeUser, caller: makeCaller() };
+  it("returns errText when the procedure rejects", async () => {
+    const failing = vi.fn().mockRejectedValue(new Error("boom"));
+    const ctx: ToolContext = { user: fakeUser, caller: makeCaller(failing) };
     const result = await listFacultiesTool.run(ctx, {});
     expect(result.isError).toBe(true);
   });
 });
 
 describe("resolveFacultyId", () => {
-  beforeEach(() => {
-    facultiesFindMany.mockReset();
-    facultiesFindMany.mockResolvedValue(ROWS);
+  it("passes numeric ids through without calling the procedure", async () => {
+    const { caller, list } = stubCaller();
+    expect(await resolveFacultyId(caller, 4)).toEqual({ ok: true, value: 4 });
+    expect(list).not.toHaveBeenCalled();
   });
 
-  it("passes numeric ids through without a db lookup", async () => {
-    expect(await resolveFacultyId(4)).toEqual({ ok: true, value: 4 });
-    expect(facultiesFindMany).not.toHaveBeenCalled();
+  it("passes numeric strings through without calling the procedure", async () => {
+    const { caller, list } = stubCaller();
+    expect(await resolveFacultyId(caller, "4")).toEqual({
+      ok: true,
+      value: 4,
+    });
+    expect(list).not.toHaveBeenCalled();
   });
 
   it("resolves SCIS to 4", async () => {
-    expect(await resolveFacultyId("SCIS")).toEqual({ ok: true, value: 4 });
+    const { caller } = stubCaller();
+    expect(await resolveFacultyId(caller, "SCIS")).toEqual({
+      ok: true,
+      value: 4,
+    });
   });
 
   it("resolves acronyms case-insensitively", async () => {
-    expect(await resolveFacultyId("scis")).toEqual({ ok: true, value: 4 });
-    expect(await resolveFacultyId("Lkcsb")).toEqual({ ok: true, value: 1 });
+    const { caller } = stubCaller();
+    expect(await resolveFacultyId(caller, "scis")).toEqual({
+      ok: true,
+      value: 4,
+    });
+    expect(await resolveFacultyId(caller, "Lkcsb")).toEqual({
+      ok: true,
+      value: 1,
+    });
   });
 
   it("returns a friendly error naming list-faculties for unknown acronyms", async () => {
-    const result = await resolveFacultyId("NOPE");
+    const { caller } = stubCaller();
+    const result = await resolveFacultyId(caller, "NOPE");
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.errText).toContain("NOPE");
       expect(result.errText).toContain("list-faculties");
     }
+  });
+
+  it("resolveFacultyId resolves SCIS via caller, not db", async () => {
+    const caller = {
+      faculties: { list: async () => [{ id: 4, acronym: "SCIS" }] },
+    };
+    const { resolveFacultyId } = await import("./faculties");
+    expect(await resolveFacultyId(caller as never, "SCIS")).toEqual({
+      ok: true,
+      value: 4,
+    });
+    expect(await resolveFacultyId(caller as never, "nope")).toMatchObject({
+      ok: false,
+    });
   });
 });

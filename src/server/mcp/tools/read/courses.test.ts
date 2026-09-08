@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Mock } from "vitest";
 import type { ToolContext } from "../../types";
 import type { SessionUser } from "@/server/auth/config";
 import { PUBLIC_COURSE_FIELDS } from "@/server/api/courses/constants";
@@ -10,15 +9,8 @@ import {
   searchCoursesTool,
 } from "./courses";
 
-// search-courses resolves string facultyId acronyms via db.faculties (see
-// faculties.ts); mock the store the same way account.test.ts does.
-const { facultiesFindMany } = vi.hoisted(() => ({
-  facultiesFindMany: vi.fn() as Mock,
-}));
-
-vi.mock("@/server/db", () => ({
-  db: { faculties: { findMany: facultiesFindMany } },
-}));
+// search-courses resolves string facultyId acronyms via the RouterCaller
+// seam (caller.faculties.list, see faculties.ts); stub it on the caller.
 
 const FACULTY_ROWS = [
   { id: 1, acronym: "LKCSB" },
@@ -44,6 +36,7 @@ const fakeUser: SessionUser = {
 // so place each mock under the router namespace the tool actually uses.
 function makeCaller(procs: Record<string, unknown>) {
   return {
+    faculties: { list: procs.facultiesList ?? (async () => FACULTY_ROWS) },
     timetable: { searchCourses: procs.searchCourses },
     courses: { getByCourseCode: procs.getByCourseCode },
     classes: { getAll: procs.getAll },
@@ -179,7 +172,6 @@ describe("search-courses", () => {
   });
 
   it("resolves a faculty acronym (SCIS) to its numeric id", async () => {
-    facultiesFindMany.mockResolvedValue(FACULTY_ROWS);
     const fn = vi.fn().mockResolvedValue([]);
     const ctx: ToolContext = {
       user: fakeUser,
@@ -199,7 +191,6 @@ describe("search-courses", () => {
   });
 
   it("resolves acronyms case-insensitively", async () => {
-    facultiesFindMany.mockResolvedValue(FACULTY_ROWS);
     const fn = vi.fn().mockResolvedValue([]);
     const ctx: ToolContext = {
       user: fakeUser,
@@ -218,7 +209,6 @@ describe("search-courses", () => {
   });
 
   it("returns a friendly error for an unknown faculty acronym without calling the procedure", async () => {
-    facultiesFindMany.mockResolvedValue(FACULTY_ROWS);
     const fn = vi.fn().mockResolvedValue([]);
     const ctx: ToolContext = {
       user: fakeUser,

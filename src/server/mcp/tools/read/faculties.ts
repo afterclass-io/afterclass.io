@@ -1,9 +1,14 @@
 import { z } from "zod";
 
-import { db } from "@/server/db";
-
 import type { ResolveResult } from "../../current";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import {
+  errText,
+  errorMessage,
+  jsonText,
+  type McpTool,
+  type RouterCaller,
+  type RouterOutputs,
+} from "../../types";
 
 const listFacultiesSchema = z.object({});
 
@@ -13,36 +18,33 @@ export const listFacultiesTool: McpTool<typeof listFacultiesSchema> = {
     "List all faculties (schools) with id, name, and acronym (e.g. SCIS for the School of Computing and Information Systems). Use this to resolve a faculty name or acronym to its numeric id before calling tools that accept facultyId.",
   inputSchema: listFacultiesSchema,
   readOnly: true,
-  run: async () => {
+  run: async ({ caller }) => {
     try {
-      const rows = await db.faculties.findMany({
-        select: { id: true, name: true, acronym: true },
-        orderBy: { id: "asc" },
-      });
-      return jsonText(rows);
+      return jsonText(await caller.faculties.list());
     } catch (e) {
       return errText(errorMessage(e));
     }
   },
 };
 
+type FacultyRows = RouterOutputs["faculties"]["list"];
+
 /**
  * Resolve a facultyId tool param to its numeric id. Numbers pass through
- * with no db lookup (numeric strings like "4" too); anything else is matched
- * case-insensitively against the faculties table acronym (SCIS -> 4), so the
- * mapping is resolved from the DB and never hardcoded. Mirrors `resolveTermId`
- * in current.ts: `{ ok: true, value }`, or a friendly model-directed error
- * the caller wraps in `errText(...)`.
+ * with no procedure call (numeric strings like "4" too); anything else is
+ * matched case-insensitively against the faculties list-procedure acronym
+ * (SCIS -> 4), so the mapping is resolved from the router and never
+ * hardcoded. Mirrors `resolveTermId` in current.ts: `{ ok: true, value }`,
+ * or a friendly model-directed error the caller wraps in `errText(...)`.
  */
 export async function resolveFacultyId(
+  caller: RouterCaller,
   input: number | string,
 ): Promise<ResolveResult<number>> {
   if (typeof input === "number") return { ok: true, value: input };
   const trimmed = input.trim();
   if (/^\d+$/.test(trimmed)) return { ok: true, value: parseInt(trimmed, 10) };
-  const rows = await db.faculties.findMany({
-    select: { id: true, acronym: true },
-  });
+  const rows: FacultyRows = await caller.faculties.list();
   const match = rows.find(
     (r) => r.acronym.toUpperCase() === trimmed.toUpperCase(),
   );

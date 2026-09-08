@@ -63,10 +63,10 @@ export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
       const term = await resolveTermId(caller, acadTermId);
       if (!term.ok) return errText(term.errText);
       // Students say "SCIS", not numeric ids: resolve acronyms via the
-      // faculties table (numbers pass through untouched).
+      // faculties list procedure (numbers pass through untouched).
       let resolvedFacultyId: number | undefined;
       if (facultyId !== undefined) {
-        const resolved = await resolveFacultyId(facultyId);
+        const resolved = await resolveFacultyId(caller, facultyId);
         if (!resolved.ok) return errText(resolved.errText);
         resolvedFacultyId = resolved.value;
       }

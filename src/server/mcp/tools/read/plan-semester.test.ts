@@ -1,19 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Mock } from "vitest";
 
 import type { ToolContext } from "../../types";
 import type { SessionUser } from "@/server/auth/config";
 import { planSemesterTool } from "./plan-semester";
 
-// plan-semester resolves string facultyId acronyms via db.faculties (see
-// faculties.ts); mock the store the same way account.test.ts does.
-const { facultiesFindMany } = vi.hoisted(() => ({
-  facultiesFindMany: vi.fn() as Mock,
-}));
-
-vi.mock("@/server/db", () => ({
-  db: { faculties: { findMany: facultiesFindMany } },
-}));
+// plan-semester resolves string facultyId acronyms via the RouterCaller seam
+// (caller.faculties.list, see faculties.ts); stub it on the caller.
 
 const FACULTY_ROWS = [
   { id: 1, acronym: "LKCSB" },
@@ -41,6 +33,7 @@ const fakeUser: SessionUser = {
 // `caller.acadTerms.list` for term fan-out.
 function makeCaller(procs: Record<string, unknown>) {
   return {
+    faculties: { list: procs.facultiesList ?? (async () => FACULTY_ROWS) },
     roadmaps: { planSemester: procs.roadmapsPlanSemester },
     timetable: { searchCourses: procs.searchCourses },
     acadTerms: { list: procs.acadTermsList },
@@ -96,7 +89,6 @@ describe("plan-semester", () => {
   });
 
   it("resolves a faculty acronym (SCIS) to its numeric id", async () => {
-    facultiesFindMany.mockResolvedValue(FACULTY_ROWS);
     const fn = vi.fn().mockResolvedValue(plan);
     const ctx: ToolContext = {
       user: fakeUser,
@@ -110,7 +102,6 @@ describe("plan-semester", () => {
   });
 
   it("returns a friendly error for an unknown faculty acronym without calling the procedure", async () => {
-    facultiesFindMany.mockResolvedValue(FACULTY_ROWS);
     const fn = vi.fn().mockResolvedValue(plan);
     const ctx: ToolContext = {
       user: fakeUser,
