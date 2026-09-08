@@ -317,6 +317,8 @@ describe("catalog read tools", () => {
       limit: 10,
     });
     expect(courseResult.isError).toBe(true);
+    // Allowlist (Task 10) only sanitizes driver-shaped text; a bare
+    // "db down" carries no internals and passes through verbatim.
     expect(courseResult.content[0]?.text).toContain("db down");
     const profResult = await getProfessorReviewsTool.run(ctx, {
       slug: "prof-x",

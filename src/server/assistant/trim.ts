@@ -23,22 +23,28 @@ export function applyTokenBudget(
 ): ModelMessage[] {
   const head = Math.max(1, options?.maxHeadMessages ?? 1);
   const tail = Math.max(1, options?.minTailMessages ?? 1);
-  const total = (ms: ModelMessage[]) =>
-    ms.reduce((sum, m) => sum + estimateTokens(m), 0);
-
+  // Incremental totals (Task 10): costs are computed ONCE and kept in lockstep
+  // with the slice, so the loop is O(n) — the old total(trimmed) re-scan on
+  // every iteration was O(n²) on long histories.
+  let costs = messages.map(estimateTokens);
+  let total = costs.reduce((a, b) => a + b, 0);
   let trimmed = messages;
-  if (total(trimmed) <= maxTokens) return trimmed;
+  if (total <= maxTokens) return trimmed;
 
   // Cache-friendly: keep a stable head (prefix) and the recent tail; drop a contiguous
   // MIDDLE block (oldest-first, starting right after the head). Keeps the head as a stable
   // cacheable prefix and preserves the most recent context.
-  while (trimmed.length > head + tail && total(trimmed) > maxTokens) {
+  while (trimmed.length > head + tail && total > maxTokens) {
+    total -= costs[head] ?? 0; // drop oldest middle first
     trimmed = [...trimmed.slice(0, head), ...trimmed.slice(head + 1)];
+    costs = [...costs.slice(0, head), ...costs.slice(head + 1)];
   }
 
   // Extreme fallback: still over budget → drop the head anchor too, but NEVER the last message.
-  while (trimmed.length > 1 && total(trimmed) > maxTokens) {
+  while (trimmed.length > 1 && total > maxTokens) {
+    total -= costs[0] ?? 0;
     trimmed = trimmed.slice(1);
+    costs = costs.slice(1);
   }
 
   return trimmed;

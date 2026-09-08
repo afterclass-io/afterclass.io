@@ -48,6 +48,12 @@ export const dynamic = "force-dynamic";
 // source comment there pointing back here).
 export const maxDuration = 300;
 
+// Input caps (Task 10): a pasted/attack payload is refused BEFORE quota,
+// rate-limit, or LLM state is touched. 200 turns matches the widest legit
+// multi-turn session; 512KB matches the largest tool-result replay.
+const MAX_CHAT_MESSAGES = 200;
+const MAX_CHAT_BODY_BYTES = 512_000;
+
 // Input-token count above which a settlement HARD-BLOCKS the turn's spend
 // recording (usually a huge tool result re-sent across loop steps or a broken
 // cached prefix). Canonical value lives in `src/server/config/chat-config.ts`
@@ -189,14 +195,24 @@ export async function POST(req: Request) {
 
   // Validate the body BEFORE any gates so a malformed request can never burn
   // a quota slot (reserveMessage writes a row) or hit the rate limiter.
+  // Caps (Task 10): at most MAX_CHAT_MESSAGES turns and MAX_CHAT_BODY_BYTES
+  // of body per request — a pasted/attack payload is refused before quota,
+  // rate-limit, or LLM state is touched.
   let messages: UIMessage[];
   let contextSuffix = "";
   try {
+    const rawLen = Number(req.headers.get("content-length") ?? "0");
+    if (rawLen > MAX_CHAT_BODY_BYTES)
+      return new Response("Request too large", { status: 413 });
     const body = (await req.json()) as {
       messages?: unknown;
       pageContext?: unknown;
     };
-    if (!Array.isArray(body.messages))
+    if (
+      !Array.isArray(body.messages) ||
+      body.messages.length === 0 ||
+      body.messages.length > MAX_CHAT_MESSAGES
+    )
       return new Response("Invalid request body", { status: 400 });
     messages = body.messages as UIMessage[];
     // pageContext is untrusted client input: safeParse + ignore-on-failure.

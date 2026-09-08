@@ -61,6 +61,21 @@ describe("applyTokenBudget", () => {
   it("handles empty input", () => {
     expect(applyTokenBudget([], 1000)).toEqual([]);
   });
+
+  it("trims a long history in linear time (no O(n^2) re-scan)", () => {
+    // 400 messages x ~500 tokens each: the old per-iteration total() re-scan
+    // did ~400 full passes; the incremental total does one. Wall-clock guard
+    // with generous headroom (CI-safe: the quadratic version takes >5s here).
+    const msgs = Array.from({ length: 400 }, (_, i) =>
+      msg(`m${i}`, `${i}-`.padEnd(2000, "x")),
+    );
+    const start = Date.now();
+    const out = applyTokenBudget(msgs, 1200);
+    expect(Date.now() - start).toBeLessThan(5000);
+    // Same semantics: head anchor + newest tail survive.
+    expect(out[0]).toBe(msgs[0]);
+    expect(out[out.length - 1]).toBe(msgs[msgs.length - 1]);
+  });
   it("respects custom maxHeadMessages/minTailMessages options", () => {
     const msgs = [0, 1, 2, 3, 4, 5].map((i) =>
       msg(`m${i}`, String(i).repeat(2000)),

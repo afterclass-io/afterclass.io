@@ -333,6 +333,30 @@ describe("POST /api/chat", () => {
     expect(mockReserveMessage).not.toHaveBeenCalled();
   });
 
+  it("400s >200 messages without touching quota", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    const messages = Array.from({ length: 201 }, (_, i) => ({
+      role: "user",
+      content: `m${i}`,
+    }));
+    const res = await POST(buildReq({ messages }));
+    expect(res.status).toBe(400);
+    expect(mockReserveMessage).not.toHaveBeenCalled();
+  });
+
+  it("413s an oversized body without touching quota", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    const res = await POST(
+      new Request("http://localhost/api/chat", {
+        method: "POST",
+        headers: { "content-length": String(600_000) },
+        body: JSON.stringify({ messages: [{ role: "user", content: "hi" }] }),
+      }),
+    );
+    expect(res.status).toBe(413);
+    expect(mockReserveMessage).not.toHaveBeenCalled();
+  });
+
   // -- 200 happy path --
   it("returns 200 on happy path, calls streamText, and onEnd invokes settleUsage", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });

@@ -250,6 +250,8 @@ describe("explore-bid-options", () => {
       professorSlug: undefined,
     });
     expect(result.isError).toBe(true);
+    // Allowlist (Task 10) only sanitizes driver-shaped text; a bare
+    // "db down" carries no internals and passes through verbatim.
     expect(result.content[0]!.text).toContain("db down");
   });
 

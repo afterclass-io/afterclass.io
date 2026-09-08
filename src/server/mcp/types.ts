@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import type { SessionUser } from "@/server/auth/config";
@@ -107,6 +108,24 @@ export const errorMessage = (e: unknown): string => {
       )
     ) {
       return "Could not complete that change — refresh and try again.";
+    }
+    // Error allowlist (Task 10): raw driver text (connection strings, IPs,
+    // file paths, `42Pxx`/500 internals) would leak storage internals to the
+    // model surface. TRPCError (machine-stable codes) already returned above;
+    // Prisma constraint noise is mapped above; TRPC-shaped friendly messages
+    // (procedures throw TRPCError) also pass through. Only escape-hatch
+    // patterns below are sanitized — everything else reaches the model
+    // verbatim so friendly procedure/tool messages keep working.
+    if (
+      /ECONNREFUSED|ENOTFOUND|ETIMEDOUT|connect timed out|connection refused|password authentication|SASL|FATAL:|42P\d\d|relation ".*" does not exist|pgbouncer|Supabase|postgres/i.test(
+        msg,
+      ) ||
+      /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?/.test(msg) ||
+      /\/[a-z0-9_.-]+\/[a-z0-9_.\-/]*\.(ts|js|prisma)/i.test(msg)
+    ) {
+      const id = randomUUID().slice(0, 8); // correlation id in server log only
+      console.error(`[mcp] tool error ${id}:`, e.message);
+      return "Something went wrong — try again.";
     }
     return msg;
   }

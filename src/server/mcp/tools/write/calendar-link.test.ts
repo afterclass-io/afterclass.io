@@ -131,6 +131,9 @@ describe("get-timetable-calendar-link", () => {
       enableLinkSharing: false,
     });
     expect(result.isError).toBe(true);
+    // Allowlist (Task 10) only sanitizes driver-shaped text; a bare "boom"
+    // carries no internals and passes through verbatim.
+    expect(result.content[0]!.text).toContain("boom");
   });
 
   it("does NOT flip visibility when probe fails with a non-private error even if enableLinkSharing=true and confirm:true", async () => {
@@ -151,5 +154,22 @@ describe("get-timetable-calendar-link", () => {
     expect(visFn).not.toHaveBeenCalled();
     expect(result.isError).toBe(true);
     expect(result.content[0]!.text).toContain("boom");
+  });
+
+  it("sanitizes driver-shaped errors end-to-end (ECONNREFUSED + IP)", async () => {
+    const fn = vi
+      .fn()
+      .mockRejectedValue(new Error("connect ECONNREFUSED 10.0.0.1:5432"));
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ getOrCreateIcalToken: fn }),
+    };
+    const result = await getTimetableCalendarLinkTool.run(ctx, {
+      timetableId: "tt1",
+      enableLinkSharing: false,
+    });
+    expect(result.isError).toBe(true);
+    expect(result.content[0]!.text).toMatch(/Something went wrong/);
+    expect(result.content[0]!.text).not.toContain("10.0.0.1");
   });
 });

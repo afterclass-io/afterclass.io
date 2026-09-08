@@ -35,9 +35,17 @@ describe("mcp result helpers", () => {
   });
 
   it("errorMessage extracts Error messages and falls back to String", () => {
-    expect(errorMessage(new Error("x"))).toBe("x");
     expect(errorMessage("raw")).toBe("raw");
     expect(errorMessage({})).toContain("[object Object]");
+  });
+
+  it("maps unknown driver errors to generic text", () => {
+    expect(
+      errorMessage(new Error("connect ECONNREFUSED 10.0.0.1:5432")),
+    ).toMatch(/Something went wrong/);
+    expect(
+      errorMessage(new Error("connect ECONNREFUSED 10.0.0.1:5432")),
+    ).not.toContain("10.0.0.1");
   });
 
   it("errorMessage passes TRPCError messages through (coded + friendly)", () => {

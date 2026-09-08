@@ -432,6 +432,8 @@ describe("bid-estimate", () => {
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await bidEstimateTool.run(ctx, { courseCode: "COR-IS1702" });
     expect(res.isError).toBe(true);
+    // Allowlist (Task 10) only sanitizes driver-shaped text; a bare
+    // "db down" carries no internals and passes through verbatim.
     expect(res.content[0]!.text).toContain("db down");
   });
 
