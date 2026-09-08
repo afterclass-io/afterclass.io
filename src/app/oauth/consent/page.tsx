@@ -35,7 +35,9 @@ function ConsentForm() {
         const res = await fetch(
           `/api/oauth/consent?authorization_id=${encodeURIComponent(authorizationId)}`,
         );
-        const data = (await res.json()) as (Details | AlreadyConsented) & { error?: string };
+        const data = (await res.json()) as (Details | AlreadyConsented) & {
+          error?: string;
+        };
         if (cancelled) return;
         if (!res.ok || data.error) {
           setError(data.error ?? "Could not load authorization details.");
@@ -51,7 +53,11 @@ function ConsentForm() {
         setDetails(data);
       } catch (e) {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Could not load authorization details.");
+          setError(
+            e instanceof Error
+              ? e.message
+              : "Could not load authorization details.",
+          );
         }
       }
     })();
@@ -76,8 +82,12 @@ function ConsentForm() {
           csrfToken: details?.csrfToken,
         }),
       });
-      const data = (await res.json()) as { redirectUrl?: string; error?: string };
-      if (!res.ok || data.error) throw new Error(data.error ?? "Consent request failed.");
+      const data = (await res.json()) as {
+        redirectUrl?: string;
+        error?: string;
+      };
+      if (!res.ok || data.error)
+        throw new Error(data.error ?? "Consent request failed.");
       // Redirect target is Supabase-validated against the client's registered
       // redirect_uris (never user-supplied beyond the authorization_id flow).
       if (data.redirectUrl) window.location.href = data.redirectUrl;
@@ -93,8 +103,8 @@ function ConsentForm() {
         <h1>Connect an agent</h1>
         {error === "no supabase session" ? (
           <p>
-            Your account isn&apos;t linked to Supabase - sign in with your school email to
-            connect an agent.
+            Your account isn&apos;t linked to Supabase - sign in with your
+            school email to connect an agent.
           </p>
         ) : (
           <p>{error}</p>
@@ -116,8 +126,8 @@ function ConsentForm() {
     <main>
       <h1>Connect an agent</h1>
       <p>
-        <strong>{details.client?.name ?? "This app"}</strong> is requesting access to your
-        account.
+        <strong>{details.client?.name ?? "This app"}</strong> is requesting
+        access to your account.
       </p>
       {(details.client_id ?? details.client?.id) && (
         <p>
@@ -131,8 +141,8 @@ function ConsentForm() {
       )}
       <p>
         <em>
-          Warning: this is an unverified third-party application that will be able to read and
-          modify your timetables, bids, and roadmaps.
+          Warning: this is an unverified third-party application that will be
+          able to read and modify your timetables, bids, and roadmaps.
         </em>
       </p>
       {details.scope && (

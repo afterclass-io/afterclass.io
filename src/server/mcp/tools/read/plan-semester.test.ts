@@ -69,7 +69,10 @@ describe("plan-semester", () => {
       caller: makeCaller({ roadmapsPlanSemester: fn }),
     };
 
-    const res = await planSemesterTool.run(ctx, { targetTermId: "2025-T3A", limit: 10 });
+    const res = await planSemesterTool.run(ctx, {
+      targetTermId: "2025-T3A",
+      limit: 10,
+    });
 
     expect(res.isError).toBeFalsy();
     expect(fn).toHaveBeenCalledWith({ targetTermId: "2025-T3A", limit: 10 });
@@ -95,7 +98,10 @@ describe("plan-semester", () => {
       caller: makeCaller({ roadmapsPlanSemester: fn }),
     };
 
-    const res = await planSemesterTool.run(ctx, { limit: 10, facultyId: "SCIS" });
+    const res = await planSemesterTool.run(ctx, {
+      limit: 10,
+      facultyId: "SCIS",
+    });
 
     expect(res.isError).toBeFalsy();
     expect(fn).toHaveBeenCalledWith({ limit: 10, facultyId: 4 });
@@ -108,7 +114,10 @@ describe("plan-semester", () => {
       caller: makeCaller({ roadmapsPlanSemester: fn }),
     };
 
-    const res = await planSemesterTool.run(ctx, { limit: 10, facultyId: "NOPE" });
+    const res = await planSemesterTool.run(ctx, {
+      limit: 10,
+      facultyId: "NOPE",
+    });
 
     expect(res.isError).toBe(true);
     expect(fn).not.toHaveBeenCalled();
@@ -122,7 +131,10 @@ describe("plan-semester", () => {
       caller: makeCaller({ roadmapsPlanSemester: fn, searchCourses: search }),
     };
 
-    const res = await planSemesterTool.run(ctx, { limit: 10, goal: "data engineering" });
+    const res = await planSemesterTool.run(ctx, {
+      limit: 10,
+      goal: "data engineering",
+    });
 
     expect(res.isError).toBeFalsy();
     // goal is a tool-layer param: stripped before the procedure call.
@@ -134,23 +146,35 @@ describe("plan-semester", () => {
   it("falls back to catalog search with reason when candidates are empty and goal is present", async () => {
     const empty = { ...plan, candidates: [] };
     const fn = vi.fn().mockResolvedValue(empty);
-    const search = vi.fn().mockResolvedValue([
-      { id: "c9", code: "IS424", name: "Data Engineering", creditUnits: 1 },
-    ]);
+    const search = vi
+      .fn()
+      .mockResolvedValue([
+        { id: "c9", code: "IS424", name: "Data Engineering", creditUnits: 1 },
+      ]);
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({ roadmapsPlanSemester: fn, searchCourses: search }),
     };
 
-    const res = await planSemesterTool.run(ctx, { limit: 10, goal: "data engineering" });
+    const res = await planSemesterTool.run(ctx, {
+      limit: 10,
+      goal: "data engineering",
+    });
 
     expect(res.isError).toBeFalsy();
     expect(search).toHaveBeenCalledWith(
-      expect.objectContaining({ query: "data engineering", acadTermId: "2025-T3A" }),
+      expect.objectContaining({
+        query: "data engineering",
+        acadTermId: "2025-T3A",
+      }),
     );
     const parsed = JSON.parse(res.content[0]!.text) as {
       reason: string;
-      candidates: Array<{ courseId: string; code: string; offeredIn: string[] }>;
+      candidates: Array<{
+        courseId: string;
+        code: string;
+        offeredIn: string[];
+      }>;
     };
     expect(parsed.reason).toBe("fallback-catalog");
     expect(parsed.candidates).toHaveLength(1);
@@ -201,15 +225,16 @@ describe("plan-semester", () => {
       }),
     };
 
-    const res = await planSemesterTool.run(ctx, { limit: 10, goal: "data engineering" });
+    const res = await planSemesterTool.run(ctx, {
+      limit: 10,
+      goal: "data engineering",
+    });
 
     expect(res.isError).toBeFalsy();
     expect(search).toHaveBeenCalledTimes(3);
-    expect(search.mock.calls.map((c) => (c[0] as { acadTermId: string }).acadTermId)).toEqual([
-      "2025-T3A",
-      "2025-T3B",
-      "2026-T1",
-    ]);
+    expect(
+      search.mock.calls.map((c) => (c[0] as { acadTermId: string }).acadTermId),
+    ).toEqual(["2025-T3A", "2025-T3B", "2026-T1"]);
     const parsed = JSON.parse(res.content[0]!.text) as {
       reason: string;
       candidates: Array<{ courseId: string; offeredIn: string[] }>;

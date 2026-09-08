@@ -3,7 +3,7 @@ import { appendAuditLog } from "./audit-log";
 
 describe("appendAuditLog", () => {
   it("logs a single-line JSON record scrubbed of bearer tokens", () => {
-    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const log = vi.spyOn(console, "log").mockImplementation(vi.fn());
     try {
       appendAuditLog({
         userId: "u1",
@@ -23,7 +23,7 @@ describe("appendAuditLog", () => {
   });
 
   it("never throws on unserializable input", () => {
-    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const log = vi.spyOn(console, "log").mockImplementation(vi.fn());
     try {
       const circular: Record<string, unknown> = {};
       circular.self = circular;

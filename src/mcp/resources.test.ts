@@ -80,16 +80,14 @@ describe("registerResources", () => {
   });
 
   it("exposes currentTermId alongside terms, matching the list-acad-terms envelope", async () => {
-    const list = vi
-      .fn()
-      .mockResolvedValue([
-        {
-          id: "t1",
-          label: "AY2026/27 T1",
-          startDt: new Date("2026-08-01"),
-          endDt: new Date("2026-11-30"),
-        },
-      ]) as Mock;
+    const list = vi.fn().mockResolvedValue([
+      {
+        id: "t1",
+        label: "AY2026/27 T1",
+        startDt: new Date("2026-08-01"),
+        endDt: new Date("2026-11-30"),
+      },
+    ]) as Mock;
     const current = vi.fn().mockResolvedValue({ id: "t1" }) as Mock;
     const resource = vi.fn();
     registerResources({ resource } as never, { acadTerms: { list, current } });
@@ -183,6 +181,7 @@ describe("registerResources", () => {
 
     await expect(
       handler(new URL("catalog://acad-terms"), { auth: {} }),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- expect.any(Array) matcher is untyped by @types/jest interop
     ).resolves.toMatchObject({ contents: expect.any(Array) });
   });
 });

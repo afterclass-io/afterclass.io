@@ -149,7 +149,8 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
         results = await caller.bidResults.getBy({ classId: resolvedClassId });
       } else {
         // getByCourseProfessor keys on professorId, so resolve the slug first.
-        if (!professorSlug?.trim()) return errText("professorSlug must not be empty");
+        if (!professorSlug?.trim())
+          return errText("professorSlug must not be empty");
         if (!courseCode?.trim()) return errText("courseCode must not be empty");
         const professor = await caller.professors.getBySlug({
           slug: professorSlug.trim(),

@@ -39,7 +39,7 @@ export const searchCourses = server.tool(
     // the raw catalog content); the bespoke array-tail below (masking, schema
     // guard, chained summary) is unchanged.
     const out = await dispatchToolCall({
-      tool: searchCoursesTool as never,
+      tool: searchCoursesTool,
       params,
       ctx,
       // No budget: the historical bespoke adapter went buildToolContext → run

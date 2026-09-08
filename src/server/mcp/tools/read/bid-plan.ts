@@ -25,7 +25,10 @@ export const myBidPlanTool: McpTool<typeof myBidPlanSchema> = {
       const plan = await buildBidPlan(caller, term.value);
       // Direct viewProps writers (Task 11): no JSON round-trip — the view
       // channel carries the typed plan; the text envelope stays for the model.
-      return { ...jsonText(plan), viewProps: plan as unknown as Record<string, unknown> };
+      return {
+        ...jsonText(plan),
+        viewProps: plan as unknown as Record<string, unknown>,
+      };
     } catch (e) {
       return errText(errorMessage(e));
     }

@@ -127,7 +127,9 @@ function ChatPanelInner({
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
         {aiDegraded && (
-          <p className="px-4 py-2 text-xs text-muted-foreground">AI paused — browsing still works.</p>
+          <p className="text-muted-foreground px-4 py-2 text-xs">
+            AI paused — browsing still works.
+          </p>
         )}
         {!hasMessages ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-4">

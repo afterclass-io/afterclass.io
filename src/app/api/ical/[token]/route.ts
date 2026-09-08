@@ -47,7 +47,7 @@ export async function GET(
   // Fail-closed: checkBudget throws on a misconfigured limit instead of
   // silently 429ing the whole world.
   const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const { icalThrottlePerMinute } = await getChatConfigAsync();
   // Single budget primitive (Task 7): `checkBudget` composes the bucket as
   // `<prefix>:<user.id>`, so prefix "ical" + the raw IP keeps the

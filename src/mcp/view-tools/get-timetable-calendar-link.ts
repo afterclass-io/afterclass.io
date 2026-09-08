@@ -40,7 +40,7 @@ export const getTimetableCalendarLink = server.tool(
     // PRIVATE → UNLISTED); the schema declares `confirm`, so confirm:true
     // survives validation, and the tool's own escalation logic is unchanged.
     const out = await dispatchToolCall({
-      tool: tool as never,
+      tool: tool,
       params,
       ctx,
       policy: {

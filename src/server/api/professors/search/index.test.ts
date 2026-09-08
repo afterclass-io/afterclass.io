@@ -115,8 +115,8 @@ describe("professors.search", () => {
   it("propagates an error when the raw query rejects", async () => {
     queryRawMock.mockRejectedValue(new Error("boom"));
 
-    await expect(
-      caller.professors.search({ query: "Goh" }),
-    ).rejects.toThrow("boom");
+    await expect(caller.professors.search({ query: "Goh" })).rejects.toThrow(
+      "boom",
+    );
   });
 });

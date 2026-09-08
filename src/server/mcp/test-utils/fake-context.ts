@@ -195,44 +195,48 @@ function stubbedRouter(
   // implies `typeof _def !== "object"`, so it could never change the result.)
   const isLiveReflective = (v: unknown): boolean =>
     typeof v === "function" && (v as { _def?: unknown })._def === undefined;
-  return new Proxy({} as Record<string, unknown>, {
-    get: (_target, prop) => {
-      if (typeof prop !== "string") return Reflect.get(source, prop);
-      if (hasOwn(stubs, prop)) return stubs[prop];
-      const v = source[prop];
-      // Reflective-shaped members forward through the printer-safe wrapper
-      // so assertion printers never trip the tRPC path machinery.
-      if (isLiveReflective(v)) return safeReflective(v, prop);
-      return v;
+  return new Proxy(
+    {},
+    {
+      get: (_target, prop) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Reflect.get on a tRPC proxy target forwards live procedure values by design
+        if (typeof prop !== "string") return Reflect.get(source, prop);
+        if (hasOwn(stubs, prop)) return stubs[prop];
+        const v = source[prop];
+        // Reflective-shaped members forward through the printer-safe wrapper
+        // so assertion printers never trip the tRPC path machinery.
+        if (isLiveReflective(v)) return safeReflective(v, prop);
+        return v;
+      },
+      set: (_target, prop, value) => {
+        // Procedure-level post-hoc overrides land on the stubs map. The
+        // reflective members above are get-only: writing them would shadow
+        // the live tRPC machinery with a dead value, so refuse loudly.
+        if (typeof prop !== "string") return false;
+        if (!isLiveReflective(source[prop])) {
+          stubs[prop] = value;
+          return true;
+        }
+        return false;
+      },
+      has: (_target, prop) =>
+        (typeof prop === "string" && hasOwn(stubs, prop)) || prop in source,
+      getOwnPropertyDescriptor: (_target, prop) => {
+        if (typeof prop === "string") {
+          if (hasOwn(stubs, prop))
+            return {
+              configurable: true,
+              enumerable: true,
+              writable: true,
+              value: stubs[prop],
+            };
+          const printer = printerSafeDescriptor(prop);
+          if (printer) return printer;
+        }
+        return Reflect.getOwnPropertyDescriptor(source, prop);
+      },
     },
-    set: (_target, prop, value) => {
-      // Procedure-level post-hoc overrides land on the stubs map. The
-      // reflective members above are get-only: writing them would shadow
-      // the live tRPC machinery with a dead value, so refuse loudly.
-      if (typeof prop !== "string") return false;
-      if (!isLiveReflective(source[prop])) {
-        stubs[prop] = value;
-        return true;
-      }
-      return false;
-    },
-    has: (_target, prop) =>
-      (typeof prop === "string" && hasOwn(stubs, prop)) || prop in source,
-    getOwnPropertyDescriptor: (_target, prop) => {
-      if (typeof prop === "string") {
-        if (hasOwn(stubs, prop))
-          return {
-            configurable: true,
-            enumerable: true,
-            writable: true,
-            value: stubs[prop],
-          };
-        const printer = printerSafeDescriptor(prop);
-        if (printer) return printer;
-      }
-      return Reflect.getOwnPropertyDescriptor(source, prop);
-    },
-  });
+  );
 }
 
 export async function makeFakeToolContext(
@@ -253,10 +257,7 @@ export async function makeFakeToolContext(
     }
     let proxy = proxies.get(ns);
     if (!proxy) {
-      proxy = stubbedRouter(
-        Reflect.get(real.caller as unknown as object, ns),
-        stubs,
-      );
+      proxy = stubbedRouter(Reflect.get(real.caller, ns), stubs);
       proxies.set(ns, proxy);
     }
     return proxy;
@@ -272,12 +273,14 @@ export async function makeFakeToolContext(
   // procedure found on path "name,toString"`.
   const caller = new Proxy(real.caller, {
     get: (target, prop, receiver) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- proxy must forward the live tRPC caller values verbatim (identity preserved)
       if (typeof prop !== "string") return Reflect.get(target, prop, receiver);
       if (prop === "then") {
         // Never thenable: awaiting a ToolContext must resolve the context,
         // not mistake the caller for a promise.
         return undefined;
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- live caller namespace forwarded into the stub-ify branch below
       const realValue = Reflect.get(target, prop, receiver);
       // Every RouterCaller member is a router namespace (procedures live
       // one level down): re-present namespaces as plain-object proxies so
@@ -297,6 +300,7 @@ export async function makeFakeToolContext(
         stubbedNamespaces.add(prop);
         return forNamespace(prop);
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- live scalar forwarded verbatim (see Reflect.get disable above)
       return realValue;
     },
     set: (_target, prop, value) => {
@@ -320,5 +324,5 @@ export async function makeFakeToolContext(
       (typeof prop === "string" && stubbedNamespaces.has(prop)) ||
       Reflect.has(target, prop),
   });
-  return { user, caller: caller as unknown as ToolContext["caller"] };
+  return { user, caller: caller };
 }

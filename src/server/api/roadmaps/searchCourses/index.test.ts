@@ -48,7 +48,10 @@ describe("roadmaps.searchCourses", () => {
     const result = await caller.roadmaps.searchCourses({ query: "statistics" });
 
     expect(queryRawMock).toHaveBeenCalledTimes(1);
-    const rawCall = queryRawMock.mock.calls[0] as unknown as [TemplateStringsArray, ...unknown[]];
+    const rawCall = queryRawMock.mock.calls[0] as unknown as [
+      TemplateStringsArray,
+      ...unknown[],
+    ];
     const sqlFragments = rawCall[0] as unknown as string[];
     const params = rawCall.slice(1);
     const sql = sqlFragments.join("?");
@@ -81,8 +84,8 @@ describe("roadmaps.searchCourses", () => {
   it("propagates an error when the raw query rejects", async () => {
     queryRawMock.mockRejectedValue(new Error("boom"));
 
-    await expect(caller.roadmaps.searchCourses({ query: "statistics" })).rejects.toThrow(
-      "boom",
-    );
+    await expect(
+      caller.roadmaps.searchCourses({ query: "statistics" }),
+    ).rejects.toThrow("boom");
   });
 });

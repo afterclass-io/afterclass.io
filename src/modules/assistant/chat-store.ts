@@ -3,7 +3,11 @@
 import { create } from "zustand";
 import { nanoid } from "nanoid";
 import type { UIMessage } from "ai";
-import { capMessages, pruneSessions, titleFromMessages } from "./chat-store-logic";
+import {
+  capMessages,
+  pruneSessions,
+  titleFromMessages,
+} from "./chat-store-logic";
 import { idbDelete, idbGetAll, idbPut } from "./idb";
 
 export type StoredSession = {
@@ -48,9 +52,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   createSession: async () => {
     const id = nanoid();
-    const session: StoredSession = { id, title: "New chat", updatedAt: new Date().toISOString(), messages: [] };
+    const session: StoredSession = {
+      id,
+      title: "New chat",
+      updatedAt: new Date().toISOString(),
+      messages: [],
+    };
     await idbPut(session);
-    set((s) => ({ sessions: pruneSessions([...s.sessions, session]), activeSessionId: id }));
+    set((s) => ({
+      sessions: pruneSessions([...s.sessions, session]),
+      activeSessionId: id,
+    }));
     return id;
   },
 
@@ -61,9 +73,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       existing && existing.title !== "New chat"
         ? existing.title
         : (titleFromMessages(capped) ?? existing?.title ?? "New chat");
-    const session: StoredSession = { id, title, updatedAt: new Date().toISOString(), messages: capped };
+    const session: StoredSession = {
+      id,
+      title,
+      updatedAt: new Date().toISOString(),
+      messages: capped,
+    };
     await idbPut(session);
-    set((s) => ({ sessions: pruneSessions(s.sessions.map((x) => (x.id === id ? session : x))) }));
+    set((s) => ({
+      sessions: pruneSessions(
+        s.sessions.map((x) => (x.id === id ? session : x)),
+      ),
+    }));
   },
 
   renameSession: async (id, title) => {
@@ -71,9 +92,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     if (!clean) return;
     const existing = get().sessions.find((x) => x.id === id);
     if (!existing) return;
-    const session: StoredSession = { ...existing, title: clean, updatedAt: new Date().toISOString() };
+    const session: StoredSession = {
+      ...existing,
+      title: clean,
+      updatedAt: new Date().toISOString(),
+    };
     await idbPut(session);
-    set((s) => ({ sessions: s.sessions.map((x) => (x.id === id ? session : x)) }));
+    set((s) => ({
+      sessions: s.sessions.map((x) => (x.id === id ? session : x)),
+    }));
   },
 
   deleteSession: async (id) => {

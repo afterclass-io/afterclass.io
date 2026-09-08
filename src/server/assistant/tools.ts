@@ -54,7 +54,7 @@ export function buildAssistantTools(
         // `t.run` throws propagate verbatim via
         // `throwBehavior: "propagate"`.
         const out = await dispatchToolCall({
-          tool: t as never,
+          tool: t,
           params: args,
           ctx,
           policy: {
@@ -84,7 +84,7 @@ export function buildAssistantTools(
         // as before.
         if ("error" in out) return out.error;
         if (out.isError)
-          throw new Error(out.content[0]?.text || `${t.name} failed`);
+          throw new Error(out.content[0]?.text ?? `${t.name} failed`);
         return out.content[0]?.text ?? "";
       },
     });

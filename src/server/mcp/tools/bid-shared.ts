@@ -46,8 +46,7 @@ export function rationaleFor(
  * Canonical value lives in `src/server/config/chat-config.ts`
  * (`defaultBeatsPct`); read through the getter. Kept as an exported const
  * (module-scope getter call) so existing imports keep working. */
-export const DEFAULT_BEATS_PERCENTAGE: number =
-  getBidLimits().defaultBeatsPct;
+export const DEFAULT_BEATS_PERCENTAGE: number = getBidLimits().defaultBeatsPct;
 
 type SafetyFactorRow = {
   acadTermId: string;

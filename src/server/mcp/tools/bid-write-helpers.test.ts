@@ -5,7 +5,11 @@ import { buildTermMap } from "./bid-write-helpers";
 describe("buildTermMap", () => {
   it("indexes listMine rows by classId|windowId", () => {
     const mine = [
-      { classId: "c1", bidWindowId: 7, bidWindow: { acadTermId: "AY202627T1" } },
+      {
+        classId: "c1",
+        bidWindowId: 7,
+        bidWindow: { acadTermId: "AY202627T1" },
+      },
       { classId: "c2", bidWindowId: 7, bidWindow: { acadTermId: null } },
     ];
     const m = buildTermMap(mine);

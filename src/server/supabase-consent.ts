@@ -52,22 +52,36 @@ async function userClient(accessToken: string) {
  * - `"already_consented"` - the user already consented; redirect immediately.
  */
 export type ConsentDetailsResult =
-  | { status: "details"; client: { name: string; id?: string }; client_id?: string; scope?: string; redirect_uri: string }
+  | {
+      status: "details";
+      client: { name: string; id?: string };
+      client_id?: string;
+      scope?: string;
+      redirect_uri: string;
+    }
   | { status: "already_consented"; redirectUrl: string };
 
-export async function approveConsent(authorizationId: string, accessToken: string) {
-  const { data, error } = await (await userClient(accessToken)).auth.oauth.approveAuthorization(
-    authorizationId,
-  );
-  if (error || !data?.redirect_url) throw new Error(error?.message ?? "approve failed");
+export async function approveConsent(
+  authorizationId: string,
+  accessToken: string,
+) {
+  const { data, error } = await (
+    await userClient(accessToken)
+  ).auth.oauth.approveAuthorization(authorizationId);
+  if (error || !data?.redirect_url)
+    throw new Error(error?.message ?? "approve failed");
   return { redirectUrl: data.redirect_url };
 }
 
-export async function denyConsent(authorizationId: string, accessToken: string) {
-  const { data, error } = await (await userClient(accessToken)).auth.oauth.denyAuthorization(
-    authorizationId,
-  );
-  if (error || !data?.redirect_url) throw new Error(error?.message ?? "deny failed");
+export async function denyConsent(
+  authorizationId: string,
+  accessToken: string,
+) {
+  const { data, error } = await (
+    await userClient(accessToken)
+  ).auth.oauth.denyAuthorization(authorizationId);
+  if (error || !data?.redirect_url)
+    throw new Error(error?.message ?? "deny failed");
   return { redirectUrl: data.redirect_url };
 }
 
@@ -75,10 +89,11 @@ export async function getConsentDetails(
   authorizationId: string,
   accessToken: string,
 ): Promise<ConsentDetailsResult> {
-  const { data, error } = await (await userClient(accessToken)).auth.oauth.getAuthorizationDetails(
-    authorizationId,
-  );
-  if (error || !data) throw new Error(error?.message ?? "invalid authorization request");
+  const { data, error } = await (
+    await userClient(accessToken)
+  ).auth.oauth.getAuthorizationDetails(authorizationId);
+  if (error || !data)
+    throw new Error(error?.message ?? "invalid authorization request");
   // `data` is either full authorization details (needs consent) or a redirect
   // (user already consented). Surface both as a discriminated result so callers
   // can branch instead of receiving a degenerate details object.
@@ -146,8 +161,12 @@ export function verifyConsentCsrf(
   }
 }
 
-export async function listUserGrants(accessToken: string): Promise<UserGrant[]> {
-  const { data, error } = await (await userClient(accessToken)).auth.oauth.listGrants();
+export async function listUserGrants(
+  accessToken: string,
+): Promise<UserGrant[]> {
+  const { data, error } = await (
+    await userClient(accessToken)
+  ).auth.oauth.listGrants();
   // Consumers must surface failures, not show an empty list.
   if (error) throw new Error(error.message);
   // The grant object nests client info under `client` (no top-level id).
@@ -159,7 +178,12 @@ export async function listUserGrants(accessToken: string): Promise<UserGrant[]> 
   }));
 }
 
-export async function revokeUserGrant(clientId: string, accessToken: string): Promise<void> {
-  const { error } = await (await userClient(accessToken)).auth.oauth.revokeGrant({ clientId });
+export async function revokeUserGrant(
+  clientId: string,
+  accessToken: string,
+): Promise<void> {
+  const { error } = await (
+    await userClient(accessToken)
+  ).auth.oauth.revokeGrant({ clientId });
   if (error) throw new Error(error.message);
 }

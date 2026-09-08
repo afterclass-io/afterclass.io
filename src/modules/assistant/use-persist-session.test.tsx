@@ -12,22 +12,34 @@ vi.mock("./idb", () => ({
 import { useChatStore } from "./chat-store";
 import { usePersistSession } from "./use-persist-session";
 
-const msg = (role: "user" | "assistant", text: string, id: string): UIMessage => ({
+const msg = (
+  role: "user" | "assistant",
+  text: string,
+  id: string,
+): UIMessage => ({
   id,
   role,
   parts: [{ type: "text", text }],
 });
 
 function renderPersist(keepOwnSession: boolean) {
-  type Props = { status: "submitted" | "streaming" | "ready" | "error"; messages: UIMessage[] };
+  type Props = {
+    status: "submitted" | "streaming" | "ready" | "error";
+    messages: UIMessage[];
+  };
   return renderHook<void, Props>(
-    ({ status, messages }) => usePersistSession({ status, messages, keepOwnSession }),
+    ({ status, messages }) =>
+      usePersistSession({ status, messages, keepOwnSession }),
     { initialProps: { status: "ready", messages: [] } },
   );
 }
 
 beforeEach(() => {
-  useChatStore.setState({ hydrated: false, sessions: [], activeSessionId: null });
+  useChatStore.setState({
+    hydrated: false,
+    sessions: [],
+    activeSessionId: null,
+  });
 });
 
 describe("usePersistSession - widget session reuse (Task 4)", () => {
@@ -35,16 +47,29 @@ describe("usePersistSession - widget session reuse (Task 4)", () => {
     const { rerender } = renderPersist(true);
 
     // Run 1: submitted -> ready persists the first thread and creates one session.
-    act(() => rerender({ status: "submitted", messages: [msg("user", "q1", "u1")] }));
-    act(() => rerender({ status: "ready", messages: [msg("user", "q1", "u1"), msg("assistant", "a1", "a1")] }));
-    await waitFor(() => expect(useChatStore.getState().sessions).toHaveLength(1));
+    act(() =>
+      rerender({ status: "submitted", messages: [msg("user", "q1", "u1")] }),
+    );
+    act(() =>
+      rerender({
+        status: "ready",
+        messages: [msg("user", "q1", "u1"), msg("assistant", "a1", "a1")],
+      }),
+    );
+    await waitFor(() =>
+      expect(useChatStore.getState().sessions).toHaveLength(1),
+    );
     const firstId = useChatStore.getState().sessions[0]!.id;
 
     // Run 2: a second run-end on the SAME mount must NOT create a second session.
     act(() =>
       rerender({
         status: "submitted",
-        messages: [msg("user", "q1", "u1"), msg("assistant", "a1", "a1"), msg("user", "q2", "u2")],
+        messages: [
+          msg("user", "q1", "u1"),
+          msg("assistant", "a1", "a1"),
+          msg("user", "q2", "u2"),
+        ],
       }),
     );
     act(() =>
@@ -72,15 +97,31 @@ describe("usePersistSession - widget session reuse (Task 4)", () => {
     useChatStore.setState({
       hydrated: true,
       sessions: [
-        { id: "shared-1", title: "Existing /assistant thread", updatedAt: "2026-01-01T00:00:00.000Z", messages: [sharedThread] },
+        {
+          id: "shared-1",
+          title: "Existing /assistant thread",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+          messages: [sharedThread],
+        },
       ],
       activeSessionId: "shared-1",
     });
 
     const { rerender } = renderPersist(true);
-    act(() => rerender({ status: "submitted", messages: [msg("user", "widget question", "w1")] }));
     act(() =>
-      rerender({ status: "ready", messages: [msg("user", "widget question", "w1"), msg("assistant", "widget answer", "wa1")] }),
+      rerender({
+        status: "submitted",
+        messages: [msg("user", "widget question", "w1")],
+      }),
+    );
+    act(() =>
+      rerender({
+        status: "ready",
+        messages: [
+          msg("user", "widget question", "w1"),
+          msg("assistant", "widget answer", "wa1"),
+        ],
+      }),
     );
 
     await waitFor(() => {
@@ -92,7 +133,9 @@ describe("usePersistSession - widget session reuse (Task 4)", () => {
       expect(s.sessions).toHaveLength(2);
     });
 
-    const widgetSession = useChatStore.getState().sessions.find((x) => x.id !== "shared-1");
+    const widgetSession = useChatStore
+      .getState()
+      .sessions.find((x) => x.id !== "shared-1");
     expect(widgetSession).toBeDefined();
     expect(widgetSession!.messages).toHaveLength(2);
     expect(useChatStore.getState().activeSessionId).toBe(widgetSession!.id);
@@ -102,21 +145,37 @@ describe("usePersistSession - widget session reuse (Task 4)", () => {
     useChatStore.setState({
       hydrated: true,
       sessions: [
-        { id: "shared-1", title: "Thread", updatedAt: "2026-01-01T00:00:00.000Z", messages: [msg("user", "first", "u0")] },
+        {
+          id: "shared-1",
+          title: "Thread",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+          messages: [msg("user", "first", "u0")],
+        },
       ],
       activeSessionId: "shared-1",
     });
 
     const { rerender } = renderPersist(false);
-    act(() => rerender({ status: "submitted", messages: [msg("user", "first", "u0"), msg("user", "second", "u1")] }));
+    act(() =>
+      rerender({
+        status: "submitted",
+        messages: [msg("user", "first", "u0"), msg("user", "second", "u1")],
+      }),
+    );
     act(() =>
       rerender({
         status: "ready",
-        messages: [msg("user", "first", "u0"), msg("user", "second", "u1"), msg("assistant", "answer", "a1")],
+        messages: [
+          msg("user", "first", "u0"),
+          msg("user", "second", "u1"),
+          msg("assistant", "answer", "a1"),
+        ],
       }),
     );
 
-    await waitFor(() => expect(useChatStore.getState().sessions).toHaveLength(1));
+    await waitFor(() =>
+      expect(useChatStore.getState().sessions).toHaveLength(1),
+    );
     const s = useChatStore.getState();
     expect(s.sessions[0]!.id).toBe("shared-1");
     expect(s.sessions[0]!.messages).toHaveLength(3);
@@ -124,9 +183,18 @@ describe("usePersistSession - widget session reuse (Task 4)", () => {
 
   it("widget creates a session on first run-end even when the shared active session is null", async () => {
     const { rerender } = renderPersist(true);
-    act(() => rerender({ status: "submitted", messages: [msg("user", "q", "u1")] }));
-    act(() => rerender({ status: "ready", messages: [msg("user", "q", "u1"), msg("assistant", "a", "a1")] }));
-    await waitFor(() => expect(useChatStore.getState().sessions).toHaveLength(1));
+    act(() =>
+      rerender({ status: "submitted", messages: [msg("user", "q", "u1")] }),
+    );
+    act(() =>
+      rerender({
+        status: "ready",
+        messages: [msg("user", "q", "u1"), msg("assistant", "a", "a1")],
+      }),
+    );
+    await waitFor(() =>
+      expect(useChatStore.getState().sessions).toHaveLength(1),
+    );
     expect(useChatStore.getState().activeSessionId).not.toBeNull();
   });
 
@@ -139,7 +207,9 @@ describe("usePersistSession - widget session reuse (Task 4)", () => {
       // unhandled) and the next run-end must persist.
       vi.mocked(idbPut).mockRejectedValueOnce(new Error("quota exceeded"));
       const { rerender } = renderPersist(true);
-      act(() => rerender({ status: "submitted", messages: [msg("user", "q1", "u1")] }));
+      act(() =>
+        rerender({ status: "submitted", messages: [msg("user", "q1", "u1")] }),
+      );
       act(() =>
         rerender({
           status: "ready",
@@ -155,7 +225,11 @@ describe("usePersistSession - widget session reuse (Task 4)", () => {
       act(() =>
         rerender({
           status: "submitted",
-          messages: [msg("user", "q1", "u1"), msg("assistant", "a1", "a1"), msg("user", "q2", "u2")],
+          messages: [
+            msg("user", "q1", "u1"),
+            msg("assistant", "a1", "a1"),
+            msg("user", "q2", "u2"),
+          ],
         }),
       );
       act(() =>
@@ -170,9 +244,7 @@ describe("usePersistSession - widget session reuse (Task 4)", () => {
         }),
       );
       await waitFor(() =>
-        expect(
-          useChatStore.getState().sessions[0]?.messages,
-        ).toHaveLength(4),
+        expect(useChatStore.getState().sessions[0]?.messages).toHaveLength(4),
       );
     } finally {
       warn.mockRestore();

@@ -44,9 +44,9 @@ export function appendAuditLog(entry: AuditLogEntry): void {
     };
     let line: string;
     try {
-      line = JSON.stringify(record) ?? String(record);
+      line = JSON.stringify(record) ?? "[unserializable]";
     } catch {
-      line = String(record);
+      line = "[unserializable]";
     }
     // intentional: the write-audit record itself — single line for log ingestion
     console.log(`[audit:write] ${line}`);

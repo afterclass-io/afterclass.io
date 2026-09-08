@@ -143,9 +143,7 @@ export function checkDestructiveConfirm(
     >;
     void _dropped;
     return (async () => {
-      const { hashConfirmArgs } = await import(
-        "@/server/mcp/confirm-token"
-      );
+      const { hashConfirmArgs } = await import("@/server/mcp/confirm-token");
       const ok = await opts.verify!(token, {
         userId: opts.userId!,
         tool: toolName,

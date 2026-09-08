@@ -269,7 +269,7 @@ describe("object-shaped view-tool adapters", () => {
   for (const [name] of ADAPTERS) {
     it(`${name}: registers with derived title/annotations, a view, and the shared schemas' outputSchema`, () => {
       const { definition } = registration(name);
-      const title = (name as string)
+      const title = name
         .split("-")
         .map((w) => (w.length > 0 ? w[0]!.toUpperCase() + w.slice(1) : w))
         .join(" ");

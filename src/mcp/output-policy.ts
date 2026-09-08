@@ -20,8 +20,7 @@ import { getToolOutputBudget } from "@/server/config/chat-config";
  * output-policy can never drift apart again. (No import cycle: chat-config
  * imports no MCP modules.)
  */
-export const DEFAULT_MAX_OUTPUT_CHARS: number =
-  getToolOutputBudget().maxChars;
+export const DEFAULT_MAX_OUTPUT_CHARS: number = getToolOutputBudget().maxChars;
 
 export const DEFAULT_TRUNCATION_NOTE: string = getToolOutputBudget().note;
 

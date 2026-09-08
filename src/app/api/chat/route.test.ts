@@ -391,7 +391,7 @@ describe("POST /api/chat", () => {
 
   it("wires onStepFinish and emits a structured per-step usage log", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const logSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
     try {
       const res = await POST(
         buildReq({ messages: [{ role: "user", content: "hi" }] }),
@@ -400,6 +400,7 @@ describe("POST /api/chat", () => {
       // The structured usage log rides onStepFinish (the CHAT_LOG_USAGE=1
       // raw-usage probe inside onEnd stays untouched).
       expect(capturedOnStepFinish).not.toBeNull();
+      // eslint-disable-next-line @typescript-eslint/await-thenable -- onStepFinish harness type is sync; the real hook may return a promise
       await capturedOnStepFinish!({
         usage: { inputTokens: 11, outputTokens: 6 },
       });

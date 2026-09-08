@@ -29,7 +29,7 @@ import { getMyTimetableDetail } from "./view-tools/get-my-timetable-detail";
 // rename breaks loudly (undefined `.name`) instead of silently
 // double-registering. Import from the view-tools/* modules directly —
 // register.ts must NOT import ./index (index.ts imports register.ts).
-export const viewBoundNames: Set<string> = new Set(
+export const viewBoundNames = new Set<string>(
   [
     searchCourses,
     getTimetableCalendarLink,
@@ -64,7 +64,7 @@ export function registerViewlessTools(server: MCPServer): void {
         // policy preserves this path's historical semantics: destructive gate
         // for writes, separate mcp-write:/mcp-read: buckets, raw text envelope.
         const out = await dispatchToolCall({
-          tool: tool as never,
+          tool: tool,
           params,
           ctx,
           policy: {

@@ -5,12 +5,16 @@ let warned = false;
 // NOTE: the `as` cast is load-bearing — `ProcessEnv` is an index-signature
 // type with no declared props, so it fails the weak-type check against the
 // all-optional `LlmEnvLike` without it (tsc TS2559).
-export function isLlmConfigured(e: LlmEnvLike = process.env as LlmEnvLike): boolean {
+export function isLlmConfigured(
+  e: LlmEnvLike = process.env as LlmEnvLike,
+): boolean {
   const ok = typeof e.LLM_API_KEY === "string" && e.LLM_API_KEY.length > 0;
   if (!ok && !warned) {
     warned = true;
     // intentional: loud once so a future maintainer removing the key is warned, not paged
-    console.error("[assistant] LLM_API_KEY missing — chat/MCP-AI disabled, app continues");
+    console.error(
+      "[assistant] LLM_API_KEY missing — chat/MCP-AI disabled, app continues",
+    );
   }
   return ok;
 }

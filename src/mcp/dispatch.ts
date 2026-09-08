@@ -102,18 +102,15 @@ export interface DispatchCatalogError {
 }
 
 export function isDispatchCatalogError(v: unknown): v is DispatchCatalogError {
-  return (
-    !!v &&
-    typeof v === "object" &&
-    (v as { __catalogError?: unknown }).__catalogError === true &&
-    typeof (v as { text?: unknown }).text === "string"
-  );
+  if (!v || typeof v !== "object") return false;
+  const rec = v as Record<string, unknown>;
+  return rec.__catalogError === true && typeof rec.text === "string";
 }
 
 function isToolContext(v: unknown): v is ToolContext {
   if (!v || typeof v !== "object") return false;
   const user = (v as { user?: unknown }).user;
-  return !!user && typeof user === "object" && "id" in (user as object);
+  return !!user && typeof user === "object" && "id" in user;
 }
 
 function isDevBypassActive(devBypassOverride?: boolean): boolean {
@@ -187,11 +184,11 @@ export async function dispatchToolCall(opts: {
     // friendly over-budget text (chat); otherwise the MCP wording applies.
     const chat = await getChatConfig();
     const limit = policy.limit ?? chat.mcpRateLimitPerMinute;
-    const windowMs =
-      policy.windowMs ?? getRateLimitWindowMinutes() * 60_000;
+    const windowMs = policy.windowMs ?? getRateLimitWindowMinutes() * 60_000;
     const { ok, retryAfterSeconds } = await checkBudget(toolCtx, {
       prefix:
-        policy.budgetPrefix ?? (policy.budget === "write" ? "mcp-write" : "mcp-read"),
+        policy.budgetPrefix ??
+        (policy.budget === "write" ? "mcp-write" : "mcp-read"),
       limit,
       windowMs,
       kind: policy.budget,

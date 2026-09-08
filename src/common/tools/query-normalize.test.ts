@@ -46,6 +46,8 @@ describe("normalizeSearchQuery", () => {
 
 describe("caps", () => {
   it("truncates absurd queries", () => {
-    expect(normalizeSearchQuery("a".repeat(5000)).length).toBeLessThanOrEqual(MAX_QUERY_LEN);
+    expect(normalizeSearchQuery("a".repeat(5000)).length).toBeLessThanOrEqual(
+      MAX_QUERY_LEN,
+    );
   });
 });

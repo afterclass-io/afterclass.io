@@ -58,7 +58,10 @@ describe("supabase-consent", () => {
   });
 
   it("throws when approve fails", async () => {
-    approveAuthorization.mockResolvedValue({ data: null, error: { message: "nope" } });
+    approveAuthorization.mockResolvedValue({
+      data: null,
+      error: { message: "nope" },
+    });
     await expect(approveConsent("auth-1", "tok")).rejects.toThrow("nope");
   });
 
@@ -74,7 +77,10 @@ describe("supabase-consent", () => {
   });
 
   it("throws when deny fails", async () => {
-    denyAuthorization.mockResolvedValue({ data: null, error: { message: "denied badly" } });
+    denyAuthorization.mockResolvedValue({
+      data: null,
+      error: { message: "denied badly" },
+    });
     await expect(denyConsent("auth-1", "tok")).rejects.toThrow("denied badly");
   });
 
@@ -84,7 +90,12 @@ describe("supabase-consent", () => {
       error: null,
     });
     await expect(listUserGrants("tok")).resolves.toEqual([
-      { id: "c1", client_id: "c1", client_name: "Client One", scopes: ["email"] },
+      {
+        id: "c1",
+        client_id: "c1",
+        client_name: "Client One",
+        scopes: ["email"],
+      },
     ]);
     expect(listGrants).toHaveBeenCalledWith();
   });
@@ -136,8 +147,13 @@ describe("supabase-consent", () => {
   });
 
   it("throws when fetching consent details fails", async () => {
-    getAuthorizationDetails.mockResolvedValue({ data: null, error: { message: "bad auth" } });
-    await expect(getConsentDetails("auth-1", "tok")).rejects.toThrow("bad auth");
+    getAuthorizationDetails.mockResolvedValue({
+      data: null,
+      error: { message: "bad auth" },
+    });
+    await expect(getConsentDetails("auth-1", "tok")).rejects.toThrow(
+      "bad auth",
+    );
   });
 
   it("issues a CSRF token that verifies for the same session token", () => {

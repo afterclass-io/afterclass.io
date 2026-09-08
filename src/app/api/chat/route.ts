@@ -190,7 +190,8 @@ export async function POST(req: Request) {
   if (!session?.user) return new Response("Unauthorized", { status: 401 });
   // Degraded mode: without an LLM key the app still boots and serves
   // browsing — only chat turns are refused, before any quota/rate-limit state.
-  if (!isLlmConfigured(env)) return new Response("Assistant unavailable", { status: 503 });
+  if (!isLlmConfigured(env))
+    return new Response("Assistant unavailable", { status: 503 });
   const userId = session.user.id;
 
   // Validate the body BEFORE any gates so a malformed request can never burn

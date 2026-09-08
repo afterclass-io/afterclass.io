@@ -4,7 +4,11 @@ import { resolveClassIdByCodeSection } from "../current";
 
 /** Index listMine rows for O(1) term lookup (replaces per-entry full scans). */
 export function buildTermMap(
-  mine: Array<{ classId: string; bidWindowId: number; bidWindow?: { acadTermId?: string | null } | null }>,
+  mine: Array<{
+    classId: string;
+    bidWindowId: number;
+    bidWindow?: { acadTermId?: string | null } | null;
+  }>,
 ): Map<string, string> {
   const m = new Map<string, string>();
   for (const b of mine) {

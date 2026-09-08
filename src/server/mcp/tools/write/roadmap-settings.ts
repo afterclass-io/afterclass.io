@@ -5,12 +5,7 @@ import {
   roadmapViewToViewProps,
 } from "../roadmap-view-shared";
 import { stripSecretsFromValue } from "@/mcp/output-policy";
-import {
-  errText,
-  errorMessage,
-  jsonText,
-  type McpTool,
-} from "../../types";
+import { errText, errorMessage, jsonText, type McpTool } from "../../types";
 
 // Tier 2 (Task 7, budget-only): no confirmField on any schema in this
 // file — confirm:true is not advertised for constructive writes (the

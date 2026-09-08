@@ -48,7 +48,11 @@ function SignedInAssistant({
 
   return (
     <>
-      <AssistantWidget open={open} onOpenChange={onOpenChange} geometry={geometry}>
+      <AssistantWidget
+        open={open}
+        onOpenChange={onOpenChange}
+        geometry={geometry}
+      >
         <ChatPanel
           quota={status.quota}
           remaining={status.remaining}
@@ -109,5 +113,7 @@ export function AssistantProvider() {
     );
   }
 
-  return <SignedInAssistant status={status} open={open} onOpenChange={setOpen} />;
+  return (
+    <SignedInAssistant status={status} open={open} onOpenChange={setOpen} />
+  );
 }

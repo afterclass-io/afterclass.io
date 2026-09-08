@@ -19,7 +19,9 @@ const DEFAULT_TTL_MS = 5 * 60_000;
 
 /** Hash tool args into the short `argHash` a confirm token binds to. */
 export function hashConfirmArgs(args: unknown): string {
-  return createHash("sha256").update(JSON.stringify(args) ?? "").digest("hex");
+  return createHash("sha256")
+    .update(JSON.stringify(args) ?? "")
+    .digest("hex");
 }
 
 /**

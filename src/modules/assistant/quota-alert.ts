@@ -22,7 +22,10 @@ export function getQuotaAlert(
   // always critical regardless of quota.
   // Clamp 0–100 (Task 12): over-quota/negative arithmetic must never
   // render a >100% or negative bar.
-  const pct = Math.min(100, Math.max(0, Math.round((remaining / Math.max(1, quota)) * 100)));
+  const pct = Math.min(
+    100,
+    Math.max(0, Math.round((remaining / Math.max(1, quota)) * 100)),
+  );
   if (remaining <= 0) return { level: "critical", pct: 0, remaining, quota };
   if (remaining <= criticalFloorFor(quota))
     return { level: "critical", pct, remaining, quota };

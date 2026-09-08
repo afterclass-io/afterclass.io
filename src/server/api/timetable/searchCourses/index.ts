@@ -36,7 +36,9 @@ export const searchCourses = publicProcedure
     // have no timings still match, exactly as before. Nulls stand in for
     // omitted filters (Prisma maps null to SQL NULL, unlike undefined).
     const hasTimingFilter =
-      input.day !== undefined || input.startsAfter !== undefined || input.endsBefore !== undefined;
+      input.day !== undefined ||
+      input.startsAfter !== undefined ||
+      input.endsBefore !== undefined;
     const rows = await searchCoursesShared(
       ctx.db,
       buildCourseSearchQuery({

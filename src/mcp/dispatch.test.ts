@@ -57,7 +57,7 @@ describe("dispatchToolCall", () => {
       .mockResolvedValue(undefined);
     const tool = { name: "x", readOnly: true, run: vi.fn() };
     const res = await dispatchToolCall({
-      tool: tool as never,
+      tool: tool,
       params: {},
       ctx: null,
       policy: { confirm: false, budget: "none", shape: "text" },
@@ -79,7 +79,7 @@ describe("dispatchToolCall", () => {
       content: [{ type: "text", text: "should-not-reach" }],
     });
     const res = await dispatchToolCall({
-      tool: { name: "set-bid-status", run } as never,
+      tool: { name: "set-bid-status", run },
       params: {},
       ctx: fakeCtx,
       policy: { confirm: true, budget: "write", shape: "text" },
@@ -92,7 +92,7 @@ describe("dispatchToolCall", () => {
   it("honors budgetPrefix on the budget key", async () => {
     const tool = okTool("ok", "plain-write-tool");
     const res = await dispatchToolCall({
-      tool: tool as never,
+      tool: tool,
       params: {},
       ctx: fakeCtx,
       policy: {
@@ -116,7 +116,7 @@ describe("dispatchToolCall", () => {
       content: [{ type: "text", text: "ok" }],
     });
     const out = await dispatchToolCall({
-      tool: { name: "set-bid-status", run } as never,
+      tool: { name: "set-bid-status", run },
       params: { confirm: true },
       ctx: fakeCtx,
       policy: {
@@ -150,7 +150,7 @@ describe("dispatchToolCall", () => {
       content: [{ type: "text", text: "deleted" }],
     });
     const out = await dispatchToolCall({
-      tool: { name: "remove-timetable", run } as never,
+      tool: { name: "remove-timetable", run },
       params: { ...args, confirmToken: token },
       ctx: fakeCtx,
       policy: {
@@ -181,7 +181,7 @@ describe("dispatchToolCall", () => {
       content: [{ type: "text", text: "should-not-reach" }],
     });
     const out = await dispatchToolCall({
-      tool: { name: "remove-timetable", run } as never,
+      tool: { name: "remove-timetable", run },
       // Tampered args: token binds the original argHash, params carry more.
       params: { ...args, extra: "evil", confirmToken: token },
       ctx: fakeCtx,
@@ -213,7 +213,7 @@ describe("dispatchToolCall", () => {
       content: [{ type: "text", text: "should-not-reach" }],
     });
     const out = await dispatchToolCall({
-      tool: { name: "remove-timetable", run } as never,
+      tool: { name: "remove-timetable", run },
       params: { ...args, confirmToken: token },
       ctx: fakeCtx,
       policy: {
@@ -230,7 +230,7 @@ describe("dispatchToolCall", () => {
   it("truncates oversized text results with the truncation note", async () => {
     const tool = okTool("abcdefghij");
     const res = await dispatchToolCall({
-      tool: tool as never,
+      tool: tool,
       params: {},
       ctx: fakeCtx,
       policy: {
@@ -252,7 +252,7 @@ describe("dispatchToolCall", () => {
       isError: true,
     });
     const res = await dispatchToolCall({
-      tool: { name: "v", run } as never,
+      tool: { name: "v", run },
       params: {},
       ctx: fakeCtx,
       policy: { confirm: false, budget: "none", shape: "view" },
@@ -268,7 +268,7 @@ describe("dispatchToolCall", () => {
     const run = vi.fn().mockRejectedValue(err);
     await expect(
       dispatchToolCall({
-        tool: { name: "v", run } as never,
+        tool: { name: "v", run },
         params: {},
         ctx: fakeCtx,
         policy: {
@@ -284,7 +284,7 @@ describe("dispatchToolCall", () => {
   it("captures thrown runs as Internal-error envelopes by default", async () => {
     const run = vi.fn().mockRejectedValue(new Error("kaboom"));
     const res = await dispatchToolCall({
-      tool: { name: "v", run } as never,
+      tool: { name: "v", run },
       params: {},
       ctx: fakeCtx,
       policy: { confirm: false, budget: "none", shape: "text" },
@@ -304,7 +304,7 @@ describe("dispatchToolCall", () => {
       }),
     );
     const res = await dispatchToolCall({
-      tool: tool as never,
+      tool: tool,
       params: {},
       ctx: fakeCtx,
       policy: { confirm: false, budget: "none", shape: "text" },
@@ -320,7 +320,7 @@ describe("dispatchToolCall", () => {
       isError: true,
     });
     const res = await dispatchToolCall({
-      tool: { name: "v", run } as never,
+      tool: { name: "v", run },
       params: {},
       ctx: fakeCtx,
       policy: { confirm: false, budget: "none", shape: "text" },
@@ -330,7 +330,7 @@ describe("dispatchToolCall", () => {
   });
 
   it("audit-logs successful writes but not reads or failures", async () => {
-    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const log = vi.spyOn(console, "log").mockImplementation(vi.fn());
     try {
       const writeTool = {
         name: "upsert-bid",
@@ -339,7 +339,7 @@ describe("dispatchToolCall", () => {
           .mockResolvedValue({ content: [{ type: "text", text: "ok" }] }),
       };
       await dispatchToolCall({
-        tool: writeTool as never,
+        tool: writeTool,
         params: { classId: "cl1" },
         ctx: fakeCtx,
         policy: { confirm: false, budget: "none", shape: "text" },
@@ -352,7 +352,7 @@ describe("dispatchToolCall", () => {
 
       log.mockClear();
       await dispatchToolCall({
-        tool: okTool("read-ok") as never,
+        tool: okTool("read-ok"),
         params: {},
         ctx: fakeCtx,
         policy: { confirm: false, budget: "none", shape: "text" },
@@ -364,15 +364,13 @@ describe("dispatchToolCall", () => {
       log.mockClear();
       const failingWrite = {
         name: "remove-bid",
-        run: vi
-          .fn()
-          .mockResolvedValue({
-            content: [{ type: "text", text: "no" }],
-            isError: true,
-          }),
+        run: vi.fn().mockResolvedValue({
+          content: [{ type: "text", text: "no" }],
+          isError: true,
+        }),
       };
       await dispatchToolCall({
-        tool: failingWrite as never,
+        tool: failingWrite,
         params: {},
         ctx: fakeCtx,
         policy: { confirm: false, budget: "none", shape: "text" },

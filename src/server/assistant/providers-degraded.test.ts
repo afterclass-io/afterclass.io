@@ -11,9 +11,9 @@ import { resolveLlmEnv } from "./providers";
 describe("providers degraded mode", () => {
   it("isLlmConfigured is false for a missing key while resolveLlmEnv throws", () => {
     expect(isLlmConfigured({ LLM_API_KEY: undefined })).toBe(false);
-    expect(() =>
-      resolveLlmEnv({ LLM_API_KEY: undefined }),
-    ).toThrowError(/LLM_API_KEY/);
+    expect(() => resolveLlmEnv({ LLM_API_KEY: undefined })).toThrowError(
+      /LLM_API_KEY/,
+    );
   });
 
   it("isLlmConfigured is true for a present key and resolveLlmEnv resolves it", () => {

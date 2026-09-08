@@ -184,11 +184,9 @@ describe("save-bids", () => {
     // to isolate run()'s hoisted fetches.)
     const getAll = vi
       .fn()
-      .mockImplementation(
-        async ({ section }: { section: string }) => [
-          { id: `cl-${section}`, section },
-        ],
-      );
+      .mockImplementation(async ({ section }: { section: string }) => [
+        { id: `cl-${section}`, section },
+      ]);
     const listMine = vi.fn().mockResolvedValue([
       mkBid({
         classId: "cl-G1",
@@ -222,9 +220,24 @@ describe("save-bids", () => {
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await saveBidsTool.run(ctx, {
       bids: [
-        { courseCode: "COR-IS1702", section: "G1", bidAmount: 25, bidWindowId: 99 },
-        { courseCode: "COR-IS1702", section: "G2", bidAmount: 30, bidWindowId: 99 },
-        { courseCode: "COR-IS1702", section: "G3", bidAmount: 35, bidWindowId: 99 },
+        {
+          courseCode: "COR-IS1702",
+          section: "G1",
+          bidAmount: 25,
+          bidWindowId: 99,
+        },
+        {
+          courseCode: "COR-IS1702",
+          section: "G2",
+          bidAmount: 30,
+          bidWindowId: 99,
+        },
+        {
+          courseCode: "COR-IS1702",
+          section: "G3",
+          bidAmount: 35,
+          bidWindowId: 99,
+        },
       ],
     });
     expect(res.isError).toBeUndefined();

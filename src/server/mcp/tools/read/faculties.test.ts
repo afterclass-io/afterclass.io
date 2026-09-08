@@ -25,7 +25,11 @@ const ROWS = [
   { id: 1, name: "Lee Kong Chian School of Business", acronym: "LKCSB" },
   { id: 2, name: "Yong Pung How School of Law", acronym: "YPHSL" },
   { id: 3, name: "School of Economics", acronym: "SOE" },
-  { id: 4, name: "School of Computing and Information Systems", acronym: "SCIS" },
+  {
+    id: 4,
+    name: "School of Computing and Information Systems",
+    acronym: "SCIS",
+  },
   { id: 5, name: "School of Social Sciences", acronym: "SOSS" },
   { id: 6, name: "School of Accountancy", acronym: "SOA" },
   { id: 7, name: "College of Integrative Studies", acronym: "CIS" },
@@ -48,7 +52,6 @@ function stubCaller() {
 }
 
 describe("list-faculties", () => {
-
   it("is named list-faculties and readOnly", () => {
     expect(listFacultiesTool.name).toBe("list-faculties");
     expect(listFacultiesTool.readOnly).toBe(true);

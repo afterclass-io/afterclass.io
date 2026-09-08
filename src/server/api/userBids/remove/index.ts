@@ -19,7 +19,7 @@ export const remove = protectedProcedure
     return {
       success: true,
       acadTermId:
-        (bid as unknown as { bidWindow?: { acadTermId?: string } }).bidWindow?.acadTermId ??
-        null,
+        (bid as unknown as { bidWindow?: { acadTermId?: string } }).bidWindow
+          ?.acadTermId ?? null,
     };
   });
