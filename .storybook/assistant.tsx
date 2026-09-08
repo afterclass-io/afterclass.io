@@ -20,8 +20,9 @@ type AssistantParameters = {
 };
 
 export const mockAssistantStatus = (status: AssistantStatus | null) => {
-  const originalFetch: typeof window.fetch = (...args) =>
-    window.fetch(...args);
+  // Snapshot the live fetch: a forwarding closure would self-recurse after
+  // cleanup restores it (closure -> window.fetch -> closure ...).
+  const originalFetch = window.fetch.bind(window);
   window.fetch = async (
     ...args: Parameters<typeof window.fetch>
   ): Promise<Response> => {
@@ -47,8 +48,8 @@ function WithAssistantEffects({
   status: AssistantStatus | null | undefined;
 }) {
   useEffect(() => {
-    const originalFetch: typeof window.fetch = (...args) =>
-      window.fetch(...args);
+    // See mockAssistantStatus: snapshot, never a forwarding closure.
+    const originalFetch = window.fetch.bind(window);
     seedAssistantStore(sessions, activeSessionId);
     if (status !== undefined) mockAssistantStatus(status);
     try {
