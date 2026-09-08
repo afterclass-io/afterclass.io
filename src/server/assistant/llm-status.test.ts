@@ -7,7 +7,7 @@ describe("isLlmConfigured", () => {
   // so any earlier missing-key call would consume the single log and this
   // assertion would never see it.
   it("logs once when missing (warn, not throw)", () => {
-    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const err = vi.spyOn(console, "error").mockImplementation(() => undefined);
     isLlmConfigured({ LLM_API_KEY: undefined });
     expect(err).toHaveBeenCalledWith(expect.stringContaining("LLM_API_KEY"));
     err.mockRestore();
