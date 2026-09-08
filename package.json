@@ -23,7 +23,6 @@
     "mcp:build": "mcp-use build --mcp-dir src/mcp --views-dir views",
     "mcp:start": "mcp-use start --mcp-dir src/mcp --views-dir views"
   },
-  },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.43",
     "@ai-sdk/react": "^4",
