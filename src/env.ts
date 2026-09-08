@@ -43,10 +43,12 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
     // LLM provider (OpenAI-compatible) - any endpoint that speaks the OpenAI chat API.
-    // Fail-closed (Task 8): empty strings are already treated as undefined
-    // (emptyStringAsUndefined), and a missing key throws at import — the old
-    // `?? ""` fallback in providers.ts is removed.
-    LLM_API_KEY: z.string().min(1),
+    // Degraded mode: the key is optional so the app boots and serves browsing
+    // without it (chat turns 503 via isLlmConfigured()). Fail-closed per turn:
+    // empty strings are already treated as undefined (emptyStringAsUndefined),
+    // and resolveLlmEnv() in providers.ts still throws when called without a
+    // key — getModel() is the single throw site.
+    LLM_API_KEY: z.string().min(1).optional(),
     LLM_BASE_URL: z.string().min(1).optional(),
     LLM_MODEL: z.string().min(1).optional(),
     // Optional rate-limit overrides (per minute, fixed window). When set they

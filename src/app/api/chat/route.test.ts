@@ -17,6 +17,7 @@ const {
   mockBuildAssistantTools,
   mockTrimToBudget,
   mockCreateCallerForUser,
+  mockIsLlmConfigured,
 } = vi.hoisted(() => ({
   mockAuth: vi.fn() as Mock,
   mockCheckSpendGuard: vi.fn() as Mock,
@@ -32,6 +33,7 @@ const {
   mockBuildAssistantTools: vi.fn() as Mock,
   mockTrimToBudget: vi.fn() as Mock,
   mockCreateCallerForUser: vi.fn() as Mock,
+  mockIsLlmConfigured: vi.fn() as Mock,
 }));
 
 // -- vi.mock calls ---------------------------------------------------------
@@ -63,6 +65,10 @@ vi.mock("@/server/config/chat-config", () => ({
 }));
 vi.mock("@/server/assistant/providers", () => ({
   getModel: mockGetModel,
+}));
+// Degraded mode (no LLM key): controllable per test; defaults to configured.
+vi.mock("@/server/assistant/llm-status", () => ({
+  isLlmConfigured: mockIsLlmConfigured,
 }));
 vi.mock("@/server/assistant/tools", () => ({
   buildAssistantTools: mockBuildAssistantTools,
@@ -190,6 +196,9 @@ describe("POST /api/chat", () => {
     mockBuildAssistantTools.mockReset();
     mockTrimToBudget.mockReset();
     mockCreateCallerForUser.mockReset();
+    mockIsLlmConfigured.mockReset();
+    // Default: key configured (matches the real .env under vitest).
+    mockIsLlmConfigured.mockReturnValue(true);
     mockStreamText.mockClear();
     mockCreateUIMessageStreamResponse.mockReset();
     mockCreateUIMessageStreamResponse.mockReturnValue(
@@ -225,6 +234,20 @@ describe("POST /api/chat", () => {
       buildReq({ messages: [{ role: "user", content: "hi" }] }),
     );
     expect(res.status).toBe(401);
+  });
+
+  // -- 503 degraded (no LLM key) --
+  it("returns 503 without touching quota, rate limit, or LLM when no key is configured", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    mockIsLlmConfigured.mockReturnValue(false);
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
+    expect(res.status).toBe(503);
+    expect(await res.text()).toBe("Assistant unavailable");
+    expect(mockCheckAndIncrement).not.toHaveBeenCalled();
+    expect(mockReserveMessage).not.toHaveBeenCalled();
+    expect(mockStreamText).not.toHaveBeenCalled();
   });
 
   // -- 429 --

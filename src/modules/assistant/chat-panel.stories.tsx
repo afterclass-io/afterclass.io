@@ -10,6 +10,7 @@ const status = (overrides: Partial<AssistantStatus> = {}): AssistantStatus => ({
   spendPaused: false,
   hasConnectedAgent: false,
   nudgeAt: 40,
+  aiDegraded: false,
   ...overrides,
 });
 
@@ -33,6 +34,17 @@ export const Initial: Story = {
     quota: 50,
     remaining: 43,
     hasConnectedAgent: false,
+    aiDegraded: false,
+    onGate: () => undefined,
+  },
+};
+
+export const Degraded: Story = {
+  args: {
+    quota: 50,
+    remaining: 43,
+    hasConnectedAgent: false,
+    aiDegraded: true,
     onGate: () => undefined,
   },
 };
@@ -42,6 +54,7 @@ export const Conversation: Story = {
     quota: 50,
     remaining: 43,
     hasConnectedAgent: false,
+    aiDegraded: false,
     onGate: () => undefined,
   },
   parameters: {
@@ -67,6 +80,7 @@ export const Streaming: Story = {
     quota: 50,
     remaining: 43,
     hasConnectedAgent: false,
+    aiDegraded: false,
     onGate: () => undefined,
   },
   parameters: {
@@ -93,6 +107,7 @@ export const Error: Story = {
     quota: 50,
     remaining: 43,
     hasConnectedAgent: false,
+    aiDegraded: false,
     onGate: () => undefined,
   },
   parameters: {
@@ -111,6 +126,7 @@ export const QuotaAlert: Story = {
     quota: 50,
     remaining: 5,
     hasConnectedAgent: false,
+    aiDegraded: false,
     onGate: () => undefined,
   },
   parameters: {
@@ -123,6 +139,7 @@ export const Dark: Story = {
     quota: 50,
     remaining: 43,
     hasConnectedAgent: false,
+    aiDegraded: false,
     onGate: () => undefined,
   },
   parameters: {

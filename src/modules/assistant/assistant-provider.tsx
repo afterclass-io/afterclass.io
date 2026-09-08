@@ -22,6 +22,7 @@ type Status =
       spendPaused: boolean;
       hasConnectedAgent: boolean;
       nudgeAt: number;
+      aiDegraded: boolean;
     }
   | null;
 
@@ -52,6 +53,7 @@ function SignedInAssistant({
           quota={status.quota}
           remaining={status.remaining}
           hasConnectedAgent={status.hasConnectedAgent}
+          aiDegraded={status.aiDegraded}
           onGate={setGate}
         />
       </AssistantWidget>

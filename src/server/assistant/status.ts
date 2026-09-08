@@ -3,6 +3,8 @@ import { checkSpendGuard, getQuotaState } from "./quota";
 // config.json > defaults) — same value, centralized source.
 import { getChatConfigAsync as getChatConfig } from "@/server/config/chat-config";
 import { hasConnectedAgent } from "./connected";
+import { isLlmConfigured } from "./llm-status";
+import { env } from "@/env";
 
 export type AssistantStatus = {
   signedIn: boolean;
@@ -12,6 +14,7 @@ export type AssistantStatus = {
   spendPaused: boolean;
   hasConnectedAgent: boolean;
   nudgeAt: number;
+  aiDegraded: boolean;
   // Additive observability: fraction of input tokens served from cache (0-1),
   // null before any input. Optional to keep existing story helpers that
   // construct AssistantStatus via Partial<AssistantStatus> spread type-correct
@@ -39,6 +42,7 @@ export async function getAssistantStatus(
     spendPaused,
     hasConnectedAgent: await connected,
     nudgeAt: chat.nudgeAt,
+    aiDegraded: !isLlmConfigured(env),
     cacheHitRate:
       quota.inputTokens > 0
         ? quota.cachedInputTokens / quota.inputTokens

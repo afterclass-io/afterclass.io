@@ -12,20 +12,26 @@ vi.mock("@/server/config/chat-config", () => ({
   getChatConfigAsync: async () => ({ quotaPerMonth: 50, nudgeAt: 40 }),
 }));
 vi.mock("./connected", () => ({ hasConnectedAgent: vi.fn() }));
+vi.mock("./llm-status", () => ({ isLlmConfigured: vi.fn() }));
 
 import { checkSpendGuard, getQuotaState } from "./quota";
 import { hasConnectedAgent } from "./connected";
+import { isLlmConfigured } from "./llm-status";
 import { getAssistantStatus } from "./status";
 
 const mockedQuotaState = vi.mocked(getQuotaState);
 const mockedSpend = vi.mocked(checkSpendGuard);
 const mockedConnected = vi.mocked(hasConnectedAgent);
+const mockedLlmConfigured = vi.mocked(isLlmConfigured);
 
 describe("getAssistantStatus", () => {
   beforeEach(() => {
     mockedQuotaState.mockReset();
     mockedSpend.mockReset();
     mockedConnected.mockReset();
+    mockedLlmConfigured.mockReset();
+    // Default: key configured (matches the real .env under vitest).
+    mockedLlmConfigured.mockReturnValue(true);
     mockedQuotaState.mockResolvedValue({
       used: 20,
       quota: 50,
@@ -50,8 +56,15 @@ describe("getAssistantStatus", () => {
       spendPaused: false,
       hasConnectedAgent: false,
       nudgeAt: 40,
+      aiDegraded: false,
       cacheHitRate: null,
     });
+  });
+
+  it("reports aiDegraded when no LLM key is configured", async () => {
+    mockedLlmConfigured.mockReturnValue(false);
+    const s = await getAssistantStatus("u1");
+    expect(s.aiDegraded).toBe(true);
   });
 
   it("reports quota exhausted when remaining is 0", async () => {

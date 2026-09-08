@@ -18,6 +18,7 @@ export type ChatPanelProps = {
   quota: number;
   remaining: number;
   hasConnectedAgent: boolean;
+  aiDegraded: boolean;
   onGate: (gate: ChatGate) => void;
 };
 
@@ -25,6 +26,7 @@ export function ChatPanel({
   quota,
   remaining,
   hasConnectedAgent,
+  aiDegraded,
   onGate,
 }: ChatPanelProps) {
   return (
@@ -33,6 +35,7 @@ export function ChatPanel({
         quota={quota}
         remaining={remaining}
         hasConnectedAgent={hasConnectedAgent}
+        aiDegraded={aiDegraded}
         onGate={onGate}
       />
     </Suspense>
@@ -47,6 +50,7 @@ function ChatPanelInner({
   quota,
   remaining,
   hasConnectedAgent,
+  aiDegraded,
   onGate,
 }: ChatPanelProps) {
   // Snapshot AT SEND TIME, not mount: transport `body` is a Resolvable
@@ -122,6 +126,9 @@ function ChatPanelInner({
   return (
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
+        {aiDegraded && (
+          <p className="px-4 py-2 text-xs text-muted-foreground">AI paused — browsing still works.</p>
+        )}
         {!hasMessages ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-4">
             <h1 className="text-2xl font-semibold">

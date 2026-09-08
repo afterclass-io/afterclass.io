@@ -10,6 +10,7 @@ const status = (overrides: Partial<AssistantStatus> = {}): AssistantStatus => ({
   spendPaused: false,
   hasConnectedAgent: false,
   nudgeAt: 40,
+  aiDegraded: false,
   ...overrides,
 });
 

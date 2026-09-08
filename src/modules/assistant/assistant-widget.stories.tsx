@@ -26,6 +26,7 @@ const chatPanel = (
     quota={30}
     remaining={12}
     hasConnectedAgent={false}
+    aiDegraded={false}
     onGate={() => undefined}
   />
 );
