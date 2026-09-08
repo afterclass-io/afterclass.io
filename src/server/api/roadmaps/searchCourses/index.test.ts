@@ -18,7 +18,7 @@ vi.mock("@/server/db", () => ({
   db: { $queryRaw: queryRawMock },
 }));
 
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@/generated/prisma/client";
 
 import { createCaller } from "@/server/api/root";
 

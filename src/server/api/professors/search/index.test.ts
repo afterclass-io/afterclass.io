@@ -19,7 +19,7 @@ vi.mock("@/server/db", () => ({
   },
 }));
 
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@/generated/prisma/client";
 
 import { createCaller } from "@/server/api/root";
 

@@ -1,4 +1,4 @@
-import { Visibility } from "@prisma/client";
+import { Visibility } from "@/generated/prisma/enums";
 
 import { protectedProcedure } from "@/server/api/trpc";
 import { getCurrentWindowLogic } from "@/server/api/bidWindows/getCurrentWindow/helpers";
