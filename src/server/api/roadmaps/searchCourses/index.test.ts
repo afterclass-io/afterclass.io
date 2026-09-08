@@ -18,8 +18,6 @@ vi.mock("@/server/db", () => ({
   db: { $queryRaw: queryRawMock },
 }));
 
-import type { PrismaClient } from "@/generated/prisma/client";
-
 import { createCaller } from "@/server/api/root";
 
 // Mock row shape matches the pre-upgrade procedure output exactly, so the
@@ -31,11 +29,14 @@ const statRow = {
   creditUnits: 1,
 };
 
-const caller = createCaller(() => ({
-  db: { $queryRaw: queryRawMock } as unknown as PrismaClient,
-  session: null,
-  headers: new Headers(),
-}));
+const caller = createCaller(
+  () =>
+    ({
+      db: { $queryRaw: queryRawMock },
+      session: null,
+      headers: new Headers(),
+    }) as never,
+);
 
 describe("roadmaps.searchCourses", () => {
   beforeEach(() => {

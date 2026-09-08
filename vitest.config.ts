@@ -50,6 +50,12 @@ export default defineConfig({
         "src/common/functions/**/*.ts",
         "src/common/hooks/**/*.ts",
         "src/common/tools/**/*.ts",
+        "src/mcp/**/*.ts",
+        "src/server/mcp/**/*.ts",
+        "src/server/assistant/**/*.ts",
+        "views/**/*.tsx",
+        "views/**/*.ts",
+        "prisma/**/*.ts",
       ],
       exclude: [
         "**/*.test.{ts,tsx}",
@@ -96,7 +102,11 @@ export default defineConfig({
         oxc,
         test: {
           name: "unit",
-          include: ["src/**/*.test.{ts,tsx}", "prisma/**/*.test.{ts,tsx}"],
+          include: [
+            "src/**/*.test.{ts,tsx}",
+            "prisma/**/*.test.{ts,tsx}",
+            "views/**/*.test.{ts,tsx}",
+          ],
           exclude: ["**/*.integration.test.ts"],
           globals: true,
           env: dummyEnv,

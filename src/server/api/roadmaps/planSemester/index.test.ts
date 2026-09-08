@@ -37,8 +37,6 @@ vi.mock("@/server/db", () => ({
   },
 }));
 
-import type { PrismaClient } from "@/generated/prisma/client";
-
 import { createCaller } from "@/server/api/root";
 import type { SessionUser } from "@/server/auth/config";
 
@@ -57,20 +55,23 @@ const fakeUser: SessionUser = {
   updatedAt: new Date(),
 };
 
-const caller = createCaller(() => ({
-  db: {
-    acadTerm: { findMany: acadTermFindManyMock },
-    bidWindow: { findMany: bidWindowFindManyMock },
-    userRoadmap: {
-      findFirst: userRoadmapFindFirstMock,
-      findMany: userRoadmapFindManyMock,
-    },
-    users: { findUnique: usersFindUniqueMock },
-    userRoadmapEntry: { findMany: userRoadmapEntryFindManyMock },
-  } as unknown as PrismaClient,
-  session: { expires: new Date().toISOString(), user: fakeUser },
-  headers: new Headers(),
-}));
+const caller = createCaller(
+  () =>
+    ({
+      db: {
+        acadTerm: { findMany: acadTermFindManyMock },
+        bidWindow: { findMany: bidWindowFindManyMock },
+        userRoadmap: {
+          findFirst: userRoadmapFindFirstMock,
+          findMany: userRoadmapFindManyMock,
+        },
+        users: { findUnique: usersFindUniqueMock },
+        userRoadmapEntry: { findMany: userRoadmapEntryFindManyMock },
+      },
+      session: { expires: new Date().toISOString(), user: fakeUser },
+      headers: new Headers(),
+    }) as never,
+);
 
 // ---------------------------------------------------------------------------
 // Fixtures

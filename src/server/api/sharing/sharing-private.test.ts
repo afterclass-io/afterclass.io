@@ -23,18 +23,19 @@ vi.mock("@/server/db", () => ({
   },
 }));
 
-import type { PrismaClient } from "@/generated/prisma/client";
-
 import { createCaller } from "@/server/api/root";
 
-const caller = createCaller(() => ({
-  db: {
-    userTimetable: { findUnique: findUniqueTimetableMock },
-    userRoadmap: { findUnique: findUniqueRoadmapMock },
-  } as unknown as PrismaClient,
-  session: null,
-  headers: new Headers(),
-}));
+const caller = createCaller(
+  () =>
+    ({
+      db: {
+        userTimetable: { findUnique: findUniqueTimetableMock },
+        userRoadmap: { findUnique: findUniqueRoadmapMock },
+      },
+      session: null,
+      headers: new Headers(),
+    }) as never,
+);
 
 describe("sharing PRIVATE refusal", () => {
   beforeEach(() => {

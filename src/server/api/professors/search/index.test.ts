@@ -19,8 +19,6 @@ vi.mock("@/server/db", () => ({
   },
 }));
 
-import type { PrismaClient } from "@/generated/prisma/client";
-
 import { createCaller } from "@/server/api/root";
 
 // Row shape returned by the raw professors search. `count` comes from
@@ -32,13 +30,16 @@ const profRow = {
   count: 1n,
 };
 
-const caller = createCaller(() => ({
-  db: {
-    $queryRaw: queryRawMock,
-  } as unknown as PrismaClient,
-  session: null,
-  headers: new Headers(),
-}));
+const caller = createCaller(
+  () =>
+    ({
+      db: {
+        $queryRaw: queryRawMock,
+      },
+      session: null,
+      headers: new Headers(),
+    }) as never,
+);
 
 describe("professors.search", () => {
   beforeEach(() => {
