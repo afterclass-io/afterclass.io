@@ -22,6 +22,21 @@ import { useChat as realUseChat } from "../../node_modules/@ai-sdk/react/dist/in
 import type { ChatStatus, UIMessage } from "ai";
 import type { UseChatHelpers, UseChatOptions } from "@ai-sdk/react";
 
+/**
+ * Options the mock accepts. Mirrors the real call shape: ChatInit fields
+ * (transport, onError, ...) pass through the `...options` spread, so onError
+ * lives here even though it is NOT on UseChatOptions itself (ChatInit carries
+ * it; useChat destructures only throttle/experimental_throttle/resume and
+ * forwards the rest). ComponentProps<typeof realUseChat> would capture this
+ * exactly, but the webpack alias maps "@ai-sdk/react" to THIS file while tsc
+ * resolves type imports to the real package — spelling the union member out
+ * keeps the acceptance surface visible instead of hiding it behind indirection.
+ */
+type MockUseChatOptions<UI_MESSAGE extends UIMessage = UIMessage> =
+  UseChatOptions<UI_MESSAGE> & {
+    onError?: (error: Error) => void;
+  };
+
 /** Story parameter driving the mocked chat: `parameters: { chatState: {...} }`. */
 type ChatStateParam = {
   messages?: UIMessage[];
@@ -43,7 +58,7 @@ export const __setChatState = (state: ChatStateParam | undefined) => {
 };
 
 export const useChat = <UI_MESSAGE extends UIMessage = UIMessage>(
-  options?: UseChatOptions<UI_MESSAGE>,
+  options?: MockUseChatOptions<UI_MESSAGE>,
 ): UseChatHelpers<UI_MESSAGE> => {
   const chatState = chatStateParam;
   const firedErrorRef = useRef(false);
@@ -64,6 +79,8 @@ export const useChat = <UI_MESSAGE extends UIMessage = UIMessage>(
   // empty/initial stories need no mock (useChat makes no request on mount).
   // `realUseChat` intentionally does not start with "use" so the
   // react-hooks/rules-of-hooks check does not treat this as a conditional hook.
+  // The MockUseChatOptions onError field is part of ChatInit (the union
+  // member useChat forwards via ...options), so this passthrough is exact.
   if (!chatState) {
     return realUseChat(options);
   }
@@ -79,7 +96,7 @@ export const useChat = <UI_MESSAGE extends UIMessage = UIMessage>(
     error: chatState.error,
     sendMessage: async () => undefined,
     regenerate: async () => undefined,
-    stop: () => undefined,
+    stop: async () => undefined,
     resumeStream: async () => undefined,
     addToolResult: () => undefined,
     addToolOutput: () => undefined,

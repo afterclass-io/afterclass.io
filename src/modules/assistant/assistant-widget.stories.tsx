@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { AssistantWidget } from "./assistant-widget";
 import { ChatPanel } from "./chat-panel";
 import { ConnectGate } from "./connect-gate";
@@ -10,12 +10,11 @@ const meta = {
     // keep meta parameters minimal - set per-story props (Storybook deep-merges)
     viewport: { defaultViewport: "desktop" },
   },
-  decorators: [],
 } satisfies Meta<typeof AssistantWidget>;
 
 export default meta;
 
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof AssistantWidget>;
 
 // Use the real ChatPanel as children - the `withAssistant` decorator seeds the
 // chat store (hydrated: true, so hydrate() short-circuits IndexedDB) and the
