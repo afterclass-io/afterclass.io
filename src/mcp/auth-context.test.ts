@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 
+// `server-only` guard (Task 12: server.ts/env-gate.ts carry the import) —
+// stub as no-op (established pattern: register.test.ts, adapters.test.ts).
+vi.mock("server-only", () => ({}));
+
 const { buildToolContext } = vi.hoisted(() => ({
   buildToolContext: vi.fn() as Mock,
 }));

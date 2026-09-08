@@ -1,4 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+// `server-only` guard (Task 12: env-gate.ts carries the import) — stub as
+// no-op (established pattern: register.test.ts, adapters.test.ts).
+vi.mock("server-only", () => ({}));
+
 import { isDevBypass } from "./env-gate";
 
 describe("isDevBypass", () => {
