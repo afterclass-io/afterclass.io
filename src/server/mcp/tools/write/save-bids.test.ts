@@ -175,6 +175,90 @@ describe("save-bids", () => {
     expect(text).not.toContain('"notes"');
   });
 
+  it("fetches the current window and listMine exactly once per call (N+1 collapse)", async () => {
+    // Per-entry bidWindowId overrides targeting a non-current window: the loop
+    // still runs 3 resolves + 3 upserts, but run()'s own getCurrentWindow +
+    // listMine stay at 1 each. (Overrides are deliberate: a default-window
+    // success batch additionally triggers ONE plan-time listMine inside the
+    // shared buildBidPlan — constant, not per-entry — so it is excluded here
+    // to isolate run()'s hoisted fetches.)
+    const getAll = vi
+      .fn()
+      .mockImplementation(
+        async ({ section }: { section: string }) => [
+          { id: `cl-${section}`, section },
+        ],
+      );
+    const listMine = vi.fn().mockResolvedValue([
+      mkBid({
+        classId: "cl-G1",
+        bidWindowId: 77,
+        bidWindow: { acadTermId: "AY202627T1", round: "1", window: 1 },
+      }),
+    ]);
+    const getCurrentWindow = vi.fn().mockResolvedValue(openWindow());
+    const upsert = vi
+      .fn()
+      .mockImplementation(
+        async ({
+          classId,
+          bidWindowId,
+        }: {
+          classId: string;
+          bidWindowId: number;
+        }) => ({
+          id: `b-${classId}`,
+          classId,
+          bidWindowId,
+        }),
+      );
+    const caller = makeCaller({
+      userBidsUpsert: upsert,
+      classesGetAll: getAll,
+      bidWindowsGetCurrentWindow: getCurrentWindow,
+      userBidsListMine: listMine,
+      userBidsGetBudget: vi.fn().mockResolvedValue({ balance: 100 }),
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const res = await saveBidsTool.run(ctx, {
+      bids: [
+        { courseCode: "COR-IS1702", section: "G1", bidAmount: 25, bidWindowId: 99 },
+        { courseCode: "COR-IS1702", section: "G2", bidAmount: 30, bidWindowId: 99 },
+        { courseCode: "COR-IS1702", section: "G3", bidAmount: 35, bidWindowId: 99 },
+      ],
+    });
+    expect(res.isError).toBeUndefined();
+    expect(upsert).toHaveBeenCalledTimes(3);
+    expect(getCurrentWindow).toHaveBeenCalledTimes(1);
+    expect(listMine).toHaveBeenCalledTimes(1);
+  });
+
+  it("learns the plan term from the current window for first-time bidders (empty pre-loop listMine)", async () => {
+    const getCurrentWindow = vi.fn().mockResolvedValue(openWindow());
+    const listMine = vi.fn().mockResolvedValue([]);
+    const caller = makeCaller({
+      userBidsUpsert: vi
+        .fn()
+        .mockResolvedValue({ id: "b-new", classId: "cl-G1", bidWindowId: 77 }),
+      classesGetAll: vi
+        .fn()
+        .mockResolvedValue([{ id: "cl-G1", section: "G1" }]),
+      bidWindowsGetCurrentWindow: getCurrentWindow,
+      userBidsListMine: listMine,
+      userBidsGetBudget: vi.fn().mockResolvedValue({ balance: 100 }),
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const res = await saveBidsTool.run(ctx, {
+      bids: [{ courseCode: "COR-IS1702", section: "G1", bidAmount: 25 }],
+    });
+    const parsed = JSON.parse(res.content[0]!.text) as {
+      updated: Array<{ ok: boolean }>;
+      plan: { acadTermId: string } | null;
+    };
+    expect(parsed.updated[0]!.ok).toBe(true);
+    expect(parsed.plan?.acadTermId).toBe("AY202627T1");
+  });
+
   it("supports per-entry bidWindowId override", async () => {
     const upsert = vi
       .fn()

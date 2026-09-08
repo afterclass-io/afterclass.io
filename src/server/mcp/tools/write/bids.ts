@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { resolveOpenWindowIdOrError, resolveTermId } from "../../current";
 import { bidPlanToViewProps, buildBidPlan } from "../bid-plan-shared";
+import { buildTermMap } from "../bid-write-helpers";
 import { stripBidNotes } from "../bid-shared";
 import {
   confirmField,
@@ -46,12 +47,9 @@ export const upsertBidTool: McpTool<typeof upsertBidSchema> = {
       let acadTermId: string | null = null;
       try {
         const bids = await caller.userBids.listMine();
-        const matched = bids.find(
-          (b) =>
-            b.classId === updated.classId &&
-            b.bidWindowId === updated.bidWindowId,
-        );
-        acadTermId = matched?.bidWindow?.acadTermId ?? null;
+        acadTermId =
+          buildTermMap(bids).get(`${updated.classId}|${updated.bidWindowId}`) ??
+          null;
       } catch {
         // Non-fatal — plan enrichment failed; return updated alone below.
       }

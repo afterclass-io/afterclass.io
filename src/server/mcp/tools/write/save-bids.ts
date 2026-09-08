@@ -1,10 +1,7 @@
 import { z } from "zod";
 
-import {
-  resolveClassIdByCodeSection,
-  resolveOpenWindowIdOrError,
-} from "../../current";
 import { bidPlanToViewProps, buildBidPlan } from "../bid-plan-shared";
+import { buildTermMap, resolveEntryClass } from "../bid-write-helpers";
 import { stripBidNotes } from "../bid-shared";
 import {
   confirmField,
@@ -50,14 +47,33 @@ export const saveBidsTool: McpTool<typeof saveBidsSchema> = {
   toViewProps: bidPlanToViewProps,
   run: async ({ caller }, { bids }) => {
     try {
-      // Resolve default open window once if any entry lacks bidWindowId.
+      // Hoisted once per call (was once per entry): the current window (class-
+      // search term hint + default-window verification) and the full bid list
+      // indexed for O(1) term lookup. Both tolerate failure — resolution then
+      // degrades to a broad search / null plan instead of throwing.
+      const cw = await caller.bidWindows.getCurrentWindow().catch(() => null);
+      const mine = await caller.userBids.listMine().catch(() => []);
+      const termMap = buildTermMap(mine);
+
+      // Default-window semantics mirror resolveOpenWindowIdOrError
+      // (src/server/mcp/current.ts): the current window must be VERIFIED open,
+      // else entries without an explicit bidWindowId fail with ask-user text.
       const needsDefault = bids.some((b) => b.bidWindowId === undefined);
+      const now = new Date();
+      const isOpen =
+        !!cw &&
+        !!cw.opensAt &&
+        !!cw.resultsAt &&
+        cw.opensAt <= now &&
+        now < cw.resultsAt;
       let defaultWindowId: number | null = null;
       let defaultWindowErr: string | null = null;
       if (needsDefault) {
-        const resolved = await resolveOpenWindowIdOrError(caller);
-        if (resolved.ok) defaultWindowId = resolved.value;
-        else defaultWindowErr = resolved.errText;
+        // The extra `cw &&` is only for narrowing (isOpen already implies non-null).
+        if (cw && isOpen) defaultWindowId = cw.id;
+        else
+          defaultWindowErr =
+            "No bid window is currently open for bidding. Ask the user which bid round and window to use, or call get-bid-windows and let the user pick.";
       }
 
       type PerEntry =
@@ -110,23 +126,14 @@ export const saveBidsTool: McpTool<typeof saveBidsSchema> = {
           }
         }
 
-        // Resolve classId by courseCode+section in the current term (thin wrapper over caller.classes.getAll).
-        // I10: single getCurrentWindow() call per entry, reused as termId below.
+        // Resolve classId by courseCode+section, hinted with the hoisted current
+        // window's term (no per-entry fetch). Overrides targeting other windows
+        // fall back to a broad search inside resolveEntryClass — courseCode +
+        // section narrows well on its own.
+        const termId = cw?.acadTermId ?? undefined;
         let classId: string | null = null;
-        let termId: string | undefined;
         try {
-          try {
-            const cw = await caller.bidWindows.getCurrentWindow();
-            // eslint-disable-next-line @typescript-eslint/prefer-optional-chain -- explicit null check narrows cw for the non-optional cw.acadTermId access below; cw?.id would not narrow
-            if (cw && cw.id === bidWindowId) termId = cw.acadTermId;
-            // getCurrentWindow returns the "current" window (active -> upcoming -> past);
-            // if bidWindowId differs, we won't know its term; leave termId undefined and let getAll search broadly.
-            // This is acceptable as courseCode+section narrows well.
-            else termId = cw?.acadTermId ?? undefined;
-          } catch {
-            // ignore
-          }
-          classId = await resolveClassIdByCodeSection(caller, {
+          classId = await resolveEntryClass(caller, {
             courseCode,
             section,
             termId,
@@ -160,22 +167,15 @@ export const saveBidsTool: McpTool<typeof saveBidsSchema> = {
             bidAmount,
             notes: entry.notes,
           });
-          // Attempt to learn the term for plan building from listMine match.
-          try {
-            const mine =
-              (await caller.userBids.listMine()) as unknown as Array<{
-                classId: string;
-                bidWindowId: number;
-                bidWindow?: { acadTermId: string | null } | null;
-              }>;
-            const m = mine.find(
-              (b) => b.classId === classId && b.bidWindowId === bidWindowId,
-            );
-            if (m?.bidWindow?.acadTermId)
-              succeededAcadTermIds.add(m.bidWindow.acadTermId);
-          } catch {
-            // non-fatal
-          }
+          // Learn the term for plan building from the hoisted index (note: the
+          // index predates this call's upserts — see the fallback below).
+          const known = termMap.get(`${classId ?? ""}|${bidWindowId}`);
+          if (known) succeededAcadTermIds.add(known);
+          // The pre-loop listMine cannot contain rows created by this call
+          // (e.g. a first-time bidder whose list was empty), so fall back to
+          // the current window's term when the upsert targeted it.
+          else if (cw?.id === bidWindowId && cw?.acadTermId)
+            succeededAcadTermIds.add(cw.acadTermId);
           updated.push({ ok: true, index: i, courseCode, section, result });
         } catch (e) {
           updated.push({
@@ -198,22 +198,13 @@ export const saveBidsTool: McpTool<typeof saveBidsSchema> = {
           plan = null;
         }
       } else if (updated.every((u) => !u.ok)) {
-        // All failed: still try to build plan for the default window's term if we have one.
-        if (defaultWindowId !== null) {
+        // All failed: still try to build plan for the default window's term if
+        // we have one (cw is already hoisted — no extra fetch).
+        if (defaultWindowId !== null && cw?.acadTermId) {
           try {
-            const cw =
-              (await caller.bidWindows.getCurrentWindow()) as unknown as {
-                acadTermId: string;
-              } | null;
-            if (cw?.acadTermId) {
-              try {
-                plan = await buildBidPlan(caller, cw.acadTermId);
-              } catch {
-                plan = null;
-              }
-            }
+            plan = await buildBidPlan(caller, cw.acadTermId);
           } catch {
-            // ignore
+            plan = null;
           }
         }
       }
