@@ -21,7 +21,6 @@ export const env = createEnv({
     DATABASE_URL: z.url(),
     // Direct (non-pooled) connection, used for migrations and interactive
     // transactions (Task 9 consumes this; validation lands here in Task 8).
-    // NOTE (T1 rebase): kept feat's key but on main's z.url() shape (T4 owns Zod-4 sweep).
     DIRECT_URL: z.url().optional(),
     // Vercel Edge Config connection string (live config layer).
     EDGE_CONFIG: z.string().min(1).optional(),
@@ -108,9 +107,9 @@ export const env = createEnv({
     // MCP dev-bypass knobs (validated here so typos fail loudly; the single
     // isDevBypass() gate in src/mcp/env-gate.ts owns the semantics).
     MCP_DEV_BYPASS: z.string().optional(),
-    MCP_DEV_USER_EMAIL: z.string().email().optional(),
+    MCP_DEV_USER_EMAIL: z.email().optional(),
     MCP_USE_OAUTH_SUPABASE_PROJECT_ID: z.string().min(1).optional(),
-    MCP_USE_OAUTH_SUPABASE_URL: z.string().url().optional(),
+    MCP_USE_OAUTH_SUPABASE_URL: z.url().optional(),
     MCP_USE_OAUTH_SUPABASE_JWT_SECRET: z.string().min(1).optional(),
     // MCP transport hardening (validated here so typos fail loudly;
     // src/mcp/server.ts owns the semantics — comma-separated allowlists,
@@ -168,7 +167,6 @@ export const env = createEnv({
     // Public MCP endpoint used by the Settings -> Agents connect page to build
     // deep links. Optional until the server is deployed - connect-links.ts
     // falls back to a placeholder URL.
-    // NOTE (T1 rebase): kept feat's key but on main's z.url() shape (T4 owns Zod-4 sweep).
     NEXT_PUBLIC_MCP_PUBLIC_URL: z.url().optional(),
   },
 
