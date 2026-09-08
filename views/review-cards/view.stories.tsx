@@ -90,6 +90,48 @@ export const ProfessorReviews: Story = {
   decorators: [withMcpView({ status: "ready", toolOutput: professorProps })],
 };
 
+/**
+ * Professor + course combined-context reviews. Both procedures accept the
+ * combined filter (`getByCourseCodeProtected` takes `code` + `slugs[]`;
+ * `getByProfSlugProtected` takes `slug` + `courseCodes[]`), and both tools
+ * share this view — so this story is the visual proof the shared cards
+ * handle the combined shape: context names professor + course, every review
+ * carries both `courseCode` and `professorName`.
+ */
+const professorCourseProps = {
+  context: "FANG Bingxu · ACCT102",
+  reviews: [
+    {
+      id: "rv-pc1",
+      body: "Her ACCT102 sections move fast but the cases are practical.",
+      tips: "Do the pre-readings — cold calls are real.",
+      rating: 4,
+      labels: ["Practical", "Cold Calls"],
+      voteCount: 15,
+      createdAt: "2026-05-12T00:00:00.000Z",
+      courseCode: "ACCT102",
+      professorName: "FANG Bingxu",
+    },
+    {
+      id: "rv-pc2",
+      body: "Fair grader for ACCT102, generous office hours.",
+      tips: null,
+      rating: 5,
+      labels: ["Fair", "Helpful"],
+      voteCount: 9,
+      createdAt: "2026-06-03T00:00:00.000Z",
+      courseCode: "ACCT102",
+      professorName: "FANG Bingxu",
+    },
+  ],
+};
+
+export const ProfessorCourseReviews: Story = {
+  decorators: [
+    withMcpView({ status: "ready", toolOutput: professorCourseProps }),
+  ],
+};
+
 export const Dark: Story = {
   decorators: [
     withMcpView({ status: "ready", toolOutput: fullProps, theme: "dark" }),
