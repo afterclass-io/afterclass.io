@@ -23,13 +23,16 @@ describe("MCPUrlBox", () => {
   it("copies the URL and shows a check for 2s", async () => {
     render(<MCPUrlBox mcpUrl="https://acme.run.mcp-use.com/mcp" />);
     fireEvent.click(screen.getByRole("button", { name: "Copy" }));
-    const clipboard = (
-      navigator as Navigator & {
-        clipboard: { writeText: (t: string) => Promise<void> };
-      }
-    ).clipboard;
+    // Arrow wrapper: `clipboard.writeText` is a plain function-typed property
+    // in the cast, not a class method — referencing it directly trips
+    // @typescript-eslint/unbound-method, so call it through a closure and
+    // assert on the closure instead.
+    const { clipboard } = navigator as Navigator & {
+      clipboard: { writeText: (t: string) => Promise<void> };
+    };
+    const writeText = (...args: [string]) => clipboard.writeText(...args);
     await vi.waitFor(() =>
-      expect(clipboard.writeText).toHaveBeenCalledWith(
+      expect(writeText).toHaveBeenCalledWith(
         "https://acme.run.mcp-use.com/mcp",
       ),
     );
