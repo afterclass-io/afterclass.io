@@ -22,7 +22,7 @@ export const setSlotSection = protectedProcedure
       throw new TRPCError({ code: "NOT_FOUND" });
     }
 
-    // Shared helper from Task 1 — class must belong to the timetable's term.
+    // Class must belong to the timetable's term.
     await assertClassInTerm(ctx.db, input.classId, timetable.acadTermId);
 
     await ctx.db.$transaction(async (tx) => {

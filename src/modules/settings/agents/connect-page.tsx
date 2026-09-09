@@ -1,11 +1,13 @@
 "use client";
 
 import { PageTitle } from "@/common/components/page-title";
-import { MCP_PUBLIC_URL } from "./connect-links";
+import { isPlaceholderMcpUrl, MCP_PUBLIC_URL } from "./connect-links";
 import { ConnectFlow } from "./connect-flow";
 import { MCPUrlBox } from "./mcp-url-box";
 
 export function ConnectPage({ mcpUrl = MCP_PUBLIC_URL }: { mcpUrl?: string }) {
+  const isPlaceholder = isPlaceholderMcpUrl(mcpUrl);
+
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -19,8 +21,16 @@ export function ConnectPage({ mcpUrl = MCP_PUBLIC_URL }: { mcpUrl?: string }) {
           site&apos;s assistant.
         </p>
       </div>
-      <MCPUrlBox mcpUrl={mcpUrl} />
-      <ConnectFlow mcpUrl={mcpUrl} />
+      {isPlaceholder ? (
+        <p role="alert">
+          MCP connections are not configured yet. Please try again later.
+        </p>
+      ) : (
+        <>
+          <MCPUrlBox mcpUrl={mcpUrl} />
+          <ConnectFlow mcpUrl={mcpUrl} />
+        </>
+      )}
     </div>
   );
 }

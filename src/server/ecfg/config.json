@@ -10,9 +10,9 @@
     "nudgeAt": 16,
     "rateLimitPerMinute": 10,
     "mcpRateLimitPerMinute": 60,
-    "maxInputTokens": 16000,
-    "maxOutputTokens": 1024,
-    "maxToolRounds": 6,
+    "maxInputTokens": 64000,
+    "maxOutputTokens": 4096,
+    "maxToolRounds": 12,
     "chatEnabled": true,
     "widgetEnabled": true,
     "mcpEnabled": true

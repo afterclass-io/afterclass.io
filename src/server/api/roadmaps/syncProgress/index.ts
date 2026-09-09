@@ -27,7 +27,7 @@ import {
  * - Batches timetable lookups into one findMany (no N+1 per term).
  * - Stops adding once 100 entries would be exceeded.
  * - Catches P2002 (duplicate courseId) from concurrent syncs.
- * - Bumps user_roadmap.updatedAt so Task 5's version check works.
+ * - Bumps user_roadmap.updatedAt so version checks work.
  */
 export const syncProgress = protectedProcedure
   .input(z.object({ roadmapId: z.string() }))

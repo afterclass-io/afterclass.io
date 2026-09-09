@@ -24,13 +24,13 @@ export async function AgentsPage() {
   try {
     grants = await listUserGrants(token);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "unknown error";
+    console.error("Failed to load connected agents", err);
     return (
       <div>
         <h1>Connected agents</h1>
         <p role="alert">
-          Could not load your connected agents ({message}). Please sign out and
-          sign back in, then try again.
+          Could not load your connected agents. Please sign out and sign back
+          in, then try again.
         </p>
       </div>
     );
