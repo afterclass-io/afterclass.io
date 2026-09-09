@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/server/assistant/quota", () => ({
   getQuotaState: vi.fn(),
-  checkSpendGuard: vi.fn(),
 }));
 vi.mock("@/server/ecfg/chat", () => ({
   getChatConfig: async () => ({ quotaPerMonth: 50, nudgeAt: 40 }),
@@ -21,14 +20,13 @@ vi.mock("./connected", () => ({ hasConnectedAgent: vi.fn() }));
 vi.mock("./llm-status", () => ({ isLlmConfigured: vi.fn() }));
 vi.mock("./consent", () => ({ getAiConsentDate: vi.fn() }));
 
-import { checkSpendGuard, getQuotaState } from "./quota";
+import { getQuotaState } from "./quota";
 import { hasConnectedAgent } from "./connected";
 import { isLlmConfigured } from "./llm-status";
 import { getAiConsentDate } from "./consent";
 import { getAssistantStatus } from "./status";
 
 const mockedQuotaState = vi.mocked(getQuotaState);
-const mockedSpend = vi.mocked(checkSpendGuard);
 const mockedConnected = vi.mocked(hasConnectedAgent);
 const mockedLlmConfigured = vi.mocked(isLlmConfigured);
 const mockedConsent = vi.mocked(getAiConsentDate);
@@ -36,7 +34,6 @@ const mockedConsent = vi.mocked(getAiConsentDate);
 describe("getAssistantStatus", () => {
   beforeEach(() => {
     mockedQuotaState.mockReset();
-    mockedSpend.mockReset();
     mockedConnected.mockReset();
     mockedLlmConfigured.mockReset();
     mockedConsent.mockReset();
@@ -55,18 +52,16 @@ describe("getAssistantStatus", () => {
       inputTokens: 0,
       cachedInputTokens: 0,
     });
-    mockedSpend.mockResolvedValue(true);
     mockedConnected.mockResolvedValue(false);
   });
 
-  it("reports remaining quota, spend pause, and agent status", async () => {
+  it("reports remaining quota and agent status", async () => {
     const s = await getAssistantStatus("u1");
     expect(s).toEqual({
       signedIn: true,
       quota: 50,
       used: 20,
       remaining: 30,
-      spendPaused: false,
       hasConnectedAgent: false,
       nudgeAt: 40,
       aiDegraded: false,
@@ -104,16 +99,9 @@ describe("getAssistantStatus", () => {
       cachedInputTokens: 0,
     });
     const s = await getAssistantStatus("u1");
-    expect(s.spendPaused).toBe(false);
     expect(s.remaining).toBe(0);
     expect(s.used).toBe(50);
     expect(s.cacheHitRate).toBeNull();
-  });
-
-  it("reports spend paused when checkSpendGuard returns false", async () => {
-    mockedSpend.mockResolvedValue(false);
-    const s = await getAssistantStatus("u1");
-    expect(s.spendPaused).toBe(true);
   });
 
   it("reports hasConnectedAgent from the Supabase grants check", async () => {

@@ -9,7 +9,7 @@ import { parseGateError } from "./gate";
 export const DEFAULT_CHAT_ERROR_MESSAGE =
   "Something went wrong while sending your message. Please try again.";
 
-/** Sanitize a chat error into user-safe copy. Gate errors (quota/spend) are
+/** Sanitize a chat error into user-safe copy. Gate errors (quota/consent) are
  *  handled by the ConnectGate surface, so any error that reaches this bubble
  *  is an unexpected failure - a friendly generic message is always correct. */
 export function toFriendlyError(_error: unknown): string {
@@ -18,7 +18,7 @@ export function toFriendlyError(_error: unknown): string {
 
 /**
  * Whether a chat error should render the generic error bubble. Gate errors
- * (quota/spend) are routed to the ConnectGate/onGate surface instead - never
+ * (quota/consent) are routed to the ConnectGate/onGate surface instead - never
  * show both the gate surface and the error bubble. This is the shared `showError`
  * wiring used by both chat surfaces (chat-panel.tsx and chat-page.tsx).
  */

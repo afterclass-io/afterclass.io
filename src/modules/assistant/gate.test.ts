@@ -7,9 +7,6 @@ describe("parseGateError", () => {
       parseGateError(new Error('[POST /api/chat] 403: {"gate":"quota"}')),
     ).toBe("quota");
   });
-  it("parses spend from a bare JSON body", () => {
-    expect(parseGateError(new Error('{"gate":"spend"}'))).toBe("spend");
-  });
   it("parses consent from an AI SDK APIError message", () => {
     expect(
       parseGateError(new Error('[POST /api/chat] 403: {"gate":"consent"}')),

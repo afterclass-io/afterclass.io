@@ -34,10 +34,6 @@ describe("shouldShowChatError (shared showError wiring in chat-panel.tsx / chat-
     ).toBe(false);
   });
 
-  it("excludes spend gate errors", () => {
-    expect(shouldShowChatError(new Error('{"gate":"spend"}'))).toBe(false);
-  });
-
   it("shows the bubble for any non-gate error", () => {
     expect(shouldShowChatError(new Error("Network request failed"))).toBe(true);
     expect(shouldShowChatError("a plain string error")).toBe(true);

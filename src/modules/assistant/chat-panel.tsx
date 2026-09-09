@@ -24,7 +24,7 @@ export type ChatPanelProps = {
   // Task 5: consent gating. False → notice in place of composer + suggestions
   // (Composer never mounts, so sends are impossible). onConsented flips the
   // parent's local state true; onConsentRevoked flips it back (mid-session
-  // consent-403 re-asks). ConnectGate handling for quota/spend unchanged.
+  // consent-403 re-asks). ConnectGate handling for quota unchanged.
   aiConsented: boolean;
   onConsented: () => void;
   onConsentRevoked: () => void;
@@ -125,7 +125,7 @@ function ChatPanelInner({
 
   // chat.error is a single global state that only reflects the LAST request;
   // a new send clears it, so the bubble naturally maps to the current failed
-  // turn. Gate errors (quota/spend) are routed to onGate instead - never show
+  // turn. Gate errors (quota/consent) are routed to onGate instead - never show
   // both the gate surface and the error bubble.
   const showError = shouldShowChatError(chat.error);
 

@@ -57,7 +57,7 @@ export function ChatPage({
       const g = parseGateError(error);
       if (!g) return;
       // Consent cleared mid-session → flip back to the notice (and clear any
-      // quota/spend gate — consent re-asks first). Other gates unchanged.
+      // quota gate — consent re-asks first). Other gates unchanged.
       if (g === "consent") {
         setConsented(false);
         setGate(null);
@@ -112,7 +112,7 @@ export function ChatPage({
 
   // chat.error is a single global state that only reflects the LAST request;
   // a new send clears it, so the bubble naturally maps to the current failed
-  // turn. Gate errors (quota/spend) render the ConnectGate surface instead.
+  // turn. Gate errors (quota/consent) render the ConnectGate surface instead.
   const showError = shouldShowChatError(chat.error);
 
   const retry = useCallback(() => {

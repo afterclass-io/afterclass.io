@@ -19,7 +19,6 @@ type Status =
       quota: number;
       used: number;
       remaining: number;
-      spendPaused: boolean;
       hasConnectedAgent: boolean;
       nudgeAt: number;
       aiDegraded: boolean;
@@ -51,10 +50,6 @@ function SignedInAssistant({
   const [consented, setConsented] = useState<boolean>(
     status.aiConsented ?? false,
   );
-
-  useEffect(() => {
-    if (status.spendPaused) setGate("spend");
-  }, [status.spendPaused]);
 
   // Reset local consent from the server payload whenever it changes (open-
   // refetch, route-change refetch). Local onConsented/onConsentRevoked flips

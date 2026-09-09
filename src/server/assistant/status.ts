@@ -1,4 +1,4 @@
-import { checkSpendGuard, getQuotaState } from "./quota";
+import { getQuotaState } from "./quota";
 // Task 8: nudgeAt comes from the canonical chat-config (env > EdgeConfig >
 // config.json > defaults) — same value, centralized source.
 import { getChatConfigAsync as getChatConfig } from "@/server/config/chat-config";
@@ -12,7 +12,6 @@ export type AssistantStatus = {
   quota: number;
   used: number;
   remaining: number;
-  spendPaused: boolean;
   hasConnectedAgent: boolean;
   nudgeAt: number;
   aiDegraded: boolean;
@@ -37,9 +36,8 @@ export async function getAssistantStatus(
   const connected = hasConnectedAgent(userId, supabaseAccessToken).catch(
     () => false,
   );
-  const [quota, spendPaused, chat, consentDate] = await Promise.all([
+  const [quota, chat, consentDate] = await Promise.all([
     getQuotaState(userId),
-    checkSpendGuard().then((ok) => !ok),
     getChatConfig(),
     getAiConsentDate(userId),
   ]);
@@ -48,7 +46,6 @@ export async function getAssistantStatus(
     quota: quota.quota,
     used: quota.used,
     remaining: quota.remaining,
-    spendPaused,
     hasConnectedAgent: await connected,
     nudgeAt: chat.nudgeAt,
     aiDegraded: !isLlmConfigured(env),

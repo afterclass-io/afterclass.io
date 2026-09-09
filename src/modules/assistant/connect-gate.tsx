@@ -6,9 +6,7 @@ export function ConnectGate({ reason }: { reason: ChatGate }) {
   const title =
     reason === "quota"
       ? "You've used your free messages this month."
-      : reason === "spend"
-        ? "The free assistant is paused for this month."
-        : "Please consent to AI use before chatting.";
+      : "Please consent to AI use before chatting.";
   if (reason === "consent") {
     return (
       <div style={{ padding: 16, maxWidth: 320 }}>
