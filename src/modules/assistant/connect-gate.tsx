@@ -9,6 +9,17 @@ export function ConnectGate({ reason }: { reason: ChatGate }) {
       : reason === "spend"
         ? "The free assistant is paused for this month."
         : "Please consent to AI use before chatting.";
+  if (reason === "consent") {
+    return (
+      <div style={{ padding: 16, maxWidth: 320 }}>
+        <h3>{title}</h3>
+        <p>
+          Open the assistant and agree to the AI notice to continue. There is no
+          training opt-out — see <a href="/privacy">privacy</a>.
+        </p>
+      </div>
+    );
+  }
   return (
     <div style={{ padding: 16, maxWidth: 320 }}>
       <h3>{title}</h3>
