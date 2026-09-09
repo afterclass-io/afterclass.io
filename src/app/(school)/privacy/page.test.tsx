@@ -26,15 +26,14 @@ describe("PrivacyPage", () => {
     expect(
       screen.getByRole("heading", { name: "Privacy Policy" }),
     ).toBeTruthy();
-    // Provider-generic disclosure (no vendor names in body copy): training
-    // warning plus links to each provider's own policy.
+    // Provider-generic disclosure (no vendor names anywhere on the page):
+    // training warning, no per-provider links.
     expect(
       screen.getByText(/may train on prompts/, { exact: false }),
     ).toBeTruthy();
-    for (const name of ["DeepSeek", "Google", "Meta"]) {
-      // "Meta" also appears in the Meta policy link text — any match counts.
-      expect(screen.getAllByText(new RegExp(name)).length).toBeGreaterThan(0);
-    }
+    expect(
+      screen.queryByRole("link", { name: /DeepSeek|Google|Meta|z\.ai/i }),
+    ).toBeNull();
   });
 
   it("cross-links to /terms", () => {

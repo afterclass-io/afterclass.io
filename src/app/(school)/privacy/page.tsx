@@ -86,44 +86,7 @@ export default function PrivacyPage() {
           processing. These providers may train on prompts; there is no training
           opt-out, so using the AI feature consents to AI processing including
           provider training. The alternative is connecting your personal AI
-          agents to the MCP, or simply not using the AI feature. For each
-          provider&apos;s own terms, see their published policies:{" "}
-          <a
-            href="https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary underline-offset-4 hover:underline"
-          >
-            DeepSeek
-          </a>
-          {", "}
-          <a
-            href="https://policies.google.com/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary underline-offset-4 hover:underline"
-          >
-            Google
-          </a>
-          {", "}
-          <a
-            href="https://www.facebook.com/privacy/policy/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary underline-offset-4 hover:underline"
-          >
-            Meta
-          </a>
-          {", and "}
-          <a
-            href="https://docs.bigmodel.cn/cn/terms/privacy-policy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary underline-offset-4 hover:underline"
-          >
-            Zhipu AI (z.ai)
-          </a>
-          .
+          agents to the MCP, or simply not using the AI feature.
         </p>
         <p>
           <span className="text-foreground">Infrastructure:</span> hosting,
@@ -138,9 +101,8 @@ export default function PrivacyPage() {
       <Section title="Retention">
         <p>
           Account and activity data is kept while you are enrolled and using the
-          site. AI prompts are retained per each provider&apos;s own terms — see
-          the provider policies linked above. Past prompts cannot be un-trained
-          once processed.
+          site. AI prompts are retained per each provider&apos;s own terms. Past
+          prompts cannot be un-trained once processed.
         </p>
       </Section>
 
