@@ -57,7 +57,9 @@ describe("ConsentNotice", () => {
     render(<ConsentNotice onConsented={vi.fn()} />);
     fireEvent.click(screen.getByText("Not now"));
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(screen.getByText("AI chat needs your OK to start.")).toBeTruthy();
+    expect(
+      screen.getByText("Assistant needs your approval to start."),
+    ).toBeTruthy();
     fireEvent.click(screen.getByText("Review notice"));
     expect(screen.getByText("Agree and continue")).toBeTruthy();
   });

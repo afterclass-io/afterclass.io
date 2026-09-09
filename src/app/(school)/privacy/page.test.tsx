@@ -26,7 +26,12 @@ describe("PrivacyPage", () => {
     expect(
       screen.getByRole("heading", { name: "Privacy Policy" }),
     ).toBeTruthy();
-    for (const name of ["OpenRouter", "DeepSeek", "Google", "Meta", "z.ai"]) {
+    // Provider-generic disclosure (no vendor names in body copy): training
+    // warning plus links to each provider's own policy.
+    expect(
+      screen.getByText(/may train on prompts/, { exact: false }),
+    ).toBeTruthy();
+    for (const name of ["DeepSeek", "Google", "Meta"]) {
       // "Meta" also appears in the Meta policy link text — any match counts.
       expect(screen.getAllByText(new RegExp(name)).length).toBeGreaterThan(0);
     }

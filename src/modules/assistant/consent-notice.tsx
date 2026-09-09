@@ -18,7 +18,9 @@ export function ConsentNotice({
   if (dismissed) {
     return (
       <div className="flex items-center justify-center gap-2 px-4 py-3 text-sm">
-        <p className="text-muted-foreground">AI chat needs your OK to start.</p>
+        <p className="text-muted-foreground">
+          Assistant needs your approval to start.
+        </p>
         <button
           type="button"
           onClick={() => setDismissed(false)}
@@ -65,14 +67,15 @@ export function ConsentNotice({
         tokens.
       </p>
       <p className="text-muted-foreground mt-2">
-        Requests run through OpenRouter and its model pool (DeepSeek, Google,
-        Meta, z.ai), who may train on prompts. There is no training opt-out:
-        agreeing consents to AI processing including provider training — the
-        alternative is not using the AI feature.
+        Requests run through third party AI providers who may train on prompts.
+        To use the AI features natively, you must consent to AI processing
+        including provider training.
       </p>
       <p className="text-muted-foreground mt-2">
-        Why no opt-out? Free and low-cost routing is what keeps this feature
-        inside our $20/month AI budget. Details in our{" "}
+        Alternatively, you may connect your personal AI agents to the MCP.
+      </p>
+      <p className="text-muted-foreground mt-2">
+        Details in our{" "}
         <a
           href="/privacy"
           className="text-primary underline-offset-4 hover:underline"

@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "AfterClass privacy policy: what data we collect, AI processor sharing (OpenRouter + preset pool), storage, and your rights.",
+    "AfterClass privacy policy: what data we collect, AI processor sharing, storage, and your rights.",
 };
 
 function Section({
@@ -82,20 +82,12 @@ export default function PrivacyPage() {
           <span className="text-foreground">
             AI processors (AI turns only):
           </span>{" "}
-          each chat turn is sent through{" "}
-          <a
-            href="https://openrouter.ai/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary underline-offset-4 hover:underline"
-          >
-            OpenRouter
-          </a>{" "}
-          and its preset model pool — DeepSeek, Google, Meta, and z.ai — for
+          each chat turn is sent through third party AI providers for
           processing. These providers may train on prompts; there is no training
           opt-out, so using the AI feature consents to AI processing including
-          provider training. The alternative is simply not using the AI feature.
-          For each provider&apos;s own terms, see their published policies:{" "}
+          provider training. The alternative is connecting your personal AI
+          agents to the MCP, or simply not using the AI feature. For each
+          provider&apos;s own terms, see their published policies:{" "}
           <a
             href="https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html"
             target="_blank"

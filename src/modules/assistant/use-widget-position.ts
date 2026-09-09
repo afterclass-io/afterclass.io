@@ -194,7 +194,7 @@ export function useWidgetPosition(viewport: Size) {
         x: e.clientX - resizeStart.current.startPointer.x,
         y: e.clientY - resizeStart.current.startPointer.y,
       };
-      setSize(applyResize(resizeStart.current.startSize, delta));
+      setSize(applyResize(resizeStart.current.startSize, delta, viewport));
     },
     onPointerUp: () => {
       resizeStart.current = null;

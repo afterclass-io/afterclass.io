@@ -81,9 +81,8 @@ export default function TermsPage() {
           outcomes.
         </p>
         <p>
-          Each chat turn is sent to our AI processors (OpenRouter and its preset
-          model pool) for processing, and providers may train on prompts — see
-          the{" "}
+          Each chat turn is sent to our third party AI providers for processing,
+          and providers may train on prompts — see the{" "}
           <Link
             href="/privacy"
             className="text-primary underline-offset-4 hover:underline"

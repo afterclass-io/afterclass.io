@@ -199,6 +199,95 @@ describe("useWidgetPosition - restore path", () => {
   });
 });
 
+describe("useWidgetPosition resize", () => {
+  let target: HTMLElement;
+
+  beforeEach(() => {
+    target = document.createElement("div");
+    target.setPointerCapture = vi.fn();
+  });
+
+  const pointer = (x: number, y: number, pointerId = 1) =>
+    ({
+      clientX: x,
+      clientY: y,
+      pointerId,
+      currentTarget: target,
+    }) as unknown as ReactPointerEvent;
+
+  it("dragging the resize grip grows the box and persists the size", () => {
+    const { result } = renderHook(() =>
+      useWidgetPosition({ width: 1280, height: 800 }),
+    );
+    expect(result.current.size).toEqual({ width: 400, height: 560 });
+
+    act(() => {
+      result.current.resizeHandlers.onPointerDown(pointer(0, 0));
+    });
+    act(() => {
+      result.current.resizeHandlers.onPointerMove(pointer(100, 60));
+    });
+    act(() => {
+      result.current.resizeHandlers.onPointerUp();
+    });
+
+    expect(result.current.size).toEqual({ width: 500, height: 620 });
+    const stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY)!) as {
+      width: number;
+      height: number;
+    };
+    expect(stored.width).toBe(500);
+    expect(stored.height).toBe(620);
+  });
+
+  it("resize clamps to the fixed min and the viewport-aware max", () => {
+    const { result } = renderHook(() =>
+      useWidgetPosition({ width: 1280, height: 800 }),
+    );
+
+    // Shrink far past the minimum — clamps at 320x420.
+    act(() => {
+      result.current.resizeHandlers.onPointerDown(pointer(0, 0));
+    });
+    act(() => {
+      result.current.resizeHandlers.onPointerMove(pointer(-500, -500));
+    });
+    act(() => {
+      result.current.resizeHandlers.onPointerUp();
+    });
+    expect(result.current.size).toEqual({ width: 320, height: 420 });
+
+    // Grow far past the maximum — width clamps at the 720 fixed max; height
+    // clamps at the viewport-aware max (800 - 2*8 = 784 < the 900 fixed max).
+    act(() => {
+      result.current.resizeHandlers.onPointerDown(pointer(0, 0));
+    });
+    act(() => {
+      result.current.resizeHandlers.onPointerMove(pointer(2000, 2000));
+    });
+    act(() => {
+      result.current.resizeHandlers.onPointerUp();
+    });
+    expect(result.current.size).toEqual({ width: 720, height: 784 });
+  });
+
+  it("resize max respects a small (mobile) viewport", () => {
+    const { result } = renderHook(() =>
+      useWidgetPosition({ width: 360, height: 640 }),
+    );
+    act(() => {
+      result.current.resizeHandlers.onPointerDown(pointer(0, 0));
+    });
+    act(() => {
+      result.current.resizeHandlers.onPointerMove(pointer(1000, 1000));
+    });
+    act(() => {
+      result.current.resizeHandlers.onPointerUp();
+    });
+    // 360 - 2*8 = 344 wide, 640 - 2*8 = 624 tall — never the 720x900 desktop max.
+    expect(result.current.size).toEqual({ width: 344, height: 624 });
+  });
+});
 describe("useWidgetPosition drag", () => {
   // The handlers read `e.currentTarget` (setPointerCapture), so every synthetic
   // event must carry a `currentTarget` element. Hoisted to the describe scope.

@@ -27,10 +27,28 @@ export function clampPosition(pos: Point, size: Size, viewport: Size): Point {
   };
 }
 
-export function clampSize(size: Size): Size {
+export function clampSize(size: Size, viewport?: Size): Size {
+  // Without a viewport the fixed bounds apply (initial state, tests). With
+  // one, the max also respects the visible area so the box can never resize
+  // larger than the screen — on a 360px phone the fixed 720px MAX would
+  // otherwise overflow the viewport.
+  const maxWidth = viewport
+    ? Math.min(MAX_WIDGET_SIZE.width, viewport.width - WIDGET_MARGIN * 2)
+    : MAX_WIDGET_SIZE.width;
+  const maxHeight = viewport
+    ? Math.min(MAX_WIDGET_SIZE.height, viewport.height - WIDGET_MARGIN * 2)
+    : MAX_WIDGET_SIZE.height;
   return {
-    width: clamp(size.width, MIN_WIDGET_SIZE.width, MAX_WIDGET_SIZE.width),
-    height: clamp(size.height, MIN_WIDGET_SIZE.height, MAX_WIDGET_SIZE.height),
+    width: clamp(
+      size.width,
+      MIN_WIDGET_SIZE.width,
+      Math.max(maxWidth, MIN_WIDGET_SIZE.width),
+    ),
+    height: clamp(
+      size.height,
+      MIN_WIDGET_SIZE.height,
+      Math.max(maxHeight, MIN_WIDGET_SIZE.height),
+    ),
   };
 }
 
@@ -110,9 +128,12 @@ export function applyDrag(
   );
 }
 
-export function applyResize(start: Size, delta: Point): Size {
-  return clampSize({
-    width: start.width + delta.x,
-    height: start.height + delta.y,
-  });
+export function applyResize(start: Size, delta: Point, viewport?: Size): Size {
+  return clampSize(
+    {
+      width: start.width + delta.x,
+      height: start.height + delta.y,
+    },
+    viewport,
+  );
 }
