@@ -1,6 +1,8 @@
 import type { RouterCaller, RouterOutputs } from "../types";
 import { parseViewJson } from "../types";
 import { stripSecretsFromValue } from "@/mcp/output-policy";
+import { TERM_ORDER } from "./feasibility-check";
+import { buildProgressSyncPlan } from "@/modules/roadmaps/functions/progress-sync";
 
 export interface RoadmapEntryView {
   yearNumber: number;
@@ -8,6 +10,10 @@ export interface RoadmapEntryView {
   courseCode: string;
   courseName: string;
   creditUnits: number | null;
+  /** taken = roadmap term elapsed before the current term (active roadmaps are
+   *  a historical source of truth, not just future plans); planned otherwise.
+   *  Absent when the position cannot be resolved (no matric term / no terms). */
+  status?: "taken" | "planned";
 }
 
 export interface RoadmapView {
@@ -20,9 +26,44 @@ export interface RoadmapView {
   entries: RoadmapEntryView[];
 }
 
+/** Compare two (yearNumber, term) slots: <0 before, 0 same, >0 after. */
+function compareTermSlot(
+  a: { yearNumber: number; term: string },
+  b: { yearNumber: number; term: string },
+): number {
+  return (
+    a.yearNumber - b.yearNumber ||
+    (TERM_ORDER[a.term] ?? 99) - (TERM_ORDER[b.term] ?? 99)
+  );
+}
+
+type TermRow = {
+  id: string;
+  acadYearStart: number;
+  term: string;
+  startDt: Date;
+};
+
+/**
+ * Resolve the user's current (yearNumber, term) position on a roadmap from
+ * its matriculation term + the current acad term, via the same sync-plan
+ * helper plan-semester uses. Null when unresolvable (no matric term, unknown
+ * terms) — callers then omit per-entry status rather than guessing.
+ */
+function resolveCurrentPosition(
+  terms: TermRow[],
+  matricTermId: string,
+  currentTermId: string,
+): { yearNumber: number; term: string } | null {
+  const plan = buildProgressSyncPlan(terms, matricTermId, currentTermId);
+  const last = plan.at(-1);
+  return last ? { yearNumber: last.yearNumber, term: last.term } : null;
+}
+
 function toRoadmapViewPropsShared(
   data: Record<string, unknown>,
   isPublic: boolean,
+  position?: { yearNumber: number; term: string } | null,
 ): RoadmapView {
   const roadmap = (data.roadmap ?? data) as Record<string, unknown>;
   const rawEntries = Array.isArray(data.entries)
@@ -47,6 +88,19 @@ function toRoadmapViewPropsShared(
       courseName: course.name,
       creditUnits:
         typeof course.creditUnits === "number" ? course.creditUnits : null,
+      // Entries in strictly earlier slots than the user's current position
+      // are already taken; the current + later slots are still planned.
+      ...(position
+        ? {
+            status:
+              compareTermSlot(
+                { yearNumber: entry.yearNumber, term: entry.term },
+                position,
+              ) < 0
+                ? ("taken" as const)
+                : ("planned" as const),
+          }
+        : {}),
     });
   }
   return {
@@ -55,21 +109,22 @@ function toRoadmapViewPropsShared(
     isPublic,
     owner: isPublic ? (data.ownerUsername as string | null) : null,
     voteCount: isPublic ? (data.voteCount as number | null) : null,
-    // Honest progress signal from the existing getMine payload only (no new
-    // queries): completed = entries whose course carries a non-empty
-    // description (content synced), total = all entries. Omit when there are
-    // no entries so the view hides the row.
+    // Completed = entries in elapsed roadmap terms (historical truth), not
+    // catalog description presence. Falls back to the description heuristic
+    // only when the position is unresolvable.
     ...(entries.length > 0
       ? {
           progress: {
-            completed: rawEntries.filter((e) => {
-              const course = ((e as Record<string, unknown>).course ??
-                {}) as Record<string, unknown>;
-              return (
-                typeof course.description === "string" &&
-                course.description.length > 0
-              );
-            }).length,
+            completed: position
+              ? entries.filter((e) => e.status === "taken").length
+              : rawEntries.filter((e) => {
+                  const course = ((e as Record<string, unknown>).course ??
+                    {}) as Record<string, unknown>;
+                  return (
+                    typeof course.description === "string" &&
+                    course.description.length > 0
+                  );
+                }).length,
             total: entries.length,
           },
         }
@@ -95,7 +150,45 @@ export async function buildRoadmapView(
   const roadmapRest: Record<string, unknown> = roadmapSrc
     ? stripSecretsFromValue({ ...roadmapSrc })
     : {};
-  return { roadmap: roadmapRest, entries: data.entries };
+  return {
+    roadmap: roadmapRest,
+    entries: data.entries,
+    position: await resolveRoadmapPosition(caller, roadmapRest),
+  };
+}
+
+/**
+ * Best-effort current position for the position-aware view: needs the
+ * roadmap's matricTermId plus the acad term list + current term. Any failure
+ * (no matric term, no terms, unknown ids) yields null and the view omits
+ * status rather than guessing.
+ */
+async function resolveRoadmapPosition(
+  caller: RouterCaller,
+  roadmap: Record<string, unknown>,
+): Promise<{ yearNumber: number; term: string } | null> {
+  try {
+    const matricTermId =
+      typeof roadmap.matricTermId === "string" ? roadmap.matricTermId : null;
+    if (!matricTermId) return null;
+    const acad = (
+      caller as unknown as {
+        acadTerms: {
+          list: () => Promise<TermRow[]>;
+          current: () => Promise<{ id: string } | null>;
+        };
+      }
+    ).acadTerms;
+    const [terms, current] = await Promise.all([acad.list(), acad.current()]);
+    if (!current) return null;
+    return resolveCurrentPosition(
+      terms.map((t) => ({ ...t, startDt: new Date(t.startDt) })),
+      matricTermId,
+      current.id,
+    );
+  } catch {
+    return null;
+  }
 }
 
 /** Shared toViewProps for any tool whose JSON text is a roadmap view. */
@@ -114,10 +207,15 @@ export function roadmapViewToViewProps(
         : data && typeof data === "object" && "roadmap" in data
           ? data
           : data;
-    return toRoadmapViewPropsShared(payload, isPublic) as unknown as Record<
-      string,
-      unknown
-    >;
+    const position =
+      payload && typeof payload === "object" && "position" in payload
+        ? (payload.position as { yearNumber: number; term: string } | null)
+        : undefined;
+    return toRoadmapViewPropsShared(
+      payload,
+      isPublic,
+      position,
+    ) as unknown as Record<string, unknown>;
   };
 }
 

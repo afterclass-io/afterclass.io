@@ -29,6 +29,10 @@ function makeCaller(procs: Record<string, unknown>) {
       getMine: procs.roadmapsGetMine,
       getById: procs.roadmapsGetById,
     },
+    acadTerms: {
+      list: procs.acadTermsList,
+      current: procs.acadTermsCurrent,
+    },
   } as unknown as ToolContext["caller"];
 }
 
@@ -84,6 +88,70 @@ describe("get-my-roadmap", () => {
     };
     expect(parsed.roadmap.shareToken).toBeUndefined();
     expect(parsed.roadmap.id).toBe("r1");
+  });
+
+  it("annotates entries as taken when their roadmap term elapsed before the current term", async () => {
+    const fn = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "My Plan", matricTermId: "AY202425T1" },
+      entries: [
+        {
+          id: "e1",
+          courseId: "c1",
+          yearNumber: 1,
+          term: "T2",
+          course: { code: "IS215", name: "Digital Business", creditUnits: 1 },
+        },
+        {
+          id: "e2",
+          courseId: "c2",
+          yearNumber: 3,
+          term: "T1",
+          course: { code: "CS301", name: "Advanced", creditUnits: 1 },
+        },
+      ],
+    });
+    const terms = vi.fn().mockResolvedValue([
+      {
+        id: "AY202425T1",
+        acadYearStart: 2024,
+        term: "1",
+        startDt: "2024-08-19T00:00:00.000Z",
+      },
+      {
+        id: "AY202425T2",
+        acadYearStart: 2024,
+        term: "2",
+        startDt: "2025-01-13T00:00:00.000Z",
+      },
+      {
+        id: "AY202627T1",
+        acadYearStart: 2026,
+        term: "1",
+        startDt: "2026-08-17T00:00:00.000Z",
+      },
+    ]);
+    const current = vi.fn().mockResolvedValue({ id: "AY202627T1" });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        roadmapsGetMine: fn,
+        acadTermsList: terms,
+        acadTermsCurrent: current,
+      }),
+    };
+    const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
+    expect(res.isError).toBeFalsy();
+    const props = getMyRoadmapTool.toViewProps?.(res) as {
+      entries: Array<{ courseCode: string; status: string }>;
+      progress: { completed: number; total: number };
+    };
+    expect(props.entries.find((e) => e.courseCode === "IS215")?.status).toBe(
+      "taken",
+    );
+    expect(props.entries.find((e) => e.courseCode === "CS301")?.status).toBe(
+      "planned",
+    );
+    expect(props.progress).toEqual({ completed: 1, total: 2 });
   });
 
   it("exposes a roadmap-view View whose props normalize the { roadmap, entries } output", async () => {

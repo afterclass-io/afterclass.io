@@ -79,6 +79,7 @@ export const roadmapOutput = z.object({
       courseCode: z.string(),
       courseName: z.string(),
       creditUnits: z.number().nullable(),
+      status: z.enum(["taken", "planned"]).optional(),
     }),
   ),
 });

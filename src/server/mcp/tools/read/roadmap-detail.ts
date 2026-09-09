@@ -16,7 +16,7 @@ const getMyRoadmapSchema = z.object({
 export const getMyRoadmapTool: McpTool<typeof getMyRoadmapSchema> = {
   name: "get-my-roadmap",
   description:
-    "Get one of the user's own roadmaps with ALL its course entries (yearNumber, term T1|T2|T3A|T3B, course code/name/credit units). Use this to see your own progression before planning.",
+    "Get one of the user's own roadmaps with ALL its course entries (yearNumber, term T1|T2|T3A|T3B, course code/name/credit units, status taken|planned). Entries in roadmap terms before the user's current position (from the roadmap's matriculation term) are marked taken — treat the active roadmap as the historical source of truth for 'have I taken X?'. Later terms are planned. Use this to see your own progression before planning.",
   inputSchema: getMyRoadmapSchema,
   readOnly: true,
   toViewProps: roadmapViewExtractor(false),
