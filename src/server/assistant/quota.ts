@@ -12,8 +12,8 @@ import { currentMonthPeriod } from "./month";
  * `ChatConfig` field names (`spendCapPerMonthUsd`, `quotaPerMonth`, prices)
  * while the VALUES now come from the canonical chat-config (env >
  * EdgeConfig > config.json > defaults). Prices are not env-tunable today —
- * they stay at the compiled 0.14/0.014/0.28 (same numbers as
- * DEFAULT_CHAT_CONFIG before Task 8).
+ * they stay at the compiled live-peak 0.44/0.014/1.32 (v4-flash peak per
+ * the cost-analysis doc §2; the $20 kill-switch must trip on real spend).
  */
 async function getQuotaChat(): Promise<ChatConfig> {
   const c = await getCanonicalChatConfig();
@@ -30,9 +30,9 @@ async function getQuotaChat(): Promise<ChatConfig> {
     chatEnabled: c.chatEnabled,
     widgetEnabled: c.widgetEnabled,
     mcpEnabled: c.mcpEnabled,
-    priceInputPerM: 0.14,
+    priceInputPerM: 0.44,
     priceCachedInputPerM: 0.014,
-    priceOutputPerM: 0.28,
+    priceOutputPerM: 1.32,
   };
 }
 

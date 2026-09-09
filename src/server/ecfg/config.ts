@@ -9,9 +9,9 @@ export const DEFAULT_CHAT_CONFIG = {
   maxInputTokens: 64000,
   maxOutputTokens: 4096,
   maxToolRounds: 12,
-  priceInputPerM: 0.14,
+  priceInputPerM: 0.44,
   priceCachedInputPerM: 0.014,
-  priceOutputPerM: 0.28,
+  priceOutputPerM: 1.32,
   // Task 4 kill-switches (ecfg-owned only, no env bindings): all default
   // true. chatEnabled gates POST /api/chat (503), widgetEnabled hides the
   // widget client-side via status, mcpEnabled gates the MCP transport only.

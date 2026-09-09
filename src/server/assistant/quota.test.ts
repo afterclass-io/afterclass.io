@@ -68,9 +68,9 @@ vi.mock("@/server/config/chat-config", () => ({
     maxOutputTokens: 1024,
     maxToolRounds: 6,
     settlementSpikeTokens: 30000,
-    priceInputPerM: 0.14,
+    priceInputPerM: 0.44,
     priceCachedInputPerM: 0.014,
-    priceOutputPerM: 0.28,
+    priceOutputPerM: 1.32,
   }),
 }));
 vi.mock("@/server/ecfg/chat", () => ({
@@ -83,9 +83,9 @@ vi.mock("@/server/ecfg/chat", () => ({
     maxInputTokens: 16000,
     maxOutputTokens: 1024,
     maxToolRounds: 6,
-    priceInputPerM: 0.14,
+    priceInputPerM: 0.44,
     priceCachedInputPerM: 0.014,
-    priceOutputPerM: 0.28,
+    priceOutputPerM: 1.32,
   }),
 }));
 
@@ -165,26 +165,25 @@ describe("quota", () => {
 
   // ---- tokensToUsd ----
   it("computes spend from token counts", () => {
-    // 10000*0.14 + 1000*0.28 over 1e6 is 0.0016800000000000003 (not exactly
-    // 0.00168), so use toBeCloseTo with 5 dp for discrimination.
+    // 10000*0.44 + 1000*1.32 over 1e6 is 0.00572 (live-peak pricing).
     expect(
       tokensToUsd(DEFAULT_CHAT_CONFIG, { input: 10_000, output: 1_000 }),
-    ).toBeCloseTo(0.00168, 5);
+    ).toBeCloseTo(0.00572, 5);
   });
 
-  it("computes spend with cached input at 10x discount", () => {
-    // (8000*0.14 + 2000*0.014 + 1000*0.28)/1e6 = (1120+28+280)/1e6 = 0.001428
+  it("computes spend with cached input at discount", () => {
+    // (8000*0.44 + 2000*0.014 + 1000*1.32)/1e6 = (3520+28+1320)/1e6 = 0.004868
     expect(
       tokensToUsd(DEFAULT_CHAT_CONFIG, {
         input: 10_000,
         output: 1_000,
         cachedInput: 2_000,
       }),
-    ).toBeCloseTo(0.001428, 5);
+    ).toBeCloseTo(0.004868, 5);
   });
 
   it("clamps cachedInput exceeding input to 0 non-cached", () => {
-    // cachedInput > input => nonCached = 0, cost = cached*0.014 + output*0.28
+    // cachedInput > input => nonCached = 0, cost = cached*0.014 + output*1.32
     expect(
       tokensToUsd(DEFAULT_CHAT_CONFIG, {
         input: 1_000,
@@ -347,7 +346,7 @@ describe("quota", () => {
           totalSpendUsd: { lt: 20 },
         },
         data: {
-          totalSpendUsd: { increment: expect.closeTo(0.00168, 5) as number },
+          totalSpendUsd: { increment: expect.closeTo(0.00572, 5) as number },
         },
       }) as Record<string, unknown>,
     );
@@ -360,13 +359,13 @@ describe("quota", () => {
           inputTokens: 10000,
           outputTokens: 1000,
           cachedInputTokens: 0,
-          spendUsd: expect.closeTo(0.00168, 5) as number,
+          spendUsd: expect.closeTo(0.00572, 5) as number,
         }) as Record<string, unknown>,
         update: expect.objectContaining({
           inputTokens: { increment: 10000 },
           outputTokens: { increment: 1000 },
           cachedInputTokens: { increment: 0 },
-          spendUsd: { increment: expect.closeTo(0.00168, 5) as number },
+          spendUsd: { increment: expect.closeTo(0.00572, 5) as number },
         }) as Record<string, unknown>,
       }) as Record<string, unknown>,
     );
@@ -382,7 +381,7 @@ describe("quota", () => {
       cachedInput: 2_000,
     });
     const expectedSpend =
-      (8000 * 0.14 + 2000 * 0.014 + 1000 * 0.28) / 1_000_000;
+      (8000 * 0.44 + 2000 * 0.014 + 1000 * 1.32) / 1_000_000;
     expect(txChatUsageUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
         create: expect.objectContaining({

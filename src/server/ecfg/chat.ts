@@ -41,9 +41,11 @@ export async function getChatConfig(): Promise<LegacyChatConfig> {
     chatEnabled: canonical.chatEnabled,
     widgetEnabled: canonical.widgetEnabled,
     mcpEnabled: canonical.mcpEnabled,
-    priceInputPerM: 0.14,
+    // Live-peak v4-flash pricing (cost-analysis §2): the $20 kill-switch
+    // must trip on real spend, not quarter-rate output accounting.
+    priceInputPerM: 0.44,
     priceCachedInputPerM: 0.014,
-    priceOutputPerM: 0.28,
+    priceOutputPerM: 1.32,
   };
 }
 

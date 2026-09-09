@@ -125,8 +125,8 @@ All limits are driven by the `chat` section of the Edge Config. The hardcoded de
 | `maxInputTokens`        | int   | 16000   | Max input tokens per request (older messages are dropped to fit)                                                                          |
 | `maxOutputTokens`       | int   | 1024    | Max output tokens per response                                                                                                            |
 | `maxToolRounds`         | int   | 6       | Max sequential tool-call rounds per message. Kept at 6 to stay within the Vercel 60s function limit (initial call + up to 6 tool rounds). |
-| `priceInputPerM`        | float | 0.14    | Price per million input tokens (USD, used for spend tracking)                                                                             |
-| `priceOutputPerM`       | float | 0.28    | Price per million output tokens (USD, used for spend tracking)                                                                            |
+| `priceInputPerM`        | float | 0.44    | Price per million input tokens (USD, used for spend tracking)                                                                             |
+| `priceOutputPerM`       | float | 1.32    | Price per million output tokens (USD, used for spend tracking)                                                                            |
 
 ### Changing Config
 
