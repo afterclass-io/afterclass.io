@@ -8,15 +8,12 @@ let warned = false;
 export function isLlmConfigured(
   e: LlmEnvLike = process.env as LlmEnvLike,
 ): boolean {
-  const ok =
-    (typeof e.OPENROUTER_API_KEY === "string" &&
-      e.OPENROUTER_API_KEY.length > 0) ||
-    (typeof e.LLM_API_KEY === "string" && e.LLM_API_KEY.length > 0);
+  const ok = typeof e.LLM_API_KEY === "string" && e.LLM_API_KEY.length > 0;
   if (!ok && !warned) {
     warned = true;
     // intentional: loud once so a future maintainer removing the key is warned, not paged
     console.error(
-      "[assistant] OPENROUTER_API_KEY (or LLM_API_KEY fallback) missing — chat/MCP-AI disabled, app continues",
+      "[assistant] LLM_API_KEY missing — chat/MCP-AI disabled, app continues",
     );
   }
   return ok;

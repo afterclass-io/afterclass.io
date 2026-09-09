@@ -1,10 +1,14 @@
 "use client";
 
-export function ConnectGate({ reason }: { reason: "quota" | "spend" }) {
+import type { ChatGate } from "./gate";
+
+export function ConnectGate({ reason }: { reason: ChatGate }) {
   const title =
     reason === "quota"
       ? "You've used your free messages this month."
-      : "The free assistant is paused for this month.";
+      : reason === "spend"
+        ? "The free assistant is paused for this month."
+        : "Please consent to AI use before chatting.";
   return (
     <div style={{ padding: 16, maxWidth: 320 }}>
       <h3>{title}</h3>

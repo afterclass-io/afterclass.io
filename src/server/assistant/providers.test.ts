@@ -6,56 +6,26 @@ import {
 } from "./providers";
 
 describe("resolveLlmEnv", () => {
-  it("throws fail-closed when both OPENROUTER_API_KEY and LLM_API_KEY are missing (no empty-string fallback)", () => {
+  it("throws fail-closed when LLM_API_KEY is missing (no empty-string fallback)", () => {
     expect(() =>
       resolveLlmEnv({
-        OPENROUTER_API_KEY: undefined,
         LLM_API_KEY: undefined,
         LLM_BASE_URL: undefined,
         LLM_MODEL: undefined,
       }),
-    ).toThrow(/OPENROUTER_API_KEY.*LLM_API_KEY/);
+    ).toThrow(/LLM_API_KEY/);
     expect(() =>
       resolveLlmEnv({
-        OPENROUTER_API_KEY: "",
         LLM_API_KEY: "",
         LLM_BASE_URL: undefined,
         LLM_MODEL: undefined,
       }),
-    ).toThrow(/OPENROUTER_API_KEY.*LLM_API_KEY/);
-  });
-  it("prefers OPENROUTER_API_KEY over the LLM_API_KEY fallback", () => {
-    expect(
-      resolveLlmEnv({
-        OPENROUTER_API_KEY: "or-key",
-        LLM_API_KEY: "legacy-key",
-        LLM_BASE_URL: undefined,
-        LLM_MODEL: undefined,
-      }),
-    ).toEqual({
-      apiKey: "or-key",
-      baseURL: DEFAULT_LLM_BASE_URL,
-      model: DEFAULT_LLM_MODEL,
-    });
-  });
-  it("falls back to LLM_API_KEY when OPENROUTER_API_KEY is unset", () => {
-    expect(
-      resolveLlmEnv({
-        OPENROUTER_API_KEY: undefined,
-        LLM_API_KEY: "legacy-key",
-        LLM_BASE_URL: undefined,
-        LLM_MODEL: undefined,
-      }),
-    ).toEqual({
-      apiKey: "legacy-key",
-      baseURL: DEFAULT_LLM_BASE_URL,
-      model: DEFAULT_LLM_MODEL,
-    });
+    ).toThrow(/LLM_API_KEY/);
   });
   it("falls back to baseURL/model defaults when only the key is set", () => {
     expect(
       resolveLlmEnv({
-        OPENROUTER_API_KEY: "k",
+        LLM_API_KEY: "k",
         LLM_BASE_URL: undefined,
         LLM_MODEL: undefined,
       }),
@@ -68,7 +38,7 @@ describe("resolveLlmEnv", () => {
   it("prefers LLM_* overrides when set", () => {
     expect(
       resolveLlmEnv({
-        OPENROUTER_API_KEY: "custom",
+        LLM_API_KEY: "custom",
         LLM_BASE_URL: "https://x.com",
         LLM_MODEL: "m1",
       }),

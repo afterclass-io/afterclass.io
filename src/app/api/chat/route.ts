@@ -34,6 +34,7 @@ import {
 } from "@/server/config/chat-config";
 import { getModel } from "@/server/assistant/providers";
 import { isLlmConfigured } from "@/server/assistant/llm-status";
+import { getAiConsentDate } from "@/server/assistant/consent";
 import { env } from "@/env";
 import { extractCachedInputTokens } from "@/server/assistant/usage";
 
@@ -101,7 +102,7 @@ const SYSTEM_PROMPT = [
   "- Deep-links: when a tool result contains a page link (e.g. 'Open in bid analytics: /bidding/analytics?...'), render it as a markdown link with a short label ('Open in bid analytics') after your 1-2 sentence summary. Link to the page instead of pasting raw data or dumping the full result — the page is the action surface. Never invent page URLs; only render links the tools returned.",
 ].join("\n");
 
-const GATE = (reason: "quota" | "spend") =>
+const GATE = (reason: "quota" | "spend" | "consent") =>
   Response.json({ gate: reason }, { status: 403 });
 
 /**
@@ -188,11 +189,15 @@ function guardAgainstFailedStream<T>(
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user) return new Response("Unauthorized", { status: 401 });
+  const userId = session.user.id;
+  // Consent gate: unconsented turns are refused BEFORE degraded-mode,
+  // body parsing, quota, rate-limit, or LLM state is touched.
+  const consentDate = await getAiConsentDate(userId);
+  if (!consentDate) return GATE("consent");
   // Degraded mode: without an LLM key the app still boots and serves
   // browsing — only chat turns are refused, before any quota/rate-limit state.
   if (!isLlmConfigured(env))
     return new Response("Assistant unavailable", { status: 503 });
-  const userId = session.user.id;
 
   // Validate the body BEFORE any gates so a malformed request can never burn
   // a quota slot (reserveMessage writes a row) or hit the rate limiter.

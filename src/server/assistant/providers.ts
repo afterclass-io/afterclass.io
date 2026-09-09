@@ -6,7 +6,6 @@ export const DEFAULT_LLM_BASE_URL = "https://openrouter.ai/api/v1";
 export const DEFAULT_LLM_MODEL = "@preset/afterclass";
 
 export type LlmEnvLike = {
-  OPENROUTER_API_KEY?: string;
   LLM_API_KEY?: string;
   LLM_BASE_URL?: string;
   LLM_MODEL?: string;
@@ -17,16 +16,15 @@ export function resolveLlmEnv(e: LlmEnvLike): {
   baseURL: string;
   model: string;
 } {
-  // OpenRouter transport: the dedicated OPENROUTER_API_KEY wins, LLM_API_KEY
-  // stays as the fallback. baseURL/model fallbacks are unchanged —
-  // LLM_BASE_URL/LLM_MODEL envs still override (Vercel sets all three per
-  // environment). Fail-closed (Task 8): a missing/empty key used to
+  // Generic OpenAI-compatible key: the operator pairs LLM_API_KEY with
+  // LLM_BASE_URL/LLM_MODEL (e.g. an OpenRouter preset key with the preset
+  // base URL + model id). Fail-closed: a missing/empty key used to
   // silently become "" and surface as a cryptic 401 on the first turn. Throw
   // here instead so the misconfiguration is loud at the call site.
-  const apiKey = e.OPENROUTER_API_KEY ?? e.LLM_API_KEY;
+  const apiKey = e.LLM_API_KEY;
   if (apiKey === undefined || apiKey === "") {
     throw new Error(
-      "resolveLlmEnv: missing OPENROUTER_API_KEY (or LLM_API_KEY fallback) — set it in the environment (see .env.example)",
+      "resolveLlmEnv: missing LLM_API_KEY — set it in the environment (see .env.example)",
     );
   }
   return {

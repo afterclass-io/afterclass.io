@@ -18,6 +18,7 @@ const {
   mockTrimToBudget,
   mockCreateCallerForUser,
   mockIsLlmConfigured,
+  mockGetAiConsentDate,
 } = vi.hoisted(() => ({
   mockAuth: vi.fn() as Mock,
   mockCheckSpendGuard: vi.fn() as Mock,
@@ -34,6 +35,7 @@ const {
   mockTrimToBudget: vi.fn() as Mock,
   mockCreateCallerForUser: vi.fn() as Mock,
   mockIsLlmConfigured: vi.fn() as Mock,
+  mockGetAiConsentDate: vi.fn() as Mock,
 }));
 
 // -- vi.mock calls ---------------------------------------------------------
@@ -78,6 +80,9 @@ vi.mock("@/server/assistant/trim", () => ({
 }));
 vi.mock("@/server/mcp/caller", () => ({
   createCallerForUser: mockCreateCallerForUser,
+}));
+vi.mock("@/server/assistant/consent", () => ({
+  getAiConsentDate: mockGetAiConsentDate,
 }));
 // Task 9: route.ts schedules settlement via after() (Vercel waitUntil
 // semantics). In tests there is no request scope, so run the work inline —
@@ -197,6 +202,10 @@ describe("POST /api/chat", () => {
     mockTrimToBudget.mockReset();
     mockCreateCallerForUser.mockReset();
     mockIsLlmConfigured.mockReset();
+    // Default: user consented (matches consented fixtures); individual
+    // tests override with null.
+    mockGetAiConsentDate.mockReset();
+    mockGetAiConsentDate.mockResolvedValue(new Date("2026-09-09T00:00:00Z"));
     // Default: key configured (matches the real .env under vitest).
     mockIsLlmConfigured.mockReturnValue(true);
     mockStreamText.mockClear();
@@ -247,6 +256,22 @@ describe("POST /api/chat", () => {
     expect(await res.text()).toBe("Assistant unavailable");
     expect(mockCheckAndIncrement).not.toHaveBeenCalled();
     expect(mockReserveMessage).not.toHaveBeenCalled();
+    expect(mockStreamText).not.toHaveBeenCalled();
+  });
+
+  // -- 403 consent --
+  it("returns 403 {gate:'consent'} on NULL consent; reserveMessage NOT called", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    mockGetAiConsentDate.mockResolvedValue(null);
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
+    expect(res.status).toBe(403);
+    const body = (await res.json()) as { gate: string };
+    expect(body.gate).toBe("consent");
+    expect(mockReserveMessage).not.toHaveBeenCalled();
+    expect(mockCheckAndIncrement).not.toHaveBeenCalled();
+    expect(mockCheckSpendGuard).not.toHaveBeenCalled();
     expect(mockStreamText).not.toHaveBeenCalled();
   });
 
