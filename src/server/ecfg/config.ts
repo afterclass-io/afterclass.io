@@ -12,6 +12,12 @@ export const DEFAULT_CHAT_CONFIG = {
   priceInputPerM: 0.14,
   priceCachedInputPerM: 0.014,
   priceOutputPerM: 0.28,
+  // Task 4 kill-switches (ecfg-owned only, no env bindings): all default
+  // true. chatEnabled gates POST /api/chat (503), widgetEnabled hides the
+  // widget client-side via status, mcpEnabled gates the MCP transport only.
+  chatEnabled: true,
+  widgetEnabled: true,
+  mcpEnabled: true,
 } as const;
 
 export const chatConfigSchema = z
@@ -27,6 +33,9 @@ export const chatConfigSchema = z
     priceInputPerM: z.number().nonnegative(),
     priceCachedInputPerM: z.number().nonnegative(),
     priceOutputPerM: z.number().nonnegative(),
+    chatEnabled: z.boolean(),
+    widgetEnabled: z.boolean(),
+    mcpEnabled: z.boolean(),
   })
   .partial()
   .default(DEFAULT_CHAT_CONFIG)

@@ -43,6 +43,9 @@
  * | llmBaseUrl | https://openrouter.ai/api/v1 | providers.ts DEFAULT_LLM_BASE_URL |
  * | llmModel | @preset/afterclass | providers.ts DEFAULT_LLM_MODEL |
  * | chatMaxDurationSec | 300 | route.ts `maxDuration = 300` (Vercel Pro ceiling; Task 9 pins via sync-mirror) |
+ * | chatEnabled | true | ecfg kill-switch: chat route 503 when false (plan Task 4; ecfg-only, no ENV_BINDINGS) |
+ * | widgetEnabled | true | ecfg kill-switch: widget hidden when false (plan Task 4; surfaced via status; ecfg-only, no ENV_BINDINGS) |
+ * | mcpEnabled | true | ecfg kill-switch: MCP transport refuses when false (plan Task 4; server-side only; ecfg-only, no ENV_BINDINGS) |
  */
 import { z } from "zod";
 
@@ -94,6 +97,11 @@ export const chatConfigSchema = z.object({
   llmBaseUrl: z.string().min(1),
   llmModel: z.string().min(1),
   chatMaxDurationSec: positiveInt("chatMaxDurationSec"),
+  // Task 4 kill-switches: ecfg-owned ONLY — deliberately NO ENV_BINDINGS
+  // entries, so the request's ecfg control cannot be bypassed via env.
+  chatEnabled: z.boolean(),
+  widgetEnabled: z.boolean(),
+  mcpEnabled: z.boolean(),
 });
 
 export type ChatConfig = z.infer<typeof chatConfigSchema>;
@@ -125,6 +133,9 @@ export const DEFAULT_CHAT_CONFIG_VALUES: ChatConfig = {
   llmBaseUrl: "https://openrouter.ai/api/v1",
   llmModel: "@preset/afterclass",
   chatMaxDurationSec: 300,
+  chatEnabled: true,
+  widgetEnabled: true,
+  mcpEnabled: true,
 };
 
 /** Env key → config field, with the parser applied to the raw env string.

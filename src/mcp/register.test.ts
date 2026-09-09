@@ -93,7 +93,10 @@ const fakeCtx = {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.unstubAllEnvs();
-  getChatConfigMock.mockResolvedValue({ mcpRateLimitPerMinute: 60 });
+  getChatConfigMock.mockResolvedValue({
+    mcpRateLimitPerMinute: 60,
+    mcpEnabled: true,
+  });
   checkAndIncrementMock.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
   buildToolContextMock.mockResolvedValue(fakeCtx);
 });
@@ -395,6 +398,36 @@ describe("registerViewlessTools", () => {
     const result = await captured[0]!({}, { auth: { user: { id: "u1" } } });
     expect(result.isError).toBe(true);
     expect(result.content?.[0]?.text).toBe("bad input");
+  });
+
+  // Task 4 kill-switch: mcpEnabled=false refuses at the MCP transport
+  // handler before tool execution (auth/budget/run untouched).
+  it("refuses with a disabled error when mcpEnabled is false", async () => {
+    getChatConfigMock.mockResolvedValue({
+      mcpRateLimitPerMinute: 60,
+      mcpEnabled: false,
+    });
+    fakeRunA.mockResolvedValue(okText("should-not-reach"));
+    type CapturedHandler = (
+      args: Record<string, unknown>,
+      mcpCtx?: unknown,
+    ) => Promise<{
+      isError?: boolean;
+      content: Array<{ type: string; text?: string }>;
+    }>;
+    const captured: CapturedHandler[] = [];
+    const tool = vi.fn((_opts: object, handler: CapturedHandler) => {
+      captured.push(handler);
+    });
+    registerViewlessTools({ tool } as never);
+    const result = await captured[0]!(
+      {},
+      { auth: { user: { id: "u1", email: "a@b" } } },
+    );
+    expect(result.isError).toBe(true);
+    expect(result.content?.[0]?.text).toMatch(/disabled/i);
+    expect(fakeRunA).not.toHaveBeenCalled();
+    expect(checkAndIncrementMock).not.toHaveBeenCalled();
   });
 
   it("viewless tools return raw text envelope (no structuredContent)", async () => {

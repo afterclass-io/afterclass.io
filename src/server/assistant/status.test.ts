@@ -9,7 +9,13 @@ vi.mock("@/server/ecfg/chat", () => ({
 }));
 // Task 8: status.ts reads the canonical chat-config directly.
 vi.mock("@/server/config/chat-config", () => ({
-  getChatConfigAsync: async () => ({ quotaPerMonth: 50, nudgeAt: 40 }),
+  getChatConfigAsync: async () => ({
+    quotaPerMonth: 50,
+    nudgeAt: 40,
+    chatEnabled: true,
+    widgetEnabled: true,
+    mcpEnabled: true,
+  }),
 }));
 vi.mock("./connected", () => ({ hasConnectedAgent: vi.fn() }));
 vi.mock("./llm-status", () => ({ isLlmConfigured: vi.fn() }));
@@ -57,6 +63,8 @@ describe("getAssistantStatus", () => {
       hasConnectedAgent: false,
       nudgeAt: 40,
       aiDegraded: false,
+      chatEnabled: true,
+      widgetEnabled: true,
       cacheHitRate: null,
     });
   });
@@ -65,6 +73,15 @@ describe("getAssistantStatus", () => {
     mockedLlmConfigured.mockReturnValue(false);
     const s = await getAssistantStatus("u1");
     expect(s.aiDegraded).toBe(true);
+  });
+
+  // Task 4: kill-switch flags surface through status (mcpEnabled stays
+  // server-side — never on the status shape).
+  it("surfaces chatEnabled/widgetEnabled and omits mcpEnabled", async () => {
+    const s = await getAssistantStatus("u1");
+    expect(s.chatEnabled).toBe(true);
+    expect(s.widgetEnabled).toBe(true);
+    expect(s).not.toHaveProperty("mcpEnabled");
   });
 
   it("reports quota exhausted when remaining is 0", async () => {

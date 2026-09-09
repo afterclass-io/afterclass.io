@@ -11,6 +11,8 @@ const status = (overrides: Partial<AssistantStatus> = {}): AssistantStatus => ({
   hasConnectedAgent: false,
   nudgeAt: 40,
   aiDegraded: false,
+  chatEnabled: true,
+  widgetEnabled: true,
   ...overrides,
 });
 

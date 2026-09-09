@@ -174,6 +174,9 @@ const DEFAULT_CHAT_CONFIG = {
   priceInputPerM: 0.14,
   priceCachedInputPerM: 0.014,
   priceOutputPerM: 0.28,
+  chatEnabled: true,
+  widgetEnabled: true,
+  mcpEnabled: true,
 };
 
 function buildReq(body: unknown) {
@@ -271,6 +274,24 @@ describe("POST /api/chat", () => {
     expect(body.gate).toBe("consent");
     expect(mockReserveMessage).not.toHaveBeenCalled();
     expect(mockCheckAndIncrement).not.toHaveBeenCalled();
+    expect(mockCheckSpendGuard).not.toHaveBeenCalled();
+    expect(mockStreamText).not.toHaveBeenCalled();
+  });
+
+  // -- 503 chat kill-switch (Task 4: after consent 403, before body parse) --
+  it("returns 503 'Assistant disabled' when chatEnabled is false; quota/rate/LLM untouched", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    mockGetChatConfig.mockResolvedValue({
+      ...DEFAULT_CHAT_CONFIG,
+      chatEnabled: false,
+    });
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
+    expect(res.status).toBe(503);
+    expect(await res.text()).toBe("Assistant disabled");
+    expect(mockCheckAndIncrement).not.toHaveBeenCalled();
+    expect(mockReserveMessage).not.toHaveBeenCalled();
     expect(mockCheckSpendGuard).not.toHaveBeenCalled();
     expect(mockStreamText).not.toHaveBeenCalled();
   });

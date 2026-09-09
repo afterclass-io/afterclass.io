@@ -18,5 +18,13 @@ export default async function AssistantPage() {
     session.user.id,
     await getSupabaseAccessToken(),
   );
+  // Task 4 kill-switch: whole-route chat off → one-line notice instead of
+  // the chat page. Browsing still works; sidebar links are NOT hidden.
+  if (status.chatEnabled === false)
+    return (
+      <p className="mx-auto max-w-6xl px-4 py-10 text-sm">
+        AI chat is currently disabled — browsing still works.
+      </p>
+    );
   return <ChatPage initialStatus={status} />;
 }

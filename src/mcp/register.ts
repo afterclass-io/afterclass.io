@@ -8,6 +8,7 @@ import {
 } from "./annotations";
 import { asSchema } from "./schema";
 import { dispatchToolCall } from "./dispatch";
+import { getChatConfig } from "@/server/ecfg/chat";
 
 // Re-exported so existing importers keep working: the derivation lives in
 // ./annotations (Task 11) alongside the view-bound adapters' usage. register.ts
@@ -60,6 +61,22 @@ export function registerViewlessTools(server: MCPServer): void {
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- mcp-use context generic varies across Hono versions; params-first signature is what matters
       async (params: unknown, ctx: any) => {
+        // Task 4 kill-switch (MCP transport layer ONLY): mcpEnabled=false
+        // refuses before tool execution. The chat route shares
+        // dispatchToolCall but never passes through here, so it is
+        // unaffected — pin that with the dispatch test (chat-shaped policy
+        // still runs with the flag off).
+        const mcpSwitch = await getChatConfig();
+        if (mcpSwitch.mcpEnabled === false)
+          return {
+            isError: true as const,
+            content: [
+              {
+                type: "text" as const,
+                text: "MCP access is currently disabled.",
+              },
+            ],
+          };
         // Single shared pipeline (auth → confirm-gate → budget → run → shape);
         // policy preserves this path's historical semantics: destructive gate
         // for writes, separate mcp-write:/mcp-read: buckets, raw text envelope.

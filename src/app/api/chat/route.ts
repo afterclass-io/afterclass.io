@@ -198,6 +198,14 @@ export async function POST(req: Request) {
   // browsing — only chat turns are refused, before any quota/rate-limit state.
   if (!isLlmConfigured(env))
     return new Response("Assistant unavailable", { status: 503 });
+  // Kill-switch (plan Task 4): chatEnabled=false refuses the whole route
+  // with a 503 BEFORE body parsing, quota, rate-limit, or LLM state is
+  // touched. Order is fixed: 401 → consent 403 → disabled 503 → body parse.
+  {
+    const killSwitch = await getCanonicalChatConfig();
+    if (!killSwitch.chatEnabled)
+      return new Response("Assistant disabled", { status: 503 });
+  }
 
   // Validate the body BEFORE any gates so a malformed request can never burn
   // a quota slot (reserveMessage writes a row) or hit the rate limiter.

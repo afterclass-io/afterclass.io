@@ -26,6 +26,10 @@ async function getQuotaChat(): Promise<ChatConfig> {
     maxInputTokens: c.maxInputTokens,
     maxOutputTokens: c.maxOutputTokens,
     maxToolRounds: c.maxToolRounds,
+    // Task 4 kill-switches ride the legacy shape (same pattern as chat.ts).
+    chatEnabled: c.chatEnabled,
+    widgetEnabled: c.widgetEnabled,
+    mcpEnabled: c.mcpEnabled,
     priceInputPerM: 0.14,
     priceCachedInputPerM: 0.014,
     priceOutputPerM: 0.28,

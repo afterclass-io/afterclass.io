@@ -21,6 +21,25 @@ describe("chat config schema", () => {
     expect(parsed.quotaPerMonth).toBe(100);
     expect(parsed.maxOutputTokens).toBe(DEFAULT_CHAT_CONFIG.maxOutputTokens);
   });
+
+  // Task 4 kill-switches: absent flags default true; explicit false parses.
+  it("defaults kill-switch flags to true when absent", () => {
+    const parsed = chatConfigSchema.parse({ quotaPerMonth: 100 });
+    expect(parsed.chatEnabled).toBe(true);
+    expect(parsed.widgetEnabled).toBe(true);
+    expect(parsed.mcpEnabled).toBe(true);
+  });
+
+  it("parses explicit false kill-switch flags", () => {
+    const parsed = chatConfigSchema.parse({
+      chatEnabled: false,
+      widgetEnabled: false,
+      mcpEnabled: false,
+    });
+    expect(parsed.chatEnabled).toBe(false);
+    expect(parsed.widgetEnabled).toBe(false);
+    expect(parsed.mcpEnabled).toBe(false);
+  });
 });
 
 describe("edge config schema", () => {
@@ -132,5 +151,30 @@ describe("getChatConfig env overrides", () => {
     expect(get1()).toBe(5);
     process.env.CHAT_RATE_LIMIT_WINDOW_MINUTES = "0";
     expect(() => get1()).toThrow(/window/i);
+  });
+
+  // Task 4: the legacy-shape shim passes the kill-switch flags through.
+  it("passes kill-switch flags through the legacy-shape return", async () => {
+    vi.doMock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+      getEdgeConfig: async () => ({
+        enableAnnouncementBanner: false,
+        enableCmdkTooltip: true,
+        enableReviewEventsTracking: true,
+        enableReviewSort: true,
+        enableReviewFilter: true,
+        enableReviewReactions: true,
+        chat: {
+          ...DEFAULT_CHAT_CONFIG,
+          chatEnabled: false,
+          widgetEnabled: false,
+          mcpEnabled: false,
+        },
+      }),
+    }));
+    const { getChatConfig } = await import("./chat");
+    const cfg = await getChatConfig();
+    expect(cfg.chatEnabled).toBe(false);
+    expect(cfg.widgetEnabled).toBe(false);
+    expect(cfg.mcpEnabled).toBe(false);
   });
 });

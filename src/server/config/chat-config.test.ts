@@ -38,4 +38,27 @@ describe("getChatConfig", () => {
     );
     expect(DEFAULT_CHAT_CONFIG_VALUES.llmModel).toBe("@preset/afterclass");
   });
+  // Task 4 kill-switches: default true, ecfg-only (no ENV_BINDINGS entries).
+  it("defaults kill-switch flags to true with no env bindings", async () => {
+    const { DEFAULT_CHAT_CONFIG_VALUES: d, getChatConfig: get } =
+      await import("./chat-config");
+    expect(d.chatEnabled).toBe(true);
+    expect(d.widgetEnabled).toBe(true);
+    expect(d.mcpEnabled).toBe(true);
+    expect(get().chatEnabled).toBe(true);
+    expect(get().widgetEnabled).toBe(true);
+    expect(get().mcpEnabled).toBe(true);
+  });
+  it("canonical schema parses explicit false kill-switch flags", async () => {
+    const { chatConfigSchema } = await import("./chat-config");
+    const parsed = chatConfigSchema.parse({
+      ...DEFAULT_CHAT_CONFIG_VALUES,
+      chatEnabled: false,
+      widgetEnabled: false,
+      mcpEnabled: false,
+    });
+    expect(parsed.chatEnabled).toBe(false);
+    expect(parsed.widgetEnabled).toBe(false);
+    expect(parsed.mcpEnabled).toBe(false);
+  });
 });

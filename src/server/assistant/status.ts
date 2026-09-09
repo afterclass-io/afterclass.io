@@ -15,6 +15,11 @@ export type AssistantStatus = {
   hasConnectedAgent: boolean;
   nudgeAt: number;
   aiDegraded: boolean;
+  // Task 4 kill-switches surfaced to clients: chatEnabled gates /assistant,
+  // widgetEnabled hides the widget. (mcpEnabled stays server-side — clients
+  // never need it. aiConsented lands in Task 5, not here.)
+  chatEnabled: boolean;
+  widgetEnabled: boolean;
   // Additive observability: fraction of input tokens served from cache (0-1),
   // null before any input. Optional to keep existing story helpers that
   // construct AssistantStatus via Partial<AssistantStatus> spread type-correct
@@ -43,6 +48,8 @@ export async function getAssistantStatus(
     hasConnectedAgent: await connected,
     nudgeAt: chat.nudgeAt,
     aiDegraded: !isLlmConfigured(env),
+    chatEnabled: chat.chatEnabled,
+    widgetEnabled: chat.widgetEnabled,
     cacheHitRate:
       quota.inputTokens > 0
         ? quota.cachedInputTokens / quota.inputTokens

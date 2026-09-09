@@ -23,6 +23,11 @@ type Status =
       hasConnectedAgent: boolean;
       nudgeAt: number;
       aiDegraded: boolean;
+      // Task 4 kill-switch: present on fresh status payloads; absent on
+      // stale/cached payloads (treated as enabled — fail-open for cached
+      // status so a stale fetch cannot hide the widget).
+      chatEnabled?: boolean;
+      widgetEnabled?: boolean;
     }
   | null;
 
@@ -43,6 +48,10 @@ function SignedInAssistant({
 
   const viewport = useViewport();
   const geometry = useWidgetPosition(viewport);
+
+  // Task 4 kill-switch: widget fully hidden when disabled. Anonymous branch
+  // below is unchanged (SignedOutPanel → login → status → hidden check).
+  if (status.widgetEnabled === false) return null;
 
   if (gate) return <ConnectGate reason={gate} />;
 

@@ -45,7 +45,10 @@ function okTool(text: string, name = "x") {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  getChatConfigMock.mockResolvedValue({ mcpRateLimitPerMinute: 60 });
+  getChatConfigMock.mockResolvedValue({
+    mcpRateLimitPerMinute: 60,
+    mcpEnabled: true,
+  });
   checkAndIncrementMock.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
   delete (globalThis as Record<string, unknown>).__dispatchBuildToolContext;
 });
@@ -132,6 +135,36 @@ describe("dispatchToolCall", () => {
       /ok|rate limit/i,
     );
     expect(checkAndIncrementMock).toHaveBeenCalledWith("chat-write:u1", 10, 1);
+    expect(run).toHaveBeenCalledTimes(1);
+  });
+
+  // Task 4: the MCP kill-switch lives in register.ts, NOT dispatch — the
+  // chat path (explicit policy.limit, chat-write: bucket) must still run
+  // with mcpEnabled=false.
+  it("chat path still runs with mcpEnabled=false (kill-switch is transport-layer only)", async () => {
+    getChatConfigMock.mockResolvedValue({
+      mcpRateLimitPerMinute: 60,
+      mcpEnabled: false,
+    });
+    const run = vi.fn().mockResolvedValue({
+      content: [{ type: "text", text: "chat-ok" }],
+    });
+    const out = await dispatchToolCall({
+      tool: { name: "set-bid-status", run },
+      params: { confirm: true },
+      ctx: fakeCtx,
+      policy: {
+        confirm: true,
+        budget: "write",
+        budgetPrefix: "chat-write",
+        limit: 10,
+        windowMs: 60_000,
+        shape: "text",
+      },
+    });
+    expect("error" in out ? out.error : out.content[0]?.text).toMatch(
+      /chat-ok|rate limit/i,
+    );
     expect(run).toHaveBeenCalledTimes(1);
   });
 

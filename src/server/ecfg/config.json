@@ -16,6 +16,9 @@
     "maxToolRounds": 6,
     "priceInputPerM": 0.14,
     "priceCachedInputPerM": 0.014,
-    "priceOutputPerM": 0.28
+    "priceOutputPerM": 0.28,
+    "chatEnabled": true,
+    "widgetEnabled": true,
+    "mcpEnabled": true
   }
 }

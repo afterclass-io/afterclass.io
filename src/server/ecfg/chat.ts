@@ -36,6 +36,11 @@ export async function getChatConfig(): Promise<LegacyChatConfig> {
     maxInputTokens: canonical.maxInputTokens,
     maxOutputTokens: canonical.maxOutputTokens,
     maxToolRounds: canonical.maxToolRounds,
+    // Task 4 kill-switches ride the same legacy-shape return so the MCP
+    // transport and tests read flags through this shim.
+    chatEnabled: canonical.chatEnabled,
+    widgetEnabled: canonical.widgetEnabled,
+    mcpEnabled: canonical.mcpEnabled,
     priceInputPerM: 0.14,
     priceCachedInputPerM: 0.014,
     priceOutputPerM: 0.28,
