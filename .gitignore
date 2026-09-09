@@ -20,8 +20,12 @@
 /out/
 next-env.d.ts
 
+# mcp-use
+.mcp-use/
+
 # production
 /build
+/dist
 
 # misc
 .DS_Store
