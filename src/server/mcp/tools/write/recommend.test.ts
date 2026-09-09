@@ -25,6 +25,7 @@ const prediction = {
   classId: "cl1",
   bidWindowId: 53,
   medianPredicted: 25,
+  medianUncertainty: 4,
   minPredicted: 20,
   bidWindow: { id: 53, acadTermId: "t1", round: "1", window: 1 },
 };
@@ -39,7 +40,7 @@ function makeCaller(pred: unknown, factors: unknown[]) {
 }
 
 describe("recommend-bid-amount", () => {
-  it("is read-only and suggests median x matching safety multiplier", async () => {
+  it("is read-only and suggests predicted + multiplier x uncertainty", async () => {
     const factors = [
       {
         acadTermId: "t1",
@@ -61,7 +62,7 @@ describe("recommend-bid-amount", () => {
     const text = (result.content[0] as { text: string }).text;
     expect(
       (JSON.parse(text) as { suggestedBidAmount: number }).suggestedBidAmount,
-    ).toBe(26.25); // 25 x 1.05
+    ).toBe(29.2); // 25 + 1.05 x 4
   });
 
   it("defaults multiplier to 1.0 when no safety factor matches", async () => {
@@ -76,7 +77,7 @@ describe("recommend-bid-amount", () => {
     const text = (result.content[0] as { text: string }).text;
     expect(
       (JSON.parse(text) as { suggestedBidAmount: number }).suggestedBidAmount,
-    ).toBe(25);
+    ).toBe(29); // 25 + 1.0 x 4
   });
 
   it("returns errText when there is no prediction", async () => {

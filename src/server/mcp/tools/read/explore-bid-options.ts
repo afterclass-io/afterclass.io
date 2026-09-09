@@ -84,22 +84,25 @@ function normalizeHistory(results: BidResultRow[]): HistoryPoint[] {
 
 /**
  * Amount answer for the prediction at the default confidence, reusing the
- * canonical bid-shared math (median x multiplier, e$10 floor) so chat and
- * bid-estimate can never diverge. Null when there is no median.
+ * canonical bid-shared math (predicted + multiplier x uncertainty, e$10
+ * floor) so chat and bid-estimate can never diverge. Null when there is no
+ * median.
  */
 function suggestedBidAmount(
   median: number | null,
+  uncertainty: number,
   safetyFactors: Array<{ beatsPercentage: number; multiplier: number }>,
 ): number | null {
   if (median === null) return null;
   const factor = safetyFactors.find(
     (f) => f.beatsPercentage === DEFAULT_BEATS_PERCENTAGE,
   );
-  return suggestBidAmount(median, factor?.multiplier);
+  return suggestBidAmount(median, factor?.multiplier, uncertainty);
 }
 
 function bidRationale(
   median: number | null,
+  uncertainty: number,
   safetyFactors: Array<{ beatsPercentage: number; multiplier: number }>,
 ): string | null {
   if (median === null) return null;
@@ -107,7 +110,13 @@ function bidRationale(
     (f) => f.beatsPercentage === DEFAULT_BEATS_PERCENTAGE,
   );
   return factor
-    ? rationaleFor(median, factor.multiplier, DEFAULT_BEATS_PERCENTAGE)
+    ? rationaleFor(
+        median,
+        factor.multiplier,
+        DEFAULT_BEATS_PERCENTAGE,
+        undefined,
+        uncertainty,
+      )
     : rationaleFor(median, null, DEFAULT_BEATS_PERCENTAGE);
 }
 
@@ -227,6 +236,7 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
         prediction: prediction?.bidWindow
           ? {
               medianPredicted: prediction.medianPredicted,
+              medianUncertainty: prediction.medianUncertainty ?? 0,
               minPredicted: prediction.minPredicted ?? null,
               bidWindow: {
                 id: prediction.bidWindow.id,
@@ -235,10 +245,12 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
               },
               suggestedBidAmount: suggestedBidAmount(
                 prediction.medianPredicted ?? null,
+                prediction.medianUncertainty ?? 0,
                 safetyFactors,
               ),
               rationale: bidRationale(
                 prediction.medianPredicted ?? null,
+                prediction.medianUncertainty ?? 0,
                 safetyFactors,
               ),
             }

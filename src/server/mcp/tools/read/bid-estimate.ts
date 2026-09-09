@@ -51,7 +51,7 @@ const bidEstimateSchema = z.object({
 export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
   name: "bid-estimate",
   description:
-    "Estimate bid prices for a course's sections for the upcoming bidding window. Provide a course code (e.g. COR-IS1702); optionally filter to a single section (e.g. G1). Returns per-section median and minimum clearing prices from the latest bid predictions, a suggested bid amount (median × safety multiplier for 70% confidence when available, never below e$10), and the current vacancy for the resolved window. Window resolution: explicit bidWindow > open window > latest window (estimates then use prior-window results — immediate-next-window only). If the course or its sections are not found, explains what was tried. Self-contained: one call is the answer. For an interactive chart/table/slider the user can play with, prefer explore-bid-options (it accepts courseCode+section); use this tool for text answers or multi-section comparison.",
+    "Estimate bid prices for a course's sections for the upcoming bidding window. Provide a course code (e.g. COR-IS1702); optionally filter to a single section (e.g. G1). Returns per-section median and minimum clearing prices from the latest bid predictions, a suggested bid amount (predicted + multiplier x uncertainty for 70% confidence when available, never below e$10), and the current vacancy for the resolved window. Window resolution: explicit bidWindow > open window > latest window (estimates then use prior-window results — immediate-next-window only). If the course or its sections are not found, explains what was tried. Self-contained: one call is the answer. For an interactive chart/table/slider the user can play with, prefer explore-bid-options (it accepts courseCode+section); use this tool for text answers or multi-section comparison.",
   inputSchema: bidEstimateSchema,
   readOnly: true,
   run: async (
@@ -148,7 +148,7 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
         });
       }
 
-      // Safety factors for suggested amount (median × multiplier for 70%).
+      // Safety factors for suggested amount (predicted + multiplier x uncertainty for 70%).
       let safetyFactors: Array<{
         acadTermId: string;
         predictionType: string;
@@ -174,6 +174,7 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
 
         const median = prediction?.medianPredicted ?? null;
         const min = prediction?.minPredicted ?? null;
+        const uncertainty = prediction?.medianUncertainty ?? 0;
         let suggested: number | null = suggestBidAmount(median);
         let multiplierUsed: number | null = null;
         let rationale: string | null = null;
@@ -184,12 +185,18 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
             DEFAULT_BEATS_PERCENTAGE,
           );
           if (factor) {
-            suggested = suggestBidAmount(median, factor.multiplier);
+            suggested = suggestBidAmount(
+              median,
+              factor.multiplier,
+              uncertainty,
+            );
             multiplierUsed = factor.multiplier;
             rationale = rationaleFor(
               median,
               factor.multiplier,
               DEFAULT_BEATS_PERCENTAGE,
+              undefined,
+              uncertainty,
             );
           } else {
             rationale = rationaleFor(

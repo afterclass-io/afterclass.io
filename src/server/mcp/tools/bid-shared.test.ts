@@ -21,31 +21,35 @@ describe("clampBidFloor", () => {
 describe("suggestBidAmount", () => {
   it("returns null for a null median", () => {
     expect(suggestBidAmount(null)).toBeNull();
-    expect(suggestBidAmount(null, 1.05)).toBeNull();
+    expect(suggestBidAmount(null, 1.05, 4)).toBeNull();
+  });
+
+  it("adds the multiplier-scaled uncertainty to the predicted median", () => {
+    expect(suggestBidAmount(18.36, 0.88, 6.04)).toBe(23.68);
   });
 
   it("defaults the multiplier to 1.0 and applies the e$10 floor", () => {
     expect(suggestBidAmount(25)).toBe(25);
-    expect(suggestBidAmount(25, 1.05)).toBe(26.25);
-    // 8 x 1.05 = 8.4 -> floored
-    expect(suggestBidAmount(8, 1.05)).toBe(10);
+    expect(suggestBidAmount(25, 1.05, 4)).toBe(29.2);
+    // 8 + 1.05 x 0.4 = 8.42 -> floored
+    expect(suggestBidAmount(8, 1.05, 0.4)).toBe(10);
     expect(suggestBidAmount(6)).toBe(10);
   });
 });
 
 describe("rationaleFor", () => {
   it("builds the multiplier rationale when a factor matched", () => {
-    expect(rationaleFor(25, 1.05, 70)).toBe(
-      "Predicted median 25 x safety multiplier 1.05 (beats 70% of bids).",
+    expect(rationaleFor(25, 1.05, 70, undefined, 4)).toBe(
+      "Predicted 25 + safety multiplier 1.05 x uncertainty 4 (beats 70% of bids).",
     );
   });
 
   it("builds the no-factor rationale, with term context when given", () => {
     expect(rationaleFor(25, null, 70)).toBe(
-      "No safety factor for beats 70%; suggested = predicted median 25 x 1.0.",
+      "No safety factor for beats 70%; suggested = predicted median 25.",
     );
     expect(rationaleFor(25, null, 70, "t1")).toBe(
-      "No safety factor for beats 70% in t1; suggested = predicted median 25 x 1.0.",
+      "No safety factor for beats 70% in t1; suggested = predicted median 25.",
     );
   });
 

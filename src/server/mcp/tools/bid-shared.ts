@@ -10,36 +10,41 @@ export function clampBidFloor(amount: number): number {
 }
 
 /**
- * Suggest a bid amount from a predicted median and an optional safety
- * multiplier. Null-safe: a null median yields no suggestion (null); the
- * multiplier defaults to 1.0 and the e$10 floor always applies.
+ * Suggest a bid amount from a predicted median, the safety multiplier for
+ * the chosen success rate, and the prediction's uncertainty:
+ * recommended = predicted + multiplier x uncertainty (same additive model
+ * as the analytics card). Null-safe: a null median yields no suggestion
+ * (null); the multiplier defaults to 1.0 and the e$10 floor always applies.
  */
 export function suggestBidAmount(
   median: number | null,
   multiplier?: number | null,
+  uncertainty = 0,
 ): number | null {
   if (median === null) return null;
   const m = multiplier ?? 1;
-  return clampBidFloor(Math.round(median * m * 100) / 100);
+  return clampBidFloor(Math.round((median + m * uncertainty) * 100) / 100);
 }
 
 /**
  * One-line rationale for a suggested bid, unifying the recommend /
- * bid-estimate prose. With a multiplier: median × multiplier at the given
- * confidence; without: median × 1.0 (no matching safety factor).
+ * bid-estimate prose. With a multiplier: predicted + multiplier x
+ * uncertainty at the given confidence; without: the predicted median alone
+ * (no matching safety factor).
  */
 export function rationaleFor(
   median: number,
   multiplierUsed?: number | null,
   beatsPercentage: number = DEFAULT_BEATS_PERCENTAGE,
   acadTermId?: string,
+  uncertainty = 0,
 ): string {
   if (multiplierUsed != null) {
-    return `Predicted median ${median} x safety multiplier ${multiplierUsed} (beats ${beatsPercentage}% of bids).`;
+    return `Predicted ${median} + safety multiplier ${multiplierUsed} x uncertainty ${uncertainty} (beats ${beatsPercentage}% of bids).`;
   }
   return acadTermId
-    ? `No safety factor for beats ${beatsPercentage}% in ${acadTermId}; suggested = predicted median ${median} x 1.0.`
-    : `No safety factor for beats ${beatsPercentage}%; suggested = predicted median ${median} x 1.0.`;
+    ? `No safety factor for beats ${beatsPercentage}% in ${acadTermId}; suggested = predicted median ${median}.`
+    : `No safety factor for beats ${beatsPercentage}%; suggested = predicted median ${median}.`;
 }
 
 /** Default confidence level: the suggested amount beats this % of bids.

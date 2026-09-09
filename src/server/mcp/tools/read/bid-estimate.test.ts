@@ -50,11 +50,13 @@ function mkCaller(opts: {
       getByAcadTerm: vi.fn().mockResolvedValue(opts.windowsByTerm ?? []),
     },
     courses: {
-      getByCourseCode: vi.fn().mockResolvedValue(
-        opts.course !== undefined
-          ? opts.course
-          : { id: "cs1", code: "COR-IS1702", name: "Computational Thinking" },
-      ),
+      getByCourseCode: vi
+        .fn()
+        .mockResolvedValue(
+          opts.course !== undefined
+            ? opts.course
+            : { id: "cs1", code: "COR-IS1702", name: "Computational Thinking" },
+        ),
     },
     classes: {
       getAll: vi.fn().mockResolvedValue(
@@ -84,9 +86,13 @@ function mkCaller(opts: {
       ),
     },
     bidResults: {
-      getBy: vi.fn().mockResolvedValue(
-        opts.bidResults ?? [{ bidWindowId: 77, vacancy: 12, bidWindow: { id: 77 } }],
-      ),
+      getBy: vi
+        .fn()
+        .mockResolvedValue(
+          opts.bidResults ?? [
+            { bidWindowId: 77, vacancy: 12, bidWindow: { id: 77 } },
+          ],
+        ),
     },
     safetyFactors: {
       getAll: vi.fn().mockResolvedValue(
@@ -104,7 +110,7 @@ function mkCaller(opts: {
 }
 
 describe("bid-estimate", () => {
-  it("is read-only and returns per-section estimates with suggested = median x multiplier and vacancy", async () => {
+  it("is read-only and returns per-section estimates with suggested = predicted + multiplier x uncertainty and vacancy", async () => {
     const caller = mkCaller({
       classes: [
         {
@@ -120,6 +126,7 @@ describe("bid-estimate", () => {
       ],
       prediction: {
         medianPredicted: 25,
+        medianUncertainty: 4,
         minPredicted: 18,
         bidWindow: {
           id: 77,
@@ -149,8 +156,8 @@ describe("bid-estimate", () => {
     expect(parsed.courseCode).toBe("COR-IS1702");
     expect(parsed.bidWindow.id).toBe(77);
     expect(parsed.estimates).toHaveLength(2);
-    // 25 x 1.05 = 26.25
-    expect(parsed.estimates[0]!.suggestedBidAmount).toBe(26.25);
+    // 25 + 1.05 x 4 = 29.2
+    expect(parsed.estimates[0]!.suggestedBidAmount).toBe(29.2);
     expect(parsed.estimates[0]!.multiplierUsed).toBe(1.05);
     expect(
       caller.classes.getAll as ReturnType<typeof vi.fn>,
@@ -427,7 +434,7 @@ describe("bid-estimate", () => {
     expect(res.content[0]!.text).toContain("db down");
   });
 
-  it("floors the suggested amount at e$10 when median x multiplier dips below 10", async () => {
+  it("floors the suggested amount at e$10 when predicted + multiplier x uncertainty dips below 10", async () => {
     const caller = mkCaller({
       safetyFactors: [
         {
@@ -439,6 +446,7 @@ describe("bid-estimate", () => {
       ],
       prediction: {
         medianPredicted: 8,
+        medianUncertainty: 0.4,
         minPredicted: 5,
         bidWindow: {
           id: 77,
@@ -453,11 +461,11 @@ describe("bid-estimate", () => {
     const parsed = JSON.parse(res.content[0]!.text) as {
       estimates: Array<{ suggestedBidAmount: number }>;
     };
-    // 8 x 1.05 = 8.4 -> floored to 10
+    // 8 + 1.05 x 0.4 = 8.42 -> floored to 10
     expect(parsed.estimates[0]!.suggestedBidAmount).toBe(10);
   });
 
-  it("floors a low median with no safety factor at e$10 (median x 1.0)", async () => {
+  it("floors a low median with no safety factor at e$10", async () => {
     const caller = mkCaller({
       safetyFactors: [],
       prediction: {

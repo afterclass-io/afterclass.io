@@ -67,6 +67,7 @@ const prediction = {
   classId: "cl1",
   bidWindowId: 53,
   medianPredicted: 30,
+  medianUncertainty: 4,
   minPredicted: 18,
   bidWindow: { id: 53, acadTermId: "t2", round: "1", window: 1 },
 };
@@ -198,11 +199,12 @@ describe("explore-bid-options", () => {
     ]);
     expect(out.prediction).toEqual({
       medianPredicted: 30,
+      medianUncertainty: 4,
       minPredicted: 18,
       bidWindow: { id: 53, round: "1", window: 1 },
-      suggestedBidAmount: 31.5,
+      suggestedBidAmount: 34.2,
       rationale:
-        "Predicted median 30 x safety multiplier 1.05 (beats 70% of bids).",
+        "Predicted 30 + safety multiplier 1.05 x uncertainty 4 (beats 70% of bids).",
     });
     // filtered to MEDIAN + prediction's acadTermId, sorted by beatsPercentage
     expect(out.safetyFactors).toEqual([
@@ -375,11 +377,12 @@ describe("explore-bid-options", () => {
     expect(out.history).toHaveLength(1);
     expect(out.prediction).toEqual({
       medianPredicted: 30,
+      medianUncertainty: 4,
       minPredicted: 18,
       bidWindow: { id: 53, round: "1", window: 1 },
-      suggestedBidAmount: 31.5,
+      suggestedBidAmount: 34.2,
       rationale:
-        "Predicted median 30 x safety multiplier 1.05 (beats 70% of bids).",
+        "Predicted 30 + safety multiplier 1.05 x uncertainty 4 (beats 70% of bids).",
     });
   });
 

@@ -106,18 +106,20 @@ const BidExplorerView: React.FC = () => {
   // No safety factors for this term -> multiplier 1.0, like recommend.ts
   // (`factor?.multiplier ?? 1`); the CTA must still be offered.
   const multiplier = factor?.multiplier ?? 1;
-  // C2-view: clamp the CTA suggestion to the SMU BOSS floor, mirroring
-  // `clampBidFloor` in `src/server/mcp/tools/bid-shared.ts` (MIN_BID = 10;
-  // inlined here so the view bundle stays dependency-free). Only the CTA
-  // value is floored — suggestedMin stays the raw display range so the hero
-  // keeps showing the true predicted band.
+  // Same additive model as the analytics card and the chat tools
+  // (recommended = predicted + multiplier x uncertainty). The value is
+  // clamped to the SMU BOSS floor, mirroring `clampBidFloor` in
+  // `src/server/mcp/tools/bid-shared.ts` (MIN_BID = 10; inlined here so the
+  // view bundle stays dependency-free).
   const suggested = prediction
-    ? round2(Math.max(10, prediction.medianPredicted * multiplier))
+    ? round2(
+        Math.max(
+          10,
+          prediction.medianPredicted +
+            multiplier * (prediction.medianUncertainty ?? 0),
+        ),
+      )
     : null;
-  const suggestedMin =
-    prediction?.minPredicted != null
-      ? round2(prediction.minPredicted * multiplier)
-      : null;
 
   // Data-driven filters mirror `BidAnalyticsClient`: options come from the
   // history itself, with bidirectional round<->window availability and
@@ -434,7 +436,7 @@ const BidExplorerView: React.FC = () => {
       {/* Safety-multiplier slider.
           Formula display replaces the deleted bid-recommendation
           view: the rationale wording mirrors `recommend.ts`
-          ("Predicted median X × multiplier Y (beats Z%)"). */}
+          ("Predicted X + multiplier Y x uncertainty Z (beats W%)"). */}
       {prediction &&
         safetyFactors.length > 0 &&
         factor &&
@@ -461,16 +463,10 @@ const BidExplorerView: React.FC = () => {
                 marginTop: 4,
               }}
             >
-              ${suggestedMin !== null ? `${suggestedMin}–` : ""}${suggested}
+              ${suggested}
             </div>
             <div style={{ fontSize: 12, color: c.mutedFg, marginTop: 4 }}>
-              {suggestedMin !== null
-                ? `Predicted min ${prediction.minPredicted} and median ` +
-                  `${prediction.medianPredicted} × multiplier ` +
-                  `${factor.multiplier} (beats ${factor.beatsPercentage}%)`
-                : `Predicted median ${prediction.medianPredicted} × ` +
-                  `multiplier ${factor.multiplier} ` +
-                  `(beats ${factor.beatsPercentage}%)`}
+              {`Predicted ${prediction.medianPredicted} + multiplier ${factor.multiplier} x uncertainty ${prediction.medianUncertainty ?? 0} (beats ${factor.beatsPercentage}%)`}
             </div>
           </div>
         )}

@@ -120,6 +120,7 @@ export const bidExplorerOutput = z.object({
   prediction: z
     .object({
       medianPredicted: z.number(),
+      medianUncertainty: z.number(),
       minPredicted: z.number().nullable(),
       bidWindow: z.object({
         id: z.number(),

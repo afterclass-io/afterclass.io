@@ -29,7 +29,7 @@ export const recommendBidAmountTool: McpTool<typeof recommendBidAmountSchema> =
   {
     name: "recommend-bid-amount",
     description:
-      "Suggest a bid amount for a class by combining the latest prediction with a safety multiplier. Read-only; never writes data. Suggested amounts are never below e$10.",
+      "Suggest a bid amount for a class by combining the latest prediction with a safety multiplier (predicted + multiplier x uncertainty). Read-only; never writes data. Suggested amounts are never below e$10.",
     inputSchema: recommendBidAmountSchema,
     readOnly: true,
     toViewProps: (result) => {
@@ -50,8 +50,13 @@ export const recommendBidAmountTool: McpTool<typeof recommendBidAmountSchema> =
           beatsPercentage,
         );
         const base = prediction.medianPredicted;
+        const uncertainty = prediction.medianUncertainty ?? 0;
         const multiplier = factor?.multiplier ?? null;
-        const suggestedBidAmount = suggestBidAmount(base, multiplier);
+        const suggestedBidAmount = suggestBidAmount(
+          base,
+          multiplier,
+          uncertainty,
+        );
         return jsonText({
           classId,
           acadTermId: prediction.bidWindow.acadTermId,
@@ -64,7 +69,13 @@ export const recommendBidAmountTool: McpTool<typeof recommendBidAmountSchema> =
           suggestedBidAmount,
           multiplierUsed: factor ? { beatsPercentage, multiplier } : null,
           rationale: factor
-            ? rationaleFor(base, factor.multiplier, beatsPercentage)
+            ? rationaleFor(
+                base,
+                factor.multiplier,
+                beatsPercentage,
+                undefined,
+                uncertainty,
+              )
             : rationaleFor(base, null, beatsPercentage),
         });
       } catch (e) {

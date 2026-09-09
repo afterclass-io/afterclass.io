@@ -58,6 +58,7 @@ const fullProps = {
   history,
   prediction: {
     medianPredicted: 30,
+    medianUncertainty: 4,
     minPredicted: 18,
     bidWindow: { id: 53, round: "1", window: 1 },
   },
@@ -140,9 +141,8 @@ describe("BidExplorerView (v2)", () => {
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
     expect(slider.getAttribute("value")).toBe("2"); // index of the 70% factor
     expect(screen.getByText(/beats 70% of bids × 0\.54/)).toBeInTheDocument();
-    // suggested median = round(30 x 0.54 x 100) / 100 = 16.2,
-    // suggested min = round(18 x 0.54 x 100) / 100 = 9.72
-    expect(screen.getByText("$9.72–$16.2")).toBeInTheDocument();
+    // suggested = round((30 + 0.54 x 4) x 100) / 100 = 32.16
+    expect(screen.getByText("$32.16")).toBeInTheDocument();
   });
 
   it("updates the suggested amount and label when the slider moves", () => {
@@ -151,9 +151,8 @@ describe("BidExplorerView (v2)", () => {
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
     fireEvent.change(slider, { target: { value: "4" } });
     expect(screen.getByText(/beats 90% of bids × 1\.37/)).toBeInTheDocument();
-    // suggested median = round(30 x 1.37 x 100) / 100 = 41.1,
-    // suggested min = round(18 x 1.37 x 100) / 100 = 24.66
-    expect(screen.getByText("$24.66–$41.1")).toBeInTheDocument();
+    // suggested = round((30 + 1.37 x 4) x 100) / 100 = 35.48
+    expect(screen.getByText("$35.48")).toBeInTheDocument();
   });
 
   it("renders history without slider or CTA when there is no prediction", () => {
@@ -173,12 +172,12 @@ describe("BidExplorerView (v2)", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
     expect(
-      screen.getByRole("button", { name: "Confirm: set bid to $16.2" }),
+      screen.getByRole("button", { name: "Confirm: set bid to $32.16" }),
     ).toBeInTheDocument();
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
     fireEvent.change(slider, { target: { value: "4" } });
     expect(
-      screen.getByRole("button", { name: "Confirm: set bid to $41.1" }),
+      screen.getByRole("button", { name: "Confirm: set bid to $35.48" }),
     ).toBeInTheDocument();
   });
 
@@ -188,12 +187,12 @@ describe("BidExplorerView (v2)", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
     fireEvent.click(
-      screen.getByRole("button", { name: "Confirm: set bid to $16.2" }),
+      screen.getByRole("button", { name: "Confirm: set bid to $32.16" }),
     );
     await waitFor(() => expect(callTool).toHaveBeenCalledTimes(1));
     expect(callTool).toHaveBeenCalledWith({
       classId: "cl1",
-      bidAmount: 16.2,
+      bidAmount: 32.16,
       bidWindowId: 53,
       confirm: true,
     });
@@ -209,7 +208,7 @@ describe("BidExplorerView (v2)", () => {
     rerender(<BidExplorerView />);
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
     expect(slider.getAttribute("value")).toBe("2"); // index of the 70% factor
-    expect(screen.getByText("$9.72–$16.2")).toBeInTheDocument();
+    expect(screen.getByText("$32.16")).toBeInTheDocument();
   });
 
   it("prediction without safety factors falls back to multiplier 1.0 (CTA still shows)", async () => {
@@ -218,14 +217,14 @@ describe("BidExplorerView (v2)", () => {
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({ status: "ready", toolInput: {}, toolOutput: noFactors });
     render(<BidExplorerView />);
-    // no slider without factors, but the CTA offers the bare median
+    // no slider without factors, but the CTA offers predicted + uncertainty
     expect(screen.queryByRole("slider")).toBeNull();
-    const cta = screen.getByRole("button", { name: "Confirm: set bid to $30" });
+    const cta = screen.getByRole("button", { name: "Confirm: set bid to $34" });
     fireEvent.click(cta);
     await waitFor(() => expect(callTool).toHaveBeenCalledTimes(1));
     expect(callTool).toHaveBeenCalledWith({
       classId: "cl1",
-      bidAmount: 30,
+      bidAmount: 34,
       bidWindowId: 53,
       confirm: true,
     });
@@ -244,7 +243,7 @@ describe("BidExplorerView (v2)", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
     fireEvent.click(
-      screen.getByRole("button", { name: "Confirm: set bid to $16.2" }),
+      screen.getByRole("button", { name: "Confirm: set bid to $32.16" }),
     );
     await waitFor(() =>
       expect(screen.getByRole("button", { name: /Saved/ })).toBeInTheDocument(),
@@ -257,7 +256,7 @@ describe("BidExplorerView (v2)", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
     fireEvent.click(
-      screen.getByRole("button", { name: "Confirm: set bid to $16.2" }),
+      screen.getByRole("button", { name: "Confirm: set bid to $32.16" }),
     );
     await waitFor(() =>
       expect(
@@ -303,6 +302,7 @@ describe("BidExplorerView (v2)", () => {
       ],
       prediction: {
         medianPredicted: 30,
+        medianUncertainty: 4,
         minPredicted: 18,
         bidWindow: { id: 53, round: "1", window: 1 },
       },
@@ -440,7 +440,7 @@ describe("BidExplorerView (v2)", () => {
       expect(within(table).getAllByRole("row")).toHaveLength(13); // header + 12
     });
 
-    it("shows the formula line with predicted min and median (formula display; recommend-bid-amount is viewless)", () => {
+    it("shows the formula line with predicted, multiplier, and uncertainty (formula display; recommend-bid-amount is viewless)", () => {
       seedContext({
         status: "ready",
         toolInput: {},
@@ -448,14 +448,14 @@ describe("BidExplorerView (v2)", () => {
       });
       render(<BidExplorerView />);
       // Formula display wording (recommend-bid-amount is viewless):
-      // "Predicted median X × multiplier Y (beats Z%)".
+      // "Predicted X + multiplier Y x uncertainty Z (beats W%)".
       expect(
         screen.getByText(
-          "Predicted min 18 and median 30 × multiplier 0.54 (beats 70%)",
+          "Predicted 30 + multiplier 0.54 x uncertainty 4 (beats 70%)",
         ),
       ).toBeInTheDocument();
-      // Hero shows suggested min AND median, not median alone.
-      expect(screen.getByText("$9.72–$16.2")).toBeInTheDocument();
+      // Hero shows the single additive suggestion.
+      expect(screen.getByText("$32.16")).toBeInTheDocument();
     });
 
     it("keeps the empty state when there is no history and no prediction", () => {
@@ -687,23 +687,22 @@ describe("BidExplorerView (v2)", () => {
       expect(screen.queryByText("null")).toBeNull();
     });
 
-    it("renders a median-only suggestion when minPredicted is null", () => {
+    it("renders the additive suggestion when minPredicted is null", () => {
       const nullMinProps = {
         ...fullProps,
         prediction: { ...fullProps.prediction, minPredicted: null },
       };
       seedContext({ status: "ready", toolInput: {}, toolOutput: nullMinProps });
-      // Median-only hero: with minPredicted null the hero div renders "$16.2"
-      // with no en-dash range prefix (view.tsx:893). The hero text is split
-      // across expression containers, so assert via container text content.
+      // Additive suggestion: 30 + 0.54 x 4 = 32.16.
       const { container } = render(<BidExplorerView />);
-      expect(container.textContent).toContain("$16.2");
-      expect(container.textContent).not.toContain("$9.72");
+      expect(container.textContent).toContain("$32.16");
       expect(
-        screen.getByText("Predicted median 30 × multiplier 0.54 (beats 70%)"),
+        screen.getByText(
+          "Predicted 30 + multiplier 0.54 x uncertainty 4 (beats 70%)",
+        ),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: "Confirm: set bid to $16.2" }),
+        screen.getByRole("button", { name: "Confirm: set bid to $32.16" }),
       ).toBeInTheDocument();
       expect(screen.queryByText("null")).toBeNull();
     });
@@ -726,7 +725,7 @@ describe("BidExplorerView (v2)", () => {
       expect(screen.queryByRole("table")).toBeNull();
       expect(screen.queryByRole("img", { name: /bid trend/i })).toBeNull();
       expect(
-        screen.getByRole("button", { name: "Confirm: set bid to $16.2" }),
+        screen.getByRole("button", { name: "Confirm: set bid to $32.16" }),
       ).toBeInTheDocument();
     });
   });
