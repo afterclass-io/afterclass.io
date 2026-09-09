@@ -40,8 +40,8 @@
  * | icalThrottlePerMinute | 60 | ical route `checkAndIncrement(\`ical:${ip}\`, 60, 1)` |
  * | inFlightStaleMs | 300000 | quota.ts IN_FLIGHT_STALE_MS = 5*60_000 |
  * | rateLimitRetentionWindows | 1440 | ratelimit.ts pruneRateLimits default 1440 |
- * | llmBaseUrl | https://api.deepseek.com | providers.ts DEFAULT_LLM_BASE_URL |
- * | llmModel | deepseek-v4-flash | providers.ts DEFAULT_LLM_MODEL |
+ * | llmBaseUrl | https://openrouter.ai/api/v1 | providers.ts DEFAULT_LLM_BASE_URL |
+ * | llmModel | @preset/afterclass | providers.ts DEFAULT_LLM_MODEL |
  * | chatMaxDurationSec | 300 | route.ts `maxDuration = 300` (Vercel Pro ceiling; Task 9 pins via sync-mirror) |
  */
 import { z } from "zod";
@@ -122,8 +122,8 @@ export const DEFAULT_CHAT_CONFIG_VALUES: ChatConfig = {
   icalThrottlePerMinute: 60,
   inFlightStaleMs: 5 * 60_000,
   rateLimitRetentionWindows: 1440,
-  llmBaseUrl: "https://api.deepseek.com",
-  llmModel: "deepseek-v4-flash",
+  llmBaseUrl: "https://openrouter.ai/api/v1",
+  llmModel: "@preset/afterclass",
   chatMaxDurationSec: 300,
 };
 

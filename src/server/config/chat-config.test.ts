@@ -32,4 +32,10 @@ describe("getChatConfig", () => {
     expect(b.maxChars).toBe(24000);
     expect(b.note).toMatch(/refine your query/);
   });
+  it("defaults point at the OpenRouter preset transport", () => {
+    expect(DEFAULT_CHAT_CONFIG_VALUES.llmBaseUrl).toBe(
+      "https://openrouter.ai/api/v1",
+    );
+    expect(DEFAULT_CHAT_CONFIG_VALUES.llmModel).toBe("@preset/afterclass");
+  });
 });

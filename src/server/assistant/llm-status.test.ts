@@ -8,15 +8,31 @@ describe("isLlmConfigured", () => {
   // assertion would never see it.
   it("logs once when missing (warn, not throw)", () => {
     const err = vi.spyOn(console, "error").mockImplementation(() => undefined);
-    isLlmConfigured({ LLM_API_KEY: undefined });
-    expect(err).toHaveBeenCalledWith(expect.stringContaining("LLM_API_KEY"));
+    isLlmConfigured({
+      OPENROUTER_API_KEY: undefined,
+      LLM_API_KEY: undefined,
+    });
+    expect(err).toHaveBeenCalledWith(
+      expect.stringContaining("OPENROUTER_API_KEY"),
+    );
     err.mockRestore();
   });
-  it("returns false when key is missing or empty", () => {
-    expect(isLlmConfigured({ LLM_API_KEY: undefined })).toBe(false);
-    expect(isLlmConfigured({ LLM_API_KEY: "" })).toBe(false);
+  it("returns false when neither key is set or both are empty", () => {
+    expect(
+      isLlmConfigured({
+        OPENROUTER_API_KEY: undefined,
+        LLM_API_KEY: undefined,
+      }),
+    ).toBe(false);
+    expect(isLlmConfigured({ OPENROUTER_API_KEY: "", LLM_API_KEY: "" })).toBe(
+      false,
+    );
   });
-  it("returns true when key is present", () => {
+  it("returns true when either key is present", () => {
+    expect(isLlmConfigured({ OPENROUTER_API_KEY: "k" })).toBe(true);
     expect(isLlmConfigured({ LLM_API_KEY: "k" })).toBe(true);
+    expect(
+      isLlmConfigured({ OPENROUTER_API_KEY: "k", LLM_API_KEY: "k2" }),
+    ).toBe(true);
   });
 });

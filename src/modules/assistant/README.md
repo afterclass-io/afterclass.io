@@ -95,7 +95,7 @@ User opens widget -> AssistantProvider mounts -> GET /api/assistant/status
 |---|---|
 | `canned.ts` | Canned answers for static capability-style prompts, short-circuited **before** the quota reserve. |
 | `tools.ts` | `buildAssistantTools(ctx)` - converts the shared MCP `allTools` into an AI SDK `ToolSet`. |
-| `providers.ts` | `getModel()` - single OpenAI-compatible provider configured from `LLM_API_KEY`/`LLM_BASE_URL`/`LLM_MODEL`. |
+| `providers.ts` | `getModel()` - single OpenRouter preset provider configured from `OPENROUTER_API_KEY` (preferred) / `LLM_API_KEY` (fallback) plus `LLM_BASE_URL`/`LLM_MODEL` overrides. |
 | `trim.ts` | `trimToBudget(messages)` - prunes reasoning/tool-call bloat, then drops oldest messages until under max input tokens. |
 | `quota.ts` | `reserveMessage`, `settleUsage`, `checkSpendGuard` - monthly quota and spend tracking. |
 | `ratelimit.ts` | `checkAndIncrement` - fixed-window rate limiter per user. |
@@ -177,16 +177,17 @@ When the spend gate or quota gate trips, `AssistantProvider` renders `ConnectGat
 
 ## Environment
 
-- **`LLM_API_KEY`** - LLM API key, set server-side in `.env` (never exposed to the client).
-- **`LLM_BASE_URL`** - (optional) overrides the default OpenAI-compatible base URL (defaults to `https://api.deepseek.com`).
-- **`LLM_MODEL`** - (optional) overrides the default model (defaults to `deepseek-v4-flash`).
+- **`OPENROUTER_API_KEY`** - OpenRouter preset API key, set server-side in `.env` (never exposed to the client). Preferred over `LLM_API_KEY`.
+- **`LLM_API_KEY`** - fallback LLM API key, used when `OPENROUTER_API_KEY` is unset.
+- **`LLM_BASE_URL`** - (optional) overrides the default OpenAI-compatible base URL (defaults to `https://openrouter.ai/api/v1`).
+- **`LLM_MODEL`** - (optional) overrides the default model (defaults to `@preset/afterclass`).
 - **`CHAT_RATE_LIMIT_PER_MINUTE`** - (optional) overrides `chat.rateLimitPerMinute` (default 10).
 - **`CHAT_MCP_RATE_LIMIT_PER_MINUTE`** - (optional) overrides `chat.mcpRateLimitPerMinute` (default 60).
 - **`CHAT_WRITE_RATE_LIMIT_PER_MINUTE`** - (optional) overrides the chat write-tool limit (defaults to `CHAT_RATE_LIMIT_PER_MINUTE`).
 - **`CHAT_RATE_LIMIT_WINDOW_MINUTES`** - (optional) fixed-window size in minutes (default 1).
 - **`SKIP_ENV_VALIDATION=1`** - set this when running `bun run lint` to bypass `src/env.ts` validation (`next lint` forces `NODE_ENV=production`, which makes the real production-required vars - `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` - required; run lint with `SKIP_ENV_VALIDATION=true` and unset it afterwards).
 
-The LLM provider is a single OpenAI-compatible backend configured from `LLM_API_KEY`/`LLM_BASE_URL`/`LLM_MODEL` (see `src/server/assistant/providers.ts`). Rate limits can be overridden via `CHAT_*` env vars (see `src/server/ecfg/chat.ts`).
+The LLM provider is a single OpenAI-compatible backend routed through OpenRouter (`@preset/afterclass`), configured from `OPENROUTER_API_KEY` (preferred) / `LLM_API_KEY` (fallback) plus `LLM_BASE_URL`/`LLM_MODEL` overrides (see `src/server/assistant/providers.ts`). Rate limits can be overridden via `CHAT_*` env vars (see `src/server/ecfg/chat.ts`).
 
 ## Smoke Testing (Local Dev)
 
@@ -194,7 +195,7 @@ The LLM provider is a single OpenAI-compatible backend configured from `LLM_API_
 2. Verify the status route compiles: `curl http://localhost:3000/api/assistant/status` -> should return `{"signedIn":false}` (no session) or the full status JSON if you have a session cookie.
 3. Verify the widget module tree compiles: open the site in a browser. The root layout should load without runtime import errors.
 4. To test a full interactive chat with tools, you need:
-   - A **real `LLM_API_KEY`** in `.env` (the placeholder will fail).
+   - A **real `OPENROUTER_API_KEY`** (or `LLM_API_KEY` fallback) in `.env` (the placeholder will fail).
    - A **signed-in browser session** (Google OAuth).
    - A running dev server with the database seeded.
 5. To simulate the quota gate: temporarily set `chat.quotaPerMonth` to `1` in `config.json`, run `bun run ecfg:update`, then send a second message - the widget should show the ConnectGate.

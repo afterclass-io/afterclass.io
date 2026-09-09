@@ -48,6 +48,9 @@ export const env = createEnv({
     // and resolveLlmEnv() in providers.ts still throws when called without a
     // key — getModel() is the single throw site.
     LLM_API_KEY: z.string().min(1).optional(),
+    // OpenRouter preset transport: the dedicated key, set independently per
+    // Vercel environment (staging/prod). Preferred over LLM_API_KEY.
+    OPENROUTER_API_KEY: z.string().min(1).optional(),
     LLM_BASE_URL: z.string().min(1).optional(),
     LLM_MODEL: z.string().min(1).optional(),
     // Optional rate-limit overrides (per minute, fixed window). When set they
@@ -182,6 +185,7 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     LLM_API_KEY: process.env.LLM_API_KEY,
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
     LLM_BASE_URL: process.env.LLM_BASE_URL,
     LLM_MODEL: process.env.LLM_MODEL,
     CHAT_QUOTA_PER_MONTH: process.env.CHAT_QUOTA_PER_MONTH,
