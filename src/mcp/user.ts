@@ -16,6 +16,7 @@ function toSessionUser(
     email: u.email,
     username: u.username,
     isVerified: u.isVerified,
+    aiConsent: u.aiConsent,
     universityId: u.universityId,
     firstName: u.firstName,
     lastName: u.lastName,

@@ -97,6 +97,7 @@ const DEFAULT_USER: SessionUser = {
   email: "a@smu.edu.sg",
   username: "u1",
   isVerified: true,
+  aiConsent: null,
   universityId: 1,
   firstName: null,
   lastName: null,

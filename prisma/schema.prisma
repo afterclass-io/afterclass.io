@@ -47,6 +47,7 @@ model Users {
   email                    String   @unique
   username                 String   @unique
   isVerified               Boolean  @default(false) @map("is_verified")
+  aiConsent                DateTime? @map("ai_consent")
   universityId             Int      @map("university_id")
   deprecatedPasswordDigest String?  @map("deprecated_password_digest")
   firstName                String?  @map("first_name")
