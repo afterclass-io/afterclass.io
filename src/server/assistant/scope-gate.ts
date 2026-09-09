@@ -52,6 +52,8 @@ const SUBSTRING_KEYWORDS: readonly string[] = [
   "venue",
   "smu",
   "gpa",
+  "secure",
+  "success",
 ];
 
 /**

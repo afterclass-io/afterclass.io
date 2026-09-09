@@ -1,16 +1,26 @@
 import { z } from "zod";
 
+import { pickActiveOrFirst } from "../../current";
 import { stripSecretsFromValue } from "@/mcp/output-policy";
 import {
   buildRoadmapView,
   roadmapViewToViewProps,
 } from "../roadmap-view-shared";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import {
+  errText,
+  errorMessage,
+  jsonText,
+  type McpTool,
+  type RouterOutputs,
+} from "../../types";
 
 const roadmapViewExtractor = roadmapViewToViewProps;
 
 const getMyRoadmapSchema = z.object({
-  roadmapId: z.string().describe("Roadmap id from my-roadmaps"),
+  roadmapId: z
+    .string()
+    .optional()
+    .describe("Roadmap id from my-roadmaps. Omit to use your active roadmap."),
 });
 
 export const getMyRoadmapTool: McpTool<typeof getMyRoadmapSchema> = {
@@ -22,7 +32,19 @@ export const getMyRoadmapTool: McpTool<typeof getMyRoadmapSchema> = {
   toViewProps: roadmapViewExtractor(false),
   run: async ({ caller }, { roadmapId }) => {
     try {
-      const view = await buildRoadmapView(caller, roadmapId);
+      let resolvedId = roadmapId?.trim() ?? "";
+      if (!resolvedId) {
+        const mine: RouterOutputs["roadmaps"]["listMine"] =
+          await caller.roadmaps.listMine();
+        const active = pickActiveOrFirst(mine);
+        if (!active) {
+          return errText(
+            "You don't have any roadmaps yet. Create one first, then ask again.",
+          );
+        }
+        resolvedId = active.id;
+      }
+      const view = await buildRoadmapView(caller, resolvedId);
       // Direct viewProps writers (Task 11): no JSON round-trip — the view
       // channel carries the typed view; the text envelope stays for the model.
       return { ...jsonText(view), viewProps: view };

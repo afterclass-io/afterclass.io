@@ -8,6 +8,15 @@ describe("isInScope", () => {
   it("accepts bid planning questions", () => {
     expect(isInScope("should I bid 80 for ACCT102?")).toBe(true);
   });
+  it("accepts bid-securing phrasing with no explicit bid noun", () => {
+    expect(isInScope("I need to secure this")).toBe(true);
+  });
+  it("accepts standalone success-rate questions", () => {
+    expect(isInScope("if i need it 80% success rate?")).toBe(true);
+  });
+  it("accepts taken-history questions with no course code", () => {
+    expect(isInScope("have I already taken that course?")).toBe(true);
+  });
   it("accepts a bare course-code question with no domain noun", () => {
     expect(isInScope("Have I already taken is215?")).toBe(true);
   });

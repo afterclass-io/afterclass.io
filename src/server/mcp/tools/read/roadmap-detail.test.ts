@@ -28,6 +28,7 @@ function makeCaller(procs: Record<string, unknown>) {
     roadmaps: {
       getMine: procs.roadmapsGetMine,
       getById: procs.roadmapsGetById,
+      listMine: procs.roadmapsListMine,
     },
     acadTerms: {
       list: procs.acadTermsList,
@@ -61,6 +62,27 @@ describe("get-my-roadmap", () => {
       entries: [{ course: { code: "COR-STAT1202" } }],
     });
     expect(fn).toHaveBeenCalledWith({ roadmapId: "r1" });
+  });
+
+  it("resolves the active roadmap when roadmapId is omitted", async () => {
+    const listMine = vi.fn().mockResolvedValue([
+      { id: "r2", name: "Secondary", isActive: false },
+      { id: "r1", name: "Primary", isActive: true },
+    ]);
+    const getMine = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "Primary" },
+      entries: [],
+    });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        roadmapsListMine: listMine,
+        roadmapsGetMine: getMine,
+      }),
+    };
+    const res = await getMyRoadmapTool.run(ctx, {});
+    expect(res.isError).toBeFalsy();
+    expect(getMine).toHaveBeenCalledWith({ roadmapId: "r1" });
   });
 
   it("returns errText when the procedure throws", async () => {

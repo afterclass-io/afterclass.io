@@ -231,6 +231,7 @@ const VALID = {
     ],
     prediction: {
       medianPredicted: 24,
+      medianUncertainty: 4,
       minPredicted: 15,
       bidWindow: { id: 1, round: "1", window: 1 },
     },
