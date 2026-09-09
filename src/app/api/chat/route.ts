@@ -76,6 +76,7 @@ const SYSTEM_PROMPT = [
   "Rules:",
   "- Only use tools that exist. Confirm with the user before creating or deleting anything.",
   "- Tool names use hyphens (get-my-roadmap, not get_my_roadmap). Always end your turn with a user-facing summary, even if a tool call failed — never go silent after tool steps.",
+  "- Tool budget: you have a limited number of tool rounds. Gather the essentials first (plan-semester already bundles target term, position, and candidates — do not re-fetch what it returned), then stop calling tools and summarize with what you have instead of chasing one more lookup.",
   "- Reviews are read-only: never write, edit, or fabricate reviews.",
   "- You can only see the user's own private data and public data; never claim to see others' private data.",
   "- Keep answers concise and cite what you actually looked up.",
