@@ -140,43 +140,43 @@ describe("account read tools", () => {
     };
     expect(out).toMatchObject({
       usedThisPeriod: 12,
-      periodLimit: 50,
-      criticalFloor: 10,
-      remaining: 38,
+      periodLimit: 20,
+      criticalFloor: 4,
+      remaining: 8,
       isCritical: false,
     });
     expect(out.period).toMatch(/^\d{4}-\d{2}$/);
   });
 
   it("get-usage reports critical at/below the 20% critical floor", async () => {
-    chatUsageFindUnique.mockResolvedValue({ messageCount: 40 });
+    chatUsageFindUnique.mockResolvedValue({ messageCount: 16 });
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller() };
     const result = await getUsageTool.run(ctx, {});
     expect(JSON.parse(textOf(result)) as Record<string, unknown>).toMatchObject(
       {
-        usedThisPeriod: 40,
-        criticalFloor: 10,
-        remaining: 10,
+        usedThisPeriod: 16,
+        criticalFloor: 4,
+        remaining: 4,
         isCritical: true,
       },
     );
   });
 
   it("get-usage derives critical from the 20% floor, not the nudge threshold", async () => {
-    // nudgeAt=20 is far from the critical floor floor(50*0.2)=10: the old
-    // `used >= nudgeAt` rule would flag used=25 as critical, but the meter
-    // rule only flags remaining <= 10.
-    getChatConfig.mockResolvedValueOnce({ ...MOCK_CHAT_CONFIG, nudgeAt: 20 });
-    chatUsageFindUnique.mockResolvedValue({ messageCount: 25 }); // remaining 25
+    // nudgeAt=8 is far from the critical floor floor(20*0.2)=4: the old
+    // `used >= nudgeAt` rule would flag used=10 as critical, but the meter
+    // rule only flags remaining <= 4.
+    getChatConfig.mockResolvedValueOnce({ ...MOCK_CHAT_CONFIG, nudgeAt: 8 });
+    chatUsageFindUnique.mockResolvedValue({ messageCount: 10 }); // remaining 10
     const ctx: ToolContext = { user: fakeUser, caller: makeCaller() };
     const result = await getUsageTool.run(ctx, {});
     expect(result.isError).toBeFalsy();
     expect(JSON.parse(textOf(result)) as Record<string, unknown>).toMatchObject(
       {
-        usedThisPeriod: 25,
-        periodLimit: 50,
-        criticalFloor: 10,
-        remaining: 25,
+        usedThisPeriod: 10,
+        periodLimit: 20,
+        criticalFloor: 4,
+        remaining: 10,
         isCritical: false,
       },
     );

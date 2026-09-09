@@ -72,7 +72,7 @@ User opens widget -> AssistantProvider mounts -> GET /api/assistant/status
 | `welcome-bubble/`                                                                            | Random engagement bubble (`logic.ts`: `pickEngagementMessage`, 7-day interval, max 3 shows, 4s delay, 12s auto-dismiss).                                                                                                                                                                                                |
 | `chat-store.ts`                                                                              | Zustand store backed by IndexedDB (`idb.ts`) - `hydrate`, `createSession`, `saveSession`, `renameSession`, `deleteSession`, `setActive`. Caps/pruning in `chat-store-logic.ts`.                                                                                                                                         |
 | `session-list.tsx`                                                                           | Sidebar session list shared by widget + `/assistant`.                                                                                                                                                                                                                                                                   |
-| `connect-gate.tsx`                                                                           | Gate screen when quota exhausted; links to `/settings/agents/connect`.                                                                                                                                                                                                                                      |
+| `connect-gate.tsx`                                                                           | Gate screen when quota exhausted; links to `/settings/agents/connect`.                                                                                                                                                                                                                                                  |
 | `mcp-recommendation.tsx`                                                                     | One-click MCP App recommendation card (3 branded buttons).                                                                                                                                                                                                                                                              |
 | `gate.ts`                                                                                    | `parseGateError` - regex-parses `{"gate":...}` (quota/consent) from the transport error body.                                                                                                                                                                                                                           |
 | `use-persist-session.ts`                                                                     | Writes active-session messages to the store on finish.                                                                                                                                                                                                                                                                  |
@@ -87,17 +87,17 @@ User opens widget -> AssistantProvider mounts -> GET /api/assistant/status
 | `tools.ts`     | `buildAssistantTools(ctx)` - converts the shared MCP `allTools` into an AI SDK `ToolSet`.                                                                           |
 | `providers.ts` | `getModel()` - single OpenAI-compatible provider configured from generic `LLM_API_KEY` plus `LLM_BASE_URL`/`LLM_MODEL` (defaults: OpenRouter `@preset/afterclass`). |
 | `trim.ts`      | `trimToBudget(messages)` - prunes reasoning/tool-call bloat, then drops oldest messages until under max input tokens.                                               |
-| `quota.ts`     | `reserveMessage`, `settleUsage` - monthly message quota and token-count tracking.                                                                               |
+| `quota.ts`     | `reserveMessage`, `settleUsage` - monthly message quota and token-count tracking.                                                                                   |
 | `ratelimit.ts` | `checkAndIncrement` - fixed-window rate limiter per user.                                                                                                           |
 | `month.ts`     | `currentMonthPeriod()` - `"YYYY-MM"` in Asia/Singapore time.                                                                                                        |
-| `status.ts`    | `getAssistantStatus(userId, supabaseAccessToken?)` - aggregates quota and Supabase grant data (`hasConnectedAgent`).                                         |
+| `status.ts`    | `getAssistantStatus(userId, supabaseAccessToken?)` - aggregates quota and Supabase grant data (`hasConnectedAgent`).                                                |
 
 ### Routes
 
 | File                                    | Purpose                                                                                                  |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | `src/app/api/chat/route.ts`             | Chat POST endpoint: canned short-circuit, auth, gates, tool catalog, streaming response, usage tracking. |
-| `src/app/api/assistant/status/route.ts` | Status GET endpoint: `{signedIn, quota, used, remaining, hasConnectedAgent, nudgeAt}`.      |
+| `src/app/api/assistant/status/route.ts` | Status GET endpoint: `{signedIn, quota, used, remaining, hasConnectedAgent, nudgeAt}`.                   |
 
 ## Configuration
 
@@ -105,15 +105,15 @@ All limits are driven by the `chat` section of the Edge Config. The hardcoded de
 
 ### Config Keys
 
-| Key                     | Type  | Default | Description                                                                                                                               |
-| ----------------------- | ----- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `quotaPerMonth`         | int   | 50      | Max messages per user per calendar month                                                                                                  |
-| `nudgeAt`               | int   | 40      | When remaining messages drop below this, the nudge intensifies ("Heads up - N messages left")                                             |
-| `rateLimitPerMinute`    | int   | 10      | Max chat POSTs per user per minute (fixed window)                                                                                         |
-| `mcpRateLimitPerMinute` | int   | 60      | Max MCP tool calls per minute (reserved for future MCP endpoint)                                                                          |
-| `maxInputTokens`        | int   | 16000   | Max input tokens per request (older messages are dropped to fit)                                                                          |
-| `maxOutputTokens`       | int   | 1024    | Max output tokens per response                                                                                                            |
-| `maxToolRounds`         | int   | 6       | Max sequential tool-call rounds per message. Kept at 6 to stay within the Vercel 60s function limit (initial call + up to 6 tool rounds). |
+| Key                     | Type | Default | Description                                                                                                                               |
+| ----------------------- | ---- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `quotaPerMonth`         | int  | 20      | Max messages per user per calendar month                                                                                                  |
+| `nudgeAt`               | int  | 16      | When remaining messages drop below this, the nudge intensifies ("Heads up - N messages left")                                             |
+| `rateLimitPerMinute`    | int  | 10      | Max chat POSTs per user per minute (fixed window)                                                                                         |
+| `mcpRateLimitPerMinute` | int  | 60      | Max MCP tool calls per minute (reserved for future MCP endpoint)                                                                          |
+| `maxInputTokens`        | int  | 16000   | Max input tokens per request (older messages are dropped to fit)                                                                          |
+| `maxOutputTokens`       | int  | 1024    | Max output tokens per response                                                                                                            |
+| `maxToolRounds`         | int  | 6       | Max sequential tool-call rounds per message. Kept at 6 to stay within the Vercel 60s function limit (initial call + up to 6 tool rounds). |
 
 ### Changing Config
 

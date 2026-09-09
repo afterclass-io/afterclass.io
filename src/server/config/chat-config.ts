@@ -20,8 +20,8 @@
  * Defaults → source mapping:
  * | Field | Default | Harvested from |
  * |---|---|---|
- * | quotaPerMonth | 50 | `src/server/ecfg/config.ts` DEFAULT_CHAT_CONFIG / config.json |
- * | nudgeAt | 40 | same |
+ * | quotaPerMonth | 20 | `src/server/ecfg/config.ts` DEFAULT_CHAT_CONFIG / config.json |
+ * | nudgeAt | 16 | same |
  * | rateLimitPerMinute | 10 | same |
  * | mcpRateLimitPerMinute | 60 | same |
  * | writeRateLimitPerMinute | 10 | `CHAT_WRITE_RATE_LIMIT_PER_MINUTE` fallback = rateLimitPerMinute (10); `src/app/api/ical/[token]/route.ts` ical 60/min kept separate as icalThrottlePerMinute |
@@ -99,8 +99,8 @@ export const chatConfigSchema = z.object({
 export type ChatConfig = z.infer<typeof chatConfigSchema>;
 
 export const DEFAULT_CHAT_CONFIG_VALUES: ChatConfig = {
-  quotaPerMonth: 50,
-  nudgeAt: 40,
+  quotaPerMonth: 20,
+  nudgeAt: 16,
   rateLimitPerMinute: 10,
   mcpRateLimitPerMinute: 60,
   writeRateLimitPerMinute: 10,
@@ -206,7 +206,9 @@ function fileChatLayer(): RawLayer {
  * (EdgeConfig is async-only — use getChatConfigAsync() when the Edge layer
  * matters. The sync path is what tests and fail-closed call sites use.)
  */
-export function getChatConfig(env: NodeJS.ProcessEnv = process.env): ChatConfig {
+export function getChatConfig(
+  env: NodeJS.ProcessEnv = process.env,
+): ChatConfig {
   const merged: RawLayer = {
     ...fileChatLayer(),
     ...readEnvLayer(env),

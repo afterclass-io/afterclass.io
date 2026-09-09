@@ -14,8 +14,8 @@ describe("SignedOutPanel", () => {
     expect(screen.getByText(/Free quota is 30 messages\/month/)).toBeTruthy();
   });
 
-  it("falls back to 50 when status has not loaded", () => {
+  it("falls back to 20 when status has not loaded", () => {
     render(<SignedOutPanel quota={undefined} />);
-    expect(screen.getByText(/Free quota is 50 messages\/month/)).toBeTruthy();
+    expect(screen.getByText(/Free quota is 20 messages\/month/)).toBeTruthy();
   });
 });

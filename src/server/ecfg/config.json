@@ -6,8 +6,8 @@
   "enableReviewFilter": true,
   "enableReviewReactions": true,
   "chat": {
-    "quotaPerMonth": 50,
-    "nudgeAt": 40,
+    "quotaPerMonth": 20,
+    "nudgeAt": 16,
     "rateLimitPerMinute": 10,
     "mcpRateLimitPerMinute": 60,
     "maxInputTokens": 16000,

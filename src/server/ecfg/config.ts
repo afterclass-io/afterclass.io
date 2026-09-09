@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const DEFAULT_CHAT_CONFIG = {
-  quotaPerMonth: 50,
-  nudgeAt: 40,
+  quotaPerMonth: 20,
+  nudgeAt: 16,
   rateLimitPerMinute: 10,
   mcpRateLimitPerMinute: 60,
   maxInputTokens: 64000,

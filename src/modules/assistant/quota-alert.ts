@@ -17,7 +17,7 @@ export function getQuotaAlert(
   // (criticalFloorFor: 20% of quota, min 1), so the alert bar, meter, welcome
   // push, and server isCritical agree. "warn" keeps its own 50% band — it is
   // the early nudge, intentionally wider than the meter's server-driven
-  // nudgeAt (quota=50 → nudgeAt=40, i.e. remaining<=40): the bar is a cheap
+  // nudgeAt (quota=20 → nudgeAt=16, i.e. remaining<=16): the bar is a cheap
   // client hint, the meter is the authoritative state. Zero remaining is
   // always critical regardless of quota.
   // Clamp 0–100 (Task 12): over-quota/negative arithmetic must never

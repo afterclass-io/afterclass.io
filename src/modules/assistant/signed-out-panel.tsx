@@ -42,7 +42,7 @@ export function SignedOutPanel({ quota }: { quota?: number }) {
         Log in to chat
       </a>
       <p className="text-muted-foreground max-w-56 text-xs">
-        Free quota is {quota ?? 50} messages/month. Log in once - we&apos;ll
+        Free quota is {quota ?? 20} messages/month. Log in once - we&apos;ll
         bring you right back here.
       </p>
     </div>
