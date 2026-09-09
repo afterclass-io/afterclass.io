@@ -120,7 +120,18 @@ function tokensOf(lower: string): string[] {
   return lower.split(/[^a-z0-9]+/).filter((t) => t.length > 0);
 }
 
+/**
+ * Course-code mentions (e.g. IS215, COR-IS1702, ACCT102, LAW 205, ACCT104/112):
+ * a bare "Have I already taken IS215?" carries no domain noun but is
+ * unambiguously an afterclass question. Same shape as the prereq-code
+ * extractor in `src/server/mcp/tools/feasibility-check.ts` — case-insensitive
+ * here because scope-gate runs on raw user text.
+ */
+const COURSE_CODE_PATTERN =
+  /\b[a-z]{2,4}(?:-[a-z]{2,4})?\s?\d{3,4}(?:\/\d{3,4})?\b/i;
+
 function matchesKeywords(lower: string): boolean {
+  if (COURSE_CODE_PATTERN.test(lower)) return true;
   for (const k of SUBSTRING_KEYWORDS) {
     if (lower.includes(k)) return true;
   }

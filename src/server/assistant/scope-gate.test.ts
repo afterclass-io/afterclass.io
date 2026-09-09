@@ -8,6 +8,9 @@ describe("isInScope", () => {
   it("accepts bid planning questions", () => {
     expect(isInScope("should I bid 80 for ACCT102?")).toBe(true);
   });
+  it("accepts a bare course-code question with no domain noun", () => {
+    expect(isInScope("Have I already taken is215?")).toBe(true);
+  });
   it("accepts pronoun follow-ups after an in-scope turn", () => {
     expect(
       isInScope(
