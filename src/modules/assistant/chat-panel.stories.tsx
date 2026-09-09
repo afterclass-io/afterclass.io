@@ -13,6 +13,7 @@ const status = (overrides: Partial<AssistantStatus> = {}): AssistantStatus => ({
   aiDegraded: false,
   chatEnabled: true,
   widgetEnabled: true,
+  aiConsented: true,
   ...overrides,
 });
 
@@ -38,6 +39,22 @@ export const Initial: Story = {
     hasConnectedAgent: false,
     aiDegraded: false,
     onGate: () => undefined,
+    aiConsented: true,
+    onConsented: () => undefined,
+    onConsentRevoked: () => undefined,
+  },
+};
+
+export const Unconsented: Story = {
+  args: {
+    quota: 50,
+    remaining: 43,
+    hasConnectedAgent: false,
+    aiDegraded: false,
+    onGate: () => undefined,
+    aiConsented: false,
+    onConsented: () => undefined,
+    onConsentRevoked: () => undefined,
   },
 };
 
@@ -48,6 +65,9 @@ export const Degraded: Story = {
     hasConnectedAgent: false,
     aiDegraded: true,
     onGate: () => undefined,
+    aiConsented: true,
+    onConsented: () => undefined,
+    onConsentRevoked: () => undefined,
   },
 };
 
@@ -58,6 +78,9 @@ export const Conversation: Story = {
     hasConnectedAgent: false,
     aiDegraded: false,
     onGate: () => undefined,
+    aiConsented: true,
+    onConsented: () => undefined,
+    onConsentRevoked: () => undefined,
   },
   parameters: {
     chatState: {
@@ -84,6 +107,9 @@ export const Streaming: Story = {
     hasConnectedAgent: false,
     aiDegraded: false,
     onGate: () => undefined,
+    aiConsented: true,
+    onConsented: () => undefined,
+    onConsentRevoked: () => undefined,
   },
   parameters: {
     chatState: {
@@ -111,6 +137,9 @@ export const Error: Story = {
     hasConnectedAgent: false,
     aiDegraded: false,
     onGate: () => undefined,
+    aiConsented: true,
+    onConsented: () => undefined,
+    onConsentRevoked: () => undefined,
   },
   parameters: {
     chatState: {
@@ -130,6 +159,9 @@ export const QuotaAlert: Story = {
     hasConnectedAgent: false,
     aiDegraded: false,
     onGate: () => undefined,
+    aiConsented: true,
+    onConsented: () => undefined,
+    onConsentRevoked: () => undefined,
   },
   parameters: {
     assistant: { status: status({ remaining: 5 }), sessions: [] },
@@ -143,6 +175,9 @@ export const Dark: Story = {
     hasConnectedAgent: false,
     aiDegraded: false,
     onGate: () => undefined,
+    aiConsented: true,
+    onConsented: () => undefined,
+    onConsentRevoked: () => undefined,
   },
   parameters: {
     themes: { themeOverride: "dark" },

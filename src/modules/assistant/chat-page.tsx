@@ -11,6 +11,7 @@ import {
   shouldShowChatError,
 } from "@/modules/assistant/error-message";
 import { Composer } from "@/modules/assistant/composer";
+import { ConsentNotice } from "@/modules/assistant/consent-notice";
 import {
   WelcomeSuggestions,
   FollowUpSuggestions,
@@ -32,6 +33,10 @@ export function ChatPage({
 }) {
   const [status] = useState(initialStatus);
   const [gate, setGate] = useState<ChatGate | null>(null);
+  // Task 5: consent is LOCAL — seeded from the server status, flipped by
+  // onConsented / onConsentRevoked. No status refetch (bare minimum — the
+  // next navigation refetches server-side anyway).
+  const [consented, setConsented] = useState(initialStatus.aiConsented);
   const activeSessionId = useChatStore((s) => s.activeSessionId);
   const hydrated = useChatStore((s) => s.hydrated);
   const hydrate = useChatStore((s) => s.hydrate);
@@ -50,7 +55,13 @@ export function ChatPage({
     throttle: 32,
     onError: (error) => {
       const g = parseGateError(error);
-      if (g) setGate(g);
+      if (!g) return;
+      // Consent cleared mid-session → flip back to the notice (and clear any
+      // quota/spend gate — consent re-asks first). Other gates unchanged.
+      if (g === "consent") {
+        setConsented(false);
+        setGate(null);
+      } else setGate(g);
     },
   });
 
@@ -154,9 +165,11 @@ export function ChatPage({
                   <h1 className="text-2xl font-semibold">
                     How can I help you today?
                   </h1>
-                  <WelcomeSuggestions
-                    onPick={(prompt) => chat.sendMessage({ text: prompt })}
-                  />
+                  {consented && (
+                    <WelcomeSuggestions
+                      onPick={(prompt) => chat.sendMessage({ text: prompt })}
+                    />
+                  )}
                 </div>
               ) : (
                 <MessageList messages={chat.messages} />
@@ -165,22 +178,37 @@ export function ChatPage({
                 <AssistantErrorMessage error={chat.error} onRetry={retry} />
               )}
             </div>
-            <FollowUpSuggestions
-              onPick={(prompt) => chat.sendMessage({ text: prompt })}
-              messages={chat.messages}
-              isRunning={isRunning}
-              lastTurnFailed={showError}
-            />
-            <QuotaAlertBar
-              remaining={status.remaining}
-              quota={status.quota}
-              hasConnectedAgent={status.hasConnectedAgent}
-            />
-            <Composer
-              sendMessage={chat.sendMessage}
-              status={chat.status}
-              stop={chat.stop}
-            />
+            {consented ? (
+              <>
+                <FollowUpSuggestions
+                  onPick={(prompt) => chat.sendMessage({ text: prompt })}
+                  messages={chat.messages}
+                  isRunning={isRunning}
+                  lastTurnFailed={showError}
+                />
+                <QuotaAlertBar
+                  remaining={status.remaining}
+                  quota={status.quota}
+                  hasConnectedAgent={status.hasConnectedAgent}
+                />
+                <Composer
+                  sendMessage={chat.sendMessage}
+                  status={chat.status}
+                  stop={chat.stop}
+                />
+              </>
+            ) : (
+              // Sidebar stays; the notice takes the composer slot so sends are
+              // impossible until the user agrees.
+              <div className="flex justify-center px-4 pt-2 pb-3">
+                <ConsentNotice
+                  onConsented={() => {
+                    setConsented(true);
+                    setGate(null);
+                  }}
+                />
+              </div>
+            )}
           </>
         )}
       </main>

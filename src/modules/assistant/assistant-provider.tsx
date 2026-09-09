@@ -28,6 +28,10 @@ type Status =
       // status so a stale fetch cannot hide the widget).
       chatEnabled?: boolean;
       widgetEnabled?: boolean;
+      // Task 5: consent flag, same staleness story — but fail-CLOSED: absent
+      // seeds the local consent state false (notice) until the open-refetch
+      // below confirms with the server.
+      aiConsented?: boolean;
     }
   | null;
 
@@ -41,10 +45,23 @@ function SignedInAssistant({
   onOpenChange: (o: boolean) => void;
 }) {
   const [gate, setGate] = useState<ChatGate | null>(null);
+  // Task 5: consent is LOCAL to the widget mount — seeded from the status
+  // payload, flipped by the notice (onConsented) and by mid-session
+  // consent-403s (onConsentRevoked → re-ask).
+  const [consented, setConsented] = useState<boolean>(
+    status.aiConsented ?? false,
+  );
 
   useEffect(() => {
     if (status.spendPaused) setGate("spend");
   }, [status.spendPaused]);
+
+  // Reset local consent from the server payload whenever it changes (open-
+  // refetch, route-change refetch). Local onConsented/onConsentRevoked flips
+  // in between do not touch `status`, so this effect does not fight them.
+  useEffect(() => {
+    setConsented(status.aiConsented ?? false);
+  }, [status.aiConsented]);
 
   const viewport = useViewport();
   const geometry = useWidgetPosition(viewport);
@@ -68,6 +85,9 @@ function SignedInAssistant({
           hasConnectedAgent={status.hasConnectedAgent}
           aiDegraded={status.aiDegraded}
           onGate={setGate}
+          aiConsented={consented}
+          onConsented={() => setConsented(true)}
+          onConsentRevoked={() => setConsented(false)}
         />
       </AssistantWidget>
       <WelcomeBubble
@@ -96,6 +116,19 @@ export function AssistantProvider() {
     // Deps: re-fetch on route change - login uses client-side router.push, so
     // this provider stays mounted and must pick up the new auth state.
   }, [pathname]);
+
+  // Task 5: refetch every time the widget OPENS (in addition to route
+  // change above), so each return re-asks: the server consent read resets the
+  // local consent state. The widgetEnabled early-return in SignedInAssistant
+  // still composes first (fully hidden beats the notice).
+  useEffect(() => {
+    if (!open) return;
+    fetch("/api/assistant/status")
+      .then((r) => r.json() as Promise<Status>)
+      .then((s) => setStatus(s))
+      // Best-effort re-ask: keep the last status on failure.
+      .catch(() => undefined);
+  }, [open]);
 
   // If the user was mid-login (we stashed "assistant-was-open" before the
   // redirect), re-open the widget and clear the flag so it only fires once.

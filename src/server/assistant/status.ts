@@ -2,6 +2,7 @@ import { checkSpendGuard, getQuotaState } from "./quota";
 // Task 8: nudgeAt comes from the canonical chat-config (env > EdgeConfig >
 // config.json > defaults) — same value, centralized source.
 import { getChatConfigAsync as getChatConfig } from "@/server/config/chat-config";
+import { getAiConsentDate } from "./consent";
 import { hasConnectedAgent } from "./connected";
 import { isLlmConfigured } from "./llm-status";
 import { env } from "@/env";
@@ -17,9 +18,11 @@ export type AssistantStatus = {
   aiDegraded: boolean;
   // Task 4 kill-switches surfaced to clients: chatEnabled gates /assistant,
   // widgetEnabled hides the widget. (mcpEnabled stays server-side — clients
-  // never need it. aiConsented lands in Task 5, not here.)
+  // never need it.) Task 5: aiConsented (NULL consent → false, fail-closed)
+  // drives the block-and-reask notice in the widget + /assistant.
   chatEnabled: boolean;
   widgetEnabled: boolean;
+  aiConsented: boolean;
   // Additive observability: fraction of input tokens served from cache (0-1),
   // null before any input. Optional to keep existing story helpers that
   // construct AssistantStatus via Partial<AssistantStatus> spread type-correct
@@ -34,10 +37,11 @@ export async function getAssistantStatus(
   const connected = hasConnectedAgent(userId, supabaseAccessToken).catch(
     () => false,
   );
-  const [quota, spendPaused, chat] = await Promise.all([
+  const [quota, spendPaused, chat, consentDate] = await Promise.all([
     getQuotaState(userId),
     checkSpendGuard().then((ok) => !ok),
     getChatConfig(),
+    getAiConsentDate(userId),
   ]);
   return {
     signedIn: true,
@@ -50,6 +54,7 @@ export async function getAssistantStatus(
     aiDegraded: !isLlmConfigured(env),
     chatEnabled: chat.chatEnabled,
     widgetEnabled: chat.widgetEnabled,
+    aiConsented: consentDate !== null,
     cacheHitRate:
       quota.inputTokens > 0
         ? quota.cachedInputTokens / quota.inputTokens

@@ -27,6 +27,9 @@ const chatPanel = (
     hasConnectedAgent={false}
     aiDegraded={false}
     onGate={() => undefined}
+    aiConsented
+    onConsented={() => undefined}
+    onConsentRevoked={() => undefined}
   />
 );
 

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, Suspense } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { Composer } from "./composer";
+import { ConsentNotice } from "./consent-notice";
 import { TypingIndicator } from "./typing-indicator";
 import { MessageList } from "./message-list";
 import { AssistantErrorMessage, shouldShowChatError } from "./error-message";
@@ -20,6 +21,13 @@ export type ChatPanelProps = {
   hasConnectedAgent: boolean;
   aiDegraded: boolean;
   onGate: (gate: ChatGate) => void;
+  // Task 5: consent gating. False → notice in place of composer + suggestions
+  // (Composer never mounts, so sends are impossible). onConsented flips the
+  // parent's local state true; onConsentRevoked flips it back (mid-session
+  // consent-403 re-asks). ConnectGate handling for quota/spend unchanged.
+  aiConsented: boolean;
+  onConsented: () => void;
+  onConsentRevoked: () => void;
 };
 
 export function ChatPanel({
@@ -28,6 +36,9 @@ export function ChatPanel({
   hasConnectedAgent,
   aiDegraded,
   onGate,
+  aiConsented,
+  onConsented,
+  onConsentRevoked,
 }: ChatPanelProps) {
   return (
     <Suspense fallback={null}>
@@ -37,6 +48,9 @@ export function ChatPanel({
         hasConnectedAgent={hasConnectedAgent}
         aiDegraded={aiDegraded}
         onGate={onGate}
+        aiConsented={aiConsented}
+        onConsented={onConsented}
+        onConsentRevoked={onConsentRevoked}
       />
     </Suspense>
   );
@@ -52,6 +66,9 @@ function ChatPanelInner({
   hasConnectedAgent,
   aiDegraded,
   onGate,
+  aiConsented,
+  onConsented,
+  onConsentRevoked,
 }: ChatPanelProps) {
   // Snapshot AT SEND TIME, not mount: transport `body` is a Resolvable
   // resolved fresh per send (see Task 2 verification), so a ref mirror of the
@@ -84,7 +101,11 @@ function ChatPanelInner({
     throttle: 32,
     onError: (error) => {
       const gate = parseGateError(error);
-      if (gate) onGate(gate);
+      if (!gate) return;
+      // Consent cleared mid-session (e.g. a fresh NULL read on another
+      // surface) → flip back to the notice instead of the ConnectGate.
+      if (gate === "consent") onConsentRevoked();
+      else onGate(gate);
     },
   });
 
@@ -136,9 +157,11 @@ function ChatPanelInner({
             <h1 className="text-2xl font-semibold">
               How can I help you today?
             </h1>
-            <WelcomeSuggestions
-              onPick={(prompt) => chat.sendMessage({ text: prompt })}
-            />
+            {aiConsented && (
+              <WelcomeSuggestions
+                onPick={(prompt) => chat.sendMessage({ text: prompt })}
+              />
+            )}
           </div>
         ) : (
           <MessageList messages={chat.messages} />
@@ -148,22 +171,32 @@ function ChatPanelInner({
         )}
         {chat.status === "submitted" && <TypingIndicator />}
       </div>
-      <FollowUpSuggestions
-        onPick={(prompt) => chat.sendMessage({ text: prompt })}
-        messages={chat.messages}
-        isRunning={chat.status === "streaming" || chat.status === "submitted"}
-        lastTurnFailed={showError}
-      />
-      <QuotaAlertBar
-        remaining={remaining}
-        quota={quota}
-        hasConnectedAgent={hasConnectedAgent}
-      />
-      <Composer
-        sendMessage={chat.sendMessage}
-        status={chat.status}
-        stop={chat.stop}
-      />
+      {aiConsented ? (
+        <>
+          <FollowUpSuggestions
+            onPick={(prompt) => chat.sendMessage({ text: prompt })}
+            messages={chat.messages}
+            isRunning={
+              chat.status === "streaming" || chat.status === "submitted"
+            }
+            lastTurnFailed={showError}
+          />
+          <QuotaAlertBar
+            remaining={remaining}
+            quota={quota}
+            hasConnectedAgent={hasConnectedAgent}
+          />
+          <Composer
+            sendMessage={chat.sendMessage}
+            status={chat.status}
+            stop={chat.stop}
+          />
+        </>
+      ) : (
+        // Header + message area stay; composer + suggestions never mount, so
+        // sends are impossible until the user agrees.
+        <ConsentNotice onConsented={onConsented} compact />
+      )}
     </div>
   );
 }

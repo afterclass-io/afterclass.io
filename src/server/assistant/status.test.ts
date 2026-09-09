@@ -19,16 +19,19 @@ vi.mock("@/server/config/chat-config", () => ({
 }));
 vi.mock("./connected", () => ({ hasConnectedAgent: vi.fn() }));
 vi.mock("./llm-status", () => ({ isLlmConfigured: vi.fn() }));
+vi.mock("./consent", () => ({ getAiConsentDate: vi.fn() }));
 
 import { checkSpendGuard, getQuotaState } from "./quota";
 import { hasConnectedAgent } from "./connected";
 import { isLlmConfigured } from "./llm-status";
+import { getAiConsentDate } from "./consent";
 import { getAssistantStatus } from "./status";
 
 const mockedQuotaState = vi.mocked(getQuotaState);
 const mockedSpend = vi.mocked(checkSpendGuard);
 const mockedConnected = vi.mocked(hasConnectedAgent);
 const mockedLlmConfigured = vi.mocked(isLlmConfigured);
+const mockedConsent = vi.mocked(getAiConsentDate);
 
 describe("getAssistantStatus", () => {
   beforeEach(() => {
@@ -36,6 +39,10 @@ describe("getAssistantStatus", () => {
     mockedSpend.mockReset();
     mockedConnected.mockReset();
     mockedLlmConfigured.mockReset();
+    mockedConsent.mockReset();
+    // Default: consented (matches T3's chat-route tests, which assume a
+    // consented user unless a case says otherwise).
+    mockedConsent.mockResolvedValue(null);
     // Default: key configured (matches the real .env under vitest).
     mockedLlmConfigured.mockReturnValue(true);
     mockedQuotaState.mockResolvedValue({
@@ -65,6 +72,7 @@ describe("getAssistantStatus", () => {
       aiDegraded: false,
       chatEnabled: true,
       widgetEnabled: true,
+      aiConsented: false,
       cacheHitRate: null,
     });
   });
@@ -113,6 +121,15 @@ describe("getAssistantStatus", () => {
     const s = await getAssistantStatus("u1", "tok");
     expect(s.hasConnectedAgent).toBe(true);
     expect(mockedConnected).toHaveBeenCalledWith("u1", "tok");
+  });
+
+  // Task 5: aiConsented is consent-date-null → false (fail-closed), date → true.
+  it("reports aiConsented:false when never consented, true once stamped", async () => {
+    mockedConsent.mockResolvedValue(null);
+    expect((await getAssistantStatus("u1")).aiConsented).toBe(false);
+    mockedConsent.mockResolvedValue(new Date("2026-09-09T00:00:00.000Z"));
+    expect((await getAssistantStatus("u1")).aiConsented).toBe(true);
+    expect(mockedConsent).toHaveBeenCalledWith("u1");
   });
 
   it("exposes cacheHitRate as cachedInputTokens / inputTokens", async () => {

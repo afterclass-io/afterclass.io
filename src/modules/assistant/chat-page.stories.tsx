@@ -13,6 +13,7 @@ const status = (overrides: Partial<AssistantStatus> = {}): AssistantStatus => ({
   aiDegraded: false,
   chatEnabled: true,
   widgetEnabled: true,
+  aiConsented: true,
   ...overrides,
 });
 
