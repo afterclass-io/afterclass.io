@@ -58,12 +58,6 @@ const positiveInt = (field: string) =>
     .positive()
     .finite();
 
-const nonNegativeNumber = (field: string) =>
-  z
-    .number({ error: `${field} must be a finite number >= 0` })
-    .nonnegative()
-    .finite();
-
 export const chatConfigSchema = z.object({
   quotaPerMonth: positiveInt("quotaPerMonth"),
   nudgeAt: z

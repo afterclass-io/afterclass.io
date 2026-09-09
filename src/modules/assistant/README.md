@@ -11,51 +11,41 @@ User opens widget -> AssistantProvider mounts -> GET /api/assistant/status
                                                     |
                                     +- signedIn:false -> SignedOutPanel (login CTA)
                                     |
-                                    +- signedIn:true ---------------------+
-                                          |                                |
-                                    spendPaused? --yes---> ConnectGate     |
-                                          |               "spend"          |
-                                          | no                             |
-                                          v                                |
-                          AssistantWidget (controlled open/onOpenChange)   |
-                          +- ChatPanel (useChat + DefaultChatTransport)    |
-                          +- WelcomeBubble (random engagement, 7d/3x max)  |
-                                          |                                |
-                                    User sends message --------------------+
+                                    +- signedIn:true -> AssistantWidget (controlled open/onOpenChange)
+                                    +- ChatPanel (useChat + DefaultChatTransport)
+                                    +- WelcomeBubble (random engagement, 7d/3x max)
+                                                      |
+                                     User sends message -+
                                           |
                                           v
                     POST /api/chat (streaming, DefaultChatTransport)
                                           |
                           +---------------+---------------+
                           v               v               v
-              canned.ts short-circuit  checkSpendGuard()  checkAndIncrement()
-              (static prompts -> instant        |               |
-               answer, BEFORE quota reserve)  exceeded? -> 403  exceeded? -> 429
-                                              {gate:"spend"}               |
-                                                          reserveMessage() |
-                                                          exceeded? -> 403   |
-                                                          {gate:"quota"}    |
-                                          |               |               v
-                                          |               |    trimToBudget(messages)
-                                          |               |               |
-                                          |               |               v
-                                          |               |    buildAssistantTools(ctx)
-                                          |               |               |
-                                          |               |               v
-                                          |               |    getModel() -> LLM_MODEL
-                                          |               |    (LLM_* env)
-                                          |               |               |
-                                          |               |               v
-                                          |               |    streamText({ model, tools, ... })
-                                          |               |               |
-                                          |               |               v
-                                          |               |    SSE stream -> useChat renders
-                                          |               |    (tool cards, markdown)
-                                          |               |               |
-                                          |               |               v
-                                          |               |    onEnd -> settleUsage(userId, {input, output})
-                                          |               |         ChatUsage row (token count + USD spend)
-                                          |               |         ChatSpend row (global monthly spend)
+              canned.ts short-circuit  checkAndIncrement()  trimToBudget(messages)
+              (static prompts -> instant       |               |
+               answer, BEFORE quota reserve)  exceeded? -> 429 |
+                                                           reserveMessage()
+                                                           exceeded? -> 403
+                                                           {gate:"quota"}
+                                                                          |
+                                                                          v
+                                                           buildAssistantTools(ctx)
+                                                                          |
+                                                                          v
+                                                           getModel() -> LLM_MODEL
+                                                           (LLM_* env)
+                                                                          |
+                                                                          v
+                                                           streamText({ model, tools, ... })
+                                                                          |
+                                                                          v
+                                                           SSE stream -> useChat renders
+                                                           (tool cards, markdown)
+                                                                          |
+                                                                          v
+                                                           onEnd -> settleUsage(userId, {input, output})
+                                                                     ChatUsage row (message + token counts)
 ```
 
 - **StrictMode is enabled** (`reactStrictMode: true` in `next.config.js`). The old assistant-ui workaround that forced StrictMode off (issue #5422) no longer applies - there is no custom assistant-ui store.
@@ -82,9 +72,9 @@ User opens widget -> AssistantProvider mounts -> GET /api/assistant/status
 | `welcome-bubble/`                                                                            | Random engagement bubble (`logic.ts`: `pickEngagementMessage`, 7-day interval, max 3 shows, 4s delay, 12s auto-dismiss).                                                                                                                                                                                                |
 | `chat-store.ts`                                                                              | Zustand store backed by IndexedDB (`idb.ts`) - `hydrate`, `createSession`, `saveSession`, `renameSession`, `deleteSession`, `setActive`. Caps/pruning in `chat-store-logic.ts`.                                                                                                                                         |
 | `session-list.tsx`                                                                           | Sidebar session list shared by widget + `/assistant`.                                                                                                                                                                                                                                                                   |
-| `connect-gate.tsx`                                                                           | Gate screen when quota exhausted or spend cap hit; links to `/settings/agents/connect`.                                                                                                                                                                                                                                 |
+| `connect-gate.tsx`                                                                           | Gate screen when quota exhausted; links to `/settings/agents/connect`.                                                                                                                                                                                                                                      |
 | `mcp-recommendation.tsx`                                                                     | One-click MCP App recommendation card (3 branded buttons).                                                                                                                                                                                                                                                              |
-| `gate.ts`                                                                                    | `parseGateError` - regex-parses `{"gate":...}` (quota/spend/consent) from the transport error body.                                                                                                                                                                                                                     |
+| `gate.ts`                                                                                    | `parseGateError` - regex-parses `{"gate":...}` (quota/consent) from the transport error body.                                                                                                                                                                                                                           |
 | `use-persist-session.ts`                                                                     | Writes active-session messages to the store on finish.                                                                                                                                                                                                                                                                  |
 | `use-refresh-after-tools.ts`                                                                 | Invalidates related React Query caches (roadmaps/timetables/userBids/courses) after tool calls finish.                                                                                                                                                                                                                  |
 | `use-widget-position.ts` / `widget-geometry.ts` / `use-viewport.ts` / `typing-indicator.tsx` | Widget drag/resize/clamp, viewport tracking, typing indicator.                                                                                                                                                                                                                                                          |
@@ -97,17 +87,17 @@ User opens widget -> AssistantProvider mounts -> GET /api/assistant/status
 | `tools.ts`     | `buildAssistantTools(ctx)` - converts the shared MCP `allTools` into an AI SDK `ToolSet`.                                                                           |
 | `providers.ts` | `getModel()` - single OpenAI-compatible provider configured from generic `LLM_API_KEY` plus `LLM_BASE_URL`/`LLM_MODEL` (defaults: OpenRouter `@preset/afterclass`). |
 | `trim.ts`      | `trimToBudget(messages)` - prunes reasoning/tool-call bloat, then drops oldest messages until under max input tokens.                                               |
-| `quota.ts`     | `reserveMessage`, `settleUsage`, `checkSpendGuard` - monthly quota and spend tracking.                                                                              |
+| `quota.ts`     | `reserveMessage`, `settleUsage` - monthly message quota and token-count tracking.                                                                               |
 | `ratelimit.ts` | `checkAndIncrement` - fixed-window rate limiter per user.                                                                                                           |
 | `month.ts`     | `currentMonthPeriod()` - `"YYYY-MM"` in Asia/Singapore time.                                                                                                        |
-| `status.ts`    | `getAssistantStatus(userId, supabaseAccessToken?)` - aggregates quota, spend, and Supabase grant data (`hasConnectedAgent`).                                        |
+| `status.ts`    | `getAssistantStatus(userId, supabaseAccessToken?)` - aggregates quota and Supabase grant data (`hasConnectedAgent`).                                         |
 
 ### Routes
 
 | File                                    | Purpose                                                                                                  |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | `src/app/api/chat/route.ts`             | Chat POST endpoint: canned short-circuit, auth, gates, tool catalog, streaming response, usage tracking. |
-| `src/app/api/assistant/status/route.ts` | Status GET endpoint: `{signedIn, quota, used, remaining, spendPaused, hasConnectedAgent, nudgeAt}`.      |
+| `src/app/api/assistant/status/route.ts` | Status GET endpoint: `{signedIn, quota, used, remaining, hasConnectedAgent, nudgeAt}`.      |
 
 ## Configuration
 
@@ -121,12 +111,9 @@ All limits are driven by the `chat` section of the Edge Config. The hardcoded de
 | `nudgeAt`               | int   | 40      | When remaining messages drop below this, the nudge intensifies ("Heads up - N messages left")                                             |
 | `rateLimitPerMinute`    | int   | 10      | Max chat POSTs per user per minute (fixed window)                                                                                         |
 | `mcpRateLimitPerMinute` | int   | 60      | Max MCP tool calls per minute (reserved for future MCP endpoint)                                                                          |
-| `spendCapPerMonthUsd`   | float | 20      | Global monthly USD spend cap (kill-switch; prevents runaway charges)                                                                      |
 | `maxInputTokens`        | int   | 16000   | Max input tokens per request (older messages are dropped to fit)                                                                          |
 | `maxOutputTokens`       | int   | 1024    | Max output tokens per response                                                                                                            |
 | `maxToolRounds`         | int   | 6       | Max sequential tool-call rounds per message. Kept at 6 to stay within the Vercel 60s function limit (initial call + up to 6 tool rounds). |
-| `priceInputPerM`        | float | 0.44    | Price per million input tokens (USD, used for spend tracking)                                                                             |
-| `priceOutputPerM`       | float | 1.32    | Price per million output tokens (USD, used for spend tracking)                                                                            |
 
 ### Changing Config
 
@@ -138,27 +125,24 @@ The `DEFAULT_CHAT_CONFIG` in `src/server/ecfg/config.ts` is the **hardcoded fall
 
 ## Usage Reset (SGT Month, Lazy)
 
-Quota and spend reset automatically at the start of each calendar month in **Asia/Singapore time** (UTC+8). There is no cron job.
+Quota resets automatically at the start of each calendar month in **Asia/Singapore time** (UTC+8). There is no cron job.
 
 - `currentMonthPeriod()` returns a period key like `"2026-08"` computed from the current SGT date.
 - `checkQuota(userId)` looks up `ChatUsage` by `(userId, period)`. If no row exists for the current period, `messageCount` defaults to 0 - effectively a fresh quota.
 - `reserveMessage(userId)` atomically checks and reserves a message slot **before** streaming begins. It runs inside an interactive transaction: it reads the current `messageCount`, and if under quota, upserts the `ChatUsage` row with `messageCount` incremented by 1. This means the slot is always consumed, even if the client disconnects mid-stream - closing the previous TOCTOU bypass where `onEnd` (which fires after the stream completes) was the only place usage was recorded.
-- `settleUsage(userId, tokens)` records token counts and USD spend in `onEnd` after the streaming response completes. It runs in a single interactive transaction that also enforces the spend cap: if global monthly spend has already reached `spendCapPerMonthUsd`, no further ChatSpend is recorded (the kill-switch stays tripped). Token/spend settlement is best-effort on disconnect - this is an accepted trade-off since the pre-reserved message slot already closes the primary quota-abuse vector.
-- `checkSpendGuard()` checks `ChatSpend.totalSpendUsd` for the current period. If the row doesn't exist yet, spend is 0 - the gate is open.
+- `settleUsage(userId, tokens)` records raw token counts in `onEnd` after the streaming response completes. It runs as a single `chatUsage` upsert recording observability only — OpenRouter's credit budget owns cost control. Token settlement is best-effort on disconnect - this is an accepted trade-off since the pre-reserved message slot already closes the primary quota-abuse vector.
 
 ### Database Schema
 
 ```
-ChatUsage(userId, period) - per-user monthly stats
-  messageCount: Int   - number of chat messages this month
-  tokenCount:   Int   - total tokens consumed
-  spendUsd:     Float - estimated USD cost
+ChatUsage(userId, period) - per-user monthly quota + token observability
+  messageCount:      Int - chat messages used this month (quota backstop)
+  inputTokens:       Int - total input tokens (observability)
+  outputTokens:      Int - total output tokens (observability)
+  cachedInputTokens: Int - input tokens served from cache (cache-hit rate)
 
-ChatSpend(period) - global monthly spend
-  totalSpendUsd: Float - aggregate across all users
-
-RateLimit(key) - fixed-window rate limiter
-  key:         String - "chat:{userId}:{windowStart}" or "mcp:{userId}:{windowStart}"
+RateLimitWindow(key) - fixed-window rate limiter (table: rate_limit)
+  key:         String - "<prefix>:<userId>:<windowStart>" (prefixes: chat:, mcp-read:, mcp-write:, chat-write:, ical:)
   windowStart: BigInt - epoch ms of the current window
   count:       Int    - requests in this window
 ```
@@ -169,11 +153,10 @@ RateLimit(key) - fixed-window rate limiter
 | ------------------- | ----------- | ----------------------- | ---------------------------- |
 | Not signed in       | 401         | `"Unauthorized"`        | `SignedOutPanel` (login CTA) |
 | Rate limit exceeded | 429         | `"Rate limit exceeded"` | Error surfaced by `onError`  |
-| Spend cap hit       | 403         | `{"gate":"spend"}`      | `ConnectGate reason="spend"` |
 | Quota exhausted     | 403         | `{"gate":"quota"}`      | `ConnectGate reason="quota"` |
 | No AI consent       | 403         | `{"gate":"consent"}`    | ConsentNotice (Task 5)       |
 
-When the spend gate or quota gate trips, `AssistantProvider` renders `ConnectGate`, which shows a message and links to **`/settings/agents/connect`** - the OAuth agent-connection page. Users who connect their own AI agent (Claude, ChatGPT, or Gemini) bypass all gates and use their own credits.
+When the quota gate trips, `AssistantProvider` renders `ConnectGate`, which shows a message and links to **`/settings/agents/connect`** - the OAuth agent-connection page. Users who connect their own AI agent (Claude, ChatGPT, or Gemini) bypass all gates and use their own credits.
 
 ## Environment
 

@@ -550,7 +550,7 @@ describe("POST /api/chat", () => {
     );
     expect(res.status).toBe(200);
     // Aborting must NOT refund - reading the answer then disconnecting
-    // must not yield a free message or unrecorded spend.
+    // must not yield a free message or unrecorded usage.
     expect(mockRefundMessage).not.toHaveBeenCalled();
     // onEnd best-effort settlement may still run; no assertion on settleUsage here.
   });
@@ -560,8 +560,8 @@ describe("POST /api/chat", () => {
     // Scenario: a tool-loop step completes, then a LATER step errors
     // with a non-NoOutputGeneratedError. The SDK's eventProcessor.flush then
     // calls onEnd (settlement) even though the stream also carried an error
-    // part. Settlement must win: partial spend is recorded and the slot is
-    // kept - the refund must NOT also fire.
+    // part. Settlement must win: partial token counts are recorded and the
+    // slot is kept - the refund must NOT also fire.
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     mockStreamText.mockImplementation(((opts: {
       onEnd?: (event: {
