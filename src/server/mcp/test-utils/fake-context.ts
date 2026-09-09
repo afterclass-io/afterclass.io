@@ -200,7 +200,6 @@ function stubbedRouter(
     {},
     {
       get: (_target, prop) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Reflect.get on a tRPC proxy target forwards live procedure values by design
         if (typeof prop !== "string") return Reflect.get(source, prop);
         if (hasOwn(stubs, prop)) return stubs[prop];
         const v = source[prop];

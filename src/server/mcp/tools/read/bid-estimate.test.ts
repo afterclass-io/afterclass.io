@@ -51,7 +51,6 @@ function mkCaller(opts: {
     },
     courses: {
       getByCourseCode: vi.fn().mockResolvedValue(
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- keep ternary: null means \"not found\" vs fallback; ?? would collapse incorrectly for explicit undefined
         opts.course !== undefined
           ? opts.course
           : { id: "cs1", code: "COR-IS1702", name: "Computational Thinking" },
@@ -59,24 +58,20 @@ function mkCaller(opts: {
     },
     classes: {
       getAll: vi.fn().mockResolvedValue(
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- keep ternary: null/[] semantics differ
-        opts.classes !== undefined
-          ? opts.classes
-          : [
-              {
-                id: "cl-g1",
-                section: "G1",
-                professor: { name: "Prof A", slug: "prof-a" },
-              },
-            ],
+        opts.classes ?? [
+          {
+            id: "cl-g1",
+            section: "G1",
+            professor: { name: "Prof A", slug: "prof-a" },
+          },
+        ],
       ),
     },
     bidPredictions: {
       getBy: vi.fn().mockResolvedValue(
         opts.prediction !== undefined
           ? opts.prediction
-          : // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- keep ternary: ?? would break null case (null ?? fallback != null ? null : fallback)
-            {
+          : {
               medianPredicted: 25,
               minPredicted: 18,
               bidWindow: {
@@ -90,25 +85,19 @@ function mkCaller(opts: {
     },
     bidResults: {
       getBy: vi.fn().mockResolvedValue(
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- keep ternary: null is a meaningful test value
-        opts.bidResults !== undefined
-          ? opts.bidResults
-          : [{ bidWindowId: 77, vacancy: 12, bidWindow: { id: 77 } }],
+        opts.bidResults ?? [{ bidWindowId: 77, vacancy: 12, bidWindow: { id: 77 } }],
       ),
     },
     safetyFactors: {
       getAll: vi.fn().mockResolvedValue(
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- keep ternary: [] and null differ in semantics
-        opts.safetyFactors !== undefined
-          ? opts.safetyFactors
-          : [
-              {
-                acadTermId: "AY202627T1",
-                predictionType: "MEDIAN",
-                beatsPercentage: 70,
-                multiplier: 1.05,
-              },
-            ],
+        opts.safetyFactors ?? [
+          {
+            acadTermId: "AY202627T1",
+            predictionType: "MEDIAN",
+            beatsPercentage: 70,
+            multiplier: 1.05,
+          },
+        ],
       ),
     },
   } as unknown as ToolContext["caller"];

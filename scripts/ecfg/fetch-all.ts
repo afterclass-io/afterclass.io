@@ -6,8 +6,8 @@ import { type EdgeConfigItems, fetchEdgeConfig } from "./utils";
  * @param items The array of Edge Config items.
  * @returns A normalized object with keys and values.
  */
-function normalizeEdgeConfig(items: EdgeConfigItems): Record<string, any> {
-  const normalizedConfig: Record<string, any> = {};
+function normalizeEdgeConfig(items: EdgeConfigItems): Record<string, unknown> {
+  const normalizedConfig: Record<string, unknown> = {};
   for (const item of items) {
     normalizedConfig[item.key] = item.value;
   }
@@ -41,4 +41,4 @@ if (!vercelApiToken || !edgeConfigId || !jsonFilePath) {
 }
 
 // Fetch and normalize the Edge Config
-main(vercelApiToken, edgeConfigId, jsonFilePath);
+void main(vercelApiToken, edgeConfigId, jsonFilePath);

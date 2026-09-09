@@ -7,7 +7,7 @@ import { edgeConfigSchema } from "@/server/ecfg/config";
  */
 function validateJson(jsonFilePath: string): void {
   try {
-    const json = readJson(jsonFilePath);
+    const json: unknown = readJson<unknown>(jsonFilePath);
 
     const validate = edgeConfigSchema.safeParse(json);
 

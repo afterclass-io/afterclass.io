@@ -1,5 +1,6 @@
 import type { Session } from "next-auth";
-import { type SessionUser } from "@/server/auth/config";
+
+export type { SessionUser } from "@/server/auth/config";
 
 type AuthState = {
   session: {

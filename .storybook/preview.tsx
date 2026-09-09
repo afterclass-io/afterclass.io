@@ -30,20 +30,19 @@ const preview: Preview = {
     },
   },
   decorators: [
-    (Story, { parameters }) => {
+    (Story, { parameters }: { parameters?: Record<string, unknown> }) => {
       let mockSession = mockAuthStates.user.session;
       if (parameters?.mockSession) {
-        mockSession = parameters.mockSession;
+        mockSession = parameters.mockSession as typeof mockSession;
       }
 
       return (
         <AuthProvider>
-          {/* @ts-ignore */}
+          {/* @ts-expect-error -- next-auth SessionContext value accepts a wider mock session in stories */}
           <SessionContext.Provider value={mockSession}>
             <TRPCReactProvider>
               <TooltipProvider>
                 <ProgressProvider>
-                  {/* @ts-ignore */}
                   <style global jsx>{`
                     :root {
                       --font-inter: ${inter.style.fontFamily};

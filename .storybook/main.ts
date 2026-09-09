@@ -1,9 +1,15 @@
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 import path from "path";
 import type { StorybookConfig } from "@storybook/nextjs";
 
-const require = createRequire(import.meta.url);
-const { loadEnvConfig } = require("@next/env");
+const require = createRequire(import.meta.url) as NodeRequire;
+// main.ts loads as native ESM (see the file:// URL in build errors), where
+// __dirname doesn't exist — derive it for the webpackFinal aliases below.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const { loadEnvConfig } = require("@next/env") as {
+  loadEnvConfig: (dir: string) => void;
+};
 
 loadEnvConfig(process.cwd());
 

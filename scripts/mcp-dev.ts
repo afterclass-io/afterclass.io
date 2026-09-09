@@ -12,8 +12,8 @@ import { fileURLToPath } from "url";
 // production — `mcp-use start` forces NODE_ENV=production, which disables
 // the bypass in src/mcp/user.ts.
 const env: Record<string, string | undefined> = { ...process.env };
-if (!env.NODE_ENV) env.NODE_ENV = "development";
-if (!env.MCP_DEV_BYPASS) env.MCP_DEV_BYPASS = "true";
+env.NODE_ENV ??= "development";
+env.MCP_DEV_BYPASS ??= "true";
 
 // Resolve the repo root from this script's location so the server boots even
 // when invoked by absolute path from a different cwd. NOTE: --mcp-dir and

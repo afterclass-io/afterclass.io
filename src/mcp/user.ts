@@ -69,7 +69,18 @@ async function resolveDevBypassUser(): Promise<SessionUser | undefined> {
   // never active in production or tests; validated shape via env.ts).
   const email = process.env.MCP_DEV_USER_EMAIL ?? "test_hash_pwd@smu.edu.sg";
   const user = await db.users.findUnique({ where: { email } });
-  return user ? toSessionUser(user) : undefined;
+  if (!user) {
+    // Visible at the `bun run mcp:dev` console: the env gate passed but the
+    // DB has no matching row (e.g. local DB never seeded — run
+    // `bunx prisma db seed`). Without this, tools/call just reports the
+    // generic "dev bypass is off" error from dispatch.ts, which misdirects
+    // toward env vars that are already correct.
+    console.warn(
+      `[mcp] dev bypass active but no users row for ${email} — run \`bunx prisma db seed\``,
+    );
+    return undefined;
+  }
+  return toSessionUser(user);
 }
 
 /** Resolve auth and build a tRPC caller scoped to the user. Accepts the v2 RequestContext (ctx.auth.user) or a bare auth object. */

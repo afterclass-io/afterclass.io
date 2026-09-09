@@ -48,7 +48,7 @@ describe("revokeAgent", () => {
   });
 
   it("throws when the user is not authenticated", async () => {
-    mockedAuth.mockResolvedValue(null as never);
+    mockedAuth.mockResolvedValue(null);
     const fd = new FormData();
     fd.set("clientId", "cl1");
     await expect(revokeAgent(fd)).rejects.toThrow("Not authenticated");

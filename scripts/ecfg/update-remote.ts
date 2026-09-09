@@ -19,8 +19,8 @@ async function convertExistingConfigToDeleteItems(
  * @returns An array of upsert operations.
  */
 function convertJsonToUpsertItems(
-  obj: Record<string, any>,
-): { operation: string; key: string; value: any }[] {
+  obj: Record<string, unknown>,
+): { operation: string; key: string; value: unknown }[] {
   return Object.entries(obj).map(([key, value]) => ({
     operation: "upsert",
     key,
@@ -41,7 +41,7 @@ async function updateEdgeConfig(
 ): Promise<void> {
   try {
     // Load the JSON file
-    const json = readJson(jsonFilePath);
+    const json = readJson<Record<string, unknown>>(jsonFilePath);
     const updatedItems = convertJsonToUpsertItems(json);
 
     // prepare delete operations for all existing items
@@ -66,7 +66,7 @@ async function updateEdgeConfig(
       },
     );
 
-    const result = await response.json();
+    const result: unknown = await response.json();
 
     if (!response.ok) {
       console.error("Failed to update Edge Config:", result);
@@ -91,4 +91,4 @@ if (!vercelApiToken || !edgeConfigId || !jsonFilePath) {
 }
 
 // Update the Edge Config
-updateEdgeConfig(vercelApiToken, edgeConfigId, jsonFilePath);
+void updateEdgeConfig(vercelApiToken, edgeConfigId, jsonFilePath);

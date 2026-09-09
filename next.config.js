@@ -8,7 +8,7 @@ const jiti = createJiti(fileURLToPath(import.meta.url));
 // Import env here to validate during build. Using jiti we can import .ts files :)
 jiti("./src/env");
 
-import { withSentryConfig } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs/config";
 
 /** @type {import("next").NextConfig} */
 const config = withSentryConfig(

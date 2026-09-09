@@ -11,7 +11,9 @@
 //
 //
 // -- This is a parent command --
-Cypress.Commands.add("loginWith", ({ email, password }) => {
+Cypress.Commands.add(
+  "loginWith",
+  ({ email, password }: { email: string; password: string }) => {
   cy.visit("/account/auth/login");
   cy.get("input[data-test=email]", { timeout: 10000 })
     .should("be.visible")
@@ -31,15 +33,26 @@ Cypress.Commands.add("loginWith", ({ email, password }) => {
 });
 
 Cypress.Commands.add("login", () => {
-  cy.loginWith({
-    email: Cypress.env("TEST_EMAIL_V1_VALID"),
-    password: Cypress.env("TEST_PWD_VALID"),
-  });
+  const email = Cypress.env("TEST_EMAIL_V1_VALID") as string;
+  const password = Cypress.env("TEST_PWD_VALID") as string;
+  cy.loginWith({ email, password });
 });
 
 Cypress.Commands.add(
   "fillReviewSectionFor",
-  ({ reviewFor, comboInputValue, comboExpectedValue, body, tips }) => {
+  ({
+    reviewFor,
+    comboInputValue,
+    comboExpectedValue,
+    body,
+    tips,
+  }: {
+    reviewFor: string;
+    comboInputValue: string;
+    comboExpectedValue: string;
+    body: string;
+    tips: string;
+  }) => {
     cy.get(
       `[data-test=review-form-${reviewFor}-section] [data-test=combobox-trigger]`,
     )
@@ -92,13 +105,18 @@ Cypress.Commands.add(
 Cypress.Commands.add("checkOgImage", () => {
   cy.get('head meta[property="og:image"]', { timeout: 10000 })
     .should("have.attr", "content")
-    .then((url: unknown) => {
-      const ogUrl = new URL(String(url), Cypress.config("baseUrl") as string).toString();
+    .then((url: JQuery<HTMLElement>) => {
+      const href = url.attr("content") ?? "";
+      const ogUrl = new URL(
+        href,
+        Cypress.config("baseUrl") ?? undefined,
+      ).toString();
       cy.request(ogUrl).its("status").should("eq", 200);
     });
 });
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace -- Cypress docs prescribe `declare global { namespace Cypress }` for custom commands
   namespace Cypress {
     interface Chainable {
       login(): Chainable<void>;

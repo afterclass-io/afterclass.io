@@ -29,8 +29,8 @@ describe("userBids.remove", () => {
 
     const result = await caller.remove({ id: "b1" });
 
-    expect(result).toEqual({ success: true });
-    expect(del).toHaveBeenCalledWith({ where: { id: "b1" } });
+    expect(result).toEqual({ success: true, acadTermId: null });
+    expect(del).toHaveBeenCalledWith({ where: { id: "b1", userId: "u1" } });
   });
 
   it("throws FORBIDDEN and does not delete when the bid belongs to another user", async () => {

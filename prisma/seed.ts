@@ -1,7 +1,35 @@
 import { randomUUID } from "crypto";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@/generated/prisma/client";
+import { type Prisma, PrismaClient } from "@/generated/prisma/client";
 
+import acadTermsData from "./data/14_acad_terms.json";
+import bidPredictionData from "./data/21_bid_predictions.json";
+import bidResultData from "./data/19_bid_result.json";
+import bidWindowData from "./data/18_bid_window.json";
+import classesData from "./data/7_classes.json";
+import classAvailabilityData from "./data/17_class_availability.json";
+import classExamTimingsData from "./data/16_class_exam_timings.json";
+import classTimingsData from "./data/15_class_timings.json";
+import coursesData from "./data/3_courses.json";
+import facultiesData from "./data/2_faculties.json";
+import hackSubmissionData from "./data/20_hack_submissions.json";
+import labelsData from "./data/8_labels.json";
+import professorFacultiesData from "./data/6_professor_faculties.json";
+import professorsData from "./data/5_professors.json";
+import reviewLabelsData from "./data/10_review_labels.json";
+import reviewReactionsData from "./data/13_review_reactions.json";
+import reviewVotesData from "./data/11_review_votes.json";
+import reviewsData from "./data/9_reviews.json";
+import safetyFactorData from "./data/22_safety_factors.json";
+import universitiesData from "./data/1_universities.json";
+import universityDomainsData from "./data/12_university_domains.json";
+import userBidBudgetsData from "./data/27_user_bid_budgets.json";
+import userBidsData from "./data/28_user_bids.json";
+import userRoadmapEntriesData from "./data/26_user_roadmap_entries.json";
+import userRoadmapsData from "./data/25_user_roadmaps.json";
+import userTimetableSlotsData from "./data/24_user_timetable_slots.json";
+import userTimetablesData from "./data/23_user_timetables.json";
+import usersData from "./data/4_users.json";
 import { assertStrictTimeFormats } from "./validate-seed-data";
 
 const adapter = new PrismaPg({
@@ -13,149 +41,124 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const universities = require("./data/1_universities.json");
   await prisma.universities.createMany({
-    data: universities,
+    data: universitiesData as Prisma.UniversitiesCreateManyInput[],
   });
 
-  const faculties = require("./data/2_faculties.json");
   await prisma.faculties.createMany({
-    data: faculties,
+    data: facultiesData,
   });
 
-  const courses = require("./data/3_courses.json");
   await prisma.courses.createMany({
-    data: courses,
+    data: coursesData,
   });
 
-  const users = require("./data/4_users.json");
   await prisma.users.createMany({
-    data: users,
+    data: usersData,
   });
 
-  const professors = require("./data/5_professors.json");
   await prisma.professors.createMany({
-    data: professors,
+    data: professorsData,
   });
 
-  const professorFaculties = require("./data/6_professor_faculties.json");
   await prisma.professorFaculties.createMany({
-    data: professorFaculties,
+    data: professorFacultiesData,
   });
 
   // Ordered before classes as classes refers to acadTermId.
-  const acadTerms = require("./data/14_acad_terms.json");
   await prisma.acadTerm.createMany({
-    data: acadTerms,
+    data: acadTermsData,
   });
 
-  const classes = require("./data/7_classes.json");
   await prisma.classes.createMany({
-    data: classes,
+    data: classesData as Prisma.ClassesCreateManyInput[],
   });
 
-  const labels = require("./data/8_labels.json");
   await prisma.labels.createMany({
-    data: labels,
+    data: labelsData as Prisma.LabelsCreateManyInput[],
   });
 
-  const reviews = require("./data/9_reviews.json");
   await prisma.reviews.createMany({
-    data: reviews,
+    data: reviewsData,
   });
 
-  const reviewLabels = require("./data/10_review_labels.json");
   await prisma.reviewLabels.createMany({
-    data: reviewLabels,
+    data: reviewLabelsData,
   });
 
-  const reviewVotes = require("./data/11_review_votes.json");
   await prisma.reviewVotes.createMany({
-    data: reviewVotes,
+    data: reviewVotesData,
   });
 
-  const universityDomain = require("./data/12_university_domains.json");
   await prisma.universityDomains.createMany({
-    data: universityDomain,
+    data: universityDomainsData,
   });
 
-  const reviewReactions = require("./data/13_review_reactions.json");
   await prisma.reviewReactions.createMany({
-    data: reviewReactions,
+    data: reviewReactionsData as Prisma.ReviewReactionsCreateManyInput[],
   });
 
-  const classTimings = require("./data/15_class_timings.json");
-  assertStrictTimeFormats(classTimings, "15_class_timings.json");
+  assertStrictTimeFormats(classTimingsData, "15_class_timings.json");
   await prisma.classTiming.createMany({
-    data: classTimings,
+    data: classTimingsData,
   });
 
-  const classExamTimings = require("./data/16_class_exam_timings.json");
-  assertStrictTimeFormats(classExamTimings, "16_class_exam_timings.json");
+  assertStrictTimeFormats(classExamTimingsData, "16_class_exam_timings.json");
   await prisma.classExamTiming.createMany({
-    data: classExamTimings,
+    data: classExamTimingsData,
   });
 
   // Changed order to load in bidWindow first before classAvailability
-  const bidWindow = require("./data/18_bid_window.json");
   await prisma.bidWindow.createMany({
-    data: bidWindow,
+    data: bidWindowData,
   });
 
-  const classAvailability = require("./data/17_class_availability.json");
   await prisma.classAvailability.createMany({
-    data: classAvailability,
+    data: classAvailabilityData,
   });
 
-  const bidResult = require("./data/19_bid_result.json");
   await prisma.bidResult.createMany({
-    data: bidResult,
+    data: bidResultData,
   });
 
-    const safetyFactor = require("./data/22_safety_factors.json");
-  await prisma.safetyFactor.createMany({ data: safetyFactor, skipDuplicates: true });
-
-const bidPrediction = require("./data/21_bid_predictions.json");
-  await prisma.bidPrediction.createMany({
-    data: bidPrediction,
+  await prisma.safetyFactor.createMany({
+    data: safetyFactorData as Prisma.SafetyFactorCreateManyInput[],
     skipDuplicates: true,
   });
 
-  const hackSubmission = require("./data/20_hack_submissions.json");
+  await prisma.bidPrediction.createMany({
+    data: bidPredictionData,
+    skipDuplicates: true,
+  });
+
   await prisma.hackSubmission.createMany({
-    data: hackSubmission,
+    data: hackSubmissionData,
   });
 
-// === Planning integration seed data ===
+  // === Planning integration seed data ===
 
-  const userTimetables = require("./data/23_user_timetables.json");
   await prisma.userTimetable.createMany({
-    data: userTimetables,
+    data: userTimetablesData as Prisma.UserTimetableCreateManyInput[],
   });
 
-  const userTimetableSlots = require("./data/24_user_timetable_slots.json");
   await prisma.userTimetableSlot.createMany({
-    data: userTimetableSlots,
+    data: userTimetableSlotsData,
   });
 
-  const userRoadmaps = require("./data/25_user_roadmaps.json");
   await prisma.userRoadmap.createMany({
-    data: userRoadmaps,
+    data: userRoadmapsData as Prisma.UserRoadmapCreateManyInput[],
   });
 
-  const userRoadmapEntries = require("./data/26_user_roadmap_entries.json");
   await prisma.userRoadmapEntry.createMany({
-    data: userRoadmapEntries,
+    data: userRoadmapEntriesData,
   });
 
-  const userBidBudgets = require("./data/27_user_bid_budgets.json");
   await prisma.userBidBudget.createMany({
-    data: userBidBudgets,
+    data: userBidBudgetsData,
   });
 
-  const userBids = require("./data/28_user_bids.json");
   await prisma.userBid.createMany({
-    data: userBids,
+    data: userBidsData as Prisma.UserBidCreateManyInput[],
   });
 
   // Cypress E2E test user — idempotent upsert so `prisma db seed` is the
@@ -167,7 +170,8 @@ const bidPrediction = require("./data/21_bid_predictions.json");
       where: { abbrv: "SMU" },
     });
     if (smu) {
-      const hash = "$2b$10$zk1rgDGgCcuZj096Z8sIcurZhBJEE6wkcdJ2BqMiW35cGyuFLb10G";
+      const hash =
+        "$2b$10$zk1rgDGgCcuZj096Z8sIcurZhBJEE6wkcdJ2BqMiW35cGyuFLb10G";
       await prisma.users.upsert({
         where: { email: "cypress_test@smu.edu.sg" },
         update: { deprecatedPasswordDigest: hash },

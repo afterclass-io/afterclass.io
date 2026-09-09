@@ -103,7 +103,6 @@ export type ToolContextHandle = {
 };
 
 export function useToolContext<Name extends string = never>(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- type param kept for parity with the real hook's signature
   _name?: Name,
 ): ToolContextHandle {
   const seed = useSeed();
@@ -146,17 +145,14 @@ export function useHostContext(): HostContextHandle {
 export function useDynamicTool<
   Args extends Record<string, unknown>,
   Result = unknown,
->(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- name accepted for signature parity; stories don't round-trip tool calls
-  _name: string,
-): CallToolHandle<Args, Result> {
+>(_name: string): CallToolHandle<Args, Result> {
   const seed = useSeed();
   const mode = seed.cta.mode ?? "success";
   return {
     callTool: async () => {
       if (mode === "error")
         throw new Error(seed.cta.message ?? "callTool failed");
-      if (mode === "pending") await new Promise<never>(() => {});
+      if (mode === "pending") await new Promise<never>(() => undefined);
       return { content: [], structuredContent: {} } as CallToolSuccess<Result>;
     },
     data: undefined,
@@ -164,6 +160,10 @@ export function useDynamicTool<
     isPending: false,
   };
 }
+
+// Mock hooks intentionally ignore/omit no-op args (signature parity with the
+// real mcp-use/react module); empty bodies below are the correct behavior.
+/* eslint-disable @typescript-eslint/no-empty-function */
 
 export function useDisplayMode(): {
   displayMode: DisplayMode;
@@ -184,10 +184,7 @@ export function useDisplayMode(): {
 // `T` return — nothing type-checks against it).
 export function useViewState<
   State extends Record<string, unknown> = Record<string, unknown>,
->(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- defaultState accepted for signature parity with the real hook
-  _defaultState?: State | (() => State),
-): readonly [
+>(_defaultState?: State | (() => State)): readonly [
   State | null,
   (updater: (prev: State | null) => State | null) => void,
 ] {
@@ -201,6 +198,7 @@ export function useOpenExternal(): (url: string) => void {
 export function useSendFollowUp(): (message: string) => void {
   return () => undefined;
 }
+/* eslint-enable @typescript-eslint/no-empty-function */
 
 // Re-export the View-authoring surface that stays legal in stories (types
 // only — the runtime members above are the seeded implementations). Types

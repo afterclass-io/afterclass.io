@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
+import type * as envModule from "@/env";
 
 const { mockCookies, mockDecode } = vi.hoisted(() => ({
   mockCookies: vi.fn() as Mock,
@@ -10,6 +11,13 @@ const { mockCookies, mockDecode } = vi.hoisted(() => ({
 vi.mock("server-only", () => ({}));
 vi.mock("next/headers", () => ({ cookies: mockCookies }));
 vi.mock("next-auth/jwt", () => ({ decode: mockDecode }));
+// `@/env` (t3-env) snapshots process.env at import, so stubEnv in beforeEach
+// arrives too late — layer the secret over the real validated env instead.
+// The accessor only reads NEXTAUTH_SECRET from it.
+vi.mock("@/env", async (importOriginal) => {
+  const actual = await importOriginal<typeof envModule>();
+  return { ...actual, env: { ...actual.env, NEXTAUTH_SECRET: "test-secret" } };
+});
 
 import { getSupabaseAccessToken } from "./supabase-access-token";
 import { authConfig } from "./config";

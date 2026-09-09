@@ -27,7 +27,18 @@ const config = [
       "cypress/**/*.cy.ts",
     ],
   },
-  ...nextCoreWebVitals,
+  // eslint-config-next bundles its own @typescript-eslint copy whose plugin
+  // object identity differs from our direct dep — flat-config merge rejects
+  // the duplicate "@typescript-eslint" key ("Cannot redefine plugin"). Swap
+  // in our single instance; rule payloads are version-aligned (8.70).
+  ...nextCoreWebVitals.map((entry) =>
+    entry?.plugins?.["@typescript-eslint"]
+      ? {
+          ...entry,
+          plugins: { ...entry.plugins, "@typescript-eslint": tseslintPlugin },
+        }
+      : entry,
+  ),
   ...tseslintRecommendedTypeChecked,
   ...tseslintStylisticTypeChecked,
   ...storybookRecommended,
