@@ -2,7 +2,7 @@ import { server } from "../server";
 import { asSchema } from "../schema";
 import { dispatchToolCall } from "../dispatch";
 import { calendarLinksOutput } from "./schemas";
-import { errorResult, guardedParse } from "./results";
+import { errorResult, checkMcpEnabled, guardedParse } from "./results";
 import { makeViewTool } from "./make-view-tool";
 
 // Shared lookup + named-throw + registration derivation (Task 11).
@@ -31,6 +31,10 @@ export const getTimetableCalendarLink = server.tool(
     },
   },
   async (params, ctx) => {
+    // Task 4 kill-switch (MCP transport layer ONLY — never the chat path):
+    // refuse before auth/budget/run when mcpEnabled=false.
+    const disabled = await checkMcpEnabled();
+    if (disabled) return errorResult(disabled);
     // Auth + write-budget + run via the single shared pipeline (`shape:
     // "view"` preserves the viewProps channel; this bespoke adapter keeps
     // its secret-splitting tail: secret URLs stay in `_meta`, only the safe

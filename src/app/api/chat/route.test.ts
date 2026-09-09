@@ -296,6 +296,40 @@ describe("POST /api/chat", () => {
     expect(mockStreamText).not.toHaveBeenCalled();
   });
 
+  // Gate precedence (Task 4 fix round): consent-null + chatEnabled=false →
+  // 403 consent wins (consent gate sits ahead of the kill-switch).
+  it("returns 403 consent (not 503) when unconsented AND chatEnabled is false", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    mockGetAiConsentDate.mockResolvedValue(null);
+    mockGetChatConfig.mockResolvedValue({
+      ...DEFAULT_CHAT_CONFIG,
+      chatEnabled: false,
+    });
+    const res = await POST(
+      buildReq({ messages: [{ role: "user", content: "hi" }] }),
+    );
+    expect(res.status).toBe(403);
+    const body = (await res.json()) as { gate: string };
+    expect(body.gate).toBe("consent");
+    expect(mockReserveMessage).not.toHaveBeenCalled();
+    expect(mockStreamText).not.toHaveBeenCalled();
+  });
+
+  // Kill-switch sits ahead of body parsing: flag-off + malformed body →
+  // 503 "Assistant disabled" (the body parser is never reached).
+  it("returns 503 'Assistant disabled' for a malformed body when chatEnabled is false", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    mockGetChatConfig.mockResolvedValue({
+      ...DEFAULT_CHAT_CONFIG,
+      chatEnabled: false,
+    });
+    const res = await POST(buildReq({ messages: "not-an-array" }));
+    expect(res.status).toBe(503);
+    expect(await res.text()).toBe("Assistant disabled");
+    expect(mockReserveMessage).not.toHaveBeenCalled();
+    expect(mockStreamText).not.toHaveBeenCalled();
+  });
+
   // -- 429 --
   it("returns 429 when rate limited; reserveMessage NOT called", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });

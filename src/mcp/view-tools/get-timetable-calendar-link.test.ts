@@ -35,8 +35,11 @@ vi.mock("@/server/mcp/tools", () => ({
   ],
 }));
 vi.mock("@/server/assistant/ratelimit", () => ({ checkAndIncrement }));
+const { getChatConfigMock } = vi.hoisted(() => ({
+  getChatConfigMock: vi.fn() as Mock,
+}));
 vi.mock("@/server/ecfg/chat", () => ({
-  getChatConfig: vi.fn().mockResolvedValue({ mcpRateLimitPerMinute: 60 }),
+  getChatConfig: getChatConfigMock,
   getRateLimitWindowMinutes: () => 1,
 }));
 
@@ -98,6 +101,11 @@ beforeEach(() => {
   checkAndIncrement.mockClear();
   buildToolContext.mockResolvedValue(fakeCtx);
   checkAndIncrement.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
+  getChatConfigMock.mockReset();
+  getChatConfigMock.mockResolvedValue({
+    mcpRateLimitPerMinute: 60,
+    mcpEnabled: true,
+  });
 });
 
 describe("get-timetable-calendar-link adapter", () => {
@@ -281,5 +289,23 @@ describe("get-timetable-calendar-link adapter", () => {
     expect(res.isError).toBe(true);
     expect(res.content[0]?.text).toContain("confirm:true");
     expect(toolRun).not.toHaveBeenCalled();
+  });
+
+  // Task 4 kill-switch: mcpEnabled=false refuses before auth/budget/run.
+  it("refuses with a disabled error when mcpEnabled is false", async () => {
+    getChatConfigMock.mockResolvedValue({
+      mcpRateLimitPerMinute: 60,
+      mcpEnabled: false,
+    });
+    checkAndIncrement.mockClear();
+    toolRun.mockClear();
+    const res = await captured().handler(
+      { timetableId: "tt1", confirm: true },
+      {},
+    );
+    expect(res.isError).toBe(true);
+    expect(res.content[0]?.text).toMatch(/disabled/i);
+    expect(toolRun).not.toHaveBeenCalled();
+    expect(checkAndIncrement).not.toHaveBeenCalled();
   });
 });

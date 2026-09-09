@@ -3,7 +3,7 @@ import { coursePage, searchPage } from "@/server/mcp/tools/page-links";
 import { asSchema } from "../schema";
 import { dispatchToolCall } from "../dispatch";
 import { courseSearchOutput } from "./schemas";
-import { errorResult, guardedParse } from "./results";
+import { errorResult, checkMcpEnabled, guardedParse } from "./results";
 import { catalogToolOrThrow, makeViewTool } from "./make-view-tool";
 
 // Shared lookup + named-throw (Task 11): same title/annotations/
@@ -35,6 +35,10 @@ export const searchCourses = server.tool(
     },
   },
   async (params, ctx) => {
+    // Task 4 kill-switch (MCP transport layer ONLY — never the chat path):
+    // refuse before auth/run when mcpEnabled=false.
+    const disabled = await checkMcpEnabled();
+    if (disabled) return errorResult(disabled);
     // Auth + run via the single shared pipeline (`shape: "view"` preserves
     // the raw catalog content); the bespoke array-tail below (masking, schema
     // guard, chained summary) is unchanged.

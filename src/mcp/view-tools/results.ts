@@ -2,8 +2,24 @@ import type { ToolResult } from "@/server/mcp/types";
 import type { ZodType } from "zod";
 import { errorResult, textResult } from "../envelopes";
 import { dispatchToolCall, isDispatchCatalogError } from "../dispatch";
+import { getChatConfig } from "@/server/ecfg/chat";
 
 export { errorResult, textResult };
+
+/** MCP kill-switch refusal text (shared with register.ts viewless gate). */
+export const MCP_DISABLED_TEXT = "MCP access is currently disabled.";
+
+/**
+ * Task 4 kill-switch for the MCP transport layer (view-bound adapters).
+ * Returns the disabled error text when `mcpEnabled === false`, else null.
+ * Reads the ecfg `chat` layer (same source as the register.ts viewless
+ * gate). NEVER called from the chat path — chat shares `dispatchToolCall`
+ * directly and must keep running with the flag off.
+ */
+export async function checkMcpEnabled(): Promise<string | null> {
+  const cfg = await getChatConfig();
+  return cfg.mcpEnabled === false ? MCP_DISABLED_TEXT : null;
+}
 
 export type UnwrapOk = {
   ok: true;
@@ -102,6 +118,10 @@ export interface RunViewToolOptions {
 export async function runViewTool(
   opts: RunViewToolOptions,
 ): Promise<ViewToolOutcome> {
+  // Task 4 kill-switch (MCP transport layer ONLY — never the chat path):
+  // refuse before auth/budget/run when mcpEnabled=false.
+  const disabled = await checkMcpEnabled();
+  if (disabled) return errorResult(disabled);
   // Auth + read-budget + run via the single shared pipeline (`shape: "view"`
   // preserves the viewProps channel for the unwrap below). Error envelopes
   // mirror each adapter's historical messages exactly ("Unauthorized: ...",

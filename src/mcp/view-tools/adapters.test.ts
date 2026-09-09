@@ -34,8 +34,11 @@ vi.mock("server-only", () => ({}));
 vi.mock("../server", () => ({ server: { tool: serverTool } }));
 vi.mock("../user", () => ({ buildToolContext }));
 vi.mock("@/server/assistant/ratelimit", () => ({ checkAndIncrement }));
+const { getChatConfigMock } = vi.hoisted(() => ({
+  getChatConfigMock: vi.fn() as Mock,
+}));
 vi.mock("@/server/ecfg/chat", () => ({
-  getChatConfig: vi.fn().mockResolvedValue({ mcpRateLimitPerMinute: 60 }),
+  getChatConfig: getChatConfigMock,
   getRateLimitWindowMinutes: () => 1,
 }));
 vi.mock("@/server/mcp/tools", () => ({
@@ -111,6 +114,11 @@ beforeEach(() => {
   buildToolContext.mockResolvedValue(fakeCtx);
   checkAndIncrement.mockClear();
   checkAndIncrement.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
+  getChatConfigMock.mockReset();
+  getChatConfigMock.mockResolvedValue({
+    mcpRateLimitPerMinute: 60,
+    mcpEnabled: true,
+  });
 });
 
 /** Fixtures valid under each outputSchema (src/mcp/view-tools/schemas.ts). */
@@ -385,6 +393,23 @@ describe("object-shaped view-tool adapters", () => {
       expect(res.isError).toBe(true);
       expect(res.content[0]?.text).toMatch(/read rate limit/i);
       expect(toolRun).not.toHaveBeenCalled();
+    });
+
+    // Task 4 kill-switch: mcpEnabled=false refuses the view-tool before
+    // auth/budget/run (tool never runs, budget never charged).
+    it(`${name}: refuses with a disabled error when mcpEnabled is false`, async () => {
+      const { handler } = registration(name);
+      getChatConfigMock.mockResolvedValue({
+        mcpRateLimitPerMinute: 60,
+        mcpEnabled: false,
+      });
+      checkAndIncrement.mockClear();
+      toolRun.mockClear();
+      const res = await handler({}, {});
+      expect(res.isError).toBe(true);
+      expect(res.content[0]?.text).toMatch(/disabled/i);
+      expect(toolRun).not.toHaveBeenCalled();
+      expect(checkAndIncrement).not.toHaveBeenCalled();
     });
   }
 });

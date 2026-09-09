@@ -8,7 +8,7 @@ import {
 } from "./annotations";
 import { asSchema } from "./schema";
 import { dispatchToolCall } from "./dispatch";
-import { getChatConfig } from "@/server/ecfg/chat";
+import { MCP_DISABLED_TEXT, checkMcpEnabled } from "./view-tools/results";
 
 // Re-exported so existing importers keep working: the derivation lives in
 // ./annotations (Task 11) alongside the view-bound adapters' usage. register.ts
@@ -65,15 +65,16 @@ export function registerViewlessTools(server: MCPServer): void {
         // refuses before tool execution. The chat route shares
         // dispatchToolCall but never passes through here, so it is
         // unaffected — pin that with the dispatch test (chat-shaped policy
-        // still runs with the flag off).
-        const mcpSwitch = await getChatConfig();
-        if (mcpSwitch.mcpEnabled === false)
+        // still runs with the flag off). Shared helper/text with the
+        // view-bound adapters (view-tools/results.ts).
+        const disabled = await checkMcpEnabled();
+        if (disabled)
           return {
             isError: true as const,
             content: [
               {
                 type: "text" as const,
-                text: "MCP access is currently disabled.",
+                text: MCP_DISABLED_TEXT,
               },
             ],
           };

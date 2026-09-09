@@ -18,6 +18,13 @@ const { serverTool } = vi.hoisted(() => ({ serverTool: vi.fn() as Mock }));
 vi.mock("server-only", () => ({}));
 vi.mock("../server", () => ({ server: { tool: serverTool } }));
 vi.mock("../user", () => ({ buildToolContext }));
+const { getChatConfigMock } = vi.hoisted(() => ({
+  getChatConfigMock: vi.fn() as Mock,
+}));
+vi.mock("@/server/ecfg/chat", () => ({
+  getChatConfig: getChatConfigMock,
+  getRateLimitWindowMinutes: () => 1,
+}));
 vi.mock("@/server/mcp/tools", () => ({
   allTools: [
     // toViewProps deliberately present: the adapter must NOT use it
@@ -97,6 +104,11 @@ beforeEach(() => {
   toolRun.mockClear();
   buildToolContext.mockClear();
   buildToolContext.mockResolvedValue(fakeCtx);
+  getChatConfigMock.mockReset();
+  getChatConfigMock.mockResolvedValue({
+    mcpRateLimitPerMinute: 60,
+    mcpEnabled: true,
+  });
 });
 
 describe("search-courses adapter", () => {
@@ -253,5 +265,19 @@ describe("search-courses adapter", () => {
     await handler({ query: "acc" }, {});
     expect(toolRun).toHaveBeenCalledTimes(1);
     expect(toolRun).toHaveBeenCalledWith(fakeCtx, { query: "acc" });
+  });
+
+  // Task 4 kill-switch: mcpEnabled=false refuses before run.
+  it("refuses with a disabled error when mcpEnabled is false", async () => {
+    const { handler } = registration("search-courses");
+    getChatConfigMock.mockResolvedValue({
+      mcpRateLimitPerMinute: 60,
+      mcpEnabled: false,
+    });
+    toolRun.mockClear();
+    const res = await handler({ query: "acc" }, {});
+    expect(res.isError).toBe(true);
+    expect(res.content[0]?.text).toMatch(/disabled/i);
+    expect(toolRun).not.toHaveBeenCalled();
   });
 });
