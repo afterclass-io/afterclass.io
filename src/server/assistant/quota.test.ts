@@ -8,16 +8,10 @@ const {
   txChatUsageFindUnique,
   txChatUsageUpsert,
   txChatUsageUpdateMany,
-  txChatSpendFindUnique,
-  txChatSpendUpsert,
-  txChatSpendUpdateMany,
 } = vi.hoisted(() => ({
   txChatUsageFindUnique: vi.fn() as Mock,
   txChatUsageUpsert: vi.fn() as Mock,
   txChatUsageUpdateMany: vi.fn() as Mock,
-  txChatSpendFindUnique: vi.fn() as Mock,
-  txChatSpendUpsert: vi.fn() as Mock,
-  txChatSpendUpdateMany: vi.fn() as Mock,
 }));
 
 const tx = {
@@ -25,11 +19,6 @@ const tx = {
     findUnique: txChatUsageFindUnique,
     upsert: txChatUsageUpsert,
     updateMany: txChatUsageUpdateMany,
-  },
-  chatSpend: {
-    findUnique: txChatSpendFindUnique,
-    upsert: txChatSpendUpsert,
-    updateMany: txChatSpendUpdateMany,
   },
 };
 
@@ -39,11 +28,6 @@ vi.mock("@/server/db", () => ({
       findUnique: txChatUsageFindUnique,
       upsert: txChatUsageUpsert,
       updateMany: txChatUsageUpdateMany,
-    },
-    chatSpend: {
-      findUnique: txChatSpendFindUnique,
-      upsert: txChatSpendUpsert,
-      updateMany: txChatSpendUpdateMany,
     },
     $transaction: (fn: (tx: Record<string, unknown>) => unknown) => fn(tx),
   },
@@ -62,15 +46,10 @@ vi.mock("@/server/config/chat-config", () => ({
     nudgeAt: 40,
     rateLimitPerMinute: 10,
     mcpRateLimitPerMinute: 60,
-    spendCapPerMonthUsd: 20,
-    spendCapUsd: 20,
     maxInputTokens: 16000,
     maxOutputTokens: 1024,
     maxToolRounds: 6,
     settlementSpikeTokens: 30000,
-    priceInputPerM: 0.44,
-    priceCachedInputPerM: 0.014,
-    priceOutputPerM: 1.32,
   }),
 }));
 vi.mock("@/server/ecfg/chat", () => ({
@@ -79,38 +58,27 @@ vi.mock("@/server/ecfg/chat", () => ({
     nudgeAt: 40,
     rateLimitPerMinute: 10,
     mcpRateLimitPerMinute: 60,
-    spendCapPerMonthUsd: 20,
     maxInputTokens: 16000,
     maxOutputTokens: 1024,
     maxToolRounds: 6,
-    priceInputPerM: 0.44,
-    priceCachedInputPerM: 0.014,
-    priceOutputPerM: 1.32,
   }),
 }));
 
 import {
   beginTurn,
   checkQuota,
-  checkSpendGuard,
-  checkUserSpendCap,
   endTurn,
   getQuotaState,
   refundMessage,
   reserveMessage,
   settleUsage,
-  tokensToUsd,
 } from "./quota";
-import { DEFAULT_CHAT_CONFIG } from "@/server/ecfg/config";
 
 describe("quota", () => {
   beforeEach(() => {
     txChatUsageFindUnique.mockReset();
     txChatUsageUpsert.mockReset();
     txChatUsageUpdateMany.mockReset();
-    txChatSpendFindUnique.mockReset();
-    txChatSpendUpsert.mockReset();
-    txChatSpendUpdateMany.mockReset();
   });
 
   // ---- getQuotaState token totals ----
@@ -163,36 +131,6 @@ describe("quota", () => {
     });
   });
 
-  // ---- tokensToUsd ----
-  it("computes spend from token counts", () => {
-    // 10000*0.44 + 1000*1.32 over 1e6 is 0.00572 (live-peak pricing).
-    expect(
-      tokensToUsd(DEFAULT_CHAT_CONFIG, { input: 10_000, output: 1_000 }),
-    ).toBeCloseTo(0.00572, 5);
-  });
-
-  it("computes spend with cached input at discount", () => {
-    // (8000*0.44 + 2000*0.014 + 1000*1.32)/1e6 = (3520+28+1320)/1e6 = 0.004868
-    expect(
-      tokensToUsd(DEFAULT_CHAT_CONFIG, {
-        input: 10_000,
-        output: 1_000,
-        cachedInput: 2_000,
-      }),
-    ).toBeCloseTo(0.004868, 5);
-  });
-
-  it("clamps cachedInput exceeding input to 0 non-cached", () => {
-    // cachedInput > input => nonCached = 0, cost = cached*0.014 + output*1.32
-    expect(
-      tokensToUsd(DEFAULT_CHAT_CONFIG, {
-        input: 1_000,
-        output: 0,
-        cachedInput: 5_000,
-      }),
-    ).toBeCloseTo((5000 * 0.014) / 1_000_000, 5);
-  });
-
   // ---- reserveMessage (atomic conditional update) ----
   it("reserveMessage creates row and returns ok on first call (atomic conditional update)", async () => {
     txChatUsageUpsert.mockResolvedValue(undefined);
@@ -212,7 +150,6 @@ describe("quota", () => {
           inputTokens: 0,
           outputTokens: 0,
           cachedInputTokens: 0,
-          spendUsd: 0,
         }) as Record<string, unknown>,
         update: {},
       }) as Record<string, unknown>,
@@ -324,155 +261,51 @@ describe("quota", () => {
     );
   });
 
-  // ---- settleUsage (atomic spend accounting) ----
-  it("settleUsage records token/spend atomically via conditional updateMany when under cap", async () => {
-    txChatSpendUpsert.mockResolvedValue(undefined);
-    txChatSpendUpdateMany.mockResolvedValue({ count: 1 });
+  // ---- settleUsage (token counts only, no spend) ----
+  it("settleUsage records token counts with a single chatUsage upsert (no spend)", async () => {
     txChatUsageUpsert.mockResolvedValue(undefined);
     await settleUsage("u1", { input: 10_000, output: 1_000 });
-    // ChatSpend ensure row
-    expect(txChatSpendUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { period: expect.any(String) as string },
-        create: { period: expect.any(String) as string, totalSpendUsd: 0 },
-        update: {},
-      }) as Record<string, unknown>,
-    );
-    // Conditional increment under cap
-    expect(txChatSpendUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: {
-          period: expect.any(String) as string,
-          totalSpendUsd: { lt: 20 },
-        },
-        data: {
-          totalSpendUsd: { increment: expect.closeTo(0.00572, 5) as number },
-        },
-      }) as Record<string, unknown>,
-    );
-    // ChatUsage upsert should be called with messageCount: 0 (not incremented)
-    expect(txChatUsageUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        create: expect.objectContaining({
-          userId: "u1",
-          messageCount: 0,
-          inputTokens: 10000,
-          outputTokens: 1000,
-          cachedInputTokens: 0,
-          spendUsd: expect.closeTo(0.00572, 5) as number,
-        }) as Record<string, unknown>,
-        update: expect.objectContaining({
-          inputTokens: { increment: 10000 },
-          outputTokens: { increment: 1000 },
-          cachedInputTokens: { increment: 0 },
-          spendUsd: { increment: expect.closeTo(0.00572, 5) as number },
-        }) as Record<string, unknown>,
-      }) as Record<string, unknown>,
-    );
+    expect(txChatUsageUpsert).toHaveBeenCalledWith({
+      where: {
+        userId_period: { userId: "u1", period: expect.any(String) as string },
+      },
+      create: {
+        userId: "u1",
+        period: expect.any(String) as string,
+        messageCount: 0,
+        inputTokens: 10000,
+        outputTokens: 1000,
+        cachedInputTokens: 0,
+      },
+      update: {
+        inputTokens: { increment: 10000 },
+        outputTokens: { increment: 1000 },
+        cachedInputTokens: { increment: 0 },
+      },
+    });
   });
 
-  it("settleUsage records cached input tokens with discounted spend", async () => {
-    txChatSpendUpsert.mockResolvedValue(undefined);
-    txChatSpendUpdateMany.mockResolvedValue({ count: 1 });
+  it("settleUsage records cached input tokens", async () => {
     txChatUsageUpsert.mockResolvedValue(undefined);
     await settleUsage("u1", {
       input: 10_000,
       output: 1_000,
       cachedInput: 2_000,
     });
-    const expectedSpend =
-      (8000 * 0.44 + 2000 * 0.014 + 1000 * 1.32) / 1_000_000;
     expect(txChatUsageUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
         create: expect.objectContaining({
           inputTokens: 10000,
           outputTokens: 1000,
           cachedInputTokens: 2000,
-          spendUsd: expect.closeTo(expectedSpend, 5) as number,
         }) as Record<string, unknown>,
         update: expect.objectContaining({
           inputTokens: { increment: 10000 },
           outputTokens: { increment: 1000 },
           cachedInputTokens: { increment: 2000 },
-          spendUsd: { increment: expect.closeTo(expectedSpend, 5) as number },
         }) as Record<string, unknown>,
       }) as Record<string, unknown>,
     );
-  });
-
-  it("settleUsage does not record spend when at cap (conditional updateMany matches 0)", async () => {
-    txChatSpendUpsert.mockResolvedValue(undefined);
-    txChatSpendUpdateMany.mockResolvedValue({ count: 0 });
-    txChatUsageUpsert.mockResolvedValue(undefined);
-    await settleUsage("u1", { input: 5_000, output: 500 });
-    expect(txChatSpendUpsert).toHaveBeenCalled();
-    expect(txChatSpendUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ totalSpendUsd: { lt: 20 } }) as Record<
-          string,
-          unknown
-        >,
-      }) as Record<string, unknown>,
-    );
-    // ChatUsage upsert is still called (usage accounting independent of spend cap)
-    expect(txChatUsageUpsert).toHaveBeenCalled();
-  });
-
-  it("settleUsage concurrent increments are additive and not lost (updateMany increment)", async () => {
-    txChatSpendUpsert.mockResolvedValue(undefined);
-    txChatSpendUpdateMany.mockResolvedValue({ count: 1 });
-    txChatUsageUpsert.mockResolvedValue(undefined);
-    await settleUsage("u1", { input: 1_000, output: 500 });
-    expect(txChatSpendUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: { totalSpendUsd: { increment: expect.any(Number) as number } },
-      }) as Record<string, unknown>,
-    );
-    // increment is additive, not a read-then-write overwrite
-    const call = txChatSpendUpdateMany.mock.calls[0]?.[0] as Record<
-      string,
-      unknown
-    >;
-    expect((call.data as Record<string, unknown>).totalSpendUsd).toEqual(
-      expect.objectContaining({ increment: expect.any(Number) as number }),
-    );
-  });
-
-  // ---- checkSpendGuard ----
-  it("spend guard blocks at the cap", async () => {
-    txChatSpendFindUnique.mockResolvedValue({ totalSpendUsd: 20 });
-    expect(await checkSpendGuard()).toBe(false);
-  });
-
-  it("spend guard allows when under cap", async () => {
-    txChatSpendFindUnique.mockResolvedValue({ totalSpendUsd: 10 });
-    expect(await checkSpendGuard()).toBe(true);
-  });
-
-  it("spend guard allows when no row exists", async () => {
-    txChatSpendFindUnique.mockResolvedValue(null);
-    expect(await checkSpendGuard()).toBe(true);
-  });
-
-  // ---- checkUserSpendCap (per-user cap reuses spendCapPerMonthUsd) ----
-  it("user spend cap blocks when the user already reached the cap", async () => {
-    txChatUsageFindUnique.mockResolvedValue({ messageCount: 50, spendUsd: 20 });
-    const r = await checkUserSpendCap("u1");
-    expect(r.ok).toBe(false);
-    expect(r.spendUsd).toBe(20);
-    expect(r.capUsd).toBe(20);
-  });
-
-  it("user spend cap allows when under the cap", async () => {
-    txChatUsageFindUnique.mockResolvedValue({ messageCount: 3, spendUsd: 0.5 });
-    const r = await checkUserSpendCap("u1");
-    expect(r.ok).toBe(true);
-  });
-
-  it("user spend cap allows when no row exists (fresh user)", async () => {
-    txChatUsageFindUnique.mockResolvedValue(null);
-    const r = await checkUserSpendCap("u1");
-    expect(r).toEqual({ ok: true, spendUsd: 0, capUsd: 20 });
   });
 
   // ---- beginTurn/endTurn (in-flight guard) ----

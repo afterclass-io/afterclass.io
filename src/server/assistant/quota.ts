@@ -8,12 +8,9 @@ import { criticalFloorFor } from "@/modules/assistant/quota-meter/logic";
 import { currentMonthPeriod } from "./month";
 
 /**
- * Legacy-shape adapter (Task 8): quota.ts keeps consuming the ecfg
- * `ChatConfig` field names (`spendCapPerMonthUsd`, `quotaPerMonth`, prices)
- * while the VALUES now come from the canonical chat-config (env >
- * EdgeConfig > config.json > defaults). Prices are not env-tunable today —
- * they stay at the compiled live-peak 0.44/0.014/1.32 (v4-flash peak per
- * the cost-analysis doc §2; the $20 kill-switch must trip on real spend).
+ * Legacy-shape adapter: quota.ts keeps consuming the ecfg `ChatConfig` field
+ * names (`quotaPerMonth`, rate limits) while the VALUES now come from the
+ * canonical chat-config (env > EdgeConfig > config.json > defaults).
  */
 async function getQuotaChat(): Promise<ChatConfig> {
   const c = await getCanonicalChatConfig();
@@ -22,7 +19,6 @@ async function getQuotaChat(): Promise<ChatConfig> {
     nudgeAt: c.nudgeAt,
     rateLimitPerMinute: c.rateLimitPerMinute,
     mcpRateLimitPerMinute: c.mcpRateLimitPerMinute,
-    spendCapPerMonthUsd: c.spendCapPerMonthUsd,
     maxInputTokens: c.maxInputTokens,
     maxOutputTokens: c.maxOutputTokens,
     maxToolRounds: c.maxToolRounds,
@@ -30,24 +26,7 @@ async function getQuotaChat(): Promise<ChatConfig> {
     chatEnabled: c.chatEnabled,
     widgetEnabled: c.widgetEnabled,
     mcpEnabled: c.mcpEnabled,
-    priceInputPerM: 0.44,
-    priceCachedInputPerM: 0.014,
-    priceOutputPerM: 1.32,
   };
-}
-
-export function tokensToUsd(
-  chat: ChatConfig,
-  tokens: { input: number; output: number; cachedInput?: number },
-): number {
-  const cached = tokens.cachedInput ?? 0;
-  const nonCachedInput = Math.max(0, tokens.input - cached);
-  return (
-    (nonCachedInput * chat.priceInputPerM +
-      cached * chat.priceCachedInputPerM +
-      tokens.output * chat.priceOutputPerM) /
-    1_000_000
-  );
 }
 
 /**
@@ -129,7 +108,6 @@ export async function reserveMessage(
         inputTokens: 0,
         outputTokens: 0,
         cachedInputTokens: 0,
-        spendUsd: 0,
       },
       update: {},
     });
@@ -155,41 +133,21 @@ export async function reserveMessage(
 }
 
 /**
- * Settle token and spend counts after a completed streaming response.
- * Spend accounting is atomic: the global `chatSpend` row is ensured first
- * (upsert 0), then a conditional `updateMany WHERE totalSpendUsd < cap`
- * increments it. Concurrent callers cannot both read `totalSpendUsd` and then
- * both overwrite - the `WHERE totalSpendUsd < cap` check and the `increment`
- * happen in the same atomic statement, and the `increment` itself is additive
- * (`SET totalSpendUsd = totalSpendUsd + $1`) so no lost updates. The
- * kill-switch guard lives primarily in `checkSpendGuard` before `reserveMessage`;
- * this conditional settle just ensures we don't record further spend after the
- * cap has been tripped. ChatUsage token/spend is always updated via an
- * atomic `upsert { increment }` (no read-then-write).
+ * Settle token counts after a completed streaming response.
+ * Single atomic `chatUsage` upsert (no read-then-write, no lost updates).
+ * There is deliberately NO spend tracking: OpenRouter's credit budget owns
+ * cost control, so no USD math happens here — only raw token counters for
+ * observability (cache-hit rate, per-step logs).
  * messageCount is NOT touched - it was already reserved by reserveMessage().
  */
 export async function settleUsage(
   userId: string,
   tokens: { input: number; output: number; cachedInput?: number },
 ): Promise<void> {
-  const chat = await getQuotaChat();
   const period = currentMonthPeriod();
-  const spendUsd = tokensToUsd(chat, tokens);
   const cachedInput = tokens.cachedInput ?? 0;
   // Interactive transaction → direct (non-pooled) client (Task 9).
   await txDb.$transaction(async (tx) => {
-    // Ensure the spend row exists so the conditional increment has a target.
-    await tx.chatSpend.upsert({
-      where: { period },
-      create: { period, totalSpendUsd: 0 },
-      update: {},
-    });
-    // Conditional increment - only when still under cap. Atomic `WHERE ... AND increment`
-    // prevents over-recording after the cap and avoids lost updates (additive).
-    await tx.chatSpend.updateMany({
-      where: { period, totalSpendUsd: { lt: chat.spendCapPerMonthUsd } },
-      data: { totalSpendUsd: { increment: spendUsd } },
-    });
     await tx.chatUsage.upsert({
       where: { userId_period: { userId, period } },
       create: {
@@ -199,13 +157,11 @@ export async function settleUsage(
         inputTokens: tokens.input,
         outputTokens: tokens.output,
         cachedInputTokens: cachedInput,
-        spendUsd,
       },
       update: {
         inputTokens: { increment: tokens.input },
         outputTokens: { increment: tokens.output },
         cachedInputTokens: { increment: cachedInput },
-        spendUsd: { increment: spendUsd },
       },
     });
   });
@@ -229,49 +185,19 @@ export async function refundMessage(userId: string): Promise<void> {
   });
 }
 
-/** true = the spend kill-switch is not tripped (chat allowed). */
-export async function checkSpendGuard(): Promise<boolean> {
-  const chat = await getQuotaChat();
-  const period = currentMonthPeriod();
-  const row = await db.chatSpend.findUnique({ where: { period } });
-  return (row?.totalSpendUsd ?? 0) < chat.spendCapPerMonthUsd;
-}
-
 /**
- * Per-user spend cap (Task 7): hard-block a turn whose current-period spend
- * already reached the per-user share of the monthly cap. Reuses the existing
- * `spendCapPerMonthUsd` tunable (R7: no new numbers — Task 8 centralizes):
- * the per-user ceiling is the global monthly cap itself, enforced per
- * `ChatUsage.spendUsd`, so no single user can burn the whole account budget.
- * Returns `{ ok: false }` when the user is at/over the cap — the route
- * hard-blocks (403 spend gate) instead of warning.
- */
-export async function checkUserSpendCap(
-  userId: string,
-): Promise<{ ok: boolean; spendUsd: number; capUsd: number }> {
-  const chat = await getQuotaChat();
-  const period = currentMonthPeriod();
-  const row = await db.chatUsage.findUnique({
-    where: { userId_period: { userId, period } },
-  });
-  const spendUsd = row?.spendUsd ?? 0;
-  const capUsd = chat.spendCapPerMonthUsd;
-  return { ok: spendUsd < capUsd, spendUsd, capUsd };
-}
-
-/**
- * In-flight turn tracking (Task 7): closes the concurrent-expensive-turns
- * overshoot window. The route calls `beginTurn(userId)` after the spend-cap
- * check and `endTurn(userId)` in settlement/refund paths; while a turn is
- * in flight for a user, a second concurrent `beginTurn` is rejected so two
- * expensive turns cannot both pass the cap check and then both settle.
+ * In-flight turn tracking: closes the concurrent-turns overshoot window.
+ * The route calls `beginTurn(userId)` before reserving a quota slot and
+ * `endTurn(userId)` in settlement/refund paths; while a turn is in flight
+ * for a user, a second concurrent `beginTurn` is rejected so two turns
+ * cannot both hold the in-flight slot.
  * Best-effort in-process guard (single-server; Vercel may run multiple
- * instances — the atomic DB settle in `settleUsage` remains the hard
- * backstop). Always pair with `endTurn` in a finally path; stale entries
- * are treated as expired after `STALE_MS` so a crashed turn cannot lock
- * the user out forever. Canonical value lives in
- * `src/server/config/chat-config.ts` (`inFlightStaleMs`), read through the
- * getter per call (Task 13) so env/file overrides move the window.
+ * instances — the reserved message slot remains the hard backstop). Always
+ * pair with `endTurn` in a finally path; stale entries are treated as
+ * expired after `STALE_MS` so a crashed turn cannot lock the user out
+ * forever. Canonical value lives in `src/server/config/chat-config.ts`
+ * (`inFlightStaleMs`), read through the getter per call so env/file
+ * overrides move the window.
  */
 const inFlightTurns = new Map<string, number>();
 
