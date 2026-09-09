@@ -66,5 +66,39 @@
     "shareCount": 0,
     "createdAt": "2024-09-01T08:00:00.000Z",
     "updatedAt": "2024-09-01T08:00:00.000Z"
+  },
+  {
+    "id": "roadmap-005-user-a",
+    "userId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "name": "BSc Information Systems (Class of 2027)",
+    "description": "A published IS roadmap from the AY2023/24 intake — Y1 core plan shared with the community.",
+    "visibility": "PUBLIC",
+    "shareToken": "sharepubis0000000002",
+    "slug": null,
+    "facultyId": 4,
+    "publishedAt": "2025-07-01T00:00:00.000Z",
+    "isActive": false,
+    "matricTermId": "AY202324T1",
+    "viewCount": 64,
+    "shareCount": 5,
+    "createdAt": "2023-09-01T08:00:00.000Z",
+    "updatedAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "roadmap-006-user-b",
+    "userId": "11894f96-aa54-4632-bf33-8c46999aab1b",
+    "name": "BSc Computer Science (Class of 2027)",
+    "description": "A published CS roadmap from the AY2023/24 intake — Y1 core plan shared with the community.",
+    "visibility": "PUBLIC",
+    "shareToken": "sharepubcs0000000001",
+    "slug": null,
+    "facultyId": 4,
+    "publishedAt": "2025-07-15T00:00:00.000Z",
+    "isActive": false,
+    "matricTermId": "AY202324T1",
+    "viewCount": 41,
+    "shareCount": 3,
+    "createdAt": "2023-09-01T08:00:00.000Z",
+    "updatedAt": "2025-07-15T00:00:00.000Z"
   }
 ]

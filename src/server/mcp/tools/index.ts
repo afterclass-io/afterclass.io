@@ -1,0 +1,127 @@
+import type { McpTool } from "../types";
+
+import {
+  getClassesTool,
+  getCourseTool,
+  getProfessorTool,
+  searchCoursesTool,
+} from "./read/courses";
+import { searchProfessorsTool } from "./read/professors";
+import {
+  getBidPredictionTool,
+  getBidResultsTool,
+  getBidWindowsTool,
+  getCourseReviewsTool,
+  getProfessorReviewsTool,
+  listAcadTermsTool,
+} from "./read/catalog";
+import { getReviewSummaryTool } from "./read/review-summary";
+import { bidEstimateTool } from "./read/bid-estimate";
+import { getContributeInfoTool } from "./read/contribute";
+import {
+  browsePublicRoadmapsTool,
+  myBidsTool,
+  myBudgetTool,
+  myRoadmapsTool,
+  myTimetablesTool,
+} from "./read/mydata";
+import { myBidPlanTool } from "./read/bid-plan";
+import { getMyTimetableDetailTool } from "./read/timetable-detail";
+import { getMyRoadmapTool, getPublicRoadmapTool } from "./read/roadmap-detail";
+import { planSemesterTool } from "./read/plan-semester";
+import { checkRoadmapFeasibilityTool } from "./read/feasibility";
+import { listFacultiesTool } from "./read/faculties";
+import {
+  addClassToTimetableTool,
+  createTimetableTool,
+  removeClassFromTimetableTool,
+  removeTimetableTool,
+  renameTimetableTool,
+  setTimetableVisibilityTool,
+} from "./write/timetable";
+import { removeBidTool, setBidBudgetTool, upsertBidTool } from "./write/bids";
+import {
+  createRoadmapTool,
+  removeRoadmapTool,
+  renameRoadmapTool,
+  saveRoadmapEntriesTool,
+  setRoadmapVisibilityTool,
+} from "./write/roadmaps";
+import {
+  copyPublicRoadmapTool,
+  setActiveRoadmapTool,
+  setMatricTermTool,
+  syncRoadmapProgressTool,
+} from "./write/roadmap-settings";
+import { setBidStatusTool } from "./write/bid-status";
+import { recommendBidAmountTool } from "./write/recommend";
+import { getTimetableCalendarLinkTool } from "./write/calendar-link";
+import { exploreBidOptionsTool } from "./read/explore-bid-options";
+import { saveBidsTool } from "./write/save-bids";
+import { upsertRoadmapEntryTool } from "./write/upsert-roadmap-entry";
+
+export const allTools: McpTool[] = [
+  // get-me / get-usage / get-shared-timetable are INTENTIONALLY
+  // excluded from the chat tool catalog. get-me and get-usage are chat/status-
+  // only surfaces (their data already lives in the session context), and
+  // get-shared-timetable accepts a bearer share token that must never be
+  // model-routed. They remain importable from read/account + read/mydata for
+  // direct/status wiring. The __smoke__ test pins this exclusion + the count.
+  // read - courses / classes / professors
+  searchCoursesTool,
+  getCourseTool,
+  getClassesTool,
+  getProfessorTool,
+  searchProfessorsTool,
+  // read - catalog
+  getCourseReviewsTool,
+  getProfessorReviewsTool,
+  getReviewSummaryTool,
+  getBidPredictionTool,
+  getBidResultsTool,
+  listAcadTermsTool,
+  getBidWindowsTool,
+  getContributeInfoTool,
+  // read - own data
+  myTimetablesTool,
+  getMyTimetableDetailTool,
+  myBidsTool,
+  myBidPlanTool,
+  myBudgetTool,
+  myRoadmapsTool,
+  browsePublicRoadmapsTool,
+  getMyRoadmapTool,
+  getPublicRoadmapTool,
+  planSemesterTool,
+  checkRoadmapFeasibilityTool,
+  listFacultiesTool,
+  // write - timetables
+  createTimetableTool,
+  renameTimetableTool,
+  removeTimetableTool,
+  addClassToTimetableTool,
+  removeClassFromTimetableTool,
+  setTimetableVisibilityTool,
+  getTimetableCalendarLinkTool,
+  // write - bids
+  upsertBidTool,
+  removeBidTool,
+  setBidBudgetTool,
+  setBidStatusTool,
+  saveBidsTool,
+  // write - roadmaps
+  createRoadmapTool,
+  renameRoadmapTool,
+  removeRoadmapTool,
+  saveRoadmapEntriesTool,
+  upsertRoadmapEntryTool,
+  setRoadmapVisibilityTool,
+  setMatricTermTool,
+  setActiveRoadmapTool,
+  syncRoadmapProgressTool,
+  copyPublicRoadmapTool,
+  // read-only recommendation
+  recommendBidAmountTool,
+  exploreBidOptionsTool,
+  bidEstimateTool,
+];
