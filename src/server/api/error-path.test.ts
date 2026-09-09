@@ -49,7 +49,7 @@ describe("tRPC Error Path & Zod Error Formatting (Seam A)", () => {
         title: "",
         rating: 10,
         contactEmail: "not-an-email",
-      } as never);
+      });
       expect.unreachable("Procedure should have thrown");
     } catch (err) {
       expect(err).toBeInstanceOf(TRPCError);
@@ -96,15 +96,16 @@ describe("tRPC Error Path & Zod Error Formatting (Seam A)", () => {
       expect(formatted.data).toBeDefined();
       expect(formatted.data.zodError).toBeDefined();
 
-      const zodError = formatted.data.zodError as {
-        formErrors: string[];
-        fieldErrors: Record<string, string[]>;
-      } | null;
+      const zodError = formatted.data.zodError;
       // External contract: { formErrors: string[], fieldErrors: Record<string, string[]> }
       expect(Array.isArray(zodError?.formErrors)).toBe(true);
-      expect(zodError?.fieldErrors).toBeTypeOf("object");
-      expect(Array.isArray(zodError?.fieldErrors.score)).toBe(true);
-      expect(zodError?.fieldErrors.score?.length).toBeGreaterThan(0);
+      const fieldErrors = zodError?.fieldErrors as Record<
+        string,
+        string[] | undefined
+      >;
+      expect(fieldErrors).toBeTypeOf("object");
+      expect(Array.isArray(fieldErrors?.score)).toBe(true);
+      expect(fieldErrors?.score?.length).toBeGreaterThan(0);
     }
   });
 

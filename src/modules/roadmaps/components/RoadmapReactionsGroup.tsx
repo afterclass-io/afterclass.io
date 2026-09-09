@@ -44,9 +44,7 @@ export const RoadmapReactionsGroup = ({ roadmapId }: { roadmapId: string }) => {
           variant={viewerReaction === reaction ? "default" : "outline"}
           className="flex min-w-fit cursor-pointer gap-1 rounded-full border px-2 py-0 select-none"
         >
-          <span className="text-lg">
-            {ReviewReactionType[reaction as keyof typeof ReviewReactionType]}
-          </span>
+          <span className="text-lg">{ReviewReactionType[reaction]}</span>
           <span className="font-mono">{count}</span>
         </Button>
       ))}

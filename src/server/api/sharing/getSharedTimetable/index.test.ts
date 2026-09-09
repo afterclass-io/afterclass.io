@@ -4,6 +4,13 @@ import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { getSharedTimetable } from "./index";
 
+// The per-IP throttle is DB-backed (`checkAndIncrement` via `txDb`); stub
+// the budget pass-through so these tests pin the share-token lookup, not the
+// bucket. Throttle behavior itself is covered by the budget suite.
+vi.mock("@/server/assistant/budget", () => ({
+  checkBudget: vi.fn().mockResolvedValue({ ok: true, retryAfterSeconds: 0 }),
+}));
+
 const router = createTRPCRouter({ getSharedTimetable });
 
 const slotFixture = {
@@ -62,7 +69,9 @@ describe("sharing.getSharedTimetable", () => {
       },
     ]);
     expect(findUnique).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { shareToken: "tok_valid" } }),
+      expect.objectContaining({
+        where: { shareToken: "tok_valid", visibility: { not: "PRIVATE" } },
+      }),
     );
   });
 

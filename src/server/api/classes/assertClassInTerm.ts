@@ -15,7 +15,7 @@ export async function assertClassInTerm(
     where: { id: classId },
     select: { acadTermId: true },
   });
-  if (!cls || cls.acadTermId !== acadTermId) {
+  if (cls?.acadTermId !== acadTermId) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "Class does not belong to this academic term",

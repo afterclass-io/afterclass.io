@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useCallback, useRef, useState, Suspense } from "react";
+import {
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+  useState,
+  Suspense,
+} from "react";
 import type { CSSProperties } from "react";
 import type { SetStateAction, WritableAtom } from "jotai";
 import {
@@ -308,8 +315,7 @@ export default function TimetablePage() {
       isLoggedIn &&
       selectedTermId &&
       !timetablesLoading &&
-      timetables &&
-      timetables.length === 0
+      timetables?.length === 0
     ) {
       createMutation.mutate({ acadTermId: selectedTermId });
     }
@@ -440,7 +446,9 @@ export default function TimetablePage() {
     <div className="flex flex-col gap-4">
       {/* Page header — matches the Roadmaps page pattern */}
       <div>
-        <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">Timetable</PageTitle>
+        <PageTitle className="text-left text-2xl font-bold tracking-tight md:text-2xl!">
+          Timetable
+        </PageTitle>
         <p className="text-muted-foreground text-sm">
           Plan your classes, track bids and share your schedule.
         </p>

@@ -63,7 +63,11 @@ describe("roadmaps.getById", () => {
     await makeCaller(router.createCaller, db, anon).getById({ id: "rm1" });
     expect(db.userRoadmap.findUnique).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: "rm1", visibility: "PUBLIC" },
+        where: {
+          id: "rm1",
+          visibility: "PUBLIC",
+          publishedAt: { not: null },
+        },
       }),
     );
   });

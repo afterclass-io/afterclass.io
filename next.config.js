@@ -8,7 +8,7 @@ const jiti = createJiti(fileURLToPath(import.meta.url));
 // Import env here to validate during build. Using jiti we can import .ts files :)
 jiti("./src/env");
 
-import { withSentryConfig } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs/config";
 
 /** @type {import("next").NextConfig} */
 const config = withSentryConfig(
@@ -100,6 +100,10 @@ const config = withSentryConfig(
     // This can increase your server load as well as your hosting bill.
     // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
     // side errors will fail.
+    // The /monitoring tunnel routes every browser error and envelope through a
+    // Vercel serverless invocation. Keep it for ad-blocker circumvention; if
+    // Sentry volume spikes,
+    // drop tunnelRoute and send directly to the ingest DSN instead.
     tunnelRoute: "/monitoring",
 
     bundleSizeOptimizations: {

@@ -26,6 +26,11 @@ services:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
     env_file:
       - .env
+    # Chat/MCP tunables (CHAT_*/BID_*/APP_TIMEZONE/LLM_*/DIRECT_URL/
+    # EDGE_CONFIG) come from the repo `.env` via env_file above — see
+    # .env.example for the full list and src/server/config/chat-config.ts
+    # for the canonical source. No per-service overrides here: exactly one
+    # place (the env file) tunes the canonical values.
     environment:
       POSTGRES_HOST: /var/run/postgresql
       PGPORT: ${POSTGRES_PORT}

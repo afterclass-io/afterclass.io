@@ -1,5 +1,6 @@
 import type { Session } from "next-auth";
-import { type SessionUser } from "@/server/auth/config";
+
+export type { SessionUser } from "@/server/auth/config";
 
 type AuthState = {
   session: {
@@ -41,6 +42,7 @@ export const mockAuthStates: MockAuthStates = {
           photoUrl:
             "https://afterclass-user-profile-pics.s3.amazonaws.com/Asset+2%402x.png",
           isVerified: true,
+          aiConsent: null,
           universityId: 1,
           facultyId: null,
           createdAt: new Date("2019-07-29T05:26:32.000Z"),
@@ -64,6 +66,7 @@ export const mockAuthStates: MockAuthStates = {
           photoUrl:
             "https://afterclass-user-profile-pics.s3.amazonaws.com/Asset+2%402x.png",
           isVerified: true,
+          aiConsent: null,
           universityId: 1,
           facultyId: null,
           createdAt: new Date("2019-07-29T05:26:32.000Z"),

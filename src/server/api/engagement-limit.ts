@@ -21,7 +21,8 @@ function pruneExpired(now: number): void {
   }
 }
 
-export function checkAndIncrement(
+/** Engagement-budget guard for non-critical view/share counters. */
+export function checkEngagementBudget(
   key: string,
   limit: number,
   windowMs: number,
@@ -48,6 +49,9 @@ export function checkAndIncrement(
   return true;
 }
 
+/** Deprecated alias retained for existing callers. */
+export const checkAndIncrement = checkEngagementBudget;
+
 export function resetLimits(): void {
   buckets.clear();
 }
@@ -59,9 +63,11 @@ export function resetLimits(): void {
  * unproxied requests share one bucket.
  */
 export function clientKey(headers: Headers): string {
-  return headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim()
-      ?? headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-      ?? "unknown";
+  return (
+    headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ??
+    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    "unknown"
+  );
 }
 
 /** Exposed for testing. */

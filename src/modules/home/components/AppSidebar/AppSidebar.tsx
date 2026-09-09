@@ -24,6 +24,7 @@ import {
   StatisticsTableIcon,
   TelegramIcon,
 } from "@/common/components/icons";
+import { BotIcon, FileTextIcon, LockIcon, PlugIcon } from "lucide-react";
 import { env } from "@/env";
 import { toTitleCase } from "@/common/functions";
 import Link from "next/link";
@@ -78,6 +79,20 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       isActiveWithoutExact: true,
       isNew: true,
     },
+    {
+      label: "MCP",
+      icon: <PlugIcon size={16} />,
+      href: "/mcp",
+      isActiveWithoutExact: true,
+      isNew: true,
+    },
+    {
+      label: "Assistant",
+      icon: <BotIcon size={16} />,
+      href: "/assistant",
+      isActiveWithoutExact: true,
+      isNew: true,
+    },
     // Development-only links
     ...(process.env.NODE_ENV === "development" ? [] : []),
   ],
@@ -118,6 +133,18 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       icon: <StatisticsTableIcon size={16} />,
       href: "/statistics",
       external: true,
+    },
+  ],
+  policies: [
+    {
+      label: "Terms",
+      icon: <FileTextIcon size={16} />,
+      href: "/terms",
+    },
+    {
+      label: "Privacy",
+      icon: <LockIcon size={16} />,
+      href: "/privacy",
     },
   ],
 };

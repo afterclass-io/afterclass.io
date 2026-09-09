@@ -1,0 +1,9 @@
+# Keep the Vercel upload limited to web application files.
+# The MCP server (src/mcp + views) NEVER deploys to Vercel serverless — it
+# runs on Manufact/Fly (see MCP.md "Deploy"). views/ is still excluded here
+# to keep web-only uploads small (a stray import would fail the build, not
+# bloat it — the bundler, not this file, guards that).
+views/
+storybook-static/
+cypress/
+.mcp-use/

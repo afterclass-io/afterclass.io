@@ -40,7 +40,7 @@ export async function fetchEdgeConfig(
       process.exit(1);
     }
 
-    const responseData = await response.json();
+    const responseData: unknown = await response.json();
     return edgeConfigResponseSchema.parse(responseData);
   } catch (error) {
     console.error("An error occurred:", error);

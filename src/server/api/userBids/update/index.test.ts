@@ -53,7 +53,7 @@ describe("userBids.update", () => {
     expect(result).toEqual({ id: "b1" });
     expect(dbMock.bidWindow.findUnique).not.toHaveBeenCalled();
     expect(dbMock.userBid.update).toHaveBeenCalledWith({
-      where: { id: "b1" },
+      where: { id: "b1", userId: "u1" },
       data: { bidAmount: 120, notes: "hi" },
     });
   });
@@ -65,7 +65,7 @@ describe("userBids.update", () => {
     await caller.update({ id: "b1", notes: null });
 
     expect(dbMock.userBid.update).toHaveBeenCalledWith({
-      where: { id: "b1" },
+      where: { id: "b1", userId: "u1" },
       data: { notes: null },
     });
   });
@@ -85,7 +85,7 @@ describe("userBids.update", () => {
       select: { acadTermId: true },
     });
     expect(dbMock.userBid.update).toHaveBeenCalledWith({
-      where: { id: "b1" },
+      where: { id: "b1", userId: "u1" },
       data: { classId: "c2" },
     });
   });
