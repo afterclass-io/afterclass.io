@@ -9,6 +9,11 @@ import {
   type McpTool,
   type RouterOutputs,
 } from "../../types";
+import {
+  DEFAULT_BEATS_PERCENTAGE,
+  rationaleFor,
+  suggestBidAmount,
+} from "../bid-shared";
 
 /** Flat history shape consumed by the bid-explorer view. */
 interface HistoryPoint {
@@ -75,6 +80,35 @@ function normalizeHistory(results: BidResultRow[]): HistoryPoint[] {
       a.round.localeCompare(b.round, undefined, { numeric: true }) ||
       a.window - b.window,
   );
+}
+
+/**
+ * Amount answer for the prediction at the default confidence, reusing the
+ * canonical bid-shared math (median x multiplier, e$10 floor) so chat and
+ * bid-estimate can never diverge. Null when there is no median.
+ */
+function suggestedBidAmount(
+  median: number | null,
+  safetyFactors: Array<{ beatsPercentage: number; multiplier: number }>,
+): number | null {
+  if (median === null) return null;
+  const factor = safetyFactors.find(
+    (f) => f.beatsPercentage === DEFAULT_BEATS_PERCENTAGE,
+  );
+  return suggestBidAmount(median, factor?.multiplier);
+}
+
+function bidRationale(
+  median: number | null,
+  safetyFactors: Array<{ beatsPercentage: number; multiplier: number }>,
+): string | null {
+  if (median === null) return null;
+  const factor = safetyFactors.find(
+    (f) => f.beatsPercentage === DEFAULT_BEATS_PERCENTAGE,
+  );
+  return factor
+    ? rationaleFor(median, factor.multiplier, DEFAULT_BEATS_PERCENTAGE)
+    : rationaleFor(median, null, DEFAULT_BEATS_PERCENTAGE);
 }
 
 const exploreBidOptionsSchema = z
@@ -199,6 +233,14 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
                 round: prediction.bidWindow.round,
                 window: prediction.bidWindow.window,
               },
+              suggestedBidAmount: suggestedBidAmount(
+                prediction.medianPredicted ?? null,
+                safetyFactors,
+              ),
+              rationale: bidRationale(
+                prediction.medianPredicted ?? null,
+                safetyFactors,
+              ),
             }
           : null,
         safetyFactors,

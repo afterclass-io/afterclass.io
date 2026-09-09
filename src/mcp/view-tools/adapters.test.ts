@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
+import { env } from "@/env";
 
 /**
  * Happy-path + shared-guard tests for the object-shaped view-tool adapters
@@ -260,7 +261,7 @@ const ADAPTERS: Array<[string, unknown, string]> = [
   [
     "explore-bid-options",
     exploreBidOptions,
-    "Bid options for class cl1 — 2 history rows:\nAY202526T1 R1W1: min 14, median 22, vacancy 10\nAY202526T1 R1W2: min 16, median 26\nPrediction: median 24 (min 15) for round 1 window 1\nOpen in bid analytics: /bidding/analytics?classId=cl1",
+    `Bid options for class cl1 — 2 history rows:\nAY202526T1 R1W1: min 14, median 22, vacancy 10\nAY202526T1 R1W2: min 16, median 26\nPrediction: median 24 (min 15) for round 1 window 1\nOpen in bid analytics: ${env.NEXT_PUBLIC_SITE_URL}/bidding/analytics?classId=cl1`,
   ],
 ];
 
@@ -269,8 +270,7 @@ const LINKS: Record<string, string> = {
   "my-bid-plan": "Manage bids: /timetable",
   "get-my-roadmap": "Open roadmap: /roadmaps?view=mine",
   "get-course-reviews": "Full reviews: /course/ACCT102",
-  "explore-bid-options":
-    "Open in bid analytics: /bidding/analytics?classId=cl1",
+  "explore-bid-options": `Open in bid analytics: ${env.NEXT_PUBLIC_SITE_URL}/bidding/analytics?classId=cl1`,
 };
 
 describe("object-shaped view-tool adapters", () => {
@@ -424,8 +424,9 @@ describe("deep-link line details", () => {
     });
     const res = await handler({ courseCode: "COR-IS1702", section: "G1" }, {});
     expect(res.content[0]?.text).toContain(
-      "\nOpen in bid analytics: /bidding/analytics?course=COR-IS1702&section=G1",
+      `\nOpen in bid analytics: ${env.NEXT_PUBLIC_SITE_URL}/bidding/analytics?course=COR-IS1702&section=G1`,
     );
+    expect(res.content[0]?.text).toMatch(/Open in bid analytics: https?:\/\//);
   });
 
   it("explore-bid-options: omits the link line when no link inputs resolve", async () => {

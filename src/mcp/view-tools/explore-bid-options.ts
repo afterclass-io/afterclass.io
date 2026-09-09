@@ -1,5 +1,5 @@
 import { server } from "../server";
-import { exploreLinkFor } from "@/server/mcp/tools/page-links";
+import { absoluteUrl, exploreLinkFor } from "@/server/mcp/tools/page-links";
 import { asSchema } from "../schema";
 import { bidExplorerOutput } from "./schemas";
 import { runViewTool } from "./results";
@@ -82,7 +82,9 @@ export const exploreBidOptions = server.tool(
           typeof input.section === "string" ? input.section : undefined,
           { classId: sc.classId },
         );
-        return link ? `${body}\nOpen in bid analytics: ${link}` : body;
+        return link
+          ? `${body}\nOpen in bid analytics: ${absoluteUrl(link)}`
+          : body;
       },
     }),
 );

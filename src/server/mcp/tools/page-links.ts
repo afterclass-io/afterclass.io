@@ -1,3 +1,5 @@
+import { env } from "@/env";
+
 export function coursePage(code: string): string {
   return `/course/${encodeURIComponent(code)}`;
 }
@@ -23,6 +25,10 @@ export function bidAnalytics(params: {
   if (params.classId)
     parts.push(`classId=${encodeURIComponent(params.classId)}`);
   return parts.length > 0 ? `/bidding/analytics?${parts.join("&")}` : null;
+}
+
+export function absoluteUrl(path: string): string {
+  return `${env.NEXT_PUBLIC_SITE_URL}${path}`;
 }
 
 export function timetablePage(): string {

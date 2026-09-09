@@ -92,6 +92,19 @@ describe("buildAssistantTools", () => {
     for (const t of allTools) expect(tools[t.name]).toBeDefined();
   });
 
+  it("aliases hyphenated names to snake_case so the model never hits unknown tools", async () => {
+    const tools = buildAssistantTools(await makeContext(), WRITE_LIMIT);
+    const hyphen = tools["get-my-roadmap"] as unknown as {
+      description: string;
+    };
+    const snake = tools.get_my_roadmap as unknown as {
+      description: string;
+    };
+    expect(snake).toBeDefined();
+    expect(snake.description).toBe(hyphen.description);
+    expect(tools.bid).toBeUndefined();
+  });
+
   it("executes a tool and returns the text content", async () => {
     const tools = buildAssistantTools(await makeContext(), WRITE_LIMIT);
     const execute = tools["search-courses"]!.execute as unknown as (

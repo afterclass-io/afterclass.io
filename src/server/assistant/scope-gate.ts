@@ -96,13 +96,31 @@ const WORD_KEYWORDS: ReadonlySet<string> = new Set([
   "hi",
 ]);
 
+/**
+ * Follow-up fragments with no domain noun ("him", "that", "more detail")
+ * that continue an in-scope turn. Only consulted against the PREVIOUS user
+ * message — never alone — so "tell me more" after an off-topic turn still
+ * refuses.
+ */
+const FOLLOWUP_TOKENS: ReadonlySet<string> = new Set([
+  "him",
+  "her",
+  "them",
+  "it",
+  "that",
+  "those",
+  "more",
+  "detail",
+  "details",
+  "specifically",
+  "else",
+]);
+
 function tokensOf(lower: string): string[] {
   return lower.split(/[^a-z0-9]+/).filter((t) => t.length > 0);
 }
 
-export function isInScope(text: string): boolean {
-  const lower = text.toLowerCase();
-  if (lower.trim().length === 0) return true; // fail-open: nothing to judge
+function matchesKeywords(lower: string): boolean {
   for (const k of SUBSTRING_KEYWORDS) {
     if (lower.includes(k)) return true;
   }
@@ -110,6 +128,16 @@ export function isInScope(text: string): boolean {
     if (WORD_KEYWORDS.has(t)) return true;
   }
   return false;
+}
+
+export function isInScope(text: string, prevText?: string): boolean {
+  const lower = text.toLowerCase();
+  if (lower.trim().length === 0) return true; // fail-open: nothing to judge
+  if (matchesKeywords(lower)) return true;
+  const prev = prevText?.toLowerCase() ?? "";
+  if (prev.trim().length === 0) return false;
+  if (!matchesKeywords(prev)) return false;
+  return tokensOf(lower).some((t) => FOLLOWUP_TOKENS.has(t));
 }
 
 /** Static cheap-refusal body served with no LLM call and no quota consumed. */

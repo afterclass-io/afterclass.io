@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  absoluteUrl,
   bidAnalytics,
   coursePage,
   exploreLinkFor,
@@ -35,5 +36,10 @@ describe("page-links", () => {
   it("links timetable and roadmaps-mine views", () => {
     expect(timetablePage()).toBe("/timetable");
     expect(roadmapsMinePage()).toBe("/roadmaps?view=mine");
+  });
+  it("absoluteUrl prefixes the site host so chat links open", () => {
+    expect(absoluteUrl("/bidding/analytics?course=X")).toMatch(
+      /^https?:\/\/.+\/bidding\/analytics\?course=X$/,
+    );
   });
 });

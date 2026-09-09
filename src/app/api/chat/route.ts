@@ -75,6 +75,7 @@ const SYSTEM_PROMPT = [
   "You can search courses and professors, manage the user's timetables, bids, and roadmaps, and recommend bid amounts.",
   "Rules:",
   "- Only use tools that exist. Confirm with the user before creating or deleting anything.",
+  "- Tool names use hyphens (get-my-roadmap, not get_my_roadmap). Always end your turn with a user-facing summary, even if a tool call failed — never go silent after tool steps.",
   "- Reviews are read-only: never write, edit, or fabricate reviews.",
   "- You can only see the user's own private data and public data; never claim to see others' private data.",
   "- Keep answers concise and cite what you actually looked up.",
@@ -84,7 +85,9 @@ const SYSTEM_PROMPT = [
   "- Search is typo-tolerant but imperfect. If a search returns nothing or nonsense, retry with a corrected/simpler query (fix typos, drop filler words) and state the assumption you made.",
   "- Academic-term and bid-window inputs default to the current term/window server-side. Do NOT invent a term id; prefer omitting it, or get it from list-acad-terms.",
   "- Reviews: when the user names a course, resolve its exact code first (search-courses/get-course), then call get-course-reviews — never present search results as the review answer.",
+  "- Review follow-ups ('what did they say?', 'tell me more about him'): re-call get-course-reviews/get-professor-reviews and quote or closely summarise the returned review bodies — never answer from tags/ratings alone.",
   "- Section-specific bid questions ('how much for COR-IS1702 G1?', 'for G1?') go to explore-bid-options with courseCode+section (interactive chart/slider), not bid-estimate.",
+  "- Bid amounts: relay the tool's suggestedBidAmount + rationale verbatim. Never hand-compute a bid from medians, multipliers, or uncertainties, and never mix the analytics-card formula (predicted + multiplier x uncertainty) with the chat formula (median x multiplier).",
   "- Scope: you help with SMU courses, bids, timetables, roadmaps, and reviews only. For anything else, refuse politely in one sentence and offer the closest in-scope help. Never write code or do coursework.",
   "After any bid/budget change, the tool result already contains the full updated bid plan — summarize budget + each bid (course/section/professor/amount/status/round/window). Do not call my-bid-plan again for the same term.",
   "After creating/copying/editing a roadmap, the tool result contains the updated roadmap — summarize its name, term grid, and key courses.",
@@ -250,16 +253,18 @@ export async function POST(req: Request) {
   // extracted (or it is only whitespace), the turn falls through to the
   // normal gates and the model's own scope rule.
   {
-    const last = messages.at(-1);
-    if (last?.role === "user") {
-      const parts = Array.isArray(last.parts) ? last.parts : [];
-      const text = parts
-        .filter((p) => p.type === "text")
-        .map((p) => ("text" in p ? p.text : ""))
-        .join(" ");
-      if (text.trim().length > 0 && !isInScope(text))
-        return cannedResponse(SCOPE_REFUSAL);
-    }
+    const userTexts = messages
+      .filter((m) => m.role === "user")
+      .map((m) => {
+        const parts = Array.isArray(m.parts) ? m.parts : [];
+        return parts
+          .filter((p) => p.type === "text")
+          .map((p) => ("text" in p ? p.text : ""))
+          .join(" ");
+      });
+    const text = userTexts.at(-1) ?? "";
+    if (text.trim().length > 0 && !isInScope(text, userTexts.at(-2)))
+      return cannedResponse(SCOPE_REFUSAL);
   }
 
   const chat = await getCanonicalChatConfig();
@@ -267,7 +272,11 @@ export async function POST(req: Request) {
   // Rate limit before any quota is reserved. Hard-blocks (429); the monthly
   // message quota below is the per-user usage backstop (spend is owned by
   // OpenRouter's credit budget — there is no spend gate).
-  const rate = await checkAndIncrement(`chat:${userId}`, chat.rateLimitPerMinute, windowMinutes);
+  const rate = await checkAndIncrement(
+    `chat:${userId}`,
+    chat.rateLimitPerMinute,
+    windowMinutes,
+  );
   if (!rate.ok) return new Response("Rate limit exceeded", { status: 429 });
   // In-flight guard: a second concurrent turn for the same user is rejected
   // (429) so two concurrent turns cannot both hold the in-flight slot.

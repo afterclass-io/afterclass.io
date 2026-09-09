@@ -140,7 +140,12 @@ function parse(result: { content: Array<{ type: string; text: string }> }) {
   return JSON.parse(result.content[0]!.text) as {
     classId: string | null;
     history: Array<Record<string, unknown>>;
-    prediction: unknown;
+    prediction: {
+      medianPredicted: number;
+      minPredicted: number | null;
+      suggestedBidAmount: number | null;
+      rationale: string | null;
+    } | null;
     safetyFactors: Array<{ beatsPercentage: number; multiplier: number }>;
   };
 }
@@ -195,6 +200,9 @@ describe("explore-bid-options", () => {
       medianPredicted: 30,
       minPredicted: 18,
       bidWindow: { id: 53, round: "1", window: 1 },
+      suggestedBidAmount: 31.5,
+      rationale:
+        "Predicted median 30 x safety multiplier 1.05 (beats 70% of bids).",
     });
     // filtered to MEDIAN + prediction's acadTermId, sorted by beatsPercentage
     expect(out.safetyFactors).toEqual([
@@ -369,6 +377,9 @@ describe("explore-bid-options", () => {
       medianPredicted: 30,
       minPredicted: 18,
       bidWindow: { id: 53, round: "1", window: 1 },
+      suggestedBidAmount: 31.5,
+      rationale:
+        "Predicted median 30 x safety multiplier 1.05 (beats 70% of bids).",
     });
   });
 

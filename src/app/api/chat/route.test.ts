@@ -915,6 +915,37 @@ describe("POST /api/chat", () => {
     expect(mockStreamText).toHaveBeenCalled();
   });
 
+  it("does not scope-refuse a pronoun follow-up to an in-scope turn", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    await POST(
+      buildReq({
+        messages: [
+          {
+            role: "user",
+            content: "reviews about fang bingxu",
+            parts: [{ type: "text", text: "reviews about fang bingxu" }],
+          },
+          {
+            role: "assistant",
+            content: "summary",
+            parts: [{ type: "text", text: "summary" }],
+          },
+          {
+            role: "user",
+            content: "what did students say about him specifically",
+            parts: [
+              {
+                type: "text",
+                text: "what did students say about him specifically",
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    expect(mockStreamText).toHaveBeenCalled();
+  });
+
   it("ignores invalid pageContext without failing the turn", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     const res = await POST(
