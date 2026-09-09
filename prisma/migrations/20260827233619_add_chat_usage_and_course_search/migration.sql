@@ -7,19 +7,9 @@ CREATE TABLE "chat_usage" (
     "input_tokens" INTEGER NOT NULL DEFAULT 0,
     "output_tokens" INTEGER NOT NULL DEFAULT 0,
     "cached_input_tokens" INTEGER NOT NULL DEFAULT 0,
-    "spend_usd" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "chat_usage_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "chat_spend" (
-    "period" TEXT NOT NULL,
-    "total_spend_usd" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "chat_spend_pkey" PRIMARY KEY ("period")
 );
 
 -- CreateTable

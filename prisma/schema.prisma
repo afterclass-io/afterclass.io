@@ -669,7 +669,6 @@ model ChatUsage {
   inputTokens       Int      @default(0) @map("input_tokens")
   outputTokens      Int      @default(0) @map("output_tokens")
   cachedInputTokens Int      @default(0) @map("cached_input_tokens")
-  spendUsd          Float    @default(0) @map("spend_usd")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
   @@unique([userId, period])
@@ -677,15 +676,7 @@ model ChatUsage {
   @@map("chat_usage")
 }
 
-model ChatSpend {
-  period        String   @id
-  totalSpendUsd Float    @default(0) @map("total_spend_usd")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  @@map("chat_spend")
-}
-
-model RateLimit {
+model RateLimitWindow {
   key         String   @id
   windowStart BigInt   @map("window_start") // epoch ms of the fixed window
   count       Int      @default(0)

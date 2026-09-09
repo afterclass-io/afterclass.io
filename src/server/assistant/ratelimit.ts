@@ -4,7 +4,7 @@ import { db, txDb } from "@/server/db";
  * Fixed-window per-key counter with atomic check+increment (Task 7 notes).
  *
  * Window semantics: FIXED windows (`windowStart` = floor(now / windowMs) *
- * windowMs, one `RateLimit` row per `<key>:<windowStart>`). A caller can
+ * windowMs, one `RateLimitWindow` row per `<key>:<windowStart>`). A caller can
  * burst up to 2× the limit at a window boundary (last second of window N +
  * first second of window N+1). This is DOCUMENTED and accepted: the buckets
  * guard cost/nuisance (chat turns, tool writes, ical spray), not hard
@@ -36,7 +36,7 @@ export async function checkAndIncrement(
   // pgbouncer breaks interactive $transaction (Task 9).
   return txDb.$transaction(async (tx) => {
     // Ensure a row exists for this window (idempotent no-op if present).
-    await tx.rateLimit.upsert({
+    await tx.rateLimitWindow.upsert({
       where: { key: rowKey },
       create: { key: rowKey, windowStart: BigInt(windowStart), count: 0 },
       update: {},
@@ -44,7 +44,7 @@ export async function checkAndIncrement(
     // Conditional increment - only when still under limit. The WHERE + increment
     // is atomic; concurrent callers cannot both read `count < limit` and both
     // increment (only one UPDATE matches, the other sees count 0 and is blocked).
-    const result = await tx.rateLimit.updateMany({
+    const result = await tx.rateLimitWindow.updateMany({
       where: { key: rowKey, count: { lt: limit } },
       data: { count: { increment: 1 } },
     });
@@ -60,7 +60,7 @@ export async function checkAndIncrement(
 }
 
 /**
- * GC for `RateLimit` rows (Task 7). Deletes windows older than
+ * GC for `RateLimitWindow` rows. Deletes windows older than
  * `retentionWindows` (default 1440 = ~24h of 1-minute windows; canonical
  * value lives in `src/server/config/chat-config.ts` as
  * `rateLimitRetentionWindows` — this default is the sync-mirror, keep both
@@ -78,7 +78,7 @@ export async function pruneRateLimits(
   const cutoff = BigInt(
     Math.floor(Date.now() / windowMs) * windowMs - retentionWindows * windowMs,
   );
-  const res = await db.rateLimit.deleteMany({
+  const res = await db.rateLimitWindow.deleteMany({
     where: { windowStart: { lt: cutoff } },
   });
   return { deleted: res.count };

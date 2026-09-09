@@ -4,32 +4,32 @@ import type { Mock } from "vitest";
 // vi.mock factories are hoisted above top-level const declarations, so the mock
 // fns must be created via vi.hoisted to avoid a TDZ ("Cannot access ... before
 // initialization") error.
-const { txRateLimitFindUnique, txRateLimitUpsert, txRateLimitUpdateMany } =
+const { txRateLimitWindowFindUnique, txRateLimitWindowUpsert, txRateLimitWindowUpdateMany } =
   vi.hoisted(() => ({
-    txRateLimitFindUnique: vi.fn() as Mock,
-    txRateLimitUpsert: vi.fn() as Mock,
-    txRateLimitUpdateMany: vi.fn() as Mock,
+    txRateLimitWindowFindUnique: vi.fn() as Mock,
+    txRateLimitWindowUpsert: vi.fn() as Mock,
+    txRateLimitWindowUpdateMany: vi.fn() as Mock,
   }));
 
-const { mockRateLimitDeleteMany } = vi.hoisted(() => ({
-  mockRateLimitDeleteMany: vi.fn() as Mock,
+const { mockRateLimitWindowDeleteMany } = vi.hoisted(() => ({
+  mockRateLimitWindowDeleteMany: vi.fn() as Mock,
 }));
 
 const tx = {
-  rateLimit: {
-    findUnique: txRateLimitFindUnique,
-    upsert: txRateLimitUpsert,
-    updateMany: txRateLimitUpdateMany,
+  rateLimitWindow: {
+    findUnique: txRateLimitWindowFindUnique,
+    upsert: txRateLimitWindowUpsert,
+    updateMany: txRateLimitWindowUpdateMany,
   },
 };
 
 vi.mock("@/server/db", () => ({
   db: {
-    rateLimit: {
-      findUnique: txRateLimitFindUnique,
-      upsert: txRateLimitUpsert,
-      updateMany: txRateLimitUpdateMany,
-      deleteMany: mockRateLimitDeleteMany,
+    rateLimitWindow: {
+      findUnique: txRateLimitWindowFindUnique,
+      upsert: txRateLimitWindowUpsert,
+      updateMany: txRateLimitWindowUpdateMany,
+      deleteMany: mockRateLimitWindowDeleteMany,
     },
     $transaction: (fn: (tx: Record<string, unknown>) => unknown) => fn(tx),
   },
@@ -43,19 +43,19 @@ import { checkAndIncrement, pruneRateLimits } from "./ratelimit";
 
 describe("checkAndIncrement", () => {
   beforeEach(() => {
-    txRateLimitFindUnique.mockReset();
-    txRateLimitUpsert.mockReset();
-    txRateLimitUpdateMany.mockReset();
-    mockRateLimitDeleteMany.mockReset();
+    txRateLimitWindowFindUnique.mockReset();
+    txRateLimitWindowUpsert.mockReset();
+    txRateLimitWindowUpdateMany.mockReset();
+    mockRateLimitWindowDeleteMany.mockReset();
   });
 
   it("allows within the limit via atomic conditional increment", async () => {
-    txRateLimitUpsert.mockResolvedValue(undefined);
-    txRateLimitUpdateMany.mockResolvedValue({ count: 1 });
+    txRateLimitWindowUpsert.mockResolvedValue(undefined);
+    txRateLimitWindowUpdateMany.mockResolvedValue({ count: 1 });
     const r: { ok: boolean; retryAfterSeconds: number } =
       await checkAndIncrement("chat:u1", 10, 1);
     expect(r).toEqual({ ok: true, retryAfterSeconds: 0 });
-    expect(txRateLimitUpsert).toHaveBeenCalledWith(
+    expect(txRateLimitWindowUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { key: expect.stringContaining("chat:u1:") as string },
         // Asymmetric matchers are typed as `any` by vitest; suppress unsafe-assignment for the mock assertion.
@@ -68,7 +68,7 @@ describe("checkAndIncrement", () => {
         update: {},
       }) as Record<string, unknown>,
     );
-    expect(txRateLimitUpdateMany).toHaveBeenCalledWith(
+    expect(txRateLimitWindowUpdateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
           key: expect.stringContaining("chat:u1:") as string,
@@ -80,23 +80,23 @@ describe("checkAndIncrement", () => {
   });
 
   it("blocks over the limit when conditional update matches 0 (atomic)", async () => {
-    txRateLimitUpsert.mockResolvedValue(undefined);
-    txRateLimitUpdateMany.mockResolvedValue({ count: 0 });
+    txRateLimitWindowUpsert.mockResolvedValue(undefined);
+    txRateLimitWindowUpdateMany.mockResolvedValue({ count: 0 });
     const r: { ok: boolean; retryAfterSeconds: number } =
       await checkAndIncrement("chat:u1", 10, 1);
     expect(r.ok).toBe(false);
     expect(r.retryAfterSeconds).toBeGreaterThan(0);
-    expect(txRateLimitUpsert).toHaveBeenCalledTimes(1);
-    expect(txRateLimitUpdateMany).toHaveBeenCalledTimes(1);
+    expect(txRateLimitWindowUpsert).toHaveBeenCalledTimes(1);
+    expect(txRateLimitWindowUpdateMany).toHaveBeenCalledTimes(1);
   });
 
   it("creates a new row on the first call in a window (ensure upsert then conditional increment)", async () => {
-    txRateLimitUpsert.mockResolvedValue(undefined);
-    txRateLimitUpdateMany.mockResolvedValue({ count: 1 });
+    txRateLimitWindowUpsert.mockResolvedValue(undefined);
+    txRateLimitWindowUpdateMany.mockResolvedValue({ count: 1 });
     const r: { ok: boolean; retryAfterSeconds: number } =
       await checkAndIncrement("chat:u1", 10, 1);
     expect(r).toEqual({ ok: true, retryAfterSeconds: 0 });
-    expect(txRateLimitUpsert).toHaveBeenCalledWith(
+    expect(txRateLimitWindowUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { key: expect.stringContaining("chat:u1:") as string },
         // Asymmetric matchers typed as `any` - see above.
@@ -111,12 +111,12 @@ describe("checkAndIncrement", () => {
   });
 
   it("allows exactly one below the limit (boundary) via conditional increment", async () => {
-    txRateLimitUpsert.mockResolvedValue(undefined);
-    txRateLimitUpdateMany.mockResolvedValue({ count: 1 });
+    txRateLimitWindowUpsert.mockResolvedValue(undefined);
+    txRateLimitWindowUpdateMany.mockResolvedValue({ count: 1 });
     const r: { ok: boolean; retryAfterSeconds: number } =
       await checkAndIncrement("chat:u1", 10, 1);
     expect(r).toEqual({ ok: true, retryAfterSeconds: 0 });
-    expect(txRateLimitUpdateMany).toHaveBeenCalledWith(
+    expect(txRateLimitWindowUpdateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ count: { lt: 10 } }) as Record<
           string,
@@ -127,9 +127,9 @@ describe("checkAndIncrement", () => {
   });
 
   it("does not allow a limit+1 burst when concurrent callers race (one conditional update wins)", async () => {
-    txRateLimitUpsert.mockResolvedValue(undefined);
+    txRateLimitWindowUpsert.mockResolvedValue(undefined);
     // First caller wins (count 1), second caller's conditional update matches 0
-    txRateLimitUpdateMany
+    txRateLimitWindowUpdateMany
       .mockResolvedValueOnce({ count: 1 })
       .mockResolvedValueOnce({ count: 0 });
     const r1: { ok: boolean; retryAfterSeconds: number } =
@@ -138,37 +138,37 @@ describe("checkAndIncrement", () => {
       await checkAndIncrement("chat:u1", 10, 1);
     expect(r1).toEqual({ ok: true, retryAfterSeconds: 0 });
     expect(r2.ok).toBe(false);
-    expect(txRateLimitUpsert).toHaveBeenCalledTimes(2);
-    expect(txRateLimitUpdateMany).toHaveBeenCalledTimes(2);
+    expect(txRateLimitWindowUpsert).toHaveBeenCalledTimes(2);
+    expect(txRateLimitWindowUpdateMany).toHaveBeenCalledTimes(2);
   });
 
   it("increments the count atomically across calls in the same window (conditional updateMany)", async () => {
-    txRateLimitUpsert.mockResolvedValue(undefined);
-    txRateLimitUpdateMany.mockResolvedValue({ count: 1 });
+    txRateLimitWindowUpsert.mockResolvedValue(undefined);
+    txRateLimitWindowUpdateMany.mockResolvedValue({ count: 1 });
     const r1: { ok: boolean; retryAfterSeconds: number } =
       await checkAndIncrement("chat:u1", 10, 1);
     const r2: { ok: boolean; retryAfterSeconds: number } =
       await checkAndIncrement("chat:u1", 10, 1);
     expect(r1).toEqual({ ok: true, retryAfterSeconds: 0 });
     expect(r2).toEqual({ ok: true, retryAfterSeconds: 0 });
-    expect(txRateLimitUpdateMany).toHaveBeenCalledTimes(2);
-    expect(txRateLimitUpsert).toHaveBeenCalledTimes(2);
+    expect(txRateLimitWindowUpdateMany).toHaveBeenCalledTimes(2);
+    expect(txRateLimitWindowUpsert).toHaveBeenCalledTimes(2);
   });
 });
 
 describe("pruneRateLimits", () => {
   it("deletes windows older than the retention cutoff and returns the count", async () => {
-    mockRateLimitDeleteMany.mockResolvedValue({ count: 7 });
+    mockRateLimitWindowDeleteMany.mockResolvedValue({ count: 7 });
     const r = await pruneRateLimits();
     expect(r).toEqual({ deleted: 7 });
-    expect(mockRateLimitDeleteMany).toHaveBeenCalledWith(
+    expect(mockRateLimitWindowDeleteMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { windowStart: { lt: expect.any(BigInt) as bigint } },
       }) as Record<string, unknown>,
     );
     // Cutoff is in the past (retention keeps ~24h of windows).
     const cutoff = (
-      mockRateLimitDeleteMany.mock.calls[0]?.[0] as {
+      mockRateLimitWindowDeleteMany.mock.calls[0]?.[0] as {
         where: { windowStart: { lt: bigint } };
       }
     ).where.windowStart.lt;
