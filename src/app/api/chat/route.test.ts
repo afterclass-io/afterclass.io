@@ -4,8 +4,6 @@ import type { Mock } from "vitest";
 // -- vi.hoisted mocks (TDZ-safe) ------------------------------------------
 const {
   mockAuth,
-  mockCheckSpendGuard,
-  mockCheckUserSpendCap,
   mockBeginTurn,
   mockEndTurn,
   mockReserveMessage,
@@ -21,8 +19,6 @@ const {
   mockGetAiConsentDate,
 } = vi.hoisted(() => ({
   mockAuth: vi.fn() as Mock,
-  mockCheckSpendGuard: vi.fn() as Mock,
-  mockCheckUserSpendCap: vi.fn() as Mock,
   mockBeginTurn: vi.fn() as Mock,
   mockEndTurn: vi.fn() as Mock,
   mockReserveMessage: vi.fn() as Mock,
@@ -41,8 +37,6 @@ const {
 // -- vi.mock calls ---------------------------------------------------------
 vi.mock("@/server/auth", () => ({ auth: mockAuth }));
 vi.mock("@/server/assistant/quota", () => ({
-  checkSpendGuard: mockCheckSpendGuard,
-  checkUserSpendCap: mockCheckUserSpendCap,
   beginTurn: mockBeginTurn,
   endTurn: mockEndTurn,
   reserveMessage: mockReserveMessage,
@@ -165,15 +159,10 @@ const DEFAULT_CHAT_CONFIG = {
   mcpRateLimitPerMinute: 60,
   writeRateLimitPerMinute: 10,
   rateLimitWindowMinutes: 1,
-  spendCapPerMonthUsd: 20,
-  spendCapUsd: 20,
   maxInputTokens: 16000,
   maxOutputTokens: 4096,
   maxToolRounds: 12,
   settlementSpikeTokens: 30000,
-  priceInputPerM: 0.44,
-  priceCachedInputPerM: 0.014,
-  priceOutputPerM: 1.32,
   chatEnabled: true,
   widgetEnabled: true,
   mcpEnabled: true,
@@ -191,8 +180,6 @@ describe("POST /api/chat", () => {
     capturedOnEnd = null;
     capturedOnStepFinish = null;
     mockAuth.mockReset();
-    mockCheckSpendGuard.mockReset();
-    mockCheckUserSpendCap.mockReset();
     mockBeginTurn.mockReset();
     mockEndTurn.mockReset();
     mockReserveMessage.mockReset();
@@ -219,12 +206,6 @@ describe("POST /api/chat", () => {
 
     // defaults: everything passing
     mockGetChatConfig.mockResolvedValue(DEFAULT_CHAT_CONFIG);
-    mockCheckSpendGuard.mockResolvedValue(true);
-    mockCheckUserSpendCap.mockResolvedValue({
-      ok: true,
-      spendUsd: 0,
-      capUsd: 20,
-    });
     mockBeginTurn.mockReturnValue(true);
     mockReserveMessage.mockResolvedValue({
       ok: true,
@@ -274,7 +255,6 @@ describe("POST /api/chat", () => {
     expect(body.gate).toBe("consent");
     expect(mockReserveMessage).not.toHaveBeenCalled();
     expect(mockCheckAndIncrement).not.toHaveBeenCalled();
-    expect(mockCheckSpendGuard).not.toHaveBeenCalled();
     expect(mockStreamText).not.toHaveBeenCalled();
   });
 
@@ -292,7 +272,6 @@ describe("POST /api/chat", () => {
     expect(await res.text()).toBe("Assistant disabled");
     expect(mockCheckAndIncrement).not.toHaveBeenCalled();
     expect(mockReserveMessage).not.toHaveBeenCalled();
-    expect(mockCheckSpendGuard).not.toHaveBeenCalled();
     expect(mockStreamText).not.toHaveBeenCalled();
   });
 
@@ -341,19 +320,6 @@ describe("POST /api/chat", () => {
       buildReq({ messages: [{ role: "user", content: "hi" }] }),
     );
     expect(res.status).toBe(429);
-    expect(mockReserveMessage).not.toHaveBeenCalled();
-  });
-
-  // -- 403 spend --
-  it("returns 403 {gate:'spend'} when spend guard tripped; reserveMessage NOT called", async () => {
-    mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    mockCheckSpendGuard.mockResolvedValue(false);
-    const res = await POST(
-      buildReq({ messages: [{ role: "user", content: "hi" }] }),
-    );
-    expect(res.status).toBe(403);
-    const body = (await res.json()) as { gate: string };
-    expect(body.gate).toBe("spend");
     expect(mockReserveMessage).not.toHaveBeenCalled();
   });
 
@@ -863,23 +829,6 @@ describe("POST /api/chat", () => {
     const withCtx = mockStreamText.mock.calls[0]?.[0]?.instructions as string;
     expect(withCtx.startsWith(plain)).toBe(true);
     expect(withCtx.length).toBeGreaterThan(plain.length);
-  });
-
-  // -- 403 spend (per-user cap) --
-  it("returns 403 {gate:'spend'} when the per-user spend cap is hit; reserveMessage NOT called", async () => {
-    mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    mockCheckUserSpendCap.mockResolvedValue({
-      ok: false,
-      spendUsd: 20,
-      capUsd: 20,
-    });
-    const res = await POST(
-      buildReq({ messages: [{ role: "user", content: "hi" }] }),
-    );
-    expect(res.status).toBe(403);
-    const body = (await res.json()) as { gate: string };
-    expect(body.gate).toBe("spend");
-    expect(mockReserveMessage).not.toHaveBeenCalled();
   });
 
   // -- 429 in-flight --

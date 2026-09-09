@@ -21,8 +21,6 @@ import {
   reserveMessage,
   settleUsage,
   refundMessage,
-  checkSpendGuard,
-  checkUserSpendCap,
   beginTurn,
   endTurn,
 } from "@/server/assistant/quota";
@@ -55,7 +53,7 @@ export const maxDuration = 300;
 const MAX_CHAT_MESSAGES = 200;
 const MAX_CHAT_BODY_BYTES = 512_000;
 
-// Input-token count above which a settlement HARD-BLOCKS the turn's spend
+// Input-token count above which a settlement HARD-BLOCKS the turn's token
 // recording (usually a huge tool result re-sent across loop steps or a broken
 // cached prefix). Canonical threshold lives in `src/server/config/chat-config.ts`
 // (`settlementSpikeTokens` = 30000, read as `chat.settlementSpikeTokens`
@@ -102,7 +100,7 @@ const SYSTEM_PROMPT = [
   "- Deep-links: when a tool result contains a page link (e.g. 'Open in bid analytics: /bidding/analytics?...'), render it as a markdown link with a short label ('Open in bid analytics') after your 1-2 sentence summary. Link to the page instead of pasting raw data or dumping the full result — the page is the action surface. Never invent page URLs; only render links the tools returned.",
 ].join("\n");
 
-const GATE = (reason: "quota" | "spend" | "consent") =>
+const GATE = (reason: "quota" | "consent") =>
   Response.json({ gate: reason }, { status: 403 });
 
 /**
@@ -120,7 +118,7 @@ const GATE = (reason: "quota" | "spend" | "consent") =>
  * matter how the SDK sequences flush vs. the error part: whichever claims the
  * turn first wins, and the other becomes a no-op. The error-part refund is
  * deferred until the stream closes so onEnd (which runs before close) can
- * claim first and record partial spend; cancel/read errors refund immediately.
+ * claim first and record partial token counts; cancel/read errors refund immediately.
  */
 function guardAgainstFailedStream<T>(
   stream: ReadableStream<T>,
@@ -162,8 +160,8 @@ function guardAgainstFailedStream<T>(
         ) {
           // Defer the refund to close: a mid-stream error may be followed by
           // onEnd settlement (partial usage from completed steps). Settlement
-          // takes priority so partial spend is still recorded and the slot is
-          // kept for a turn that produced content.
+          // takes priority so partial token counts are still recorded and the
+          // slot is kept for a turn that produced content.
           failed = true;
         }
         controller.enqueue(value);
@@ -175,7 +173,7 @@ function guardAgainstFailedStream<T>(
     cancel() {
       // Client disconnected (abort): do NOT refund. The reserved slot stays consumed
       // so reading the answer then aborting cannot yield a free message or unrecorded
-      // spend. Settlement (onEnd) will still account token usage best-effort; if the
+      // usage. Settlement (onEnd) will still account token usage best-effort; if the
       // stream is torn down before it can fire, the slot remains consumed - intentional.
       if (!quotaSettled.value) quotaSettled.value = true;
       onRelease?.();
@@ -266,19 +264,15 @@ export async function POST(req: Request) {
 
   const chat = await getCanonicalChatConfig();
   const windowMinutes = getCanonicalRateLimitWindowMinutes();
-  // Per-user spend cap (Task 7): checked alongside the global kill-switch,
-  // before any quota is reserved. Both hard-block (403 spend gate).
-  const [spendOk, userSpend, rate] = await Promise.all([
-    checkSpendGuard(),
-    checkUserSpendCap(userId),
-    checkAndIncrement(`chat:${userId}`, chat.rateLimitPerMinute, windowMinutes),
-  ]);
+  // Rate limit before any quota is reserved. Hard-blocks (429); the monthly
+  // message quota below is the per-user usage backstop (spend is owned by
+  // OpenRouter's credit budget — there is no spend gate).
+  const rate = await checkAndIncrement(`chat:${userId}`, chat.rateLimitPerMinute, windowMinutes);
   if (!rate.ok) return new Response("Rate limit exceeded", { status: 429 });
-  if (!spendOk || !userSpend.ok) return GATE("spend");
   // In-flight guard: a second concurrent turn for the same user is rejected
-  // (429) so two expensive turns cannot both pass the cap check and then
-  // both settle past it. Best-effort (single-instance); the atomic DB settle
-  // remains the hard backstop.
+  // (429) so two concurrent turns cannot both hold the in-flight slot.
+  // Best-effort (single-instance); the reserved message slot remains the
+  // hard backstop.
   if (!beginTurn(userId))
     return new Response("A previous turn is still running", { status: 429 });
 
@@ -343,13 +337,12 @@ export async function POST(req: Request) {
       // consumed on abort (see guardAgainstFailedStream.cancel).
       abortSignal: req.signal,
       // NOTE: The message slot was pre-reserved by reserveMessage(), so quota
-      // cannot be bypassed by disconnecting. Token/spend settlement is
+      // cannot be bypassed by disconnecting. Token settlement is
       // scheduled via after() in onEnd (Vercel waitUntil semantics: the
       // function keeps running after the response closes); where after() is
       // unavailable it runs inline. The remaining best-effort case (crash
-      // before the promise settles) is accepted: the spend cap is already
-      // enforced atomically in settleUsage and the primary abuse vector
-      // (free messages) is closed.
+      // before the promise settles) is accepted: the pre-reserved slot means
+      // the primary abuse vector (free messages) is closed.
       // On failure, guardAgainstFailedStream below refunds the reserved slot.
       onEnd: async ({ usage }) => {
         if (quotaSettled.value) return; // already refunded - never settle after a refund
@@ -376,8 +369,8 @@ export async function POST(req: Request) {
             if ((usage.inputTokens ?? 0) > spikeThreshold) {
               // Settlement spike: usually a huge tool result re-sent across loop
               // steps or a broken cached prefix. HARD-BLOCK: skip settleUsage so
-              // a runaway turn cannot record unbounded spend (the message slot
-              // stays consumed — the turn happened — but the token/spend write
+              // a runaway turn cannot record unbounded token counts (the message
+              // slot stays consumed — the turn happened — but the token write
               // is dropped). Loud enough to catch cost regressions.
               // intentional: cost-regression signal, keep loud
               console.warn(
@@ -404,9 +397,8 @@ export async function POST(req: Request) {
         // past client disconnect — MUST be called synchronously in the
         // request scope. Falls back to inline execution where after() is
         // unavailable (tests, non-Vercel runtimes). A crash before the work
-        // settles stays best-effort (accepted: the spend cap is enforced
-        // atomically in settleUsage and free messages are closed by the
-        // pre-reserved slot).
+        // settles stays best-effort (accepted: the pre-reserved slot closes
+        // free messages).
         try {
           after(settle);
         } catch {
