@@ -2,7 +2,7 @@
  * Centralized chat/bid/catalog tunables (Task 8).
  *
  * Canonical home for every runtime number the chat + MCP + bid layers
- * consume: quotas, rate limits, token budgets, spend caps, bid floors, and
+ * consume: quotas, rate limits, token budgets, bid floors, and
  * the app timezone. Precedence: process.env (CHAT/BID/APP keys) >
  * EdgeConfig `chat` section > `config.json` > compiled defaults.
  *
@@ -29,7 +29,6 @@
  * | maxInputTokens | 64000 | brief spec: live ecfg value (config.json still carries the stale 16000; env override documented in .env.example) |
  * | maxOutputTokens | 4096 | brief spec: live ecfg value (config.json stale 1024 — same note) |
  * | maxToolRounds | 12 | brief spec: live ecfg value (config.json stale 6 — same note); route.ts stopWhen(12-round comment) agrees |
- * | spendCapPerMonthUsd | 20 | DEFAULT_CHAT_CONFIG.spendCapPerMonthUsd |
  * | settlementSpikeTokens | 30000 | route.ts SETTLEMENT_SPIKE_FRACTION 0.5 × maxInputTokens 64000 ≈ 32000 → brief pins 30000 as the named tunable (CORRECTION: current code derives threshold = floor(maxInputTokens*0.5); the named constant is new, value per brief) |
  * | maxToolResultChars | 24000 | `MAX_TOOL_RESULT_CHARS` in `src/server/assistant/tools.ts` + `DEFAULT_MAX_OUTPUT_CHARS` in `src/mcp/output-policy.ts` |
  * | minBid | 10 | `MIN_BID` in `src/server/mcp/tools/bid-shared.ts` (+ Task 6 parity pin) |
@@ -83,7 +82,6 @@ export const chatConfigSchema = z.object({
   maxInputTokens: positiveInt("maxInputTokens"),
   maxOutputTokens: positiveInt("maxOutputTokens"),
   maxToolRounds: positiveInt("maxToolRounds"),
-  spendCapPerMonthUsd: nonNegativeNumber("spendCapPerMonthUsd"),
   settlementSpikeTokens: positiveInt("settlementSpikeTokens"),
   maxToolResultChars: positiveInt("maxToolResultChars"),
   minBid: positiveInt("minBid"),
@@ -106,9 +104,6 @@ export const chatConfigSchema = z.object({
 
 export type ChatConfig = z.infer<typeof chatConfigSchema>;
 
-/** spendCapUsd alias kept for the brief's verbatim test (`c.spendCapUsd`). */
-export type ChatConfigWithAliases = ChatConfig & { spendCapUsd: number };
-
 export const DEFAULT_CHAT_CONFIG_VALUES: ChatConfig = {
   quotaPerMonth: 50,
   nudgeAt: 40,
@@ -119,7 +114,6 @@ export const DEFAULT_CHAT_CONFIG_VALUES: ChatConfig = {
   maxInputTokens: 64000,
   maxOutputTokens: 4096,
   maxToolRounds: 12,
-  spendCapPerMonthUsd: 20,
   settlementSpikeTokens: 30000,
   maxToolResultChars: 24000,
   minBid: 10,
@@ -155,8 +149,6 @@ const ENV_BINDINGS = [
   ["CHAT_MAX_TOOL_ROUNDS", "maxToolRounds", Number],
   ["CHAT_QUOTA_PER_MONTH", "quotaPerMonth", Number],
   ["CHAT_NUDGE_AT", "nudgeAt", Number],
-  ["CHAT_SPEND_CAP_USD", "spendCapPerMonthUsd", Number],
-  ["CHAT_SPEND_CAP_PER_MONTH_USD", "spendCapPerMonthUsd", Number],
   ["CHAT_SETTLEMENT_SPIKE_TOKENS", "settlementSpikeTokens", Number],
   ["CHAT_MAX_TOOL_RESULT_CHARS", "maxToolResultChars", Number],
   ["BID_MIN_AMOUNT", "minBid", Number],
@@ -187,8 +179,6 @@ function readEnvLayer(env: NodeJS.ProcessEnv = process.env): RawLayer {
 
 /** Legacy camelCase EdgeConfig/config.json chat keys → canonical fields. */
 const CHAT_KEY_ALIASES: Record<string, keyof ChatConfig> = {
-  spendCapUsd: "spendCapPerMonthUsd",
-  spendCapPerMonthUsd: "spendCapPerMonthUsd",
   writeRateLimitPerMinute: "writeRateLimitPerMinute",
 };
 
@@ -222,9 +212,7 @@ function fileChatLayer(): RawLayer {
  * (EdgeConfig is async-only — use getChatConfigAsync() when the Edge layer
  * matters. The sync path is what tests and fail-closed call sites use.)
  */
-export function getChatConfig(
-  env: NodeJS.ProcessEnv = process.env,
-): ChatConfigWithAliases {
+export function getChatConfig(env: NodeJS.ProcessEnv = process.env): ChatConfig {
   const merged: RawLayer = {
     ...fileChatLayer(),
     ...readEnvLayer(env),
@@ -232,14 +220,14 @@ export function getChatConfig(
   const parsed = chatConfigSchema
     .strict()
     .parse({ ...DEFAULT_CHAT_CONFIG_VALUES, ...merged });
-  return { ...parsed, spendCapUsd: parsed.spendCapPerMonthUsd };
+  return parsed;
 }
 
 /**
  * Full precedence incl. the live EdgeConfig layer:
  * env > EdgeConfig > config.json > defaults.
  */
-export async function getChatConfigAsync(): Promise<ChatConfigWithAliases> {
+export async function getChatConfigAsync(): Promise<ChatConfig> {
   let edge: unknown = null;
   try {
     edge = await getEdgeConfig();
@@ -254,7 +242,7 @@ export async function getChatConfigAsync(): Promise<ChatConfigWithAliases> {
   const parsed = chatConfigSchema
     .strict()
     .parse({ ...DEFAULT_CHAT_CONFIG_VALUES, ...merged });
-  return { ...parsed, spendCapUsd: parsed.spendCapPerMonthUsd };
+  return parsed;
 }
 
 /**

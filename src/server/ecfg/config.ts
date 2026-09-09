@@ -5,13 +5,9 @@ export const DEFAULT_CHAT_CONFIG = {
   nudgeAt: 40,
   rateLimitPerMinute: 10,
   mcpRateLimitPerMinute: 60,
-  spendCapPerMonthUsd: 20,
   maxInputTokens: 64000,
   maxOutputTokens: 4096,
   maxToolRounds: 12,
-  priceInputPerM: 0.44,
-  priceCachedInputPerM: 0.014,
-  priceOutputPerM: 1.32,
   // Task 4 kill-switches (ecfg-owned only, no env bindings): all default
   // true. chatEnabled gates POST /api/chat (503), widgetEnabled hides the
   // widget client-side via status, mcpEnabled gates the MCP transport only.
@@ -26,13 +22,9 @@ export const chatConfigSchema = z
     nudgeAt: z.number().int().min(0),
     rateLimitPerMinute: z.number().int().positive(),
     mcpRateLimitPerMinute: z.number().int().positive(),
-    spendCapPerMonthUsd: z.number().nonnegative(),
     maxInputTokens: z.number().int().positive(),
     maxOutputTokens: z.number().int().positive(),
     maxToolRounds: z.number().int().positive(),
-    priceInputPerM: z.number().nonnegative(),
-    priceCachedInputPerM: z.number().nonnegative(),
-    priceOutputPerM: z.number().nonnegative(),
     chatEnabled: z.boolean(),
     widgetEnabled: z.boolean(),
     mcpEnabled: z.boolean(),

@@ -17,12 +17,11 @@ import {
  * route.ts, trim.ts, view-tools, tests) keep working unchanged.
  *
  * The legacy `ChatConfig` shape (camelCase ecfg keys incl.
- * `spendCapPerMonthUsd`, `maxInputTokens`, `maxOutputTokens`,
- * `maxToolRounds`) is a SUBSET of the canonical config: quota/rate/spend/
- * token fields map 1:1, and the canonical extra fields (bid floors, spike
- * tokens, retention windows, llm, timezone, duration) ride along
- * harmlessly. `getChatWriteRateLimit(chat)` keeps its C2 precedence
- * (env-override-then-fallback) — see the budget matrix in
+ * `maxInputTokens`, `maxOutputTokens`, `maxToolRounds`) is a SUBSET of the
+ * canonical config: quota/rate/token fields map 1:1, and the canonical extra
+ * fields (bid floors, spike tokens, retention windows, llm, timezone,
+ * duration) ride along harmlessly. `getChatWriteRateLimit(chat)` keeps its
+ * C2 precedence (env-override-then-fallback) — see the budget matrix in
  * `src/mcp/rate-limit.ts`, which still describes the three buckets.
  */
 export async function getChatConfig(): Promise<LegacyChatConfig> {
@@ -32,7 +31,6 @@ export async function getChatConfig(): Promise<LegacyChatConfig> {
     nudgeAt: canonical.nudgeAt,
     rateLimitPerMinute: canonical.rateLimitPerMinute,
     mcpRateLimitPerMinute: canonical.mcpRateLimitPerMinute,
-    spendCapPerMonthUsd: canonical.spendCapPerMonthUsd,
     maxInputTokens: canonical.maxInputTokens,
     maxOutputTokens: canonical.maxOutputTokens,
     maxToolRounds: canonical.maxToolRounds,
@@ -41,11 +39,6 @@ export async function getChatConfig(): Promise<LegacyChatConfig> {
     chatEnabled: canonical.chatEnabled,
     widgetEnabled: canonical.widgetEnabled,
     mcpEnabled: canonical.mcpEnabled,
-    // Live-peak v4-flash pricing (cost-analysis §2): the $20 kill-switch
-    // must trip on real spend, not quarter-rate output accounting.
-    priceInputPerM: 0.44,
-    priceCachedInputPerM: 0.014,
-    priceOutputPerM: 1.32,
   };
 }
 

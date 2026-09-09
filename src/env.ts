@@ -81,8 +81,6 @@ export const env = createEnv({
     CHAT_MAX_INPUT_TOKENS: z.coerce.number().int().min(1).optional(),
     CHAT_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(1).optional(),
     CHAT_MAX_TOOL_ROUNDS: z.coerce.number().int().min(1).max(100).optional(),
-    CHAT_SPEND_CAP_USD: z.coerce.number().min(0).optional(),
-    CHAT_SPEND_CAP_PER_MONTH_USD: z.coerce.number().min(0).optional(),
     CHAT_SETTLEMENT_SPIKE_TOKENS: z.coerce.number().int().min(1).optional(),
     CHAT_MAX_TOOL_RESULT_CHARS: z.coerce.number().int().min(1).optional(),
     CHAT_ICAL_THROTTLE_PER_MINUTE: z.coerce
@@ -194,8 +192,6 @@ export const env = createEnv({
     CHAT_MAX_INPUT_TOKENS: process.env.CHAT_MAX_INPUT_TOKENS,
     CHAT_MAX_OUTPUT_TOKENS: process.env.CHAT_MAX_OUTPUT_TOKENS,
     CHAT_MAX_TOOL_ROUNDS: process.env.CHAT_MAX_TOOL_ROUNDS,
-    CHAT_SPEND_CAP_USD: process.env.CHAT_SPEND_CAP_USD,
-    CHAT_SPEND_CAP_PER_MONTH_USD: process.env.CHAT_SPEND_CAP_PER_MONTH_USD,
     CHAT_SETTLEMENT_SPIKE_TOKENS: process.env.CHAT_SETTLEMENT_SPIKE_TOKENS,
     CHAT_MAX_TOOL_RESULT_CHARS: process.env.CHAT_MAX_TOOL_RESULT_CHARS,
     CHAT_ICAL_THROTTLE_PER_MINUTE: process.env.CHAT_ICAL_THROTTLE_PER_MINUTE,

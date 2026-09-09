@@ -12,10 +12,9 @@ describe("getChatConfig", () => {
     expect(() => getChatConfig()).toThrow(/rate/i);
     delete process.env.CHAT_RATE_LIMIT_PER_MINUTE;
   });
-  it("exposes quota, spend cap, token budgets, and bid floors", () => {
+  it("exposes quota, token budgets, and bid floors", () => {
     const c = getChatConfig();
     expect(c.quotaPerMonth).toBeGreaterThan(0);
-    expect(c.spendCapUsd).toBeGreaterThan(0);
     expect(c.minBid).toBe(10);
   });
   it("bid getters mirror canonical defaults", () => {

@@ -47,12 +47,9 @@ const MOCK_CHAT_CONFIG = {
   nudgeAt: 40,
   rateLimitPerMinute: 10,
   mcpRateLimitPerMinute: 60,
-  spendCapPerMonthUsd: 20,
   maxInputTokens: 16000,
   maxOutputTokens: 1024,
   maxToolRounds: 6,
-  priceInputPerM: 0.44,
-  priceOutputPerM: 1.32,
 };
 
 // Keep the nested-subrouter mock shape used by the other tool tests; the
