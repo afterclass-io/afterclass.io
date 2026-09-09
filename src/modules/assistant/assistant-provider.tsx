@@ -13,7 +13,7 @@ import { useWidgetPosition } from "./use-widget-position";
 import { WelcomeBubble } from "./welcome-bubble/welcome-bubble";
 
 type Status =
-  | { signedIn: false }
+  | { signedIn: false; quota?: number }
   | {
       signedIn: true;
       quota: number;
@@ -145,7 +145,7 @@ export function AssistantProvider() {
     // Anonymous users still get the widget - it leads them to login.
     return (
       <AssistantWidget open={open} onOpenChange={setOpen}>
-        <SignedOutPanel />
+        <SignedOutPanel quota={status?.quota} />
       </AssistantWidget>
     );
   }

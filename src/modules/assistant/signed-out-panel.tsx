@@ -4,7 +4,7 @@ import { LogInIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { WELCOME_SUGGESTIONS } from "./suggestions";
 
-export function SignedOutPanel() {
+export function SignedOutPanel({ quota }: { quota?: number }) {
   const pathname = usePathname();
   const callbackUrl = encodeURIComponent(pathname ?? "/");
 
@@ -42,8 +42,8 @@ export function SignedOutPanel() {
         Log in to chat
       </a>
       <p className="text-muted-foreground max-w-56 text-xs">
-        Free quota is 50 messages/month. Log in once - we&apos;ll bring you
-        right back here.
+        Free quota is {quota ?? 50} messages/month. Log in once - we&apos;ll
+        bring you right back here.
       </p>
     </div>
   );
