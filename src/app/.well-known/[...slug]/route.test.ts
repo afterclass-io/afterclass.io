@@ -13,6 +13,12 @@ vi.hoisted(() => {
   // @/env requires NEXTAUTH_SECRET in production (imported transitively
   // via the route's Prisma/tRPC graph); any non-empty value satisfies it.
   (process.env as Record<string, string>).NEXTAUTH_SECRET = "test-secret";
+  // src/server/db.ts throws at import in production without DIRECT_URL
+  // (route → route-server → register → dispatch/rate-limit → budget →
+  // ratelimit → db); the test serves only the OAuth discovery document and
+  // never connects, so any valid URL satisfies the presence check.
+  (process.env as Record<string, string>).DIRECT_URL =
+    "postgresql://user:pass@localhost:5432/db";
   (process.env as Record<string, string>).MCP_URL = "http://localhost";
   (process.env as Record<string, string>).MCP_USE_OAUTH_SUPABASE_URL =
     "http://localhost:54321";
