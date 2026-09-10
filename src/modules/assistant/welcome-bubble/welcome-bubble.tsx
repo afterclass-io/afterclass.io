@@ -36,11 +36,12 @@ export function WelcomeBubble({
   const [visible, setVisible] = useState(false);
   const [message, setMessage] = useState("");
 
+  // Hide pre-paint while the widget is open (render adjustment, not an
+  // effect — converges immediately).
+  if (open && visible) setVisible(false);
+
   useEffect(() => {
-    if (open) {
-      setVisible(false);
-      return;
-    }
+    if (open) return;
     let cancelled = false;
     const timer = window.setTimeout(() => {
       if (cancelled) return;

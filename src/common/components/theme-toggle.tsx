@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 
 import { Button } from "@/common/components/button";
@@ -7,12 +7,15 @@ import { MoonIcon, SunIcon } from "@/common/components/icons";
 import { Loader2 } from "lucide-react";
 
 export const ThemeToggle = () => {
-  const [isMounted, setIsMounted] = useState(false);
+  // next-themes reads the theme from the DOM — render a placeholder until
+  // hydration so the server HTML matches.
+  const isMounted = useSyncExternalStore(
+    // eslint-disable-next-line @typescript-eslint/no-empty-function -- no external store to subscribe to; mount state never changes
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const { theme, systemTheme, setTheme } = useTheme();
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const currentTheme = theme === "system" ? systemTheme : theme;
   const newTheme = currentTheme === "dark" ? "light" : "dark";

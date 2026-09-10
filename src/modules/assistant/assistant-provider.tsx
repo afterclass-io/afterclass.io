@@ -53,10 +53,12 @@ function SignedInAssistant({
 
   // Reset local consent from the server payload whenever it changes (open-
   // refetch, route-change refetch). Local onConsented/onConsentRevoked flips
-  // in between do not touch `status`, so this effect does not fight them.
-  useEffect(() => {
+  // in between do not touch `status`, so this adjustment does not fight them.
+  const [prevAiConsented, setPrevAiConsented] = useState(status.aiConsented);
+  if (status.aiConsented !== prevAiConsented) {
+    setPrevAiConsented(status.aiConsented);
     setConsented(status.aiConsented ?? false);
-  }, [status.aiConsented]);
+  }
 
   const viewport = useViewport();
   const geometry = useWidgetPosition(viewport);
@@ -136,6 +138,7 @@ export function AssistantProvider() {
     } catch {
       // storage unavailable - non-fatal
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount/identity sync from sessionStorage; fires once (flag is cleared), no cascade
     if (wasOpen) setOpen(true);
   }, [status]);
 

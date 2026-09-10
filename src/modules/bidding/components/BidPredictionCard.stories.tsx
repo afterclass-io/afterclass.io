@@ -2,16 +2,12 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import { BidPredictionCard } from "./BidPredictionCard";
 import type { BidPrediction } from "./BidPredictionCard";
 import { MultiplierType, PredictionType } from "@/generated/prisma/enums";
+import type { SafetyFactor } from "@/generated/prisma/client";
 
-type MiniSafetyFactor = {
-  // re-declared as dates are not required
-  beatsPercentage: number;
-  multiplier: number;
-};
-type MiniBidPrediction = {
-  value: number;
-  safetyFactor: MiniSafetyFactor[];
-  uncertainty: number;
+type SeedSafetyFactor = Pick<SafetyFactor, "beatsPercentage" | "multiplier">;
+
+type SeedBidPrediction = Pick<BidPrediction, "value" | "uncertainty"> & {
+  safetyFactor: SeedSafetyFactor[];
 };
 
 // Safety factors mirror the real seed data
@@ -19,7 +15,7 @@ type MiniBidPrediction = {
 // steps of 5 with ascending multipliers. The uncertainties are non-zero so
 // the success-rate slider actually moves the recommended amounts, exactly
 // like the live card (recommended = predicted + multiplier x uncertainty).
-const SEED_MULTIPLIERS: MiniSafetyFactor[] = [
+const SEED_MULTIPLIERS: SeedSafetyFactor[] = [
   { beatsPercentage: 50, multiplier: 0 },
   { beatsPercentage: 55, multiplier: 0.13 },
   { beatsPercentage: 60, multiplier: 0.25 },
@@ -32,7 +28,7 @@ const SEED_MULTIPLIERS: MiniSafetyFactor[] = [
   { beatsPercentage: 95, multiplier: 1.81 },
 ];
 
-const minPrediction: MiniBidPrediction = {
+const minPrediction: SeedBidPrediction = {
   // IS215 G1 shape (see screenshots): the slider then derives the header
   // range, e.g. 70%: 8.31 + 0.54 x 5.20 = 11.12; 80%: 8.31 + 0.88 x 5.20 =
   // 12.89.
@@ -41,7 +37,7 @@ const minPrediction: MiniBidPrediction = {
   safetyFactor: SEED_MULTIPLIERS,
 };
 
-const medianPrediction: MiniBidPrediction = {
+const medianPrediction: SeedBidPrediction = {
   // IS215 G1 shape: 70%: 18.36 + 0.54 x 6.04 = 21.62; 80%: 18.36 + 0.88 x
   // 6.04 = 23.68.
   value: 18.36,
@@ -50,7 +46,7 @@ const medianPrediction: MiniBidPrediction = {
 };
 
 const transformBidPrediction = (
-  prediction: MiniBidPrediction,
+  prediction: SeedBidPrediction,
   acadTermId: string,
   predictionType: PredictionType,
 ): BidPrediction => {

@@ -7,9 +7,7 @@ import { ConnectPage } from "./connect-page";
 
 describe("ConnectPage", () => {
   it("shows a configuration message instead of actions for a placeholder URL", () => {
-    render(
-      <ConnectPage mcpUrl="https://<slug>.run.mcp-use.com/mcp" />,
-    );
+    render(<ConnectPage mcpUrl="https://<slug>.run.mcp-use.com/mcp" />);
 
     expect(
       screen.getByText(
@@ -17,8 +15,6 @@ describe("ConnectPage", () => {
       ),
     ).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Copy" })).toBeNull();
-    expect(
-      screen.queryByRole("link", { name: /One-click set up/ }),
-    ).toBeNull();
+    expect(screen.queryByRole("link", { name: /One-click set up/ })).toBeNull();
   });
 });

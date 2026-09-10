@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
 import { Search, Loader2 } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
@@ -40,11 +40,14 @@ export function CourseSearchPanel({
   const debouncedQuery = useDebouncedValue(query, 300);
   const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null);
 
-  // Clear stale search state when the term changes — results are term-scoped
-  useEffect(() => {
+  // Clear stale search state when the term changes — results are term-scoped.
+  // Render adjustment, not an effect; converges immediately.
+  const [prevTermId, setPrevTermId] = useState(selectedTermId);
+  if (selectedTermId !== prevTermId) {
+    setPrevTermId(selectedTermId);
     setQuery("");
     setExpandedCourseId(null);
-  }, [selectedTermId]);
+  }
 
   const searchQuery = api.timetable.searchCourses.useQuery(
     {
@@ -113,7 +116,7 @@ export function CourseSearchPanel({
           (expanded state) so neither is clipped by the overflow clipping
           rect; [scrollbar-gutter:stable] keeps the scrollbar from overlaying
           the ring — same pattern as the roadmap T3B fix (pr-1 + 12px). */}
-      <div className="mt-3 min-h-0 flex-1 overflow-y-auto px-1 py-1 [scrollbar-gutter:stable]">
+      <div className="mt-3 min-h-0 flex-1 [scrollbar-gutter:stable] overflow-y-auto px-1 py-1">
         {/* Empty state */}
         {!selectedTermId && (
           <p className="text-muted-foreground py-8 text-center text-sm">

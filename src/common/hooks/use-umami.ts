@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 
 interface PageView {
   // Hostname of server
@@ -38,16 +38,13 @@ interface _Umami {
 
 // https://umami.is/docs/tracker-functions
 export default function useUmami(): Umami {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true); // this will be set to true only in the client
-  }, []);
-
   const isUmamiAvailable = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access
-    return isClient && typeof (window as any).umami !== "undefined";
-  }, [isClient]);
+    return (
+      typeof window !== "undefined" &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access
+      typeof (window as any).umami !== "undefined"
+    );
+  }, []);
 
   const windowUmami = useCallback(() => {
     if (!isUmamiAvailable()) {

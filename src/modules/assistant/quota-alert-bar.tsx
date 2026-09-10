@@ -20,6 +20,7 @@ export function QuotaAlertBar({
 
   useEffect(() => {
     try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-once sessionStorage read (SSR-unsafe to init lazily); fires at most once, no cascade
       if (sessionStorage.getItem(DISMISS_KEY)) setDismissed(true);
     } catch {
       // storage unavailable - non-fatal

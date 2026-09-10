@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { CustomIcon, type CustomIconProps } from "./custom-icon";
 
 interface RatingHeartProps extends CustomIconProps {
@@ -8,7 +9,9 @@ export const HeartIcon = ({
   fillPercentage = 1,
   ...props
 }: RatingHeartProps) => {
-  const clipPathId = `heart-clip-${Math.random().toString(36).substr(2, 9)}`;
+  // Stable per mount (not per render): a random id per render would orphan
+  // the clipPath reference on every re-render.
+  const clipPathId = useId();
   return (
     <CustomIcon viewBox="0 0 24 24" fill="none" {...props}>
       {/* Define clip path for partial fill */}

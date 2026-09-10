@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { z } from "zod";
@@ -25,11 +25,14 @@ export const ReviewSectionListFilter = () => {
   const [filterFor, setFilterFor] =
     useState<ReviewsFilterFor>(defaultFilterFor);
 
-  useEffect(() => {
-    if (filterFor !== defaultFilterFor) {
-      setFilterFor(defaultFilterFor);
-    }
-  }, [defaultFilterFor, filterFor]);
+  // Reset from the URL when it changes (back/forward navigation) — render
+  // adjustment, not an effect; converges immediately.
+  const [prevDefaultFilterFor, setPrevDefaultFilterFor] =
+    useState<ReviewsFilterFor>(defaultFilterFor);
+  if (defaultFilterFor !== prevDefaultFilterFor) {
+    setPrevDefaultFilterFor(defaultFilterFor);
+    setFilterFor(defaultFilterFor);
+  }
 
   const ecfg = useEdgeConfigs();
   if (!ecfg.enableReviewFilter) {

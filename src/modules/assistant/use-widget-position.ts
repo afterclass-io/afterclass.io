@@ -79,6 +79,7 @@ export function useWidgetPosition(viewport: Size) {
         width: stored.width,
         height: stored.height,
       });
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-once localStorage hydration (SSR-unsafe to init lazily); converges, no cascade
       setSize(restoredSize);
       // Persisted offsets are the user's intended (unclamped) offsets — clamp only for display.
       // fromOffsets will clamp the derived position on-screen; we never overwrite the stored offsets.

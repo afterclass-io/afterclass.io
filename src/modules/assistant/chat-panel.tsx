@@ -76,10 +76,13 @@ function ChatPanelInner({
   // no composer.tsx change.
   const pageContext = usePageContext();
   const pageContextRef = useRef<PageContext | null>(pageContext);
-  pageContextRef.current = pageContext;
+  useEffect(() => {
+    pageContextRef.current = pageContext;
+  });
 
   const transport = useMemo(
     () =>
+      // eslint-disable-next-line react-hooks/refs -- body resolves per send (not during render); the ref mirror above keeps it fresh
       new DefaultChatTransport({
         api: "/api/chat",
         body: () => {
