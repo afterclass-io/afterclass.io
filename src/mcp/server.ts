@@ -77,9 +77,10 @@ function buildSupabaseProvider(
  * keeps working unmodified. Both are additive per the mcp-use contract:
  * localhost-class hostnames/origins stay allowed, and requests without an
  * `Origin` header always pass (non-browser MCP clients don't send one).
- * - `MCP_ALLOWED_HOSTS`: extra Host values, e.g. the Manufact/Fly hostname
- *   serving the MCP endpoint (the OAuth protected-resource URL must use the
- *   same host + the `/mcp` basePath).
+ * - `MCP_ALLOWED_HOSTS`: extra Host values, e.g. a custom domain in front
+ *   of the Vercel deployment serving the MCP endpoint (the OAuth
+ *   protected-resource URL must use the same host + the `/api/mcp`
+ *   basePath).
  * - `MCP_ALLOWED_ORIGINS`: extra Origin hostnames for browser clients on
  *   non-GET/HEAD requests (the MCP wire is POST). Sandboxed view iframes
  *   send `Origin: null` on asset GETs — unaffected (GETs are never checked).
