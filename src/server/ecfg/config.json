@@ -4,5 +4,17 @@
   "enableReviewEventsTracking": true,
   "enableReviewSort": true,
   "enableReviewFilter": true,
-  "enableReviewReactions": true
+  "enableReviewReactions": true,
+  "chat": {
+    "quotaPerMonth": 20,
+    "nudgeAt": 16,
+    "rateLimitPerMinute": 10,
+    "mcpRateLimitPerMinute": 60,
+    "maxInputTokens": 64000,
+    "maxOutputTokens": 4096,
+    "maxToolRounds": 12,
+    "chatEnabled": true,
+    "widgetEnabled": true,
+    "mcpEnabled": true
+  }
 }

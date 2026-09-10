@@ -51,7 +51,13 @@ export function ProgressLink({
         progress.start();
 
         startTransition(() => {
-          router.push(props.href.toString());
+          // href is a route string at every call site; the UrlObject branch
+          // only satisfies next/link's Href type.
+          const href =
+            typeof props.href === "string"
+              ? props.href
+              : (props.href.pathname ?? "/");
+          router.push(href);
           progress.done();
         });
       }}

@@ -1,0 +1,8 @@
+# Keep the Vercel upload limited to web application files.
+# The MCP server is an embedded Next.js route (src/mcp + views served from
+# /api/mcp via withMcpUse, which runs `mcp-use build` at config-eval time),
+# so views/ MUST be uploaded — excluding it breaks the build. Only
+# generated/preview artifacts stay excluded here.
+storybook-static/
+cypress/
+.mcp-use/

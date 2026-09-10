@@ -1,0 +1,78 @@
+import { z } from "zod";
+
+import { env } from "@/env";
+import { buildCalendarLinks } from "@/modules/timetable/functions/calendar-links";
+
+import {
+  confirmField,
+  errText,
+  errorMessage,
+  okText,
+  type McpTool,
+} from "../../types";
+
+const getTimetableCalendarLinkSchema = z.object({
+  timetableId: z.string().describe("Timetable id from my-timetables"),
+  enableLinkSharing: z
+    .boolean()
+    .default(false)
+    .describe(
+      "Set true ONLY after the user explicitly agrees to make this timetable link-shareable (UNLISTED). Required when the timetable is still private.",
+    ),
+  ...confirmField,
+});
+
+export const getTimetableCalendarLinkTool: McpTool<
+  typeof getTimetableCalendarLinkSchema
+> = {
+  name: "get-timetable-calendar-link",
+  description:
+    "Get calendar subscribe links (Google / Apple / Outlook + ICS feed) for one of the user's timetables, so their calendar stays in sync automatically. If the timetable is private, the user must first agree to link-sharing (enableLinkSharing=true). Links render in a View; never ask the user for tokens.",
+  inputSchema: getTimetableCalendarLinkSchema,
+  readOnly: false,
+  run: async ({ caller }, { timetableId, enableLinkSharing, confirm }) => {
+    try {
+      let madeLinkShareable = false;
+      try {
+        await caller.timetable.getOrCreateIcalToken({ timetableId });
+      } catch (e) {
+        // PRIVATE timetables refuse to mint a token — flip to UNLISTED only
+        // when the user explicitly opted in AND confirmed the visibility
+        // escalation. Narrow to the private-visibility error so random
+        // failures (network etc.) don't over-eagerly escalate visibility.
+        if (!enableLinkSharing) throw e;
+        if (confirm !== true) {
+          return errText(
+            "Set your timetable to link-sharing before creating a calendar link. " +
+              "Making it link-shareable changes its visibility to UNLISTED — " +
+              "call again with enableLinkSharing:true AND confirm:true to confirm.",
+          );
+        }
+        if (!errorMessage(e).includes("link-sharing")) throw e;
+        await caller.sharing.setVisibility({
+          entity: "timetable",
+          id: timetableId,
+          visibility: "UNLISTED",
+        });
+        madeLinkShareable = true;
+      }
+      const { icalToken } = await caller.timetable.getOrCreateIcalToken({
+        timetableId,
+      });
+      const links = buildCalendarLinks(env.NEXT_PUBLIC_SITE_URL, icalToken);
+      return {
+        // Model sees NO token-bearing URLs — they go to the view only.
+        ...okText(
+          "Calendar subscribe links are shown in the View. The feed stays in sync automatically when the timetable changes." +
+            (madeLinkShareable
+              ? " The timetable is now link-shareable (UNLISTED)."
+              : "") +
+            " If the View is not visible, the user can also export from the Timetable page on the site.",
+        ),
+        viewProps: { timetableId, madeLinkShareable, ...links },
+      };
+    } catch (e) {
+      return errText(errorMessage(e));
+    }
+  },
+};

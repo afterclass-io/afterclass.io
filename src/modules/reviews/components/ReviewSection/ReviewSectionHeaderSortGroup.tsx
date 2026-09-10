@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 
@@ -34,11 +34,14 @@ export const ReviewSectionHeaderSortGroup = () => {
 
   const [sortBy, setSortBy] = useState<ReviewsSortBy>(defaultSortBy);
 
-  useEffect(() => {
-    if (sortBy !== defaultSortBy) {
-      setSortBy(defaultSortBy);
-    }
-  }, [defaultSortBy, sortBy]);
+  // Reset from the URL when it changes (back/forward navigation) — render
+  // adjustment, not an effect; converges immediately.
+  const [prevDefaultSortBy, setPrevDefaultSortBy] =
+    useState<ReviewsSortBy>(defaultSortBy);
+  if (defaultSortBy !== prevDefaultSortBy) {
+    setPrevDefaultSortBy(defaultSortBy);
+    setSortBy(defaultSortBy);
+  }
 
   const ecfg = useEdgeConfigs();
 

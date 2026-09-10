@@ -72,8 +72,6 @@ function sampleItem({
       publishedAt,
       viewCount,
       shareCount: 0,
-      isActive: true,
-      userId: `user-${id}`,
       user: { username },
       _count: { entries: entryCount, votes: voteCount },
     },

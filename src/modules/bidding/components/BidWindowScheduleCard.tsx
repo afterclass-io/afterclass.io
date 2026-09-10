@@ -57,7 +57,8 @@ function formatSgt(date: Date, formatStr: string): string {
       timeZone: "Asia/Singapore",
     }).formatToParts(date);
 
-    const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+    const get = (type: string) =>
+      parts.find((p) => p.type === type)?.value ?? "";
     const month = get("month");
     const day = get("day");
     const year = get("year");
@@ -69,9 +70,8 @@ function formatSgt(date: Date, formatStr: string): string {
     // Convert 12-hour to 1-12 without leading zero
     if (hour === 0) hour = 12;
 
-    const timeStr = minute === "00"
-      ? `${hour}${dayPeriod}`
-      : `${hour}:${minute}${dayPeriod}`;
+    const timeStr =
+      minute === "00" ? `${hour}${dayPeriod}` : `${hour}:${minute}${dayPeriod}`;
 
     return `${day} ${month} ${year}, ${weekday} ${timeStr}`;
   }
@@ -130,7 +130,7 @@ const TimelineWithIcon = ({
 }) => {
   if (items.length === 0) {
     return (
-      <div className="text-muted-foreground text-sm py-4 text-center">
+      <div className="text-muted-foreground py-4 text-center text-sm">
         No upcoming bidding windows scheduled.
       </div>
     );
@@ -205,6 +205,9 @@ const TimelineWithIcon = ({
 
 export const BidWindowScheduleCard = async () => {
   await connection();
+  // "Now" in Singapore time — read once per render (after connection(), so
+  // this dynamic render is never cached across windows).
+  // eslint-disable-next-line react-hooks/purity -- server component: time read is the point, not render impurity
   const now = new TZDate(Date.now(), "Asia/Singapore");
 
   const currentWindow = await getCurrentWindowOrNull(() =>
@@ -214,7 +217,7 @@ export const BidWindowScheduleCard = async () => {
   if (!currentWindow) {
     return (
       <Card className="w-full max-w-[321px]">
-        <CardContent className="py-4 text-muted-foreground text-sm text-center">
+        <CardContent className="text-muted-foreground py-4 text-center text-sm">
           No bidding window schedule available.
         </CardContent>
       </Card>
@@ -229,7 +232,9 @@ export const BidWindowScheduleCard = async () => {
   return (
     <Card className="w-full max-w-[321px]">
       <CardHeader className="gap-2">
-        <CardTitle>BOSS {displayYear} Term {term}</CardTitle>
+        <CardTitle>
+          BOSS {displayYear} Term {term}
+        </CardTitle>
         <CardDescription>
           Round {titleRound} Window {currentWindow.window}
         </CardDescription>

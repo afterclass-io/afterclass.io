@@ -39,9 +39,7 @@ const chartConfig = {
 
 import { compareRounds } from "@/modules/bidding/utils/round-order";
 import { parseBidWindowKey } from "@/modules/bidding/utils/bid-window-key";
-import {
-  computeAcadTermGroups,
-} from "@/modules/bidding/utils/acad-term-groups";
+import { computeAcadTermGroups } from "@/modules/bidding/utils/acad-term-groups";
 
 export function sortChartData(
   data: (
@@ -69,7 +67,9 @@ export function sortChartData(
         return aKey.acadTermId.localeCompare(bKey.acadTermId);
       const roundCmp = compareRounds(aKey.round, bKey.round);
       if (roundCmp !== 0) return roundCmp;
-      return (parseInt(aKey.window, 10) || 0) - (parseInt(bKey.window, 10) || 0);
+      return (
+        (parseInt(aKey.window, 10) || 0) - (parseInt(bKey.window, 10) || 0)
+      );
     });
 }
 
@@ -127,9 +127,14 @@ export const BidChart = ({
   const groupMidTicks = useMemo(() => {
     const map = new Map<string, string>();
     for (const group of ayGroups) {
-      const firstIdx = sorted.findIndex((d) => d.bidWindow === group.firstBidWindow);
-      const lastIdx = sorted.findIndex((d) => d.bidWindow === group.lastBidWindow);
-      const midIdx = firstIdx + Math.max(0, Math.floor((lastIdx - firstIdx) / 2));
+      const firstIdx = sorted.findIndex(
+        (d) => d.bidWindow === group.firstBidWindow,
+      );
+      const lastIdx = sorted.findIndex(
+        (d) => d.bidWindow === group.lastBidWindow,
+      );
+      const midIdx =
+        firstIdx + Math.max(0, Math.floor((lastIdx - firstIdx) / 2));
       const midWindow = sorted[midIdx]?.bidWindow;
       if (midWindow) map.set(midWindow, group.shortLabel);
     }
@@ -138,10 +143,7 @@ export const BidChart = ({
 
   return (
     <ChartContainer ref={containerRef} config={chartConfig}>
-      <LineChart
-        data={sorted}
-        margin={CHART_MARGIN}
-      >
+      <LineChart data={sorted} margin={CHART_MARGIN}>
         <CartesianGrid
           strokeDasharray="3 3"
           vertical={false}
@@ -240,9 +242,19 @@ export const BidChart = ({
           dot={
             manyPoints
               ? false
-              : { r: 4, fill: "white", stroke: "var(--color-median)", strokeWidth: 2 }
+              : {
+                  r: 4,
+                  fill: "white",
+                  stroke: "var(--color-median)",
+                  strokeWidth: 2,
+                }
           }
-          activeDot={{ r: 6, fill: "var(--color-median)", stroke: "white", strokeWidth: 2 }}
+          activeDot={{
+            r: 6,
+            fill: "var(--color-median)",
+            stroke: "white",
+            strokeWidth: 2,
+          }}
         />
 
         {/* Min line — amber dashed */}
@@ -255,15 +267,26 @@ export const BidChart = ({
           dot={
             manyPoints
               ? false
-              : { r: 3, fill: "white", stroke: "var(--color-min)", strokeWidth: 2 }
+              : {
+                  r: 3,
+                  fill: "white",
+                  stroke: "var(--color-min)",
+                  strokeWidth: 2,
+                }
           }
-          activeDot={{ r: 5, fill: "var(--color-min)", stroke: "white", strokeWidth: 2 }}
+          activeDot={{
+            r: 5,
+            fill: "var(--color-min)",
+            stroke: "white",
+            strokeWidth: 2,
+          }}
         />
 
         <ChartTooltip
           content={
             <ChartTooltipContent
               labelFormatter={(value) => {
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string -- recharts passes the axis tick (string key); String() mirrors the labelFormatter in chart.tsx usage
                 const [acadTerm, round, window] = String(value).split("/");
                 const { term, displayYear } = inferAcadTerm(acadTerm!);
                 return (
@@ -279,8 +302,7 @@ export const BidChart = ({
               }}
               formatter={(value, name) => {
                 const item = sorted.find(
-                  (d) =>
-                    (name === "median" ? d.median : d.min) === value,
+                  (d) => (name === "median" ? d.median : d.min) === value,
                 );
                 return (
                   <div className="flex w-full items-center justify-between gap-8">
@@ -299,7 +321,7 @@ export const BidChart = ({
                       </span>
                     </div>
                     <div className="flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                      <span className="text-muted-foreground font-normal text-xs">
+                      <span className="text-muted-foreground text-xs font-normal">
                         e$
                       </span>
                       {value as number}

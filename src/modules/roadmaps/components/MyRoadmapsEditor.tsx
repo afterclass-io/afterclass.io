@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useAtom } from "jotai";
 import { toast } from "sonner";
 import {
@@ -238,25 +238,23 @@ export function MyRoadmapsEditor() {
     return [...termIdByAy.entries()].map(([ay, termId]) => ({ ay, termId }));
   }, [matricTermOptions, selectedRoadmap?.matricTermId]);
 
+  const selectedMatricTermId = selectedRoadmap?.matricTermId;
   const selectedMatricAy = useMemo(() => {
-    const term = matricTermOptions.find(
-      (t) => t.id === selectedRoadmap?.matricTermId,
-    );
+    const term = matricTermOptions.find((t) => t.id === selectedMatricTermId);
     if (term) return acadYearLabel(term.label);
     // Fallback: the persisted term isn't in the (24h-cached) options — derive
     // the AY label from the raw id so the Select never blanks out a stored
     // value.
-    return selectedRoadmap?.matricTermId
-      ? (acadYearLabelFromTermId(selectedRoadmap.matricTermId) ?? undefined)
+    return selectedMatricTermId
+      ? (acadYearLabelFromTermId(selectedMatricTermId) ?? undefined)
       : undefined;
-  }, [matricTermOptions, selectedRoadmap?.matricTermId]);
+  }, [matricTermOptions, selectedMatricTermId]);
 
-  // ---- Cold-load: auto-select first roadmap ----
-  useEffect(() => {
-    if (roadmaps.length > 0 && !selectedId) {
-      setSelectedId(roadmaps[0]!.id);
-    }
-  }, [roadmaps, selectedId]);
+  // ---- Cold-load: auto-select first roadmap (render adjustment, not an
+  // effect — converges once selectedId is set) ----
+  if (roadmaps.length > 0 && !selectedId) {
+    setSelectedId(roadmaps[0]!.id);
+  }
 
   // ---- Entries query (only when a roadmap is selected) ----
   const {
@@ -404,9 +402,7 @@ export function MyRoadmapsEditor() {
       getSnapshot: () => utils.roadmaps.listMine.getData(),
       applyOptimistic: ({ roadmapId, facultyId }) =>
         utils.roadmaps.listMine.setData(undefined, (old) =>
-          old?.map((r) =>
-            r.id === roadmapId ? { ...r, facultyId } : r,
-          ),
+          old?.map((r) => (r.id === roadmapId ? { ...r, facultyId } : r)),
         ),
       restoreSnapshot: (prev) =>
         utils.roadmaps.listMine.setData(undefined, prev),

@@ -1,6 +1,9 @@
 import type { PrismaClient } from "@/generated/prisma/client";
 import { requirePublicRoadmap } from "@/server/api/roadmaps/requirePublicRoadmap";
-import { checkAndIncrement, clientKey } from "@/server/api/engagement-limit";
+import {
+  checkEngagementBudget,
+  clientKey,
+} from "@/server/api/engagement-limit";
 
 type EngagementField = "viewCount" | "shareCount";
 
@@ -16,7 +19,7 @@ export async function incrementEngagement(
   await requirePublicRoadmap(db, input.roadmapId);
 
   const key = `${input.roadmapId}:${input.field}:${clientKey(headers)}`;
-  if (!checkAndIncrement(key, 5, 60_000)) {
+  if (!checkEngagementBudget(key, 5, 60_000)) {
     return false;
   }
 

@@ -79,9 +79,8 @@ export const Default: Story = {
 
 export const AsCommandDialog: Story = {
   render: () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [open, setOpen] = useState(false);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+
     useEffect(() => {
       const down = (e: KeyboardEvent) => {
         if (e.key === "j" && (e.metaKey || e.ctrlKey)) {

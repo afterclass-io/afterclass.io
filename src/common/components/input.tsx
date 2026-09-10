@@ -25,8 +25,9 @@ const InputContext = React.createContext<InputContextProps>({
 
 const useInputContext = () => React.useContext(InputContext);
 
-export interface InputProps
-  extends React.ComponentPropsWithoutRef<typeof Primitive.div> {
+export interface InputProps extends React.ComponentPropsWithoutRef<
+  typeof Primitive.div
+> {
   autoFocus?: boolean;
   disabled?: boolean;
 }
@@ -50,6 +51,7 @@ const InputRoot = React.forwardRef<
     >
       <Primitive.div
         ref={ref}
+        // eslint-disable-next-line react-hooks/refs -- controlRef is read in the click handler (event time), never during render
         onClick={composeEventHandlers(onClick, (event) => {
           // Based on MUI's <Input /> implementation.
           // https://github.com/mui/material-ui/blob/master/packages/mui-material/src/Input/Input.js#L458~L460
@@ -102,8 +104,7 @@ const InputControl = React.forwardRef<
 });
 InputControl.displayName = "InputControl";
 
-export interface InputAdornmentProps
-  extends React.ComponentPropsWithoutRef<"div"> {
+export interface InputAdornmentProps extends React.ComponentPropsWithoutRef<"div"> {
   asChild?: boolean;
   disablePointerEvents?: boolean;
 }

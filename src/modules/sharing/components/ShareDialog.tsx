@@ -71,10 +71,7 @@ const ALL_VISIBILITY_OPTIONS: VisibilityOption[] = [
 
 // Timetables have no public gallery — keep the component reusable but hide
 // the PUBLIC option when entity === "timetable" (server also rejects it).
-const VISIBILITY_OPTIONS_BY_ENTITY: Record<
-  ShareEntity,
-  VisibilityOption[]
-> = {
+const VISIBILITY_OPTIONS_BY_ENTITY: Record<ShareEntity, VisibilityOption[]> = {
   timetable: ALL_VISIBILITY_OPTIONS.filter((o) => o.value !== "PUBLIC"),
   roadmap: ALL_VISIBILITY_OPTIONS,
 };
@@ -102,12 +99,14 @@ export function ShareDialog({
   // in sync if the parent refetches while closed.
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- open-transition sync (converges: same values bail out), preserves while-open refetch resync
       setDraft(visibility);
       setToken(shareToken);
     }
   }, [open, visibility, shareToken]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-once window read (SSR-unsafe to init lazily); fires once, no cascade
     setOrigin(window.location.origin);
   }, []);
 

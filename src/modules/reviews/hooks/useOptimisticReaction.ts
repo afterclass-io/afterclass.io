@@ -19,32 +19,42 @@ export function useOptimisticReaction() {
     ...createOptimisticMutationCallbacks<
       RouterInputs["reviewReactions"]["upsert"],
       unknown
-    >({
-      cancel: async () => {
-        if (lastInputRef.current) {
-          await utils.reviewReactions.getByReviewId.cancel(lastInputRef.current);
-        }
+    >(
+      // eslint-disable-next-line react-hooks/refs -- callbacks run in the mutation lifecycle (cancel/snapshot/restore), never during render; the ref carries the debounced input
+      {
+        cancel: async () => {
+          if (lastInputRef.current) {
+            await utils.reviewReactions.getByReviewId.cancel(
+              lastInputRef.current,
+            );
+          }
+        },
+        getSnapshot: () =>
+          lastInputRef.current
+            ? utils.reviewReactions.getByReviewId.getData(lastInputRef.current)
+            : undefined,
+        // Pattern A: the caller (mutateWithDebounce) already applied the optimistic
+        // update for instant feedback — re-applying here would double-increment.
+        applyOptimistic: () => {
+          /* Pattern A: caller (mutateWithDebounce) already applied */
+        },
+        restoreSnapshot: (prev) => {
+          if (lastInputRef.current) {
+            utils.reviewReactions.getByReviewId.setData(
+              lastInputRef.current,
+              prev as never,
+            );
+          }
+        },
+        invalidate: async () => {
+          if (lastInputRef.current) {
+            await utils.reviewReactions.getByReviewId.invalidate(
+              lastInputRef.current,
+            );
+          }
+        },
       },
-      getSnapshot: () =>
-        lastInputRef.current
-          ? utils.reviewReactions.getByReviewId.getData(lastInputRef.current)
-          : undefined,
-      // Pattern A: the caller (mutateWithDebounce) already applied the optimistic
-      // update for instant feedback — re-applying here would double-increment.
-      applyOptimistic: () => {
-        /* Pattern A: caller (mutateWithDebounce) already applied */
-      },
-      restoreSnapshot: (prev) => {
-        if (lastInputRef.current) {
-          utils.reviewReactions.getByReviewId.setData(lastInputRef.current, prev as never);
-        }
-      },
-      invalidate: async () => {
-        if (lastInputRef.current) {
-          await utils.reviewReactions.getByReviewId.invalidate(lastInputRef.current);
-        }
-      },
-    }),
+    ),
     onSuccess: (_data, { reviewId, reaction }) => {
       if (reaction && ecfg.enableReviewEventsTracking) {
         track({

@@ -5,7 +5,11 @@ import { Pencil } from "lucide-react";
 import { pushHistoryAtom } from "@/modules/timetable/atoms/history";
 import { Button } from "@/common/components/button";
 import { Textarea } from "@/common/components/textarea";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/common/components/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/common/components/tooltip";
 
 interface InlineNotesEditorProps {
   initialNotes: string | null;
@@ -26,9 +30,13 @@ export function InlineNotesEditor({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const pushHistory = useSetAtom(pushHistoryAtom);
 
-  useEffect(() => {
+  // Adopt incoming notes when the prop changes (e.g. undo) — render
+  // adjustment, not an effect; converges immediately.
+  const [prevInitialNotes, setPrevInitialNotes] = useState(initialNotes);
+  if (initialNotes !== prevInitialNotes) {
+    setPrevInitialNotes(initialNotes);
     setValue(initialNotes ?? "");
-  }, [initialNotes]);
+  }
 
   useEffect(() => {
     if (editing) textareaRef.current?.focus();
@@ -59,9 +67,11 @@ export function InlineNotesEditor({
     return (
       <div className="flex items-start gap-2">
         {initialNotes ? (
-          <p className="text-sm whitespace-pre-line flex-1">{initialNotes}</p>
+          <p className="flex-1 text-sm whitespace-pre-line">{initialNotes}</p>
         ) : (
-          <p className="text-sm text-muted-foreground italic flex-1">No notes</p>
+          <p className="text-muted-foreground flex-1 text-sm italic">
+            No notes
+          </p>
         )}
         {!disabled && (
           <Tooltip>
@@ -91,14 +101,14 @@ export function InlineNotesEditor({
         onChange={(e) => setValue(e.target.value)}
         maxLength={500}
         rows={3}
-        className="text-sm resize-none"
+        className="resize-none text-sm"
         placeholder="Add a note…"
         onBlur={handleSave}
         onKeyDown={(e) => {
           if (e.key === "Escape") handleCancel();
         }}
       />
-      <p className="text-xs text-muted-foreground text-right">
+      <p className="text-muted-foreground text-right text-xs">
         {value.length}/500
       </p>
     </div>

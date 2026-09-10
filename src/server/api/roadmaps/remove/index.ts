@@ -10,7 +10,9 @@ export const remove = protectedProcedure
       userId: true,
     });
 
+    // TOCTOU hardening: requireOwnedRoadmap checked ownership above; the
+    // delete itself is also scoped to the caller's row.
     return ctx.db.userRoadmap.delete({
-      where: { id: input.roadmapId },
+      where: { id: input.roadmapId, userId: ctx.session.user.id },
     });
   });

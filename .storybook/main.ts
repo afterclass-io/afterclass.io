@@ -1,8 +1,15 @@
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
+import path from "path";
 import type { StorybookConfig } from "@storybook/nextjs";
 
-const require = createRequire(import.meta.url);
-const { loadEnvConfig } = require("@next/env");
+const require = createRequire(import.meta.url) as NodeRequire;
+// main.ts loads as native ESM (see the file:// URL in build errors), where
+// __dirname doesn't exist — derive it for the webpackFinal aliases below.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const { loadEnvConfig } = require("@next/env") as {
+  loadEnvConfig: (dir: string) => void;
+};
 
 loadEnvConfig(process.cwd());
 
@@ -16,7 +23,10 @@ const defaultEnv: Record<string, string> = {
 };
 
 const config: StorybookConfig = {
-  stories: ["../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
+  stories: [
+    "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+    "../views/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+  ],
   addons: ["@storybook/addon-themes"],
   framework: {
     name: "@storybook/nextjs",
@@ -54,6 +64,17 @@ const config: StorybookConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       obscenity$: require.resolve("obscenity"),
+      // Storybook-only: point @ai-sdk/react at the mock that swaps useChat for
+      // one driven by `parameters.chatState`. Vitest does not use webpack, so
+      // the unit suite is unaffected.
+      "@ai-sdk/react": path.resolve(__dirname, "./mocks/ai-sdk-react.ts"),
+      // Storybook-only: point mcp-use/react at the mock that swaps the v2 View
+      // hooks (useToolContext/useViewTheme/useHostContext/useDynamicTool) for
+      // context-driven implementations seeded by the `withMcpView` decorator.
+      // The real hooks require the module-private bootstrapView runtime that
+      // only exists inside an MCP Apps host. Vitest mocks the module with
+      // vi.mock instead, so the unit suite is unaffected.
+      "mcp-use/react": path.resolve(__dirname, "./mocks/mcp-use-react.ts"),
     };
     return config;
   },

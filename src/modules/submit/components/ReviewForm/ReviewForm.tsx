@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useEffect, useState, type ReactNode } from "react";
+import { startTransition, useEffect, type ReactNode } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useSession } from "next-auth/react";
@@ -43,13 +43,11 @@ export const ReviewForm = ({ children }: { children: ReactNode }) => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const progress = useProgress();
-  const [isLoading, setIsLoading] = useState(status === "loading");
 
   const reviewsMutation = api.reviews.create.useMutation();
 
-  useEffect(() => {
-    setIsLoading(status === "loading" || reviewsMutation.isPending);
-  }, [status, reviewsMutation.isPending]);
+  // Derived — no state/effect needed (was a sync effect).
+  const isLoading = status === "loading" || reviewsMutation.isPending;
 
   useEffect(() => {
     if (reviewsMutation.isSuccess) {

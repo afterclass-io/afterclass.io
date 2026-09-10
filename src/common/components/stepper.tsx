@@ -21,7 +21,10 @@ const defineStepper = <const Steps extends readonly Stepperize.Step[]>(
 ): Stepper.DefineProps<Steps> => {
   const {
     Provider: ScopedProvider,
-    Stepper: _stepperPrimitives,
+    // Stepper primitives are re-implemented below (StepperContainer/Provider/
+    // Navigation/Step) — only useStepper is reused from the definition.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Stepper: _StepperPrimitives,
     useStepper,
     ...rest
   } = Stepperize.defineStepper(steps);

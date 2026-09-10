@@ -64,22 +64,23 @@ export function useTransitionMount(): TransitionMountReturn {
   const [value, setValue] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout>(undefined);
 
+  // State-machine transitions applied during render (no effects): each
+  // guard converges immediately, so there is no render loop.
+  if (state === "initial" && value !== 0) setValue(0);
+  if (state === "completing" && value !== 100) setValue(100);
+  if (value === 100 && state !== "complete") setState("complete");
+
   useEffect(() => {
-    if (state === "initial") {
-      setValue(0);
-    } else if (state === "completing") {
-      setValue(100);
-    } else if (state === "in-progress") {
-      // Simulate progress
-      timeoutRef.current = setInterval(() => {
-        setValue((prev) => {
-          if (prev >= 99) return prev;
-          if (prev === 0) return prev + 15;
-          if (prev < 50) return prev + rand(1, 10);
-          return prev + rand(1, 5);
-        });
-      }, 750);
-    }
+    if (state !== "in-progress") return;
+    // Simulate progress
+    timeoutRef.current = setInterval(() => {
+      setValue((prev) => {
+        if (prev >= 99) return prev;
+        if (prev === 0) return prev + 15;
+        if (prev < 50) return prev + rand(1, 10);
+        return prev + rand(1, 5);
+      });
+    }, 750);
 
     return () => {
       if (timeoutRef.current) {
@@ -87,12 +88,6 @@ export function useTransitionMount(): TransitionMountReturn {
       }
     };
   }, [state]);
-
-  useEffect(() => {
-    if (value === 100) {
-      setState("complete");
-    }
-  }, [value]);
 
   function reset() {
     setState("initial");

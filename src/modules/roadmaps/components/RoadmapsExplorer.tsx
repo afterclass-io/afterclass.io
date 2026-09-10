@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { LogIn } from "lucide-react";
@@ -40,10 +40,15 @@ export function RoadmapsExplorer({
   const searchParams = useSearchParams();
   const [view, setView] = useState<RoadmapsView>(initialView);
 
-  // Keep the tab in sync with the URL so browser back/forward works.
-  useEffect(() => {
-    setView(searchParams.get("view") === "mine" ? "mine" : "public");
-  }, [searchParams]);
+  // Keep the tab in sync with the URL so browser back/forward works —
+  // render adjustment, not an effect; converges immediately.
+  const viewParam: RoadmapsView =
+    searchParams.get("view") === "mine" ? "mine" : "public";
+  const [prevViewParam, setPrevViewParam] = useState<RoadmapsView>(viewParam);
+  if (viewParam !== prevViewParam) {
+    setPrevViewParam(viewParam);
+    setView(viewParam);
+  }
 
   const handleViewChange = (v: string) => {
     if (!v) return;
@@ -60,7 +65,9 @@ export function RoadmapsExplorer({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">Roadmaps</PageTitle>
+          <PageTitle className="text-left text-2xl font-bold tracking-tight md:text-2xl!">
+            Roadmaps
+          </PageTitle>
           <p className="text-muted-foreground text-sm">
             Plan your degree and explore roadmaps shared by the SMU community.
           </p>

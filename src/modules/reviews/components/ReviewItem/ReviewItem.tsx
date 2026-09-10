@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { useSession } from "next-auth/react";
 
 import { LockedOverlay } from "@/common/components/locked-overlay";
@@ -29,14 +28,11 @@ export const ReviewItem = ({
 }: ReviewItemProps) => {
   const session = useSession();
 
-  const ReviewHeader = useCallback(
-    () => (
-      <div className="flex flex-col content-center gap-3 self-stretch overflow-hidden md:flex-row-reverse md:justify-between">
-        <ReviewerGroup review={review} />
-        <RevieweeGroup review={review} variant={variant} />
-      </div>
-    ),
-    [review, variant],
+  const reviewHeader = (
+    <div className="flex flex-col content-center gap-3 self-stretch overflow-hidden md:flex-row-reverse md:justify-between">
+      <ReviewerGroup review={review} />
+      <RevieweeGroup review={review} variant={variant} />
+    </div>
   );
 
   return !(session.status === "authenticated") || isLocked ? (
@@ -44,7 +40,7 @@ export const ReviewItem = ({
       className="focus-ring flex h-fit max-w-prose cursor-pointer flex-col items-start gap-2 rounded-md p-4 text-left md:gap-4"
       data-test="review"
     >
-      <ReviewHeader />
+      {reviewHeader}
       <div className="text-muted-foreground relative line-clamp-5 flex h-16 w-full self-stretch overflow-hidden rounded-sm border wrap-anywhere md:line-clamp-3 md:text-sm">
         <LockedOverlay ctaType="review" />
         <FullWidthEnforcer />
@@ -56,7 +52,7 @@ export const ReviewItem = ({
         className="focus-ring hover:bg-accent flex h-fit max-w-prose cursor-pointer flex-col items-start gap-2 rounded-md p-4 text-left md:gap-4"
         data-test="review"
       >
-        <ReviewHeader />
+        {reviewHeader}
         <ReviewBody review={review} />
         <ReviewFooter review={review} />
         {!isMocked && <ReviewItemViewEventTracker reviewId={review.id} />}

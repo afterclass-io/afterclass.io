@@ -111,17 +111,24 @@ export function RoadmapGrid({
   const dirtyRef = useRef(dirty);
   const localEntriesRef = useRef(localEntries);
   const onSaveRef = useRef(onSave);
-  dirtyRef.current = dirty;
-  localEntriesRef.current = localEntries;
-  onSaveRef.current = onSave;
+  useEffect(() => {
+    dirtyRef.current = dirty;
+    localEntriesRef.current = localEntries;
+    onSaveRef.current = onSave;
+  });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- adopt incoming entries when clean (converges: deps only re-fire on change)
     if (!dirty && !saving) setLocalEntries(entries);
   }, [entries, dirty, saving]);
 
-  useEffect(() => {
+  // Reset appended years when switching roadmaps — render adjustment, not
+  // an effect; converges immediately.
+  const [prevRoadmapId, setPrevRoadmapId] = useState(roadmapId);
+  if (roadmapId !== prevRoadmapId) {
+    setPrevRoadmapId(roadmapId);
     setAddedYears(0);
-  }, [roadmapId]);
+  }
 
   useEffect(() => {
     if (!dirty || !onSave || saving) return;
@@ -154,7 +161,6 @@ export function RoadmapGrid({
         );
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ---- Sensors ----
@@ -244,8 +250,7 @@ export function RoadmapGrid({
 
         // Parse the droppable target
         const targetData = over.data.current as
-          | { yearNumber: number; term: string; type: string }
-          | undefined;
+          { yearNumber: number; term: string; type: string } | undefined;
 
         let yearNumber: number;
         let term: string;
@@ -283,8 +288,7 @@ export function RoadmapGrid({
       if (entryIdx === undefined) return;
 
       const targetData = over.data.current as
-        | { yearNumber: number; term: string; type: string }
-        | undefined;
+        { yearNumber: number; term: string; type: string } | undefined;
 
       let yearNumber: number;
       let term: string;
@@ -359,7 +363,10 @@ export function RoadmapGrid({
 
   // ---- Render ----
   return (
-    <div className={cn("space-y-4 h-full", className)} aria-busy={saving || undefined}>
+    <div
+      className={cn("h-full space-y-4", className)}
+      aria-busy={saving || undefined}
+    >
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -394,36 +401,36 @@ export function RoadmapGrid({
                   <div key={yearNumber}>
                     <RoadmapYearRow
                       yearNumber={yearNumber}
-                        entries={localEntries}
-                        sortableIds={sortableIdMap}
-                        readOnly={readOnly}
-                        onCourseClick={handleCourseClick}
-                        onRemove={readOnly ? undefined : handleRemoveEntry}
-                      />
+                      entries={localEntries}
+                      sortableIds={sortableIdMap}
+                      readOnly={readOnly}
+                      onCourseClick={handleCourseClick}
+                      onRemove={readOnly ? undefined : handleRemoveEntry}
+                    />
 
-                      {/* Conflict badges per term */}
+                    {/* Conflict badges per term */}
+                    <div className={cn("grid gap-2 px-1", YEAR_LABEL_COL)}>
+                      <div />
+                      {TERMS.map((term) => {
+                        const key = `${yearNumber}-${term}`;
+                        const termConflicts = conflictsByTerm.get(key) ?? [];
+                        return (
+                          <div key={term}>
+                            <RoadmapConflictBadge conflicts={termConflicts} />
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Term footer (e.g. timetable links) */}
+                    {termFooter && (
                       <div className={cn("grid gap-2 px-1", YEAR_LABEL_COL)}>
                         <div />
-                        {TERMS.map((term) => {
-                          const key = `${yearNumber}-${term}`;
-                          const termConflicts = conflictsByTerm.get(key) ?? [];
-                          return (
-                            <div key={term}>
-                              <RoadmapConflictBadge conflicts={termConflicts} />
-                            </div>
-                          );
-                        })}
+                        {TERMS.map((term) => (
+                          <div key={term}>{termFooter(yearNumber, term)}</div>
+                        ))}
                       </div>
-
-                      {/* Term footer (e.g. timetable links) */}
-                      {termFooter && (
-                        <div className={cn("grid gap-2 px-1", YEAR_LABEL_COL)}>
-                          <div />
-                          {TERMS.map((term) => (
-                            <div key={term}>{termFooter(yearNumber, term)}</div>
-                          ))}
-                        </div>
-                      )}
+                    )}
                   </div>
                 ))}
               </div>

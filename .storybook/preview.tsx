@@ -9,6 +9,7 @@ import ProgressProvider from "../src/common/providers/ProgressProvider";
 import { Toaster } from "../src/common/components/sonner";
 import { SessionContext } from "next-auth/react";
 import { mockAuthStates } from "./auth";
+import { withAssistant } from "./assistant";
 
 const preview: Preview = {
   parameters: {
@@ -29,20 +30,19 @@ const preview: Preview = {
     },
   },
   decorators: [
-    (Story, { parameters }) => {
+    (Story, { parameters }: { parameters?: Record<string, unknown> }) => {
       let mockSession = mockAuthStates.user.session;
       if (parameters?.mockSession) {
-        mockSession = parameters.mockSession;
+        mockSession = parameters.mockSession as typeof mockSession;
       }
 
       return (
         <AuthProvider>
-          {/* @ts-ignore */}
+          {/* @ts-expect-error -- next-auth SessionContext value accepts a wider mock session in stories */}
           <SessionContext.Provider value={mockSession}>
             <TRPCReactProvider>
               <TooltipProvider>
                 <ProgressProvider>
-                  {/* @ts-ignore */}
                   <style global jsx>{`
                     :root {
                       --font-inter: ${inter.style.fontFamily};
@@ -75,6 +75,7 @@ const preview: Preview = {
       },
       defaultTheme: "light",
     }),
+    withAssistant,
   ],
 };
 

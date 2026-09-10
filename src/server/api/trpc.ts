@@ -12,7 +12,6 @@ import superjson from "superjson";
 import { z, ZodError } from "zod";
 import * as Sentry from "@sentry/nextjs";
 
-import { auth } from "@/server/auth";
 import { db } from "@/server/db";
 
 /**
@@ -28,6 +27,9 @@ import { db } from "@/server/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+  // Lazy-loaded so the MCP process (which uses its own context factory)
+  // never pulls next-auth / next/headers at module scope.
+  const { auth } = await import("@/server/auth");
   const session = await auth();
 
   return {
@@ -58,11 +60,19 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
   },
 });
 
-const sentryMiddleware = t.middleware(
-  Sentry.trpcMiddleware({
-    attachRpcInput: true,
-  }),
-);
+// `@sentry/nextjs` ESM exports may not resolve under mcp-use's Vite SSR bundler.
+// When trpcMiddleware is unavailable we degrade to a no-op so the MCP process
+// can still boot; Sentry instrumentation is not needed in the MCP path.
+const sentryMiddleware: ReturnType<typeof t.middleware> = (() => {
+  if (
+    typeof (Sentry as Record<string, unknown>).trpcMiddleware === "function"
+  ) {
+    // attachRpcInput:false — procedure inputs may carry PII (e.g. bid notes);
+    // they must never be attached to Sentry error events.
+    return t.middleware(Sentry.trpcMiddleware({ attachRpcInput: false }));
+  }
+  return t.middleware(async ({ next }) => next());
+})();
 
 /**
  * Create a server-side caller.
@@ -94,6 +104,7 @@ export const createTRPCRouter = t.router;
 const timingMiddleware = t.middleware(async ({ next, path }) => {
   const start = Date.now();
 
+  // Allowlisted raw reads (dev-only logging flags, not config).
   if (process.env.DEBUG_TRPC === "1" && t._config.isDev) {
     // artificial delay in dev
     const waitMs = Math.floor(Math.random() * 400) + 100;
@@ -103,6 +114,7 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
   const result = await next();
 
   const end = Date.now();
+  // Allowlisted raw read (dev-only timing log, not config).
   if (process.env.NODE_ENV === "development") {
     console.debug(`[TRPC] ${path} took ${end - start}ms to execute`);
   }

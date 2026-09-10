@@ -13,32 +13,44 @@ export function useOptimisticReaction() {
     ...createOptimisticMutationCallbacks<
       RouterInputs["roadmapReactions"]["upsert"],
       unknown
-    >({
-      cancel: async () => {
-        if (lastInputRef.current) {
-          await utils.roadmapReactions.getByRoadmapId.cancel(lastInputRef.current);
-        }
+    >(
+      // eslint-disable-next-line react-hooks/refs -- callbacks run in the mutation lifecycle (cancel/snapshot/restore), never during render; the ref carries the debounced input
+      {
+        cancel: async () => {
+          if (lastInputRef.current) {
+            await utils.roadmapReactions.getByRoadmapId.cancel(
+              lastInputRef.current,
+            );
+          }
+        },
+        getSnapshot: () =>
+          lastInputRef.current
+            ? utils.roadmapReactions.getByRoadmapId.getData(
+                lastInputRef.current,
+              )
+            : undefined,
+        // Pattern A: the caller (mutateWithDebounce) already applied the optimistic
+        // update for instant feedback — re-applying here would double-increment.
+        applyOptimistic: () => {
+          /* Pattern A: caller (mutateWithDebounce) already applied */
+        },
+        restoreSnapshot: (prev) => {
+          if (lastInputRef.current) {
+            utils.roadmapReactions.getByRoadmapId.setData(
+              lastInputRef.current,
+              prev as never,
+            );
+          }
+        },
+        invalidate: async () => {
+          if (lastInputRef.current) {
+            await utils.roadmapReactions.getByRoadmapId.invalidate(
+              lastInputRef.current,
+            );
+          }
+        },
       },
-      getSnapshot: () =>
-        lastInputRef.current
-          ? utils.roadmapReactions.getByRoadmapId.getData(lastInputRef.current)
-          : undefined,
-      // Pattern A: the caller (mutateWithDebounce) already applied the optimistic
-      // update for instant feedback — re-applying here would double-increment.
-      applyOptimistic: () => {
-        /* Pattern A: caller (mutateWithDebounce) already applied */
-      },
-      restoreSnapshot: (prev) => {
-        if (lastInputRef.current) {
-          utils.roadmapReactions.getByRoadmapId.setData(lastInputRef.current, prev as never);
-        }
-      },
-      invalidate: async () => {
-        if (lastInputRef.current) {
-          await utils.roadmapReactions.getByRoadmapId.invalidate(lastInputRef.current);
-        }
-      },
-    }),
+    ),
   });
   const mutate = mutation.mutate;
 
@@ -58,7 +70,9 @@ export function useOptimisticReaction() {
           ) =>
             list
               .map((c) =>
-                c.reaction === r ? { ...c, count: Math.max(0, c.count - 1) } : c,
+                c.reaction === r
+                  ? { ...c, count: Math.max(0, c.count - 1) }
+                  : c,
               )
               .filter((c) => c.count > 0);
 
@@ -71,7 +85,9 @@ export function useOptimisticReaction() {
           }
 
           // when user reacts (or switches to a new reaction)
-          const afterRemove = prevViewer ? decrement(counts, prevViewer) : counts;
+          const afterRemove = prevViewer
+            ? decrement(counts, prevViewer)
+            : counts;
           const existing = afterRemove.find((c) => c.reaction === reaction);
           const nextCounts = existing
             ? afterRemove.map((c) =>

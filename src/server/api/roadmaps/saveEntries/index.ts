@@ -26,7 +26,7 @@ export const saveEntries = protectedProcedure
       select: { id: true, userId: true, updatedAt: true },
     });
 
-    if (!roadmap || roadmap.userId !== ctx.session.user.id) {
+    if (roadmap?.userId !== ctx.session.user.id) {
       throw new TRPCError({ code: "FORBIDDEN" });
     }
 
@@ -59,16 +59,25 @@ export const saveEntries = protectedProcedure
     let updatedAt: Date;
     try {
       updatedAt = await ctx.db.$transaction(async (tx) => {
+        // TOCTOU hardening: ownership is checked above, but the in-tx writes
+        // are scoped to the caller's rows anyway so a raced/confused write
+        // can never touch another user's roadmap.
         await tx.userRoadmapEntry.deleteMany({
-          where: { roadmapId: input.roadmapId },
+          where: {
+            roadmapId: input.roadmapId,
+            roadmap: { userId: ctx.session.user.id },
+          },
         });
         await tx.userRoadmapEntry.createMany({
-          data: input.entries.map((e) => ({ ...e, roadmapId: input.roadmapId })),
+          data: input.entries.map((e) => ({
+            ...e,
+            roadmapId: input.roadmapId,
+          })),
         });
         // Bump updatedAt so concurrent editors' version checks fail fast, and
         // return it so the client can keep its version token in sync.
         const updated = await tx.userRoadmap.update({
-          where: { id: input.roadmapId },
+          where: { id: input.roadmapId, userId: ctx.session.user.id },
           data: { updatedAt: new Date() },
           select: { updatedAt: true },
         });

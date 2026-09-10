@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/cron/prune-rate-limits",
+      "schedule": "0 4 * * *"
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+import type React from "react";
+import type { ViewConfig } from "mcp-use/react";
+import { useToolContext, useViewTheme } from "mcp-use/react";
+import type { ReviewCardsData } from "../../src/mcp/view-tools/schemas";
+import { TOKENS, Skeleton } from "../shared/tokens";
+import { ViewShell } from "../shared/view-shell";
+import { ReviewCard } from "../shared/components/ReviewCard";
+
+/**
+ * MCP App View (mcp-use v2) for the `get-course-reviews` tool. Must stay
+ * dependency-free: no `@/server/*`, no `next/*`.
+ *
+ * The review-card layout, labels and tokens are copied verbatim from the v1
+ * `resources/review-cards/widget.tsx`; only the data channels changed:
+ *
+ *   v1 useWidget().props            -> v2 useToolContext().toolOutput
+ *   v1 useWidget().isPending        -> v2 status === "pending"
+ *   v1 useWidget().theme            -> v2 useViewTheme()
+ *   v1 widgetMetadata export        -> v2 viewConfig export
+ *
+ * `get-professor-reviews` is viewless (no second View dir); it returns
+ * text only.
+ */
+
+export const viewConfig = {
+  autoResize: true,
+  displayModes: ["inline", "fullscreen", "pip"],
+} satisfies ViewConfig;
+
+const ReviewCardsView: React.FC = () => {
+  const { status, toolOutput, error } = useToolContext<"get-course-reviews">();
+  const theme = useViewTheme();
+  const dark = theme === "dark";
+  const c = dark ? TOKENS.dark : TOKENS.light;
+  if (status === "pending") {
+    return (
+      <ViewShell
+        status="pending"
+        dark={dark}
+        skeleton={<Skeleton dark={dark} />}
+      >
+        <span />
+      </ViewShell>
+    );
+  }
+  if (status === "error") {
+    return (
+      <ViewShell status="error" dark={dark} error={error}>
+        <span />
+      </ViewShell>
+    );
+  }
+  // `toolOutput` is {context, reviews} from the tool's outputSchema. The
+  // tool adapter passes its schemas `as never`, so read defensively
+  // (every field optional with a skeleton fallback).
+  const props = toolOutput as ReviewCardsData | undefined;
+  const reviews = props?.reviews ?? [];
+  const context = props?.context ?? "";
+  return (
+    <div
+      style={{
+        fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
+        color: c.cardFg,
+        background: c.card,
+        border: `1px solid ${c.border}`,
+        borderRadius: c.radius,
+        padding: 16,
+        boxSizing: "border-box",
+        width: "100%",
+        maxWidth: "100%",
+      }}
+    >
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
+      {/* Header: title + context badge */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          flexWrap: "wrap",
+        }}
+      >
+        <span style={{ fontSize: 13, fontWeight: 600 }}>Reviews</span>
+        {context && (
+          <span
+            style={{
+              fontFamily: "var(--font-geist-mono, ui-monospace)",
+              fontSize: 11,
+              fontWeight: 600,
+              padding: "2px 8px",
+              borderRadius: 9999,
+              background: dark
+                ? "oklch(0.488 0.243 264.376 / 15%)"
+                : "oklch(0.546 0.245 262.881 / 12%)",
+              color: dark
+                ? "oklch(0.623 0.214 259.815)"
+                : "oklch(0.488 0.243 264.376)",
+              border: `1px solid ${c.border}`,
+            }}
+          >
+            {context}
+          </span>
+        )}
+      </div>
+      {reviews.length === 0 ? (
+        <p style={{ margin: "12px 0 0", fontSize: 13, color: c.mutedFg }}>
+          No reviews yet.
+        </p>
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            marginTop: 12,
+            maxHeight: 420,
+            overflowY: "auto",
+          }}
+        >
+          {reviews.map((review) => (
+            <ReviewCard key={review.id} review={review} c={c} dark={dark} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ReviewCardsView;

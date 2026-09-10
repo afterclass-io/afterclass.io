@@ -206,8 +206,7 @@ describe("_fetchAcadTerms", () => {
     const findMany = vi.fn().mockResolvedValue(rows);
     const mockDb = { acadTerm: { findMany } };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    const result = await _fetchAcadTerms(mockDb as any);
+    const result = await _fetchAcadTerms(mockDb);
 
     // Verify the correct query was issued
     expect(findMany).toHaveBeenCalledWith({
@@ -226,8 +225,7 @@ describe("_fetchAcadTerms", () => {
     const findMany = vi.fn().mockResolvedValue([]);
     const mockDb = { acadTerm: { findMany } };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    const result = await _fetchAcadTerms(mockDb as any);
+    const result = await _fetchAcadTerms(mockDb);
 
     expect(result).toEqual([]);
   });
@@ -288,6 +286,36 @@ describe("listAcadTerms", () => {
     expect(result).toHaveLength(2);
     expect(result[0]!.label).toBe("AY2025/26 T2");
     expect(result[1]!.label).toBe("AY2025/26 T1");
+  });
+
+  it("rethrows non-cache errors instead of silently bypassing the cache", async () => {
+    // A DB failure inside the cached path must surface — only the
+    // missing-incrementalCache shim error falls back to a direct fetch.
+    const findMany = vi.fn().mockRejectedValue(new Error("db down"));
+    const mockDb = { acadTerm: { findMany } };
+    await expect(
+      listAcadTerms(
+        mockDb as unknown as Parameters<typeof listAcadTerms>[0],
+      ),
+    ).rejects.toThrow("db down");
+  });
+
+  it("still falls back to a direct fetch on the incrementalCache shim error", async () => {
+    const cache = await import("next/cache");
+    const throwingCache = vi
+      .spyOn(cache, "unstable_cache")
+      .mockImplementationOnce(() => {
+        throw new Error("incrementalCache missing");
+      });
+    try {
+      const findMany = vi.fn().mockResolvedValue(sampleRows);
+      const mockDb = { acadTerm: { findMany } };
+      const result = await listAcadTerms(mockDb);
+      expect(result).toHaveLength(2);
+      expect(findMany).toHaveBeenCalled();
+    } finally {
+      throwingCache.mockRestore();
+    }
   });
 });
 

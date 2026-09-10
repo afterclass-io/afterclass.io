@@ -1,0 +1,127 @@
+import type { Meta, StoryObj } from "@storybook/nextjs";
+import { ChatPage } from "./chat-page";
+import type { AssistantStatus } from "@/server/assistant/status";
+
+const status = (overrides: Partial<AssistantStatus> = {}): AssistantStatus => ({
+  signedIn: true,
+  quota: 50,
+  used: 7,
+  remaining: 43,
+  hasConnectedAgent: false,
+  nudgeAt: 40,
+  aiDegraded: false,
+  chatEnabled: true,
+  widgetEnabled: true,
+  aiConsented: true,
+  ...overrides,
+});
+
+const meta = {
+  title: "Assistant/Chat Page",
+  component: ChatPage,
+  parameters: {
+    assistant: { status: status(), sessions: [] },
+  },
+} satisfies Meta<typeof ChatPage>;
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+export const Empty: Story = {
+  args: { initialStatus: status() },
+};
+
+export const Unconsented: Story = {
+  args: { initialStatus: status({ aiConsented: false }) },
+  parameters: {
+    assistant: { status: status({ aiConsented: false }), sessions: [] },
+  },
+};
+
+export const Conversation: Story = {
+  args: { initialStatus: status() },
+  parameters: {
+    assistant: {
+      status: status(),
+      sessions: [
+        {
+          id: "s1",
+          title: "Semester planning",
+          updatedAt: new Date().toISOString(),
+          messages: [],
+        },
+      ],
+      activeSessionId: "s1",
+    },
+    chatState: {
+      messages: [
+        {
+          id: "1",
+          role: "user",
+          parts: [{ type: "text", text: "Plan my semester" }],
+        },
+        {
+          id: "2",
+          role: "assistant",
+          parts: [{ type: "text", text: "Here's your plan." }],
+        },
+      ],
+    },
+  },
+};
+
+export const QuotaExhausted: Story = {
+  args: { initialStatus: status() },
+  parameters: {
+    chatState: {
+      error: new globalThis.Error('[POST /api/chat] 403: {"gate":"quota"}'),
+    },
+  },
+};
+
+export const Streaming: Story = {
+  args: { initialStatus: status() },
+  parameters: {
+    chatState: {
+      status: "streaming",
+      messages: [
+        {
+          id: "1",
+          role: "user",
+          parts: [{ type: "text", text: "Plan my semester" }],
+        },
+        {
+          id: "2",
+          role: "assistant",
+          parts: [{ type: "text", text: "Building your plan..." }],
+        },
+      ],
+    },
+  },
+};
+
+export const GenericError: Story = {
+  args: { initialStatus: status() },
+  parameters: {
+    chatState: {
+      status: "error",
+      error: new globalThis.Error("[POST /api/chat] 500: something failed"),
+      messages: [
+        { id: "1", role: "user", parts: [{ type: "text", text: "Hello" }] },
+      ],
+    },
+  },
+};
+
+export const AgentConnected: Story = {
+  args: { initialStatus: status({ hasConnectedAgent: true }) },
+  parameters: {
+    assistant: { status: status({ hasConnectedAgent: true }), sessions: [] },
+  },
+};
+
+export const Dark: Story = {
+  args: { initialStatus: status() },
+  parameters: { themes: { themeOverride: "dark" } },
+};

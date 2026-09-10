@@ -36,8 +36,6 @@ export const listPublic = publicProcedure
       publishedAt: true,
       viewCount: true,
       shareCount: true,
-      isActive: true,
-      userId: true,
       user: {
         select: { username: true },
       },

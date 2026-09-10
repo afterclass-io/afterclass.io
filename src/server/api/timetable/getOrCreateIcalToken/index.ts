@@ -34,8 +34,10 @@ export const getOrCreateIcalToken = protectedProcedure
     }
 
     const icalToken = mintToken();
+    // TOCTOU hardening: requireOwnedTimetable checked ownership above; the
+    // token write is also scoped to the caller's row.
     await ctx.db.userTimetable.update({
-      where: { id: input.timetableId },
+      where: { id: input.timetableId, userId: ctx.session.user.id },
       data: { icalToken },
     });
 
