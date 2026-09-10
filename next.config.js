@@ -9,6 +9,7 @@ const jiti = createJiti(fileURLToPath(import.meta.url));
 jiti("./src/env");
 
 import { withSentryConfig } from "@sentry/nextjs/config";
+import { withMcpUse } from "mcp-use/next";
 
 /** @type {import("next").NextConfig} */
 const config = withSentryConfig(
@@ -118,4 +119,15 @@ const config = withSentryConfig(
   },
 );
 
-export default config;
+// withMcpUse builds views at config-eval time (dev + prod), adds
+// outputFileTracingIncludes for .mcp-use/build, and merges MCP CORS
+// headers for /api/mcp/:path*. It returns a Promise — next.config.js
+// supports top-level await.
+export default await withMcpUse(
+  /** @type {import("mcp-use/next").NextConfigLike} */ (config),
+  {
+    mcpDir: "src/mcp",
+    viewsDir: "views",
+    basePath: "/api/mcp",
+  },
+);

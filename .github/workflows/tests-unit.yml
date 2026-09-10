@@ -33,5 +33,8 @@ jobs:
 
       - run: bun install
 
+      - name: Build MCP views
+        run: bun run mcp:build
+
       - name: Run unit tests with coverage gate
         run: bun run test:coverage

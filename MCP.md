@@ -64,7 +64,21 @@ Useful commands:
 - `bunx mcp-use typecheck` regenerates `mcp-env.d.ts` from exported ToolRefs
   and runs TypeScript checking.
 
-For deployment, build with `bunx mcp-use build --mcp-dir src/mcp` and start
-with `bunx mcp-use start --mcp-dir src/mcp` on a long-lived Node host. The
-Next.js web app and consent route may run separately; set the public MCP URL
-in the web app so agent connection links point to the deployed server.
+## Deployment (Vercel embedded route)
+
+The MCP server ships inside the web app at `/api/mcp` via the `mcp-use/next`
+embedded adapter — no separate host. `next.config.js` is wrapped with
+`withMcpUse()` (builds views, tracing, CORS with `next build`);
+`src/app/api/mcp/[[...path]]/route.ts` serves the 50-tool catalog + 7 views
+through `createNextHandler`. The Settings connect page (`/mcp`) derives the
+public URL automatically from the request origin + `/api/mcp`, so agent
+connection links always point at the deployed route with nothing to configure.
+
+Auth posture: Supabase OAuth is fail-closed and resolved at server
+construction — missing or malformed config refuses `fetch`/`listen`/`getHandler`
+with its own message instead of serving unauthenticated (credential-less
+`next build` still succeeds; only serving refuses). `MCP_DEV_BYPASS` is local
+dev only and can never activate on Vercel (`NODE_ENV=production`).
+
+The standalone commands above (`mcp:dev`, Inspector on :3001) remain the
+local development path; `mcp:start` on a long-lived host is no longer used.

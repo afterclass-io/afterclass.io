@@ -15,6 +15,7 @@
 
 ### Changed
 
+- MCP server is served from the web app itself at `/api/mcp` (mcp-use/next embedded adapter) — no separate host to deploy. OAuth stays fail-closed (missing/malformed config refuses at serve time, never silently unauthenticated). The Settings connect page (`/mcp`) derives the public URL from the request origin + `/api/mcp`, so no env var is needed.
 - MCP v2 uses one canonical tool per View, raw MCP envelopes, typed `outputSchema` results, Supabase OAuth in production, and no OAuth in local development. The catalog and Views are served from `src/mcp/`, while the shared tools remain in `src/server/mcp/tools`.
 - MCP hardening adds explicit confirmation gates, per-user read and write quotas, fail-closed public data and consent routes, secret-safe View metadata, bounded chat output, and shared validation for bids, roadmaps, prompts, and page context.
 

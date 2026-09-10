@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MCP_PUBLIC_URL, buildClaudeDeepLink } from "./connect-links";
+import { buildClaudeDeepLink } from "./connect-links";
 import { ProviderLogo } from "./provider-logos";
 import { cn } from "@/common/functions/index";
 
@@ -54,7 +54,7 @@ const PROVIDERS: Record<
   },
 };
 
-export function ConnectFlow({ mcpUrl = MCP_PUBLIC_URL }: { mcpUrl?: string }) {
+export function ConnectFlow({ mcpUrl }: { mcpUrl: string }) {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-muted-foreground text-sm">

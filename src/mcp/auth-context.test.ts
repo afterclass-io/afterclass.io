@@ -177,6 +177,15 @@ describe("tool handler auth resolution", () => {
  * wiring/options, not Supabase's own token verification (provider surface is
  * covered by mcp-use's own tests; a real verifyToken round-trip needs a live
  * Supabase JWKS).
+ *
+ * Credential-less builds: the module import must NEVER throw for missing
+ * Supabase config (`mcp-use build` at next.config-eval imports the entry to
+ * read the tool/view registry, and the repo .env ships a non-credential
+ * placeholder). The fail-closed refusal instead fires when the first
+ * request would be served (server.fetch) or the CLI takes over the socket
+ * (server.listen) — i.e. credential-less builds succeed, but serving without
+ * credentials is impossible. Dev bypass (isDevBypass) is orthogonal: when it
+ * passes, OAuth is omitted entirely and serving proceeds unauthenticated.
  */
 describe("oauth wiring", () => {
   // Minimal provider stub: the MCPServer constructor only stores config.oauth
@@ -225,7 +234,12 @@ describe("oauth wiring", () => {
     vi.stubEnv("MCP_USE_OAUTH_SUPABASE_URL", "");
     vi.stubEnv("MCP_USE_OAUTH_SUPABASE_JWT_SECRET", "");
 
+    // Deferred OAuth: construction happens on first SERVE, not import —
+    // `server.tool` calls are queued without building the singleton, so poke
+    // a non-registration member (`basePath` getter → lazyServer()) here.
     const { server } = await import("./server");
+
+    void server.basePath;
 
     expect(providerFactory).toHaveBeenCalledTimes(1);
     expect(providerFactory).toHaveBeenCalledWith(
@@ -249,22 +263,80 @@ describe("oauth wiring", () => {
 
     const { server } = await import("./server");
 
+    void server.basePath;
+
     expect(providerFactory).not.toHaveBeenCalled();
     expect(
       (server as unknown as { config: { oauth?: unknown } }).config.oauth,
     ).toBeUndefined();
   });
 
-  it("throws a clear startup error in production when project config is missing", async () => {
+  it("imports without throwing when project config is missing (credential-less build)", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("MCP_USE_OAUTH_SUPABASE_PROJECT_ID", "");
     vi.stubEnv("MCP_USE_OAUTH_SUPABASE_URL", "");
 
-    // supabaseOAuth() throws at module scope → the dynamic import rejects.
-    await expect(import("./server")).rejects.toThrow(
+    // Deferred OAuth: module import must resolve (the `mcp-use build`
+    // config-eval import only needs the tool/view registry). The fail-closed
+    // refusal fires at serve time (fetch/listen), pinned below.
+    const { server } = await import("./server");
+
+    // Import itself never builds the singleton (lazy): the provider factory
+    // stays uncalled until first serve. (Only non-registration access —
+    // e.g. `server.basePath` — builds; `server.tool` merely queues, so this
+    // test pins the import + factory-uncalled properties. The registration
+    // path is pinned by the real view-tools imports in serialization.test.ts
+    // under dev bypass.)
+    expect(providerFactory).not.toHaveBeenCalled();
+    expect(server).toBeDefined();
+  });
+
+  it("refuses the first request without credentials (fail-closed serve)", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("MCP_USE_OAUTH_SUPABASE_PROJECT_ID", "");
+    vi.stubEnv("MCP_USE_OAUTH_SUPABASE_URL", "");
+
+    // Credential-less prod builds an OAuth-free instance whose serve entry
+    // points refuse with the same clear error — never silent unauthenticated
+    // serving. The facade's `get` returns the refusing function (no throw on
+    // access); CALLING it throws synchronously. __mount is intentionally NOT
+    // refused: `mcp-use build` mounts the primed registry to emit the view
+    // manifest without serving (mounting performs no auth and serves nothing
+    // by itself); fetch/listen/getHandler are the actual serve entries.
+    const { server } = await import("./server");
+
+    expect(() => (server.fetch as unknown as () => unknown)()).toThrow(
+      /MCP_USE_OAUTH_SUPABASE_PROJECT_ID or MCP_USE_OAUTH_SUPABASE_URL is required/,
+    );
+    expect(() => (server.listen as unknown as () => unknown)()).toThrow(
+      /MCP_USE_OAUTH_SUPABASE_PROJECT_ID or MCP_USE_OAUTH_SUPABASE_URL is required/,
+    );
+    expect(() => (server.getHandler as unknown as () => unknown)()).toThrow(
       /MCP_USE_OAUTH_SUPABASE_PROJECT_ID or MCP_USE_OAUTH_SUPABASE_URL is required/,
     );
     expect(providerFactory).not.toHaveBeenCalled();
+  });
+
+  it("refuses to serve with the factory error when the ref is present but malformed (never the missing text)", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("MCP_USE_OAUTH_SUPABASE_PROJECT_ID", "BAD REF!!");
+    vi.stubEnv("MCP_USE_OAUTH_SUPABASE_URL", "");
+    providerFactory.mockImplementationOnce(() => {
+      throw new Error("Supabase requires projectId or supabaseUrl");
+    });
+
+    // Present-but-malformed ≠ missing: the build-time import still succeeds
+    // (mcp-use build only primes the registry), but serving throws the
+    // FACTORY's shape error — not the missing-config text. Missing vs
+    // malformed never conflate.
+    const { server } = await import("./server");
+
+    expect(() => (server.fetch as unknown as () => unknown)()).toThrow(
+      /Supabase requires projectId or supabaseUrl/,
+    );
+    expect(() => (server.fetch as unknown as () => unknown)()).not.toThrow(
+      /is required \(see \.env\.example\)/,
+    );
   });
 
   it("passes supabaseUrl and jwtSecret explicitly when set", async () => {
@@ -273,7 +345,9 @@ describe("oauth wiring", () => {
     vi.stubEnv("MCP_USE_OAUTH_SUPABASE_URL", "http://localhost:54321");
     vi.stubEnv("MCP_USE_OAUTH_SUPABASE_JWT_SECRET", "x".repeat(40));
 
-    await import("./server");
+    const { server } = await import("./server");
+
+    void server.basePath;
 
     expect(providerFactory).toHaveBeenCalledWith(
       expect.objectContaining({
