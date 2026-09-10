@@ -29,15 +29,11 @@ export function Message({ message }: { message: UIMessage }) {
         if (part.type === "text") {
           return <Markdown key={i} text={"text" in part ? part.text : ""} />;
         }
+        // Reasoning parts are model-internal deliberation, never user-facing:
+        // drop them (the final text part carries the answer). Rendered once
+        // as raw <pre> before, leaking chain-of-thought into the thread.
         if (part.type === "reasoning") {
-          return (
-            <pre
-              key={i}
-              className="text-muted-foreground text-xs whitespace-pre-wrap"
-            >
-              {"text" in part ? part.text : ""}
-            </pre>
-          );
+          return null;
         }
         if (isToolPart(part)) {
           const stepIndex = toolParts.findIndex((t) => t === part) + 1;
