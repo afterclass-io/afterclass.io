@@ -318,6 +318,11 @@ const QUEUED_METHODS = new Set([
   "prompt",
 ]);
 
+/**
+ * The shared MCP server singleton (lazy Proxy facade — see the module NOTE
+ * above). Imported by name (`import { server }`) from view-tools adapters,
+ * register/prompts/resources modules, route-server, index, and tests.
+ */
 export const server: MCPServer = new Proxy({} as MCPServer, {
   get(_target, prop, _receiver) {
     // Registration calls queue WITHOUT building the singleton ONLY while
@@ -366,4 +371,12 @@ export const server: MCPServer = new Proxy({} as MCPServer, {
   },
 });
 
+/**
+ * Entry default for the standalone CLI (`mcp-use build/dev/start` reads
+ * `(await import(entry)).default`): re-exported as default from
+ * `src/mcp/index.ts`. Same singleton as the named `server` export above —
+ * one value, two entry points (CLI default vs in-tree named binding).
+ *
+ * @alias server — knip `duplicates`: intentional, not a redundant export.
+ */
 export default server;

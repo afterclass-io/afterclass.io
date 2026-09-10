@@ -49,9 +49,6 @@ export function checkEngagementBudget(
   return true;
 }
 
-/** Deprecated alias retained for existing callers. */
-export const checkAndIncrement = checkEngagementBudget;
-
 export function resetLimits(): void {
   buckets.clear();
 }

@@ -34,7 +34,16 @@ jobs:
       - run: bun install
 
       - name: Build MCP views
+        # Dummy DB URLs: mcp:build imports the server entry (which pulls @/env
+        # transitively) under plain Node, whose .env loader does NOT
+        # interpolate ${VAR} refs — .env.example's DATABASE_URL/DIRECT_URL
+        # stay literal and fail z.url(). The build only imports the graph
+        # (never connects), so valid-but-unreachable URLs suffice; unit tests
+        # inject their own dummyEnv via vitest.config.ts.
         run: bun run mcp:build
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5432/db
+          DIRECT_URL: postgresql://user:pass@localhost:5432/db
 
       - name: Run unit tests with coverage gate
         run: bun run test:coverage

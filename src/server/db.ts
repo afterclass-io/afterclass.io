@@ -70,9 +70,6 @@ if (!directUrl && env.NODE_ENV !== "production") {
 export const txDb =
   globalForPrisma.prismaTx ?? (directUrl ? createDirectClient(directUrl) : db);
 
-/** Alias for the transactional/direct client (call sites use either name). */
-export const directDb = txDb;
-
 if (env.NODE_ENV !== "production") {
   globalForPrisma.prisma = db;
   globalForPrisma.prismaTx = txDb;
