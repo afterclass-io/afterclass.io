@@ -16,7 +16,6 @@ import {
   pageContextSchema,
 } from "@/server/assistant/page-context";
 import { cannedResponse, findCannedAnswer } from "@/server/assistant/canned";
-import { isInScope, SCOPE_REFUSAL } from "@/server/assistant/scope-gate";
 import {
   reserveMessage,
   settleUsage,
@@ -89,7 +88,7 @@ const SYSTEM_PROMPT = [
   "- Review follow-ups ('what did they say?', 'tell me more about him'): re-call get-course-reviews/get-professor-reviews and quote or closely summarise the returned review bodies — never answer from tags/ratings alone.",
   "- Section-specific bid questions ('how much for COR-IS1702 G1?', 'for G1?') go to explore-bid-options with courseCode+section (interactive chart/slider), not bid-estimate.",
   "- Bid amounts: relay the tool's suggestedBidAmount + rationale verbatim. Never hand-compute a bid from medians, multipliers, or uncertainties.",
-  "- Scope: you help with SMU courses, bids, timetables, roadmaps, and reviews only. For anything else, refuse politely in one sentence and offer the closest in-scope help. Never write code or do coursework.",
+  "- Scope: you help with SMU courses, bids, timetables, roadmaps, and reviews only. For anything else, refuse politely in one sentence and offer the closest in-scope help — do NOT call any tools for out-of-scope turns. Never write code or do coursework.",
   "After any bid/budget change, the tool result already contains the full updated bid plan — summarize budget + each bid (course/section/professor/amount/status/round/window). Do not call my-bid-plan again for the same term.",
   "After creating/copying/editing a roadmap, the tool result contains the updated roadmap — summarize its name, term grid, and key courses.",
   "Multi-step planning:",
@@ -247,26 +246,6 @@ export async function POST(req: Request) {
   // static capability questions cost the user nothing.
   const canned = findCannedAnswer(messages);
   if (canned) return cannedResponse(canned);
-
-  // Scope gate: cheap static refusal BEFORE the rate limiter and quota
-  // reservation, so off-topic turns ("reverse a linked list") burn neither a
-  // quota slot nor an LLM call. Fail-open: when no user text can be
-  // extracted (or it is only whitespace), the turn falls through to the
-  // normal gates and the model's own scope rule.
-  {
-    const userTexts = messages
-      .filter((m) => m.role === "user")
-      .map((m) => {
-        const parts = Array.isArray(m.parts) ? m.parts : [];
-        return parts
-          .filter((p) => p.type === "text")
-          .map((p) => ("text" in p ? p.text : ""))
-          .join(" ");
-      });
-    const text = userTexts.at(-1) ?? "";
-    if (text.trim().length > 0 && !isInScope(text, userTexts.at(-2)))
-      return cannedResponse(SCOPE_REFUSAL);
-  }
 
   const chat = await getCanonicalChatConfig();
   const windowMinutes = getCanonicalRateLimitWindowMinutes();

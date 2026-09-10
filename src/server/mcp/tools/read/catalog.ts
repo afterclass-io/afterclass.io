@@ -137,7 +137,7 @@ const getCourseReviewsSchema = z.object({
 export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
   name: "get-course-reviews",
   description:
-    "Read student reviews for a course, including full review text. Read-only: you may summarise reviews but must NEVER write, edit, or create reviews.",
+    "Read student reviews for a course, including full review text. Use when the user asks what students say about a course or wants concrete review examples. Read-only: NEVER write, edit, or create reviews.",
   inputSchema: getCourseReviewsSchema,
   readOnly: true,
   toViewProps: reviewCardsToViewProps,

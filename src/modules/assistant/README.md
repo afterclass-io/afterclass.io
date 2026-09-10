@@ -105,15 +105,15 @@ All limits are driven by the `chat` section of the Edge Config. The hardcoded de
 
 ### Config Keys
 
-| Key                     | Type | Default | Description                                                                                                                               |
-| ----------------------- | ---- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `quotaPerMonth`         | int  | 20      | Max messages per user per calendar month                                                                                                  |
-| `nudgeAt`               | int  | 16      | When remaining messages drop below this, the nudge intensifies ("Heads up - N messages left")                                             |
-| `rateLimitPerMinute`    | int  | 10      | Max chat POSTs per user per minute (fixed window)                                                                                         |
-| `mcpRateLimitPerMinute` | int  | 60      | Max MCP tool calls per minute (reserved for future MCP endpoint)                                                                          |
-| `maxInputTokens`        | int  | 16000   | Max input tokens per request (older messages are dropped to fit)                                                                          |
-| `maxOutputTokens`       | int  | 1024    | Max output tokens per response                                                                                                            |
-| `maxToolRounds`         | int  | 6       | Max sequential tool-call rounds per message. Kept at 6 to stay within the Vercel 60s function limit (initial call + up to 6 tool rounds). |
+| Key                     | Type | Default | Description                                                                                                                                  |
+| ----------------------- | ---- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `quotaPerMonth`         | int  | 20      | Max messages per user per calendar month                                                                                                     |
+| `nudgeAt`               | int  | 16      | When remaining messages drop below this, the nudge intensifies ("Heads up - N messages left")                                                |
+| `rateLimitPerMinute`    | int  | 10      | Max chat POSTs per user per minute (fixed window)                                                                                            |
+| `mcpRateLimitPerMinute` | int  | 60      | Max MCP tool calls per minute (reserved for future MCP endpoint)                                                                             |
+| `maxInputTokens`        | int  | 64000   | Max input tokens per request (older messages are dropped to fit)                                                                             |
+| `maxOutputTokens`       | int  | 4096    | Max output tokens per response                                                                                                               |
+| `maxToolRounds`         | int  | 12      | Max sequential tool-call rounds per message. Kept at 12 to stay within the route's 300s `maxDuration` (initial call + up to 12 tool rounds). |
 
 ### Changing Config
 

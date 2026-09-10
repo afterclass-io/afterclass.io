@@ -100,6 +100,15 @@ describe("catalog read tools", () => {
     expect(result.isError).toBeUndefined();
   });
 
+  it("get-course-reviews carries the colloquial routing hint like get-professor-reviews", () => {
+    expect(getCourseReviewsTool.description).toMatch(
+      /what students say about a course/i,
+    );
+    expect(getProfessorReviewsTool.description).toMatch(
+      /what students say about a professor/i,
+    );
+  });
+
   it("get-professor-reviews calls reviews.getByProfSlugProtected and stays read-only", async () => {
     const fn = vi.fn().mockResolvedValue({ items: [], nextCursor: undefined });
     const ctx: ToolContext = {

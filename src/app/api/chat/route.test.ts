@@ -159,7 +159,7 @@ const DEFAULT_CHAT_CONFIG = {
   mcpRateLimitPerMinute: 60,
   writeRateLimitPerMinute: 10,
   rateLimitWindowMinutes: 1,
-  maxInputTokens: 16000,
+  maxInputTokens: 64000,
   maxOutputTokens: 4096,
   maxToolRounds: 12,
   settlementSpikeTokens: 30000,
@@ -764,6 +764,25 @@ describe("POST /api/chat", () => {
     );
   });
 
+  it("routes paraphrased review questions to the model, not a static refusal", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    for (const text of [
+      "What do people say about Fang Bingxu",
+      "What do people say about Statistics",
+      "What do people say",
+    ]) {
+      mockStreamText.mockClear();
+      await POST(
+        buildReq({
+          messages: [
+            { role: "user", content: text, parts: [{ type: "text", text }] },
+          ],
+        }),
+      );
+      expect(mockStreamText).toHaveBeenCalled();
+    }
+  });
+
   // -- section bids go to the explorer, not the text estimator --
   it("steers section-specific bid questions to explore-bid-options with courseCode+section", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
@@ -873,9 +892,9 @@ describe("POST /api/chat", () => {
     );
     expect(res.status).toBe(200);
     expect(capturedOnEnd).not.toBeNull();
-    // DEFAULT_CHAT_CONFIG.maxInputTokens is 16000 → min(16000*0.5, 30000)=8000.
+    // DEFAULT_CHAT_CONFIG.maxInputTokens is 64000 → min(64000*0.5, 30000)=30000.
     // eslint-disable-next-line @typescript-eslint/await-thenable -- onEnd returns void|Promise<void>
-    await capturedOnEnd!({ usage: { inputTokens: 9000, outputTokens: 5 } });
+    await capturedOnEnd!({ usage: { inputTokens: 31000, outputTokens: 5 } });
     expect(mockSettleUsage).not.toHaveBeenCalled();
     expect(mockEndTurn).toHaveBeenCalledWith("u1");
   });
@@ -899,27 +918,29 @@ describe("POST /api/chat", () => {
     expect(mockEndTurn).toHaveBeenCalledWith("u1");
   });
 
-  // -- scope gate (cheap refusal before rate limit / quota) --
-  it("refuses off-topic turns without touching the rate limiter, quota, or LLM", async () => {
-    mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    const res = await POST(
-      buildReq({
-        messages: [
-          {
-            role: "user",
-            content: "reverse a linked list",
-            parts: [{ type: "text", text: "reverse a linked list" }],
-          },
-        ],
-      }),
-    );
-    expect(res.status).toBe(200);
-    expect(mockCheckAndIncrement).not.toHaveBeenCalled();
-    expect(mockReserveMessage).not.toHaveBeenCalled();
-    expect(mockStreamText).not.toHaveBeenCalled();
+  it("documents live budget defaults (12 rounds / 4096 out / 64000 in)", () => {
+    expect(DEFAULT_CHAT_CONFIG.maxToolRounds).toBe(12);
+    expect(DEFAULT_CHAT_CONFIG.maxOutputTokens).toBe(4096);
+    expect(DEFAULT_CHAT_CONFIG.maxInputTokens).toBe(64000);
   });
 
-  it("does not scope-refuse legacy content-only messages (fail-open to normal gates)", async () => {
+  // -- off-topic turns reach the model (model-native refusal, no static gate) --
+  it("routes off-topic turns to the model instead of a static refusal", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    for (const text of ["reverse a linked list please", "write my essay"]) {
+      mockStreamText.mockClear();
+      await POST(
+        buildReq({
+          messages: [
+            { role: "user", content: text, parts: [{ type: "text", text }] },
+          ],
+        }),
+      );
+      expect(mockStreamText).toHaveBeenCalled();
+    }
+  });
+
+  it("reaches the model for legacy content-only messages", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     const res = await POST(
       buildReq({ messages: [{ role: "user", content: "hi" }] }),
@@ -928,7 +949,7 @@ describe("POST /api/chat", () => {
     expect(mockStreamText).toHaveBeenCalled();
   });
 
-  it("does not scope-refuse a pronoun follow-up to an in-scope turn", async () => {
+  it("reaches the model for a pronoun follow-up to an in-scope turn", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     await POST(
       buildReq({
