@@ -247,7 +247,7 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
     });
     render(<CourseSearchView />);
     fireEvent.click(
-      screen.getByRole("button", { name: "Add G1 — confirm to enroll" }),
+      screen.getByRole("button", { name: "Add G1 to timetable" }),
     );
     await waitFor(() => expect(callTool).toHaveBeenCalledTimes(1));
     expect(callTool).toHaveBeenCalledWith({
@@ -268,7 +268,7 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
     });
     render(<CourseSearchView />);
     expect(
-      screen.queryByRole("button", { name: "Add G3 — confirm to enroll" }),
+      screen.queryByRole("button", { name: "Add G3 to timetable" }),
     ).toBeNull();
   });
 
@@ -281,7 +281,7 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
     });
     render(<CourseSearchView />);
     expect(
-      screen.queryByRole("button", { name: "Add G1 — confirm to enroll" }),
+      screen.queryByRole("button", { name: "Add G1 to timetable" }),
     ).toBeNull();
   });
 
@@ -295,7 +295,7 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
     });
     render(<CourseSearchView />);
     fireEvent.click(
-      screen.getByRole("button", { name: "Add G1 — confirm to enroll" }),
+      screen.getByRole("button", { name: "Add G1 to timetable" }),
     );
     await waitFor(() =>
       expect(screen.getByRole("button", { name: /Saved/ })).toBeInTheDocument(),
@@ -312,7 +312,7 @@ describe("CourseSearchView CTA (v2 useDynamicTool)", () => {
     });
     render(<CourseSearchView />);
     fireEvent.click(
-      screen.getByRole("button", { name: "Add G1 — confirm to enroll" }),
+      screen.getByRole("button", { name: "Add G1 to timetable" }),
     );
     await waitFor(() =>
       expect(

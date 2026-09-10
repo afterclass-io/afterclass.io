@@ -118,18 +118,16 @@ describe("TimetableView (v2)", () => {
     expect(screen.getAllByText("FANG Bingxu").length).toBe(2);
   });
 
-  it("renders day-column headers Mon-Sun in order", () => {
+  it("renders day-column headers Mon-Fri in order", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<TimetableView />);
-    const headers = screen.getAllByText(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)$/);
+    const headers = screen.getAllByText(/^(Mon|Tue|Wed|Thu|Fri)$/);
     expect(headers.map((h) => h.textContent)).toEqual([
       "Mon",
       "Tue",
       "Wed",
       "Thu",
       "Fri",
-      "Sat",
-      "Sun",
     ]);
   });
 
@@ -150,6 +148,26 @@ describe("TimetableView (v2)", () => {
       const width = Number(card.getAttribute("data-width-pct"));
       expect(width).toBeLessThan(100);
     }
+  });
+
+  it("renders hour ticks across the full grid height (08:00–22:00)", () => {
+    seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+    render(<TimetableView />);
+    // fullProps classes end at 15:15 — a data-scoped axis would stop at 15:00.
+    expect(screen.getByText("08:00")).toBeInTheDocument();
+    expect(screen.getByText("22:00")).toBeInTheDocument();
+  });
+
+  it("pins the final tick inside the axis so the grid never scrolls vertically", () => {
+    seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+    const { container } = render(<TimetableView />);
+    expect(screen.getByText("22:00").style.transform).toBe("translateY(-100%)");
+    // The grid wrapper must only scroll horizontally — never vertically.
+    const scrollers = [...container.querySelectorAll("div")].filter((el) => {
+      const overflowY = el.style.overflowY;
+      return overflowY === "auto" || overflowY === "scroll";
+    });
+    expect(scrollers).toHaveLength(0);
   });
 
   it("shows the timetable name in the header", () => {

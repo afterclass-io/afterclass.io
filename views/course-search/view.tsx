@@ -289,7 +289,7 @@ const CourseSearchView: React.FC = () => {
                           ? "Saved \u2713"
                           : fb === "error"
                             ? "Failed"
-                            : `Add ${s.section} — confirm to enroll`;
+                            : `Add ${s.section} to timetable`;
                       return (
                         <button
                           type="button"

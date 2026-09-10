@@ -13,8 +13,7 @@ import { formatExamDate } from "../shared/format";
  * The layout semantics are copied from the website's read-only sharing UI —
  * `SharedTimetableView` rendering `TimetableGrid` with `view="classes"` and
  * `readOnly` (src/app/(school)/share/timetable/[token]/SharedTimetableView.tsx):
- * day columns (Mon–Sun here; the share grid renders Mon–Fri, widened to a
- * full week because MCP timetable payloads can carry weekend sections) ×
+ * day columns (Mon–Fri, mirroring the share grid) ×
  * time rows, with overlapping same-day blocks stacked side-by-side per the
  * `layoutDay` lane-packing semantics
  * (src/modules/timetable/functions/slot-math.ts). Only the data channel
@@ -243,24 +242,10 @@ const TimetableView: React.FC = () => {
     byDay.set(day, list);
   }
 
-  // Time range from data (clamped to the visible grid), like the website
-  // grid's fixed 08:00–22:15 window.
-  const minutes = slots.flatMap((s) => {
-    const start = timeToMinutes(s.startTime);
-    const end = timeToMinutes(s.endTime);
-    return start !== null && end !== null ? [start, end] : [];
-  });
-  const rangeStart =
-    minutes.length > 0
-      ? Math.max(GRID_START_MIN, Math.min(...minutes))
-      : GRID_START_MIN;
-  const rangeEnd =
-    minutes.length > 0
-      ? Math.min(GRID_END_MIN, Math.max(...minutes))
-      : GRID_END_MIN;
+  // Hour ticks span the full visible grid (08:00–22:15) so axis labels cover
+  // the whole column height — scoped ticks would leave empty space below.
   const hourTicks: number[] = [];
-  for (let h = Math.ceil(rangeStart / 60) * 60; h <= rangeEnd; h += 60)
-    hourTicks.push(h);
+  for (let h = GRID_START_MIN; h <= GRID_END_MIN; h += 60) hourTicks.push(h);
 
   const empty = slots.length === 0;
 
@@ -319,7 +304,7 @@ const TimetableView: React.FC = () => {
               —
             </div>
             <div style={{ position: "relative", height: 480 }}>
-              {hourTicks.map((h) => {
+              {hourTicks.map((h, i) => {
                 const topPct = ((h - GRID_START_MIN) / GRID_RANGE_MIN) * 100;
                 return (
                   <div
@@ -331,6 +316,14 @@ const TimetableView: React.FC = () => {
                       right: 2,
                       fontSize: 9,
                       color: c.mutedFg,
+                      // Pin the final tick inside the column: its text would
+                      // otherwise overflow the 480px body and — because
+                      // overflow-x:auto computes overflow-y to auto — force a
+                      // vertical scrollbar on the whole grid.
+                      transform:
+                        i === hourTicks.length - 1
+                          ? "translateY(-100%)"
+                          : undefined,
                     }}
                   >
                     {formatHourLabel(h)}
@@ -340,7 +333,7 @@ const TimetableView: React.FC = () => {
             </div>
           </div>
           {/* Day columns */}
-          {DAY_ORDER.map((day) => {
+          {DAY_ORDER.slice(0, 5).map((day) => {
             const blocks = layoutDay(byDay.get(day) ?? []);
             return (
               <div
@@ -348,7 +341,7 @@ const TimetableView: React.FC = () => {
                 style={{
                   flex: "1 1 0",
                   minWidth: 88,
-                  borderRight: day === "Sun" ? "none" : `1px solid ${c.border}`,
+                  borderRight: day === "Fri" ? "none" : `1px solid ${c.border}`,
                 }}
               >
                 <div
