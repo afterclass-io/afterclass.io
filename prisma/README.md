@@ -48,7 +48,9 @@ or
 
 ```sh
 # resets the database and applies the seed
-npx prisma migrate reset
+# (Prisma 7 `migrate reset` no longer seeds on its own, so `db:reset`
+# chains `prisma db seed` explicitly)
+bun run db:reset
 ```
 
 See [Prisma
