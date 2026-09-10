@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ChatPanel } from "./chat-panel";
+import { ConnectGate } from "./connect-gate";
 import type { AssistantStatus } from "@/server/assistant/status";
 
 const status = (overrides: Partial<AssistantStatus> = {}): AssistantStatus => ({
@@ -195,4 +196,27 @@ export const Dark: Story = {
       ],
     },
   },
+};
+
+/**
+ * Quota exhausted: the panel routes quota gates to `onGate`, so the host
+ * swaps the thread for the gate card — this is that composition in a
+ * panel-height frame.
+ */
+export const QuotaExhausted: Story = {
+  args: {
+    quota: 50,
+    remaining: 0,
+    hasConnectedAgent: false,
+    aiDegraded: false,
+    onGate: () => undefined,
+    aiConsented: true,
+    onConsented: () => undefined,
+    onConsentRevoked: () => undefined,
+  },
+  render: () => (
+    <div className="flex h-[560px] w-[400px] max-w-full flex-col">
+      <ConnectGate reason="quota" />
+    </div>
+  ),
 };

@@ -32,6 +32,13 @@ export const Empty: Story = {
   args: { initialStatus: status() },
 };
 
+export const Unconsented: Story = {
+  args: { initialStatus: status({ aiConsented: false }) },
+  parameters: {
+    assistant: { status: status({ aiConsented: false }), sessions: [] },
+  },
+};
+
 export const Conversation: Story = {
   args: { initialStatus: status() },
   parameters: {
@@ -64,7 +71,7 @@ export const Conversation: Story = {
   },
 };
 
-export const QuotaGate: Story = {
+export const QuotaExhausted: Story = {
   args: { initialStatus: status() },
   parameters: {
     chatState: {

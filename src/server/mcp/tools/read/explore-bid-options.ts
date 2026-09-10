@@ -150,7 +150,7 @@ const exploreBidOptionsSchema = z
 export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
   name: "explore-bid-options",
   description:
-    "Explore bid prices for a class, course+professor, or course+section combination: historical clearing ranges per term/round, the latest prediction, and safety multipliers (what amount beats X% of bids). Use for interactive section-level bidding questions ('how much for COR-IS1702 G1?') — pass courseCode+section. Use when the user wants to compare options and decide a bid themselves rather than get a single recommendation.",
+    "Explore bid prices for a class, course+professor, or course+section combination: historical clearing ranges per term/round, the latest prediction, and safety multipliers (what amount beats X% of bids). This is the bid explorer: for anything related to bid predictions, prefer this tool. Use for interactive section-level bidding questions ('how much for COR-IS1702 G1?') — pass courseCode+section. Use when the user wants to compare options and decide a bid themselves rather than get a single recommendation.",
   inputSchema: exploreBidOptionsSchema,
   readOnly: true,
   toViewProps: (result) => {

@@ -22,6 +22,7 @@ import {
   rationaleFor,
   suggestBidAmount,
 } from "../bid-shared";
+import { absoluteUrl, bidAnalytics } from "../page-links";
 
 const bidEstimateSchema = z.object({
   courseCode: z
@@ -51,7 +52,7 @@ const bidEstimateSchema = z.object({
 export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
   name: "bid-estimate",
   description:
-    "Estimate bid prices for a course's sections for the upcoming bidding window. Provide a course code (e.g. COR-IS1702); optionally filter to a single section (e.g. G1). Returns per-section median and minimum clearing prices from the latest bid predictions, a suggested bid amount (predicted + multiplier x uncertainty for 70% confidence when available, never below e$10), and the current vacancy for the resolved window. Window resolution: explicit bidWindow > open window > latest window (estimates then use prior-window results — immediate-next-window only). If the course or its sections are not found, explains what was tried. Self-contained: one call is the answer. For an interactive chart/table/slider the user can play with, prefer explore-bid-options (it accepts courseCode+section); use this tool for text answers or multi-section comparison.",
+    "Estimate bid prices for a course's sections for the upcoming bidding window. Provide a course code (e.g. COR-IS1702); optionally filter to a single section (e.g. G1). Returns per-section median and minimum clearing prices from the latest bid predictions, a suggested bid amount (predicted + multiplier x uncertainty for 70% confidence when available, never below e$10), and the current vacancy for the resolved window. Window resolution: explicit bidWindow > open window > latest window (estimates then use prior-window results — immediate-next-window only). If the course or its sections are not found, explains what was tried. Self-contained: one call is the answer. For anything related to bid predictions, prefer explore-bid-options (interactive bid-explorer chart/table/slider; it accepts courseCode+section); use this tool for text answers or multi-section comparison, and always surface its bid-explorer link(s) so the user can open the interactive view.",
   inputSchema: bidEstimateSchema,
   readOnly: true,
   run: async (
@@ -249,12 +250,60 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
         String(a.section).localeCompare(String(b.section)),
       );
 
+      // Bid explorer surface: point the user at the analytics page for each
+      // estimated section (courseCode+section key; link-to-page, no raw dump).
+      // Multi-section output renders one deep-link per line; the single-section
+      // path renders one link. The explore URLs must match
+      // exploreLinkFor(courseCode, section) exactly so chat and MCP surfaces
+      // can never diverge (pinned by page-links.test.ts).
+      const exploreLines =
+        estimates.length > 0
+          ? estimates
+              .map((e) => {
+                const link = bidAnalytics({
+                  courseCode: course.code,
+                  section: String(e.section),
+                });
+                return link
+                  ? `- ${course.code} ${String(e.section)}: explore in the bid explorer — Open in bid analytics: ${absoluteUrl(link)}`
+                  : null;
+              })
+              .filter((line): line is string => line !== null)
+          : [];
+      const exploreBlock =
+        exploreLines.length > 0 ? `\n\n${exploreLines.join("\n")}` : "";
+      const intro = `Here are the suggested bid amounts for ${course.code}${sectionFilter ? ` ${sectionFilter}` : ""}:`;
+      const lines = estimates.map((e) => {
+        const professor =
+          typeof e.professorName === "string" && e.professorName.length > 0
+            ? ` (${e.professorName})`
+            : "";
+        const median =
+          typeof e.medianPredicted === "number"
+            ? `e$${e.medianPredicted}`
+            : "?";
+        const min =
+          typeof e.minPredicted === "number" ? `e$${e.minPredicted}` : "?";
+        const suggested =
+          typeof e.suggestedBidAmount === "number"
+            ? `e$${e.suggestedBidAmount}`
+            : "?";
+        return `- ${String(e.section)}${professor}: ${suggested} (median predicted: ${median}, minimum predicted: ${min})`;
+      });
+      const summary = [
+        `${intro}`,
+        ...lines,
+        ...(warning ? [warning] : []),
+        `Open each section in the bid explorer to play with the safety slider before confirming.`,
+      ].join("\n");
+
       return jsonText({
         courseCode: course.code,
         courseName: course.name,
         bidWindow,
         ...(warning ? { warning } : {}),
         estimates,
+        summary: `${summary}${exploreBlock}`,
       });
     } catch (e) {
       return errText(errorMessage(e));

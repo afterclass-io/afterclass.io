@@ -200,7 +200,7 @@ export function registerPrompts(server: MCPServer): void {
 
 1. Call my-bid-plan${acadTermId ? ` with acadTermId "${acadTermId}"` : ""} for budget balance and saved bids, plus get-bid-windows${acadTermId ? ` with acadTermId "${acadTermId}"` : ""} for open rounds.
 2. If my-bid-plan returns budget null (no budget set), STOP and offer to set one first via set-bid-budget (balance 0-10000) before suggesting any amounts. Do not suggest bid amounts until the user sets or declines a budget.
-3. For each bid target, call explore-bid-options (interactive history + safety factors; pass courseCode+section for section questions) or bid-estimate (text answer / multi-section comparison) to ground the suggested amount. recommend-bid-amount is a fallback for a single number only.
+3. For each bid target, call explore-bid-options (interactive bid-explorer history + safety factors; pass courseCode+section for section questions) or bid-estimate (text answer / multi-section comparison) to ground the suggested amount. recommend-bid-amount is a fallback for a single number only. Anything related to bid predictions uses the bid explorer: when a bid tool returns a bid-explorer link ('Open in bid analytics: ...'), render it as a markdown link with a short label ('Open in bid explorer').
 4. Present per class: predicted median/min, suggested bid, vacancy, and whether it fits the remaining budget (skip the fit check when there is no budget). Never guarantee a seat - predictions are guidance.`,
             },
           },
@@ -282,7 +282,7 @@ export function registerPrompts(server: MCPServer): void {
 
 1. Discover: call search-courses on the goal (use list-faculties to scope to one school when asked). Present top hits with code, name, and description.
 2. Vet: for the top 3-5 hits call get-course-reviews (and get-professor-reviews for professor picks). Present what reviewers actually say. Resolve exact codes first (get-course) — never present search results as the review answer.
-3. Bid: for the shortlist call explore-bid-options (courseCode+section) or bid-estimate for comparison. Call my-bid-plan for budget balance and saved bids — if budget is null, offer set-bid-budget before suggesting amounts.
+3. Bid: for the shortlist call explore-bid-options (interactive bid explorer: courseCode+section) or bid-estimate for comparison. Call my-bid-plan for budget balance and saved bids — if budget is null, offer set-bid-budget before suggesting amounts. Anything related to bid predictions uses the bid explorer: when a bid tool returns a bid-explorer link ('Open in bid analytics: ...'), render it as a markdown link with a short label ('Open in bid explorer').
 4. Commit: save with upsert-bid (single) or save-bids (bulk, confirm:true). After the write the result already contains the full updated bid plan — summarize it, do not re-fetch.
 5. Timetable + calendar: offer get-my-timetable-detail to check the weekly arrangement, then get-timetable-calendar-link for a subscribe link only if the user asks.
 6. Roadmap check: offer get-my-roadmap on the active roadmap to show where the term fits.

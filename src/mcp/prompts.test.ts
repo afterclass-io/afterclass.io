@@ -213,6 +213,9 @@ describe("registerPrompts", () => {
     const bidding = await handlers.get("plan-bidding")!({});
     expect(bidding.messages[0]!.content.text).toContain("my-bid-plan");
     expect(bidding.messages[0]!.content.text).toContain("explore-bid-options");
+    // Anything related to bid predictions uses the bid explorer (link label).
+    expect(bidding.messages[0]!.content.text).toContain("bid explorer");
+    expect(bidding.messages[0]!.content.text).toContain("Open in bid explorer");
 
     const courses = await handlers.get("find-courses")!({
       interest: "machine learning",

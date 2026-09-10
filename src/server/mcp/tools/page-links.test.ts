@@ -33,6 +33,17 @@ describe("page-links", () => {
       }),
     ).toBe("/bidding/analytics?course=COR-IS1702&section=G1");
   });
+  it("bid-estimate explorer links match exploreLinkFor(courseCode, section)", () => {
+    // Parity pin: bid-estimate builds its per-section bid-explorer links via
+    // bidAnalytics({ courseCode, section }); exploreLinkFor with the same
+    // inputs must produce the identical URL so chat and MCP never diverge.
+    expect(exploreLinkFor("IS215", "G1")).toBe(
+      bidAnalytics({ courseCode: "IS215", section: "G1" }),
+    );
+    expect(bidAnalytics({ courseCode: "IS215", section: "G1" })).toBe(
+      "/bidding/analytics?course=IS215&section=G1",
+    );
+  });
   it("links timetable and roadmaps-mine views", () => {
     expect(timetablePage()).toBe("/timetable");
     expect(roadmapsMinePage()).toBe("/roadmaps?view=mine");

@@ -800,6 +800,15 @@ describe("POST /api/chat", () => {
     );
   });
 
+  it("steers every bid-prediction question at the bid explorer and its link", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    const instructions = mockStreamText.mock.calls[0]?.[0]
+      ?.instructions as string;
+    expect(instructions).toMatch(/Anything related to bid predictions/i);
+    expect(instructions).toMatch(/Open in bid explorer/);
+  });
+
   // -- long planning chains must leave a round for the closing summary --
   it("tells the model to stop calling tools and summarize before the round cap", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });

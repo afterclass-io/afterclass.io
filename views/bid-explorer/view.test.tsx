@@ -51,8 +51,11 @@ const history = [
 ];
 
 // Safety factors mirror the real seed data
-// (`prisma/data/22_safety_factors.json`, EMPIRICAL/MEDIAN): six
-// rates 50/60/70/80/90/95 with ascending multipliers.
+// (`prisma/data/22_safety_factors.json`, EMPIRICAL/MEDIAN): ten
+// rates 50/55/60/65/70/75/80/85/90/95 with ascending multipliers. The
+// non-zero medianUncertainty is what makes the slider move the suggested
+// amount, like the live view (suggested = predicted + multiplier x
+// uncertainty, e$10 floor).
 const fullProps = {
   classId: "cl1",
   history,
@@ -64,9 +67,13 @@ const fullProps = {
   },
   safetyFactors: [
     { beatsPercentage: 50, multiplier: 0 },
+    { beatsPercentage: 55, multiplier: 0.13 },
     { beatsPercentage: 60, multiplier: 0.25 },
+    { beatsPercentage: 65, multiplier: 0.39 },
     { beatsPercentage: 70, multiplier: 0.54 },
+    { beatsPercentage: 75, multiplier: 0.7 },
     { beatsPercentage: 80, multiplier: 0.88 },
+    { beatsPercentage: 85, multiplier: 1.09 },
     { beatsPercentage: 90, multiplier: 1.37 },
     { beatsPercentage: 95, multiplier: 1.81 },
   ],
@@ -139,7 +146,7 @@ describe("BidExplorerView (v2)", () => {
     expect(screen.getByText("Round 1 W1")).toBeInTheDocument();
     expect(screen.getByText(/median \$30/)).toBeInTheDocument(); // predicted median
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
-    expect(slider.getAttribute("value")).toBe("2"); // index of the 70% factor
+    expect(slider.getAttribute("value")).toBe("4"); // index of the 70% factor
     expect(screen.getByText(/beats 70% of bids × 0\.54/)).toBeInTheDocument();
     // suggested = round((30 + 0.54 x 4) x 100) / 100 = 32.16
     expect(screen.getByText("$32.16")).toBeInTheDocument();
@@ -149,7 +156,7 @@ describe("BidExplorerView (v2)", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
-    fireEvent.change(slider, { target: { value: "4" } });
+    fireEvent.change(slider, { target: { value: "8" } });
     expect(screen.getByText(/beats 90% of bids × 1\.37/)).toBeInTheDocument();
     // suggested = round((30 + 1.37 x 4) x 100) / 100 = 35.48
     expect(screen.getByText("$35.48")).toBeInTheDocument();
@@ -175,7 +182,7 @@ describe("BidExplorerView (v2)", () => {
       screen.getByRole("button", { name: "Confirm: set bid to $32.16" }),
     ).toBeInTheDocument();
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
-    fireEvent.change(slider, { target: { value: "4" } });
+    fireEvent.change(slider, { target: { value: "8" } });
     expect(
       screen.getByRole("button", { name: "Confirm: set bid to $35.48" }),
     ).toBeInTheDocument();
@@ -207,8 +214,23 @@ describe("BidExplorerView (v2)", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     rerender(<BidExplorerView />);
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
-    expect(slider.getAttribute("value")).toBe("2"); // index of the 70% factor
+    expect(slider.getAttribute("value")).toBe("4"); // index of the 70% factor
     expect(screen.getByText("$32.16")).toBeInTheDocument();
+  });
+
+  it("computes the same suggestion as the shared bid math (parity pin)", async () => {
+    // Slider @70%: bid-shared.suggestBidAmount(30, 0.54, 4) = 32.16 must equal
+    // the view's hero + CTA. If the view's inline formula ever drifts from the
+    // canonical math again, this fails instead of the screenshots.
+    const { suggestBidAmount } = await import("@/server/mcp/tools/bid-shared");
+    seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+    render(<BidExplorerView />);
+    const expected = suggestBidAmount(30, 0.54, 4);
+    expect(expected).toBe(32.16);
+    expect(screen.getByText(`$${expected}`)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: `Confirm: set bid to $${expected}` }),
+    ).toBeInTheDocument();
   });
 
   it("prediction without safety factors falls back to multiplier 1.0 (CTA still shows)", async () => {
@@ -308,9 +330,13 @@ describe("BidExplorerView (v2)", () => {
       },
       safetyFactors: [
         { beatsPercentage: 50, multiplier: 0 },
+        { beatsPercentage: 55, multiplier: 0.13 },
         { beatsPercentage: 60, multiplier: 0.25 },
+        { beatsPercentage: 65, multiplier: 0.39 },
         { beatsPercentage: 70, multiplier: 0.54 },
+        { beatsPercentage: 75, multiplier: 0.7 },
         { beatsPercentage: 80, multiplier: 0.88 },
+        { beatsPercentage: 85, multiplier: 1.09 },
         { beatsPercentage: 90, multiplier: 1.37 },
         { beatsPercentage: 95, multiplier: 1.81 },
       ],

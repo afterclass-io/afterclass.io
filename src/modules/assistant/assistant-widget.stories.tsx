@@ -61,6 +61,29 @@ export const OpenThread: Story = {
   },
 };
 
+/**
+ * Pre-consent surface: the notice renders in the composer slot (sends are
+ * impossible until the user agrees), matching `ChatPanel aiConsented=false`.
+ */
+export const Unconsented: Story = {
+  args: {
+    open: true,
+    onOpenChange: () => undefined,
+    children: (
+      <ChatPanel
+        quota={30}
+        remaining={12}
+        hasConnectedAgent={false}
+        aiDegraded={false}
+        onGate={() => undefined}
+        aiConsented={false}
+        onConsented={() => undefined}
+        onConsentRevoked={() => undefined}
+      />
+    ),
+  },
+};
+
 export const Dark: Story = {
   args: { open: true, onOpenChange: () => undefined, children: chatPanel },
   parameters: { themes: { themeOverride: "dark" } },
@@ -102,13 +125,41 @@ export const ErrorState: Story = {
 
 /**
  * Post-gate surface: the provider renders `<ConnectGate>` in place of the
- * widget body once `onGate` fires (assistant-provider.tsx), so the widget
- * chrome shows the gate copy instead of the thread.
+ * widget body once `onGate` fires (assistant-provider.tsx), so the gate copy
+ * shows instead of the thread.
  */
 export const GateState: Story = {
   args: {
     open: true,
     onOpenChange: () => undefined,
     children: <ConnectGate reason="quota" />,
+  },
+};
+
+/**
+ * Quota exhausted: the open dialog with the gate card as its body — the
+ * composition from the quota-exhausted screenshot. Uses the real
+ * `AssistantWidget` chrome with a static geometry so the header never drifts
+ * from the production markup.
+ */
+export const QuotaExhausted: Story = {
+  args: {
+    open: true,
+    onOpenChange: () => undefined,
+    children: <ConnectGate reason="quota" />,
+    geometry: {
+      position: { x: 624, y: 192 },
+      size: { width: 400, height: 560 },
+      dragHandlers: {
+        onPointerDown: () => undefined,
+        onPointerMove: () => undefined,
+        onPointerUp: () => undefined,
+      },
+      resizeHandlers: {
+        onPointerDown: () => undefined,
+        onPointerMove: () => undefined,
+        onPointerUp: () => undefined,
+      },
+    },
   },
 };

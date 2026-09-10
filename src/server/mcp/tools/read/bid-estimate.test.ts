@@ -144,6 +144,7 @@ describe("bid-estimate", () => {
       courseCode: string;
       courseName: string;
       bidWindow: { id: number };
+      summary: string;
       estimates: Array<{
         section: string;
         medianPredicted: number;
@@ -159,6 +160,11 @@ describe("bid-estimate", () => {
     // 25 + 1.05 x 4 = 29.2
     expect(parsed.estimates[0]!.suggestedBidAmount).toBe(29.2);
     expect(parsed.estimates[0]!.multiplierUsed).toBe(1.05);
+    // Bid explorer surface: prose summary + one deep-link per section.
+    expect(parsed.summary).toContain("COR-IS1702");
+    expect(parsed.summary).toContain("Open in bid analytics:");
+    expect(parsed.summary).toContain("course=COR-IS1702&section=G1");
+    expect(parsed.summary).toContain("course=COR-IS1702&section=G2");
     expect(
       caller.classes.getAll as ReturnType<typeof vi.fn>,
     ).toHaveBeenCalled();
@@ -189,8 +195,12 @@ describe("bid-estimate", () => {
     });
     const parsed = JSON.parse(res.content[0]!.text) as {
       estimates: Array<{ section: string }>;
+      summary: string;
     };
     expect(parsed.estimates.map((e) => e.section)).toEqual(["G1"]);
+    // Single-section path renders exactly one bid-explorer link.
+    expect(parsed.summary).toContain("course=COR-IS1702&section=G1");
+    expect(parsed.summary).not.toContain("section=G2");
   });
 
   it("returns errText when the course is not found", async () => {

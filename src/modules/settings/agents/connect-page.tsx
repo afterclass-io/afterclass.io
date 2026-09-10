@@ -15,10 +15,7 @@ export function ConnectPage({ mcpUrl = MCP_PUBLIC_URL }: { mcpUrl?: string }) {
           Connect your own AI agent
         </PageTitle>
         <p className="text-muted-foreground text-sm">
-          Connect Claude, ChatGPT or your own agent to afterclass.io via MCP —
-          you&apos;ll approve access on the consent screen. Unlimited access on
-          your own AI credits: your agent connects once, then works like the
-          site&apos;s assistant.
+          Connect your own agent to afterclass.io via MCP.
         </p>
       </div>
       {isPlaceholder ? (
