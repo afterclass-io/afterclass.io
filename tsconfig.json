@@ -41,6 +41,9 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.js",
+    // `**` globs skip dot-directories: the OAuth discovery route
+    // (src/app/.well-known, RFC 9728) needs an explicit entry.
+    "src/app/.well-known/**/*.ts",
     ".next/types/**/*.ts",
     "eslint.config.mjs",
     "postcss.config.mjs",
