@@ -10,6 +10,9 @@ vi.hoisted(() => {
   // Must run before the route import below (instance built at import time).
   // `as Record<...>` — lib.dom/next-env types NODE_ENV as readonly.
   (process.env as Record<string, string>).NODE_ENV = "production";
+  // @/env requires NEXTAUTH_SECRET in production (imported transitively
+  // via the route's Prisma/tRPC graph); any non-empty value satisfies it.
+  (process.env as Record<string, string>).NEXTAUTH_SECRET = "test-secret";
   (process.env as Record<string, string>).MCP_URL = "http://localhost";
   (process.env as Record<string, string>).MCP_USE_OAUTH_SUPABASE_URL =
     "http://localhost:54321";
