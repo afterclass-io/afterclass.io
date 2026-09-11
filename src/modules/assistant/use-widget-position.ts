@@ -25,6 +25,7 @@ type StoredV3 = {
   bottom: number;
   width: number;
   height: number;
+  expanded: boolean;
 };
 
 function loadStored(): StoredV3 | null {
@@ -45,6 +46,8 @@ function loadStored(): StoredV3 | null {
         typeof parsed.height === "number"
           ? parsed.height
           : DEFAULT_WIDGET_SIZE.height,
+      // Rows written before `expanded` existed restore un-expanded.
+      expanded: parsed.expanded === true,
     };
   } catch {
     return null;
@@ -79,7 +82,7 @@ export function useWidgetPosition(viewport: Size) {
   }, [position]);
 
   // Initialise once from storage onto the current viewport; ignore legacy v2 shape.
-  // Legacy rows without `expanded` restore un-expanded (opt-in per click).
+  // Legacy rows without `expanded` restore un-expanded (false fallback).
   useEffect(() => {
     const stored = loadStored();
     if (stored) {
@@ -89,6 +92,7 @@ export function useWidgetPosition(viewport: Size) {
       });
       // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-once localStorage hydration (SSR-unsafe to init lazily); converges, no cascade
       setSize(restoredSize);
+      setExpanded(stored.expanded);
       // Persisted offsets are the user's intended (unclamped) offsets — clamp only for display.
       // fromOffsets will clamp the derived position on-screen; we never overwrite the stored offsets.
       const off: LauncherOffsets = {
@@ -131,12 +135,13 @@ export function useWidgetPosition(viewport: Size) {
         right: offsetsRef.current.right,
         bottom: offsetsRef.current.bottom,
         ...sizeRef.current,
+        expanded,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
     } catch {
       // storage unavailable (private mode) - non-fatal
     }
-  }, [position, size]);
+  }, [position, size, expanded]);
 
   // A press records its origin but does NOT capture the pointer. Capture is
   // deferred until the pointer actually moves past DRAG_THRESHOLD, so a plain
