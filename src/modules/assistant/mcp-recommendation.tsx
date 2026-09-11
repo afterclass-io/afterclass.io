@@ -25,7 +25,7 @@ export function McpRecommendation({
   return (
     <div
       role="status"
-      className="bg-muted/40 flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm"
+      className="bg-muted/40 flex min-w-0 flex-col gap-3 rounded-xl border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
       data-umami-event="assistant-mcp-recommendation-shown"
     >
       <p>

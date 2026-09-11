@@ -58,7 +58,7 @@ export function AssistantWidget({
         role="dialog"
         aria-label="AfterClass assistant"
         className={cn(
-          "bg-popover text-popover-foreground fixed z-50 flex flex-col overflow-hidden rounded-2xl border shadow-2xl",
+          "bg-popover text-popover-foreground fixed z-50 flex max-h-[calc(100dvh-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl border shadow-2xl",
           !open && "hidden",
         )}
         style={{
@@ -66,6 +66,8 @@ export function AssistantWidget({
           top: boxPos.y,
           width: size.width,
           height: size.height,
+          maxWidth: "calc(100vw - 16px)",
+          maxHeight: "calc(100dvh - 16px)",
         }}
       >
         {/* Drag header - Chatwoot-style: logo + title + open-full-chat + close */}
@@ -104,7 +106,7 @@ export function AssistantWidget({
         <div
           aria-hidden
           {...resizeHandlers}
-          className="absolute right-0 bottom-0 size-5 cursor-se-resize"
+          className="absolute right-0 bottom-0 hidden size-5 cursor-se-resize sm:block"
           style={{ touchAction: "none" }}
         />
       </div>

@@ -56,7 +56,7 @@ const PROVIDERS: Record<
 
 export function ConnectFlow({ mcpUrl }: { mcpUrl: string }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-w-0 max-w-full flex-col gap-4">
       <p className="text-muted-foreground text-sm">
         Pick a provider to connect your own AI agent via MCP - unlimited access
         on your own credits.
@@ -73,7 +73,7 @@ function ProviderButtons({ mcpUrl }: { mcpUrl: string }) {
 
   return (
     <>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {(Object.keys(PROVIDERS) as ProviderId[]).map((id) => {
           const active = selected === id;
           return (
@@ -98,7 +98,7 @@ function ProviderButtons({ mcpUrl }: { mcpUrl: string }) {
 
       {/* Expanded detail for the selected provider */}
       {selected && (
-        <div className="bg-muted/40 animate-in fade-in zoom-in-95 rounded-xl border p-4 duration-150">
+        <div className="bg-muted/40 animate-in fade-in zoom-in-95 min-w-0 max-w-full rounded-xl border p-4 duration-150">
           <p className="mb-3 text-sm">{PROVIDERS[selected].description}</p>
 
           {PROVIDERS[selected].oneClickUrl ? (
@@ -107,7 +107,7 @@ function ProviderButtons({ mcpUrl }: { mcpUrl: string }) {
                 href={PROVIDERS[selected].oneClickUrl(mcpUrl)}
                 target="_blank"
                 rel="noreferrer"
-                className="bg-primary text-primary-foreground inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold"
+                className="bg-primary text-primary-foreground inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2 text-center text-sm font-semibold sm:w-auto"
                 data-umami-event="assistant-connect-oneclick"
               >
                 One-click set up with {PROVIDERS[selected].name}
