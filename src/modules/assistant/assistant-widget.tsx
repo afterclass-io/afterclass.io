@@ -1,6 +1,12 @@
 "use client";
 
-import { ArrowUpRightIcon, ChevronDownIcon, XIcon } from "lucide-react";
+import {
+  ArrowUpRightIcon,
+  ChevronDownIcon,
+  Maximize2Icon,
+  Minimize2Icon,
+  XIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { type ReactNode } from "react";
 import { AfterclassIcon } from "@/common/components/icons";
@@ -24,8 +30,14 @@ export function AssistantWidget({
 }) {
   const viewport = useViewport();
   const fallback = useWidgetPosition(viewport);
-  const { position, size, dragHandlers, resizeHandlers } =
-    geometryProp ?? fallback;
+  const {
+    position,
+    size,
+    dragHandlers,
+    resizeHandlers,
+    expanded,
+    toggleExpanded,
+  } = geometryProp ?? fallback;
 
   if (!position) return null;
 
@@ -90,6 +102,19 @@ export function AssistantWidget({
             >
               Open full chat <ArrowUpRightIcon className="size-3" />
             </Link>
+            <button
+              type="button"
+              aria-label={expanded ? "Restore widget size" : "Expand widget"}
+              aria-pressed={expanded}
+              onClick={toggleExpanded}
+              className="hover:bg-muted rounded p-1"
+            >
+              {expanded ? (
+                <Minimize2Icon className="size-4" />
+              ) : (
+                <Maximize2Icon className="size-4" />
+              )}
+            </button>
             <button
               type="button"
               aria-label="Close assistant"

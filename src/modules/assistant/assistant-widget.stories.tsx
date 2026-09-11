@@ -160,6 +160,8 @@ export const QuotaExhausted: Story = {
         onPointerMove: () => undefined,
         onPointerUp: () => undefined,
       },
+      expanded: false,
+      toggleExpanded: () => undefined,
     },
   },
 };

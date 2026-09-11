@@ -7,6 +7,10 @@ export const LAUNCHER_SIZE = 56;
 export const MIN_WIDGET_SIZE: Size = { width: 320, height: 420 };
 export const MAX_WIDGET_SIZE: Size = { width: 720, height: 900 };
 export const DEFAULT_WIDGET_SIZE: Size = { width: 400, height: 560 };
+// Expanded mode (OpenClaw-style): a larger reading surface one click away.
+// Capped by clampSize to the viewport, so small screens just get "as big as
+// fits" instead of overflowing.
+export const EXPANDED_WIDGET_SIZE: Size = { width: 640, height: 760 };
 
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);

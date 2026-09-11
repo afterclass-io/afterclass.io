@@ -7,6 +7,7 @@ import {
   clampSize,
   DEFAULT_WIDGET_SIZE,
   defaultPosition,
+  EXPANDED_WIDGET_SIZE,
   fromOffsets,
   LAUNCHER_SIZE,
   toOffsets,
@@ -59,6 +60,12 @@ export type PointerHandlers = {
 export function useWidgetPosition(viewport: Size) {
   const [size, setSize] = useState<Size>(() => clampSize(DEFAULT_WIDGET_SIZE));
   const [position, setPosition] = useState<Point | null>(null);
+  // Expanded mode (OpenClaw-style): one click toggles between the compact
+  // default size and a larger reading surface. Persisted alongside the size
+  // so a reload keeps the user's preference; the pre-expand size is
+  // remembered in a ref so collapsing restores exactly what was there.
+  const [expanded, setExpanded] = useState(false);
+  const prevSizeRef = useRef<Size | null>(null);
 
   const sizeRef = useRef(size);
   const positionRef = useRef(position);
@@ -72,6 +79,7 @@ export function useWidgetPosition(viewport: Size) {
   }, [position]);
 
   // Initialise once from storage onto the current viewport; ignore legacy v2 shape.
+  // Legacy rows without `expanded` restore un-expanded (opt-in per click).
   useEffect(() => {
     const stored = loadStored();
     if (stored) {
@@ -202,5 +210,40 @@ export function useWidgetPosition(viewport: Size) {
     },
   };
 
-  return { position, size, dragHandlers, resizeHandlers };
+  const toggleExpanded = () => {
+    if (expanded) {
+      // Collapse: restore the exact pre-expand size (or default).
+      setSize(prevSizeRef.current ?? clampSize(DEFAULT_WIDGET_SIZE));
+      prevSizeRef.current = null;
+      setExpanded(false);
+    } else {
+      // Expand: remember the current size, then grow (clamped to viewport).
+      prevSizeRef.current = sizeRef.current;
+      setSize(clampSize(EXPANDED_WIDGET_SIZE, viewport));
+      setExpanded(true);
+    }
+  };
+
+  // Manual resizes while expanded drop back to manual sizing (collapse the
+  // flag without clobbering the user's chosen size).
+  const resizeHandlersWithCollapse: PointerHandlers = {
+    onPointerDown: (e) => {
+      if (expanded) {
+        prevSizeRef.current = null;
+        setExpanded(false);
+      }
+      resizeHandlers.onPointerDown(e);
+    },
+    onPointerMove: resizeHandlers.onPointerMove,
+    onPointerUp: resizeHandlers.onPointerUp,
+  };
+
+  return {
+    position,
+    size,
+    dragHandlers,
+    resizeHandlers: resizeHandlersWithCollapse,
+    expanded,
+    toggleExpanded,
+  };
 }
