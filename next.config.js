@@ -16,6 +16,16 @@ const config = withSentryConfig(
   {
     reactStrictMode: true,
 
+    // File tracing for the MCP view manifest: withMcpUse() only traces
+    // .mcp-use/build into the /api/mcp function bundle, but the
+    // /.well-known discovery route (src/app/.well-known) primes the same
+    // manifest via createNextHandler — without this its bundle misses the
+    // file and every request 500s with ENOENT. withMcpUse preserves
+    // pre-existing keys when it merges its own entry.
+    outputFileTracingIncludes: {
+      "/.well-known": ["./.mcp-use/build/**/*"],
+    },
+
     /**
      * If you have `experimental: { appDir: true }` set, then you must comment the below `i18n` config
      * out.
