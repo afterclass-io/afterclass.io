@@ -41,6 +41,7 @@ export function toFriendlyError(error: unknown): string {
     case "unauthorized":
       return "You were signed out. Sign in again and retry.";
     case "invalid-request":
+      return "That message could not be sent. Change it and try again.";
     case "failed":
     case null:
     default:

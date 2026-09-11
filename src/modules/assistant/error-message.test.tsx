@@ -40,10 +40,10 @@ describe("toFriendlyError", () => {
     );
   });
 
-  it("maps invalid-request (400) to the default message", () => {
+  it("maps invalid-request (400) to a revise-and-resend message", () => {
     expect(
       toFriendlyError(new Error("[POST /api/chat] 400: Invalid request body")),
-    ).toBe(DEFAULT_CHAT_ERROR_MESSAGE);
+    ).toBe("That message could not be sent. Change it and try again.");
   });
 
   it("maps unavailable (503) to a temporarily-unavailable message", () => {
