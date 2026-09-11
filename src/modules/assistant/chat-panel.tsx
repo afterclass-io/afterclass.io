@@ -167,7 +167,12 @@ function ChatPanelInner({
             )}
           </div>
         ) : (
-          <MessageList messages={chat.messages} />
+          <MessageList
+            messages={chat.messages}
+            isStreaming={
+              chat.status === "streaming" || chat.status === "submitted"
+            }
+          />
         )}
         {showError && (
           <AssistantErrorMessage error={chat.error} onRetry={retry} />

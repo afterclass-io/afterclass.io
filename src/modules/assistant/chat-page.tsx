@@ -172,7 +172,7 @@ export function ChatPage({
                   )}
                 </div>
               ) : (
-                <MessageList messages={chat.messages} />
+                <MessageList messages={chat.messages} isStreaming={isRunning} />
               )}
               {showError && (
                 <AssistantErrorMessage error={chat.error} onRetry={retry} />
