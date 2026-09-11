@@ -6,6 +6,7 @@ import { DefaultChatTransport } from "ai";
 
 import type { AssistantStatus } from "@/server/assistant/status";
 import { MessageList } from "@/modules/assistant/message-list";
+import { TypingIndicator } from "@/modules/assistant/typing-indicator";
 import {
   AssistantErrorMessage,
   shouldShowChatError,
@@ -177,6 +178,7 @@ export function ChatPage({
               {showError && (
                 <AssistantErrorMessage error={chat.error} onRetry={retry} />
               )}
+              {chat.status === "submitted" && <TypingIndicator />}
             </div>
             {consented ? (
               <>
