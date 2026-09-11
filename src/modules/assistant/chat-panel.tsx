@@ -157,7 +157,7 @@ function ChatPanelInner({
         )}
         {!hasMessages ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-4">
-            <h1 className="text-2xl font-semibold">
+            <h1 className="text-center text-xl font-semibold sm:text-2xl">
               How can I help you today?
             </h1>
             {aiConsented && (
@@ -167,7 +167,12 @@ function ChatPanelInner({
             )}
           </div>
         ) : (
-          <MessageList messages={chat.messages} />
+          <MessageList
+            messages={chat.messages}
+            isStreaming={
+              chat.status === "streaming" || chat.status === "submitted"
+            }
+          />
         )}
         {showError && (
           <AssistantErrorMessage error={chat.error} onRetry={retry} />

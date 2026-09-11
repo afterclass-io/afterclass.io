@@ -2,9 +2,16 @@
 
 import type { UIMessage } from "ai";
 import { Markdown } from "./markdown";
+import { ReasoningCard } from "./reasoning-card";
 import { ToolCallCard, isToolPart } from "./tool-call-card";
 
-export function Message({ message }: { message: UIMessage }) {
+export function Message({
+  message,
+  isStreaming = false,
+}: {
+  message: UIMessage;
+  isStreaming?: boolean;
+}) {
   // Tolerate parts-less messages (persisted/legacy shapes): render as empty.
   const parts = Array.isArray(message.parts) ? message.parts : [];
   if (message.role === "user") {
@@ -29,11 +36,15 @@ export function Message({ message }: { message: UIMessage }) {
         if (part.type === "text") {
           return <Markdown key={i} text={"text" in part ? part.text : ""} />;
         }
-        // Reasoning parts are model-internal deliberation, never user-facing:
-        // drop them (the final text part carries the answer). Rendered once
-        // as raw <pre> before, leaking chain-of-thought into the thread.
+        // Reasoning parts are model-internal deliberation: visible-but-collapsed
+        // by default (never a top-level answer bubble). The final text part
+        // still carries the answer.
         if (part.type === "reasoning") {
-          return null;
+          const text = "text" in part ? part.text : "";
+          if (!text?.trim()) return null;
+          return (
+            <ReasoningCard key={i} text={text} isStreaming={isStreaming} />
+          );
         }
         if (isToolPart(part)) {
           const stepIndex = toolParts.findIndex((t) => t === part) + 1;

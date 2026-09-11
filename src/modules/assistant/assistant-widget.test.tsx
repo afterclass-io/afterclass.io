@@ -98,4 +98,20 @@ describe("AssistantWidget", () => {
     });
     expect(capture).toHaveBeenCalled();
   });
+
+  it("toggles expanded size when the expand button is clicked", () => {
+    renderWidget(true);
+    const dialog = screen.getByRole("dialog", { name: "AfterClass assistant" });
+    const collapsedWidth = dialog.style.width;
+    // jsdom viewport is 1024x768: expanded (640x760) fits, so width grows.
+    fireEvent.click(screen.getByRole("button", { name: "Expand widget" }));
+    expect(dialog.style.width).toBe("640px");
+    expect(
+      screen.getByRole("button", { name: "Restore widget size" }),
+    ).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Restore widget size" }),
+    );
+    expect(dialog.style.width).toBe(collapsedWidth);
+  });
 });

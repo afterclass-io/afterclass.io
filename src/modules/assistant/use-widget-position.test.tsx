@@ -355,3 +355,84 @@ describe("useWidgetPosition drag", () => {
     });
   });
 });
+
+describe("useWidgetPosition expanded persistence", () => {
+  it("persists the expanded flag alongside the expanded size", () => {
+    const { result } = renderHook(() =>
+      useWidgetPosition({ width: 1280, height: 800 }),
+    );
+
+    act(() => {
+      result.current.toggleExpanded();
+    });
+
+    expect(result.current.expanded).toBe(true);
+    expect(result.current.size).toEqual({ width: 640, height: 760 });
+    const stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY)!) as {
+      width: number;
+      height: number;
+      expanded: boolean;
+    };
+    expect(stored.expanded).toBe(true);
+    expect(stored.width).toBe(640);
+    expect(stored.height).toBe(760);
+  });
+
+  it("restores the expanded flag and expanded size from storage", () => {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        right: 16,
+        bottom: 16,
+        width: 640,
+        height: 760,
+        expanded: true,
+      }),
+    );
+
+    const { result } = renderHook(() =>
+      useWidgetPosition({ width: 1280, height: 800 }),
+    );
+
+    expect(result.current.expanded).toBe(true);
+    expect(result.current.size).toEqual({ width: 640, height: 760 });
+  });
+
+  it("restores legacy rows without `expanded` un-expanded (false fallback)", () => {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ right: 16, bottom: 16, width: 640, height: 760 }),
+    );
+
+    const { result } = renderHook(() =>
+      useWidgetPosition({ width: 1280, height: 800 }),
+    );
+
+    expect(result.current.expanded).toBe(false);
+  });
+
+  it("expanded survives a remount and collapse still restores the compact size in-session", () => {
+    const first = renderHook(() =>
+      useWidgetPosition({ width: 1280, height: 800 }),
+    );
+    act(() => {
+      first.result.current.toggleExpanded();
+    });
+    expect(first.result.current.size).toEqual({ width: 640, height: 760 });
+    first.unmount();
+
+    // Fresh mount == reload; storage persists, in-memory prevSizeRef does not.
+    const { result } = renderHook(() =>
+      useWidgetPosition({ width: 1280, height: 800 }),
+    );
+    expect(result.current.expanded).toBe(true);
+    expect(result.current.size).toEqual({ width: 640, height: 760 });
+
+    act(() => {
+      result.current.toggleExpanded();
+    });
+    // Pre-expand size was not persisted, so collapse falls back to DEFAULT_WIDGET_SIZE.
+    expect(result.current.expanded).toBe(false);
+    expect(result.current.size).toEqual({ width: 400, height: 560 });
+  });
+});

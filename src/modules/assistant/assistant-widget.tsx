@@ -1,9 +1,16 @@
 "use client";
 
-import { ArrowUpRightIcon, ChevronDownIcon, XIcon } from "lucide-react";
+import {
+  ArrowUpRightIcon,
+  ChevronDownIcon,
+  Maximize2Icon,
+  Minimize2Icon,
+  XIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { type ReactNode } from "react";
 import { AfterclassIcon } from "@/common/components/icons";
+import { Button } from "@/common/components/button";
 import { cn } from "@/common/functions/index";
 import { useViewport } from "./use-viewport";
 import { useWidgetPosition } from "./use-widget-position";
@@ -24,8 +31,14 @@ export function AssistantWidget({
 }) {
   const viewport = useViewport();
   const fallback = useWidgetPosition(viewport);
-  const { position, size, dragHandlers, resizeHandlers } =
-    geometryProp ?? fallback;
+  const {
+    position,
+    size,
+    dragHandlers,
+    resizeHandlers,
+    expanded,
+    toggleExpanded,
+  } = geometryProp ?? fallback;
 
   if (!position) return null;
 
@@ -58,7 +71,7 @@ export function AssistantWidget({
         role="dialog"
         aria-label="AfterClass assistant"
         className={cn(
-          "bg-popover text-popover-foreground fixed z-50 flex flex-col overflow-hidden rounded-2xl border shadow-2xl",
+          "bg-popover text-popover-foreground fixed z-50 flex max-h-[calc(100dvh-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl border shadow-2xl",
           !open && "hidden",
         )}
         style={{
@@ -66,6 +79,8 @@ export function AssistantWidget({
           top: boxPos.y,
           width: size.width,
           height: size.height,
+          maxWidth: "calc(100vw - 16px)",
+          maxHeight: "calc(100dvh - 16px)",
         }}
       >
         {/* Drag header - Chatwoot-style: logo + title + open-full-chat + close */}
@@ -88,14 +103,31 @@ export function AssistantWidget({
             >
               Open full chat <ArrowUpRightIcon className="size-3" />
             </Link>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={expanded ? "Restore widget size" : "Expand widget"}
+              aria-pressed={expanded}
+              onClick={toggleExpanded}
+              className="size-7"
+            >
+              {expanded ? (
+                <Minimize2Icon className="size-4" />
+              ) : (
+                <Maximize2Icon className="size-4" />
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               aria-label="Close assistant"
               onClick={() => onOpenChange(false)}
-              className="hover:bg-muted rounded p-1"
+              className="size-7"
             >
               <XIcon className="size-4" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -104,7 +136,7 @@ export function AssistantWidget({
         <div
           aria-hidden
           {...resizeHandlers}
-          className="absolute right-0 bottom-0 size-5 cursor-se-resize"
+          className="absolute right-0 bottom-0 hidden size-5 cursor-se-resize sm:block"
           style={{ touchAction: "none" }}
         />
       </div>

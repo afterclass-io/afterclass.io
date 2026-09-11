@@ -1,6 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 
+// Confirm-gate determinism: the adapter's destructive confirm gate is
+// skipped under the dev bypass (NODE_ENV=development/unset +
+// MCP_DEV_BYPASS=true), which a local shell may export (e.g. via .env).
+// Pin NODE_ENV=test with no bypass so the gate always applies — same
+// seeding pattern as src/app/api/mcp/[[...path]]/route.test.ts.
+vi.hoisted(() => {
+  // `as Record<...>` — lib.dom/next-env types NODE_ENV as readonly.
+  (process.env as Record<string, string>).NODE_ENV = "test";
+  delete (process.env as Record<string, string | undefined>).MCP_DEV_BYPASS;
+});
+
 /**
  * Adapter-level tests for get-timetable-calendar-link — the secret-isolation
  * boundary. The catalog tool's viewProps carry bearer-bearing iCal URLs that

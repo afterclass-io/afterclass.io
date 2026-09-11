@@ -26,7 +26,8 @@ vi.hoisted(() => {
 
 describe("well-known OAuth discovery route", () => {
   // NOTE: importing the route constructs a dedicated MCP server instance
-  // (Prisma/tRPC graph, ~4s cold; slower under full-suite CPU contention).
+  // (Prisma/tRPC graph, ~8s cold; far slower under full-suite CPU
+  // contention — observed >30s). The 120s budget keeps this deterministic.
   it("serves the protected-resource metadata for /api/mcp", async () => {
     const route = await import("./route");
     expect(typeof route.GET).toBe("function");
@@ -48,5 +49,5 @@ describe("well-known OAuth discovery route", () => {
     expect(body.authorization_servers).toEqual([
       "http://localhost:54321/auth/v1",
     ]);
-  }, 30_000);
+  }, 120_000);
 });

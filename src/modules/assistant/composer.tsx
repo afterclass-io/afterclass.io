@@ -24,7 +24,7 @@ export function Composer({ sendMessage, status, stop }: ComposerProps) {
   return (
     <form
       onSubmit={submit}
-      className="relative flex items-end gap-2 px-3 pt-2 pb-3 shadow-[0px_-20px_20px_1px_rgba(0,0,0,0.05)] dark:shadow-none"
+      className="relative flex max-w-full items-end gap-2 px-3 pt-2 pb-3 shadow-[0px_-20px_20px_1px_rgba(0,0,0,0.05)] dark:shadow-none"
     >
       <textarea
         value={input}
@@ -32,7 +32,7 @@ export function Composer({ sendMessage, status, stop }: ComposerProps) {
         placeholder="Send a message..."
         aria-label="Message input"
         rows={1}
-        className="bg-muted/40 focus:border-ring [field-sizing:content] max-h-32 min-h-10 w-full resize-none rounded-xl border px-3 py-2 text-sm outline-none"
+        className="bg-muted/40 focus:border-ring [field-sizing:content] max-h-32 min-h-10 w-full min-w-0 resize-none rounded-xl border px-3 py-2 text-sm outline-none"
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -45,7 +45,7 @@ export function Composer({ sendMessage, status, stop }: ComposerProps) {
           type="button"
           onClick={stop}
           aria-label="Stop generating"
-          className="bg-muted rounded-full p-2.5"
+          className="bg-muted shrink-0 rounded-full p-2.5"
         >
           <SquareIcon className="size-4" />
         </button>
@@ -54,7 +54,7 @@ export function Composer({ sendMessage, status, stop }: ComposerProps) {
           type="submit"
           disabled={!canSend}
           aria-label="Send message"
-          className="bg-primary text-primary-foreground rounded-full p-2.5 disabled:opacity-40"
+          className="bg-primary text-primary-foreground shrink-0 rounded-full p-2.5 disabled:opacity-40"
         >
           <ArrowUpIcon className="size-4" />
         </button>

@@ -6,6 +6,7 @@ import { DefaultChatTransport } from "ai";
 
 import type { AssistantStatus } from "@/server/assistant/status";
 import { MessageList } from "@/modules/assistant/message-list";
+import { TypingIndicator } from "@/modules/assistant/typing-indicator";
 import {
   AssistantErrorMessage,
   shouldShowChatError,
@@ -134,8 +135,8 @@ export function ChatPage({
     // Vertical chrome above the chat (see CoreLayoutHeader h-16 + (school)/layout
     // margins/padding): 5.5rem on mobile, 7rem on desktop. This keeps the composer
     // above the fold at 100% zoom. Update if the header/layout heights change.
-    <div className="mx-auto flex h-[calc(100dvh-5.5rem)] max-w-6xl gap-4 md:h-[calc(100dvh-7rem)]">
-      <aside className="border-border/60 dark:border-muted-foreground/15 flex w-72 shrink-0 flex-col gap-3 rounded-xl border p-3">
+    <div className="mx-auto flex h-[calc(100dvh-5.5rem)] max-w-6xl flex-col gap-4 overflow-y-auto md:h-[calc(100dvh-7rem)] md:flex-row md:overflow-visible">
+      <aside className="border-border/60 dark:border-muted-foreground/15 flex w-full min-w-0 shrink-0 flex-col gap-3 rounded-xl border p-3 md:w-72">
         <McpRecommendation
           hasConnectedAgent={status.hasConnectedAgent}
           onDismiss={() => undefined}
@@ -152,7 +153,7 @@ export function ChatPage({
           onNew={newChat}
         />
       </aside>
-      <main className="border-border/60 dark:border-muted-foreground/15 flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border">
+      <main className="border-border/60 dark:border-muted-foreground/15 flex min-h-[60dvh] min-w-0 flex-1 flex-col overflow-hidden rounded-xl border md:min-h-0">
         {gate ? (
           <div className="flex h-full items-center justify-center">
             <ConnectGate reason={gate} />
@@ -172,11 +173,12 @@ export function ChatPage({
                   )}
                 </div>
               ) : (
-                <MessageList messages={chat.messages} />
+                <MessageList messages={chat.messages} isStreaming={isRunning} />
               )}
               {showError && (
                 <AssistantErrorMessage error={chat.error} onRetry={retry} />
               )}
+              {chat.status === "submitted" && <TypingIndicator />}
             </div>
             {consented ? (
               <>

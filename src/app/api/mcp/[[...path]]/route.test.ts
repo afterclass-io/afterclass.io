@@ -16,9 +16,11 @@ vi.hoisted(() => {
 
 describe("MCP route exports", () => {
   // NOTE: importing ./route constructs the dedicated /api/mcp server
-  // (Prisma/tRPC graph, ~4s cold; slower under full-suite CPU contention).
-  // The 30s budget keeps this deterministic — a 5s default flakes under
-  // load and the timeout then cascades into the tests below.
+  // (Prisma/tRPC graph, ~8s cold; far slower under full-suite CPU
+  // contention — observed >30s). The 120s budget keeps this deterministic;
+  // a tight budget flakes under load and the timeout then cascades into
+  // the tests below. Tests run sequentially in-file (default sequence)
+  // so the single import cost is paid once.
   it("exposes GET/POST/DELETE/OPTIONS with nodejs runtime and 300s duration", async () => {
     const route = await import("./route");
     expect(typeof route.GET).toBe("function");
@@ -27,7 +29,7 @@ describe("MCP route exports", () => {
     expect(typeof route.OPTIONS).toBe("function");
     expect(route.runtime).toBe("nodejs");
     expect(route.maxDuration).toBe(300);
-  }, 30_000);
+  }, 120_000);
 
   it("OPTIONS returns 204 with MCP CORS headers", async () => {
     const route = await import("./route");

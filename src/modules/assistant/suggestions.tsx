@@ -43,7 +43,7 @@ function SuggestionButton({
     <button
       type="button"
       onClick={() => onPick(suggestion.prompt)}
-      className="hover:bg-muted rounded-full border px-3.5 py-1.5 text-sm transition-colors"
+      className="hover:bg-muted max-w-full rounded-full border px-3 py-1 text-[13px] transition-colors sm:px-3.5 sm:py-1.5 sm:text-sm"
     >
       {suggestion.label}
     </button>
@@ -56,7 +56,7 @@ export function WelcomeSuggestions({
   onPick: (prompt: string) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 px-4 pb-2">
+    <div className="flex max-w-full flex-wrap items-center justify-center gap-2 px-4 pb-2">
       {WELCOME_SUGGESTIONS.map((s) => (
         <SuggestionButton key={s.prompt} suggestion={s} onPick={onPick} />
       ))}
@@ -94,7 +94,7 @@ export function FollowUpSuggestions({
 }) {
   if (!shouldShowFollowUps(messages, isRunning, lastTurnFailed)) return null;
   return (
-    <div className="flex flex-wrap gap-2 px-4 pb-2">
+    <div className="flex max-w-full flex-wrap gap-2 px-4 pb-2">
       {FOLLOW_UP_SUGGESTIONS.map((s) => (
         <SuggestionButton key={s.prompt} suggestion={s} onPick={onPick} />
       ))}
