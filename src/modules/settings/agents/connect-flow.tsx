@@ -56,7 +56,7 @@ const PROVIDERS: Record<
 
 export function ConnectFlow({ mcpUrl }: { mcpUrl: string }) {
   return (
-    <div className="flex min-w-0 max-w-full flex-col gap-4">
+    <div className="flex max-w-full min-w-0 flex-col gap-4">
       <p className="text-muted-foreground text-sm">
         Pick a provider to connect your own AI agent via MCP - unlimited access
         on your own credits.
@@ -98,7 +98,7 @@ function ProviderButtons({ mcpUrl }: { mcpUrl: string }) {
 
       {/* Expanded detail for the selected provider */}
       {selected && (
-        <div className="bg-muted/40 animate-in fade-in zoom-in-95 min-w-0 max-w-full rounded-xl border p-4 duration-150">
+        <div className="bg-muted/40 animate-in fade-in zoom-in-95 max-w-full min-w-0 rounded-xl border p-4 duration-150">
           <p className="mb-3 text-sm">{PROVIDERS[selected].description}</p>
 
           {PROVIDERS[selected].oneClickUrl ? (

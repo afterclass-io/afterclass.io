@@ -6,7 +6,7 @@ import { MCPUrlBox } from "./mcp-url-box";
 
 export function ConnectPage({ mcpUrl }: { mcpUrl: string }) {
   return (
-    <div className="flex min-w-0 max-w-full flex-col gap-4">
+    <div className="flex max-w-full min-w-0 flex-col gap-4">
       <div>
         <PageTitle className="text-left text-2xl font-bold tracking-tight md:text-2xl!">
           Connect your own AI agent
