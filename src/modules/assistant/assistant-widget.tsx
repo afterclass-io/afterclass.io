@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { type ReactNode } from "react";
 import { AfterclassIcon } from "@/common/components/icons";
+import { Button } from "@/common/components/button";
 import { cn } from "@/common/functions/index";
 import { useViewport } from "./use-viewport";
 import { useWidgetPosition } from "./use-widget-position";
@@ -102,27 +103,31 @@ export function AssistantWidget({
             >
               Open full chat <ArrowUpRightIcon className="size-3" />
             </Link>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               aria-label={expanded ? "Restore widget size" : "Expand widget"}
               aria-pressed={expanded}
               onClick={toggleExpanded}
-              className="hover:bg-muted rounded p-1"
+              className="size-7"
             >
               {expanded ? (
                 <Minimize2Icon className="size-4" />
               ) : (
                 <Maximize2Icon className="size-4" />
               )}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               aria-label="Close assistant"
               onClick={() => onOpenChange(false)}
-              className="hover:bg-muted rounded p-1"
+              className="size-7"
             >
               <XIcon className="size-4" />
-            </button>
+            </Button>
           </div>
         </div>
 

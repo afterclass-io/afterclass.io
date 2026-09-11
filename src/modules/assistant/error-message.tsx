@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertTriangleIcon, RotateCwIcon } from "lucide-react";
+import { Button } from "@/common/components/button";
 import { parseChatError, parseGateError } from "./gate";
 
 /** Fixed friendly copy for a failed assistant turn. Deliberately generic: the
@@ -77,14 +78,16 @@ export function AssistantErrorMessage({
           <span>{toFriendlyError(error)}</span>
         </div>
         {isRetryableChatError(error) && (
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onRetry}
-            className="border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 mt-2 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors"
+            className="border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive mt-2 h-7 text-xs"
           >
             <RotateCwIcon className="size-3.5" aria-hidden="true" />
             Try again
-          </button>
+          </Button>
         )}
       </div>
     </div>
