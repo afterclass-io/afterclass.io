@@ -24,10 +24,12 @@ vi.hoisted(() => {
 // auth (buildToolContext), which is exactly the split the fail-closed test
 // pins: OAuth-mounted server + unauthenticated request → Unauthorized
 // envelope (never a throw, never a 500).
+// Cold import costs ~8s solo and far more under full-suite CPU contention
+// (observed >30s hook timeouts), so the hook budget is a generous 120s.
 beforeAll(async () => {
   vi.stubEnv("MCP_DEV_BYPASS", "true");
   await import("./route");
-}, 30_000);
+}, 120_000);
 
 // Embedded route contract: the Next handler serves the MCP protocol
 // without the standalone CLI. Dev bypass resolves the seeded user
@@ -71,7 +73,7 @@ describe("embedded /api/mcp", () => {
     };
     expect(body.result?.tools).toHaveLength(50);
     vi.unstubAllEnvs();
-  }, 30_000);
+  }, 120_000);
 
   it("fail-closed without bypass or token", async () => {
     vi.stubEnv("MCP_DEV_BYPASS", "");
@@ -253,5 +255,5 @@ describe("embedded /api/mcp views", () => {
     }
     vi.unstubAllEnvs();
     // ~15 RPCs + asset GETs; generous budget for full-suite contention.
-  }, 60_000);
+  }, 120_000);
 });

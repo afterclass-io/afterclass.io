@@ -1,6 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 
+// Confirm-gate determinism: dispatch skips the destructive confirm gate
+// under the dev bypass (NODE_ENV=development/unset + MCP_DEV_BYPASS=true),
+// which a local shell may export (e.g. via .env). Pin the test env to
+// NODE_ENV=test with no bypass so the gate always applies — same seeding
+// pattern as src/app/api/mcp/[[...path]]/route.test.ts. Must run before
+// the dispatch import below (isDevBypass() reads env at call time, but
+// the module graph may capture it during import).
+vi.hoisted(() => {
+  // `as Record<...>` — lib.dom/next-env types NODE_ENV as readonly.
+  (process.env as Record<string, string>).NODE_ENV = "test";
+  delete (process.env as Record<string, string | undefined>).MCP_DEV_BYPASS;
+});
+
 // `server-only` throws outside a Next.js server bundle — stub as no-op
 // (same as register.test.ts / adapters.test.ts).
 vi.mock("server-only", () => ({}));
