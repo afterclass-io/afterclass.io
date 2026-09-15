@@ -27,11 +27,13 @@ export function courseDescription(data: CourseFigures): string {
   const { course, averageRating, reviewCount, reviewLabels, professorCount } =
     data;
   const professors = `${professorCount} professor${professorCount === 1 ? "" : "s"}`;
+  const review =
+    reviewCount === 1 ? "1 student review" : `${reviewCount} student reviews`;
   if (reviewCount === 0) {
     return `${course.name} (${course.code}): no student reviews yet; taught by ${professors}.`;
   }
 
-  return `${course.name} (${course.code}): ${reviewCount} student reviews with a ${averageRating.toFixed(2)}/5 average rating across ${professors}.${topLabelNote(reviewLabels)}`;
+  return `${course.name} (${course.code}): ${review} with a ${averageRating.toFixed(2)}/5 average rating across ${professors}.${topLabelNote(reviewLabels)}`;
 }
 
 /** Description composed from this professor's own figures, distinct per URL. */
@@ -39,9 +41,11 @@ export function professorDescription(data: ProfessorFigures): string {
   const { professor, averageRating, reviewCount, reviewLabels, courseCount } =
     data;
   const courses = `${courseCount} course${courseCount === 1 ? "" : "s"}`;
+  const review =
+    reviewCount === 1 ? "1 student review" : `${reviewCount} student reviews`;
   if (reviewCount === 0) {
     return `${professor.name}: no student reviews yet; teaches ${courses}.`;
   }
 
-  return `${professor.name}: ${reviewCount} student reviews with a ${averageRating.toFixed(2)}/5 average rating across ${courses}.${topLabelNote(reviewLabels)}`;
+  return `${professor.name}: ${review} with a ${averageRating.toFixed(2)}/5 average rating across ${courses}.${topLabelNote(reviewLabels)}`;
 }

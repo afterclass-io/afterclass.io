@@ -64,6 +64,15 @@ describe("courseDescription", () => {
     });
     expect(description).toContain("taught by 1 professor.");
   });
+
+  it("uses the singular for one review", () => {
+    const description = courseDescription({
+      ...baseCourse,
+      reviewCount: 1,
+      reviewLabels: [],
+    });
+    expect(description).toContain("1 student review with a 4.11/5");
+  });
 });
 
 describe("professorDescription", () => {
@@ -85,5 +94,14 @@ describe("professorDescription", () => {
     expect(description).toBe(
       "OUH Eng Lieh: no student reviews yet; teaches 1 course.",
     );
+  });
+
+  it("uses the singular for one review", () => {
+    const description = professorDescription({
+      ...baseProfessor,
+      reviewCount: 1,
+      reviewLabels: [],
+    });
+    expect(description).toContain("OUH Eng Lieh: 1 student review with a");
   });
 });
