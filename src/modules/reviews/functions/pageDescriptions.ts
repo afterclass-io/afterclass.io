@@ -15,9 +15,7 @@ type ProfessorFigures = {
 };
 
 /** The most-cited label, if any label was cited at all. */
-function topLabelNote(
-  reviewLabels: { name: string; count: number }[],
-): string {
+function topLabelNote(reviewLabels: { name: string; count: number }[]): string {
   const topLabel = [...reviewLabels].sort((a, b) => b.count - a.count)[0];
   return topLabel && topLabel.count > 0
     ? ` Most-cited label: ${topLabel.name}.`

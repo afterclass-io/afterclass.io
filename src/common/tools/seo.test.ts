@@ -101,6 +101,7 @@ describe("buildCourseJsonLd", () => {
     const course = buildCourseJsonLd({
       siteUrl: BASE,
       name: "Management and Leadership: A Seminar with CEOs",
+      description: "no student reviews yet",
       code: "MGMT214",
       averageRating: 0,
       reviewCount: 0,
@@ -115,11 +116,14 @@ describe("buildCourseJsonLd", () => {
     const course = buildCourseJsonLd({
       siteUrl: BASE,
       name: "Digital Business - Technologies and Transformation",
+      description: "9 student reviews",
       code: "IS215",
       // A DB average can be a long float; the emitted value must not be.
       averageRating: 4.111111111111,
       reviewCount: 9,
     });
+
+    expect(course.description).toBe("9 student reviews");
 
     expect(course.aggregateRating).toEqual({
       "@type": "AggregateRating",
