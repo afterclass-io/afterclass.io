@@ -39,6 +39,10 @@ export const env = createEnv({
         ? process.env.VERCEL_PROJECT_PRODUCTION_URL
         : process.env.VERCEL_URL,
     ),
+    // Vercel deployment context, exposed so generated files (robots.ts) read
+    // it through the validated schema rather than process.env directly.
+    // Unset locally and in CI.
+    VERCEL_ENV: z.enum(["production", "preview", "development"]).optional(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
     // LLM provider (OpenAI-compatible) - any endpoint that speaks the OpenAI chat API.
@@ -172,7 +176,10 @@ export const env = createEnv({
     EDGE_CONFIG: process.env.EDGE_CONFIG,
     NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? process.env.VERCEL_URL,
+    // Leave undefined when unset so the schema's siteUrlValidator fallback
+    // (VERCEL_PROJECT_PRODUCTION_URL on production, VERCEL_URL otherwise) runs.
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    VERCEL_ENV: process.env.VERCEL_ENV,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     LLM_API_KEY: process.env.LLM_API_KEY,

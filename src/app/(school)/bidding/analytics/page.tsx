@@ -1,3 +1,5 @@
+import { type Metadata } from "next";
+
 import { api } from "@/common/tools/trpc/server";
 import {
   Card,
@@ -9,7 +11,10 @@ import {
 import { Separator } from "@/common/components/separator";
 import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
 import { notFound } from "next/navigation";
-import { PredictionType, type UniversityAbbreviation } from "@/generated/prisma/enums";
+import {
+  PredictionType,
+  type UniversityAbbreviation,
+} from "@/generated/prisma/enums";
 import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
 import { BidAnalyticsClient } from "@/modules/bidding/components/BidAnalyticsClient";
 import { AddToTimetableButton } from "@/modules/bidding/components/AddToTimetableButton";
@@ -19,6 +24,12 @@ import { texts } from "@/modules/bidding/constants";
 import { EmptyState } from "@/common/components/empty-state";
 import { selectOneClassPerTerm } from "@/modules/bidding/utils/selectOneClassPerTerm";
 import { filterSafetyFactors } from "@/modules/bidding/utils/bid-prediction";
+
+// `classId`, `course`, `section`, `rounds`, `windows` and `prof` all select a
+// facet of this page, so the canonical drops them.
+export const metadata: Metadata = {
+  alternates: { canonical: "/bidding/analytics" },
+};
 
 export default async function BiddingHistoryPage({
   searchParams,

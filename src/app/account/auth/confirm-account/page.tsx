@@ -1,8 +1,15 @@
+import { type Metadata } from "next";
+
 import { Button } from "@/common/components/button";
 import { ProgressLink } from "@/common/components/progress-link";
 import { AuthCard } from "@/modules/auth/components";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+
+// `confirmation_url` names one confirmation, not a page of its own.
+export const metadata: Metadata = {
+  alternates: { canonical: "/account/auth/confirm-account" },
+};
 
 const CONFIRMATION_TEXTS = {
   signup: {
@@ -25,16 +32,14 @@ export default async function ConfirmSignUp(props: {
   searchParams: Promise<{ confirmation_url: string | string[] | undefined }>;
 }) {
   const searchParams = await props.searchParams;
-  const confirmationUrlSchema = z
-    .url()
-    .refine((url) => {
-      try {
-        const urlObject = new URL(url);
-        return urlObject.searchParams?.has("type");
-      } catch {
-        return false;
-      }
-    });
+  const confirmationUrlSchema = z.url().refine((url) => {
+    try {
+      const urlObject = new URL(url);
+      return urlObject.searchParams?.has("type");
+    } catch {
+      return false;
+    }
+  });
 
   const confirmationUrl = searchParams?.confirmation_url;
   const parseResult = confirmationUrlSchema.safeParse(confirmationUrl);

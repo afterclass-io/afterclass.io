@@ -1,7 +1,13 @@
+import { type Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/server/auth";
 import { RoadmapsExplorer } from "@/modules/roadmaps/components/RoadmapsExplorer";
+
+// `view` selects which tab is shown, so it is dropped from the canonical.
+export const metadata: Metadata = {
+  alternates: { canonical: "/roadmaps" },
+};
 
 // ---------------------------------------------------------------------------
 // Page
