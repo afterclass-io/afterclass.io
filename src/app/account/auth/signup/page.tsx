@@ -1,3 +1,4 @@
+import { type Metadata } from "next";
 import { redirect } from "next/navigation";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import { getEdgeConfig } from "@/common/providers/EdgeConfig/EdgeConfigProvider";
@@ -6,6 +7,11 @@ import {
   SignupForm,
   ResetV1UserAlertDialog,
 } from "@/modules/auth/components";
+
+// `email` pre-fills the form, it does not name a distinct page.
+export const metadata: Metadata = {
+  alternates: { canonical: "/account/auth/signup" },
+};
 
 export default async function SignUp(props: {
   searchParams: Promise<{ email: string | string[] | undefined }>;

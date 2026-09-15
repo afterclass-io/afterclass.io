@@ -38,20 +38,22 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : env.NEXTAUTH_URL,
-  ),
-  title: appName,
+  metadataBase: new URL(env.NEXTAUTH_URL),
+  title: { default: appName, template: `%s | ${appName}` },
   description: appDesc,
   openGraph: {
     title: appName,
     siteName: appName,
     description: appDesc,
-    locale: "en_US",
+    // `en_SG` is not on the Open Graph locale enumeration (FacebookLocales.xml);
+    // `en_GB` is the closest accepted value. See the issue report for the source.
+    locale: "en_GB",
     type: "website",
+    url: "/",
   },
+  // No `openGraph.images`: the root `opengraph-image.png` file convention emits
+  // it, and declaring images here suppresses that file-convention image.
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({

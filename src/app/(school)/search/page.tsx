@@ -1,3 +1,5 @@
+import { type Metadata } from "next";
+
 import { ConstrainedContainer } from "@/common/components/constrained-container";
 import { SearchResult } from "@/modules/search/components/SearchResult";
 import {
@@ -8,6 +10,13 @@ import {
   type SearchProfResult,
   searchProf,
 } from "@/modules/search/functions/searchProf";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+  // `q` is the query, but this route is noindexed, so the canonical is a
+  // formality: the bare search URL is declared anyway.
+  alternates: { canonical: "/search" },
+};
 
 export default async function Search(props: {
   searchParams: Promise<{ q: string }>;
