@@ -78,6 +78,7 @@ export default async function Course(props: {
             data={buildCourseJsonLd({
               siteUrl: env.NEXTAUTH_URL,
               name: data.course.name,
+              description: courseDescription(data),
               code: data.course.code,
               averageRating: data.averageRating,
               reviewCount: data.reviewCount,

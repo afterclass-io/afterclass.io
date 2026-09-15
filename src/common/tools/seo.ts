@@ -114,12 +114,14 @@ function buildAggregateRating(
 export function buildCourseJsonLd({
   siteUrl,
   name,
+  description,
   code,
   averageRating,
   reviewCount,
 }: {
   siteUrl: string;
   name: string;
+  description: string;
   code: string;
   averageRating: number;
   reviewCount: number;
@@ -130,6 +132,8 @@ export function buildCourseJsonLd({
     "@context": "https://schema.org",
     "@type": "Course",
     name,
+    // Required alongside `name` and `provider` for the Course rich result.
+    description,
     courseCode: code,
     url: abs(siteUrl, `/course/${code}`),
     provider: {
