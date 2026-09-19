@@ -57,6 +57,7 @@ function ConsentForm() {
   const [details, setDetails] = useState<ConsentDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (!authorizationId) return;
@@ -97,7 +98,7 @@ function ConsentForm() {
     return () => {
       cancelled = true;
     };
-  }, [authorizationId]);
+  }, [authorizationId, attempt]);
 
   const decide = async (decision: "approve" | "deny") => {
     if (!authorizationId || busy) return;
@@ -159,12 +160,16 @@ function ConsentForm() {
         </Shell>
       );
     }
+    const retry = () => {
+      setError(null);
+      setAttempt((n) => n + 1);
+    };
     return (
       <Shell>
         <EmptyState
           title="Connect an agent"
           description={error}
-          action={<Button onClick={() => decide("approve")}>Retry</Button>}
+          action={<Button onClick={retry}>Retry</Button>}
         />
       </Shell>
     );
