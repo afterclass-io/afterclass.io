@@ -57,6 +57,32 @@ describe("supabase-consent", () => {
     expect(approveAuthorization).toHaveBeenCalledWith("auth-1");
   });
 
+  it("threads the real refresh token into setSession", async () => {
+    approveAuthorization.mockResolvedValue({
+      data: { redirect_url: "https://client/cb?code=x" },
+      error: null,
+    });
+    setSession.mockClear();
+    await approveConsent("auth-1", "tok", "real-refresh");
+    expect(setSession).toHaveBeenCalledWith({
+      access_token: "tok",
+      refresh_token: "real-refresh",
+    });
+  });
+
+  it("falls back to the sentinel when no refresh token exists", async () => {
+    approveAuthorization.mockResolvedValue({
+      data: { redirect_url: "https://client/cb?code=x" },
+      error: null,
+    });
+    setSession.mockClear();
+    await approveConsent("auth-1", "tok");
+    expect(setSession).toHaveBeenCalledWith({
+      access_token: "tok",
+      refresh_token: "refresh_token_not_used",
+    });
+  });
+
   it("throws when approve fails", async () => {
     approveAuthorization.mockResolvedValue({
       data: null,

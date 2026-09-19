@@ -4,6 +4,7 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/server/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/server/auth/supabase-access-token", () => ({
   getSupabaseAccessToken: vi.fn(),
+  getSupabaseRefreshToken: vi.fn().mockResolvedValue(null),
 }));
 vi.mock("@/server/supabase-consent", () => ({
   listUserGrants: vi.fn(),
@@ -36,7 +37,7 @@ describe("revokeAgent", () => {
     const fd = new FormData();
     fd.set("clientId", "cl1");
     await revokeAgent(fd);
-    expect(mockedRevoke).toHaveBeenCalledWith("cl1", "tok");
+    expect(mockedRevoke).toHaveBeenCalledWith("cl1", "tok", null);
     expect(revalidatePath).toHaveBeenCalledWith("/settings/agents");
   });
 

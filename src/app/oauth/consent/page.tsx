@@ -3,14 +3,15 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-type Details = {
-  status: "details";
-  client?: { name: string; id?: string };
-  client_id?: string;
-  scope?: string;
-  redirect_uri?: string;
-  csrfToken?: string;
-};
+import {
+  ConsentCard,
+  ConsentError,
+  ConsentLoading,
+  ConsentMissing,
+  ConsentSignIn,
+  Shell,
+  type ConsentDetails,
+} from "./consent-ui";
 
 type AlreadyConsented = {
   status: "already_consented";
@@ -20,9 +21,10 @@ type AlreadyConsented = {
 function ConsentForm() {
   const searchParams = useSearchParams();
   const authorizationId = searchParams.get("authorization_id");
-  const [details, setDetails] = useState<Details | null>(null);
+  const [details, setDetails] = useState<ConsentDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (!authorizationId) return;
@@ -32,7 +34,9 @@ function ConsentForm() {
         const res = await fetch(
           `/api/oauth/consent?authorization_id=${encodeURIComponent(authorizationId)}`,
         );
-        const data = (await res.json()) as (Details | AlreadyConsented) & {
+        const data = (await res.json()) as (
+          ConsentDetails | AlreadyConsented
+        ) & {
           error?: string;
         };
         if (cancelled) return;
@@ -61,7 +65,7 @@ function ConsentForm() {
     return () => {
       cancelled = true;
     };
-  }, [authorizationId]);
+  }, [authorizationId, attempt]);
 
   const decide = async (decision: "approve" | "deny") => {
     if (!authorizationId || busy) return;
@@ -96,88 +100,56 @@ function ConsentForm() {
 
   if (!authorizationId) {
     return (
-      <main>
-        <h1>Connect an agent</h1>
-        <p>Missing authorization request.</p>
-      </main>
+      <Shell>
+        <ConsentMissing />
+      </Shell>
     );
   }
 
   if (error) {
+    if (error === "no supabase session") {
+      const loginHref = `/account/auth/login?callbackUrl=${encodeURIComponent(`/oauth/consent?authorization_id=${authorizationId}`)}`;
+      return (
+        <Shell>
+          <ConsentSignIn loginHref={loginHref} />
+        </Shell>
+      );
+    }
+    const retry = () => {
+      setError(null);
+      setAttempt((n) => n + 1);
+    };
     return (
-      <main>
-        <h1>Connect an agent</h1>
-        {error === "no supabase session" ? (
-          <p>
-            Your account isn&apos;t linked to Supabase - sign in with your
-            school email to connect an agent.
-          </p>
-        ) : (
-          <p>{error}</p>
-        )}
-      </main>
+      <Shell>
+        <ConsentError message={error} onRetry={retry} />
+      </Shell>
     );
   }
 
   if (!details) {
     return (
-      <main>
-        <h1>Connect an agent</h1>
-        <p>Loading...</p>
-      </main>
+      <Shell>
+        <ConsentLoading />
+      </Shell>
     );
   }
 
   return (
-    <main>
-      <h1>Connect an agent</h1>
-      <p>
-        <strong>{details.client?.name ?? "This app"}</strong> is requesting
-        access to your account.
-      </p>
-      {(details.client_id ?? details.client?.id) && (
-        <p>
-          Client ID: <code>{details.client_id ?? details.client?.id}</code>
-        </p>
-      )}
-      {details.redirect_uri && (
-        <p>
-          Redirect URI: <code>{details.redirect_uri}</code>
-        </p>
-      )}
-      <p>
-        <em>
-          Warning: this is an unverified third-party application that will be
-          able to read and modify your timetables, bids, and roadmaps.
-        </em>
-      </p>
-      {details.scope && (
-        <section>
-          <h2>Requested access</h2>
-          <ul>
-            {details.scope
-              .split(" ")
-              .filter(Boolean)
-              .map((s) => (
-                <li key={s}>{s}</li>
-              ))}
-          </ul>
-        </section>
-      )}
-      <button type="button" onClick={() => decide("approve")} disabled={busy}>
-        Approve
-      </button>
-      <button type="button" onClick={() => decide("deny")} disabled={busy}>
-        Deny
-      </button>
-    </main>
+    <Shell>
+      <ConsentCard
+        details={details}
+        busy={busy}
+        onApprove={() => decide("approve")}
+        onDeny={() => decide("deny")}
+      />
+    </Shell>
   );
 }
 
 export default function OAuthConsentPage() {
   // Suspense is required around useSearchParams (CSR bailout).
   return (
-    <Suspense fallback={<main>Loading...</main>}>
+    <Suspense fallback={<Shell>Loading…</Shell>}>
       <ConsentForm />
     </Suspense>
   );

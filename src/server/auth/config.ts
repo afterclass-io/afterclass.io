@@ -8,6 +8,7 @@ import { type Users } from "@/generated/prisma/client";
 
 import { env } from "@/env";
 import { signInWithEmail } from "../supabase";
+import { exchangeGoogleIdToken } from "./supabase-link";
 import { db } from "@/server/db";
 import randomId from "@/common/functions/randomId";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
@@ -33,12 +34,16 @@ declare module "next-auth" {
    */
   interface User {
     supabaseAccessToken?: string | null;
+    supabaseRefreshToken?: string | null;
+    supabaseExpiresAt?: number | null;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     supabaseAccessToken?: string | null;
+    supabaseRefreshToken?: string | null;
+    supabaseExpiresAt?: number | null;
   }
 }
 
@@ -192,19 +197,130 @@ export const authConfig = {
         token.supabaseAccessToken =
           (user as { supabaseAccessToken?: string | null })
             .supabaseAccessToken ?? null;
+        token.supabaseRefreshToken =
+          (user as { supabaseRefreshToken?: string | null })
+            .supabaseRefreshToken ?? null;
+        token.supabaseExpiresAt =
+          (user as { supabaseExpiresAt?: number | null }).supabaseExpiresAt ??
+          null;
       }
 
       if (account?.provider === "google") {
-        const emailToUse = user.email ?? profile?.email;
+        // First Google sign-in only: exchange the Google ID token for a
+        // Supabase session so MCP OAuth consent can run as this user.
+        // Failures leave tokens null (login still succeeds; consent prompts
+        // a re-login) — never block sign-in on the link step.
+        let link: {
+          accessToken: string;
+          refreshToken: string;
+          expiresAt: number | null;
+          supabaseUserId: string;
+        } | null = null;
+        const idToken =
+          typeof (account as { id_token?: unknown }).id_token === "string"
+            ? (account as { id_token: string }).id_token
+            : null;
+        if (idToken) {
+          try {
+            link = await exchangeGoogleIdToken({
+              idToken,
+              supabaseUrl: env.NEXT_PUBLIC_SUPABASE_URL,
+              anonKey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+            });
+            token.supabaseAccessToken = link.accessToken;
+            token.supabaseRefreshToken = link.refreshToken;
+            token.supabaseExpiresAt = link.expiresAt;
+          } catch (e) {
+            Sentry.addBreadcrumb({
+              category: "auth",
+              message: `Google Supabase link failed: ${e instanceof Error ? e.message : String(e)}`,
+              level: "warning",
+            });
+          }
+        }
+
+        const emailToUse = user?.email ?? profile?.email;
         if (!emailToUse) throw new Error("Email not found in user or profile");
 
-        const dbUser = await db.users.findUnique({
+        let dbUser = await db.users.findUnique({
           where: { email: emailToUse },
         });
-        if (!dbUser) throw new Error("Email not found in database");
+        if (!dbUser) {
+          // signIn() is validation-only, so create the row once here. Use
+          // the Supabase id when the exchange succeeded so resolveMcpUser
+          // (id lookup) matches; fall back to a generated id when it failed
+          // so login still succeeds and consent prompts a re-login.
+          const universities = await db.universities.findMany({
+            include: { domains: true },
+          });
+          const uniOfThisEmail = universities.find((u) =>
+            u.domains.some((d) => emailToUse.endsWith(d.domain)),
+          );
+          if (!uniOfThisEmail) throw new Error("Email not found in database");
+          try {
+            const created = await db.users.create({
+              data: {
+                ...(link ? { id: link.supabaseUserId } : {}),
+                email: emailToUse,
+                username: `user_${randomId()}`,
+                isVerified: true,
+                universityId: uniOfThisEmail.id,
+                photoUrl: (profile as { picture?: string } | null)?.picture,
+              },
+            });
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { deprecatedPasswordDigest, ...rest } = created;
+            token.sub = rest.id;
+            token.user = rest;
+            return token;
+          } catch (e) {
+            // Concurrent sign-in race: re-read the row another request made.
+            dbUser = await db.users.findUnique({
+              where: { email: emailToUse },
+            });
+            if (!dbUser) throw e;
+          }
+        }
+        // Reconcile legacy generated-id rows: when a later exchange succeeds
+        // with a Supabase id, move the row to it (FKs are ON UPDATE CASCADE)
+        // so resolveMcpUser matches. Never block login on the reconcile.
+        if (link && dbUser.id !== link.supabaseUserId) {
+          try {
+            const clash = await db.users.findUnique({
+              where: { id: link.supabaseUserId },
+            });
+            if (clash) {
+              // Another row already owns this Supabase id: drop the
+              // occupied identity's credentials so consent cannot run as
+              // the wrong Supabase user. Never block login on this.
+              token.supabaseAccessToken = null;
+              token.supabaseRefreshToken = null;
+              token.supabaseExpiresAt = null;
+            } else {
+              const updated = await db.users.update({
+                where: { email: emailToUse },
+                data: { id: link.supabaseUserId },
+              });
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { deprecatedPasswordDigest, ...rest } = updated;
+              token.sub = rest.id;
+              token.user = rest;
+              return token;
+            }
+          } catch (e) {
+            Sentry.addBreadcrumb({
+              category: "auth",
+              message: `Google user reconcile failed: ${e instanceof Error ? e.message : String(e)}`,
+              level: "warning",
+            });
+          }
+        }
         // strip user object of unwanted sensitive fields before populating to token
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { deprecatedPasswordDigest, ...rest } = dbUser;
+        // Keep token.sub on the local row so trigger:"update" lookups hit
+        // it (Auth.js seeds sub from the provider id, not Users.id).
+        token.sub = rest.id;
         token.user = rest;
       }
 
@@ -246,6 +362,10 @@ export const authConfig = {
           return false;
         }
 
+        // Validation-only: user creation happens once in jwt() (which has
+        // the Supabase id from the exchange and can create/reconcile the
+        // row). Creating here would mint a generated-id row before jwt()
+        // knows the Supabase id.
         const user = await db.users.findUnique({
           where: { email: googleProfile.email },
         });
@@ -270,15 +390,8 @@ export const authConfig = {
           return false;
         }
 
-        await db.users.create({
-          data: {
-            email: googleProfile.email,
-            username: `user_${randomId()}`,
-            isVerified: googleProfile.email_verified,
-            universityId: uniOfThisEmail.id,
-            photoUrl: googleProfile.picture,
-          },
-        });
+        // New-user validation only — jwt() creates the row once (with the
+        // Supabase id when the exchange succeeded).
         return true;
       }
 

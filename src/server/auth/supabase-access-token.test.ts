@@ -19,7 +19,10 @@ vi.mock("@/env", async (importOriginal) => {
   return { ...actual, env: { ...actual.env, NEXTAUTH_SECRET: "test-secret" } };
 });
 
-import { getSupabaseAccessToken } from "./supabase-access-token";
+import {
+  getSupabaseAccessToken,
+  getSupabaseRefreshToken,
+} from "./supabase-access-token";
 import { authConfig } from "./config";
 
 function cookieStore(entries: Record<string, string>) {
@@ -85,6 +88,26 @@ describe("getSupabaseAccessToken", () => {
     );
     mockDecode.mockResolvedValue({ sub: "u1" });
     await expect(getSupabaseAccessToken()).resolves.toBeNull();
+  });
+
+  it("returns the stored refresh token for Google sign-ins", async () => {
+    mockCookies.mockResolvedValue(
+      cookieStore({ "authjs.session-token": "raw-jwe" }),
+    );
+    mockDecode.mockResolvedValue({
+      sub: "u1",
+      supabaseAccessToken: "supa-tok",
+      supabaseRefreshToken: "supa-refresh",
+    });
+    await expect(getSupabaseRefreshToken()).resolves.toBe("supa-refresh");
+  });
+
+  it("returns null refresh token for legacy sessions", async () => {
+    mockCookies.mockResolvedValue(
+      cookieStore({ "authjs.session-token": "raw-jwe" }),
+    );
+    mockDecode.mockResolvedValue({ sub: "u1", supabaseAccessToken: "tok" });
+    await expect(getSupabaseRefreshToken()).resolves.toBeNull();
   });
 });
 

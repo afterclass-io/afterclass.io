@@ -13,11 +13,12 @@ import { env } from "@/env";
  * token (carried in the NextAuth session, see `src/server/auth/config.ts`).
  *
  * NOTE: the Supabase access token in the NextAuth JWT is captured at
- * sign-in and expires after ~1h. Stale tokens surface a Supabase auth error
- * (e.g. the consent route returns 400); recommend the user re-login. A
- * refresh-token flow is out of scope and tracked for later.
+ * sign-in and expires after ~1h. The JWT refresh token (Google sign-ins,
+ * Task 1) is threaded through `setSession`; legacy sessions without one
+ * fall back to the sentinel. Stale tokens surface a Supabase auth error
+ * (e.g. the consent route returns 400); recommend the user re-login.
  */
-async function userClient(accessToken: string) {
+async function userClient(accessToken: string, refreshToken?: string | null) {
   const client = createClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -33,13 +34,13 @@ async function userClient(accessToken: string) {
   // session so the OAuth-server calls run as this user.
   //
   // `setSession` requires a non-empty `refresh_token` (it throws
-  // `AuthSessionMissingError` otherwise). The NextAuth JWT only carries the
-  // access token - a refresh-token flow is tracked separately - so pass a
-  // sentinel. It is only used if the access token has already expired, which
-  // a per-call consent client (fresh ~1h token) never needs.
+  // `AuthSessionMissingError` otherwise). Callers thread the JWT refresh
+  // token through (see `getSupabaseRefreshToken()`); when absent (legacy
+  // credentials sessions without a stored refresh token) fall back to a
+  // sentinel that is only used if the access token already expired.
   const { error } = await client.auth.setSession({
     access_token: accessToken,
-    refresh_token: "refresh_token_not_used",
+    refresh_token: refreshToken ?? "refresh_token_not_used",
   });
   if (error) throw error;
   return client;
@@ -64,9 +65,10 @@ export type ConsentDetailsResult =
 export async function approveConsent(
   authorizationId: string,
   accessToken: string,
+  refreshToken?: string | null,
 ) {
   const { data, error } = await (
-    await userClient(accessToken)
+    await userClient(accessToken, refreshToken)
   ).auth.oauth.approveAuthorization(authorizationId);
   if (error || !data?.redirect_url)
     throw new Error(error?.message ?? "approve failed");
@@ -76,9 +78,10 @@ export async function approveConsent(
 export async function denyConsent(
   authorizationId: string,
   accessToken: string,
+  refreshToken?: string | null,
 ) {
   const { data, error } = await (
-    await userClient(accessToken)
+    await userClient(accessToken, refreshToken)
   ).auth.oauth.denyAuthorization(authorizationId);
   if (error || !data?.redirect_url)
     throw new Error(error?.message ?? "deny failed");
@@ -88,9 +91,10 @@ export async function denyConsent(
 export async function getConsentDetails(
   authorizationId: string,
   accessToken: string,
+  refreshToken?: string | null,
 ): Promise<ConsentDetailsResult> {
   const { data, error } = await (
-    await userClient(accessToken)
+    await userClient(accessToken, refreshToken)
   ).auth.oauth.getAuthorizationDetails(authorizationId);
   if (error || !data)
     throw new Error(error?.message ?? "invalid authorization request");
@@ -172,9 +176,10 @@ export function verifyConsentCsrf(
 
 export async function listUserGrants(
   accessToken: string,
+  refreshToken?: string | null,
 ): Promise<UserGrant[]> {
   const { data, error } = await (
-    await userClient(accessToken)
+    await userClient(accessToken, refreshToken)
   ).auth.oauth.listGrants();
   // Consumers must surface failures, not show an empty list.
   if (error) throw new Error(error.message);
@@ -190,9 +195,10 @@ export async function listUserGrants(
 export async function revokeUserGrant(
   clientId: string,
   accessToken: string,
+  refreshToken?: string | null,
 ): Promise<void> {
   const { error } = await (
-    await userClient(accessToken)
+    await userClient(accessToken, refreshToken)
   ).auth.oauth.revokeGrant({ clientId });
   if (error) throw new Error(error.message);
 }
