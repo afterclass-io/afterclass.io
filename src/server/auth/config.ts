@@ -8,6 +8,7 @@ import { type Users } from "@/generated/prisma/client";
 
 import { env } from "@/env";
 import { signInWithEmail } from "../supabase";
+import { exchangeGoogleIdToken } from "./supabase-link";
 import { db } from "@/server/db";
 import randomId from "@/common/functions/randomId";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
@@ -33,12 +34,16 @@ declare module "next-auth" {
    */
   interface User {
     supabaseAccessToken?: string | null;
+    supabaseRefreshToken?: string | null;
+    supabaseExpiresAt?: number | null;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     supabaseAccessToken?: string | null;
+    supabaseRefreshToken?: string | null;
+    supabaseExpiresAt?: number | null;
   }
 }
 
@@ -192,16 +197,83 @@ export const authConfig = {
         token.supabaseAccessToken =
           (user as { supabaseAccessToken?: string | null })
             .supabaseAccessToken ?? null;
+        token.supabaseRefreshToken =
+          (user as { supabaseRefreshToken?: string | null })
+            .supabaseRefreshToken ?? null;
+        token.supabaseExpiresAt =
+          (user as { supabaseExpiresAt?: number | null }).supabaseExpiresAt ??
+          null;
       }
 
       if (account?.provider === "google") {
+        // First Google sign-in only: exchange the Google ID token for a
+        // Supabase session so MCP OAuth consent can run as this user.
+        // Failures leave tokens null (login still succeeds; consent prompts
+        // a re-login) — never block sign-in on the link step.
+        let link: {
+          accessToken: string;
+          refreshToken: string;
+          expiresAt: number | null;
+          supabaseUserId: string;
+        } | null = null;
+        const idToken =
+          typeof (account as { id_token?: unknown }).id_token === "string"
+            ? (account as { id_token: string }).id_token
+            : null;
+        if (idToken) {
+          try {
+            link = await exchangeGoogleIdToken({
+              idToken,
+              supabaseUrl: env.NEXT_PUBLIC_SUPABASE_URL,
+              anonKey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+            });
+            token.supabaseAccessToken = link.accessToken;
+            token.supabaseRefreshToken = link.refreshToken;
+            token.supabaseExpiresAt = link.expiresAt;
+          } catch (e) {
+            Sentry.addBreadcrumb({
+              category: "auth",
+              message: `Google Supabase link failed: ${e instanceof Error ? e.message : String(e)}`,
+              level: "warning",
+            });
+          }
+        }
+
         const emailToUse = user.email ?? profile?.email;
         if (!emailToUse) throw new Error("Email not found in user or profile");
 
         const dbUser = await db.users.findUnique({
           where: { email: emailToUse },
         });
-        if (!dbUser) throw new Error("Email not found in database");
+        if (!dbUser) {
+          // signIn() already created the row (random uuid) when the link
+          // was unavailable; when the exchange succeeded, create it here
+          // with the Supabase id so resolveMcpUser matches. If signIn()
+          // created it first, fall through to the throw below (Task 2
+          // backfills existing rows).
+          if (!link) throw new Error("Email not found in database");
+          const universities = await db.universities.findMany({
+            include: { domains: true },
+          });
+          const uniOfThisEmail = universities.find((u) =>
+            u.domains.some((d) => emailToUse.endsWith(d.domain)),
+          );
+          if (!uniOfThisEmail) throw new Error("Email not found in database");
+          const created = await db.users.create({
+            data: {
+              id: link.supabaseUserId,
+              email: emailToUse,
+              username: `user_${randomId()}`,
+              isVerified: true,
+              universityId: uniOfThisEmail.id,
+              photoUrl: (profile as { picture?: string } | null)?.picture,
+            },
+          });
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { deprecatedPasswordDigest, ...rest } = created;
+          token.user = rest;
+          return token;
+        }
         // strip user object of unwanted sensitive fields before populating to token
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { deprecatedPasswordDigest, ...rest } = dbUser;
