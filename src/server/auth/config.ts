@@ -239,19 +239,17 @@ export const authConfig = {
           }
         }
 
-        const emailToUse = user.email ?? profile?.email;
+        const emailToUse = user?.email ?? profile?.email;
         if (!emailToUse) throw new Error("Email not found in user or profile");
 
-        const dbUser = await db.users.findUnique({
+        let dbUser = await db.users.findUnique({
           where: { email: emailToUse },
         });
         if (!dbUser) {
-          // signIn() already created the row (random uuid) when the link
-          // was unavailable; when the exchange succeeded, create it here
-          // with the Supabase id so resolveMcpUser matches. If signIn()
-          // created it first, fall through to the throw below (Task 2
-          // backfills existing rows).
-          if (!link) throw new Error("Email not found in database");
+          // signIn() is validation-only, so create the row once here. Use
+          // the Supabase id when the exchange succeeded so resolveMcpUser
+          // (id lookup) matches; fall back to a generated id when it failed
+          // so login still succeeds and consent prompts a re-login.
           const universities = await db.universities.findMany({
             include: { domains: true },
           });
@@ -259,20 +257,54 @@ export const authConfig = {
             u.domains.some((d) => emailToUse.endsWith(d.domain)),
           );
           if (!uniOfThisEmail) throw new Error("Email not found in database");
-          const created = await db.users.create({
-            data: {
-              id: link.supabaseUserId,
-              email: emailToUse,
-              username: `user_${randomId()}`,
-              isVerified: true,
-              universityId: uniOfThisEmail.id,
-              photoUrl: (profile as { picture?: string } | null)?.picture,
-            },
-          });
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { deprecatedPasswordDigest, ...rest } = created;
-          token.user = rest;
-          return token;
+          try {
+            const created = await db.users.create({
+              data: {
+                ...(link ? { id: link.supabaseUserId } : {}),
+                email: emailToUse,
+                username: `user_${randomId()}`,
+                isVerified: true,
+                universityId: uniOfThisEmail.id,
+                photoUrl: (profile as { picture?: string } | null)?.picture,
+              },
+            });
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { deprecatedPasswordDigest, ...rest } = created;
+            token.user = rest;
+            return token;
+          } catch (e) {
+            // Concurrent sign-in race: re-read the row another request made.
+            dbUser = await db.users.findUnique({
+              where: { email: emailToUse },
+            });
+            if (!dbUser) throw e;
+          }
+        }
+        // Reconcile legacy generated-id rows: when a later exchange succeeds
+        // with a Supabase id, move the row to it (FKs are ON UPDATE CASCADE)
+        // so resolveMcpUser matches. Never block login on the reconcile.
+        if (link && dbUser.id !== link.supabaseUserId) {
+          try {
+            const clash = await db.users.findUnique({
+              where: { id: link.supabaseUserId },
+            });
+            if (!clash) {
+              const updated = await db.users.update({
+                where: { email: emailToUse },
+                data: { id: link.supabaseUserId },
+              });
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { deprecatedPasswordDigest, ...rest } = updated;
+              token.user = rest;
+              return token;
+            }
+          } catch (e) {
+            Sentry.addBreadcrumb({
+              category: "auth",
+              message: `Google user reconcile failed: ${e instanceof Error ? e.message : String(e)}`,
+              level: "warning",
+            });
+          }
         }
         // strip user object of unwanted sensitive fields before populating to token
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -318,6 +350,10 @@ export const authConfig = {
           return false;
         }
 
+        // Validation-only: user creation happens once in jwt() (which has
+        // the Supabase id from the exchange and can create/reconcile the
+        // row). Creating here would mint a generated-id row before jwt()
+        // knows the Supabase id.
         const user = await db.users.findUnique({
           where: { email: googleProfile.email },
         });
@@ -342,15 +378,8 @@ export const authConfig = {
           return false;
         }
 
-        await db.users.create({
-          data: {
-            email: googleProfile.email,
-            username: `user_${randomId()}`,
-            isVerified: googleProfile.email_verified,
-            universityId: uniOfThisEmail.id,
-            photoUrl: googleProfile.picture,
-          },
-        });
+        // New-user validation only — jwt() creates the row once (with the
+        // Supabase id when the exchange succeeded).
         return true;
       }
 

@@ -137,9 +137,9 @@ export function ConsentSignIn({ loginHref }: { loginHref: string }) {
       title="Sign in to continue"
       description="Sign in with Google to connect an AI agent."
       action={
-        <a href={loginHref}>
-          <Button>Sign in with Google</Button>
-        </a>
+        <Button asChild>
+          <a href={loginHref}>Sign in with Google</a>
+        </Button>
       }
     />
   );
