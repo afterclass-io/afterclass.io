@@ -44,6 +44,8 @@ function req(
 describe("GET /api/oauth/consent", () => {
   beforeEach(() => {
     mockGetToken.mockReset();
+    mockGetRefreshToken.mockReset();
+    mockGetRefreshToken.mockResolvedValue(null);
     mockGetConsentDetails.mockReset();
     mockGetConsentDetails.mockResolvedValue({
       status: "details",
@@ -67,7 +69,8 @@ describe("GET /api/oauth/consent", () => {
       req("http://localhost/api/oauth/consent?authorization_id=a1"),
     );
     expect(res.status).toBe(200);
-    expect(mockGetConsentDetails).toHaveBeenCalledWith("a1", "tok");
+    expect(mockGetRefreshToken).toHaveBeenCalled();
+    expect(mockGetConsentDetails).toHaveBeenCalledWith("a1", "tok", null);
   });
 
   it("rejects cross-origin GET via Sec-Fetch-Site (403)", async () => {
@@ -121,6 +124,8 @@ describe("GET /api/oauth/consent", () => {
 describe("POST /api/oauth/consent", () => {
   beforeEach(() => {
     mockGetToken.mockReset();
+    mockGetRefreshToken.mockReset();
+    mockGetRefreshToken.mockResolvedValue(null);
     mockApproveConsent.mockReset();
     mockDenyConsent.mockReset();
     mockApproveConsent.mockResolvedValue({
@@ -151,7 +156,7 @@ describe("POST /api/oauth/consent", () => {
       }),
     );
     expect(res.status).toBe(200);
-    expect(mockApproveConsent).toHaveBeenCalledWith("a1", "tok");
+    expect(mockApproveConsent).toHaveBeenCalledWith("a1", "tok", null);
     const body = (await res.json()) as { redirectUrl: string };
     expect(body.redirectUrl).toBe("https://client/cb?code=x");
   });
@@ -164,7 +169,7 @@ describe("POST /api/oauth/consent", () => {
       }),
     );
     expect(res.status).toBe(200);
-    expect(mockDenyConsent).toHaveBeenCalledWith("a1", "tok");
+    expect(mockDenyConsent).toHaveBeenCalledWith("a1", "tok", null);
   });
 
   it("returns 400 for unknown decision - does not take the deny path", async () => {
