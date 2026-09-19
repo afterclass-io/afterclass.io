@@ -270,6 +270,7 @@ export const authConfig = {
             });
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { deprecatedPasswordDigest, ...rest } = created;
+            token.sub = rest.id;
             token.user = rest;
             return token;
           } catch (e) {
@@ -288,13 +289,21 @@ export const authConfig = {
             const clash = await db.users.findUnique({
               where: { id: link.supabaseUserId },
             });
-            if (!clash) {
+            if (clash) {
+              // Another row already owns this Supabase id: drop the
+              // occupied identity's credentials so consent cannot run as
+              // the wrong Supabase user. Never block login on this.
+              token.supabaseAccessToken = null;
+              token.supabaseRefreshToken = null;
+              token.supabaseExpiresAt = null;
+            } else {
               const updated = await db.users.update({
                 where: { email: emailToUse },
                 data: { id: link.supabaseUserId },
               });
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { deprecatedPasswordDigest, ...rest } = updated;
+              token.sub = rest.id;
               token.user = rest;
               return token;
             }
@@ -309,6 +318,9 @@ export const authConfig = {
         // strip user object of unwanted sensitive fields before populating to token
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { deprecatedPasswordDigest, ...rest } = dbUser;
+        // Keep token.sub on the local row so trigger:"update" lookups hit
+        // it (Auth.js seeds sub from the provider id, not Users.id).
+        token.sub = rest.id;
         token.user = rest;
       }
 
