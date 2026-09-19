@@ -17,7 +17,10 @@ export async function AgentsPage() {
     return (
       <div>
         <h1>Connected agents</h1>
-        <p>Sign in with your school email to connect an AI agent.</p>
+        <p>
+          Sign in with Google to connect an AI agent. If you just signed in,
+          sign out and sign back in with Google, then try again.
+        </p>
         <a href="/mcp">Connect your agent</a>
       </div>
     );

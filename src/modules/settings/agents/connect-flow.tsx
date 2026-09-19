@@ -137,24 +137,38 @@ function ProviderButtons({ mcpUrl }: { mcpUrl: string }) {
               </details>
             </>
           ) : (
-            <ol className="text-muted-foreground list-decimal space-y-1 pl-5 text-sm">
-              {PROVIDERS[selected].steps.map((s) => (
-                <li key={s.label}>
-                  {s.href ? (
-                    <a
-                      href={s.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="hover:text-foreground underline underline-offset-2"
-                    >
-                      {s.label}
-                    </a>
-                  ) : (
-                    s.label
-                  )}
-                </li>
-              ))}
-            </ol>
+            <>
+              <ol className="text-muted-foreground list-decimal space-y-1 pl-5 text-sm">
+                {PROVIDERS[selected].steps.map((s) => (
+                  <li key={s.label}>
+                    {s.href ? (
+                      <a
+                        href={s.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="hover:text-foreground underline underline-offset-2"
+                      >
+                        {s.label}
+                      </a>
+                    ) : (
+                      s.label
+                    )}
+                  </li>
+                ))}
+              </ol>
+              {selected === "gemini" && (
+                <details className="text-muted-foreground mt-3 text-sm">
+                  <summary className="cursor-pointer underline-offset-2 hover:underline">
+                    See “Account linking is required”?
+                  </summary>
+                  <p className="mt-2">
+                    Approve access in the browser first (sign in with Google on
+                    the same site), then retry. If it persists, revoke the grant
+                    in Connected agents and reconnect.
+                  </p>
+                </details>
+              )}
+            </>
           )}
         </div>
       )}
