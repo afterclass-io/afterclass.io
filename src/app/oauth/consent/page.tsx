@@ -2,54 +2,21 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ShieldCheck } from "lucide-react";
 
-import { Button } from "@/common/components/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/common/components/card";
-import { EmptyState } from "@/common/components/empty-state";
-import { Skeleton } from "@/common/components/skeleton";
+  ConsentCard,
+  ConsentError,
+  ConsentLoading,
+  ConsentMissing,
+  ConsentSignIn,
+  Shell,
+  type ConsentDetails,
+} from "./consent-ui";
 
-export type ConsentDetails = {
-  status: "details";
-  client?: { name: string; id?: string };
-  client_id?: string;
-  scope?: string;
-  redirect_uri?: string;
-  csrfToken?: string;
-};
-
-export type AlreadyConsented = {
+type AlreadyConsented = {
   status: "already_consented";
   redirectUrl: string;
 };
-
-const SCOPE_LABELS: Record<string, string> = {
-  openid: "Verify your identity",
-  email: "Email address",
-  profile: "Name and profile photo",
-  phone: "Phone number",
-  offline_access: "Stay connected when you're away",
-};
-
-/** Plain-language label for an OAuth scope; unknown scopes pass through. */
-export function scopeLabel(scope: string): string {
-  return SCOPE_LABELS[scope] ?? scope;
-}
-
-function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <main className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 py-10">
-      {children}
-    </main>
-  );
-}
 
 function ConsentForm() {
   const searchParams = useSearchParams();
@@ -134,10 +101,7 @@ function ConsentForm() {
   if (!authorizationId) {
     return (
       <Shell>
-        <EmptyState
-          title="Connect an agent"
-          description="Missing authorization request."
-        />
+        <ConsentMissing />
       </Shell>
     );
   }
@@ -147,16 +111,7 @@ function ConsentForm() {
       const loginHref = `/account/auth/login?callbackUrl=${encodeURIComponent(`/oauth/consent?authorization_id=${authorizationId}`)}`;
       return (
         <Shell>
-          <EmptyState
-            icon={<ShieldCheck />}
-            title="Sign in to continue"
-            description="Sign in with Google to connect an AI agent."
-            action={
-              <a href={loginHref}>
-                <Button>Sign in with Google</Button>
-              </a>
-            }
-          />
+          <ConsentSignIn loginHref={loginHref} />
         </Shell>
       );
     }
@@ -166,11 +121,7 @@ function ConsentForm() {
     };
     return (
       <Shell>
-        <EmptyState
-          title="Connect an agent"
-          description={error}
-          action={<Button onClick={retry}>Retry</Button>}
-        />
+        <ConsentError message={error} onRetry={retry} />
       </Shell>
     );
   }
@@ -178,79 +129,19 @@ function ConsentForm() {
   if (!details) {
     return (
       <Shell>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-2/3" />
-            <Skeleton className="h-4 w-full" />
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-4 w-3/4" />
-          </CardContent>
-        </Card>
+        <ConsentLoading />
       </Shell>
     );
   }
 
-  const clientName = details.client?.name ?? "This app";
-  const scopes = (details.scope ?? "").split(" ").filter(Boolean);
-  const clientId = details.client_id ?? details.client?.id;
-
   return (
     <Shell>
-      <Card>
-        <CardHeader>
-          <CardTitle>Connect an agent</CardTitle>
-          <CardDescription>
-            <strong>{clientName}</strong> is requesting access to your account.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
-            This is an unverified third-party application that will be able to
-            read and modify your timetables, bids, and roadmaps.
-          </p>
-          {scopes.length > 0 && (
-            <section>
-              <h2 className="mb-2 text-sm font-semibold">Requested access</h2>
-              <ul className="flex flex-col gap-1 text-sm">
-                {scopes.map((s) => (
-                  <li key={s}>{scopeLabel(s)}</li>
-                ))}
-              </ul>
-            </section>
-          )}
-          {(clientId ?? details.redirect_uri) && (
-            <details className="text-muted-foreground text-xs">
-              <summary className="cursor-pointer underline-offset-2 hover:underline">
-                Advanced details
-              </summary>
-              {clientId && (
-                <p className="mt-1">
-                  Client ID: <code>{clientId}</code>
-                </p>
-              )}
-              {details.redirect_uri && (
-                <p className="mt-1">
-                  Redirect URI: <code>{details.redirect_uri}</code>
-                </p>
-              )}
-            </details>
-          )}
-        </CardContent>
-        <CardFooter className="flex gap-2">
-          <Button onClick={() => decide("approve")} disabled={busy}>
-            {busy ? "Working…" : "Approve"}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => decide("deny")}
-            disabled={busy}
-          >
-            Deny
-          </Button>
-        </CardFooter>
-      </Card>
+      <ConsentCard
+        details={details}
+        busy={busy}
+        onApprove={() => decide("approve")}
+        onDeny={() => decide("deny")}
+      />
     </Shell>
   );
 }

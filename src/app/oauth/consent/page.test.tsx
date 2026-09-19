@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { scopeLabel } from "./page";
+import { scopeLabel } from "./consent-ui";
 
 describe("scopeLabel", () => {
   it("maps known scopes to plain language", () => {
