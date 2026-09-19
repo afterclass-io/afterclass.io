@@ -3,11 +3,13 @@ import type { Mock } from "vitest";
 
 const {
   mockGetToken,
+  mockGetRefreshToken,
   mockApproveConsent,
   mockDenyConsent,
   mockGetConsentDetails,
 } = vi.hoisted(() => ({
   mockGetToken: vi.fn() as Mock,
+  mockGetRefreshToken: vi.fn() as Mock,
   mockApproveConsent: vi.fn() as Mock,
   mockDenyConsent: vi.fn() as Mock,
   mockGetConsentDetails: vi.fn() as Mock,
@@ -15,6 +17,7 @@ const {
 
 vi.mock("@/server/auth/supabase-access-token", () => ({
   getSupabaseAccessToken: mockGetToken,
+  getSupabaseRefreshToken: mockGetRefreshToken,
 }));
 vi.mock("@/server/supabase-consent", () => ({
   approveConsent: mockApproveConsent,

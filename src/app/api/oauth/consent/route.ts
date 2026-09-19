@@ -1,4 +1,7 @@
-import { getSupabaseAccessToken } from "@/server/auth/supabase-access-token";
+import {
+  getSupabaseAccessToken,
+  getSupabaseRefreshToken,
+} from "@/server/auth/supabase-access-token";
 import {
   approveConsent,
   denyConsent,
@@ -49,7 +52,12 @@ export async function GET(req: Request) {
       { status: 400 },
     );
   try {
-    const details = await getConsentDetails(authorizationId, token);
+    const refreshToken = await getSupabaseRefreshToken();
+    const details = await getConsentDetails(
+      authorizationId,
+      token,
+      refreshToken,
+    );
     // HMAC synchronizer CSRF token (stateless, no DB row): bound to this
     // session's Supabase access token, verified on POST before approve/deny.
     // When no app secret is configured (secret-less dev), omit the token and skip
@@ -104,10 +112,11 @@ export async function POST(req: Request) {
     return Response.json({ error: "bad csrf" }, { status: 403 });
   }
   try {
+    const refreshToken = await getSupabaseRefreshToken();
     const { redirectUrl } =
       body.decision === "approve"
-        ? await approveConsent(body.authorization_id, token)
-        : await denyConsent(body.authorization_id, token);
+        ? await approveConsent(body.authorization_id, token, refreshToken)
+        : await denyConsent(body.authorization_id, token, refreshToken);
     return Response.json({ redirectUrl });
   } catch (e) {
     // Generic message — provider error detail is logged server-side only.

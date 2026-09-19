@@ -1,5 +1,8 @@
 import { auth } from "@/server/auth";
-import { getSupabaseAccessToken } from "@/server/auth/supabase-access-token";
+import {
+  getSupabaseAccessToken,
+  getSupabaseRefreshToken,
+} from "@/server/auth/supabase-access-token";
 import { listUserGrants } from "@/server/supabase-consent";
 import { revokeAgent } from "./revoke-agent";
 
@@ -22,7 +25,7 @@ export async function AgentsPage() {
 
   let grants;
   try {
-    grants = await listUserGrants(token);
+    grants = await listUserGrants(token, await getSupabaseRefreshToken());
   } catch (err) {
     console.error("Failed to load connected agents", err);
     return (

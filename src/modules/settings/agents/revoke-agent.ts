@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { auth } from "@/server/auth";
-import { getSupabaseAccessToken } from "@/server/auth/supabase-access-token";
+import {
+  getSupabaseAccessToken,
+  getSupabaseRefreshToken,
+} from "@/server/auth/supabase-access-token";
 import { listUserGrants, revokeUserGrant } from "@/server/supabase-consent";
 
 const input = z.object({ clientId: z.string().min(1) });
@@ -18,11 +21,12 @@ export async function revokeAgent(formData: FormData): Promise<void> {
   const parsed = input.safeParse({ clientId: formData.get("clientId") });
   if (!parsed.success) throw new Error("Invalid client id");
 
-  const grants = await listUserGrants(token);
+  const refreshToken = await getSupabaseRefreshToken();
+  const grants = await listUserGrants(token, refreshToken);
   const owned = grants.some((g) => g.client_id === parsed.data.clientId);
   if (!owned) throw new Error("Grant not found");
 
-  await revokeUserGrant(parsed.data.clientId, token);
+  await revokeUserGrant(parsed.data.clientId, token, refreshToken);
   revalidatePath("/settings/agents");
   revalidatePath("/mcp");
 }

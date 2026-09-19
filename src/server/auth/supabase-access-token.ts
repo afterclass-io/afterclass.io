@@ -50,3 +50,34 @@ export async function getSupabaseAccessToken(): Promise<string | null> {
     return null;
   }
 }
+
+/**
+ * Server-only accessor for the Supabase refresh token (Google sign-ins,
+ * persisted by `src/server/auth/config.ts`). Same cookie/decode path as
+ * `getSupabaseAccessToken`; null for legacy sessions. Never exposed
+ * client-side — thread into `userClient()` refresh params only.
+ */
+export async function getSupabaseRefreshToken(): Promise<string | null> {
+  const store = await cookies();
+  const secure = store.get("__Secure-authjs.session-token")?.value;
+  const plain = store.get("authjs.session-token")?.value;
+  // Same production rule as the access-token accessor above.
+  if (process.env.NODE_ENV === "production" && !secure) return null;
+  const raw = secure ?? plain;
+  if (!raw) return null;
+  const salt = secure
+    ? "__Secure-authjs.session-token"
+    : "authjs.session-token";
+  const secret = env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+  if (!secret) return null;
+  try {
+    const token = await decode({
+      token: raw,
+      secret,
+      salt,
+    });
+    return token?.supabaseRefreshToken ?? null;
+  } catch {
+    return null;
+  }
+}
