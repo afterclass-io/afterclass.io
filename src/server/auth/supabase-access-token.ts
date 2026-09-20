@@ -2,8 +2,15 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { decode } from "next-auth/jwt";
+import { createClient } from "@supabase/supabase-js";
 
 import { env } from "@/env";
+
+/**
+ * Seconds of clock skew before `supabaseExpiresAt` at which the token
+ * counts as expired (refresh early so consent calls never race expiry).
+ */
+const EXPIRY_SKEW_SECONDS = 60;
 
 /**
  * Server-only accessor for the Supabase access token.
@@ -45,7 +52,32 @@ export async function getSupabaseAccessToken(): Promise<string | null> {
       secret,
       salt,
     });
-    return token?.supabaseAccessToken ?? null;
+    const accessToken = token?.supabaseAccessToken ?? null;
+    if (!accessToken) return null;
+    // Expiry-aware: tokens captured at sign-in expire after ~1h. When past
+    // the skew window, refresh via Supabase when a refresh token exists;
+    // otherwise fail closed (null → 401 → re-login) instead of handing out
+    // a stale bearer. Never throw — map all failures to null.
+    // NOTE: the refreshed token is returned to the caller only; the JWT
+    // cookie is rewritten on the next `update()`/sign-in, so callers that
+    // need persistence across requests should re-login on repeated nulls.
+    const expiresAt = token?.supabaseExpiresAt ?? null;
+    const expired =
+      typeof expiresAt === "number" &&
+      Date.now() / 1000 > expiresAt - EXPIRY_SKEW_SECONDS;
+    if (!expired) return accessToken;
+    const refreshToken = token?.supabaseRefreshToken ?? null;
+    if (!refreshToken) return null;
+    try {
+      const { data, error } = await createClient(
+        env.NEXT_PUBLIC_SUPABASE_URL,
+        env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      ).auth.refreshSession({ refresh_token: refreshToken });
+      if (error || !data.session?.access_token) return null;
+      return data.session.access_token;
+    } catch {
+      return null;
+    }
   } catch {
     return null;
   }

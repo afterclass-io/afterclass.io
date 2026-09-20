@@ -109,6 +109,18 @@ describe("getSupabaseAccessToken", () => {
     mockDecode.mockResolvedValue({ sub: "u1", supabaseAccessToken: "tok" });
     await expect(getSupabaseRefreshToken()).resolves.toBeNull();
   });
+
+  it("returns null when the stored token is expired and no refresh token exists", async () => {
+    mockCookies.mockResolvedValue(
+      cookieStore({ "authjs.session-token": "raw-jwe" }),
+    );
+    mockDecode.mockResolvedValue({
+      sub: "u1",
+      supabaseAccessToken: "stale",
+      supabaseExpiresAt: 1,
+    });
+    await expect(getSupabaseAccessToken()).resolves.toBeNull();
+  });
 });
 
 describe("authConfig session/JWT token handling (regression)", () => {
