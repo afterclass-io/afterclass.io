@@ -52,7 +52,7 @@ const config = withSentryConfig(
         {
           source: "/reviews",
           destination: "/",
-          permanent: false,
+          permanent: true,
         },
         {
           // redirect old afterclass professor pages to new ones

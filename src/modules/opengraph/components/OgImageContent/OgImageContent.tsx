@@ -1,9 +1,19 @@
 import {
   BooksIcon,
+  CustomIcon,
   GraduationCapIcon,
-  HeartIcon,
+  HEART_PATH,
   PencilIcon,
 } from "@/common/components/icons";
+
+// Hook-free heart for the OG card. `HeartIcon` calls `useId()`, and hooks
+// throw inside an ImageResponse's satori render (the clip path it builds is
+// unnecessary for a fully filled heart anyway).
+const HeartGlyph = ({ size }: { size: number | string }) => (
+  <CustomIcon size={size} viewBox="0 0 24 24" fill="none">
+    <path d={HEART_PATH} fill="#C1694F" />
+  </CustomIcon>
+);
 
 const StatItemHorizontal = ({
   label,
@@ -168,7 +178,7 @@ export const OgImageContent = ({
           gap: "1rem",
         }}
       >
-        <HeartIcon size="2rem" />
+        <HeartGlyph size="2rem" />
         <StatItemHorizontal label="Average Rating" value={rating} />
       </div>
 

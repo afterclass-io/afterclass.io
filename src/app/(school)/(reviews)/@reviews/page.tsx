@@ -1,3 +1,6 @@
+import { JsonLd } from "@/common/components/json-ld";
+import { buildWebSiteJsonLd } from "@/common/tools/seo";
+import { env } from "@/env";
 import {
   ReviewSection,
   ReviewSectionHeader,
@@ -11,6 +14,7 @@ import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocu
 export default function Home() {
   return (
     <>
+      <JsonLd data={buildWebSiteJsonLd({ siteUrl: env.NEXTAUTH_URL })} />
       <ReviewSection>
         <ReviewSectionHeader>
           <ReviewSectionHeaderSortGroup />

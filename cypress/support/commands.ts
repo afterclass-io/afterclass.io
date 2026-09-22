@@ -14,23 +14,24 @@
 Cypress.Commands.add(
   "loginWith",
   ({ email, password }: { email: string; password: string }) => {
-  cy.visit("/account/auth/login");
-  cy.get("input[data-test=email]", { timeout: 10000 })
-    .should("be.visible")
-    .clear()
-    .type(email);
-  cy.get("input[data-test=password]", { timeout: 10000 })
-    .should("be.visible")
-    .clear()
-    .type(password);
-  cy.get("button[data-test=submit]", { timeout: 10000 })
-    .should("be.visible")
-    .click();
-  // Wait for successful login: the URL must not be the login page anymore
-  cy.url({ timeout: 15000 }).should("not.include", "/account/auth/login");
-  // Give NextAuth a moment to finalize the session cookie
-  cy.wait(800);
-});
+    cy.visit("/account/auth/login");
+    cy.get("input[data-test=email]", { timeout: 10000 })
+      .should("be.visible")
+      .clear()
+      .type(email);
+    cy.get("input[data-test=password]", { timeout: 10000 })
+      .should("be.visible")
+      .clear()
+      .type(password);
+    cy.get("button[data-test=submit]", { timeout: 10000 })
+      .should("be.visible")
+      .click();
+    // Wait for successful login: the URL must not be the login page anymore
+    cy.url({ timeout: 15000 }).should("not.include", "/account/auth/login");
+    // Give NextAuth a moment to finalize the session cookie
+    cy.wait(800);
+  },
+);
 
 Cypress.Commands.add("login", () => {
   const email = Cypress.env("TEST_EMAIL_V1_VALID") as string;
@@ -103,16 +104,29 @@ Cypress.Commands.add(
 //
 
 Cypress.Commands.add("checkOgImage", () => {
-  cy.get('head meta[property="og:image"]', { timeout: 10000 })
-    .should("have.attr", "content")
-    .then((url: JQuery<HTMLElement>) => {
-      const href = url.attr("content") ?? "";
-      const ogUrl = new URL(
-        href,
-        Cypress.config("baseUrl") ?? undefined,
-      ).toString();
-      cy.request(ogUrl).its("status").should("eq", 200);
-    });
+  // Assert against the raw response, not the hydrated DOM: with per-route
+  // generateMetadata the image tag is streamed and moved into <head> after
+  // hydration, where cy.get("head meta[...]") does not reliably see it. A
+  // crawler reads the raw HTML anyway (see the SEO e2e seam).
+  cy.location("pathname").then((pathname) => {
+    cy.request(pathname)
+      .its("body")
+      .then((body: string) => {
+        const tagMatch = /<meta[^>]*property="og:image"[^>]*\/?>/.exec(
+          String(body),
+        );
+        const tag = tagMatch ? tagMatch[0] : "";
+        const contentMatch = /content="([^"]+)"/.exec(tag);
+        const matchedHref = contentMatch ? contentMatch[1] : undefined;
+        const href = matchedHref ?? "";
+        expect(href, "og:image meta present in raw HTML").to.not.equal("");
+        const ogUrl = new URL(
+          href,
+          Cypress.config("baseUrl") ?? undefined,
+        ).toString();
+        cy.request(ogUrl).its("status").should("eq", 200);
+      });
+  });
 });
 
 declare global {

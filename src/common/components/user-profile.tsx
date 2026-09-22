@@ -28,7 +28,8 @@ export const UserProfile = ({ user }: Props) => {
       <PopoverTrigger className="hidden items-center gap-2 md:flex">
         <div className="text-muted-foreground overflow-hidden text-sm text-ellipsis">
           <Avatar className="h-6 w-6">
-            <AvatarImage src={user.photoUrl ?? undefined} alt={user.email} />
+            {/* Decorative: the email is rendered as adjacent text below. */}
+            <AvatarImage src={user.photoUrl ?? undefined} alt="" />
             <AvatarFallback className="text-center">
               {user.email[0]?.toUpperCase() ?? "U"}
             </AvatarFallback>
