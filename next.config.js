@@ -75,19 +75,6 @@ const config = withSentryConfig(
         },
       ];
     },
-    async headers() {
-      return [
-        {
-          source: "/:path*",
-          headers: [
-            {
-              key: "Document-Policy",
-              value: "js-profiling",
-            },
-          ],
-        },
-      ];
-    },
   },
 
   // Injected content via Sentry wizard below
