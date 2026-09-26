@@ -1,9 +1,4 @@
 "use client";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/common/components/avatar";
 import { ExitIcon } from "@radix-ui/react-icons";
 import { signOut } from "next-auth/react";
 import type { SessionUser } from "@/server/auth/config";
@@ -13,6 +8,7 @@ import {
   PopoverTrigger,
 } from "@/common/components/popover";
 import { Button } from "@/common/components/button";
+import { UserAvatar } from "@/common/components/user-avatar";
 
 interface Props {
   user: SessionUser;
@@ -27,13 +23,11 @@ export const UserProfile = ({ user }: Props) => {
     <Popover>
       <PopoverTrigger className="hidden items-center gap-2 md:flex">
         <div className="text-muted-foreground overflow-hidden text-sm text-ellipsis">
-          <Avatar className="h-6 w-6">
-            {/* Decorative: the email is rendered as adjacent text below. */}
-            <AvatarImage src={user.photoUrl ?? undefined} alt="" />
-            <AvatarFallback className="text-center">
-              {user.email[0]?.toUpperCase() ?? "U"}
-            </AvatarFallback>
-          </Avatar>
+          {/* Decorative: the email is rendered as adjacent text below. */}
+          <UserAvatar
+            photoUrl={user.photoUrl}
+            fallback={user.email[0]?.toUpperCase() ?? "U"}
+          />
         </div>
         <div>{user.email}</div>
       </PopoverTrigger>
