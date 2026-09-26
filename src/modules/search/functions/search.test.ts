@@ -26,10 +26,14 @@ import { processSearchQuery } from "./processSearchQuery";
 import { searchCourse } from "./searchCourse";
 import { searchProf } from "./searchProf";
 
-/** The interpolated value handed to `to_tsquery` — the 2nd arg of the tagged template. */
-const tsQueryArg = () => (m.queryRaw.mock.calls[0] as unknown[])[1];
-/** The `LIMIT` value — the 3rd arg of the tagged template. */
-const limitArg = () => (m.queryRaw.mock.calls[0] as unknown[])[2];
+/**
+ * The interpolated value handed to `to_tsquery` — the 3rd arg of the tagged
+ * template. Arg 1 is the optional count-column fragment (a `Prisma.Sql` value,
+ * `Prisma.empty` when anonymous), so the tsquery/limit indices are stable.
+ */
+const tsQueryArg = () => (m.queryRaw.mock.calls[0] as unknown[])[2];
+/** The `LIMIT` value — the 4th arg of the tagged template. */
+const limitArg = () => (m.queryRaw.mock.calls[0] as unknown[])[3];
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -82,7 +86,7 @@ describe("searchCourse", () => {
     expect(limitArg()).toBe(20);
   });
 
-  it("returns zeroed counts and skips the per-row lookups when unauthenticated", async () => {
+  it("returns zeroed counts and stays a single query when unauthenticated", async () => {
     m.queryRaw.mockResolvedValue(rows);
     m.auth.mockResolvedValue(null);
 
@@ -92,21 +96,21 @@ describe("searchCourse", () => {
       { ...rows[0], profCount: 0, reviewCount: 0 },
       { ...rows[1], profCount: 0, reviewCount: 0 },
     ]);
+    expect(m.queryRaw).toHaveBeenCalledTimes(1);
     expect(m.countByCourseCode).not.toHaveBeenCalled();
     expect(m.reviewsCount).not.toHaveBeenCalled();
   });
 
-  it("enriches each row with prof and review counts when authenticated", async () => {
-    m.queryRaw.mockResolvedValue([rows[0]]);
+  it("folds the counts into the primary query when authenticated", async () => {
+    m.queryRaw.mockResolvedValue([{ ...rows[0], profCount: 3, reviewCount: 7 }]);
     m.auth.mockResolvedValue({ user: { id: "u1" } });
-    m.countByCourseCode.mockResolvedValue(3);
-    m.reviewsCount.mockResolvedValue(7);
 
     const result = await searchCourse("python");
 
     expect(result).toEqual([{ ...rows[0], profCount: 3, reviewCount: 7 }]);
-    expect(m.countByCourseCode).toHaveBeenCalledWith({ courseCode: "IS111" });
-    expect(m.reviewsCount).toHaveBeenCalledWith({ courseCode: "IS111" });
+    expect(m.queryRaw).toHaveBeenCalledTimes(1);
+    expect(m.countByCourseCode).not.toHaveBeenCalled();
+    expect(m.reviewsCount).not.toHaveBeenCalled();
   });
 });
 
@@ -126,7 +130,7 @@ describe("searchProf", () => {
     expect(limitArg()).toBe(3);
   });
 
-  it("returns zeroed counts and skips the per-row lookups when unauthenticated", async () => {
+  it("returns zeroed counts and stays a single query when unauthenticated", async () => {
     m.queryRaw.mockResolvedValue(rows);
     m.auth.mockResolvedValue(null);
 
@@ -136,19 +140,22 @@ describe("searchProf", () => {
       { ...rows[0], courseCount: 0, reviewCount: 0 },
       { ...rows[1], courseCount: 0, reviewCount: 0 },
     ]);
+    expect(m.queryRaw).toHaveBeenCalledTimes(1);
     expect(m.countByProfSlug).not.toHaveBeenCalled();
+    expect(m.reviewsCount).not.toHaveBeenCalled();
   });
 
-  it("enriches each row with course and review counts when authenticated", async () => {
-    m.queryRaw.mockResolvedValue([rows[0]]);
+  it("folds the counts into the primary query when authenticated", async () => {
+    m.queryRaw.mockResolvedValue([
+      { ...rows[0], courseCount: 4, reviewCount: 9 },
+    ]);
     m.auth.mockResolvedValue({ user: { id: "u1" } });
-    m.countByProfSlug.mockResolvedValue(4);
-    m.reviewsCount.mockResolvedValue(9);
 
     const result = await searchProf("ada");
 
     expect(result).toEqual([{ ...rows[0], courseCount: 4, reviewCount: 9 }]);
-    expect(m.countByProfSlug).toHaveBeenCalledWith({ slug: "ada-lovelace" });
-    expect(m.reviewsCount).toHaveBeenCalledWith({ profSlug: "ada-lovelace" });
+    expect(m.queryRaw).toHaveBeenCalledTimes(1);
+    expect(m.countByProfSlug).not.toHaveBeenCalled();
+    expect(m.reviewsCount).not.toHaveBeenCalled();
   });
 });

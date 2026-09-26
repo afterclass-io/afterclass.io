@@ -36,7 +36,6 @@ describe("performance invariants", () => {
     expect(readSource("../../../sentry.edge.config.ts")).toContain(gate);
   });
 
-<<<<<<< HEAD
   it("drops the unused Poppins and Inter webfonts", () => {
     const root = path.resolve(import.meta.dirname, "../../..");
     expect(fs.existsSync(path.join(root, "src/common/fonts/poppins.ts"))).toBe(
