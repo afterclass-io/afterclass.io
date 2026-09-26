@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { LogIn } from "lucide-react";
@@ -8,9 +9,28 @@ import { LogIn } from "lucide-react";
 import { Button } from "@/common/components/button";
 import { EmptyState } from "@/common/components/empty-state";
 import { PageTitle } from "@/common/components/page-title";
+import { Skeleton } from "@/common/components/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
 import { PublicRoadmapsGallery } from "@/modules/roadmaps/components/PublicRoadmapsGallery";
-import { MyRoadmapsEditor } from "@/modules/roadmaps/components/MyRoadmapsEditor";
+
+// Split the personal editor (xyflow + dnd-kit) out of the public gallery chunk.
+// No `ssr: false`: its server-rendered HTML is preserved, so this is a chunk
+// split rather than a client-only render. Skeleton mirrors the editor's own
+// entries-loading state.
+const MyRoadmapsEditor = dynamic(
+  () =>
+    import("@/modules/roadmaps/components/MyRoadmapsEditor").then(
+      (m) => m.MyRoadmapsEditor,
+    ),
+  {
+    loading: () => (
+      <div className="p-4">
+        <Skeleton className="mb-2 h-6 w-48" />
+        <Skeleton className="h-[400px] w-full rounded-lg" />
+      </div>
+    ),
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Types

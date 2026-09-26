@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useAtom } from "jotai";
 import { toast } from "sonner";
 import {
@@ -24,7 +25,6 @@ import { roadmapPanelWidthsAtom } from "@/modules/roadmaps/atoms/roadmap";
 import { hasSeenRoadmapsTourAtom } from "@/modules/roadmaps/atoms/roadmap";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
 import { RoadmapList } from "@/modules/roadmaps/components/RoadmapList";
-import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
 import { CourseSearchSidebar } from "@/modules/roadmaps/components/CourseSearchSidebar";
 import { TermTimetableLink } from "@/modules/roadmaps/components/TermTimetableLink";
 import { ShareDialog } from "@/modules/sharing/components/ShareDialog";
@@ -50,6 +50,19 @@ import { roadmapsTourSteps } from "@/common/tour/steps";
 import { useAutoStartTour } from "@/common/tour/useAutoStartTour";
 import { cn } from "@/common/functions";
 import { ResizeHandle } from "@/common/components/resize-handle";
+
+// Non-default toggle view, below the fold — xyflow only loads when the student
+// selects the timeline. The grid (default, above the fold) stays server-rendered.
+const RoadmapTimeline = dynamic(
+  () =>
+    import("@/modules/roadmaps/components/RoadmapTimeline").then(
+      (m) => m.RoadmapTimeline,
+    ),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[500px] w-full rounded-lg" />,
+  },
+);
 
 type EditorViewMode = "grid" | "timeline";
 

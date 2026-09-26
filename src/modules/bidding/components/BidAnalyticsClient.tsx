@@ -1,12 +1,26 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/common/components/card";
-import { BidChart, sortChartData } from "@/modules/bidding/components/BidChart";
+import { Skeleton } from "@/common/components/skeleton";
 import { BidTable } from "@/modules/bidding/components/BidTable";
 import { TagToggleGroup } from "@/common/components/tag-toggle-group";
 import { DisclosureDisclaimer } from "@/modules/bidding/components/DisclosureDisclaimer";
 import { compareRounds } from "@/modules/bidding/utils/round-order";
+import { sortChartData } from "@/modules/bidding/utils/sort-chart-data";
+
+// Below the fold, below the card header — never an LCP candidate. recharts only
+// loads when a student actually reaches the analytics chart.
+const BidChart = dynamic(
+  () =>
+    import("@/modules/bidding/components/BidChart").then((m) => m.BidChart),
+  {
+    ssr: false,
+    // Matches ChartContainer's `flex aspect-video w-full` exactly.
+    loading: () => <Skeleton className="aspect-video w-full" />,
+  },
+);
 
 interface BidResultRow {
   bidWindow: {

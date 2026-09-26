@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -15,12 +16,25 @@ import {
 } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
-import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
 import { Button } from "@/common/components/button";
 import { PageTitle } from "@/common/components/page-title";
+import { Skeleton } from "@/common/components/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
 import { censorProfanity } from "@/common/functions";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
+
+// Non-default toggle view, below the fold — xyflow only loads when a student
+// selects the timeline. The grid (default, above the fold) stays server-rendered.
+const RoadmapTimeline = dynamic(
+  () =>
+    import("@/modules/roadmaps/components/RoadmapTimeline").then(
+      (m) => m.RoadmapTimeline,
+    ),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[500px] w-full rounded-lg" />,
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Types
