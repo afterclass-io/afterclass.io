@@ -45,8 +45,10 @@ export function appendAuditLog(entry: AuditLogEntry): void {
     } catch {
       line = "[unserializable]";
     }
-    // intentional: the write-audit record itself — single line for log ingestion
-    console.log(`[audit:write] ${line}`);
+    // intentional: the write-audit record itself — single line for log
+    // ingestion. Written to stdout directly rather than `console.log`, which
+    // `compiler.removeConsole` strips from production server bundles.
+    process.stdout.write(`[audit:write] ${line}\n`);
   } catch {
     // Never break the tool call for an audit failure.
   }

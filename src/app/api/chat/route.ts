@@ -308,15 +308,16 @@ export async function POST(req: Request) {
       // throws — observability must not break the turn.
       onStepFinish: async ({ usage }) => {
         try {
-          // intentional: per-step structured usage signal, keep loud
-          console.log(
-            "[assistant:step-usage]",
-            JSON.stringify({
+          // intentional: per-step structured usage signal, keep loud. Written
+          // to stdout directly because `compiler.removeConsole` strips
+          // `console.log` from production server bundles.
+          process.stdout.write(
+            `[assistant:step-usage] ${JSON.stringify({
               userId,
               inputTokens: usage.inputTokens ?? 0,
               outputTokens: usage.outputTokens ?? 0,
               cachedInputTokens: extractCachedInputTokens(usage),
-            }),
+            })}\n`,
           );
         } catch {
           // Never break the turn for a logging failure.
@@ -347,8 +348,12 @@ export async function POST(req: Request) {
             // Allowlisted raw read (diagnostic flag only — not config; the ban
             // covers config reads outside env.ts/env-gate.ts/chat-config.ts).
             if (process.env.CHAT_LOG_USAGE === "1") {
-              // intentional: one-time opt-in diagnostic for provider field mapping
-              console.log("[assistant:usage]", JSON.stringify(usage));
+              // intentional: one-time opt-in diagnostic for provider field
+              // mapping; stdout directly because `removeConsole` strips
+              // `console.log` from production server bundles.
+              process.stdout.write(
+                `[assistant:usage] ${JSON.stringify(usage)}\n`,
+              );
             }
             const spikeThreshold = Math.floor(
               Math.min(

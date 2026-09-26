@@ -373,7 +373,9 @@ describe("dispatchToolCall", () => {
   });
 
   it("audit-logs successful writes but not reads or failures", async () => {
-    const log = vi.spyOn(console, "log").mockImplementation(vi.fn());
+    const log = vi
+      .spyOn(process.stdout, "write")
+      .mockImplementation(() => true);
     try {
       const writeTool = {
         name: "upsert-bid",

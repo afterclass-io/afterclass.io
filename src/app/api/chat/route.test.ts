@@ -437,7 +437,9 @@ describe("POST /api/chat", () => {
 
   it("wires onStepFinish and emits a structured per-step usage log", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    const logSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
+    const logSpy = vi
+      .spyOn(process.stdout, "write")
+      .mockImplementation(() => true);
     try {
       const res = await POST(
         buildReq({ messages: [{ role: "user", content: "hi" }] }),
@@ -451,11 +453,12 @@ describe("POST /api/chat", () => {
         usage: { inputTokens: 11, outputTokens: 6 },
       });
       expect(logSpy).toHaveBeenCalledWith(
-        "[assistant:step-usage]",
+        expect.stringContaining("[assistant:step-usage]"),
+      );
+      expect(logSpy).toHaveBeenCalledWith(
         expect.stringContaining('"inputTokens":11'),
       );
       expect(logSpy).toHaveBeenCalledWith(
-        "[assistant:step-usage]",
         expect.stringContaining('"outputTokens":6'),
       );
     } finally {
