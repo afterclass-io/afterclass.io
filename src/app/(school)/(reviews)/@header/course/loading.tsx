@@ -15,11 +15,11 @@ export default function Loading() {
             variant="outline"
             avatar={<Skeleton className="h-6 w-6" />}
           >
-            <Skeleton className="h-[23.98px] w-[36.31px]" />
+            <Skeleton className="h-5 w-9" />
           </Tag>
         }
       >
-        <Skeleton className="h-[23.98px] w-[200px]" />
+        <Skeleton className="h-7 w-[200px] md:h-9" />
       </PageTitle>
     </div>
   );

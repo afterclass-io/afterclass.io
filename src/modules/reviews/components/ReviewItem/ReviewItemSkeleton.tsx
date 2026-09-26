@@ -3,12 +3,14 @@ import { Skeleton } from "@/common/components/skeleton";
 export const ReviewItemSkeleton = () => {
   return (
     <div className="focus-ring flex h-fit max-w-prose flex-col items-start gap-2 rounded-md p-4 text-left md:gap-4">
-      <div className="flex content-center justify-between gap-3 self-stretch md:flex-row-reverse">
+      <div className="flex flex-col content-center gap-3 self-stretch overflow-hidden md:flex-row-reverse md:justify-between">
         <Skeleton className="h-[24px] w-[100px]" />
         <Skeleton className="h-[24px] w-[200px]" />
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-6 w-[160px]" />
         <div className="text-accent-foreground line-clamp-5 wrap-anywhere md:line-clamp-3 md:text-sm">
           <Skeleton aria-hidden tabIndex={-1}>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
@@ -20,6 +22,13 @@ export const ReviewItemSkeleton = () => {
             culpa qui officia deserunt mollit anim id est laborum
           </Skeleton>
         </div>
+      </div>
+
+      <div className="flex min-h-11 gap-4">
+        <Skeleton className="h-8 w-[88px] rounded-full" />
+        <Skeleton className="size-8 rounded-full" />
+        <Skeleton className="h-8 w-[72px] rounded-full" />
+        <Skeleton className="h-5 w-8" />
       </div>
     </div>
   );

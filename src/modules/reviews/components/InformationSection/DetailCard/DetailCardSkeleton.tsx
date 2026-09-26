@@ -7,9 +7,9 @@ export const DetailCardSkeleton = () => {
       <Heading as="h2" className="text-lg md:text-2xl">
         Details
       </Heading>
-      <div className="flex flex-col gap-1 md:gap-3">
-        <Skeleton className="h-[20px] w-full" />
-        <Skeleton className="h-[20px] w-full" />
+      <div className="flex min-h-[120px] flex-col gap-1 md:gap-3">
+        <Skeleton className="h-6 w-full md:h-7" />
+        <Skeleton className="h-6 w-full md:h-7" />
       </div>
     </div>
   );

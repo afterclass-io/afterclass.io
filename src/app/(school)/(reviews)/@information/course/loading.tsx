@@ -3,11 +3,11 @@ import { DetailCard } from "@/modules/reviews/components/InformationSection/Deta
 
 export default function Loading() {
   return (
-    <div className="flex w-full flex-wrap gap-6 md:flex-nowrap">
-      <div className="w-full md:w-2/3">
+    <div className="grid w-full grid-cols-25 gap-4 md:gap-6">
+      <div className="col-span-25 md:col-span-16">
         <InformationCard.Skeleton />
       </div>
-      <div className="w-full md:w-1/3">
+      <div className="col-span-25 md:col-span-9">
         <DetailCard.Skeleton />
       </div>
     </div>
