@@ -36,6 +36,7 @@ describe("performance invariants", () => {
     expect(readSource("../../../sentry.edge.config.ts")).toContain(gate);
   });
 
+<<<<<<< HEAD
   it("drops the unused Poppins and Inter webfonts", () => {
     const root = path.resolve(import.meta.dirname, "../../..");
     expect(fs.existsSync(path.join(root, "src/common/fonts/poppins.ts"))).toBe(
@@ -71,5 +72,18 @@ describe("performance invariants", () => {
     for (const icon of icons) {
       expect(fs.statSync(icon).size, icon).toBeLessThanOrEqual(10_000);
     }
+  });
+
+  it("caches the edge config read behind the invalidation tag", () => {
+    const src = readSource("../providers/EdgeConfig/EdgeConfigProvider.tsx");
+    expect(src).toContain("unstable_cache");
+    expect(src).toContain('"edge-config"');
+  });
+
+  it("invalidates the edge-config tag on demand", () => {
+    const src = readSource(
+      "../../app/api/cron/revalidate-edge-config/route.ts",
+    );
+    expect(src).toContain('revalidateTag("edge-config"');
   });
 });

@@ -30,6 +30,21 @@ jobs:
       - name: Update Edge Config
         run: bun run ecfg:update -- ${{ secrets.VERCEL_TOKEN }} ${{ secrets.VERCEL_EDGE_CONFIG_ID }} src/server/ecfg/config.json
 
+      - name: Revalidate Edge Config cache
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          # Invalidate the app's cached edge-config read so the new config
+          # propagates without waiting for the 24h window or a deploy.
+          if [ -z "$APP_URL" ]; then
+            echo "APP_URL secret not set - skipping cache revalidation"
+            exit 0
+          fi
+          curl --fail-with-body -sS -X GET \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$APP_URL/api/cron/revalidate-edge-config"
+
       # - name: Update Local copy of Edge Config
       #   run: bun run ecfg:fetch -- ${{ secrets.VERCEL_TOKEN }} ${{ secrets.VERCEL_EDGE_CONFIG_ID }} src/server/ecfg/config.json
 
