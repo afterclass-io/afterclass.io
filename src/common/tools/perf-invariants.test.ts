@@ -85,4 +85,19 @@ describe("performance invariants", () => {
     );
     expect(src).toContain('revalidateTag("edge-config"');
   });
+
+  it("gives every data-heavy route a loading boundary", () => {
+    const root = path.resolve(import.meta.dirname, "../../..");
+    for (const route of [
+      "src/app/(school)/bidding",
+      "src/app/(school)/bidding/analytics",
+      "src/app/(school)/search",
+      "src/app/(school)/roadmaps",
+      "src/app/(school)/submit",
+    ]) {
+      expect(fs.existsSync(path.join(root, route, "loading.tsx")), route).toBe(
+        true,
+      );
+    }
+  });
 });

@@ -133,32 +133,36 @@ export default async function BiddingHistoryPage({
       startTime: t.startTime,
     })) ?? [];
 
-  const professors = await api.professors.getProfessorsByClassId({
-    classId: classId!,
-  });
-
+  // Professors, prediction and safety factors depend only on `classId` (or
+  // nothing), so they run alongside the bid-results lookup. Bid results need
+  // the course/professor resolved from `_class`, so they are started here too
+  // rather than awaited first — the four now resolve in one round instead of
+  // three sequential ones.
   // SPEC-2: Single data source — course+professor matching when professor exists,
   // fall back to section-specific only when professor is null (TBA).
-  const allBidResults = professorId
-    ? selectOneClassPerTerm(
-        await api.bidResults.getByCourseProfessor({
+  const allBidResultsPromise = professorId
+    ? api.bidResults
+        .getByCourseProfessor({
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
           courseCode: courseCode!,
           professorId,
-        }),
-        referenceTimings,
-        section,
-      )
-    : await api.bidResults.getBy({
+        })
+        .then((results) =>
+          selectOneClassPerTerm(results, referenceTimings, section),
+        )
+    : api.bidResults.getBy({
         courseCode,
         section,
         classId,
       });
 
-  const [bidPrediction, safetyFactor] = await Promise.all([
-    api.bidPredictions.getBy({ classId }),
-    api.safetyFactors.getAll(),
-  ]);
+  const [professors, allBidResults, bidPrediction, safetyFactor] =
+    await Promise.all([
+      api.professors.getProfessorsByClassId({ classId: classId! }),
+      allBidResultsPromise,
+      api.bidPredictions.getBy({ classId }),
+      api.safetyFactors.getAll(),
+    ]);
 
   if (allBidResults.length === 0 && !bidPrediction) {
     return (
