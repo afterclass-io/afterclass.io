@@ -2,6 +2,7 @@ import { type Metadata } from "next";
 
 import { JsonLd } from "@/common/components/json-ld";
 import { buildBreadcrumbJsonLd, buildPersonJsonLd } from "@/common/tools/seo";
+import { api, HydrateClient } from "@/common/tools/trpc/server";
 import { env } from "@/env";
 import {
   ReviewSection,
@@ -13,7 +14,9 @@ import {
 import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader";
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
 import { getProfessorPageData } from "@/modules/reviews/functions/getProfessorPageData";
+import { parseReviewParams } from "@/modules/reviews/functions/parseReviewParams";
 import { professorDescription } from "@/modules/reviews/functions/pageDescriptions";
+import { auth } from "@/server/auth";
 
 // `@reviews` is the single metadata owner for `/professor/[slug]`. Parallel
 // slots merge in traversal order and the last writer wins, so do NOT export
@@ -53,22 +56,39 @@ export async function generateMetadata(props: {
 
 export default async function Professor(props: {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{
-    course?: string | string[];
-  }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const searchParams = await props.searchParams;
-  const params = await props.params;
+  const [searchParams, params, session] = await Promise.all([
+    props.searchParams,
+    props.params,
+    auth(),
+  ]);
   let courseCodes: string[] = [];
   if (searchParams?.course) {
-    courseCodes = Array.isArray(searchParams?.course)
-      ? searchParams?.course
-      : [searchParams?.course];
+    courseCodes = Array.isArray(searchParams.course)
+      ? searchParams.course
+      : [searchParams.course];
   }
+  const { filterFor, sortBy } = parseReviewParams(searchParams);
+  const isAuthenticated = !!session?.user;
+
+  // The exact input the loader builds, prefetched under the procedure the
+  // loader will pick for this session so the hydrated key is the one it reads.
+  const reviewInput = {
+    slug: params.slug,
+    courseCodes: courseCodes.length > 0 ? courseCodes : undefined,
+    filterFor,
+    sortBy,
+  };
 
   // The same request-scoped, `cache`d query `generateMetadata` runs; the two
   // calls dedupe by function identity and arguments, so this is one query.
-  const data = await getProfessorPageData(params.slug);
+  const [data] = await Promise.all([
+    getProfessorPageData(params.slug),
+    isAuthenticated
+      ? api.reviews.getByProfSlugProtected.prefetchInfinite(reviewInput)
+      : api.reviews.getByProfSlug.prefetchInfinite(reviewInput),
+  ]);
 
   return (
     <>
@@ -98,11 +118,14 @@ export default async function Professor(props: {
         </ReviewSectionHeader>
         <ReviewSectionListFilter />
         <ReviewSectionList>
-          <ReviewItemLoader
-            variant="professor"
-            slug={params.slug}
-            courseCodes={courseCodes.length > 0 ? courseCodes : undefined}
-          />
+          <HydrateClient>
+            <ReviewItemLoader
+              variant="professor"
+              slug={params.slug}
+              courseCodes={courseCodes.length > 0 ? courseCodes : undefined}
+              isAuthenticated={isAuthenticated}
+            />
+          </HydrateClient>
         </ReviewSectionList>
       </ReviewSection>
       <ReviewModalFocused variant="professor" />

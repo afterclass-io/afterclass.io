@@ -2,6 +2,7 @@ import { type Metadata } from "next";
 
 import { JsonLd } from "@/common/components/json-ld";
 import { buildBreadcrumbJsonLd, buildCourseJsonLd } from "@/common/tools/seo";
+import { api, HydrateClient } from "@/common/tools/trpc/server";
 import { env } from "@/env";
 import {
   ReviewSection,
@@ -13,7 +14,9 @@ import {
 import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader";
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
 import { getCoursePageData } from "@/modules/reviews/functions/getCoursePageData";
+import { parseReviewParams } from "@/modules/reviews/functions/parseReviewParams";
 import { courseDescription } from "@/modules/reviews/functions/pageDescriptions";
+import { auth } from "@/server/auth";
 
 // `@reviews` is the single metadata owner for `/course/[code]`. Parallel slots
 // merge in traversal order and the last writer wins, so do NOT export metadata
@@ -54,21 +57,40 @@ export async function generateMetadata(props: {
 
 export default async function Course(props: {
   params: Promise<{ code: string }>;
-  searchParams?: Promise<{ professor?: string | string[] }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const searchParams = await props.searchParams;
-  const params = await props.params;
+  const [searchParams, params, session] = await Promise.all([
+    props.searchParams,
+    props.params,
+    auth(),
+  ]);
   // assuming all course codes are uppercase
   const courseCode = params.code.toUpperCase();
   const professorSlugs = searchParams?.professor
-    ? Array.isArray(searchParams?.professor)
-      ? searchParams?.professor
-      : [searchParams?.professor]
+    ? Array.isArray(searchParams.professor)
+      ? searchParams.professor
+      : [searchParams.professor]
     : [];
+  const { filterFor, sortBy } = parseReviewParams(searchParams);
+  const isAuthenticated = !!session?.user;
+
+  // The exact input the loader builds, prefetched under the procedure the
+  // loader will pick for this session so the hydrated key is the one it reads.
+  const reviewInput = {
+    code: courseCode,
+    slugs: professorSlugs.length > 0 ? professorSlugs : undefined,
+    filterFor,
+    sortBy,
+  };
 
   // The same request-scoped, `cache`d query `generateMetadata` runs; the two
   // calls dedupe by function identity and arguments, so this is one query.
-  const data = await getCoursePageData(courseCode);
+  const [data] = await Promise.all([
+    getCoursePageData(courseCode),
+    isAuthenticated
+      ? api.reviews.getByCourseCodeProtected.prefetchInfinite(reviewInput)
+      : api.reviews.getByCourseCode.prefetchInfinite(reviewInput),
+  ]);
 
   return (
     <>
@@ -99,11 +121,14 @@ export default async function Course(props: {
         </ReviewSectionHeader>
         <ReviewSectionListFilter />
         <ReviewSectionList>
-          <ReviewItemLoader
-            variant="course"
-            code={courseCode}
-            slugs={professorSlugs.length > 0 ? professorSlugs : undefined}
-          />
+          <HydrateClient>
+            <ReviewItemLoader
+              variant="course"
+              code={courseCode}
+              slugs={professorSlugs.length > 0 ? professorSlugs : undefined}
+              isAuthenticated={isAuthenticated}
+            />
+          </HydrateClient>
         </ReviewSectionList>
       </ReviewSection>
       <ReviewModalFocused variant="course" />

@@ -51,8 +51,9 @@ context("Reviews: Home", function () {
     });
 
     it("should not be able to load more reviews", function () {
-      cy.intercept("GET", "**/api/trpc/*reviews.getAll*").as("getReviews");
-      cy.wait("@getReviews");
+      // The first page is server-prefetched and hydrated, so there is no
+      // client `reviews.getAll` request to wait on; wait on the DOM instead.
+      cy.get("[data-test=review]").should("have.length", 10);
 
       cy.scrollTo("bottom");
       cy.wait(2000);
