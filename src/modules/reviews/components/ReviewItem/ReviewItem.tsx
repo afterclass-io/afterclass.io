@@ -11,7 +11,7 @@ import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
 
 export type ReviewItemProps = {
   review: Review;
-  isLocked?: boolean;
+  isLocked: boolean;
   variant?: "home" | "professor" | "course";
   isMocked?: boolean; // for testing purposes only
   seeMore?: boolean;
@@ -19,7 +19,7 @@ export type ReviewItemProps = {
 
 export const ReviewItem = ({
   review,
-  isLocked = true,
+  isLocked,
   variant = "home",
   isMocked = false,
   seeMore,

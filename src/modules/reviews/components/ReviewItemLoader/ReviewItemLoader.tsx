@@ -7,6 +7,12 @@ import { AfterclassIcon } from "@/common/components/icons";
 import { ProgressLink } from "@/common/components/progress-link";
 
 import { parseReviewParams } from "@/modules/reviews/functions/parseReviewParams";
+import {
+  buildCourseReviewInput,
+  buildHomeReviewInput,
+  buildProfessorReviewInput,
+  infiniteReviewQueryOptions,
+} from "@/modules/reviews/functions/reviewFeedInput";
 import { ReviewItem, ReviewItemSkeleton } from "../ReviewItem";
 import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
 import { Separator } from "@/common/components/separator";
@@ -73,11 +79,8 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
           ? api.reviews.getByCourseCodeProtected
           : api.reviews.getByCourseCode;
         return apiFn.useSuspenseInfiniteQuery(
-          { code, slugs, filterFor, sortBy },
-          {
-            getNextPageParam: (lastPage: { nextCursor?: string }) =>
-              lastPage.nextCursor,
-          },
+          buildCourseReviewInput({ code, slugs, filterFor, sortBy }),
+          infiniteReviewQueryOptions,
         );
       }
       case "professor": {
@@ -86,11 +89,8 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
           ? api.reviews.getByProfSlugProtected
           : api.reviews.getByProfSlug;
         return apiFn.useSuspenseInfiniteQuery(
-          { slug, courseCodes, filterFor, sortBy },
-          {
-            getNextPageParam: (lastPage: { nextCursor?: string }) =>
-              lastPage.nextCursor,
-          },
+          buildProfessorReviewInput({ slug, courseCodes, filterFor, sortBy }),
+          infiniteReviewQueryOptions,
         );
       }
       default: {
@@ -98,11 +98,8 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
           ? api.reviews.getAllProtected
           : api.reviews.getAll;
         return apiFn.useSuspenseInfiniteQuery(
-          { filterFor, sortBy },
-          {
-            getNextPageParam: (lastPage: { nextCursor?: string }) =>
-              lastPage.nextCursor,
-          },
+          buildHomeReviewInput({ filterFor, sortBy }),
+          infiniteReviewQueryOptions,
         );
       }
     }

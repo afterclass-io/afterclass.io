@@ -2,7 +2,7 @@ import { type Metadata } from "next";
 
 import { JsonLd } from "@/common/components/json-ld";
 import { buildBreadcrumbJsonLd, buildPersonJsonLd } from "@/common/tools/seo";
-import { api, HydrateClient } from "@/common/tools/trpc/server";
+import { HydrateClient } from "@/common/tools/trpc/server";
 import { env } from "@/env";
 import {
   ReviewSection,
@@ -15,6 +15,7 @@ import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader"
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
 import { getProfessorPageData } from "@/modules/reviews/functions/getProfessorPageData";
 import { parseReviewParams } from "@/modules/reviews/functions/parseReviewParams";
+import { prefetchReviewFeed } from "@/modules/reviews/functions/prefetchReviewFeed";
 import { professorDescription } from "@/modules/reviews/functions/pageDescriptions";
 import { auth } from "@/server/auth";
 
@@ -72,22 +73,18 @@ export default async function Professor(props: {
   const { filterFor, sortBy } = parseReviewParams(searchParams);
   const isAuthenticated = !!session?.user;
 
-  // The exact input the loader builds, prefetched under the procedure the
-  // loader will pick for this session so the hydrated key is the one it reads.
-  const reviewInput = {
-    slug: params.slug,
-    courseCodes: courseCodes.length > 0 ? courseCodes : undefined,
-    filterFor,
-    sortBy,
-  };
-
   // The same request-scoped, `cache`d query `generateMetadata` runs; the two
   // calls dedupe by function identity and arguments, so this is one query.
   const [data] = await Promise.all([
     getProfessorPageData(params.slug),
-    isAuthenticated
-      ? api.reviews.getByProfSlugProtected.prefetchInfinite(reviewInput)
-      : api.reviews.getByProfSlug.prefetchInfinite(reviewInput),
+    prefetchReviewFeed({
+      variant: "professor",
+      isAuthenticated,
+      slug: params.slug,
+      courseCodes: courseCodes.length > 0 ? courseCodes : undefined,
+      filterFor,
+      sortBy,
+    }),
   ]);
 
   return (

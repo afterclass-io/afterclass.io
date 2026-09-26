@@ -2,7 +2,7 @@ import { type Metadata } from "next";
 
 import { JsonLd } from "@/common/components/json-ld";
 import { buildBreadcrumbJsonLd, buildCourseJsonLd } from "@/common/tools/seo";
-import { api, HydrateClient } from "@/common/tools/trpc/server";
+import { HydrateClient } from "@/common/tools/trpc/server";
 import { env } from "@/env";
 import {
   ReviewSection,
@@ -15,6 +15,7 @@ import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader"
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
 import { getCoursePageData } from "@/modules/reviews/functions/getCoursePageData";
 import { parseReviewParams } from "@/modules/reviews/functions/parseReviewParams";
+import { prefetchReviewFeed } from "@/modules/reviews/functions/prefetchReviewFeed";
 import { courseDescription } from "@/modules/reviews/functions/pageDescriptions";
 import { auth } from "@/server/auth";
 
@@ -74,22 +75,18 @@ export default async function Course(props: {
   const { filterFor, sortBy } = parseReviewParams(searchParams);
   const isAuthenticated = !!session?.user;
 
-  // The exact input the loader builds, prefetched under the procedure the
-  // loader will pick for this session so the hydrated key is the one it reads.
-  const reviewInput = {
-    code: courseCode,
-    slugs: professorSlugs.length > 0 ? professorSlugs : undefined,
-    filterFor,
-    sortBy,
-  };
-
   // The same request-scoped, `cache`d query `generateMetadata` runs; the two
   // calls dedupe by function identity and arguments, so this is one query.
   const [data] = await Promise.all([
     getCoursePageData(courseCode),
-    isAuthenticated
-      ? api.reviews.getByCourseCodeProtected.prefetchInfinite(reviewInput)
-      : api.reviews.getByCourseCode.prefetchInfinite(reviewInput),
+    prefetchReviewFeed({
+      variant: "course",
+      isAuthenticated,
+      code: courseCode,
+      slugs: professorSlugs.length > 0 ? professorSlugs : undefined,
+      filterFor,
+      sortBy,
+    }),
   ]);
 
   return (

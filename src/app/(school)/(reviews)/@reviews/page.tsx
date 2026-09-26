@@ -1,6 +1,6 @@
 import { JsonLd } from "@/common/components/json-ld";
 import { buildWebSiteJsonLd } from "@/common/tools/seo";
-import { api, HydrateClient } from "@/common/tools/trpc/server";
+import { HydrateClient } from "@/common/tools/trpc/server";
 import { env } from "@/env";
 import {
   ReviewSection,
@@ -12,6 +12,7 @@ import {
 import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader";
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
 import { parseReviewParams } from "@/modules/reviews/functions/parseReviewParams";
+import { prefetchReviewFeed } from "@/modules/reviews/functions/prefetchReviewFeed";
 import { auth } from "@/server/auth";
 
 export default async function Home(props: {
@@ -26,9 +27,12 @@ export default async function Home(props: {
 
   // Prefetch under the session-resolved procedure so the hydrated key is the
   // one the client hook reads after hydration.
-  await (isAuthenticated
-    ? api.reviews.getAllProtected.prefetchInfinite({ filterFor, sortBy })
-    : api.reviews.getAll.prefetchInfinite({ filterFor, sortBy }));
+  await prefetchReviewFeed({
+    variant: "home",
+    isAuthenticated,
+    filterFor,
+    sortBy,
+  });
 
   return (
     <>

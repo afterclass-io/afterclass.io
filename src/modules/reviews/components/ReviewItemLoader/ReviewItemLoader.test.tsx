@@ -110,6 +110,23 @@ describe("ReviewItemLoader procedure selection", () => {
     });
   });
 
+  it("passes absent course/professor filters as undefined, matching the prefetch", () => {
+    render(
+      <ReviewItemLoader
+        variant="course"
+        code="IS215"
+        isAuthenticated={false}
+      />,
+    );
+
+    expect(hooks.getByCourseCode.mock.calls[0]?.[0]).toEqual({
+      code: "IS215",
+      slugs: undefined,
+      filterFor: "all",
+      sortBy: "latest",
+    });
+  });
+
   it("keeps the professor query input stable across rerenders and never refetches", () => {
     const input = {
       variant: "professor" as const,
@@ -124,6 +141,11 @@ describe("ReviewItemLoader procedure selection", () => {
 
     expect(hooks.getByProfSlugProtected).toHaveBeenCalledTimes(2);
     expect(hooks.getByProfSlugProtected.mock.calls[1]?.[0]).toEqual(firstInput);
+
+    // A new-but-equal params object would have re-run the deleted
+    // `useEffect(..., [searchParams])` and called refetch on every navigation.
+    mockSearchParams = new URLSearchParams("filter=all&sort=latest");
+    rerender(<ReviewItemLoader {...input} />);
     expect(refetch).not.toHaveBeenCalled();
   });
 });
