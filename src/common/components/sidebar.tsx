@@ -7,6 +7,7 @@ import { PanelLeftIcon } from "lucide-react";
 
 import { useIsMobile } from "@/common/hooks";
 import { cn } from "@/common/functions";
+import { sidebarMenuSkeletonWidth } from "@/common/functions/sidebar-skeleton-width";
 import { Button } from "@/common/components/button";
 import { Input } from "@/common/components/input";
 import { Separator } from "@/common/components/separator";
@@ -207,7 +208,7 @@ function Sidebar({
 
   return (
     <div
-      className="group peer text-sidebar-foreground hidden md:block"
+      className="group peer text-sidebar-foreground hidden min-[1250px]:block"
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
       data-variant={variant}
@@ -229,7 +230,7 @@ function Sidebar({
       <div
         data-slot="sidebar-container"
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
+          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear min-[1250px]:flex",
           side === "left"
             ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
             : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
@@ -602,15 +603,13 @@ function SidebarMenuBadge({
 function SidebarMenuSkeleton({
   className,
   showIcon = false,
+  index = 0,
   ...props
 }: React.ComponentProps<"div"> & {
   showIcon?: boolean;
+  index?: number;
 }) {
-  // Random width between 50 to 90%, fixed per mount so skeletons don't
-  // jitter on re-render.
-  const [width] = React.useState(
-    () => `${Math.floor(Math.random() * 40) + 50}%`,
-  );
+  const width = sidebarMenuSkeletonWidth(index);
 
   return (
     <div
