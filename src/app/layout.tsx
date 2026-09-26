@@ -8,7 +8,6 @@ import { CoreLayout } from "@/common/components/core-layout";
 import ThemeProvider from "@/common/providers/ThemeProvider";
 import AuthProvider from "@/common/providers/AuthProvider";
 import TooltipProvider from "@/common/providers/TooltipProvider";
-import { inter, poppins } from "@/common/fonts";
 import { env } from "@/env";
 import { EdgeConfigProvider } from "@/common/providers/EdgeConfig";
 import { UmamiProvider } from "@/common/providers/Umami";
@@ -63,11 +62,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${poppins.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="en" suppressHydrationWarning>
       <head>
         <UmamiProvider
           src="/statistics/script.js"

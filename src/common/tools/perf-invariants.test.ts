@@ -35,4 +35,41 @@ describe("performance invariants", () => {
     expect(readSource("../../../instrumentation-client.ts")).toContain(gate);
     expect(readSource("../../../sentry.edge.config.ts")).toContain(gate);
   });
+
+  it("drops the unused Poppins and Inter webfonts", () => {
+    const root = path.resolve(import.meta.dirname, "../../..");
+    expect(fs.existsSync(path.join(root, "src/common/fonts/poppins.ts"))).toBe(
+      false,
+    );
+    expect(fs.existsSync(path.join(root, "src/common/fonts/inter.ts"))).toBe(
+      false,
+    );
+
+    for (const file of ["src/app/layout.tsx", "src/app/global-error.tsx"]) {
+      const src = readSource(`../../../${file}`);
+      expect(src).not.toContain("common/fonts");
+      expect(src).not.toContain("--font-inter");
+      expect(src).not.toContain("--font-poppins");
+      expect(src).not.toContain("inter.variable");
+      expect(src).not.toContain("poppins.variable");
+    }
+  });
+
+  it("keeps every app icon under 10 KB", () => {
+    const root = path.resolve(import.meta.dirname, "../../../src/app");
+    const icons: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (/^(favicon\.ico|icon\..+)$/.test(entry.name)) icons.push(full);
+      }
+    };
+    walk(root);
+
+    expect(icons.length).toBeGreaterThan(0);
+    for (const icon of icons) {
+      expect(fs.statSync(icon).size, icon).toBeLessThanOrEqual(10_000);
+    }
+  });
 });
