@@ -26,6 +26,35 @@ const config = withSentryConfig(
       "/.well-known": ["./.mcp-use/build/**/*"],
     },
 
+    images: {
+      formats: ["image/avif", "image/webp"],
+      remotePatterns: [
+        // Google avatars are served from lh3-lh6; a bare lh3 pattern would
+        // reject the other shards for real users.
+        { protocol: "https", hostname: "**.googleusercontent.com" },
+        // Seed/dev and Cypress avatars live in this bucket.
+        {
+          protocol: "https",
+          hostname: "afterclass-user-profile-pics.s3.amazonaws.com",
+        },
+      ],
+    },
+
+    experimental: {
+      optimizePackageImports: [
+        "@xyflow/react",
+        "@dnd-kit/core",
+        "@dnd-kit/sortable",
+        "rc-slider",
+        "cmdk",
+        "@number-flow/react",
+      ],
+    },
+
+    compiler: {
+      removeConsole: { exclude: ["error", "warn"] },
+    },
+
     /**
      * If you have `experimental: { appDir: true }` set, then you must comment the below `i18n` config
      * out.
