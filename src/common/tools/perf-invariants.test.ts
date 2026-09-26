@@ -55,6 +55,32 @@ describe("performance invariants", () => {
     }
   });
 
+  it("binds every declared font variable to a stylesheet token", () => {
+    const root = path.resolve(import.meta.dirname, "../../..");
+    const fontsDir = path.join(root, "src/common/fonts");
+    if (!fs.existsSync(fontsDir)) return;
+
+    const declared = fs
+      .readdirSync(fontsDir)
+      .filter((file) => file.endsWith(".ts"))
+      .flatMap((file) => {
+        const src = fs.readFileSync(path.join(fontsDir, file), "utf-8");
+        return [...src.matchAll(/variable:\s*"(--font-[^"]+)"/g)].map(
+          (match) => match[1],
+        );
+      });
+
+    const stylesDir = path.join(root, "src/common/styles");
+    const css = fs
+      .readdirSync(stylesDir)
+      .map((file) => fs.readFileSync(path.join(stylesDir, file), "utf-8"))
+      .join("\n");
+
+    for (const variable of declared) {
+      expect(css, variable).toContain(variable);
+    }
+  });
+
   it("keeps every app icon under 10 KB", () => {
     const root = path.resolve(import.meta.dirname, "../../../src/app");
     const icons: string[] = [];
@@ -86,13 +112,15 @@ describe("performance invariants", () => {
     expect(src).toContain('revalidateTag("edge-config"');
   });
 
-  it("gives every data-heavy route a loading boundary", () => {
+  it("gives the streaming data-heavy routes a loading boundary", () => {
     const root = path.resolve(import.meta.dirname, "../../..");
+    // /roadmaps is deliberately excluded: that segment contains only the
+    // searchParams/auth gates (redirects and notFound), and a boundary above
+    // them would stream a 200 over the 307/404.
     for (const route of [
       "src/app/(school)/bidding",
       "src/app/(school)/bidding/analytics",
       "src/app/(school)/search",
-      "src/app/(school)/roadmaps",
       "src/app/(school)/submit",
     ]) {
       expect(fs.existsSync(path.join(root, route, "loading.tsx")), route).toBe(

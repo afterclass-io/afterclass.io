@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import { ConstrainedContainer } from "@/common/components/constrained-container";
 import { CtaButton } from "@/common/components/cta-button";
@@ -47,7 +47,11 @@ export default function ReviewLayout({
             data-test="cta-contribute-oss"
             data-umami-event="cta-btn-contribute-oss"
           />
-          <BidWindowScheduleCard />
+          {/* Suspense keeps this uncached, request-time card from blocking the
+              layout, so the route segments' loading.tsx shells can stream. */}
+          <Suspense fallback={null}>
+            <BidWindowScheduleCard />
+          </Suspense>
         </div>
       </div>
     </ConstrainedContainer>

@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import { CtaButton } from "@/common/components/cta-button";
 import { EditIcon, GithubIcon, PlusIcon } from "@/common/components/icons";
@@ -36,7 +36,11 @@ export default function BidLayout({ children }: { children: ReactNode }) {
           data-umami-event="cta-btn-contribute-oss"
         />
         <ReviewCtaButtons />
-        <BidWindowScheduleCard />
+        {/* Suspense keeps this uncached, request-time card from blocking the
+            layout, so the route segments' loading.tsx shells can stream. */}
+        <Suspense fallback={null}>
+          <BidWindowScheduleCard />
+        </Suspense>
       </div>
     </div>
   );
