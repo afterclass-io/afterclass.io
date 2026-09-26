@@ -31,6 +31,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  revalidateTag("edge-config", "max");
+  // Called from outside a Server Action (a workflow webhook), so expire the
+  // entry immediately instead of serving one stale response first.
+  revalidateTag("edge-config", { expire: 0 });
   return NextResponse.json({ ok: true });
 }

@@ -36,13 +36,20 @@ async function getFallbackConfig() {
   return (await import("@/server/ecfg/config.json")).default;
 }
 
+// Built once at module scope: `unstable_cache` is keyed by the function
+// identity and args, so a fresh wrapper per call would never hit the cache.
+const cachedEdgeConfig = unstable_cache(
+  fetchAndValidateEdgeConfig,
+  ["edge-config"],
+  {
+    revalidate: 86_400,
+    tags: ["edge-config"],
+  },
+);
+
 export async function getEdgeConfig() {
   try {
-    const cached = unstable_cache(fetchAndValidateEdgeConfig, ["edge-config"], {
-      revalidate: 86_400,
-      tags: ["edge-config"],
-    });
-    return await cached();
+    return await cachedEdgeConfig();
   } catch (error) {
     // Outside the Next runtime (standalone MCP `mcp-use`, which shims
     // `next/cache`) `unstable_cache` throws "incrementalCache missing". Fall

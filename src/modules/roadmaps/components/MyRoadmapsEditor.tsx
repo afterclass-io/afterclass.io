@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import dynamic from "next/dynamic";
 import { useAtom } from "jotai";
 import { toast } from "sonner";
 import {
@@ -50,19 +49,7 @@ import { roadmapsTourSteps } from "@/common/tour/steps";
 import { useAutoStartTour } from "@/common/tour/useAutoStartTour";
 import { cn } from "@/common/functions";
 import { ResizeHandle } from "@/common/components/resize-handle";
-
-// Non-default toggle view, below the fold — xyflow only loads when the student
-// selects the timeline. The grid (default, above the fold) stays server-rendered.
-const RoadmapTimeline = dynamic(
-  () =>
-    import("@/modules/roadmaps/components/RoadmapTimeline").then(
-      (m) => m.RoadmapTimeline,
-    ),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="h-[500px] w-full rounded-lg" />,
-  },
-);
+import { RoadmapTimelineLazy } from "@/modules/roadmaps/components/RoadmapTimelineLazy";
 
 type EditorViewMode = "grid" | "timeline";
 
@@ -892,7 +879,7 @@ export function MyRoadmapsEditor() {
           !entriesError &&
           (viewMode === "timeline" ? (
             <div className="p-4">
-              <RoadmapTimeline entries={entries} readOnly />
+              <RoadmapTimelineLazy entries={entries} readOnly />
             </div>
           ) : (
             <div

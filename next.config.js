@@ -29,9 +29,10 @@ const config = withSentryConfig(
     images: {
       formats: ["image/avif", "image/webp"],
       remotePatterns: [
-        // Google avatars are served from lh3-lh6; a bare lh3 pattern would
-        // reject the other shards for real users.
-        { protocol: "https", hostname: "**.googleusercontent.com" },
+        // Google avatars are served from lh3-lh6 (a single subdomain label);
+        // `*` matches one label, so this accepts the shards without opening
+        // the optimizer to arbitrary nested googleusercontent.com hosts.
+        { protocol: "https", hostname: "*.googleusercontent.com" },
         // Seed/dev and Cypress avatars live in this bucket.
         {
           protocol: "https",
@@ -45,6 +46,7 @@ const config = withSentryConfig(
         "@xyflow/react",
         "@dnd-kit/core",
         "@dnd-kit/sortable",
+        "@radix-ui/react-dialog",
         "rc-slider",
         "cmdk",
         "@number-flow/react",

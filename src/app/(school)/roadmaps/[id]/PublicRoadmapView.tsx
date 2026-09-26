@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -25,7 +24,6 @@ import { RoadmapReactionButton } from "@/modules/roadmaps/components/RoadmapReac
 import { RoadmapReactionsGroup } from "@/modules/roadmaps/components/RoadmapReactionsGroup";
 import { Button } from "@/common/components/button";
 import { PageTitle } from "@/common/components/page-title";
-import { Skeleton } from "@/common/components/skeleton";
 import { ShareIcon } from "@/common/components/icons";
 import {
   Tooltip,
@@ -35,19 +33,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
 import { censorProfanity, censorProfanityOrNull } from "@/common/functions";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
-
-// Non-default toggle view, below the fold — xyflow only loads when a student
-// selects the timeline. The grid (default, above the fold) stays server-rendered.
-const RoadmapTimeline = dynamic(
-  () =>
-    import("@/modules/roadmaps/components/RoadmapTimeline").then(
-      (m) => m.RoadmapTimeline,
-    ),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="h-[500px] w-full rounded-lg" />,
-  },
-);
+import { RoadmapTimelineLazy } from "@/modules/roadmaps/components/RoadmapTimelineLazy";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -171,7 +157,9 @@ export function PublicRoadmapView({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">{safeName}</PageTitle>
+          <PageTitle className="text-left text-2xl font-bold tracking-tight md:text-2xl!">
+            {safeName}
+          </PageTitle>
           {/* Author line: who made this roadmap, their faculty, and when it
               was published */}
           <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
@@ -287,7 +275,7 @@ export function PublicRoadmapView({
           onEntriesChange={noop}
         />
       ) : (
-        <RoadmapTimeline entries={entries} readOnly />
+        <RoadmapTimelineLazy entries={entries} readOnly />
       )}
     </div>
   );

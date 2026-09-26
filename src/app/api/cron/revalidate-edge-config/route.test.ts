@@ -48,7 +48,9 @@ describe("GET /api/cron/revalidate-edge-config", () => {
     process.env.CRON_SECRET = "s3cret";
     const res = await GET(req("Bearer s3cret"));
     expect(res.status).toBe(200);
-    expect(mockRevalidateTag).toHaveBeenCalledWith("edge-config", "max");
+    expect(mockRevalidateTag).toHaveBeenCalledWith("edge-config", {
+      expire: 0,
+    });
     expect(await res.json()).toEqual({ ok: true });
   });
 
@@ -56,6 +58,8 @@ describe("GET /api/cron/revalidate-edge-config", () => {
     process.env.CRON_SECRET = "s3cret";
     const res = await GET(req("Bearer dev"));
     expect(res.status).toBe(200);
-    expect(mockRevalidateTag).toHaveBeenCalledWith("edge-config", "max");
+    expect(mockRevalidateTag).toHaveBeenCalledWith("edge-config", {
+      expire: 0,
+    });
   });
 });

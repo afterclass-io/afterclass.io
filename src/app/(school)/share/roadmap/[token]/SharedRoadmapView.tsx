@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -18,23 +17,10 @@ import { api } from "@/common/tools/trpc/react";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
 import { Button } from "@/common/components/button";
 import { PageTitle } from "@/common/components/page-title";
-import { Skeleton } from "@/common/components/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
 import { censorProfanity } from "@/common/functions";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
-
-// Non-default toggle view, below the fold — xyflow only loads when a student
-// selects the timeline. The grid (default, above the fold) stays server-rendered.
-const RoadmapTimeline = dynamic(
-  () =>
-    import("@/modules/roadmaps/components/RoadmapTimeline").then(
-      (m) => m.RoadmapTimeline,
-    ),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="h-[500px] w-full rounded-lg" />,
-  },
-);
+import { RoadmapTimelineLazy } from "@/modules/roadmaps/components/RoadmapTimelineLazy";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -110,7 +96,7 @@ export function SharedRoadmapView({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">
+          <PageTitle className="text-left text-2xl font-bold tracking-tight md:text-2xl!">
             Shared Roadmap: {censorProfanity(roadmapName)}
           </PageTitle>
           <p className="text-muted-foreground text-sm">
@@ -173,7 +159,7 @@ export function SharedRoadmapView({
           onEntriesChange={noop}
         />
       ) : (
-        <RoadmapTimeline entries={entries} readOnly />
+        <RoadmapTimelineLazy entries={entries} readOnly />
       )}
     </div>
   );
