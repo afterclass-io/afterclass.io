@@ -7,6 +7,7 @@ import * as Sentry from "@sentry/nextjs";
 import { type Users } from "@/generated/prisma/client";
 
 import { env } from "@/env";
+import { getEdgeConfig } from "@/common/providers/EdgeConfig/EdgeConfigProvider";
 import { signInWithEmail } from "../supabase";
 import { exchangeGoogleIdToken } from "./supabase-link";
 import { db } from "@/server/db";
@@ -65,6 +66,18 @@ export const authConfig = {
       // You can pass any HTML attribute to the <input> tag through the object.
       credentials: { email: { type: "text" }, password: { type: "password" } },
       async authorize(credentials) {
+        // Jailbreak prevention: password login is disabled unless the
+        // `enablePasswordLogin` Edge Config flag is on. Dev keeps a local
+        // escape hatch (unset ENABLE_PASSWORD_LOGIN) for testing.
+        const ecfg = await getEdgeConfig().catch(() => null);
+        const isDev = process.env.NODE_ENV === "development";
+        const allowPassword =
+          (isDev && process.env.ENABLE_PASSWORD_LOGIN !== "false") ||
+          (ecfg?.enablePasswordLogin ?? false);
+        if (!allowPassword) {
+          return null;
+        }
+
         const Credential = z.object({
           email: emailValidationSchema,
           password: z.string(),

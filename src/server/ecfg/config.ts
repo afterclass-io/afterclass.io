@@ -42,6 +42,9 @@ export const edgeConfigSchema = z.object({
   enableReviewSort: z.boolean(),
   enableReviewFilter: z.boolean(),
   enableReviewReactions: z.boolean(),
+  // Gates password (Credentials provider) login. Defaults to false
+  // (Google-only auth); flipped on via remote Edge Config when needed.
+  enablePasswordLogin: z.boolean().default(false),
   // A config whose remote Edge Config hasn't been updated with `chat` yet must
   // still parse. NOTE (zod 4.5+): an inner schema's `.default()` is now applied
   // even when the key is absent/undefined, so `chat` is always populated (with
