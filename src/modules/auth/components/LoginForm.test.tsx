@@ -40,6 +40,7 @@ describe("LoginForm with enablePasswordLogin flag", () => {
     expect(container.querySelector('[data-test="submit"]')).toBeNull();
     expect(screen.queryByText(/^OR$/)).toBeNull();
     expect(container.querySelector('[data-test="register"]')).toBeNull();
+    expect(screen.queryByText(/don't have an account\?/i)).toBeNull();
     expect(container.querySelector('[data-test="forget"]')).toBeNull();
   });
 
@@ -51,6 +52,7 @@ describe("LoginForm with enablePasswordLogin flag", () => {
     expect(container.querySelector('[data-test="submit"]')).toBeNull();
     expect(screen.queryByText(/^OR$/)).toBeNull();
     expect(container.querySelector('[data-test="register"]')).toBeNull();
+    expect(screen.queryByText(/don't have an account\?/i)).toBeNull();
   });
 
   it("renders full password form when enablePasswordLogin is true", () => {
@@ -61,5 +63,6 @@ describe("LoginForm with enablePasswordLogin flag", () => {
     expect(container.querySelector('[data-test="submit"]')).not.toBeNull();
     expect(screen.getByText(/^OR$/)).toBeDefined();
     expect(container.querySelector('[data-test="register"]')).not.toBeNull();
+    expect(screen.getByText(/don't have an account\?/i)).toBeDefined();
   });
 });

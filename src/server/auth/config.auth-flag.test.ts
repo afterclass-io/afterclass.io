@@ -101,4 +101,19 @@ describe("Credentials authorize enablePasswordLogin gate", () => {
     expect(result).toBeNull();
     expect(usersFindUnique).toHaveBeenCalled();
   });
+
+  it("rejects when ENABLE_PASSWORD_LOGIN is 'false' in dev even if Edge Config enables it", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    process.env.ENABLE_PASSWORD_LOGIN = "false";
+    getEdgeConfigMock.mockResolvedValue({ enablePasswordLogin: true });
+
+    const result = await credentialsProvider().authorize({
+      email: "notfound@smu.edu.sg",
+      password: "password123",
+    });
+
+    expect(result).toBeNull();
+    expect(usersFindUnique).not.toHaveBeenCalled();
+    expect(signInWithEmailMock).not.toHaveBeenCalled();
+  });
 });

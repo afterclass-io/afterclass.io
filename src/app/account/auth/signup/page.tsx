@@ -12,9 +12,9 @@ export default async function SignUp(props: {
 }) {
   const ecfg = await getEdgeConfig().catch(() => null);
   const isDev = process.env.NODE_ENV === "development";
-  const enablePasswordLogin =
-    (isDev && process.env.ENABLE_PASSWORD_LOGIN !== "false") ||
-    (ecfg?.enablePasswordLogin ?? false);
+  const enablePasswordLogin = isDev
+    ? process.env.ENABLE_PASSWORD_LOGIN !== "false"
+    : (ecfg?.enablePasswordLogin ?? false);
   if (!enablePasswordLogin) {
     redirect("/account/auth/login");
   }

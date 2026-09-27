@@ -67,13 +67,14 @@ export const authConfig = {
       credentials: { email: { type: "text" }, password: { type: "password" } },
       async authorize(credentials) {
         // Jailbreak prevention: password login is disabled unless the
-        // `enablePasswordLogin` Edge Config flag is on. Dev keeps a local
-        // escape hatch (unset ENABLE_PASSWORD_LOGIN) for testing.
+        // `enablePasswordLogin` Edge Config flag is on. In dev the local
+        // env var is authoritative (unset means allowed for testing), so
+        // an enabled Edge Config flag cannot override an explicit opt-out.
         const ecfg = await getEdgeConfig().catch(() => null);
         const isDev = process.env.NODE_ENV === "development";
-        const allowPassword =
-          (isDev && process.env.ENABLE_PASSWORD_LOGIN !== "false") ||
-          (ecfg?.enablePasswordLogin ?? false);
+        const allowPassword = isDev
+          ? process.env.ENABLE_PASSWORD_LOGIN !== "false"
+          : (ecfg?.enablePasswordLogin ?? false);
         if (!allowPassword) {
           return null;
         }

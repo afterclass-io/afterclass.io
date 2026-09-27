@@ -266,11 +266,11 @@ export const LoginForm = ({
             Sign in with Google
           </GoogleSignInButton>
 
-          <div className="flex items-center gap-1 self-stretch md:text-base">
-            <span className="text-muted-foreground text-center">
-              {"Don't have an account?"}
-            </span>
-            {enablePasswordLogin && (
+          {enablePasswordLogin && (
+            <div className="flex items-center gap-1 self-stretch md:text-base">
+              <span className="text-muted-foreground text-center">
+                {"Don't have an account?"}
+              </span>
               <ProgressLink
                 href="/account/auth/signup"
                 type="button"
@@ -280,8 +280,8 @@ export const LoginForm = ({
               >
                 Create an account
               </ProgressLink>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </form>
     </Form>
