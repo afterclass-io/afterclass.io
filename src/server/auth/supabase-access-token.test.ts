@@ -110,7 +110,7 @@ describe("getSupabaseAccessToken", () => {
     await expect(getSupabaseRefreshToken()).resolves.toBeNull();
   });
 
-  it("returns null when the stored token is expired and no refresh token exists", async () => {
+  it("returns null when the stored token is expired", async () => {
     mockCookies.mockResolvedValue(
       cookieStore({ "authjs.session-token": "raw-jwe" }),
     );

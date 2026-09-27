@@ -2,7 +2,6 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { decode } from "next-auth/jwt";
-import { createClient } from "@supabase/supabase-js";
 
 import { env } from "@/env";
 
@@ -26,6 +25,20 @@ const EXPIRY_SKEW_SECONDS = 60;
  * when served over HTTPS. The JWE encryption key is derived via HKDF from
  * `secret` + `salt`, where the salt is the cookie name - so the salt passed
  * to `decode` must match the name of the cookie actually found.
+ *
+ * Returns the Supabase access token stored in the Auth.js session JWT.
+ *
+ * Takes no parameters; reads the session cookie via `next/headers`.
+ *
+ * @returns The stored Supabase access token, or `null` when no session
+ * cookie is present, the cookie cannot be decoded, no access token is
+ * stored, or the stored token is expired. Expiry is evaluated against
+ * `supabaseExpiresAt` with an `EXPIRY_SKEW_SECONDS` early-expiry window.
+ * Security: fails closed on expiry (returns `null` so callers route to
+ * re-login) — an in-memory token refresh without cookie persistence is
+ * deliberately not attempted because it desynchronizes rotated refresh
+ * tokens and breaks CSRF binding in consent routes. Never throws; all
+ * failures map to `null`.
  */
 export async function getSupabaseAccessToken(): Promise<string | null> {
   const store = await cookies();
@@ -55,39 +68,34 @@ export async function getSupabaseAccessToken(): Promise<string | null> {
     const accessToken = token?.supabaseAccessToken ?? null;
     if (!accessToken) return null;
     // Expiry-aware: tokens captured at sign-in expire after ~1h. When past
-    // the skew window, refresh via Supabase when a refresh token exists;
-    // otherwise fail closed (null → 401 → re-login) instead of handing out
-    // a stale bearer. Never throw — map all failures to null.
-    // NOTE: the refreshed token is returned to the caller only; the JWT
-    // cookie is rewritten on the next `update()`/sign-in, so callers that
-    // need persistence across requests should re-login on repeated nulls.
+    // the skew window, fail closed (null → 401 → re-login) instead of
+    // handing out a stale bearer. An in-memory refresh without cookie
+    // persistence is deliberately not attempted: it desynchronizes rotated
+    // refresh tokens and breaks CSRF binding in consent routes, so failing
+    // closed safely routes callers to re-login. Never throw — map all
+    // failures to null.
     const expiresAt = token?.supabaseExpiresAt ?? null;
     const expired =
       typeof expiresAt === "number" &&
       Date.now() / 1000 > expiresAt - EXPIRY_SKEW_SECONDS;
-    if (!expired) return accessToken;
-    const refreshToken = token?.supabaseRefreshToken ?? null;
-    if (!refreshToken) return null;
-    try {
-      const { data, error } = await createClient(
-        env.NEXT_PUBLIC_SUPABASE_URL,
-        env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      ).auth.refreshSession({ refresh_token: refreshToken });
-      if (error || !data.session?.access_token) return null;
-      return data.session.access_token;
-    } catch {
-      return null;
-    }
+    if (expired) return null;
+    return accessToken;
   } catch {
     return null;
   }
 }
 
 /**
- * Server-only accessor for the Supabase refresh token (Google sign-ins,
- * persisted by `src/server/auth/config.ts`). Same cookie/decode path as
- * `getSupabaseAccessToken`; null for legacy sessions. Never exposed
- * client-side — thread into `userClient()` refresh params only.
+ * Returns the Supabase refresh token stored in the Auth.js session JWT.
+ *
+ * Takes no parameters; reads the session cookie via `next/headers` using
+ * the same cookie/decode path as `getSupabaseAccessToken`.
+ *
+ * @returns The stored Supabase refresh token (Google sign-ins, persisted
+ * by `src/server/auth/config.ts`), or `null` for legacy sessions, missing
+ * cookies, or undecodable cookies. Never exposed client-side — thread
+ * into `userClient()` refresh params only. Never throws; all failures map
+ * to `null`.
  */
 export async function getSupabaseRefreshToken(): Promise<string | null> {
   const store = await cookies();
