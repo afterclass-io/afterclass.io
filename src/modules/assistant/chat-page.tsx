@@ -101,7 +101,11 @@ export function ChatPage({
       seenRunningRef.current = true;
       return;
     }
-    if (chat.status !== "ready" || !seenRunningRef.current) return;
+    if (
+      (chat.status !== "ready" && chat.status !== "error") ||
+      !seenRunningRef.current
+    )
+      return;
     seenRunningRef.current = false;
     let cancelled = false;
     void fetch("/api/assistant/status")

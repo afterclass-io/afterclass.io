@@ -1,5 +1,4 @@
 // @vitest-environment jsdom
-import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
@@ -25,8 +24,8 @@ describe("ConsentSignIn", () => {
     render(<ConsentSignIn loginHref={loginHref} />);
 
     const link = screen.getByRole("link", { name: /sign in with google/i });
-    expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", loginHref);
+    expect(link).toBeDefined();
+    expect(link.getAttribute("href")).toBe(loginHref);
   });
 });
 
@@ -42,7 +41,7 @@ describe("ConsentError", () => {
 
     expect(
       screen.getByText("Could not load authorization details."),
-    ).toBeInTheDocument();
+    ).toBeDefined();
     const retry = screen.getByRole("button", { name: /^retry$/i });
     fireEvent.click(retry);
     expect(onRetry).toHaveBeenCalledTimes(1);
@@ -60,12 +59,10 @@ describe("ConsentError", () => {
       />,
     );
 
-    expect(
-      screen.getByRole("button", { name: /^retry$/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^retry$/i })).toBeDefined();
     const link = screen.getByRole("link", { name: /sign in with google/i });
-    expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", loginHref);
+    expect(link).toBeDefined();
+    expect(link.getAttribute("href")).toBe(loginHref);
   });
 
   it("omits the sign-in option when loginHref is absent", () => {
@@ -74,9 +71,7 @@ describe("ConsentError", () => {
       <ConsentError message="Consent request failed." onRetry={onRetry} />,
     );
 
-    expect(
-      screen.getByRole("button", { name: /^retry$/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^retry$/i })).toBeDefined();
     expect(
       screen.queryByRole("link", { name: /sign in with google/i }),
     ).toBeNull();
