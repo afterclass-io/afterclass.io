@@ -43,7 +43,11 @@ const loginFormInputsSchema = z.object({
 });
 type LoginFormInputs = z.infer<typeof loginFormInputsSchema>;
 
-export const LoginForm = () => {
+export const LoginForm = ({
+  enablePasswordLogin = false,
+}: {
+  enablePasswordLogin?: boolean;
+}) => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const progress = useProgress();
@@ -145,84 +149,97 @@ export const LoginForm = () => {
         className="flex w-full flex-col gap-4 md:gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>School Email Address</FormLabel>
-              <FormControl>
-                <InputRoot>
-                  <InputAdornment>
-                    <EnvelopeIcon />
-                  </InputAdornment>
-                  <InputControl>
-                    <Input
-                      {...field}
-                      disabled={form.formState.isSubmitting}
-                      placeholder="john.doe.2023@smu.edu.sg"
-                      autoComplete="on"
-                      tabIndex={1}
-                      data-test="email"
-                    />
-                  </InputControl>
-                </InputRoot>
-              </FormControl>
-              <FormMessage data-test="email-helper-text" />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center justify-between">
-                <span>Password</span>
-                <ProgressLink
-                  href="/account/auth/forgot"
-                  variant="link"
-                  className="md:text-sm"
-                  tabIndex={5}
-                  data-test="forget"
-                >
-                  Forgot password?
-                </ProgressLink>
-              </FormLabel>
-              <FormControl>
-                <PasswordInputRoot>
-                  <PasswordInputAdornment>
-                    <LockIcon />
-                  </PasswordInputAdornment>
-                  <PasswordInput
-                    {...field}
-                    disabled={form.formState.isSubmitting}
-                    placeholder="Enter password"
-                    autoComplete="on"
-                    tabIndex={2}
-                    data-test="password"
-                  />
-                  <PasswordInputAdornmentToggle />
-                </PasswordInputRoot>
-              </FormControl>
-              <FormMessage data-test="password-helper-text" />
-            </FormItem>
-          )}
-        />
+        {enablePasswordLogin && (
+          <>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>School Email Address</FormLabel>
+                  <FormControl>
+                    <InputRoot>
+                      <InputAdornment>
+                        <EnvelopeIcon />
+                      </InputAdornment>
+                      <InputControl>
+                        <Input
+                          {...field}
+                          disabled={form.formState.isSubmitting}
+                          placeholder="john.doe.2023@smu.edu.sg"
+                          autoComplete="on"
+                          tabIndex={1}
+                          data-test="email"
+                        />
+                      </InputControl>
+                    </InputRoot>
+                  </FormControl>
+                  <FormMessage data-test="email-helper-text" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center justify-between">
+                    <span>Password</span>
+                    <ProgressLink
+                      href="/account/auth/forgot"
+                      variant="link"
+                      className="md:text-sm"
+                      tabIndex={5}
+                      data-test="forget"
+                    >
+                      Forgot password?
+                    </ProgressLink>
+                  </FormLabel>
+                  <FormControl>
+                    <PasswordInputRoot>
+                      <PasswordInputAdornment>
+                        <LockIcon />
+                      </PasswordInputAdornment>
+                      <PasswordInput
+                        {...field}
+                        disabled={form.formState.isSubmitting}
+                        placeholder="Enter password"
+                        autoComplete="on"
+                        tabIndex={2}
+                        data-test="password"
+                      />
+                      <PasswordInputAdornmentToggle />
+                    </PasswordInputRoot>
+                  </FormControl>
+                  <FormMessage data-test="password-helper-text" />
+                </FormItem>
+              )}
+            />
+          </>
+        )}
         <div className="flex w-full flex-col items-start gap-4 self-stretch pt-3">
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={form.formState.isSubmitting}
-            tabIndex={3}
-            data-test="submit"
-          >
-            {form.formState.isSubmitting ? "Signing in..." : "Login"}
-          </Button>
-          <div className="before:bg-border after:bg-border mx-auto my-2 flex w-full items-center justify-evenly before:mr-4 before:block before:h-px before:flex-grow after:ml-4 after:block after:h-px after:flex-grow">
-            OR
-          </div>
+          {enablePasswordLogin && (
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={form.formState.isSubmitting}
+              tabIndex={3}
+              data-test="submit"
+            >
+              {form.formState.isSubmitting ? "Signing in..." : "Login"}
+            </Button>
+          )}
+          {enablePasswordLogin && (
+            <div className="before:bg-border after:bg-border mx-auto my-2 flex w-full items-center justify-evenly before:mr-4 before:block before:h-px before:flex-grow after:ml-4 after:block after:h-px after:flex-grow">
+              OR
+            </div>
+          )}
 
+          {!enablePasswordLogin && (
+            <p className="text-muted-foreground text-sm md:text-base">
+              Sign in with your university Google account to continue.
+            </p>
+          )}
           <GoogleSignInButton
             googleSignInOptions={{
               callbackUrl: searchParams?.get("callbackUrl") ?? "/",
@@ -253,15 +270,17 @@ export const LoginForm = () => {
             <span className="text-muted-foreground text-center">
               {"Don't have an account?"}
             </span>
-            <ProgressLink
-              href="/account/auth/signup"
-              type="button"
-              variant="link"
-              tabIndex={6}
-              data-test="register"
-            >
-              Create an account
-            </ProgressLink>
+            {enablePasswordLogin && (
+              <ProgressLink
+                href="/account/auth/signup"
+                type="button"
+                variant="link"
+                tabIndex={6}
+                data-test="register"
+              >
+                Create an account
+              </ProgressLink>
+            )}
           </div>
         </div>
       </form>
