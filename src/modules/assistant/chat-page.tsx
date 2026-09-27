@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 
@@ -32,12 +32,21 @@ export function ChatPage({
 }: {
   initialStatus: AssistantStatus;
 }) {
-  const [status] = useState(initialStatus);
+  const [status, setStatus] = useState(initialStatus);
   const [gate, setGate] = useState<ChatGate | null>(null);
   // Consent is LOCAL — seeded from the server status, flipped by
   // onConsented / onConsentRevoked. No status refetch (bare minimum — the
   // next navigation refetches server-side anyway).
   const [consented, setConsented] = useState(initialStatus.aiConsented);
+  // Optimistic quota: decrement instantly on send, reconcile with the server
+  // DB count when the turn completes. Seed from props; the background sync
+  // below keeps the displayed value honest.
+  const [optimisticRemaining, setOptimisticRemaining] = useState(
+    initialStatus.remaining,
+  );
+  // Skip the mount "ready": only sync after a send transitions through a
+  // non-ready chat status (submitted/streaming) back to ready.
+  const seenRunningRef = useRef(false);
   const activeSessionId = useChatStore((s) => s.activeSessionId);
   const hydrated = useChatStore((s) => s.hydrated);
   const hydrate = useChatStore((s) => s.hydrate);
@@ -68,6 +77,47 @@ export function ChatPage({
 
   usePersistSession({ status: chat.status, messages: chat.messages });
   useRefreshAfterTools(chat.status, chat.messages);
+
+  // Wrap sendMessage: decrement instantly so quota feedback never waits on
+  // the stream; refund when the send itself rejects (e.g. immediate 403).
+  const handleSendMessage = useCallback(
+    async (params: Parameters<typeof chat.sendMessage>[0]) => {
+      setOptimisticRemaining((prev) => Math.max(0, prev - 1));
+      try {
+        return await chat.sendMessage(params);
+      } catch (e) {
+        setOptimisticRemaining((prev) => prev + 1);
+        throw e;
+      }
+    },
+    [chat],
+  );
+
+  // Background sync: when a turn completes (running → ready), refetch the
+  // authoritative DB count. The mount "ready" is skipped via seenRunningRef
+  // so the initial render never fires a status request.
+  useEffect(() => {
+    if (chat.status === "streaming" || chat.status === "submitted") {
+      seenRunningRef.current = true;
+      return;
+    }
+    if (chat.status !== "ready" || !seenRunningRef.current) return;
+    seenRunningRef.current = false;
+    let cancelled = false;
+    void fetch("/api/assistant/status")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((fresh: AssistantStatus | null) => {
+        if (cancelled || fresh == null || typeof fresh !== "object") return;
+        if (typeof fresh.remaining === "number") {
+          setOptimisticRemaining(fresh.remaining);
+        }
+        setStatus((prev) => ({ ...prev, ...fresh }));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [chat.status]);
 
   // Resume the highlighted active session once, right after hydrate. Without
   // this, /assistant mounts an EMPTY thread while the sidebar highlights the
@@ -142,7 +192,7 @@ export function ChatPage({
           onDismiss={() => undefined}
         />
         <QuotaMeter
-          remaining={status.remaining}
+          remaining={optimisticRemaining}
           quota={status.quota}
           nudgeAt={status.nudgeAt}
           hasConnectedAgent={status.hasConnectedAgent}
@@ -168,7 +218,7 @@ export function ChatPage({
                   </h1>
                   {consented && (
                     <WelcomeSuggestions
-                      onPick={(prompt) => chat.sendMessage({ text: prompt })}
+                      onPick={(prompt) => void handleSendMessage({ text: prompt })}
                     />
                   )}
                 </div>
@@ -183,18 +233,18 @@ export function ChatPage({
             {consented ? (
               <>
                 <FollowUpSuggestions
-                  onPick={(prompt) => chat.sendMessage({ text: prompt })}
+                  onPick={(prompt) => void handleSendMessage({ text: prompt })}
                   messages={chat.messages}
                   isRunning={isRunning}
                   lastTurnFailed={showError}
                 />
                 <QuotaAlertBar
-                  remaining={status.remaining}
+                  remaining={optimisticRemaining}
                   quota={status.quota}
                   hasConnectedAgent={status.hasConnectedAgent}
                 />
                 <Composer
-                  sendMessage={chat.sendMessage}
+                  sendMessage={(params) => void handleSendMessage(params)}
                   status={chat.status}
                   stop={chat.stop}
                 />

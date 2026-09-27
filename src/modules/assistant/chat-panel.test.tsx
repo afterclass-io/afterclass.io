@@ -144,3 +144,24 @@ describe("ChatPanel consent gating", () => {
     expect(onConsentRevoked).not.toHaveBeenCalled();
   });
 });
+
+describe("ChatPanel optimistic quota", () => {
+  it("optimistically decrements the remaining count passed to QuotaAlertBar on send", async () => {
+    // remaining=18/20 sits in the warn band (pct 90→85 would show no bar at
+    // 43/50, so use values where the bar is visible and its message shifts).
+    mockSendMessage.mockResolvedValue(undefined);
+    const props = { ...baseProps, quota: 20, remaining: 10 };
+    render(<ChatPanel {...props} />);
+    expect(
+      screen.getByText(/You've used 50% of your free messages/),
+    ).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("Message input"), {
+      target: { value: "hello" },
+    });
+    fireEvent.click(screen.getByLabelText("Send message"));
+    expect(
+      await screen.findByText(/You've used 55% of your free messages/),
+    ).toBeTruthy();
+    expect(mockSendMessage).toHaveBeenCalledWith({ text: "hello" });
+  });
+});
