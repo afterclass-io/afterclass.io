@@ -149,15 +149,26 @@ export function ConsentSignIn({ loginHref }: { loginHref: string }) {
 export function ConsentError({
   message,
   onRetry,
+  loginHref,
 }: {
   message: string;
   onRetry: () => void;
+  loginHref?: string;
 }) {
   return (
     <EmptyState
       title="Connect an agent"
       description={message}
-      action={<Button onClick={onRetry}>Retry</Button>}
+      action={
+        <div className="flex flex-col items-center gap-2 sm:flex-row">
+          <Button onClick={onRetry}>Retry</Button>
+          {loginHref && (
+            <Button asChild variant="outline">
+              <a href={loginHref}>Sign in with Google</a>
+            </Button>
+          )}
+        </div>
+      }
     />
   );
 }
