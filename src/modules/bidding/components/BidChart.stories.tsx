@@ -61,10 +61,21 @@ export const ManyPoints: Story = {
   },
 };
 
-export const WithCurrentWindow: Story = {
+export const WithCurrentTerm: Story = {
   args: {
     chartData: multiYearData,
-    currentWindowBidWindow: "AY202627T1/1A/1",
+    currentAcadTermId: "AY202627T1",
+  },
+};
+
+export const SparseTermBoundary: Story = {
+  args: {
+    chartData: [
+      { bidWindow: "AY202425T1/2/1", price: [32, 45] as [number, number], size: 5 },
+      { bidWindow: "AY202526T1/1C/1", price: [43, 45] as [number, number], size: 5 },
+      { bidWindow: "AY202627T1/2/1", price: [30.02, 32.51] as [number, number], size: 2 },
+    ],
+    currentAcadTermId: "AY202627T1",
   },
 };
 
