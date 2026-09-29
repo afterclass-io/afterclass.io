@@ -40,7 +40,7 @@ export function scopeLabel(scope: string): string {
  * Friendly requester label for the consent header. Supabase reports the
  * OAuth client's provider name (e.g. "Google" for Google login), but with a
  * `user_bound_custom-mcp` redirect the actual requester is the user's AI
- * agent authenticating via Google — not Google itself. Neutral fallback to
+ * agent authenticating via Google, not Google itself. Neutral fallback to
  * the client name (or "This app") for all other redirects.
  */
 export function requesterLabel(
