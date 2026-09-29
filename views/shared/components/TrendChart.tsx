@@ -50,8 +50,13 @@ export const TrendChart: React.FC<{
   // Half-step band geometry mirrors the website BidChart (Tasks 1-4): each
   // term band spans firstIdx - 0.5 to lastIdx + 0.5 in point-index units,
   // and term transitions get one crisp boundary line at lastIdx + 0.5.
-  const step = plotW / Math.max(1, points.length);
-  const bandX = (idx: number) => PAD.left + (idx + 0.5) * step;
+  // x() spaces N points over N-1 gaps, so the half-step edge between point
+  // i and i+1 is their midpoint.
+  const edgeX = (i: number) => (x(i) + x(i + 1)) / 2;
+  const bandLeft = (firstIdx: number) =>
+    firstIdx === 0 ? PAD.left : edgeX(firstIdx - 1);
+  const bandRight = (lastIdx: number) =>
+    lastIdx >= points.length - 1 ? plotRight : edgeX(lastIdx);
   const boundaryIdxs: number[] = [];
   for (let i = 1; i < points.length; i++) {
     if (points[i - 1]!.acadTermId !== points[i]!.acadTermId)
@@ -72,7 +77,10 @@ export const TrendChart: React.FC<{
             .map((k) => keyToIdx.get(k))
             .filter((v): v is number => v !== undefined);
           return idxs.length > 0
-            ? { x1: bandX(Math.min(...idxs) - 1), x2: bandX(Math.max(...idxs)) }
+            ? {
+                x1: bandLeft(Math.min(...idxs)),
+                x2: bandRight(Math.max(...idxs)),
+              }
             : null;
         })()
       : null;
@@ -86,6 +94,12 @@ export const TrendChart: React.FC<{
   const nowIdx = currentKey ? (keyToIdx.get(currentKey) ?? null) : null;
   const nowX = nowIdx !== null ? x(nowIdx) : 0;
   const nowAtRightEdge = nowIdx !== null && nowX >= plotRight - 16;
+  // Legacy prediction-key marker: only when the term gate is unknown (no
+  // currentAcadTermId on old payloads) and the term highlight is absent.
+  // When the current term is known, the term highlight is the only now
+  // marker — a stale prediction key must never pin "now" to the wrong term.
+  const showLegacyNow =
+    !nowBand && !currentAcadTermId && nowIdx !== null;
   return (
     <svg
       role="img"
@@ -98,12 +112,14 @@ export const TrendChart: React.FC<{
           .map((k) => keyToIdx.get(k))
           .filter((v): v is number => v !== undefined);
         if (gi % 2 !== 1 || idxs.length === 0) return null;
+        const x1 = bandLeft(Math.min(...idxs));
+        const x2 = bandRight(Math.max(...idxs));
         return (
           <rect
             key={g[0]}
-            x={bandX(Math.min(...idxs) - 1)}
+            x={x1}
             y={PAD.top}
-            width={(idxs.length * plotW) / Math.max(1, points.length)}
+            width={x2 - x1}
             height={H - PAD.top - PAD.bottom}
             fill={c.border}
             opacity={0.4}
@@ -113,8 +129,8 @@ export const TrendChart: React.FC<{
       {boundaryIdxs.map((i) => (
         <line
           key={`boundary-${points[i]!.key}`}
-          x1={bandX(i)}
-          x2={bandX(i)}
+          x1={edgeX(i)}
+          x2={edgeX(i)}
           y1={PAD.top}
           y2={H - PAD.bottom}
           stroke={c.border}
@@ -151,10 +167,10 @@ export const TrendChart: React.FC<{
           </text>
         </>
       )}
-      {currentKey && keyToIdx.has(currentKey) && (
+      {!nowBand && showLegacyNow && (
         <line
-          x1={x(keyToIdx.get(currentKey)!)}
-          x2={x(keyToIdx.get(currentKey)!)}
+          x1={x(nowIdx!)}
+          x2={x(nowIdx!)}
           y1={PAD.top}
           y2={H - PAD.bottom}
           stroke="#64748b"
@@ -228,7 +244,7 @@ export const TrendChart: React.FC<{
           </g>
         );
       })}
-      {nowIdx !== null && (
+      {showLegacyNow && (
         <text
           x={nowX}
           y={PAD.top - 4}

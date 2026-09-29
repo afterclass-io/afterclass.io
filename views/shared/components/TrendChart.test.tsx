@@ -106,11 +106,13 @@ describe("TrendChart", () => {
     ).toHaveLength(1);
 
     // Filtered-out term -> no highlight even with a matching prediction key.
+    // The filtered slice keeps a point whose key is passed as currentKey, so
+    // the legacy path would render; only the term gate suppresses output.
     const visible = manyTerms.slice(0, 3);
     rerender(
       <TrendChart
         points={visible}
-        currentKey={manyTerms[manyTerms.length - 1]!.key}
+        currentKey={visible[visible.length - 1]!.key}
         currentAcadTermId="AY2026/27-T1"
         c={TOKENS.light}
       />,
