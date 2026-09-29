@@ -71,7 +71,18 @@ describe("GET /api/oauth/consent", () => {
     expect(body.error).toBe("no supabase session");
   });
 
-  it("returns 401 link_failed for signed-in user without a token", async () => {
+  it("returns 401 link_failed for recorded link failure", async () => {
+    mockGetToken.mockResolvedValue(null);
+    mockAuth.mockResolvedValue({ user: { id: "u1" }, googleLinkFailed: true });
+    const res = await GET(
+      req("http://localhost/api/oauth/consent?authorization_id=a1"),
+    );
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe("link_failed");
+  });
+
+  it("returns 401 no supabase session for signed-in user without a recorded failure (e.g. expired token)", async () => {
     mockGetToken.mockResolvedValue(null);
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     const res = await GET(
@@ -79,7 +90,7 @@ describe("GET /api/oauth/consent", () => {
     );
     expect(res.status).toBe(401);
     const body = (await res.json()) as { error: string };
-    expect(body.error).toBe("link_failed");
+    expect(body.error).toBe("no supabase session");
   });
 
   it("returns consent details for a same-origin GET", async () => {
@@ -172,7 +183,21 @@ describe("POST /api/oauth/consent", () => {
     expect(body.error).toBe("no supabase session");
   });
 
-  it("returns 401 link_failed for signed-in user without a token", async () => {
+  it("returns 401 link_failed for recorded link failure", async () => {
+    mockGetToken.mockResolvedValue(null);
+    mockAuth.mockResolvedValue({ user: { id: "u1" }, googleLinkFailed: true });
+    const res = await POST(
+      req("http://localhost/api/oauth/consent", {
+        method: "POST",
+        body: JSON.stringify({ authorization_id: "a1", decision: "approve" }),
+      }),
+    );
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe("link_failed");
+  });
+
+  it("returns 401 no supabase session for signed-in user without a recorded failure (e.g. expired token)", async () => {
     mockGetToken.mockResolvedValue(null);
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
     const res = await POST(
@@ -183,7 +208,7 @@ describe("POST /api/oauth/consent", () => {
     );
     expect(res.status).toBe(401);
     const body = (await res.json()) as { error: string };
-    expect(body.error).toBe("link_failed");
+    expect(body.error).toBe("no supabase session");
   });
 
   it("approve passes through", async () => {

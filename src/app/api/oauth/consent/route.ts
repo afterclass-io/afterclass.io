@@ -45,11 +45,11 @@ export async function GET(req: Request) {
   if (blocked) return blocked;
   const token = await getSupabaseAccessToken();
   if (!token) {
-    // Signed-in (Auth.js session) but no Supabase token = Google->Supabase
-    // link failed. Fail closed (still 401) but name it so the page stops
-    // looping back to login forever.
+    // Only a RECORDED Google->Supabase link failure names link_failed: an
+    // expired or otherwise missing token (same null read) stays
+    // "no supabase session" so the page does not misreport. Still 401.
     const session = await auth();
-    if (session?.user) {
+    if (session?.user && session.googleLinkFailed) {
       console.error("[oauth/consent] link failed for signed-in user");
       return Response.json({ error: "link_failed" }, { status: 401 });
     }
@@ -95,7 +95,7 @@ export async function POST(req: Request) {
   const token = await getSupabaseAccessToken();
   if (!token) {
     const session = await auth();
-    if (session?.user) {
+    if (session?.user && session.googleLinkFailed) {
       console.error("[oauth/consent] link failed for signed-in user");
       return Response.json({ error: "link_failed" }, { status: 401 });
     }

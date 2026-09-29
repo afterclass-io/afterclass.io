@@ -84,6 +84,7 @@ describe("google jwt reconcile (legacy id self-heal)", () => {
     });
     expect(token?.sub).toBe("supa-uid");
     expect(token?.supabaseAccessToken).toBe("supa-access");
+    expect(token?.googleLinkFailed).toBe(false);
   });
 
   it("clears tokens fail-closed when another row owns the Supabase id", async () => {
@@ -118,6 +119,7 @@ describe("google jwt reconcile (legacy id self-heal)", () => {
 
       expect(token?.sub).toBe("random-uuid");
       expect(token?.supabaseAccessToken).toBeNull();
+      expect(token?.googleLinkFailed).toBe(true);
       expect(usersUpdate).not.toHaveBeenCalled();
       expect(errSpy).toHaveBeenCalledWith(
         "[auth][google-link-failed]",
