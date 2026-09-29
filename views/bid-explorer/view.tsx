@@ -218,10 +218,15 @@ const BidExplorerView: React.FC = () => {
   const currentKey = prediction
     ? (allPoints.find(
         (p) =>
+          p.acadTermId === prediction.bidWindow.acadTermId &&
           p.round === prediction.bidWindow.round &&
           p.window === String(prediction.bidWindow.window),
       )?.key ?? null)
     : null;
+  // Current academic term for the now marker (tool-output field,
+  // `caller.acadTerms.current()` at the server). TrendChart renders the
+  // marker only when this term is visible in the filtered points.
+  const currentAcadTermId = props?.currentAcadTermId ?? null;
 
   const max = Math.max(
     1,
@@ -329,7 +334,12 @@ const BidExplorerView: React.FC = () => {
           <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>
             Historical Bidding Trend
           </div>
-          <TrendChart points={filteredPoints} currentKey={currentKey} c={c} />
+          <TrendChart
+            points={filteredPoints}
+            currentKey={currentKey}
+            currentAcadTermId={currentAcadTermId}
+            c={c}
+          />
         </div>
       )}
       {/* Round / window filters (data-driven, bidirectional) */}

@@ -233,7 +233,7 @@ const VALID = {
       medianPredicted: 24,
       medianUncertainty: 4,
       minPredicted: 15,
-      bidWindow: { id: 1, round: "1", window: 1 },
+      bidWindow: { id: 1, acadTermId: "AY202526T1", round: "1", window: 1 },
     },
     safetyFactors: [
       { beatsPercentage: 60, multiplier: 0.25 },

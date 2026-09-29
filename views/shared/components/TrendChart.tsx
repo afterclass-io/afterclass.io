@@ -19,8 +19,9 @@ import { computeTermGroups, type ChartPoint } from "../utils/chart-points";
 export const TrendChart: React.FC<{
   points: ChartPoint[];
   currentKey: string | null;
+  currentAcadTermId?: string | null;
   c: ThemeColors;
-}> = ({ points, currentKey, c }) => {
+}> = ({ points, currentKey, currentAcadTermId, c }) => {
   const W = 560;
   const H = 196;
   // Ported from `BidChart`'s gutter thinking (CHART_MARGIN +
@@ -46,6 +47,35 @@ export const TrendChart: React.FC<{
   const keyToIdx = new Map(points.map((p, i) => [p.key, i]));
   const plotW = W - PAD.left - PAD.right;
   const plotRight = W - PAD.right;
+  // Half-step band geometry mirrors the website BidChart (Tasks 1-4): each
+  // term band spans firstIdx - 0.5 to lastIdx + 0.5 in point-index units,
+  // and term transitions get one crisp boundary line at lastIdx + 0.5.
+  const step = plotW / Math.max(1, points.length);
+  const bandX = (idx: number) => PAD.left + (idx + 0.5) * step;
+  const boundaryIdxs: number[] = [];
+  for (let i = 1; i < points.length; i++) {
+    if (points[i - 1]!.acadTermId !== points[i]!.acadTermId)
+      boundaryIdxs.push(i - 1);
+  }
+  // "now" marks the current academic term segment, not the prediction key:
+  // only when that term is visible in the (possibly filtered) points.
+  const nowGroupIdx = currentAcadTermId
+    ? groups.findIndex((g) =>
+        g.some((k) => points[keyToIdx.get(k) ?? -1]?.acadTermId === currentAcadTermId),
+      )
+    : -1;
+  const nowBand =
+    nowGroupIdx >= 0
+      ? (() => {
+          const keys = groups[nowGroupIdx]!;
+          const idxs = keys
+            .map((k) => keyToIdx.get(k))
+            .filter((v): v is number => v !== undefined);
+          return idxs.length > 0
+            ? { x1: bandX(Math.min(...idxs) - 1), x2: bandX(Math.max(...idxs)) }
+            : null;
+        })()
+      : null;
   const maxLabel = String(maxV);
   const stagger = points.length > 2;
   // Clamp an x-label's center so the whole label stays inside the plot area.
@@ -64,24 +94,63 @@ export const TrendChart: React.FC<{
       style={{ width: "100%", height: "auto", display: "block" }}
     >
       {groups.map((g, gi) => {
-        const firstIdx = keyToIdx.get(g[0] ?? "");
-        if (gi % 2 !== 1 || firstIdx === undefined) return null;
+        const idxs = g
+          .map((k) => keyToIdx.get(k))
+          .filter((v): v is number => v !== undefined);
+        if (gi % 2 !== 1 || idxs.length === 0) return null;
         return (
           <rect
             key={g[0]}
-            x={
-              firstIdx === 0
-                ? PAD.left
-                : x(firstIdx) - plotW / Math.max(1, points.length) / 2
-            }
+            x={bandX(Math.min(...idxs) - 1)}
             y={PAD.top}
-            width={(g.length * plotW) / Math.max(1, points.length)}
+            width={(idxs.length * plotW) / Math.max(1, points.length)}
             height={H - PAD.top - PAD.bottom}
             fill={c.border}
             opacity={0.4}
           />
         );
       })}
+      {boundaryIdxs.map((i) => (
+        <line
+          key={`boundary-${points[i]!.key}`}
+          x1={bandX(i)}
+          x2={bandX(i)}
+          y1={PAD.top}
+          y2={H - PAD.bottom}
+          stroke={c.border}
+          strokeWidth={1}
+        />
+      ))}
+      {nowBand && (
+        <>
+          <rect
+            x={nowBand.x1}
+            y={PAD.top}
+            width={nowBand.x2 - nowBand.x1}
+            height={H - PAD.top - PAD.bottom}
+            fill="#2563eb"
+            opacity={0.06}
+          />
+          <line
+            x1={nowBand.x2}
+            x2={nowBand.x2}
+            y1={PAD.top}
+            y2={H - PAD.bottom}
+            stroke="#64748b"
+            strokeWidth={1.5}
+            strokeDasharray="4 4"
+          />
+          <text
+            x={nowBand.x2 >= plotRight - 16 ? nowBand.x2 - 4 : nowBand.x2 + 4}
+            y={PAD.top - 4}
+            fontSize={9}
+            textAnchor={nowBand.x2 >= plotRight - 16 ? "end" : "start"}
+            fill="#64748b"
+          >
+            now
+          </text>
+        </>
+      )}
       {currentKey && keyToIdx.has(currentKey) && (
         <line
           x1={x(keyToIdx.get(currentKey)!)}

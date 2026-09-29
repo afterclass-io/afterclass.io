@@ -66,4 +66,65 @@ describe("TrendChart", () => {
     expect(now!.getAttribute("text-anchor")).not.toBe("middle");
     expect(Number(now!.getAttribute("y"))).toBeLessThan(16);
   });
+
+  it("extends every term band half a step with one boundary line per transition", () => {
+    render(
+      <TrendChart points={manyTerms} currentKey={null} c={TOKENS.light} />,
+    );
+    const chart = screen.getByRole("img", { name: /bid trend/i });
+    // Odd-indexed term groups render shaded bands: 4 terms -> bands at 1, 3.
+    const bands = Array.from(chart.querySelectorAll("rect")).filter(
+      (r) => r.getAttribute("fill") === TOKENS.light.border,
+    );
+    expect(bands).toHaveLength(2);
+    // 4 contiguous terms -> 3 transition boundaries.
+    const boundaries = Array.from(chart.querySelectorAll("line")).filter(
+      (l) => l.getAttribute("stroke-width") === "1",
+    );
+    expect(boundaries).toHaveLength(3);
+  });
+
+  it("gates the now highlight on the visible current term, not the prediction key", () => {
+    const { rerender } = render(
+      <TrendChart
+        points={manyTerms}
+        currentKey={null}
+        currentAcadTermId="AY2026/27-T1"
+        c={TOKENS.light}
+      />,
+    );
+    let chart = screen.getByRole("img", { name: /bid trend/i });
+    expect(
+      Array.from(chart.querySelectorAll("text")).find(
+        (t) => t.textContent === "now",
+      ),
+    ).toBeDefined();
+    expect(
+      Array.from(chart.querySelectorAll("rect")).filter(
+        (r) => r.getAttribute("fill") === "#2563eb",
+      ),
+    ).toHaveLength(1);
+
+    // Filtered-out term -> no highlight even with a matching prediction key.
+    const visible = manyTerms.slice(0, 3);
+    rerender(
+      <TrendChart
+        points={visible}
+        currentKey={manyTerms[manyTerms.length - 1]!.key}
+        currentAcadTermId="AY2026/27-T1"
+        c={TOKENS.light}
+      />,
+    );
+    chart = screen.getByRole("img", { name: /bid trend/i });
+    expect(
+      Array.from(chart.querySelectorAll("text")).find(
+        (t) => t.textContent === "now",
+      ),
+    ).toBeUndefined();
+    expect(
+      Array.from(chart.querySelectorAll("rect")).filter(
+        (r) => r.getAttribute("fill") === "#2563eb",
+      ),
+    ).toHaveLength(0);
+  });
 });

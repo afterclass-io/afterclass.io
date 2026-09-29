@@ -230,9 +230,19 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
           }))
           .sort((a, b) => a.beatsPercentage - b.beatsPercentage);
       }
+      // Current academic term for the view's now marker (same source the
+      // website analytics page uses). Null-safe: a failure here must not
+      // fail the whole tool.
+      let currentAcadTermId: string | null = null;
+      try {
+        currentAcadTermId = (await caller.acadTerms.current())?.id ?? null;
+      } catch {
+        currentAcadTermId = null;
+      }
       return jsonText({
         classId: resolvedClassId,
         history,
+        currentAcadTermId,
         prediction: prediction?.bidWindow
           ? {
               medianPredicted: prediction.medianPredicted,
@@ -240,6 +250,7 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
               minPredicted: prediction.minPredicted ?? null,
               bidWindow: {
                 id: prediction.bidWindow.id,
+                acadTermId: prediction.bidWindow.acadTermId,
                 round: prediction.bidWindow.round,
                 window: prediction.bidWindow.window,
               },

@@ -108,6 +108,7 @@ export const reviewCardsOutput = z.object({
 
 export const bidExplorerOutput = z.object({
   classId: z.string().nullable(),
+  currentAcadTermId: z.string().nullable().optional(),
   history: z.array(
     z.object({
       acadTermId: z.string(),
@@ -125,6 +126,7 @@ export const bidExplorerOutput = z.object({
       minPredicted: z.number().nullable(),
       bidWindow: z.object({
         id: z.number(),
+        acadTermId: z.string(),
         round: z.string(),
         window: z.number(),
       }),
