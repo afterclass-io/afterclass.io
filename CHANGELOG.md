@@ -1,3 +1,71 @@
+<a id="v1.5.0"></a>
+# [v1.5.0](https://github.com/afterclass-io/afterclass.io/releases/tag/v1.5.0) - 2026-09-29
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### 💥 Breaking Changes
+* feat: upgrade to tailwind v4, fix breaking changes with ui overhaul, remove tailwind-variants by [@davidlhw](https://github.com/davidlhw) in [#425](https://github.com/afterclass-io/afterclass.io/pull/425)
+### 🚀 Features
+* feat(ui): implement logout functionality by [@onebignick](https://github.com/onebignick) in [#415](https://github.com/afterclass-io/afterclass.io/pull/415)
+* feat(ui): jump to top button by [@onebignick](https://github.com/onebignick) in [#417](https://github.com/afterclass-io/afterclass.io/pull/417)
+* feat(ui): add course outline url to course detail card by [@onebignick](https://github.com/onebignick) in [#420](https://github.com/afterclass-io/afterclass.io/pull/420)
+* feat(ui): make statistics sidebar anchor an external link by [@onebignick](https://github.com/onebignick) in [#422](https://github.com/afterclass-io/afterclass.io/pull/422)
+* Feat/bid analytics improvements by [@tanzhongyan](https://github.com/tanzhongyan) in [#482](https://github.com/afterclass-io/afterclass.io/pull/482)
+* feat: integrate student projects (timetable + roadmaps) by [@tanzhongyan](https://github.com/tanzhongyan) in [#491](https://github.com/afterclass-io/afterclass.io/pull/491)
+### 👾 Bug Fixes
+* fix(timetable): use https feed URL in Google Calendar subscribe link by [@tanzhongyan](https://github.com/tanzhongyan) in [#498](https://github.com/afterclass-io/afterclass.io/pull/498)
+### Other Changes
+* chore(deps): bump next to v15, react to v19 by [@davidlhw](https://github.com/davidlhw) in [#424](https://github.com/afterclass-io/afterclass.io/pull/424)
+* feat: add ui hack 2025 info page by [@davidlhw](https://github.com/davidlhw) in [#427](https://github.com/afterclass-io/afterclass.io/pull/427)
+* feat: add voting mechanism for ui hack submissions by [@davidlhw](https://github.com/davidlhw) in [#428](https://github.com/afterclass-io/afterclass.io/pull/428)
+* fix(voting): clamp weight values server side by [@tiongg](https://github.com/tiongg) in [#429](https://github.com/afterclass-io/afterclass.io/pull/429)
+* bugfix(ui): fix home button not redirecting to the base url by [@Qingyu255](https://github.com/Qingyu255) in [#435](https://github.com/afterclass-io/afterclass.io/pull/435)
+* feat(db): update classes and professors tables for easier reference by [@davidlhw](https://github.com/davidlhw) in [#436](https://github.com/afterclass-io/afterclass.io/pull/436)
+* feat(ui): debounce review reactions and upvotes by [@jinhanloh2021](https://github.com/jinhanloh2021) in [#437](https://github.com/afterclass-io/afterclass.io/pull/437)
+* feat(db): reformat boss_name to array type boss_aliases by [@davidlhw](https://github.com/davidlhw) in [#438](https://github.com/afterclass-io/afterclass.io/pull/438)
+* feat(db): add warn_inaccuracy field to classes table by [@davidlhw](https://github.com/davidlhw) in [#439](https://github.com/afterclass-io/afterclass.io/pull/439)
+* feat(db): add professor to classes unique constraint by [@davidlhw](https://github.com/davidlhw) in [#440](https://github.com/afterclass-io/afterclass.io/pull/440)
+* feat(db): update classes prof_id field to nullable by [@davidlhw](https://github.com/davidlhw) in [#442](https://github.com/afterclass-io/afterclass.io/pull/442)
+* feat(db): add table schema for bid prediction by [@davidlhw](https://github.com/davidlhw) in [#447](https://github.com/afterclass-io/afterclass.io/pull/447)
+* feat(db): add user bid table schema by [@davidlhw](https://github.com/davidlhw) in [#448](https://github.com/afterclass-io/afterclass.io/pull/448)
+* feat(db): update bid_result table nullable fields by [@davidlhw](https://github.com/davidlhw) in [#449](https://github.com/afterclass-io/afterclass.io/pull/449)
+* feat(db): bid_prediction - remove computed cols, improve col naming by [@davidlhw](https://github.com/davidlhw) in [#450](https://github.com/afterclass-io/afterclass.io/pull/450)
+* feat(db): bid_prediction remove confidence level by [@davidlhw](https://github.com/davidlhw) in [#451](https://github.com/afterclass-io/afterclass.io/pull/451)
+* chore: remove ui hack related assets by [@davidlhw](https://github.com/davidlhw) in [#452](https://github.com/afterclass-io/afterclass.io/pull/452)
+* feat(db): update safety table schema by [@davidlhw](https://github.com/davidlhw) in [#454](https://github.com/afterclass-io/afterclass.io/pull/454)
+* feat(ui): beta bid recommendation by [@davidlhw](https://github.com/davidlhw) in [#456](https://github.com/afterclass-io/afterclass.io/pull/456)
+* chore: fix typo and add umami events by [@davidlhw](https://github.com/davidlhw) in [#457](https://github.com/afterclass-io/afterclass.io/pull/457)
+* fix: bidding analytics throw 500 on no params by [@davidlhw](https://github.com/davidlhw) in [#458](https://github.com/afterclass-io/afterclass.io/pull/458)
+* feat(db): make class_timing venue nullable by [@davidlhw](https://github.com/davidlhw) in [#459](https://github.com/afterclass-io/afterclass.io/pull/459)
+* feat(db): bid prediction - remove computed confidence interval fields by [@davidlhw](https://github.com/davidlhw) in [#460](https://github.com/afterclass-io/afterclass.io/pull/460)
+* Docs: Supabase postgres development tips by [@MarkBosco-Codes](https://github.com/MarkBosco-Codes) in [#464](https://github.com/afterclass-io/afterclass.io/pull/464)
+* feat: mod alternatives prototype UI by [@MarkBosco-Codes](https://github.com/MarkBosco-Codes) in [#467](https://github.com/afterclass-io/afterclass.io/pull/467)
+* fix: classcard title clipping by [@MarkBosco-Codes](https://github.com/MarkBosco-Codes) in [#468](https://github.com/afterclass-io/afterclass.io/pull/468)
+* feat: redesigned class alternatives widget  by [@MarkBosco-Codes](https://github.com/MarkBosco-Codes) in [#469](https://github.com/afterclass-io/afterclass.io/pull/469)
+* fix(bidding): stop content hiding under the expanded sidebar ([#545](https://github.com/afterclass-io/afterclass.io/issues/545)) by [@zekkv](https://github.com/zekkv) in [#547](https://github.com/afterclass-io/afterclass.io/pull/547)
+* chore(deps): update all dependencies to latest, resolve breaking changes, and migrate legacy code by [@zekkv](https://github.com/zekkv) in [#542](https://github.com/afterclass-io/afterclass.io/pull/542)
+* fix(security): scope Sentry user context to the request, not the process by [@zekkv](https://github.com/zekkv) in [#540](https://github.com/afterclass-io/afterclass.io/pull/540)
+* fix(timetable): only show course search skeletons while a query is fetching by [@tanzhongyan](https://github.com/tanzhongyan) in [#552](https://github.com/afterclass-io/afterclass.io/pull/552)
+* feat(mcp): serve MCP server from embedded Next.js route at /api/mcp by [@tanzhongyan](https://github.com/tanzhongyan) in [#553](https://github.com/afterclass-io/afterclass.io/pull/553)
+* fix(mcp): serve OAuth discovery metadata at /.well-known by [@tanzhongyan](https://github.com/tanzhongyan) in [#554](https://github.com/afterclass-io/afterclass.io/pull/554)
+* fix(mcp): make MCP UI mobile responsive and consistent by [@tanzhongyan](https://github.com/tanzhongyan) in [#555](https://github.com/afterclass-io/afterclass.io/pull/555)
+* fix(auth): bridge Google login to Supabase session for MCP consent by [@tanzhongyan](https://github.com/tanzhongyan) in [#558](https://github.com/afterclass-io/afterclass.io/pull/558)
+* fix(auth): refresh Supabase tokens before expiry and test Google login self-heal by [@tanzhongyan](https://github.com/tanzhongyan) in [#560](https://github.com/afterclass-io/afterclass.io/pull/560)
+* feat(auth): revamp login flow with Google-only gate and optimistic quota updates by [@tanzhongyan](https://github.com/tanzhongyan) in [#561](https://github.com/afterclass-io/afterclass.io/pull/561)
+* docs: triage changelog unreleased and fix stale doc links for v1.5.0 by [@tanzhongyan](https://github.com/tanzhongyan) in [#570](https://github.com/afterclass-io/afterclass.io/pull/570)
+
+## New Contributors
+* [@tiongg](https://github.com/tiongg) made their first contribution in [#429](https://github.com/afterclass-io/afterclass.io/pull/429)
+* [@Qingyu255](https://github.com/Qingyu255) made their first contribution in [#435](https://github.com/afterclass-io/afterclass.io/pull/435)
+* [@jinhanloh2021](https://github.com/jinhanloh2021) made their first contribution in [#437](https://github.com/afterclass-io/afterclass.io/pull/437)
+* [@zekkv](https://github.com/zekkv) made their first contribution in [#547](https://github.com/afterclass-io/afterclass.io/pull/547)
+
+**Full Changelog**: https://github.com/afterclass-io/afterclass.io/compare/v1.4.0...v1.5.0
+
+[Changes][v1.5.0]
+
+
 <a id="v1.4.0"></a>
 # [v1.4.0](https://github.com/afterclass-io/afterclass.io/releases/tag/v1.4.0) - 2025-03-01
 
@@ -393,6 +461,7 @@
 [Changes][v0.1.0]
 
 
+[v1.5.0]: https://github.com/afterclass-io/afterclass.io/compare/v1.4.0...v1.5.0
 [v1.4.0]: https://github.com/afterclass-io/afterclass.io/compare/v1.3.0...v1.4.0
 [v1.3.0]: https://github.com/afterclass-io/afterclass.io/compare/v1.2.0...v1.3.0
 [v1.2.0]: https://github.com/afterclass-io/afterclass.io/compare/v1.1.0...v1.2.0
@@ -407,4 +476,4 @@
 [v0.2.0]: https://github.com/afterclass-io/afterclass.io/compare/v0.1.0...v0.2.0
 [v0.1.0]: https://github.com/afterclass-io/afterclass.io/tree/v0.1.0
 
-<!-- Generated by https://github.com/rhysd/changelog-from-release v3.9.0 -->
+<!-- Generated by https://github.com/rhysd/changelog-from-release v3.9.1 -->
