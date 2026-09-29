@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/modules/bidding/components/BidWindowScheduleCard", () => ({
-  BidWindowScheduleCard: () => <div data-test="schedule-card-stub" />,
+  BidWindowScheduleCard: () => <div />,
 }));
 
 vi.mock("next/navigation", () => ({
@@ -30,7 +30,7 @@ describe("ReviewLayout", () => {
         rating={<div>rating</div>}
         filter={<div>filter</div>}
         information={<div>info</div>}
-        reviews={<div data-test="reviews-slot">one short review</div>}
+        reviews={<div>one short review</div>}
       />,
     );
     // The row holding the reviews column + rail must not stretch flex
