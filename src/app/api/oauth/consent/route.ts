@@ -1,3 +1,4 @@
+import { auth } from "@/server/auth";
 import {
   getSupabaseAccessToken,
   getSupabaseRefreshToken,
@@ -43,8 +44,17 @@ export async function GET(req: Request) {
   const blocked = sameOriginGuard(req);
   if (blocked) return blocked;
   const token = await getSupabaseAccessToken();
-  if (!token)
+  if (!token) {
+    // Only a RECORDED Google->Supabase link failure names link_failed: an
+    // expired or otherwise missing token (same null read) stays
+    // "no supabase session" so the page does not misreport. Still 401.
+    const session = await auth();
+    if (session?.user && session.googleLinkFailed) {
+      console.error("[oauth/consent] link failed for signed-in user");
+      return Response.json({ error: "link_failed" }, { status: 401 });
+    }
     return Response.json({ error: "no supabase session" }, { status: 401 });
+  }
   const authorizationId = new URL(req.url).searchParams.get("authorization_id");
   if (!authorizationId)
     return Response.json(
@@ -83,8 +93,14 @@ export async function POST(req: Request) {
   if (blocked) return blocked;
 
   const token = await getSupabaseAccessToken();
-  if (!token)
+  if (!token) {
+    const session = await auth();
+    if (session?.user && session.googleLinkFailed) {
+      console.error("[oauth/consent] link failed for signed-in user");
+      return Response.json({ error: "link_failed" }, { status: 401 });
+    }
     return Response.json({ error: "no supabase session" }, { status: 401 });
+  }
   // Malformed JSON is a 400, never a 500 (unhandled req.json() throw).
   let body: {
     authorization_id?: string;

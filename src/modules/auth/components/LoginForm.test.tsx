@@ -1,11 +1,16 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { signIn } from "next-auth/react";
 import { LoginForm } from "./LoginForm";
+
+const mockSearchParams = vi.hoisted(() => ({
+  current: new URLSearchParams(),
+}));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams.current,
 }));
 
 vi.mock("next-auth/react", () => ({
@@ -30,6 +35,11 @@ vi.mock("next/link", () => ({
 vi.mock("@/common/providers/ProgressProvider", () => ({
   useProgress: () => ({ start: vi.fn(), done: vi.fn() }),
 }));
+
+beforeEach(() => {
+  mockSearchParams.current = new URLSearchParams();
+  vi.clearAllMocks();
+});
 
 describe("LoginForm with enablePasswordLogin flag", () => {
   it("renders only Google sign-in when enablePasswordLogin is false", () => {
@@ -64,5 +74,20 @@ describe("LoginForm with enablePasswordLogin flag", () => {
     expect(screen.getByText(/^OR$/)).toBeDefined();
     expect(container.querySelector('[data-test="register"]')).not.toBeNull();
     expect(screen.getByText(/don't have an account\?/i)).toBeDefined();
+  });
+
+  it("forwards full callbackUrl with authorization_id to Google signIn", async () => {
+    mockSearchParams.current = new URLSearchParams({
+      callbackUrl: "/oauth/consent?authorization_id=abc",
+    });
+    render(<LoginForm enablePasswordLogin={false} />);
+    fireEvent.click(
+      screen.getByRole("button", { name: /sign in with google/i }),
+    );
+    await waitFor(() =>
+      expect(vi.mocked(signIn)).toHaveBeenCalledWith("google", {
+        callbackUrl: "/oauth/consent?authorization_id=abc",
+      }),
+    );
   });
 });

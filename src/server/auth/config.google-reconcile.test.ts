@@ -84,6 +84,7 @@ describe("google jwt reconcile (legacy id self-heal)", () => {
     });
     expect(token?.sub).toBe("supa-uid");
     expect(token?.supabaseAccessToken).toBe("supa-access");
+    expect(token?.googleLinkFailed).toBe(false);
   });
 
   it("clears tokens fail-closed when another row owns the Supabase id", async () => {
@@ -107,13 +108,25 @@ describe("google jwt reconcile (legacy id self-heal)", () => {
   });
 
   it("leaves login succeeding with null tokens when the exchange throws", async () => {
-    linkMock.mockRejectedValue(new Error("bad token"));
-    usersFindUnique.mockResolvedValue(legacyRow);
+    const errSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    try {
+      linkMock.mockRejectedValue(new Error("bad token"));
+      usersFindUnique.mockResolvedValue(legacyRow);
 
-    const token = await jwt(googleParams());
+      const token = await jwt(googleParams());
 
-    expect(token?.sub).toBe("random-uuid");
-    expect(token?.supabaseAccessToken).toBeNull();
-    expect(usersUpdate).not.toHaveBeenCalled();
+      expect(token?.sub).toBe("random-uuid");
+      expect(token?.supabaseAccessToken).toBeNull();
+      expect(token?.googleLinkFailed).toBe(true);
+      expect(usersUpdate).not.toHaveBeenCalled();
+      expect(errSpy).toHaveBeenCalledWith(
+        "[auth][google-link-failed]",
+        expect.anything(),
+      );
+    } finally {
+      errSpy.mockRestore();
+    }
   });
 });

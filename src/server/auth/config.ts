@@ -28,6 +28,13 @@ declare module "next-auth" {
    */
   interface Session {
     user: SessionUser;
+    /**
+     * Recorded Google->Supabase link failure (set in jwt() when the
+     * exchange throws). Lets the consent route tell a recorded failure
+     * apart from an expired or otherwise missing token. Never a bearer —
+     * safe to expose, but only server code reads it.
+     */
+    googleLinkFailed?: boolean;
   }
 
   /**
@@ -45,6 +52,11 @@ declare module "next-auth/jwt" {
     supabaseAccessToken?: string | null;
     supabaseRefreshToken?: string | null;
     supabaseExpiresAt?: number | null;
+    /**
+     * True when the Google->Supabase exchange last threw. Cleared on the
+     * next successful exchange. Read by session() into Session.
+     */
+    googleLinkFailed?: boolean;
   }
 }
 
@@ -244,12 +256,21 @@ export const authConfig = {
             token.supabaseAccessToken = link.accessToken;
             token.supabaseRefreshToken = link.refreshToken;
             token.supabaseExpiresAt = link.expiresAt;
+            token.googleLinkFailed = false;
           } catch (e) {
+            // Record the failure explicitly: the consent route must tell a
+            // recorded link failure apart from an expired token (both read
+            // as null via getSupabaseAccessToken). Never block sign-in.
+            token.googleLinkFailed = true;
             Sentry.addBreadcrumb({
               category: "auth",
               message: `Google Supabase link failed: ${e instanceof Error ? e.message : String(e)}`,
               level: "warning",
             });
+            console.error(
+              "[auth][google-link-failed]",
+              e instanceof Error ? e.message : String(e),
+            );
           }
         }
 
@@ -365,6 +386,9 @@ export const authConfig = {
         // session - `/api/auth/session` serves this object to any browser JS,
         // and a bearer token must never be client-readable. Server code reads
         // it via `getSupabaseAccessToken()` in `./supabase-access-token`.
+        // The link-failure marker IS copied: it carries no credential, and
+        // the consent route needs it to name a recorded failure.
+        session.googleLinkFailed = token.googleLinkFailed ?? false;
       }
       return session;
     },

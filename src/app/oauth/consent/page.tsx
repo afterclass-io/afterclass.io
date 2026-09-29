@@ -107,8 +107,8 @@ function ConsentForm() {
   }
 
   if (error) {
+    const loginHref = `/account/auth/login?callbackUrl=${encodeURIComponent(`/oauth/consent?authorization_id=${authorizationId}`)}`;
     if (error === "no supabase session") {
-      const loginHref = `/account/auth/login?callbackUrl=${encodeURIComponent(`/oauth/consent?authorization_id=${authorizationId}`)}`;
       return (
         <Shell>
           <ConsentSignIn loginHref={loginHref} />
@@ -119,7 +119,17 @@ function ConsentForm() {
       setError(null);
       setAttempt((n) => n + 1);
     };
-    const loginHref = `/account/auth/login?callbackUrl=${encodeURIComponent(`/oauth/consent?authorization_id=${authorizationId}`)}`;
+    if (error === "link_failed") {
+      return (
+        <Shell>
+          <ConsentError
+            message="Google sign-in succeeded, but linking your account failed. Please try signing in again."
+            onRetry={retry}
+            loginHref={loginHref}
+          />
+        </Shell>
+      );
+    }
     return (
       <Shell>
         <ConsentError message={error} onRetry={retry} loginHref={loginHref} />
