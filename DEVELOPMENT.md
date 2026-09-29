@@ -5,7 +5,7 @@
 ### Branching Strategy
 
 Refer to our [[RFC] Branching Strategy
-#66](https://github.com/AfterClass-io/afterclass.io-v2/discussions/66) for more
+#66](https://github.com/afterclass-io/afterclass.io/discussions/66) for more
 information on how to work with branches in this project.
 
 ### Prerequisites
@@ -61,7 +61,7 @@ recommended settings and extensions for VSCode. You can find the settings in the
 Start the database
 
 ```sh
-docker-compose up
+docker compose up
 ```
 
 > [!TIP]
@@ -88,7 +88,7 @@ Creates the database schema. Run `bunx prisma db seed` separately to seed data.
 To destroy the database and remove all data
 
 ```sh
-docker-compose down -v
+docker compose down -v
 ```
 
 See the [docker compose documentation](https://docs.docker.com/compose/) for
@@ -148,7 +148,7 @@ stroke-based rendering.
 ### How do I add a brand/colored custom icon to the local set?
 
 Refer to the README
-[here](https://github.com/AfterClass-io/afterclass.io-v2/tree/main/src/common/components/icons/README.md)
+[here](./src/common/components/icons/README.md)
 
 ## Developing with: Theming System
 
