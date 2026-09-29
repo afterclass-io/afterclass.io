@@ -122,3 +122,34 @@ describe("ChatPage consent gating", () => {
     expect(screen.queryByLabelText("Message input")).toBeNull();
   });
 });
+
+describe("ChatPage optimistic quota", () => {
+  it("optimistically decrements QuotaMeter remaining immediately when sending via Composer", () => {
+    mockSendMessage.mockResolvedValue(undefined);
+    render(<ChatPage initialStatus={status()} />);
+    expect(
+      screen.getByText("43 of 50 free messages left this month"),
+    ).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("Message input"), {
+      target: { value: "hello" },
+    });
+    fireEvent.click(screen.getByLabelText("Send message"));
+    expect(
+      screen.getByText("42 of 50 free messages left this month"),
+    ).toBeTruthy();
+    expect(mockSendMessage).toHaveBeenCalledWith({ text: "hello" });
+  });
+
+  it("optimistically decrements QuotaMeter remaining immediately when picking a suggestion", () => {
+    mockSendMessage.mockResolvedValue(undefined);
+    render(<ChatPage initialStatus={status()} />);
+    expect(
+      screen.getByText("43 of 50 free messages left this month"),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByText("Find a course"));
+    expect(
+      screen.getByText("42 of 50 free messages left this month"),
+    ).toBeTruthy();
+    expect(mockSendMessage).toHaveBeenCalledTimes(1);
+  });
+});

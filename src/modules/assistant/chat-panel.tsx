@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, Suspense } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { Composer } from "./composer";
@@ -99,6 +99,22 @@ function ChatPanelInner({
     void hydrate();
   }, [hydrate]);
 
+  // Optimistic quota: decrement instantly on send, reconcile with the server
+  // DB count when the turn completes. Seeded from the parent prop and keyed
+  // by the parent's remaining value: when the parent pushes a fresh server
+  // count (e.g. a remount with new props), the state re-seeds; local sends
+  // in between only touch the seeded copy. (A sync effect calling setState
+  // directly trips react-hooks/set-state-in-effect, hence the key pattern.)
+  const [optimisticSeed, setOptimisticSeed] = useState(remaining);
+  const [optimisticRemaining, setOptimisticRemaining] = useState(remaining);
+  if (optimisticSeed !== remaining) {
+    setOptimisticSeed(remaining);
+    setOptimisticRemaining(remaining);
+  }
+  // Skip the mount "ready": only sync after a send transitions through a
+  // non-ready chat status (submitted/streaming) back to ready.
+  const seenRunningRef = useRef(false);
+
   const chat = useChat({
     transport,
     throttle: 32,
@@ -111,6 +127,50 @@ function ChatPanelInner({
       else onGate(gate);
     },
   });
+
+  // Wrap sendMessage: decrement instantly so quota feedback never waits on
+  // the stream; refund when the send itself rejects (e.g. immediate 403).
+  const handleSendMessage = useCallback(
+    async (params: Parameters<typeof chat.sendMessage>[0]) => {
+      setOptimisticRemaining((prev) => Math.max(0, prev - 1));
+      try {
+        return await chat.sendMessage(params);
+      } catch (e) {
+        setOptimisticRemaining((prev) => prev + 1);
+        throw e;
+      }
+    },
+    [chat],
+  );
+
+  // Background sync: when a turn completes (running → ready), refetch the
+  // authoritative DB count. The mount "ready" is skipped via seenRunningRef
+  // so the initial render never fires a status request.
+  useEffect(() => {
+    if (chat.status === "streaming" || chat.status === "submitted") {
+      seenRunningRef.current = true;
+      return;
+    }
+    if (
+      (chat.status !== "ready" && chat.status !== "error") ||
+      !seenRunningRef.current
+    )
+      return;
+    seenRunningRef.current = false;
+    let cancelled = false;
+    void fetch("/api/assistant/status")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((fresh: { remaining?: unknown } | null) => {
+        if (cancelled || fresh == null || typeof fresh !== "object") return;
+        if (typeof fresh.remaining === "number") {
+          setOptimisticRemaining(fresh.remaining);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [chat.status]);
 
   // The widget has no resume UI and its useChat starts empty on every fresh
   // mount. It keeps ONE session open for the life of this mount (created on the
@@ -162,7 +222,7 @@ function ChatPanelInner({
             </h1>
             {aiConsented && (
               <WelcomeSuggestions
-                onPick={(prompt) => chat.sendMessage({ text: prompt })}
+                onPick={(prompt) => void handleSendMessage({ text: prompt })}
               />
             )}
           </div>
@@ -182,7 +242,7 @@ function ChatPanelInner({
       {aiConsented ? (
         <>
           <FollowUpSuggestions
-            onPick={(prompt) => chat.sendMessage({ text: prompt })}
+            onPick={(prompt) => void handleSendMessage({ text: prompt })}
             messages={chat.messages}
             isRunning={
               chat.status === "streaming" || chat.status === "submitted"
@@ -190,12 +250,12 @@ function ChatPanelInner({
             lastTurnFailed={showError}
           />
           <QuotaAlertBar
-            remaining={remaining}
+            remaining={optimisticRemaining}
             quota={quota}
             hasConnectedAgent={hasConnectedAgent}
           />
           <Composer
-            sendMessage={chat.sendMessage}
+            sendMessage={(params) => void handleSendMessage(params)}
             status={chat.status}
             stop={chat.stop}
           />

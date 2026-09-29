@@ -162,9 +162,11 @@ function ProviderButtons({ mcpUrl }: { mcpUrl: string }) {
                     See “Account linking is required”?
                   </summary>
                   <p className="mt-2">
-                    Approve access in the browser first (sign in with Google on
-                    the same site), then retry. If it persists, revoke the grant
-                    in Connected agents and reconnect.
+                    Make sure you are signed in with your @smu.edu.sg Google
+                    account on AfterClass before approving access. Approve
+                    access in the browser first (sign in with Google on the same
+                    site), then retry. If it persists, revoke the grant in
+                    Connected agents and reconnect.
                   </p>
                 </details>
               )}

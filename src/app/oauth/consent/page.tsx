@@ -119,9 +119,10 @@ function ConsentForm() {
       setError(null);
       setAttempt((n) => n + 1);
     };
+    const loginHref = `/account/auth/login?callbackUrl=${encodeURIComponent(`/oauth/consent?authorization_id=${authorizationId}`)}`;
     return (
       <Shell>
-        <ConsentError message={error} onRetry={retry} />
+        <ConsentError message={error} onRetry={retry} loginHref={loginHref} />
       </Shell>
     );
   }
