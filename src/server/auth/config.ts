@@ -250,6 +250,10 @@ export const authConfig = {
               message: `Google Supabase link failed: ${e instanceof Error ? e.message : String(e)}`,
               level: "warning",
             });
+            console.error(
+              "[auth][google-link-failed]",
+              e instanceof Error ? e.message : String(e),
+            );
           }
         }
 

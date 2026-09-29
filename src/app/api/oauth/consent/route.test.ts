@@ -7,14 +7,17 @@ const {
   mockApproveConsent,
   mockDenyConsent,
   mockGetConsentDetails,
+  mockAuth,
 } = vi.hoisted(() => ({
   mockGetToken: vi.fn() as Mock,
   mockGetRefreshToken: vi.fn() as Mock,
   mockApproveConsent: vi.fn() as Mock,
   mockDenyConsent: vi.fn() as Mock,
   mockGetConsentDetails: vi.fn() as Mock,
+  mockAuth: vi.fn() as Mock,
 }));
 
+vi.mock("@/server/auth", () => ({ auth: mockAuth }));
 vi.mock("@/server/auth/supabase-access-token", () => ({
   getSupabaseAccessToken: mockGetToken,
   getSupabaseRefreshToken: mockGetRefreshToken,
@@ -46,6 +49,8 @@ describe("GET /api/oauth/consent", () => {
     mockGetToken.mockReset();
     mockGetRefreshToken.mockReset();
     mockGetRefreshToken.mockResolvedValue(null);
+    mockAuth.mockReset();
+    mockAuth.mockResolvedValue(null);
     mockGetConsentDetails.mockReset();
     mockGetConsentDetails.mockResolvedValue({
       status: "details",
@@ -55,12 +60,26 @@ describe("GET /api/oauth/consent", () => {
     });
   });
 
-  it("returns 401 without a supabase access token", async () => {
+  it("returns 401 no supabase session for anonymous without a token", async () => {
     mockGetToken.mockResolvedValue(null);
+    mockAuth.mockResolvedValue(null);
     const res = await GET(
       req("http://localhost/api/oauth/consent?authorization_id=a1"),
     );
     expect(res.status).toBe(401);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe("no supabase session");
+  });
+
+  it("returns 401 link_failed for signed-in user without a token", async () => {
+    mockGetToken.mockResolvedValue(null);
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    const res = await GET(
+      req("http://localhost/api/oauth/consent?authorization_id=a1"),
+    );
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe("link_failed");
   });
 
   it("returns consent details for a same-origin GET", async () => {
@@ -126,6 +145,8 @@ describe("POST /api/oauth/consent", () => {
     mockGetToken.mockReset();
     mockGetRefreshToken.mockReset();
     mockGetRefreshToken.mockResolvedValue(null);
+    mockAuth.mockReset();
+    mockAuth.mockResolvedValue(null);
     mockApproveConsent.mockReset();
     mockDenyConsent.mockReset();
     mockApproveConsent.mockResolvedValue({
@@ -137,8 +158,9 @@ describe("POST /api/oauth/consent", () => {
     mockGetToken.mockResolvedValue("tok");
   });
 
-  it("returns 401 without a supabase access token", async () => {
+  it("returns 401 no supabase session for anonymous without a token", async () => {
     mockGetToken.mockResolvedValue(null);
+    mockAuth.mockResolvedValue(null);
     const res = await POST(
       req("http://localhost/api/oauth/consent", {
         method: "POST",
@@ -146,6 +168,22 @@ describe("POST /api/oauth/consent", () => {
       }),
     );
     expect(res.status).toBe(401);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe("no supabase session");
+  });
+
+  it("returns 401 link_failed for signed-in user without a token", async () => {
+    mockGetToken.mockResolvedValue(null);
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    const res = await POST(
+      req("http://localhost/api/oauth/consent", {
+        method: "POST",
+        body: JSON.stringify({ authorization_id: "a1", decision: "approve" }),
+      }),
+    );
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe("link_failed");
   });
 
   it("approve passes through", async () => {

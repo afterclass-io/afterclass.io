@@ -107,13 +107,24 @@ describe("google jwt reconcile (legacy id self-heal)", () => {
   });
 
   it("leaves login succeeding with null tokens when the exchange throws", async () => {
-    linkMock.mockRejectedValue(new Error("bad token"));
-    usersFindUnique.mockResolvedValue(legacyRow);
+    const errSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    try {
+      linkMock.mockRejectedValue(new Error("bad token"));
+      usersFindUnique.mockResolvedValue(legacyRow);
 
-    const token = await jwt(googleParams());
+      const token = await jwt(googleParams());
 
-    expect(token?.sub).toBe("random-uuid");
-    expect(token?.supabaseAccessToken).toBeNull();
-    expect(usersUpdate).not.toHaveBeenCalled();
+      expect(token?.sub).toBe("random-uuid");
+      expect(token?.supabaseAccessToken).toBeNull();
+      expect(usersUpdate).not.toHaveBeenCalled();
+      expect(errSpy).toHaveBeenCalledWith(
+        "[auth][google-link-failed]",
+        expect.anything(),
+      );
+    } finally {
+      errSpy.mockRestore();
+    }
   });
 });
