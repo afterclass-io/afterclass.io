@@ -30,8 +30,8 @@ interface BidAnalyticsClientProps {
   allBidResults: BidResultRow[];
   courseCode: string;
   section: string;
-  /** Full bidWindow key for the current active window, e.g. "AY202627T1/1A/2" */
-  currentWindowBidWindow?: string;
+  /** Acad term id of the current term, e.g. "AY202627T1". Marker renders only when visible. */
+  currentAcadTermId?: string;
   /** Initial filter state from URL params */
   initialRounds?: string[];
   initialWindows?: string[];
@@ -62,7 +62,7 @@ export const BidAnalyticsClient = ({
   allBidResults,
   courseCode,
   section,
-  currentWindowBidWindow,
+  currentAcadTermId,
   initialRounds = [],
   initialWindows = [],
 }: BidAnalyticsClientProps) => {
@@ -248,7 +248,7 @@ export const BidAnalyticsClient = ({
           <CardContent className="flex flex-col gap-4">
             <BidChart
               chartData={chartData}
-              currentWindowBidWindow={currentWindowBidWindow}
+              currentAcadTermId={currentAcadTermId}
             />
             {/* Filter controls — always visible with all data-driven options */}
             {dataRounds.length > 0 && (

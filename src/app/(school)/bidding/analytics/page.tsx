@@ -144,9 +144,10 @@ export default async function BiddingHistoryPage({
         classId,
       });
 
-  const [bidPrediction, safetyFactor] = await Promise.all([
+  const [bidPrediction, safetyFactor, currentTerm] = await Promise.all([
     api.bidPredictions.getBy({ classId }),
     api.safetyFactors.getAll(),
+    api.acadTerms.current(),
   ]);
 
   if (allBidResults.length === 0 && !bidPrediction) {
@@ -288,11 +289,7 @@ export default async function BiddingHistoryPage({
         section={section!}
         initialRounds={initialRounds}
         initialWindows={initialWindows}
-        currentWindowBidWindow={
-          bidPrediction
-            ? `${bidPrediction.bidWindow.acadTermId}/${bidPrediction.bidWindow.round}/${bidPrediction.bidWindow.window}`
-            : undefined
-        }
+        currentAcadTermId={currentTerm?.id}
       />
 
       {/* Prediction Card — server rendered */}
