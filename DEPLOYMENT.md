@@ -16,7 +16,7 @@ this project.
 
 We use Git Tags to mark new releases. To create a new release, please use the
 [GitHub Release
-Page](https://github.com/AfterClass-io/afterclass.io-v2/releases/new):
+Page](https://github.com/afterclass-io/afterclass.io/releases/new):
 
 1. Click on `Choose a tag`.
 2. Determine what version this release is. If it is a major, minor, or patch
@@ -37,7 +37,7 @@ will also be created with release notes.
 
 Sometimes the odds are just not in your favor, and you may need to delete a
 release. To delete a release, please use the [GitHub Release
-Page](https://github.com/AfterClass-io/afterclass.io-v2/releases) and follow the
+Page](https://github.com/afterclass-io/afterclass.io/releases) and follow the
 steps below:
 
 1. Click on the release you want to delete.
@@ -53,7 +53,7 @@ steps below:
 
 We abide by [Semantic Versioning](https://semver.org/) to version our releases.
 For the versions available, see the [tags on this
-repository](https://github.com/AfterClass-io/afterclass.io-v2/tags).
+repository](https://github.com/afterclass-io/afterclass.io/tags).
 
 ## Release Notes
 
@@ -92,7 +92,7 @@ main branch, Vercel will automatically deploy the project to the staging
 environment.
 
 After a new release is ready, creating a new release on GitHub with Tags will
-trigger the [`promote-prod.yaml`](.github/workflows/promote-prod.yml) GitHub
+trigger the [`promote-prod.yml`](.github/workflows/promote-prod.yml) GitHub
 action and Vercel will automatically deploy the project to the production
 environment and promote it as the latest production version.
 

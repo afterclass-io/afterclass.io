@@ -28,7 +28,7 @@ adhere to.
 ## Open Development
 
 All work on AfterClass happens directly on
-[GitHub](https://github.com/AfterClass-io/afterclass.io-v2). Both core team
+[GitHub](https://github.com/afterclass-io/afterclass.io). Both core team
 members and external contributors send pull requests which go through the same
 review process.
 
@@ -47,7 +47,7 @@ to improve this guide, feel free to submit a pull request.
 
 If you have questions about usage, help or support, please use our dedicated
 community forum at [GitHub
-Discussions](https://github.com/AfterClass-io/afterclass.io-v2/discussions/categories/q-a)
+Discussions](https://github.com/afterclass-io/afterclass.io/discussions/categories/q-a)
 or reach out to any of the core maintainers.
 
 > [!IMPORTANT]
@@ -57,18 +57,18 @@ or reach out to any of the core maintainers.
 ### Reporting Issues
 
 If you have found what you think is a bug, please [file an
-issue](https://github.com/AfterClass-io/afterclass.io-v2/issues/new/choose).
+issue](https://github.com/afterclass-io/afterclass.io/issues/new/choose).
 
 > [!IMPORTANT]
 > Issues that are identified as implementation questions or
 > non-issues will be immediately closed and redirected to [GitHub
-> Discussions](https://github.com/AfterClass-io/afterclass.io-v2/discussions).
+Discussions](https://github.com/afterclass-io/afterclass.io/discussions).
 
 ### Feature Requests
 
 If you have suggestions for improvements, please use our dedicated community
 forum at [GitHub
-Discussions](https://github.com/AfterClass-io/afterclass.io-v2/discussions/categories/ideas).
+Discussions](https://github.com/afterclass-io/afterclass.io/discussions/categories/ideas).
 From there, we will discuss use-cases for the feature and then finally discuss
 how it could be implemented.
 
@@ -87,7 +87,7 @@ GitHub](https://docs.github.com/en/get-started/exploring-projects-on-github/cont
 
 To help you get your feet wet and get you familiar with our contribution
 process, we have a list of **[good first
-issues](https://github.com/AfterClass-io/afterclass.io-v2/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)** that
+issues](https://github.com/afterclass-io/afterclass.io/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)** that
 contain tasks with a relatively limited scope. This is a great place to get
 started.
 
@@ -108,7 +108,7 @@ Request.
 
 - Checkout a topic branch from a base branch (e.g. `main`), and merge back
   against that branch. See [RFC#66: Branching
-  Strategy](https://github.com/AfterClass-io/afterclass.io-v2/discussions/66).
+  Strategy](https://github.com/afterclass-io/afterclass.io/discussions/66).
 - If adding a new feature:
   - Add accompanying test case or storybook, if it's a ui-related change.
   - Provide a convincing reason to add this feature

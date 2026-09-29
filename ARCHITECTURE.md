@@ -79,7 +79,7 @@ technologies:
     └── server/
         ├── api/
         │   ├── root.ts
-        │   ├── routers/
+        │   ├── <feature>/   # one folder per router (no routers/ dir)
         │   │   └── ...
         │   └── trpc.ts
         ├── auth.ts
