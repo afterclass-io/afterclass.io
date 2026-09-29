@@ -45,7 +45,6 @@ export const TrendChart: React.FC<{
       .join(" ");
   const groups = computeTermGroups(points);
   const keyToIdx = new Map(points.map((p, i) => [p.key, i]));
-  const plotW = W - PAD.left - PAD.right;
   const plotRight = W - PAD.right;
   // Half-step band geometry mirrors the website BidChart (Tasks 1-4): each
   // term band spans firstIdx - 0.5 to lastIdx + 0.5 in point-index units,
