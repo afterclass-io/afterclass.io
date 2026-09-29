@@ -20,10 +20,10 @@ type Story = StoryObj<typeof meta>;
 
 const geminiDetails = {
   status: "details",
-  client: { name: "Google", id: "49e991be-cd99-4a23-82d2-ee4ecd4d09e4" },
+  client: { name: "Google", id: "3e3aa4a2-753a-4fa3-bd42-eb44eecff143" },
   scope: "openid profile email phone offline_access",
   redirect_uri:
-    "https://oauth-redirect.googleusercontent.com/r/user_bound_custom-mcp-107023827359948230403-afterclass-io-afterclass_vercel_app",
+    "https://oauth-redirect.googleusercontent.com/r/user_bound_custom-mcp-107023827359948230403-www_afterclass_io",
 } as const;
 
 export const Ready: Story = {
