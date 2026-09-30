@@ -324,6 +324,36 @@ describe("explore-bid-options", () => {
     expect(out.safetyFactors).toEqual([]);
   });
 
+  it("drops zero clearing-price rows (no participation) from history", async () => {
+    const caller = makeCaller({
+      results: [
+        bidRow("t2", "1", 1, 14, 28, 40),
+        bidRow("t2", "1A", 1, 0, 0, 20),
+        bidRow("t2", "2", 1, 0, 28, 20),
+        bidRow("t2", "2A", 1, 14, 0, 20),
+      ],
+      pred: prediction,
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const result = await exploreBidOptionsTool.run(ctx, {
+      classId: "cl1",
+      courseCode: undefined,
+      professorSlug: undefined,
+    });
+    expect(result.isError).toBeUndefined();
+    const out = parse(result);
+    expect(out.history).toEqual([
+      {
+        acadTermId: "t2",
+        round: "1",
+        window: 1,
+        min: 14,
+        median: 28,
+        vacancy: 40,
+      },
+    ]);
+  });
+
   it("errTexts when bidResults rejects", async () => {
     const caller = {
       bidResults: {
