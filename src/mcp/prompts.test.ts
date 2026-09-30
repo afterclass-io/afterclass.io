@@ -330,6 +330,21 @@ describe("registerPrompts", () => {
     expect(text).toContain("Do not invent course codes");
   });
 
+  it("find-courses and plan-term vet steps call get-course-reviews directly with a query", async () => {
+    const prompt = vi.fn();
+    const server = { prompt } as never;
+    registerPrompts(server);
+    const handlers = registrations(prompt);
+    const courses = await handlers.get("find-courses")!({
+      interest: "management communication",
+    });
+    expect(courses.messages[0]!.content.text).toContain("get-course-reviews");
+    const term = await handlers.get("plan-term")!({ goal: "this term" });
+    expect(term.messages[0]!.content.text).toMatch(
+      /get-course-reviews.*query|query.*get-course-reviews/s,
+    );
+  });
+
   it("plan-roadmap prompt treats public roadmaps as hints to verify", async () => {
     const prompt = vi.fn();
     const server = { prompt } as never;

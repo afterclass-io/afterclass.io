@@ -44,6 +44,7 @@ function makeCaller(procs: Record<string, unknown>) {
       getByAcadTerm: procs.getByAcadTerm,
       getCurrentWindow: procs.getCurrentWindow,
     },
+    timetable: { searchCourses: procs.searchCourses },
   } as unknown as ToolContext["caller"];
 }
 
@@ -107,6 +108,57 @@ describe("catalog read tools", () => {
     expect(getProfessorReviewsTool.description).toMatch(
       /what students say about a professor/i,
     );
+  });
+
+  it("get-course-reviews resolves a fuzzy query to the top code without a separate search call", async () => {
+    const searchFn = vi.fn().mockResolvedValue([
+      { id: "c1", code: "COR-COMM1304", name: "Management Communication" },
+    ]);
+    const reviewsFn = vi
+      .fn()
+      .mockResolvedValue({ items: [], nextCursor: undefined });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        getByCourseCodeProtected: reviewsFn,
+        searchCourses: searchFn,
+        current: vi.fn().mockResolvedValue({ id: "t1" }),
+      }),
+    };
+    const result = await getCourseReviewsTool.run(ctx, {
+      query: "management communication",
+      limit: 10,
+    });
+    expect(searchFn).toHaveBeenCalledWith(
+      expect.objectContaining({ query: "management communication" }),
+    );
+    expect(reviewsFn).toHaveBeenCalledWith(
+      expect.objectContaining({ code: "COR-COMM1304" }),
+    );
+    expect(result.isError).toBeUndefined();
+  });
+
+  it("get-course-reviews rejects code+query together and neither alone", () => {
+    expect(
+      getCourseReviewsTool.inputSchema.safeParse({
+        code: "IS216",
+        query: "management",
+        limit: 10,
+      }).success,
+    ).toBe(false);
+    expect(
+      getCourseReviewsTool.inputSchema.safeParse({ limit: 10 }).success,
+    ).toBe(false);
+    expect(
+      getCourseReviewsTool.inputSchema.safeParse({ code: "IS216", limit: 10 })
+        .success,
+    ).toBe(true);
+    expect(
+      getCourseReviewsTool.inputSchema.safeParse({
+        query: "management",
+        limit: 10,
+      }).success,
+    ).toBe(true);
   });
 
   it("get-professor-reviews calls reviews.getByProfSlugProtected and stays read-only", async () => {
