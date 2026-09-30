@@ -69,9 +69,17 @@ export const roadmapOutput = z.object({
   roadmapId: z.string(),
   name: z.string(),
   isPublic: z.boolean(),
-  owner: z.string().nullable(),
-  voteCount: z.number().nullable(),
-  progress: z.object({ completed: z.number(), total: z.number() }).optional(),
+  owner: z.unknown().transform((v) => (typeof v === "string" ? v : null)),
+  voteCount: z.unknown().transform((v) => (typeof v === "number" ? v : null)),
+  progress: z
+    .object({ completed: z.number(), total: z.number() })
+    .partial()
+    .transform((p) =>
+      typeof p.completed === "number" && typeof p.total === "number"
+        ? p
+        : undefined,
+    )
+    .optional(),
   entries: z.array(
     z.object({
       yearNumber: z.number(),

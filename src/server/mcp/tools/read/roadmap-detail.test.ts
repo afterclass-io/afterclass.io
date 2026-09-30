@@ -67,8 +67,7 @@ describe("get-my-roadmap", () => {
   it("resolves the active roadmap when roadmapId is omitted", async () => {
     const listMine = vi.fn().mockResolvedValue([
       { id: "r2", name: "Secondary", isActive: false },
-      { id: "r1", name: "Primary", isActive: true },
-    ]);
+      { id: "r1", name: "Primary", isActive: true },    ]);
     const getMine = vi.fn().mockResolvedValue({
       roadmap: { id: "r1", name: "Primary" },
       entries: [],
@@ -110,6 +109,26 @@ describe("get-my-roadmap", () => {
     };
     expect(parsed.roadmap.shareToken).toBeUndefined();
     expect(parsed.roadmap.id).toBe("r1");
+  });
+
+  it("toViewProps coerces a non-string ownerUsername to null instead of failing the schema", async () => {
+    const fn = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "My Plan", matricTermId: "t1" },
+      entries: [],
+      ownerUsername: { username: "senior123" },
+      voteCount: true,
+    });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsGetMine: fn }),
+    };
+    const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
+    const props = getMyRoadmapTool.toViewProps?.(res) as {
+      owner: unknown;
+      voteCount: unknown;
+    };
+    expect(props.owner).toBeNull();
+    expect(props.voteCount).toBeNull();
   });
 
   it("annotates entries as taken when their roadmap term elapsed before the current term", async () => {

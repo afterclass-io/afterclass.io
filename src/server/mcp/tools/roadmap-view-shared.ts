@@ -107,8 +107,12 @@ function toRoadmapViewPropsShared(
     roadmapId: roadmap.id as string,
     name: roadmap.name as string,
     isPublic,
-    owner: isPublic ? (data.ownerUsername as string | null) : null,
-    voteCount: isPublic ? (data.voteCount as number | null) : null,
+    owner:
+      isPublic && typeof data.ownerUsername === "string"
+        ? data.ownerUsername
+        : null,
+    voteCount:
+      isPublic && typeof data.voteCount === "number" ? data.voteCount : null,
     // Completed = entries in elapsed roadmap terms (historical truth), not
     // catalog description presence. Falls back to the description heuristic
     // only when the position is unresolvable.
