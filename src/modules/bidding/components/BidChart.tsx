@@ -20,7 +20,6 @@ import {
 } from "@/common/components/chart";
 import { inferAcadTerm } from "@/common/functions";
 import { formatBidCurrencyCompact } from "@/common/functions/format-bid-currency";
-import { Label } from "recharts";
 import {
   clampLabelCenterX,
   estimateLabelWidth,
@@ -236,29 +235,14 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
           tick={{ fontSize: 12 }}
         />
 
-        {/* Current term highlight */}
+        {/* Current term highlight (rect only — no divider line or "now" text) */}
         {nowBand && (
-          <>
-            <ReferenceArea
-              x1={nowBand.x1}
-              x2={nowBand.x2}
-              fill="#2563eb"
-              fillOpacity={0.06}
-            />
-            <ReferenceLine
-              x={nowBand.x2}
-              stroke="#64748b"
-              strokeWidth={1.5}
-              strokeDasharray="4 4"
-            >
-              <Label
-                value="now"
-                position="insideTopRight"
-                fill="#64748b"
-                fontSize={11}
-              />
-            </ReferenceLine>
-          </>
+          <ReferenceArea
+            x1={nowBand.x1}
+            x2={nowBand.x2}
+            fill="#2563eb"
+            fillOpacity={0.06}
+          />
         )}
 
         {/* Median line — blue solid */}

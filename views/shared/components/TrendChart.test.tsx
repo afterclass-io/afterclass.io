@@ -45,11 +45,12 @@ describe("TrendChart", () => {
     }
   });
 
-  it("staggers labels when >2 points and anchors the now marker off-center", () => {
+  it("staggers labels when >2 points with no now text", () => {
     render(
       <TrendChart
         points={manyTerms}
         currentKey={manyTerms[manyTerms.length - 1]!.key}
+        currentAcadTermId="AY2026/27-T1"
         c={TOKENS.light}
       />,
     );
@@ -58,13 +59,11 @@ describe("TrendChart", () => {
       .map((t) => Number(t.getAttribute("y")))
       .filter((yy) => yy > 150);
     expect(new Set(labelYs).size).toBeGreaterThanOrEqual(2);
-    const now = Array.from(chart.querySelectorAll("text")).find(
-      (t) => t.textContent === "now",
-    );
-    expect(now).toBeDefined();
-    expect(Number(now!.getAttribute("font-size"))).toBeLessThanOrEqual(9);
-    expect(now!.getAttribute("text-anchor")).not.toBe("middle");
-    expect(Number(now!.getAttribute("y"))).toBeLessThan(16);
+    expect(
+      Array.from(chart.querySelectorAll("text")).find(
+        (t) => t.textContent === "now",
+      ),
+    ).toBeUndefined();
   });
 
   it("extends every term band half a step with one boundary line per transition", () => {
@@ -84,7 +83,7 @@ describe("TrendChart", () => {
     expect(boundaries).toHaveLength(3);
   });
 
-  it("gates the now highlight on the visible current term, not the prediction key", () => {
+  it("gates the term highlight on the visible current term with no now text", () => {
     const { rerender } = render(
       <TrendChart
         points={manyTerms}
@@ -98,16 +97,16 @@ describe("TrendChart", () => {
       Array.from(chart.querySelectorAll("text")).find(
         (t) => t.textContent === "now",
       ),
-    ).toBeDefined();
+    ).toBeUndefined();
     expect(
       Array.from(chart.querySelectorAll("rect")).filter(
         (r) => r.getAttribute("fill") === "#2563eb",
       ),
     ).toHaveLength(1);
 
-    // Filtered-out term -> no highlight even with a matching prediction key.
-    // The filtered slice keeps a point whose key is passed as currentKey, so
-    // the legacy path would render; only the term gate suppresses output.
+    // Filtered-out term -> no highlight and no now text even with a matching
+    // prediction key. The filtered slice keeps a point whose key is passed
+    // as currentKey, so only the term gate suppresses output.
     const visible = manyTerms.slice(0, 3);
     rerender(
       <TrendChart
@@ -126,6 +125,27 @@ describe("TrendChart", () => {
     expect(
       Array.from(chart.querySelectorAll("rect")).filter(
         (r) => r.getAttribute("fill") === "#2563eb",
+      ),
+    ).toHaveLength(0);
+  });
+
+  it("renders no now text or dashed now line even with a legacy currentKey", () => {
+    render(
+      <TrendChart
+        points={manyTerms}
+        currentKey={manyTerms[manyTerms.length - 1]!.key}
+        c={TOKENS.light}
+      />,
+    );
+    const chart = screen.getByRole("img", { name: /bid trend/i });
+    expect(
+      Array.from(chart.querySelectorAll("text")).find(
+        (t) => t.textContent === "now",
+      ),
+    ).toBeUndefined();
+    expect(
+      Array.from(chart.querySelectorAll("line")).filter(
+        (l) => l.getAttribute("stroke-dasharray") === "4 4",
       ),
     ).toHaveLength(0);
   });

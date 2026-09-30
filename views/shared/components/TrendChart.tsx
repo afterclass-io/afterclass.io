@@ -18,10 +18,12 @@ import { computeTermGroups, type ChartPoint } from "../utils/chart-points";
  */
 export const TrendChart: React.FC<{
   points: ChartPoint[];
-  currentKey: string | null;
+  // Accepted for API compatibility; ignored — the highlight is gated only
+  // on currentAcadTermId, never on a stale prediction key.
+  currentKey?: string | null;
   currentAcadTermId?: string | null;
   c: ThemeColors;
-}> = ({ points, currentKey, currentAcadTermId, c }) => {
+}> = ({ points, currentAcadTermId, c }) => {
   const W = 560;
   const H = 196;
   // Ported from `BidChart`'s gutter thinking (CHART_MARGIN +
@@ -62,7 +64,8 @@ export const TrendChart: React.FC<{
       boundaryIdxs.push(i - 1);
   }
   // "now" marks the current academic term segment, not the prediction key:
-  // only when that term is visible in the (possibly filtered) points.
+  // only when that term is visible in the (possibly filtered) points. The
+  // marker is a highlight rect only — no divider line or "now" text.
   const nowGroupIdx = currentAcadTermId
     ? groups.findIndex((g) =>
         g.some(
@@ -91,16 +94,6 @@ export const TrendChart: React.FC<{
   // Clamp an x-label's center so the whole label stays inside the plot area.
   const clampCenterX = (centerX: number, labelWidth: number): number =>
     clampLabelCenterX(centerX, PAD.left, plotRight, labelWidth);
-  // "now" marker: offset left of the line so it never collides
-  // with a max-value x-label at the same position.
-  const nowIdx = currentKey ? (keyToIdx.get(currentKey) ?? null) : null;
-  const nowX = nowIdx !== null ? x(nowIdx) : 0;
-  const nowAtRightEdge = nowIdx !== null && nowX >= plotRight - 16;
-  // Legacy prediction-key marker: only when the term gate is unknown (no
-  // currentAcadTermId on old payloads) and the term highlight is absent.
-  // When the current term is known, the term highlight is the only now
-  // marker — a stale prediction key must never pin "now" to the wrong term.
-  const showLegacyNow = !nowBand && !currentAcadTermId && nowIdx !== null;
   return (
     <svg
       role="img"
@@ -139,44 +132,13 @@ export const TrendChart: React.FC<{
         />
       ))}
       {nowBand && (
-        <>
-          <rect
-            x={nowBand.x1}
-            y={PAD.top}
-            width={nowBand.x2 - nowBand.x1}
-            height={H - PAD.top - PAD.bottom}
-            fill="#2563eb"
-            opacity={0.06}
-          />
-          <line
-            x1={nowBand.x2}
-            x2={nowBand.x2}
-            y1={PAD.top}
-            y2={H - PAD.bottom}
-            stroke="#64748b"
-            strokeWidth={1.5}
-            strokeDasharray="4 4"
-          />
-          <text
-            x={nowBand.x2 >= plotRight - 16 ? nowBand.x2 - 4 : nowBand.x2 + 4}
-            y={PAD.top - 4}
-            fontSize={9}
-            textAnchor={nowBand.x2 >= plotRight - 16 ? "end" : "start"}
-            fill="#64748b"
-          >
-            now
-          </text>
-        </>
-      )}
-      {!nowBand && showLegacyNow && (
-        <line
-          x1={x(nowIdx!)}
-          x2={x(nowIdx!)}
-          y1={PAD.top}
-          y2={H - PAD.bottom}
-          stroke="#64748b"
-          strokeWidth={1.5}
-          strokeDasharray="4 4"
+        <rect
+          x={nowBand.x1}
+          y={PAD.top}
+          width={nowBand.x2 - nowBand.x1}
+          height={H - PAD.top - PAD.bottom}
+          fill="#2563eb"
+          opacity={0.06}
         />
       )}
       <line
@@ -245,18 +207,6 @@ export const TrendChart: React.FC<{
           </g>
         );
       })}
-      {showLegacyNow && (
-        <text
-          x={nowX}
-          y={PAD.top - 4}
-          fontSize={9}
-          textAnchor={nowAtRightEdge ? "end" : "start"}
-          dx={nowAtRightEdge ? -4 : 4}
-          fill="#64748b"
-        >
-          now
-        </text>
-      )}
     </svg>
   );
 };

@@ -557,7 +557,7 @@ describe("BidExplorerView (v2)", () => {
       expect(chart.querySelectorAll("circle")).toHaveLength(2);
     });
 
-    it("keeps all chart labels inside the viewBox (x, y, now)", () => {
+    it("keeps all chart labels inside the viewBox (x, y)", () => {
       const manyTerms = {
         ...fullProps,
         history: [
@@ -672,21 +672,17 @@ describe("BidExplorerView (v2)", () => {
       expect(new Set(labelYs).size).toBeGreaterThanOrEqual(2);
     });
 
-    it("offsets the now marker away from the max-value label", () => {
+    it("renders the current term highlight with no now text", () => {
       seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
       render(<BidExplorerView />);
       const chart = screen.getByRole("img", { name: /bid trend/i });
       const texts = Array.from(chart.querySelectorAll("text"));
-      const now = texts.find((t) => t.textContent === "now");
-      expect(now).toBeDefined();
-      // now marker sits above the plot in small type, anchored
-      // away from the line (start+offset, or end when hugging
-      // the right edge).
-      expect(Number(now!.getAttribute("font-size"))).toBeLessThanOrEqual(9);
-      expect(now!.getAttribute("text-anchor")).not.toBe("middle");
-      // Above the plot, clear of the x-label row.
-      const nowY = Number(now!.getAttribute("y"));
-      expect(nowY).toBeLessThan(16);
+      expect(texts.find((t) => t.textContent === "now")).toBeUndefined();
+      // Current term highlight rect renders when the term is visible.
+      const highlights = Array.from(chart.querySelectorAll("rect")).filter(
+        (r) => r.getAttribute("fill") === "#2563eb",
+      );
+      expect(highlights).toHaveLength(1);
     });
   });
 
