@@ -41,7 +41,7 @@ const searchCoursesSchema = z.object({
 export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
   name: "search-courses",
   description:
-    "Search courses offered in an academic term by code, name, description, courseArea, or professor name. Fuzzy/typo-tolerant (e.g. 'statistics' matches 'Statistical Analysis'); also matches description/courseArea and supports optional facultyId filter. Supports time filters day/startsAfter/endsBefore (e.g. day=Mon, startsAfter=18:00 for night classes). Returns matching courses with sections and timings.",
+    "Search courses offered in an academic term by code, name, description, courseArea, or professor name. Fuzzy/typo-tolerant (e.g. 'statistics' matches 'Statistical Analysis'); also matches description/courseArea and supports optional facultyId filter. Supports time filters day/startsAfter/endsBefore (e.g. day=Mon, startsAfter=18:00 for night classes). Returns matching courses with sections and timings. If the query is an exact course code (e.g. IS216), only that course is returned. Use only when the user explicitly asks to browse or compare courses; for intermediate code resolution before reviews or bids, call get-course-reviews (query) or explore-bid-options (courseCode+section) directly instead.",
   inputSchema: searchCoursesSchema,
   readOnly: true,
   toViewProps: (result) => {

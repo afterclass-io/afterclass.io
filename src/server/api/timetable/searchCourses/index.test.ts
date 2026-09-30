@@ -388,4 +388,61 @@ describe("timetable.searchCourses", () => {
       caller.timetable.searchCourses({ acadTermId: "t1", query: "statistics" }),
     ).rejects.toThrow("boom");
   });
+
+  it("returns only the exact course when the query is an exact code (IS216)", async () => {
+    queryRawMock.mockResolvedValue([
+      {
+        id: "c1",
+        code: "IS216",
+        name: "Web Application Development II",
+        creditUnits: 1,
+      },
+      {
+        id: "c2",
+        code: "IS211",
+        name: "Interaction Design and Prototyping",
+        creditUnits: 1,
+      },
+      {
+        id: "c3",
+        code: "IS214",
+        name: "Data Management",
+        creditUnits: 1,
+      },
+    ]);
+    classesFindManyMock.mockResolvedValue([]);
+    const result = await caller.timetable.searchCourses({
+      acadTermId: "t1",
+      query: "IS216",
+    });
+    expect(result.map((r) => r.code)).toEqual(["IS216"]);
+    expect(classesFindManyMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { acadTermId: "t1", courseId: { in: ["c1"] } },
+      }),
+    );
+  });
+
+  it("matches exact codes dash-insensitively (COR STAT1202 finds COR-STAT1202 only)", async () => {
+    queryRawMock.mockResolvedValue([
+      {
+        id: "c1",
+        code: "COR-STAT1202",
+        name: "Statistical Analysis",
+        creditUnits: 1,
+      },
+      {
+        id: "c2",
+        code: "COR-STAT1203",
+        name: "Statistics II",
+        creditUnits: 1,
+      },
+    ]);
+    classesFindManyMock.mockResolvedValue([]);
+    const result = await caller.timetable.searchCourses({
+      acadTermId: "t1",
+      query: "COR STAT1202",
+    });
+    expect(result.map((r) => r.code)).toEqual(["COR-STAT1202"]);
+  });
 });

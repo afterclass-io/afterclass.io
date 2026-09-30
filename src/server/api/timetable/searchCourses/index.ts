@@ -56,7 +56,15 @@ export const searchCourses = publicProcedure
 
     // Keep the pre-upgrade response shape (sections/timings/exam timings),
     // now fetched in ONE follow-up query instead of per-row.
-    const courseIds = rows.map((r) => r.id);
+    // Exact-code short-circuit: when the normalized query exactly matches a
+    // returned code (dash/space-insensitive), return only that course so an
+    // exact lookup (e.g. IS216) never drags fuzzy trigram neighbors along.
+    const normQ = q.toUpperCase().replace(/[\s-]/g, "");
+    const exact = rows.filter(
+      (r) => r.code.toUpperCase().replace(/[\s-]/g, "") === normQ,
+    );
+    const finalRows = exact.length > 0 ? exact : rows;
+    const courseIds = finalRows.map((r) => r.id);
     const classes = courseIds.length
       ? await ctx.db.classes.findMany({
           where: { acadTermId: input.acadTermId, courseId: { in: courseIds } },
@@ -95,7 +103,7 @@ export const searchCourses = publicProcedure
       classesByCourse.set(cl.courseId, list);
     }
 
-    return rows.map((c) => ({
+    return finalRows.map((c) => ({
       id: c.id,
       code: c.code,
       name: c.name,

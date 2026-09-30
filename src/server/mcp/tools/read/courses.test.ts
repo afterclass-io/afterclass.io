@@ -252,6 +252,10 @@ describe("search-courses", () => {
     expect(searchCoursesTool.description).toContain("courseArea");
   });
 
+  it("description documents the exact-code single return", () => {
+    expect(searchCoursesTool.description).toContain("exact");
+  });
+
   it("maps description through when the procedure returns it", async () => {
     const fn = vi.fn().mockResolvedValue([
       {
