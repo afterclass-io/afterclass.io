@@ -2,7 +2,13 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { ConsentError, ConsentSignIn, scopeLabel } from "./consent-ui";
+import {
+  ConsentCard,
+  ConsentError,
+  ConsentSignIn,
+  requesterLabel,
+  scopeLabel,
+} from "./consent-ui";
 
 describe("scopeLabel", () => {
   it("maps known scopes to plain language", () => {
@@ -75,5 +81,65 @@ describe("ConsentError", () => {
     expect(
       screen.queryByRole("link", { name: /sign in with google/i }),
     ).toBeNull();
+  });
+});
+
+describe("requesterLabel", () => {
+  it("maps the user_bound_custom-mcp redirect to the AI agent label", () => {
+    expect(
+      requesterLabel(
+        "Google",
+        "https://oauth-redirect.googleusercontent.com/r/user_bound_custom-mcp-107023827359948230403-afterclass-io-afterclass_vercel_app",
+      ),
+    ).toBe("Your AI agent (via Google)");
+  });
+
+  it("falls back to the client name for other redirects", () => {
+    expect(requesterLabel("Google", "https://client.example/cb")).toBe(
+      "Google",
+    );
+  });
+
+  it("falls back to This app when no client name is given", () => {
+    expect(requesterLabel(undefined, undefined)).toBe("This app");
+  });
+});
+
+describe("ConsentCard", () => {
+  const geminiDetails = {
+    status: "details",
+    client: { name: "Google", id: "3e3aa4a2-753a-4fa3-bd42-eb44eecff143" },
+    scope: "openid profile email",
+    redirect_uri:
+      "https://oauth-redirect.googleusercontent.com/r/user_bound_custom-mcp-107023827359948230403-www_afterclass_io",
+  } as const;
+
+  it("attributes the request to the AI agent, not Google login", () => {
+    render(
+      <ConsentCard
+        details={{ ...geminiDetails }}
+        onApprove={vi.fn()}
+        onDeny={vi.fn()}
+      />,
+    );
+    // The label is split across <strong> + description text nodes.
+    const description = screen.getByText(/is requesting access/i);
+    expect(description.textContent).toMatch(
+      /your ai agent \(via google\) is requesting access/i,
+    );
+    expect(description.textContent).not.toMatch(/^google is requesting/i);
+  });
+
+  it("wraps long client id and redirect uri values", () => {
+    const { container } = render(
+      <ConsentCard
+        details={{ ...geminiDetails }}
+        onApprove={vi.fn()}
+        onDeny={vi.fn()}
+      />,
+    );
+    for (const code of Array.from(container.querySelectorAll("code"))) {
+      expect(code.className).toMatch(/break-all/);
+    }
   });
 });

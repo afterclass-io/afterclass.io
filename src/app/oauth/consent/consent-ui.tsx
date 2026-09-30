@@ -36,6 +36,22 @@ export function scopeLabel(scope: string): string {
   return SCOPE_LABELS[scope] ?? scope;
 }
 
+/**
+ * Friendly requester label for the consent header. Supabase reports the
+ * OAuth client's provider name (e.g. "Google" for Google login), but with a
+ * `user_bound_custom-mcp` redirect the actual requester is the user's AI
+ * agent authenticating via Google, not Google itself. Neutral fallback to
+ * the client name (or "This app") for all other redirects.
+ */
+export function requesterLabel(
+  clientName: string | undefined,
+  redirectUri: string | undefined,
+): string {
+  if (redirectUri?.includes("user_bound_custom-mcp"))
+    return `Your AI agent (via ${clientName ?? "Google"})`;
+  return clientName ?? "This app";
+}
+
 export function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 py-10">
@@ -56,7 +72,7 @@ export function ConsentCard({
   onApprove: () => void;
   onDeny: () => void;
 }) {
-  const clientName = details.client?.name ?? "This app";
+  const clientName = requesterLabel(details.client?.name, details.redirect_uri);
   const scopes = (details.scope ?? "").split(" ").filter(Boolean);
   const clientId = details.client_id ?? details.client?.id;
 
@@ -90,12 +106,13 @@ export function ConsentCard({
             </summary>
             {clientId && (
               <p className="mt-1">
-                Client ID: <code>{clientId}</code>
+                Client ID: <code className="break-all">{clientId}</code>
               </p>
             )}
             {details.redirect_uri && (
               <p className="mt-1">
-                Redirect URI: <code>{details.redirect_uri}</code>
+                Redirect URI:{" "}
+                <code className="break-all">{details.redirect_uri}</code>
               </p>
             )}
           </details>

@@ -23,6 +23,7 @@ export const ManyTerms: Story = {
   args: {
     points: manyTerms,
     currentKey: manyTerms[manyTerms.length - 1]!.key,
+    currentAcadTermId: "AY2026/27-T1",
     c: TOKENS.light,
   },
 };

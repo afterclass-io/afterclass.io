@@ -124,35 +124,60 @@ const reviewCardsToViewProps = (
   return reviewCardsProps(text);
 };
 
-const getCourseReviewsSchema = z.object({
-  code: z.string().describe("Exact course code"),
-  limit: z.number().int().min(1).max(20).default(10),
-  // Optional cursor into the procedure's { items, nextCursor } page. When
-  // omitted the first page is returned and `nextCursor` is embedded in the
-  // payload alongside `context` (additive only — existing callers that pass
-  // just { code, limit } see identical behavior plus the extra key).
-  cursor: z.string().optional(),
-});
+const getCourseReviewsSchema = z
+  .object({
+    code: z.string().optional().describe("Exact course code"),
+    query: z
+      .string()
+      .min(1)
+      .max(200)
+      .optional()
+      .describe(
+        "Fuzzy course name or code; resolved internally to the top-ranked code",
+      ),
+    limit: z.number().int().min(1).max(20).default(10),
+    // Optional cursor into the procedure's { items, nextCursor } page. When
+    // omitted the first page is returned and `nextCursor` is embedded in the
+    // payload alongside `context` (additive only — existing callers that pass
+    // just { code, limit } see identical behavior plus the extra key).
+    cursor: z.string().optional(),
+  })
+  .refine((v) => Boolean(v.code?.trim()) !== Boolean(v.query?.trim()), {
+    message: "Provide exactly one of code or query",
+  });
 
 export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
   name: "get-course-reviews",
   description:
-    "Read student reviews for a course, including full review text. Use when the user asks what students say about a course or wants concrete review examples. Read-only: NEVER write, edit, or create reviews.",
+    "Read student reviews for a course, including full review text. Accepts an exact code OR a fuzzy query (course name or code, e.g. management communication); the query resolves internally to the top-ranked course. Use when the user asks what students say about a course or wants concrete review examples. Do NOT call search-courses first for review questions - call this tool directly with query so only the reviews UI renders. Read-only: NEVER write, edit, or create reviews.",
   inputSchema: getCourseReviewsSchema,
   readOnly: true,
   toViewProps: reviewCardsToViewProps,
-  run: async ({ caller }, { code, limit, cursor }) => {
+  run: async ({ caller }, { code, query, limit, cursor }) => {
     try {
+      let resolvedCode = code?.trim() ?? "";
+      if (!resolvedCode) {
+        const q = query!.trim();
+        const hits = (await caller.roadmaps.searchCourses({
+          query: q,
+        })) as Array<{ code: string }>;
+        if (hits.length === 0) return errText(`No courses found for "${q}".`);
+        const norm = q.toUpperCase().replace(/[\s-]/g, "");
+        const exact = hits.find(
+          (h) => h.code.toUpperCase().replace(/[\s-]/g, "") === norm,
+        );
+        resolvedCode = (exact ?? hits[0]!).code;
+      }
       const data = await caller.reviews.getByCourseCodeProtected({
-        code,
+        code: resolvedCode,
         limit,
         ...(cursor !== undefined ? { cursor } : {}),
         filterFor: ReviewsFilterFor.ALL,
         sortBy: ReviewsSortBy.LATEST,
       });
       const payload = Array.isArray(data)
-        ? { context: code, items: data }
-        : { context: code, ...(data as Record<string, unknown>) };
+        ? { context: resolvedCode, items: data }
+        : { context: resolvedCode, ...(data as Record<string, unknown>) };
       return jsonText(payload);
     } catch (e) {
       return errText(errorMessage(e));

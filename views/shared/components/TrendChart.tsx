@@ -18,9 +18,12 @@ import { computeTermGroups, type ChartPoint } from "../utils/chart-points";
  */
 export const TrendChart: React.FC<{
   points: ChartPoint[];
-  currentKey: string | null;
+  // Accepted for API compatibility; ignored — the highlight is gated only
+  // on currentAcadTermId, never on a stale prediction key.
+  currentKey?: string | null;
+  currentAcadTermId?: string | null;
   c: ThemeColors;
-}> = ({ points, currentKey, c }) => {
+}> = ({ points, currentAcadTermId, c }) => {
   const W = 560;
   const H = 196;
   // Ported from `BidChart`'s gutter thinking (CHART_MARGIN +
@@ -44,18 +47,53 @@ export const TrendChart: React.FC<{
       .join(" ");
   const groups = computeTermGroups(points);
   const keyToIdx = new Map(points.map((p, i) => [p.key, i]));
-  const plotW = W - PAD.left - PAD.right;
   const plotRight = W - PAD.right;
+  // Half-step band geometry mirrors the website BidChart (Tasks 1-4): each
+  // term band spans firstIdx - 0.5 to lastIdx + 0.5 in point-index units,
+  // and term transitions get one crisp boundary line at lastIdx + 0.5.
+  // x() spaces N points over N-1 gaps, so the half-step edge between point
+  // i and i+1 is their midpoint.
+  const edgeX = (i: number) => (x(i) + x(i + 1)) / 2;
+  const bandLeft = (firstIdx: number) =>
+    firstIdx === 0 ? PAD.left : edgeX(firstIdx - 1);
+  const bandRight = (lastIdx: number) =>
+    lastIdx >= points.length - 1 ? plotRight : edgeX(lastIdx);
+  const boundaryIdxs: number[] = [];
+  for (let i = 1; i < points.length; i++) {
+    if (points[i - 1]!.acadTermId !== points[i]!.acadTermId)
+      boundaryIdxs.push(i - 1);
+  }
+  // "now" marks the current academic term segment, not the prediction key:
+  // only when that term is visible in the (possibly filtered) points. The
+  // marker is a highlight rect only — no divider line or "now" text.
+  const nowGroupIdx = currentAcadTermId
+    ? groups.findIndex((g) =>
+        g.some(
+          (k) =>
+            points[keyToIdx.get(k) ?? -1]?.acadTermId === currentAcadTermId,
+        ),
+      )
+    : -1;
+  const nowBand =
+    nowGroupIdx >= 0
+      ? (() => {
+          const keys = groups[nowGroupIdx]!;
+          const idxs = keys
+            .map((k) => keyToIdx.get(k))
+            .filter((v): v is number => v !== undefined);
+          return idxs.length > 0
+            ? {
+                x1: bandLeft(Math.min(...idxs)),
+                x2: bandRight(Math.max(...idxs)),
+              }
+            : null;
+        })()
+      : null;
   const maxLabel = String(maxV);
   const stagger = points.length > 2;
   // Clamp an x-label's center so the whole label stays inside the plot area.
   const clampCenterX = (centerX: number, labelWidth: number): number =>
     clampLabelCenterX(centerX, PAD.left, plotRight, labelWidth);
-  // "now" marker: offset left of the line so it never collides
-  // with a max-value x-label at the same position.
-  const nowIdx = currentKey ? (keyToIdx.get(currentKey) ?? null) : null;
-  const nowX = nowIdx !== null ? x(nowIdx) : 0;
-  const nowAtRightEdge = nowIdx !== null && nowX >= plotRight - 16;
   return (
     <svg
       role="img"
@@ -64,33 +102,43 @@ export const TrendChart: React.FC<{
       style={{ width: "100%", height: "auto", display: "block" }}
     >
       {groups.map((g, gi) => {
-        const firstIdx = keyToIdx.get(g[0] ?? "");
-        if (gi % 2 !== 1 || firstIdx === undefined) return null;
+        const idxs = g
+          .map((k) => keyToIdx.get(k))
+          .filter((v): v is number => v !== undefined);
+        if (gi % 2 !== 1 || idxs.length === 0) return null;
+        const x1 = bandLeft(Math.min(...idxs));
+        const x2 = bandRight(Math.max(...idxs));
         return (
           <rect
             key={g[0]}
-            x={
-              firstIdx === 0
-                ? PAD.left
-                : x(firstIdx) - plotW / Math.max(1, points.length) / 2
-            }
+            x={x1}
             y={PAD.top}
-            width={(g.length * plotW) / Math.max(1, points.length)}
+            width={x2 - x1}
             height={H - PAD.top - PAD.bottom}
             fill={c.border}
             opacity={0.4}
           />
         );
       })}
-      {currentKey && keyToIdx.has(currentKey) && (
+      {boundaryIdxs.map((i) => (
         <line
-          x1={x(keyToIdx.get(currentKey)!)}
-          x2={x(keyToIdx.get(currentKey)!)}
+          key={`boundary-${points[i]!.key}`}
+          x1={edgeX(i)}
+          x2={edgeX(i)}
           y1={PAD.top}
           y2={H - PAD.bottom}
-          stroke="#64748b"
-          strokeWidth={1.5}
-          strokeDasharray="4 4"
+          stroke={c.border}
+          strokeWidth={1}
+        />
+      ))}
+      {nowBand && (
+        <rect
+          x={nowBand.x1}
+          y={PAD.top}
+          width={nowBand.x2 - nowBand.x1}
+          height={H - PAD.top - PAD.bottom}
+          fill="#2563eb"
+          opacity={0.06}
         />
       )}
       <line
@@ -159,18 +207,6 @@ export const TrendChart: React.FC<{
           </g>
         );
       })}
-      {nowIdx !== null && (
-        <text
-          x={nowX}
-          y={PAD.top - 4}
-          fontSize={9}
-          textAnchor={nowAtRightEdge ? "end" : "start"}
-          dx={nowAtRightEdge ? -4 : 4}
-          fill="#64748b"
-        >
-          now
-        </text>
-      )}
     </svg>
   );
 };

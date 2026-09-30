@@ -55,6 +55,7 @@ export function buildChartPoints(history: HistoryInput[]): ChartPoint[] {
   const grouped = new Map<string, ChartPoint>();
   for (const h of history) {
     if (h.min === null || h.median === null) continue;
+    if (h.min <= 0 || h.median <= 0) continue;
     const key = pointKey(h);
     const existing = grouped.get(key);
     if (existing) {

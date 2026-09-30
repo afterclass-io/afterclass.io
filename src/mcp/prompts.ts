@@ -227,7 +227,7 @@ export function registerPrompts(server: MCPServer): void {
               text: `Help the user find courses about: "${interest}".
 
 1. Call search-courses with the interest as the query; if it names a professor, call search-professors too. To narrow to one school, call list-faculties to resolve the school name to its acronym/id, then pass it as search-courses facultyId (numeric id or acronym, e.g. SCIS).
-2. For the top 3-5 hits, call get-course-reviews (and get-professor-reviews for professor picks) plus get-review-summary to ground quality claims.
+2. For the top 3-5 hits, call get-course-reviews directly with query (it resolves fuzzy names internally; do NOT call search-courses first for review questions) (and get-professor-reviews for professor picks) plus get-review-summary to ground quality claims.
 3. Present each pick with code, name, credit units, and what reviewers actually say, plus its page link (/course/<CODE> from the search summary, /professor/<slug> for professor picks) — link to the page, don't paste the full review text. Do not invent course codes or review quotes. Map common names to codes via search first (e.g. Statistics → COR-STAT1202) instead of asking the user for an exact code.`,
             },
           },
@@ -281,7 +281,7 @@ export function registerPrompts(server: MCPServer): void {
               text: `Help the user plan their term toward this goal: "${goal}".
 
 1. Discover: call search-courses on the goal (use list-faculties to scope to one school when asked). Present top hits with code, name, and description.
-2. Vet: for the top 3-5 hits call get-course-reviews (and get-professor-reviews for professor picks). Present what reviewers actually say. Resolve exact codes first (get-course) — never present search results as the review answer.
+2. Vet: for the top 3-5 hits call get-course-reviews directly with query (it resolves fuzzy names internally; do NOT call search-courses first for review questions) (and get-professor-reviews for professor picks). Present what reviewers actually say. Resolve exact codes first (get-course) — never present search results as the review answer.
 3. Bid: for the shortlist call explore-bid-options (interactive bid explorer: courseCode+section) or bid-estimate for comparison. Call my-bid-plan for budget balance and saved bids — if budget is null, offer set-bid-budget before suggesting amounts. Anything related to bid predictions uses the bid explorer: when a bid tool returns a bid-explorer link ('Open in bid analytics: ...'), render it as a markdown link with a short label ('Open in bid explorer').
 4. Commit: save with upsert-bid (single) or save-bids (bulk, confirm:true). After the write the result already contains the full updated bid plan — summarize it, do not re-fetch.
 5. Timetable + calendar: offer get-my-timetable-detail to check the weekly arrangement, then get-timetable-calendar-link for a subscribe link only if the user asks.

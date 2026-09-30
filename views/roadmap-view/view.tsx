@@ -71,6 +71,10 @@ const RoadmapView: React.FC = () => {
   const entries = props?.entries ?? [];
   const name = props?.name ?? "";
   const isPublic = props?.isPublic === true;
+  // The schema coerces unknown owner/voteCount shapes to null, but old cached
+  // payloads may still carry objects — read defensively, never crash.
+  const owner = typeof props?.owner === "string" ? props.owner : null;
+  const votes = typeof props?.voteCount === "number" ? props.voteCount : null;
   const progress = props?.progress;
   const showProgress =
     progress !== undefined &&
@@ -105,10 +109,10 @@ const RoadmapView: React.FC = () => {
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
       {/* Header: roadmap name + owner/votes subline for public roadmaps */}
       <div style={{ fontSize: 14, fontWeight: 600 }}>{name}</div>
-      {isPublic && props?.owner && (
+      {isPublic && owner && (
         <div style={{ marginTop: 2, fontSize: 11, color: c.mutedFg }}>
-          by {props.owner}
-          {props.voteCount !== null && ` · ${props.voteCount} upvotes`}
+          by {owner}
+          {votes !== null && ` · ${votes} upvotes`}
         </div>
       )}
       {showProgress && (

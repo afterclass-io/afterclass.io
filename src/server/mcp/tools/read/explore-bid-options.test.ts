@@ -112,6 +112,7 @@ function makeCaller({
   professor = null as { id: string } | null,
   classes = [] as Array<{ id: string; section: string }>,
   currentWindow = { id: 53, acadTermId: "t2", round: "1", window: 1 },
+  currentTerm = { id: "t2" },
 }: {
   results?: unknown[];
   pred?: unknown;
@@ -123,6 +124,7 @@ function makeCaller({
     round: string;
     window: number;
   };
+  currentTerm?: { id: string } | null;
 } = {}) {
   return {
     bidResults: {
@@ -134,12 +136,14 @@ function makeCaller({
     professors: { getBySlug: vi.fn().mockResolvedValue(professor) },
     classes: { getAll: vi.fn().mockResolvedValue(classes) },
     bidWindows: { getCurrentWindow: vi.fn().mockResolvedValue(currentWindow) },
+    acadTerms: { current: vi.fn().mockResolvedValue(currentTerm) },
   } as unknown as ToolContext["caller"];
 }
 
 function parse(result: { content: Array<{ type: string; text: string }> }) {
   return JSON.parse(result.content[0]!.text) as {
     classId: string | null;
+    currentAcadTermId: string | null;
     history: Array<Record<string, unknown>>;
     prediction: {
       medianPredicted: number;
@@ -201,17 +205,34 @@ describe("explore-bid-options", () => {
       medianPredicted: 30,
       medianUncertainty: 4,
       minPredicted: 18,
-      bidWindow: { id: 53, round: "1", window: 1 },
+      bidWindow: { id: 53, acadTermId: "t2", round: "1", window: 1 },
       suggestedBidAmount: 34.2,
       rationale:
         "Predicted 30 + safety multiplier 1.05 x uncertainty 4 (beats 70% of bids).",
     });
+    expect(out.currentAcadTermId).toBe("t2");
     // filtered to MEDIAN + prediction's acadTermId, sorted by beatsPercentage
     expect(out.safetyFactors).toEqual([
       { beatsPercentage: 50, multiplier: 1.0 },
       { beatsPercentage: 70, multiplier: 1.05 },
       { beatsPercentage: 90, multiplier: 1.15 },
     ]);
+  });
+
+  it("nulls currentAcadTermId when the current-term lookup fails, without failing the tool", async () => {
+    const caller = makeCaller({
+      results: [bidRow("t2", "1", 1, 14, 28, 40)],
+      pred: prediction,
+    });
+    caller.acadTerms.current = vi.fn().mockRejectedValue(new Error("db down"));
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const result = await exploreBidOptionsTool.run(ctx, {
+      classId: "cl1",
+      courseCode: undefined,
+      professorSlug: undefined,
+    });
+    expect(result.isError).toBeUndefined();
+    expect(parse(result).currentAcadTermId).toBeNull();
   });
 
   it("uses getByCourseProfessor for courseCode + professorSlug; classId and prediction are null", async () => {
@@ -303,6 +324,36 @@ describe("explore-bid-options", () => {
     expect(out.safetyFactors).toEqual([]);
   });
 
+  it("drops zero clearing-price rows (no participation) from history", async () => {
+    const caller = makeCaller({
+      results: [
+        bidRow("t2", "1", 1, 14, 28, 40),
+        bidRow("t2", "1A", 1, 0, 0, 20),
+        bidRow("t2", "2", 1, 0, 28, 20),
+        bidRow("t2", "2A", 1, 14, 0, 20),
+      ],
+      pred: prediction,
+    });
+    const ctx: ToolContext = { user: fakeUser, caller };
+    const result = await exploreBidOptionsTool.run(ctx, {
+      classId: "cl1",
+      courseCode: undefined,
+      professorSlug: undefined,
+    });
+    expect(result.isError).toBeUndefined();
+    const out = parse(result);
+    expect(out.history).toEqual([
+      {
+        acadTermId: "t2",
+        round: "1",
+        window: 1,
+        min: 14,
+        median: 28,
+        vacancy: 40,
+      },
+    ]);
+  });
+
   it("errTexts when bidResults rejects", async () => {
     const caller = {
       bidResults: {
@@ -379,11 +430,12 @@ describe("explore-bid-options", () => {
       medianPredicted: 30,
       medianUncertainty: 4,
       minPredicted: 18,
-      bidWindow: { id: 53, round: "1", window: 1 },
+      bidWindow: { id: 53, acadTermId: "t2", round: "1", window: 1 },
       suggestedBidAmount: 34.2,
       rationale:
         "Predicted 30 + safety multiplier 1.05 x uncertainty 4 (beats 70% of bids).",
     });
+    expect(out.currentAcadTermId).toBe("t2");
   });
 
   it("errTexts when no class matches courseCode + section", async () => {

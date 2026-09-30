@@ -27,6 +27,6 @@ export async function revokeAgent(formData: FormData): Promise<void> {
   if (!owned) throw new Error("Grant not found");
 
   await revokeUserGrant(parsed.data.clientId, token, refreshToken);
-  revalidatePath("/settings/agents");
+  revalidatePath("/mcp/connected-agents");
   revalidatePath("/mcp");
 }

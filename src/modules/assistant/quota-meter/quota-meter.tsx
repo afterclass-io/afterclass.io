@@ -40,7 +40,7 @@ export function QuotaMeter({
           className={cn("text-xs font-semibold", compact && "text-[11px]")}
           aria-live="polite"
         >
-          {remaining} of {quota} free messages left this month
+          {remaining} of {quota} free website messages left this month
         </p>
         <span
           className={cn(
@@ -74,7 +74,8 @@ export function QuotaMeter({
       </div>
       {hasConnectedAgent ? (
         <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-          Unlimited - your connected agent uses your own credits.
+          Website chats use this quota; connected-agent chats use your own
+          credits.
         </p>
       ) : (
         <a

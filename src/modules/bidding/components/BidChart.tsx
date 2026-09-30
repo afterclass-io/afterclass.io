@@ -20,7 +20,6 @@ import {
 } from "@/common/components/chart";
 import { inferAcadTerm } from "@/common/functions";
 import { formatBidCurrencyCompact } from "@/common/functions/format-bid-currency";
-import { Label } from "recharts";
 import {
   clampLabelCenterX,
   estimateLabelWidth,
@@ -40,6 +39,12 @@ const chartConfig = {
 import { compareRounds } from "@/modules/bidding/utils/round-order";
 import { parseBidWindowKey } from "@/modules/bidding/utils/bid-window-key";
 import { computeAcadTermGroups } from "@/modules/bidding/utils/acad-term-groups";
+import {
+  computeTermBandBounds,
+  computeTermBoundaries,
+  shouldShowNowMarker,
+  withPlotIndex,
+} from "@/modules/bidding/utils/term-bands";
 
 export function sortChartData(
   data: (
@@ -73,6 +78,37 @@ export function sortChartData(
     });
 }
 
+/** Tooltip header for a hovered point. Shadcn's ChartTooltipContent passes the
+ * itemConfig label ('Median Bid') as value since XAxis is numeric, so the
+ * bidWindow is read from the payload first with an idx-map fallback. */
+export function formatBidTooltipLabel(
+  value: unknown,
+  payload: readonly { payload?: unknown }[] | undefined,
+  bidWindowOfIdx: Map<number, string>,
+) {
+  const dataPoint = payload?.[0]?.payload as
+    | { bidWindow?: string }
+    | undefined;
+  const bidWindow =
+    dataPoint?.bidWindow ??
+    (typeof value === "string" && value.includes("/")
+      ? value
+      : bidWindowOfIdx.get(Number(value)));
+  if (!bidWindow) return null;
+  const [acadTerm, round, window] = bidWindow.split("/");
+  const { term, displayYear } = inferAcadTerm(acadTerm!);
+  return (
+    <div className="flex flex-col">
+      <span className="font-medium">
+        {displayYear} Term {term}
+      </span>
+      <span className="text-muted-foreground text-xs">
+        Round {round} · Window {window}
+      </span>
+    </div>
+  );
+}
+
 /** Alternating background colors for AY group shading */
 const AY_BG_EVEN = "transparent";
 const AY_BG_ODD = "var(--muted)";
@@ -88,23 +124,28 @@ interface BidChartProps {
     price: [number, number]; // [min, median]
     size: number;
   }[];
-  /** Full bidWindow key of the current active bidding window, e.g. "AY202627T1/1A/2". If omitted or not found in data, no highlight renders. */
-  currentWindowBidWindow?: string;
+  /** Current academic term id, e.g. "AY202627T1". The now highlight renders only when this term is visible in the (filtered) data. */
+  currentAcadTermId?: string;
 }
 
-export const BidChart = ({
-  chartData,
-  currentWindowBidWindow,
-}: BidChartProps) => {
-  const sorted = sortChartData(chartData);
+export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
+  const sortedBase = sortChartData(chartData);
+  const sorted = useMemo(() => withPlotIndex(sortedBase), [sortedBase]);
   const manyPoints = sorted.length >= 15;
 
   // Compute academic year groups for two-tier x-axis and alternating backgrounds
   const ayGroups = useMemo(() => computeAcadTermGroups(sorted), [sorted]);
 
-  // Find the data point matching the current window for the highlight
-  const currentPoint = currentWindowBidWindow
-    ? sorted.find((d) => d.bidWindow === currentWindowBidWindow)
+  // Half-step term band bounds, transition boundaries, and the now highlight
+  // gated on the current academic term being visible in the filtered data.
+  const bandBounds = useMemo(
+    () => computeTermBandBounds(sorted, ayGroups),
+    [sorted, ayGroups],
+  );
+  const boundaries = useMemo(() => computeTermBoundaries(sorted), [sorted]);
+  const showNow = shouldShowNowMarker(sorted, currentAcadTermId);
+  const nowBand = showNow
+    ? (bandBounds.find((b) => b.acadTermId === currentAcadTermId) ?? null)
     : null;
 
   // Track the chart's rendered width so we can clamp axis labels into the
@@ -122,10 +163,10 @@ export const BidChart = ({
     return () => ro.disconnect();
   }, []);
 
-  // Map the MIDDLE bidWindow of each AY group to its short label, so the
+  // Map the MIDDLE plot index of each AY group to its short label, so the
   // label renders once per group, centered under the group.
   const groupMidTicks = useMemo(() => {
-    const map = new Map<string, string>();
+    const map = new Map<number, string>();
     for (const group of ayGroups) {
       const firstIdx = sorted.findIndex(
         (d) => d.bidWindow === group.firstBidWindow,
@@ -135,11 +176,18 @@ export const BidChart = ({
       );
       const midIdx =
         firstIdx + Math.max(0, Math.floor((lastIdx - firstIdx) / 2));
-      const midWindow = sorted[midIdx]?.bidWindow;
-      if (midWindow) map.set(midWindow, group.shortLabel);
+      const midPoint = sorted[midIdx];
+      if (midPoint) map.set(midPoint.idx, group.shortLabel);
     }
     return map;
   }, [ayGroups, sorted]);
+
+  // Map a numeric tick back to its bidWindow key for the tooltip label.
+  const bidWindowOfIdx = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const p of sorted) map.set(p.idx, p.bidWindow);
+    return map;
+  }, [sorted]);
 
   return (
     <ChartContainer ref={containerRef} config={chartConfig}>
@@ -150,27 +198,36 @@ export const BidChart = ({
           stroke="var(--border)"
         />
 
-        {/* Alternating academic year background shading */}
-        {ayGroups.map((group, i) => (
+        {/* Alternating academic year background shading (half-step bounds) */}
+        {bandBounds.map((b, i) => (
           <ReferenceArea
-            key={group.acadTermId}
-            x1={group.firstBidWindow}
-            x2={group.lastBidWindow}
+            key={b.acadTermId}
+            x1={b.x1}
+            x2={b.x2}
             fill={i % 2 === 0 ? AY_BG_EVEN : AY_BG_ODD}
             fillOpacity={i % 2 === 0 ? 0 : 0.4}
           />
         ))}
 
+        {/* Crisp boundary line at each term transition */}
+        {boundaries.map((x) => (
+          <ReferenceLine key={x} x={x} stroke="var(--border)" strokeWidth={1} />
+        ))}
+
         <XAxis
-          dataKey="bidWindow"
+          dataKey="idx"
+          type="number"
+          domain={[-0.5, Math.max(0, sorted.length - 0.5)]}
           axisLine={false}
           tickLine={false}
           interval={0}
+          ticks={[...groupMidTicks.keys()]}
+          tickFormatter={(idx) => groupMidTicks.get(Number(idx)) ?? ""}
           tick={(props) => {
             const { x, y, payload } = props as {
               x: number;
               y: number;
-              payload: { value: string };
+              payload: { value: number };
             };
             const label = groupMidTicks.get(payload.value);
             if (!label) return <g />;
@@ -209,28 +266,14 @@ export const BidChart = ({
           tick={{ fontSize: 12 }}
         />
 
-        {/* Current window highlight */}
-        {currentPoint && (
-          <>
-            <ReferenceArea
-              x1={currentPoint.bidWindow}
-              fill="#2563eb"
-              fillOpacity={0.06}
-            />
-            <ReferenceLine
-              x={currentPoint.bidWindow}
-              stroke="#64748b"
-              strokeWidth={1.5}
-              strokeDasharray="4 4"
-            >
-              <Label
-                value="now"
-                position="insideTopRight"
-                fill="#64748b"
-                fontSize={11}
-              />
-            </ReferenceLine>
-          </>
+        {/* Current term highlight (rect only — no divider line or "now" text) */}
+        {nowBand && (
+          <ReferenceArea
+            x1={nowBand.x1}
+            x2={nowBand.x2}
+            fill="#2563eb"
+            fillOpacity={0.06}
+          />
         )}
 
         {/* Median line — blue solid */}
@@ -285,21 +328,9 @@ export const BidChart = ({
         <ChartTooltip
           content={
             <ChartTooltipContent
-              labelFormatter={(value) => {
-                // eslint-disable-next-line @typescript-eslint/no-base-to-string -- recharts passes the axis tick (string key); String() mirrors the labelFormatter in chart.tsx usage
-                const [acadTerm, round, window] = String(value).split("/");
-                const { term, displayYear } = inferAcadTerm(acadTerm!);
-                return (
-                  <div className="flex flex-col">
-                    <span className="font-medium">
-                      {displayYear} Term {term}
-                    </span>
-                    <span className="text-muted-foreground text-xs">
-                      Round {round} · Window {window}
-                    </span>
-                  </div>
-                );
-              }}
+              labelFormatter={(value, payload) =>
+                formatBidTooltipLabel(value, payload, bidWindowOfIdx)
+              }
               formatter={(value, name) => {
                 const item = sorted.find(
                   (d) => (name === "median" ? d.median : d.min) === value,

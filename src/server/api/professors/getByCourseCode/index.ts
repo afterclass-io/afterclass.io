@@ -1,18 +1,19 @@
 import { z } from "zod";
 import { publicProcedure } from "@/server/api/trpc";
-import { DEFAULT_PAGE_SIZE, PROFESSOR_FIELDS } from "../constants";
+import { PROFESSOR_FIELDS } from "../constants";
 
 export const getByCourseCode = publicProcedure
   .input(
     z.object({
       code: z.string(),
-      page: z.number().default(1),
     }),
   )
   .query(async ({ ctx, input }) => {
+    // No pagination: the course filter renders the full toggle list, so a
+    // first-N page would silently drop professors (e.g. 20-professor
+    // courses with the old take-10). Result sets are small (tens of rows).
     const professors = await ctx.db.professors.findMany({
-      skip: DEFAULT_PAGE_SIZE * (input.page - 1),
-      take: DEFAULT_PAGE_SIZE,
+      orderBy: { name: "asc" },
       select: {
         ...PROFESSOR_FIELDS,
         _count: {

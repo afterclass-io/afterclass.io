@@ -71,6 +71,7 @@ model Users {
   userBidBudget      UserBidBudget[]
   roadmapVotes       RoadmapVote[]
   roadmapReactions   RoadmapReaction[]
+  chatUsage          ChatUsage[]
 
   @@map("users")
 }
@@ -670,6 +671,11 @@ model ChatUsage {
   outputTokens      Int      @default(0) @map("output_tokens")
   cachedInputTokens Int      @default(0) @map("cached_input_tokens")
   updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Ephemeral usage rows follow the user id through Google id reconciles
+  // (ON UPDATE CASCADE) and are removed with the user (ON DELETE CASCADE,
+  // same as other user-owned ephemeral rows like RoadmapVote).
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, period])
   @@index([period])

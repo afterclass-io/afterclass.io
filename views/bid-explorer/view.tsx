@@ -132,13 +132,14 @@ const BidExplorerView: React.FC = () => {
       const windows = new Set<string>();
       const rw = new Map<string, Set<number>>();
       const wr = new Map<number, Set<string>>();
-      for (const h of history) {
-        rounds.add(h.round);
-        windows.add(String(h.window));
-        if (!rw.has(h.round)) rw.set(h.round, new Set());
-        rw.get(h.round)!.add(h.window);
-        if (!wr.has(h.window)) wr.set(h.window, new Set());
-        wr.get(h.window)!.add(h.round);
+      for (const p of allPoints) {
+        rounds.add(p.round);
+        windows.add(p.window);
+        const w = parseInt(p.window, 10) || 0;
+        if (!rw.has(p.round)) rw.set(p.round, new Set());
+        rw.get(p.round)!.add(w);
+        if (!wr.has(w)) wr.set(w, new Set());
+        wr.get(w)!.add(p.round);
       }
       return {
         dataRounds: Array.from(rounds).sort(compareRounds),
@@ -148,7 +149,7 @@ const BidExplorerView: React.FC = () => {
         roundWindows: rw,
         windowRounds: wr,
       };
-    }, [history]);
+    }, [allPoints]);
   const { availableRounds, availableWindows } = useMemo(() => {
     let availRounds: string[];
     if (selectedWindows.length > 0) {
@@ -218,10 +219,15 @@ const BidExplorerView: React.FC = () => {
   const currentKey = prediction
     ? (allPoints.find(
         (p) =>
+          p.acadTermId === prediction.bidWindow.acadTermId &&
           p.round === prediction.bidWindow.round &&
           p.window === String(prediction.bidWindow.window),
       )?.key ?? null)
     : null;
+  // Current academic term for the now marker (tool-output field,
+  // `caller.acadTerms.current()` at the server). TrendChart renders the
+  // marker only when this term is visible in the filtered points.
+  const currentAcadTermId = props?.currentAcadTermId ?? null;
 
   const max = Math.max(
     1,
@@ -329,7 +335,12 @@ const BidExplorerView: React.FC = () => {
           <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>
             Historical Bidding Trend
           </div>
-          <TrendChart points={filteredPoints} currentKey={currentKey} c={c} />
+          <TrendChart
+            points={filteredPoints}
+            currentKey={currentKey}
+            currentAcadTermId={currentAcadTermId}
+            c={c}
+          />
         </div>
       )}
       {/* Round / window filters (data-driven, bidirectional) */}

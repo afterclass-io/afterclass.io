@@ -162,7 +162,10 @@ export const HomeBreadcrumb = (
     }
 
     case "mcp": {
-      elements.push({ label: "MCP" });
+      elements.push({ label: "MCP", href: "/mcp" });
+      if (pathSegments[1] === "connected-agents") {
+        elements.push({ label: "Connected Agents" });
+      }
       isSuccess = true;
       break;
     }

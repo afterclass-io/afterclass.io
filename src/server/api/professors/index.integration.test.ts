@@ -35,6 +35,7 @@ let slug1: string;
 let slug2: string;
 let prof1Id: string;
 let courseCode: string;
+let course2Code: string;
 let class1Id: string;
 
 beforeAll(async () => {
@@ -56,6 +57,7 @@ beforeAll(async () => {
       name: "Prof Course Two",
     }),
   ]);
+  course2Code = course2.code;
 
   // prof1 teaches `course` (class1) and `course2` (class3) → distinct-course
   // count 2. prof2 teaches only `course` (class2) → distinct-course count 1.
@@ -100,6 +102,26 @@ beforeAll(async () => {
       reviewerId: reviewer.id,
     },
   });
+
+  // Ten more professors teaching course2 (11 with prof1): beyond the old
+  // first-10 page, so the filter list must return every professor.
+  const extra = await Promise.all(
+    Array.from({ length: 10 }, (_, i) =>
+      seedProfessor(db, {
+        name: `Prof Extra ${String(i).padStart(2, "0")}`,
+        slug: `prfx-${i}-${suffix}`,
+      }),
+    ),
+  );
+  await db.classes.createMany({
+    data: extra.map((p, i) => ({
+      section: `GX${i}`,
+      courseId: course2.id,
+      professorId: p.id,
+      acadTermId,
+      bossId: randBoss(),
+    })),
+  });
 });
 
 describe("professors.getBySlug (integration)", () => {
@@ -129,6 +151,14 @@ describe("professors.getByCourseCode (integration)", () => {
     expect(p1._count.reviews).toBe(1);
     expect(p2._count.classes).toBe(1);
     expect(p2._count.reviews).toBe(0);
+  });
+
+  it("returns all 11 professors past the old first-10 page, ordered by name", async () => {
+    const res = await call().getByCourseCode({ code: course2Code });
+    expect(res).toHaveLength(11);
+    const names = res.map((p) => p.name);
+    expect(names).toEqual([...names].sort());
+    expect(names).toContain("Prof One");
   });
 });
 

@@ -59,18 +59,48 @@ export function unwrapResultData(
   }
 }
 
+/**
+ * Parse-and-coerce via the schema: returns the schema's output (transforms
+ * applied) on success, so unknown-tolerant gates (e.g. roadmapOutput owner)
+ * emit their coerced values downstream. Logs the field path on failure.
+ */
+export function parseWithSchema(
+  schema: ZodType,
+  data: unknown,
+): { ok: true; data: unknown } | { ok: false; error: string } {
+  try {
+    const parsed = (
+      schema as unknown as {
+        safeParse: (d: unknown) => {
+          success: boolean;
+          data?: unknown;
+          error?: {
+            issues?: Array<{ path: Array<string | number>; message: string }>;
+          };
+        };
+      }
+    ).safeParse(data);
+    if (parsed.success) return { ok: true, data: parsed.data };
+    const first = parsed.error?.issues?.[0];
+    const where = first
+      ? `${first.path.join(".")}: ${first.message}`
+      : "unknown field";
+    const msg = `Output schema validation failed at ${where}`;
+    console.error("[mcp] " + msg);
+    return { ok: false, error: msg };
+  } catch (e) {
+    const msg = `Output schema validation failed at unknown field: ${String(e)}`;
+    console.error("[mcp] " + msg);
+    return { ok: false, error: msg };
+  }
+}
+
 export function guardedParse(
   schema: ZodType,
   data: unknown,
 ): { ok: true } | { ok: false; error: string } {
-  try {
-    schema.parse(data);
-    return { ok: true };
-  } catch (e) {
-    const msg = String(e);
-    console.error("[mcp] Output schema validation failed", msg);
-    return { ok: false, error: msg };
-  }
+  const r = parseWithSchema(schema, data);
+  return r.ok ? { ok: true } : { ok: false, error: r.error };
 }
 
 export function isRawPayload(data: unknown): boolean {
@@ -170,10 +200,10 @@ export function finishViewTool(
   if (!unwrapped.ok) return errorResult("Invalid JSON from catalog");
   const structured: unknown = unwrapped.data;
   if (isRawPayload(structured)) return errorResult(opts.rawPayloadMessage);
-  const parsed = guardedParse(opts.schema, structured);
+  const parsed = parseWithSchema(opts.schema, structured);
   if (!parsed.ok) return errorResult("Output schema validation failed");
   return {
-    content: [{ type: "text" as const, text: opts.summarize(structured) }],
-    structuredContent: structured,
+    content: [{ type: "text" as const, text: opts.summarize(parsed.data) }],
+    structuredContent: parsed.data,
   };
 }

@@ -233,7 +233,7 @@ const VALID = {
       medianPredicted: 24,
       medianUncertainty: 4,
       minPredicted: 15,
-      bidWindow: { id: 1, round: "1", window: 1 },
+      bidWindow: { id: 1, acadTermId: "AY202526T1", round: "1", window: 1 },
     },
     safetyFactors: [
       { beatsPercentage: 60, multiplier: 0.25 },
@@ -482,6 +482,41 @@ describe("viewProps unwrap path (my-bid-plan via toViewProps fallback)", () => {
     const res = await handler({}, {});
     expect(res.isError).toBeUndefined();
     expect(res.structuredContent).toEqual(VALID["get-my-roadmap"]);
+  });
+
+  it("get-my-roadmap: tolerates unknown owner/voteCount shapes and partial progress", async () => {
+    const { handler } = registration("get-my-roadmap");
+    toolRun.mockResolvedValue({
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            roadmapId: "r1",
+            name: "My Plan",
+            isPublic: false,
+            owner: { username: "senior123" },
+            voteCount: { up: 42 },
+            progress: { completed: 3 },
+            entries: [
+              {
+                yearNumber: 1,
+                term: "T3",
+                courseCode: "COR-IS1702",
+                courseName: "Computational Thinking",
+                creditUnits: 1,
+              },
+            ],
+          }),
+        },
+      ],
+    });
+    const res = await handler({}, {});
+    expect(res.isError).toBeUndefined();
+    expect(res.structuredContent).toMatchObject({
+      roadmapId: "r1",
+      owner: null,
+      voteCount: null,
+    });
   });
 });
 

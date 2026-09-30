@@ -69,9 +69,19 @@ export const roadmapOutput = z.object({
   roadmapId: z.string(),
   name: z.string(),
   isPublic: z.boolean(),
-  owner: z.string().nullable(),
-  voteCount: z.number().nullable(),
-  progress: z.object({ completed: z.number(), total: z.number() }).optional(),
+  // Unknown-tolerant (a real 30-entry prod roadmap failed the strict gate
+  // with "Output schema validation failed"): non-string owners and
+  // non-number vote counts coerce to null instead of failing.
+  // NOTE: `.catch` (not `.transform`) - outputSchemas must stay
+  // JSON-Schema serializable for tools/list (see serialization.test.ts);
+  // transforms throw "Transforms cannot be represented in JSON Schema"
+  // and break the whole 50-tool catalog with -32603.
+  owner: z.string().nullable().catch(null),
+  voteCount: z.number().nullable().catch(null),
+  progress: z
+    .object({ completed: z.number(), total: z.number() })
+    .optional()
+    .catch(undefined),
   entries: z.array(
     z.object({
       yearNumber: z.number(),
@@ -108,6 +118,7 @@ export const reviewCardsOutput = z.object({
 
 export const bidExplorerOutput = z.object({
   classId: z.string().nullable(),
+  currentAcadTermId: z.string().nullable().optional(),
   history: z.array(
     z.object({
       acadTermId: z.string(),
@@ -125,6 +136,7 @@ export const bidExplorerOutput = z.object({
       minPredicted: z.number().nullable(),
       bidWindow: z.object({
         id: z.number(),
+        acadTermId: z.string(),
         round: z.string(),
         window: z.number(),
       }),

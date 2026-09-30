@@ -40,8 +40,9 @@ interface BidResultRow {
 
 /**
  * Map real bid-result rows into `HistoryPoint[]`, dropping rows without
- * clearing prices (min/median are null until results are released) and sorting
- * ascending by acadTermId, then round, then window.
+ * clearing prices (min/median are null until results are released, or zero
+ * when no one participated) and sorting ascending by acadTermId, then round,
+ * then window. Mirrors the website `BidAnalyticsClient` min > 0 gate.
  *
  * At most one row per term+round+window is emitted: duplicates collapse to the
  * lowest min/median (mirrors `buildChartPoints` grouping in
@@ -52,6 +53,7 @@ function normalizeHistory(results: BidResultRow[]): HistoryPoint[] {
   const grouped = new Map<string, HistoryPoint>();
   for (const r of results) {
     if (r.min === null || r.median === null) continue;
+    if (r.min <= 0 || r.median <= 0) continue;
     const key = `${r.bidWindow.acadTermId}/${r.bidWindow.round}/${r.bidWindow.window}`;
     const existing = grouped.get(key);
     if (existing) {
@@ -230,9 +232,19 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
           }))
           .sort((a, b) => a.beatsPercentage - b.beatsPercentage);
       }
+      // Current academic term for the view's now marker (same source the
+      // website analytics page uses). Null-safe: a failure here must not
+      // fail the whole tool.
+      let currentAcadTermId: string | null = null;
+      try {
+        currentAcadTermId = (await caller.acadTerms.current())?.id ?? null;
+      } catch {
+        currentAcadTermId = null;
+      }
       return jsonText({
         classId: resolvedClassId,
         history,
+        currentAcadTermId,
         prediction: prediction?.bidWindow
           ? {
               medianPredicted: prediction.medianPredicted,
@@ -240,6 +252,7 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
               minPredicted: prediction.minPredicted ?? null,
               bidWindow: {
                 id: prediction.bidWindow.id,
+                acadTermId: prediction.bidWindow.acadTermId,
                 round: prediction.bidWindow.round,
                 window: prediction.bidWindow.window,
               },

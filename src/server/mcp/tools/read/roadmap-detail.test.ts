@@ -112,6 +112,26 @@ describe("get-my-roadmap", () => {
     expect(parsed.roadmap.id).toBe("r1");
   });
 
+  it("toViewProps coerces a non-string ownerUsername to null instead of failing the schema", async () => {
+    const fn = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "My Plan", matricTermId: "t1" },
+      entries: [],
+      ownerUsername: { username: "senior123" },
+      voteCount: true,
+    });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({ roadmapsGetMine: fn }),
+    };
+    const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
+    const props = getMyRoadmapTool.toViewProps?.(res) as {
+      owner: unknown;
+      voteCount: unknown;
+    };
+    expect(props.owner).toBeNull();
+    expect(props.voteCount).toBeNull();
+  });
+
   it("annotates entries as taken when their roadmap term elapsed before the current term", async () => {
     const fn = vi.fn().mockResolvedValue({
       roadmap: { id: "r1", name: "My Plan", matricTermId: "AY202425T1" },

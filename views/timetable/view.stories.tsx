@@ -106,6 +106,59 @@ export const Clash: Story = {
   decorators: [withMcpView({ status: "ready", toolOutput: fullProps })],
 };
 
+/**
+ * TightStack: three same-day blocks within one hour — the per-block time
+ * line stays legible at half-width overlap.
+ */
+export const TightStack: Story = {
+  decorators: [
+    withMcpView({
+      status: "ready",
+      toolOutput: {
+        ...fullProps,
+        slots: [
+          {
+            classId: "c1",
+            courseCode: "ACCT102",
+            courseName: "Management Accounting",
+            section: "G1",
+            day: "Mon",
+            startTime: "08:15",
+            endTime: "09:15",
+            venue: "SOE/SR3-1",
+            professor: "FANG Bingxu",
+            creditUnits: 4,
+          },
+          {
+            classId: "c2",
+            courseCode: "COR-IS1702",
+            courseName: "Computational Thinking",
+            section: "G2",
+            day: "Mon",
+            startTime: "09:00",
+            endTime: "10:00",
+            venue: "SIS/SR2-3",
+            professor: null,
+            creditUnits: 4,
+          },
+          {
+            classId: "c3",
+            courseCode: "STAT203",
+            courseName: "Financial Mathematics",
+            section: "G5",
+            day: "Mon",
+            startTime: "09:30",
+            endTime: "10:30",
+            venue: null,
+            professor: "Yixin CAO",
+            creditUnits: 4,
+          },
+        ],
+      },
+    }),
+  ],
+};
+
 export const Exams: Story = {
   decorators: [
     withMcpView({

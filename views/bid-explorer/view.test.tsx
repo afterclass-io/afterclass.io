@@ -59,11 +59,12 @@ const history = [
 const fullProps = {
   classId: "cl1",
   history,
+  currentAcadTermId: "AY2025/26-T1",
   prediction: {
     medianPredicted: 30,
     medianUncertainty: 4,
     minPredicted: 18,
-    bidWindow: { id: 53, round: "1", window: 1 },
+    bidWindow: { id: 53, acadTermId: "AY2025/26-T1", round: "1", window: 1 },
   },
   safetyFactors: [
     { beatsPercentage: 50, multiplier: 0 },
@@ -556,7 +557,7 @@ describe("BidExplorerView (v2)", () => {
       expect(chart.querySelectorAll("circle")).toHaveLength(2);
     });
 
-    it("keeps all chart labels inside the viewBox (x, y, now)", () => {
+    it("keeps all chart labels inside the viewBox (x, y)", () => {
       const manyTerms = {
         ...fullProps,
         history: [
@@ -671,21 +672,17 @@ describe("BidExplorerView (v2)", () => {
       expect(new Set(labelYs).size).toBeGreaterThanOrEqual(2);
     });
 
-    it("offsets the now marker away from the max-value label", () => {
+    it("renders the current term highlight with no now text", () => {
       seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
       render(<BidExplorerView />);
       const chart = screen.getByRole("img", { name: /bid trend/i });
       const texts = Array.from(chart.querySelectorAll("text"));
-      const now = texts.find((t) => t.textContent === "now");
-      expect(now).toBeDefined();
-      // now marker sits above the plot in small type, anchored
-      // away from the line (start+offset, or end when hugging
-      // the right edge).
-      expect(Number(now!.getAttribute("font-size"))).toBeLessThanOrEqual(9);
-      expect(now!.getAttribute("text-anchor")).not.toBe("middle");
-      // Above the plot, clear of the x-label row.
-      const nowY = Number(now!.getAttribute("y"));
-      expect(nowY).toBeLessThan(16);
+      expect(texts.find((t) => t.textContent === "now")).toBeUndefined();
+      // Current term highlight rect renders when the term is visible.
+      const highlights = Array.from(chart.querySelectorAll("rect")).filter(
+        (r) => r.getAttribute("fill") === "#2563eb",
+      );
+      expect(highlights).toHaveLength(1);
     });
   });
 
@@ -753,6 +750,50 @@ describe("BidExplorerView (v2)", () => {
       expect(
         screen.getByRole("button", { name: "Confirm: set bid to $32.16" }),
       ).toBeInTheDocument();
+    });
+
+    it("shows only rounds/windows with positive bid data", () => {
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: {
+          classId: "cl1",
+          history: [
+            {
+              acadTermId: "AY2025/26-T1",
+              round: "1",
+              window: 1,
+              min: 14,
+              median: 28,
+              vacancy: 40,
+            },
+            {
+              acadTermId: "AY2025/26-T1",
+              round: "1A",
+              window: 2,
+              min: 0,
+              median: 0,
+              vacancy: 20,
+            },
+            {
+              acadTermId: "AY2025/26-T1",
+              round: "2",
+              window: 3,
+              min: 0,
+              median: 0,
+              vacancy: 20,
+            },
+          ],
+          prediction: null,
+          safetyFactors: [],
+        },
+      });
+      render(<BidExplorerView />);
+      expect(screen.getByRole("button", { name: "1" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "1A" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "2" })).toBeNull();
+      expect(screen.getByRole("button", { name: "W1" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "W2" })).toBeNull();
     });
   });
 });
