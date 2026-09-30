@@ -267,4 +267,14 @@ describe("TimetableView (v2)", () => {
     render(<TimetableView />);
     expect(screen.getByRole("alert")).toHaveTextContent("boom");
   });
+
+  it("shows each block's own time band so no axis matching is needed", () => {
+    seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+    render(<TimetableView />);
+    // ACCT102 G1 meets Mon+Wed at the same time, so 08:15-11:30 appears
+    // twice; the other two bands appear once each.
+    expect(screen.getAllByText("08:15-11:30")).toHaveLength(2);
+    expect(screen.getByText("09:00-10:00")).toBeInTheDocument();
+    expect(screen.getByText("12:00-15:15")).toBeInTheDocument();
+  });
 });

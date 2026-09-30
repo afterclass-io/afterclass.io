@@ -414,6 +414,17 @@ const TimetableView: React.FC = () => {
                             {b.slot.section}
                           </span>
                         </span>
+                        <span
+                          style={{
+                            display: "block",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            opacity: 0.9,
+                          }}
+                        >
+                          {b.slot.startTime}-{b.slot.endTime}
+                        </span>
                         {b.slot.venue && (
                           <span
                             style={{
