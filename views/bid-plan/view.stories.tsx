@@ -72,6 +72,46 @@ export const Loading: Story = {
   decorators: [withMcpView({ status: "pending" })],
 };
 
+/**
+ * PartiallySecured: balance 100 with one SECURED $10 bid plus one PLANNED
+ * $60 bid — the footer reads $90 (PLANNED bids never move remaining).
+ */
+export const PartiallySecured: Story = {
+  decorators: [
+    withMcpView({
+      status: "ready",
+      toolOutput: {
+        acadTermId: "AY202627T1",
+        budget: { balance: 100 },
+        bids: [
+          {
+            id: "b1",
+            bidAmount: 10,
+            status: "SECURED",
+            courseCode: "IS459",
+            courseName: "Big Data Architecture",
+            section: "G2",
+            professorName: "Indu SANDYA",
+            round: "2A",
+            window: 3,
+          },
+          {
+            id: "b2",
+            bidAmount: 60,
+            status: "PLANNED",
+            courseCode: "ACCT102",
+            courseName: "Management Accounting",
+            section: "G1",
+            professorName: null,
+            round: "1",
+            window: 1,
+          },
+        ],
+      },
+    }),
+  ],
+};
+
 export const ErrorState: Story = {
   decorators: [
     withMcpView({ status: "error", error: { message: "Unauthorized" } }),

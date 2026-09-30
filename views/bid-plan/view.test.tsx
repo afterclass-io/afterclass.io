@@ -136,4 +136,61 @@ describe("BidPlanView (v2)", () => {
     render(<BidPlanView />);
     expect(screen.getByRole("alert")).toHaveTextContent("boom");
   });
+
+  it("renders a ledger: starting budget minus SECURED bids equals remaining", () => {
+    seedContext({
+      status: "ready",
+      toolInput: {},
+      toolOutput: {
+        acadTermId: "AY202627T1",
+        budget: { balance: 100 },
+        bids: [
+          {
+            id: "b1",
+            bidAmount: 10,
+            status: "SECURED",
+            courseCode: "IS459",
+            courseName: "Big Data Architecture",
+            section: "G2",
+            professorName: "Indu SANDYA",
+            round: "2A",
+            window: 3,
+          },
+        ],
+      },
+    });
+    render(<BidPlanView />);
+    expect(screen.getByText("Starting budget")).toBeInTheDocument();
+    expect(screen.getByText("$100")).toBeInTheDocument();
+    expect(screen.getByText("- $10")).toBeInTheDocument();
+    expect(screen.getByText("Remaining")).toBeInTheDocument();
+    expect(screen.getByText("$90")).toBeInTheDocument();
+  });
+
+  it("ignores PLANNED bids in the remaining balance", () => {
+    seedContext({
+      status: "ready",
+      toolInput: {},
+      toolOutput: {
+        acadTermId: "AY202627T1",
+        budget: { balance: 100 },
+        bids: [
+          {
+            id: "b1",
+            bidAmount: 60,
+            status: "PLANNED",
+            courseCode: "ACCT102",
+            courseName: "Management Accounting",
+            section: "G1",
+            professorName: null,
+            round: "1",
+            window: 1,
+          },
+        ],
+      },
+    });
+    render(<BidPlanView />);
+    expect(screen.queryByText("$40")).toBeNull();
+    expect(screen.getByText("$100")).toBeInTheDocument();
+  });
 });

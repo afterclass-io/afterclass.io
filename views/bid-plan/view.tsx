@@ -81,6 +81,9 @@ const BidPlanView: React.FC = () => {
   const bids = props?.bids ?? [];
   const acadTermId = props?.acadTermId ?? "";
   const budget = props?.budget ?? null;
+  const secured = bids.filter((b) => b.status === "SECURED");
+  const spent = secured.reduce((s, b) => s + (b.bidAmount ?? 0), 0);
+  const remaining = budget ? budget.balance - spent : null;
 
   return (
     <div
@@ -143,7 +146,7 @@ const BidPlanView: React.FC = () => {
         }}
       >
         <span style={{ fontSize: 12, fontWeight: 500, color: c.mutedFg }}>
-          Budget balance
+          Starting budget
         </span>
         {budget ? (
           <span style={{ fontSize: 14, fontWeight: 600 }}>
@@ -244,6 +247,45 @@ const BidPlanView: React.FC = () => {
               </span>
             </div>
           ))}
+        </div>
+      )}
+
+      {budget && secured.length > 0 && remaining !== null && (
+        <div
+          style={{
+            marginTop: 12,
+            borderTop: `1px solid ${c.border}`,
+            paddingTop: 8,
+          }}
+        >
+          {secured.map((b) => (
+            <div
+              key={b.id}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: 12,
+                color: c.mutedFg,
+              }}
+            >
+              <span>
+                {b.courseCode} {b.section}
+              </span>
+              <span>- ${b.bidAmount}</span>
+            </div>
+          ))}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: 13,
+              fontWeight: 700,
+              marginTop: 4,
+            }}
+          >
+            <span>Remaining</span>
+            <span>${remaining}</span>
+          </div>
         </div>
       )}
     </div>
