@@ -5,7 +5,6 @@ import { Card, CardContent, CardFooter } from "@/common/components/card";
 import { EmptyState } from "@/common/components/empty-state";
 import { PageTitle } from "@/common/components/page-title";
 import { AgentRowIcon, RevokeAgentForm } from "./revoke-agent-form";
-import { revokeAgent } from "./revoke-agent";
 
 /** Minimal grant shape rendered by this view (see UserGrant in @/server/supabase-consent). */
 export interface AgentGrant {
@@ -14,6 +13,9 @@ export interface AgentGrant {
   client_name?: string;
   scopes: string[];
 }
+
+/** Server action injected by the page wrapper (Node-only, never bundled into stories). */
+export type RevokeAction = (formData: FormData) => void | Promise<void>;
 
 export type AgentsViewState =
   | { kind: "signed-out" }
@@ -29,7 +31,13 @@ function Title() {
   );
 }
 
-export function AgentsView({ state }: { state: AgentsViewState }) {
+export function AgentsView({
+  state,
+  revokeAction,
+}: {
+  state: AgentsViewState;
+  revokeAction?: RevokeAction;
+}) {
   switch (state.kind) {
     case "signed-out":
       return (
@@ -126,7 +134,7 @@ export function AgentsView({ state }: { state: AgentsViewState }) {
                       <RevokeAgentForm
                         clientId={g.client_id}
                         name={name}
-                        action={revokeAgent}
+                        action={revokeAction}
                       />
                     </li>
                   );
