@@ -7,10 +7,7 @@ import {
   withPlotIndex,
 } from "./term-bands";
 
-const pts = [
-  { bidWindow: "AY202526T1/1C/1" },
-  { bidWindow: "AY202627T1/2/1" },
-];
+const pts = [{ bidWindow: "AY202526T1/1C/1" }, { bidWindow: "AY202627T1/2/1" }];
 
 describe("term-bands", () => {
   it("extends each band half a step beyond its extreme ticks", () => {

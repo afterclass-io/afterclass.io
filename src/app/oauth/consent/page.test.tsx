@@ -35,7 +35,8 @@ describe("ConsentSignIn", () => {
   });
 });
 
-describe("ConsentError", () => {  it("renders the error message with a Retry action", () => {
+describe("ConsentError", () => {
+  it("renders the error message with a Retry action", () => {
     const onRetry = vi.fn();
     render(
       <ConsentError

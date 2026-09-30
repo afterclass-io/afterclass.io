@@ -65,7 +65,10 @@ export const TrendChart: React.FC<{
   // only when that term is visible in the (possibly filtered) points.
   const nowGroupIdx = currentAcadTermId
     ? groups.findIndex((g) =>
-        g.some((k) => points[keyToIdx.get(k) ?? -1]?.acadTermId === currentAcadTermId),
+        g.some(
+          (k) =>
+            points[keyToIdx.get(k) ?? -1]?.acadTermId === currentAcadTermId,
+        ),
       )
     : -1;
   const nowBand =
@@ -97,8 +100,7 @@ export const TrendChart: React.FC<{
   // currentAcadTermId on old payloads) and the term highlight is absent.
   // When the current term is known, the term highlight is the only now
   // marker — a stale prediction key must never pin "now" to the wrong term.
-  const showLegacyNow =
-    !nowBand && !currentAcadTermId && nowIdx !== null;
+  const showLegacyNow = !nowBand && !currentAcadTermId && nowIdx !== null;
   return (
     <svg
       role="img"

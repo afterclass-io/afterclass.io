@@ -72,10 +72,7 @@ export function ConsentCard({
   onApprove: () => void;
   onDeny: () => void;
 }) {
-  const clientName = requesterLabel(
-    details.client?.name,
-    details.redirect_uri,
-  );
+  const clientName = requesterLabel(details.client?.name, details.redirect_uri);
   const scopes = (details.scope ?? "").split(" ").filter(Boolean);
   const clientId = details.client_id ?? details.client?.id;
 

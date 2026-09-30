@@ -22,7 +22,9 @@ export function computeTermBandBounds<T extends { bidWindow: string }>(
       void parseBidWindowKey(g.firstBidWindow);
       return { acadTermId: g.acadTermId, x1: first - 0.5, x2: last + 0.5 };
     })
-    .filter((b): b is { acadTermId: string; x1: number; x2: number } => b !== null);
+    .filter(
+      (b): b is { acadTermId: string; x1: number; x2: number } => b !== null,
+    );
 }
 
 export function computeTermBoundaries<T extends { bidWindow: string }>(
@@ -42,7 +44,5 @@ export function shouldShowNowMarker<T extends { bidWindow: string }>(
   currentAcadTermId: string | undefined,
 ): boolean {
   if (!currentAcadTermId) return false;
-  return indexed.some(
-    (p) => p.bidWindow.split("/")[0] === currentAcadTermId,
-  );
+  return indexed.some((p) => p.bidWindow.split("/")[0] === currentAcadTermId);
 }

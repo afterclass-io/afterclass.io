@@ -98,10 +98,7 @@ interface BidChartProps {
   currentAcadTermId?: string;
 }
 
-export const BidChart = ({
-  chartData,
-  currentAcadTermId,
-}: BidChartProps) => {
+export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
   const sortedBase = sortChartData(chartData);
   const sorted = useMemo(() => withPlotIndex(sortedBase), [sortedBase]);
   const manyPoints = sorted.length >= 15;
@@ -184,12 +181,7 @@ export const BidChart = ({
 
         {/* Crisp boundary line at each term transition */}
         {boundaries.map((x) => (
-          <ReferenceLine
-            key={x}
-            x={x}
-            stroke="var(--border)"
-            strokeWidth={1}
-          />
+          <ReferenceLine key={x} x={x} stroke="var(--border)" strokeWidth={1} />
         ))}
 
         <XAxis

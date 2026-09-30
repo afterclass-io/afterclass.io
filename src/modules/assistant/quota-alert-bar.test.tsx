@@ -17,9 +17,7 @@ describe("QuotaAlertBar", () => {
   });
 
   it("renders the switch-to upsell when connected and quota is critical", () => {
-    render(
-      <QuotaAlertBar remaining={3} quota={20} hasConnectedAgent={true} />,
-    );
+    render(<QuotaAlertBar remaining={3} quota={20} hasConnectedAgent={true} />);
     expect(screen.getByRole("status")).toBeTruthy();
     expect(
       screen.getByText(/switch to your connected agent for unlimited/i),
