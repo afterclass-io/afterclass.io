@@ -15,7 +15,7 @@ describe("AgentsView", () => {
       screen.getByRole("link", { name: "Sign in with Google" }),
     ).toHaveAttribute(
       "href",
-      "/account/auth/login?callbackUrl=%2Fsettings%2Fagents",
+      "/account/auth/login?callbackUrl=%2Fmcp%2Fconnected-agents",
     );
   });
 
@@ -57,6 +57,7 @@ describe("AgentsView", () => {
       />,
     );
     expect(screen.getByText("Gemini")).toBeInTheDocument();
+    expect(screen.queryByText("cl1")).toBeNull();
     const hidden = document.querySelector<HTMLInputElement>(
       'input[type="hidden"][name="clientId"]',
     )!;
@@ -67,6 +68,22 @@ describe("AgentsView", () => {
     expect(
       screen.getByRole("link", { name: "Connect another agent" }),
     ).toHaveAttribute("href", "/mcp");
+  });
+
+  it("ready with an unnamed grant shows the Connected agent fallback", () => {
+    render(
+      <AgentsView
+        state={{
+          kind: "ready",
+          grants: [{ id: "g1", client_id: "cl1", scopes: [] }],
+        }}
+      />,
+    );
+    expect(screen.getByText("Connected agent")).toBeInTheDocument();
+    expect(screen.queryByText("cl1")).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Revoke Connected agent" }),
+    ).toBeInTheDocument();
   });
 
   it("ready with multiple grants renders one revoke button per grant", () => {

@@ -49,7 +49,7 @@ export function AgentsView({
             description="Sign in with Google to manage your connected AI agents."
             action={
               <Button asChild>
-                <a href="/account/auth/login?callbackUrl=%2Fsettings%2Fagents">
+                <a href="/account/auth/login?callbackUrl=%2Fmcp%2Fconnected-agents">
                   Sign in with Google
                 </a>
               </Button>
@@ -112,7 +112,7 @@ export function AgentsView({
             <CardContent className="pt-6">
               <ul className="flex flex-col gap-2">
                 {state.grants.map((g) => {
-                  const name = g.client_name ?? g.client_id;
+                  const name = g.client_name ?? "Connected agent";
                   return (
                     <li
                       key={g.client_id}
@@ -124,11 +124,6 @@ export function AgentsView({
                           <span className="block truncate text-sm font-medium">
                             {name}
                           </span>
-                          {g.client_name && (
-                            <span className="text-muted-foreground block truncate font-mono text-xs">
-                              {g.client_id}
-                            </span>
-                          )}
                         </span>
                       </span>
                       <RevokeAgentForm
