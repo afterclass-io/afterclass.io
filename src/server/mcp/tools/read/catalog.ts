@@ -158,10 +158,7 @@ export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
       let resolvedCode = code?.trim() ?? "";
       if (!resolvedCode) {
         const q = query!.trim();
-        const term = await resolveTermId(caller, undefined);
-        if (!term.ok) return errText(term.errText);
-        const hits = (await caller.timetable.searchCourses({
-          acadTermId: term.value,
+        const hits = (await caller.roadmaps.searchCourses({
           query: q,
         })) as Array<{ code: string }>;
         if (hits.length === 0) return errText(`No courses found for "${q}".`);

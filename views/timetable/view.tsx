@@ -417,9 +417,8 @@ const TimetableView: React.FC = () => {
                         <span
                           style={{
                             display: "block",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
+                            overflowWrap: "anywhere",
+                            lineHeight: 1.15,
                             opacity: 0.9,
                           }}
                         >

@@ -45,6 +45,7 @@ function makeCaller(procs: Record<string, unknown>) {
       getCurrentWindow: procs.getCurrentWindow,
     },
     timetable: { searchCourses: procs.searchCourses },
+    roadmaps: { searchCourses: procs.searchCourses },
   } as unknown as ToolContext["caller"];
 }
 
@@ -124,16 +125,15 @@ describe("catalog read tools", () => {
       caller: makeCaller({
         getByCourseCodeProtected: reviewsFn,
         searchCourses: searchFn,
-        current: vi.fn().mockResolvedValue({ id: "t1" }),
       }),
     };
     const result = await getCourseReviewsTool.run(ctx, {
       query: "management communication",
       limit: 10,
     });
-    expect(searchFn).toHaveBeenCalledWith(
-      expect.objectContaining({ query: "management communication" }),
-    );
+    expect(searchFn).toHaveBeenCalledWith({
+      query: "management communication",
+    });
     expect(reviewsFn).toHaveBeenCalledWith(
       expect.objectContaining({ code: "COR-COMM1304" }),
     );

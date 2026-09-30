@@ -1,8 +1,24 @@
 "use client";
 
+import { useFormStatus } from "react-dom";
 import { Bot } from "lucide-react";
 
 import { Button } from "@/common/components/button";
+
+function RevokeSubmitButton({ name }: { name: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <Button
+      type="submit"
+      variant="outline"
+      size="sm"
+      aria-label={`Revoke ${name}`}
+      disabled={pending}
+    >
+      {pending ? "Revoking…" : "Revoke"}
+    </Button>
+  );
+}
 
 export function RevokeAgentForm({
   clientId,
@@ -33,14 +49,7 @@ export function RevokeAgentForm({
   return (
     <form action={action} className="shrink-0">
       <input type="hidden" name="clientId" value={clientId} />
-      <Button
-        type="submit"
-        variant="outline"
-        size="sm"
-        aria-label={`Revoke ${name}`}
-      >
-        Revoke
-      </Button>
+      <RevokeSubmitButton name={name} />
     </form>
   );
 }
