@@ -67,7 +67,8 @@ describe("get-my-roadmap", () => {
   it("resolves the active roadmap when roadmapId is omitted", async () => {
     const listMine = vi.fn().mockResolvedValue([
       { id: "r2", name: "Secondary", isActive: false },
-      { id: "r1", name: "Primary", isActive: true },    ]);
+      { id: "r1", name: "Primary", isActive: true },
+    ]);
     const getMine = vi.fn().mockResolvedValue({
       roadmap: { id: "r1", name: "Primary" },
       entries: [],

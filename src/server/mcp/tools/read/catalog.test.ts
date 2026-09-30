@@ -111,9 +111,11 @@ describe("catalog read tools", () => {
   });
 
   it("get-course-reviews resolves a fuzzy query to the top code without a separate search call", async () => {
-    const searchFn = vi.fn().mockResolvedValue([
-      { id: "c1", code: "COR-COMM1304", name: "Management Communication" },
-    ]);
+    const searchFn = vi
+      .fn()
+      .mockResolvedValue([
+        { id: "c1", code: "COR-COMM1304", name: "Management Communication" },
+      ]);
     const reviewsFn = vi
       .fn()
       .mockResolvedValue({ items: [], nextCursor: undefined });
