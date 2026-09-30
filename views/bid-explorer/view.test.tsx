@@ -755,5 +755,49 @@ describe("BidExplorerView (v2)", () => {
         screen.getByRole("button", { name: "Confirm: set bid to $32.16" }),
       ).toBeInTheDocument();
     });
+
+    it("shows only rounds/windows with positive bid data", () => {
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: {
+          classId: "cl1",
+          history: [
+            {
+              acadTermId: "AY2025/26-T1",
+              round: "1",
+              window: 1,
+              min: 14,
+              median: 28,
+              vacancy: 40,
+            },
+            {
+              acadTermId: "AY2025/26-T1",
+              round: "1A",
+              window: 2,
+              min: 0,
+              median: 0,
+              vacancy: 20,
+            },
+            {
+              acadTermId: "AY2025/26-T1",
+              round: "2",
+              window: 3,
+              min: 0,
+              median: 0,
+              vacancy: 20,
+            },
+          ],
+          prediction: null,
+          safetyFactors: [],
+        },
+      });
+      render(<BidExplorerView />);
+      expect(screen.getByRole("button", { name: "1" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "1A" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "2" })).toBeNull();
+      expect(screen.getByRole("button", { name: "W1" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "W2" })).toBeNull();
+    });
   });
 });

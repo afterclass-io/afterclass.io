@@ -32,6 +32,17 @@ describe("buildChartPoints", () => {
     expect(points[0]?.acadTermId).toBe("AY2025/26-T1");
   });
 
+  it("drops zero min/median rows (no participation)", () => {
+    const points = buildChartPoints([
+      row("AY2025/26-T1", "1", 1, 14, 28),
+      row("AY2025/26-T1", "1A", 1, 0, 0),
+      row("AY2025/26-T1", "2", 1, 0, 28),
+      row("AY2025/26-T1", "2A", 1, 14, 0),
+    ]);
+    expect(points).toHaveLength(1);
+    expect(points[0]?.round).toBe("1");
+  });
+
   it("sorts by term, then BOSS round order, then window", () => {
     const points = buildChartPoints([
       row("AY2024/25-T1", "1A", 2, 12, 25),
