@@ -5,6 +5,7 @@ import {
 } from "@/server/auth/supabase-access-token";
 import { listUserGrants } from "@/server/supabase-consent";
 import { AgentsView } from "./agents-view";
+import { revokeAgent } from "./revoke-agent";
 
 export async function AgentsPage() {
   const session = await auth();
@@ -22,5 +23,5 @@ export async function AgentsPage() {
     console.error("Failed to load connected agents", err);
     return <AgentsView state={{ kind: "error" }} />;
   }
-  return <AgentsView state={{ kind: "ready", grants }} />;
+  return <AgentsView state={{ kind: "ready", grants }} revokeAction={revokeAgent} />;
 }
