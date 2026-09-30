@@ -128,14 +128,14 @@ describe("ChatPage optimistic quota", () => {
     mockSendMessage.mockResolvedValue(undefined);
     render(<ChatPage initialStatus={status()} />);
     expect(
-      screen.getByText("43 of 50 free messages left this month"),
+      screen.getByText("43 of 50 free website messages left this month"),
     ).toBeTruthy();
     fireEvent.change(screen.getByLabelText("Message input"), {
       target: { value: "hello" },
     });
     fireEvent.click(screen.getByLabelText("Send message"));
     expect(
-      screen.getByText("42 of 50 free messages left this month"),
+      screen.getByText("42 of 50 free website messages left this month"),
     ).toBeTruthy();
     expect(mockSendMessage).toHaveBeenCalledWith({ text: "hello" });
   });
@@ -144,12 +144,38 @@ describe("ChatPage optimistic quota", () => {
     mockSendMessage.mockResolvedValue(undefined);
     render(<ChatPage initialStatus={status()} />);
     expect(
-      screen.getByText("43 of 50 free messages left this month"),
+      screen.getByText("43 of 50 free website messages left this month"),
     ).toBeTruthy();
     fireEvent.click(screen.getByText("Find a course"));
     expect(
-      screen.getByText("42 of 50 free messages left this month"),
+      screen.getByText("42 of 50 free website messages left this month"),
     ).toBeTruthy();
     expect(mockSendMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the website scope note when an agent is connected", () => {
+    mockSendMessage.mockResolvedValue(undefined);
+    render(
+      <ChatPage
+        initialStatus={status({
+          hasConnectedAgent: true,
+          used: 47,
+          remaining: 3,
+        })}
+      />,
+    );
+    expect(
+      screen.getByText("3 of 50 free website messages left this month"),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        /website chats use this quota; connected-agent chats use your own credits/i,
+      ),
+    ).toBeTruthy();
+    // Critical website quota still alerts when connected, with switch-to copy.
+    expect(screen.getByRole("status")).toBeTruthy();
+    expect(
+      screen.getByText(/switch to your connected agent for unlimited/i),
+    ).toBeTruthy();
   });
 });

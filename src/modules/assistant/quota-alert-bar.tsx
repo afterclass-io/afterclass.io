@@ -36,13 +36,20 @@ export function QuotaAlertBar({
     }
   };
 
-  const alert = hasConnectedAgent ? null : getQuotaAlert(remaining, quota);
+  const alert = getQuotaAlert(remaining, quota);
   if (!alert || dismissed) return null;
 
   const message =
     alert.remaining <= 0
       ? "You've used all your free messages this month."
       : `You've used ${100 - alert.pct}% of your free messages this month.`;
+
+  // Website quota is always enforced (reserveMessage has no connected-agent
+  // bypass), so low/critical prompts fire in both states. Only the upsell
+  // branch differs: switch to the connected agent vs connect one.
+  const upsell = hasConnectedAgent
+    ? "Switch to your connected agent for unlimited (uses your own credits)."
+    : "Connect your AI agent for unlimited.";
 
   return (
     <div
@@ -65,7 +72,7 @@ export function QuotaAlertBar({
           className="font-semibold underline underline-offset-2"
           data-umami-event="assistant-quota-alert-connect"
         >
-          Connect your AI agent for unlimited.
+          {upsell}
         </a>
       </p>
       <button

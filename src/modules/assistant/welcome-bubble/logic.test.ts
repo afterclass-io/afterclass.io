@@ -55,9 +55,13 @@ describe("markShown", () => {
 });
 
 describe("pickEngagementMessage", () => {
-  it("returns the connected message when an agent is connected", () => {
-    expect(pickEngagementMessage(true, 50, 50)).toBe(
-      "Unlimited via your connected agent - ask me anything.",
+  it("returns a neutral engagement message when connected and quota is healthy", () => {
+    const msg = pickEngagementMessage(true, 50, 50);
+    expect(ENGAGEMENT_MESSAGES).toContain(msg);
+  });
+  it("returns the switch-to copy when connected and remaining is critical", () => {
+    expect(pickEngagementMessage(true, 3, 50)).toContain(
+      "switch to your connected agent for unlimited",
     );
   });
   it("returns a quota push when remaining is low", () => {

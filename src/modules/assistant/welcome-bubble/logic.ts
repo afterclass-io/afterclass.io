@@ -36,12 +36,15 @@ export function pickEngagementMessage(
   remaining: number,
   quota: number,
 ): string {
-  if (hasConnectedAgent)
-    return "Unlimited via your connected agent - ask me anything.";
   // Same critical floor as the meter/server (criticalFloorFor): the push fires
   // exactly when usage is critical, not on a separate magic threshold.
+  // Website chats always consume quota, so a connected agent never makes the
+  // website chat itself unlimited: connected + healthy returns a neutral
+  // engagement message, connected + critical returns the switch-to push.
   if (remaining <= criticalFloorFor(quota))
-    return `${remaining} free messages left - connect your agent for unlimited.`;
+    return hasConnectedAgent
+      ? `${remaining} website messages left - switch to your connected agent for unlimited.`
+      : `${remaining} free messages left - connect your agent for unlimited.`;
   return ENGAGEMENT_MESSAGES[
     Math.floor(Math.random() * ENGAGEMENT_MESSAGES.length)
   ]!;
