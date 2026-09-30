@@ -59,11 +59,12 @@ const history = [
 const fullProps = {
   classId: "cl1",
   history,
+  currentAcadTermId: "AY2025/26-T1",
   prediction: {
     medianPredicted: 30,
     medianUncertainty: 4,
     minPredicted: 18,
-    bidWindow: { id: 53, round: "1", window: 1 },
+    bidWindow: { id: 53, acadTermId: "AY2025/26-T1", round: "1", window: 1 },
   },
   safetyFactors: [
     { beatsPercentage: 50, multiplier: 0 },
