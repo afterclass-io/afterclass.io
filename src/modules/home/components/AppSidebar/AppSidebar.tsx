@@ -87,6 +87,12 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       isNew: true,
     },
     {
+      label: "Connected agents",
+      icon: <BotIcon size={16} />,
+      href: "/settings/agents",
+      isActiveWithoutExact: true,
+    },
+    {
       label: "Assistant",
       icon: <BotIcon size={16} />,
       href: "/assistant",

@@ -4,77 +4,23 @@ import {
   getSupabaseRefreshToken,
 } from "@/server/auth/supabase-access-token";
 import { listUserGrants } from "@/server/supabase-consent";
-import { revokeAgent } from "./revoke-agent";
+import { AgentsView } from "./agents-view";
 
 export async function AgentsPage() {
   const session = await auth();
   if (!session?.user) {
-    return <p>Please sign in to view your connected agents.</p>;
+    return <AgentsView state={{ kind: "signed-out" }} />;
   }
   const token = await getSupabaseAccessToken();
-
   if (!token) {
-    return (
-      <div>
-        <h1>Connected agents</h1>
-        <p>
-          Sign in with Google to connect an AI agent. If you just signed in,
-          sign out and sign back in with Google, then try again.
-        </p>
-        <a href="/mcp">Connect your agent</a>
-      </div>
-    );
+    return <AgentsView state={{ kind: "no-token" }} />;
   }
-
   let grants;
   try {
     grants = await listUserGrants(token, await getSupabaseRefreshToken());
   } catch (err) {
     console.error("Failed to load connected agents", err);
-    return (
-      <div>
-        <h1>Connected agents</h1>
-        <p role="alert">
-          Could not load your connected agents. Please sign out and sign back
-          in, then try again.
-        </p>
-      </div>
-    );
+    return <AgentsView state={{ kind: "error" }} />;
   }
-
-  if (grants.length === 0) {
-    return (
-      <div>
-        <h1>Connected agents</h1>
-        <p>
-          No agents connected yet. Connect your own AI agent (Claude, ChatGPT,
-          Gemini) to use afterclass.io on your own AI credits.
-        </p>
-        <a href="/mcp">Connect your agent</a>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <h1>Connected agents</h1>
-      <ul>
-        {grants.map((g) => (
-          <li key={g.client_id}>
-            <span>{g.client_name ?? g.client_id}</span>
-            <form action={revokeAgent}>
-              <input type="hidden" name="clientId" value={g.client_id} />
-              <button
-                type="submit"
-                aria-label={`Revoke ${g.client_name ?? g.client_id}`}
-              >
-                Revoke
-              </button>
-            </form>
-          </li>
-        ))}
-      </ul>
-      <a href="/mcp">Connect another agent</a>
-    </div>
-  );
+  return <AgentsView state={{ kind: "ready", grants }} />;
 }

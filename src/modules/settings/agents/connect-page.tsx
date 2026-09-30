@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/common/components/button";
 import { PageTitle } from "@/common/components/page-title";
 import { ConnectFlow } from "./connect-flow";
 import { MCPUrlBox } from "./mcp-url-box";
@@ -17,6 +18,12 @@ export function ConnectPage({ mcpUrl }: { mcpUrl: string }) {
       </div>
       <MCPUrlBox mcpUrl={mcpUrl} />
       <ConnectFlow mcpUrl={mcpUrl} />
+      <p className="text-muted-foreground text-sm">
+        Already connected?{" "}
+        <Button asChild variant="link" className="h-auto p-0 text-sm">
+          <a href="/settings/agents">Manage connected agents</a>
+        </Button>
+      </p>
     </div>
   );
 }
