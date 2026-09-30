@@ -1,9 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
-
-vi.mock("./revoke-agent", () => ({ revokeAgent: vi.fn() }));
+import { describe, expect, it } from "vitest";
 
 import { AgentsView } from "./agents-view";
 
