@@ -258,22 +258,6 @@ const BidPlanView: React.FC = () => {
             paddingTop: 8,
           }}
         >
-          {secured.map((b) => (
-            <div
-              key={b.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: 12,
-                color: c.mutedFg,
-              }}
-            >
-              <span>
-                {b.courseCode} {b.section}
-              </span>
-              <span>- ${b.bidAmount}</span>
-            </div>
-          ))}
           <div
             style={{
               display: "flex",

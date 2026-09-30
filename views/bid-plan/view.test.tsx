@@ -162,7 +162,7 @@ describe("BidPlanView (v2)", () => {
     render(<BidPlanView />);
     expect(screen.getByText("Starting budget")).toBeInTheDocument();
     expect(screen.getByText("$100")).toBeInTheDocument();
-    expect(screen.getByText("- $10")).toBeInTheDocument();
+    expect(screen.queryByText("- $10")).toBeNull();
     expect(screen.getByText("Remaining")).toBeInTheDocument();
     expect(screen.getByText("$90")).toBeInTheDocument();
   });
