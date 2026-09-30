@@ -38,7 +38,7 @@ describe("revokeAgent", () => {
     fd.set("clientId", "cl1");
     await revokeAgent(fd);
     expect(mockedRevoke).toHaveBeenCalledWith("cl1", "tok", null);
-    expect(revalidatePath).toHaveBeenCalledWith("/settings/agents");
+    expect(revalidatePath).toHaveBeenCalledWith("/mcp/connected-agents");
   });
 
   it("throws and does NOT call revokeUserGrant when the grant is not owned by the user", async () => {

@@ -21,7 +21,7 @@ export function ConnectPage({ mcpUrl }: { mcpUrl: string }) {
       <p className="text-muted-foreground text-sm">
         Already connected?{" "}
         <Button asChild variant="link" className="h-auto p-0 text-sm">
-          <a href="/settings/agents">Manage connected agents</a>
+          <a href="/mcp/connected-agents">Manage connected agents</a>
         </Button>
       </p>
     </div>

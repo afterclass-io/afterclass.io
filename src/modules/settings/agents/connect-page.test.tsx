@@ -10,6 +10,6 @@ describe("ConnectPage", () => {
     render(<ConnectPage mcpUrl="https://example.com/api/mcp" />);
     expect(
       screen.getByRole("link", { name: "Manage connected agents" }),
-    ).toHaveAttribute("href", "/settings/agents");
+    ).toHaveAttribute("href", "/mcp/connected-agents");
   });
 });
