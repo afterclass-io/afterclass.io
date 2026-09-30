@@ -2,7 +2,7 @@
 import "@testing-library/jest-dom/vitest";
 import { render } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { BidChart } from "./BidChart";
+import { BidChart, formatBidTooltipLabel } from "./BidChart";
 import { computeAcadTermGroups } from "../utils/acad-term-groups";
 import {
   computeTermBandBounds,
@@ -78,6 +78,23 @@ describe("BidChart", () => {
       (b) => b.acadTermId === "AY202627T1",
     );
     expect(nowBand).toBeDefined();
+  });
+
+  it("formats the tooltip header from payload even when value is the item label", () => {
+    const bidWindowOfIdx = new Map<number, string>([
+      [0, "AY202627T1/2/3"],
+      [1, "AY202627T1/1/1"],
+    ]);
+    // In dev, shadcn chart.tsx passes the itemConfig label ('Median Bid') as
+    // value, so the bidWindow must come from the payload.
+    const node = formatBidTooltipLabel(
+      "Median Bid",
+      [{ payload: { bidWindow: "AY202627T1/2/3" } }],
+      bidWindowOfIdx,
+    );
+    const { container } = render(<>{node}</>);
+    expect(container.textContent).toContain("2026-27 Term 1");
+    expect(container.textContent).toContain("Round 2 · Window 3");
   });
 
   it("renders no highlight when the current term is not visible", () => {

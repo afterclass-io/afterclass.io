@@ -78,6 +78,37 @@ export function sortChartData(
     });
 }
 
+/** Tooltip header for a hovered point. Shadcn's ChartTooltipContent passes the
+ * itemConfig label ('Median Bid') as value since XAxis is numeric, so the
+ * bidWindow is read from the payload first with an idx-map fallback. */
+export function formatBidTooltipLabel(
+  value: unknown,
+  payload: readonly { payload?: unknown }[] | undefined,
+  bidWindowOfIdx: Map<number, string>,
+) {
+  const dataPoint = payload?.[0]?.payload as
+    | { bidWindow?: string }
+    | undefined;
+  const bidWindow =
+    dataPoint?.bidWindow ??
+    (typeof value === "string" && value.includes("/")
+      ? value
+      : bidWindowOfIdx.get(Number(value)));
+  if (!bidWindow) return null;
+  const [acadTerm, round, window] = bidWindow.split("/");
+  const { term, displayYear } = inferAcadTerm(acadTerm!);
+  return (
+    <div className="flex flex-col">
+      <span className="font-medium">
+        {displayYear} Term {term}
+      </span>
+      <span className="text-muted-foreground text-xs">
+        Round {round} · Window {window}
+      </span>
+    </div>
+  );
+}
+
 /** Alternating background colors for AY group shading */
 const AY_BG_EVEN = "transparent";
 const AY_BG_ODD = "var(--muted)";
@@ -297,24 +328,9 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
         <ChartTooltip
           content={
             <ChartTooltipContent
-              labelFormatter={(value) => {
-                const bidWindow = bidWindowOfIdx.get(Number(value));
-                // Recharts passes the numeric plot index as the label; an
-                // unknown tick means no data point to describe.
-                if (typeof bidWindow !== "string") return null;
-                const [acadTerm, round, window] = bidWindow.split("/");
-                const { term, displayYear } = inferAcadTerm(acadTerm!);
-                return (
-                  <div className="flex flex-col">
-                    <span className="font-medium">
-                      {displayYear} Term {term}
-                    </span>
-                    <span className="text-muted-foreground text-xs">
-                      Round {round} · Window {window}
-                    </span>
-                  </div>
-                );
-              }}
+              labelFormatter={(value, payload) =>
+                formatBidTooltipLabel(value, payload, bidWindowOfIdx)
+              }
               formatter={(value, name) => {
                 const item = sorted.find(
                   (d) => (name === "median" ? d.median : d.min) === value,
