@@ -27,17 +27,25 @@ const PROVIDERS: Record<
       { label: "Open Claude connectors" },
       { label: "Add custom connector" },
       { label: "Paste the MCP server URL from above" },
-      { label: "Approve" },
+      { label: "Approve access" },
     ],
   },
   chatgpt: {
     name: "ChatGPT",
     description:
-      "Requires Developer mode (Business/Enterprise/Edu for full access; Pro is read-only).",
+      "Requires Developer mode (availability depends on account and workspace policy). Connect the MCP server as a custom app, then approve access.",
     steps: [
       { label: "Enable Developer mode: Settings -> Security and login" },
       { label: "Open ChatGPT Plugins", href: "https://chatgpt.com/plugins" },
-      { label: "+ -> paste the MCP server URL from above" },
+      { label: "Add (+) a new connection, then create an MCP App" },
+      {
+        label:
+          "Fill in a Name, choose Custom Tool, add a short Description (optional)",
+      },
+      { label: "Under Connection, paste the MCP server URL from above" },
+      {
+        label: "Set Authentication as required and create the connection",
+      },
       { label: "Approve access" },
     ],
   },
@@ -49,7 +57,7 @@ const PROVIDERS: Record<
       { label: "Open Connected Apps", href: "https://gemini.google.com/apps" },
       { label: "Add a custom app" },
       { label: "Paste the MCP server URL from above" },
-      { label: "Approve (OAuth) access" },
+      { label: "Approve access" },
     ],
   },
 };
@@ -156,20 +164,6 @@ function ProviderButtons({ mcpUrl }: { mcpUrl: string }) {
                   </li>
                 ))}
               </ol>
-              {selected === "gemini" && (
-                <details className="text-muted-foreground mt-3 text-sm">
-                  <summary className="cursor-pointer underline-offset-2 hover:underline">
-                    See “Account linking is required”?
-                  </summary>
-                  <p className="mt-2">
-                    Make sure you are signed in with your @smu.edu.sg Google
-                    account on AfterClass before approving access. Approve
-                    access in the browser first (sign in with Google on the same
-                    site), then retry. If it persists, revoke the grant in
-                    Connected agents and reconnect.
-                  </p>
-                </details>
-              )}
             </>
           )}
         </div>
