@@ -69,17 +69,19 @@ export const roadmapOutput = z.object({
   roadmapId: z.string(),
   name: z.string(),
   isPublic: z.boolean(),
-  owner: z.unknown().transform((v) => (typeof v === "string" ? v : null)),
-  voteCount: z.unknown().transform((v) => (typeof v === "number" ? v : null)),
+  // Unknown-tolerant (a real 30-entry prod roadmap failed the strict gate
+  // with "Output schema validation failed"): non-string owners and
+  // non-number vote counts coerce to null instead of failing.
+  // NOTE: `.catch` (not `.transform`) - outputSchemas must stay
+  // JSON-Schema serializable for tools/list (see serialization.test.ts);
+  // transforms throw "Transforms cannot be represented in JSON Schema"
+  // and break the whole 50-tool catalog with -32603.
+  owner: z.string().nullable().catch(null),
+  voteCount: z.number().nullable().catch(null),
   progress: z
     .object({ completed: z.number(), total: z.number() })
-    .partial()
-    .transform((p) =>
-      typeof p.completed === "number" && typeof p.total === "number"
-        ? p
-        : undefined,
-    )
-    .optional(),
+    .optional()
+    .catch(undefined),
   entries: z.array(
     z.object({
       yearNumber: z.number(),

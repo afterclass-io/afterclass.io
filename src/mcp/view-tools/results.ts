@@ -74,7 +74,9 @@ export function parseWithSchema(
         safeParse: (d: unknown) => {
           success: boolean;
           data?: unknown;
-          error?: { issues?: Array<{ path: Array<string | number>; message: string }> };
+          error?: {
+            issues?: Array<{ path: Array<string | number>; message: string }>;
+          };
         };
       }
     ).safeParse(data);
