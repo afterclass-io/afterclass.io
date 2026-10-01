@@ -269,6 +269,7 @@ model ReviewEvents {
   review         Reviews @relation(fields: [reviewId], references: [id])
   triggeringUser Users?  @relation(fields: [triggeringUserId], references: [id])
 
+  @@index([reviewId, eventType])
   @@map("review_events")
 }
 
