@@ -15,7 +15,6 @@ import { compareRounds } from "../shared/utils/round-order";
 import { buildChartPoints } from "../shared/utils/chart-points";
 import { shortTermLabel } from "../shared/utils/term-label";
 import { ToggleButton } from "../shared/components/ToggleButton";
-import { RangeRow } from "../shared/components/RangeRow";
 import { HistoryTable } from "../shared/components/HistoryTable";
 import { TrendChart } from "../shared/components/TrendChart";
 
@@ -64,8 +63,8 @@ const confidenceLabel = (score: number): string =>
           : "Very High";
 
 // NOTE: ROUND_ORDER/compareRounds, buildChartPoints/ChartPoint, shortTermLabel,
-// estimateLabelWidth/clampLabelCenterX, TrendChart, HistoryTable, ToggleButton,
-// RangeRow all live in `../shared/*` now (relative imports above) — do NOT
+// estimateLabelWidth/clampLabelCenterX, TrendChart, HistoryTable, ToggleButton
+// all live in `../shared/*` now (relative imports above) — do NOT
 // reintroduce local copies here; the view bundle stays dependency-free via
 // the shared modules.
 
@@ -293,12 +292,6 @@ const BidExplorerView: React.FC = () => {
   // `caller.acadTerms.current()` at the server). TrendChart renders the
   // marker only when this term is visible in the filtered points.
   const currentAcadTermId = props?.currentAcadTermId ?? null;
-
-  const max = Math.max(
-    1,
-    ...history.map((h) => h.median),
-    ...(prediction ? [prediction.medianPredicted] : []),
-  );
 
   // State returns AFTER every hook above: pending/error/empty must not
   // return before the useMemo block, or hook order changes when toolOutput
@@ -617,7 +610,7 @@ const BidExplorerView: React.FC = () => {
             {availableWindows.map((w) => (
               <ToggleButton
                 key={w}
-                label={`W${w}`}
+                label={String(parseInt(w, 10) || w)}
                 pressed={selectedWindows.includes(w)}
                 onClick={() => toggleWindow(w)}
                 c={c}
@@ -644,38 +637,6 @@ const BidExplorerView: React.FC = () => {
             No bid data available for the selected filters.
           </div>
         ))}
-      {/* History bands */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 6,
-          marginTop: 12,
-        }}
-      >
-        {prediction && (
-          <div>
-            <div
-              style={{
-                fontSize: 11,
-                color: c.mutedFg,
-                fontWeight: 500,
-                marginBottom: 2,
-              }}
-            >
-              Predicted · median e${format2dp(prediction.medianPredicted)}
-            </div>
-            <RangeRow
-              label="Predicted"
-              min={prediction.minPredicted ?? prediction.medianPredicted}
-              median={prediction.medianPredicted}
-              max={max}
-              dashed
-              c={c}
-            />
-          </div>
-        )}
-      </div>
       {/* Success-rate slider driving both formula rows (BidPredictionCard parity).
           Ticks mirror the website SuccessRateSlider marks: 50/60/70/80/90/95
           (default 70%). The selected beatsPercentage resolves minMultiplier
@@ -763,22 +724,6 @@ const BidExplorerView: React.FC = () => {
                 clip: "rect(0,0,0,0)",
               }}
             />
-            <div style={{ fontSize: 12, color: c.mutedFg, marginTop: 4 }}>
-              beats {factor.beatsPercentage}% of bids × {factor.multiplier}
-            </div>
-            <div
-              style={{
-                fontSize: 28,
-                fontWeight: 700,
-                color: c.primary,
-                marginTop: 4,
-              }}
-            >
-              ${format2dp(suggested)}
-            </div>
-            <div style={{ fontSize: 12, color: c.mutedFg, marginTop: 4 }}>
-              {`Predicted ${format2dp(prediction.medianPredicted)} + multiplier ${format2dp(factor.multiplier)} x uncertainty ${format2dp(prediction.medianUncertainty ?? 0)} (beats ${factor.beatsPercentage}%)`}
-            </div>
           </div>
         )}
       {/* Formula breakdown (BidPredictionCard parity, 2dp throughout):

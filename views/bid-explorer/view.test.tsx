@@ -166,27 +166,32 @@ describe("BidExplorerView (v2)", () => {
     expect(within(firstRow!).getByText("28.00")).toBeInTheDocument();
   });
 
-  it("renders the prediction marker and defaults the slider to the 70% factor", () => {
+  it("renders the prediction header range and defaults the slider to the 70% factor", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
     expect(screen.getByText("Bid Prediction")).toBeInTheDocument();
     expect(screen.getByText("Round 1 · Window 1")).toBeInTheDocument();
-    expect(screen.getByText(/median e\$30\.00/)).toBeInTheDocument(); // predicted median
+    // Header price range: min 18 + 0.47 x 2 = 18.94; median 30 + 0.54 x 4.
+    expect(screen.getByText("e$18.94 - e$32.16")).toBeInTheDocument();
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
     expect(slider.getAttribute("value")).toBe("4"); // index of the 70% factor
-    expect(screen.getByText(/beats 70% of bids × 0\.54/)).toBeInTheDocument();
-    // suggested = round((30 + 0.54 x 4) x 100) / 100 = 32.16
+    // Median formula breakdown: 32.16 = 30.00 + (0.54 x 4.00).
     expect(screen.getByText("32.16")).toBeInTheDocument();
+    expect(screen.getByText("30.00")).toBeInTheDocument();
+    expect(screen.getByText("0.54")).toBeInTheDocument();
+    expect(screen.getByText("4.00")).toBeInTheDocument();
   });
 
-  it("updates the suggested amount and label when the slider moves", () => {
+  it("updates the formula breakdown and header range when the slider moves", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
     fireEvent.change(slider, { target: { value: "8" } });
-    expect(screen.getByText(/beats 90% of bids × 1\.37/)).toBeInTheDocument();
-    // suggested = round((30 + 1.37 x 4) x 100) / 100 = 35.48
+    // 90%: min mult 1.24 -> 18 + 1.24 x 2 = 20.48;
+    // median mult 1.37 -> 30 + 1.37 x 4 = 35.48.
+    expect(screen.getByText("e$20.48 - e$35.48")).toBeInTheDocument();
     expect(screen.getByText("35.48")).toBeInTheDocument();
+    expect(screen.getByText("1.37")).toBeInTheDocument();
   });
 
   it("renders history without slider or CTA when there is no prediction", () => {
@@ -247,14 +252,16 @@ describe("BidExplorerView (v2)", () => {
 
   it("computes the same suggestion as the shared bid math (parity pin)", async () => {
     // Slider @70%: bid-shared.suggestBidAmount(30, 0.54, 4) = 32.16 must equal
-    // the view's hero + CTA. If the view's inline formula ever drifts from the
-    // canonical math again, this fails instead of the screenshots.
+    // the view's formula median + CTA. If the view's inline formula ever
+    // drifts from the canonical math again, this fails instead of the
+    // screenshots.
     const { suggestBidAmount } = await import("@/server/mcp/tools/bid-shared");
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
     const expected = suggestBidAmount(30, 0.54, 4);
     expect(expected).toBe(32.16);
     expect(screen.getByText(`${expected}`)).toBeInTheDocument();
+    expect(screen.getByText("e$18.94 - e$32.16")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: `Confirm: set bid to $${expected}` }),
     ).toBeInTheDocument();
@@ -500,10 +507,11 @@ describe("BidExplorerView (v2)", () => {
         toolOutput: multiRoundProps,
       });
       render(<BidExplorerView />);
-      expect(screen.getByRole("button", { name: "1" })).toBeInTheDocument();
+      expect(
+        screen.getAllByRole("button", { name: "1" }),
+      ).toHaveLength(2); // round 1 + window 1 share the plain number label
       expect(screen.getByRole("button", { name: "1A" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "W1" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "W2" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "2" })).toBeInTheDocument();
     });
 
     it("toggling a round filter narrows the chart and table", () => {
@@ -530,7 +538,7 @@ describe("BidExplorerView (v2)", () => {
       });
       render(<BidExplorerView />);
       const roundBtn = screen.getByRole("button", { name: "1A" });
-      const windowBtn = screen.getByRole("button", { name: "W2" });
+      const windowBtn = screen.getByRole("button", { name: "2" });
       fireEvent.click(windowBtn); // select W2 first
       fireEvent.click(roundBtn); // select 1A
       fireEvent.click(roundBtn); // deselect 1A -> round filter cleared
@@ -603,22 +611,23 @@ describe("BidExplorerView (v2)", () => {
       expect(within(table).getAllByRole("row")).toHaveLength(13); // header + 12
     });
 
-    it("shows the formula line with predicted, multiplier, and uncertainty (formula display; recommend-bid-amount is viewless)", () => {
+    it("shows the median formula breakdown in 2dp (recommend-bid-amount is viewless)", () => {
       seedContext({
         status: "ready",
         toolInput: {},
         toolOutput: multiRoundProps,
       });
       render(<BidExplorerView />);
-      // Formula display wording (recommend-bid-amount is viewless):
-      // "Predicted X + multiplier Y x uncertainty Z (beats W%)", 2dp.
-      expect(
-        screen.getByText(
-          "Predicted 30.00 + multiplier 0.54 x uncertainty 4.00 (beats 70%)",
-        ),
-      ).toBeInTheDocument();
-      // Hero shows the single additive suggestion.
+      // Median formula display (recommend-bid-amount is viewless):
+      // 32.16 = 30.00 + (0.54 x 4.00) at the default 70% factor, 2dp.
+      expect(screen.getByText("Formula")).toBeInTheDocument();
+      expect(screen.getByText("Median")).toBeInTheDocument();
       expect(screen.getByText("32.16")).toBeInTheDocument();
+      expect(screen.getByText("30.00")).toBeInTheDocument();
+      expect(screen.getByText("0.54")).toBeInTheDocument();
+      expect(screen.getByText("4.00")).toBeInTheDocument();
+      // Header range carries the same median suggestion.
+      expect(screen.getByText("e$18.94 - e$32.16")).toBeInTheDocument();
     });
 
     it("keeps the empty state when there is no history and no prediction", () => {
@@ -855,11 +864,10 @@ describe("BidExplorerView (v2)", () => {
       // Additive suggestion: 30 + 0.54 x 4 = 32.16.
       const { container } = render(<BidExplorerView />);
       expect(container.textContent).toContain("32.16");
-      expect(
-        screen.getByText(
-          "Predicted 30.00 + multiplier 0.54 x uncertainty 4.00 (beats 70%)",
-        ),
-      ).toBeInTheDocument();
+      // Min formula row shows em-dash placeholders without a prediction.
+      expect(screen.getAllByText("—").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText("30.00")).toBeInTheDocument();
+      expect(screen.getByText("0.54")).toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: "Confirm: set bid to $32.16" }),
       ).toBeInTheDocument();
@@ -944,11 +952,11 @@ describe("BidExplorerView (v2)", () => {
         },
       });
       render(<BidExplorerView />);
-      expect(screen.getByRole("button", { name: "1" })).toBeInTheDocument();
+      expect(
+        screen.getAllByRole("button", { name: "1" }),
+      ).toHaveLength(2); // round 1 + window 1 share the plain number label
       expect(screen.queryByRole("button", { name: "1A" })).toBeNull();
       expect(screen.queryByRole("button", { name: "2" })).toBeNull();
-      expect(screen.getByRole("button", { name: "W1" })).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: "W2" })).toBeNull();
     });
   });
 });

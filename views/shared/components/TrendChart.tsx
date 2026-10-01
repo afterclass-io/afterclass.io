@@ -90,7 +90,7 @@ export const TrendChart: React.FC<{
         })()
       : null;
   const maxLabel = String(maxV);
-  const stagger = points.length > 2;
+  const stagger = groups.length > 2;
   // Clamp an x-label's center so the whole label stays inside the plot area.
   const clampCenterX = (centerX: number, labelWidth: number): number =>
     clampLabelCenterX(centerX, PAD.left, plotRight, labelWidth);
@@ -181,30 +181,39 @@ export const TrendChart: React.FC<{
         strokeWidth={2}
         strokeDasharray="5 3"
       />
-      {points.map((p, i) => {
-        const label = shortTermLabel(p.acadTermId);
-        const cx = clampCenterX(x(i), estimateLabelWidth(label));
-        const ly = stagger && i % 2 === 1 ? H - 8 : H - 22;
+      {points.map((p, i) => (
+        <circle
+          key={p.key}
+          cx={x(i)}
+          cy={y(p.median)}
+          r={4}
+          fill={c.card}
+          stroke={c.primary}
+          strokeWidth={2}
+        />
+      ))}
+      {groups.map((g, gi) => {
+        const idxs = g
+          .map((k) => keyToIdx.get(k))
+          .filter((v): v is number => v !== undefined);
+        if (idxs.length === 0) return null;
+        const minIdx = Math.min(...idxs);
+        const maxIdx = Math.max(...idxs);
+        const label = shortTermLabel(points[minIdx]!.acadTermId);
+        const midX = (x(minIdx) + x(maxIdx)) / 2;
+        const cx = clampCenterX(midX, estimateLabelWidth(label));
+        const ly = stagger && gi % 2 === 1 ? H - 8 : H - 22;
         return (
-          <g key={p.key}>
-            <circle
-              cx={x(i)}
-              cy={y(p.median)}
-              r={4}
-              fill={c.card}
-              stroke={c.primary}
-              strokeWidth={2}
-            />
-            <text
-              x={cx}
-              y={ly}
-              fontSize={9}
-              textAnchor="middle"
-              fill={c.mutedFg}
-            >
-              {label}
-            </text>
-          </g>
+          <text
+            key={g[0]}
+            x={cx}
+            y={ly}
+            fontSize={9}
+            textAnchor="middle"
+            fill={c.mutedFg}
+          >
+            {label}
+          </text>
         );
       })}
     </svg>
