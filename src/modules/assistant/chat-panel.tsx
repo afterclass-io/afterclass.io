@@ -1,8 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  Suspense,
+} from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { ChevronDownIcon } from "lucide-react";
 import { Composer } from "./composer";
 import { ConsentNotice } from "./consent-notice";
 import { TypingIndicator } from "./typing-indicator";
@@ -12,6 +20,7 @@ import { WelcomeSuggestions, FollowUpSuggestions } from "./suggestions";
 import { parseGateError, type ChatGate } from "./gate";
 import { QuotaAlertBar } from "./quota-alert-bar";
 import { usePersistSession } from "./use-persist-session";
+import { useChatScroll } from "./use-chat-scroll";
 import { useChatStore } from "./chat-store";
 import { usePageContext, type PageContext } from "./use-page-context";
 
@@ -130,8 +139,14 @@ function ChatPanelInner({
 
   // Wrap sendMessage: decrement instantly so quota feedback never waits on
   // the stream; refund when the send itself rejects (e.g. immediate 403).
+  // Stick-to-bottom: a fresh user message pins the thread back to the
+  // latest turn so the outgoing message + incoming stream stay in view.
+  const { containerRef, isAtBottom, scrollToBottom, handleScroll } =
+    useChatScroll({ dependencies: [chat.messages, chat.status] });
+
   const handleSendMessage = useCallback(
     async (params: Parameters<typeof chat.sendMessage>[0]) => {
+      scrollToBottom("smooth");
       setOptimisticRemaining((prev) => Math.max(0, prev - 1));
       try {
         return await chat.sendMessage(params);
@@ -140,7 +155,7 @@ function ChatPanelInner({
         throw e;
       }
     },
-    [chat],
+    [chat, scrollToBottom],
   );
 
   // Background sync: when a turn completes (running → ready), refetch the
@@ -209,7 +224,12 @@ function ChatPanelInner({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        data-testid="chat-scroll-container"
+        className="relative min-h-0 flex-1 overflow-y-auto"
+      >
         {aiDegraded && (
           <p className="text-muted-foreground px-4 py-2 text-xs">
             AI paused — browsing still works.
@@ -238,6 +258,17 @@ function ChatPanelInner({
           <AssistantErrorMessage error={chat.error} onRetry={retry} />
         )}
         {chat.status === "submitted" && <TypingIndicator />}
+        {!isAtBottom && hasMessages && (
+          <button
+            type="button"
+            aria-label="Scroll to bottom"
+            onClick={() => scrollToBottom("smooth")}
+            className="bg-background sticky bottom-4 left-1/2 flex w-fit -translate-x-1/2 items-center gap-1 rounded-full border px-3 py-1.5 text-xs shadow-lg"
+          >
+            <ChevronDownIcon className="size-4" />
+            Latest
+          </button>
+        )}
       </div>
       {aiConsented ? (
         <>
