@@ -46,10 +46,14 @@ export const getByProfSlug = publicProcedure
       items: reviews.map(
         (review) =>
           ({
-            ...review,
+            id: review.id,
+            rating: 0,
+            countEventViews: review.countEventViews,
+            reviewedUniversityId: review.reviewedUniversityId,
+            reviewedProfessorId: review.reviewedProfessorId,
+            reviewedCourseId: review.reviewedCourseId,
             body: "",
             tips: "",
-            rating: 0,
             createdAt: review.createdAt.getTime(),
             courseCode: review.reviewedCourse.code,
             courseName: review.reviewedCourse.name,
