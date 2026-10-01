@@ -31,7 +31,7 @@ describe("page-links", () => {
         section: "G9",
         classId: "cl9",
       }),
-    ).toBe("/bidding/analytics?course=COR-IS1702&section=G1");
+    ).toBe("/bidding/analytics?course=COR-IS1702&section=G1&classId=cl9");
   });
   it("bid-estimate explorer links match exploreLinkFor(courseCode, section)", () => {
     // Parity pin: bid-estimate builds its per-section bid-explorer links via

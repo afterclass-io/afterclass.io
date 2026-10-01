@@ -26,7 +26,7 @@ export default async function BiddingHistoryPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const _searchParams = await searchParams;
-  const classId = _searchParams.classId;
+  let classId = _searchParams.classId;
   let courseCode = _searchParams.course;
   let section = _searchParams.section;
   const initialRounds = _searchParams.rounds
@@ -103,16 +103,16 @@ export default async function BiddingHistoryPage({
     );
   }
 
-  const _class = await api.classes.getAll({ id: classId, limit: 1 });
-  if (!courseCode || !section) {
-    if (_class.length === 0) {
-      return notFound();
-    }
-    courseCode = _class[0]!.course.code;
-    section = _class[0]!.section;
+  const _class = await api.classes.getAll(
+    classId ? { id: classId, limit: 1 } : { courseCode, section, limit: 1 },
+  );
+  if (_class.length === 0) {
+    return notFound();
   }
-
-  const classInfo = _class[0];
+  const classInfo = _class[0]!;
+  classId = classInfo.id;
+  courseCode = classInfo.course.code;
+  section = classInfo.section;
   const professorId = classInfo?.professor?.id;
 
   // Reference timings for timing-based section selection

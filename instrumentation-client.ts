@@ -4,13 +4,15 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+const isProd = process.env.NODE_ENV === "production";
+
 Sentry.init({
   dsn: "https://81c51704b5a973abc295473c5b430131@o4508338523537408.ingest.us.sentry.io/4508338554208256",
 
   // Add optional integrations for additional features
   integrations: [
     Sentry.replayIntegration({ maskAllText: false, blockAllMedia: false }),
-    Sentry.browserProfilingIntegration(),
+    ...(!isProd ? [Sentry.browserProfilingIntegration()] : []),
   ],
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
@@ -18,7 +20,7 @@ Sentry.init({
 
   // Keep production sampling lower to control Sentry volume; development
   // remains full fidelity.
-  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1,
+  tracesSampleRate: isProd ? 0.05 : 1,
 
   // Define how likely Replay events are sampled.
   // This sets the sample rate to be 10%. You may want this to be 100% while

@@ -31,7 +31,7 @@ export type UnwrapErr = { ok: false; error: string; text: string };
 
 /**
  * Unwrap catalog run result into a data payload.
- * Order: result.viewProps -> tool.toViewProps(result) -> JSON.parse(text) (guarded).
+ * Order: tool.toViewProps(result) -> result.viewProps -> JSON.parse(text) (guarded).
  * Returns ok:false with error string if JSON parsing fails.
  * `fallbackJson` controls what to parse when content text is missing (undefined/null):
  *   - "{}" for object-shaped tools (roadmap, reviews, bid-plan, explore)
@@ -45,7 +45,8 @@ export function unwrapResultData(
   const text = result.content[0]?.text ?? "";
   const viewProps = result.viewProps;
   let data: unknown =
-    viewProps ?? (tool?.toViewProps ? tool.toViewProps(result) : undefined);
+    (tool?.toViewProps ? tool.toViewProps(result) : undefined) ??
+    viewProps;
   if (data !== undefined) {
     return { ok: true, data, text, viewProps };
   }

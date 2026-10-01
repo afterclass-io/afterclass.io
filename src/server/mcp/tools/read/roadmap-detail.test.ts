@@ -58,8 +58,10 @@ describe("get-my-roadmap", () => {
     const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
     expect(res.isError).toBeFalsy();
     expect(JSON.parse(res.content[0]!.text)).toMatchObject({
-      roadmap: { id: "r1" },
-      entries: [{ course: { code: "COR-STAT1202" } }],
+      roadmapId: "r1",
+      name: "My Plan",
+      isPublic: false,
+      entries: [{ courseCode: "COR-STAT1202" }],
     });
     expect(fn).toHaveBeenCalledWith({ roadmapId: "r1" });
   });
@@ -106,10 +108,13 @@ describe("get-my-roadmap", () => {
     };
     const res = await getMyRoadmapTool.run(ctx, { roadmapId: "r1" });
     const parsed = JSON.parse(res.content[0]!.text) as {
-      roadmap: Record<string, unknown>;
+      roadmapId: string;
+      name: string;
+      entries: Array<Record<string, unknown>>;
     };
-    expect(parsed.roadmap.shareToken).toBeUndefined();
-    expect(parsed.roadmap.id).toBe("r1");
+    expect(parsed.roadmapId).toBe("r1");
+    expect(parsed.name).toBe("My Plan");
+    expect(JSON.stringify(parsed)).not.toContain("secret-tok");
   });
 
   it("toViewProps coerces a non-string ownerUsername to null instead of failing the schema", async () => {
