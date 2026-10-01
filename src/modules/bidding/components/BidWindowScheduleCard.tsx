@@ -1,4 +1,3 @@
-import { connection } from "next/server";
 import { TZDate } from "@date-fns/tz";
 import { Lock, ScreenShare, SquarePen } from "lucide-react";
 import {
@@ -203,10 +202,10 @@ const TimelineWithIcon = ({
   );
 };
 
+export const revalidate = 3600;
+
 export const BidWindowScheduleCard = async () => {
-  await connection();
-  // "Now" in Singapore time — read once per render (after connection(), so
-  // this dynamic render is never cached across windows).
+  // "Now" in Singapore time — read once per render.
   // eslint-disable-next-line react-hooks/purity -- server component: time read is the point, not render impurity
   const now = new TZDate(Date.now(), "Asia/Singapore");
 

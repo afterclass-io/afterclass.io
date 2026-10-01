@@ -7,6 +7,8 @@ export const metadata: Metadata = {
     "AfterClass terms of service: who may use the site, acceptable use, accounts, AI-feature limits, and how terms change.",
 };
 
+export const revalidate = 86400;
+
 function Section({
   title,
   children,

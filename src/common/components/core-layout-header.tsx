@@ -1,4 +1,5 @@
-import { auth } from "@/server/auth";
+"use client";
+import { useSession } from "next-auth/react";
 
 import { SidebarTrigger } from "@/common/components/sidebar";
 import { Separator } from "@/common/components/separator";
@@ -13,8 +14,8 @@ import { Button } from "@/common/components/button";
 import { ProgressLink } from "@/common/components/progress-link";
 import { UserProfile } from "@/common/components/user-profile";
 
-export const CoreLayoutHeader = async () => {
-  const session = await auth();
+export const CoreLayoutHeader = () => {
+  const { data: session } = useSession();
   return (
     <header className="border-border-default bg-background sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b px-4">
       <SidebarTrigger className="-ml-1" />

@@ -7,6 +7,8 @@ export const metadata: Metadata = {
     "AfterClass privacy policy: what data we collect, AI processor sharing, storage, and your rights.",
 };
 
+export const revalidate = 86400;
+
 function Section({
   title,
   children,
