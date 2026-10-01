@@ -9,7 +9,7 @@ Sentry.init({
 
   // Keep production sampling lower to control Sentry volume; development
   // remains full fidelity.
-  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1,
+  tracesSampleRate: process.env.NODE_ENV === "development" ? 1 : 0.1,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,

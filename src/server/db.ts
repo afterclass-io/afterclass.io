@@ -55,12 +55,12 @@ const globalForPrisma = globalThis as unknown as {
 export const db = globalForPrisma.prisma ?? createPooledClient();
 
 const directUrl = env.DIRECT_URL;
-if (!directUrl && env.NODE_ENV === "production") {
+if (!directUrl && env.NODE_ENV !== "development" && env.NODE_ENV !== "test") {
   throw new Error(
     "DIRECT_URL is required in production (transactional Prisma client needs the direct connection); set it in production env.",
   );
 }
-if (!directUrl && env.NODE_ENV !== "production") {
+if (!directUrl && (env.NODE_ENV === "development" || env.NODE_ENV === "test")) {
   // intentional: dev/test fallback so local dev and unit tests pass
   // without a direct connection string; transactions still run, just pooled.
   console.warn(
@@ -71,7 +71,7 @@ if (!directUrl && env.NODE_ENV !== "production") {
 export const txDb =
   globalForPrisma.prismaTx ?? (directUrl ? createDirectClient(directUrl) : db);
 
-if (env.NODE_ENV !== "production") {
+if (env.NODE_ENV === "development") {
   globalForPrisma.prisma = db;
   globalForPrisma.prismaTx = txDb;
 }

@@ -4,7 +4,8 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-const isProd = process.env.NODE_ENV === "production";
+const isDev = process.env.NODE_ENV === "development";
+const isProd = !isDev;
 
 Sentry.init({
   dsn: "https://81c51704b5a973abc295473c5b430131@o4508338523537408.ingest.us.sentry.io/4508338554208256",

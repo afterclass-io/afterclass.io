@@ -28,16 +28,17 @@ export const env = createEnv({
       .enum(["development", "test", "production"])
       .default("development"),
     NEXTAUTH_SECRET:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV !== "development" &&
+      process.env.NODE_ENV !== "test"
         ? z.string()
         : z.string().optional(),
     // VERCEL_URL is automatically set by Vercel
     // as system environment variable. doesn't include `https`
     // https://vercel.com/docs/projects/environment-variables/system-environment-variables
     NEXTAUTH_URL: siteUrlValidator(
-      process.env.VERCEL_ENV === "production"
-        ? process.env.VERCEL_PROJECT_PRODUCTION_URL
-        : process.env.VERCEL_URL,
+      process.env.VERCEL_ENV === "development"
+        ? process.env.VERCEL_URL
+        : (process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL),
     ),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
@@ -131,9 +132,10 @@ export const env = createEnv({
     // as system environment variable. doesn't include `https`
     // https://vercel.com/docs/projects/environment-variables/system-environment-variables
     NEXT_PUBLIC_SITE_URL: siteUrlValidator(
-      process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
-        ? process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
-        : process.env.NEXT_PUBLIC_VERCEL_URL,
+      process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+        ? process.env.NEXT_PUBLIC_VERCEL_URL
+        : (process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ??
+          process.env.NEXT_PUBLIC_VERCEL_URL),
     ),
     NEXT_PUBLIC_OLD_SITE_URL: z.url().default("https://old.afterclass.io"),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
