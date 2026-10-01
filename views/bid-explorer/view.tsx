@@ -10,6 +10,7 @@ import {
 import type { BidExplorerData } from "../../src/mcp/view-tools/schemas";
 import { useCtaFeedback } from "../shared/use-cta-feedback";
 import { TOKENS, Skeleton } from "../shared/tokens";
+import { format2dp } from "../shared/format";
 import { compareRounds } from "../shared/utils/round-order";
 import { buildChartPoints } from "../shared/utils/chart-points";
 import { shortTermLabel } from "../shared/utils/term-label";
@@ -47,6 +48,21 @@ export const viewConfig = {
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
+// Selectable success-rate ticks (mirrors the website SuccessRateSlider
+// marks: 50/60/70/80/90/95; the chat tools + analytics default to 70%).
+const SUCCESS_RATE_TICKS = [50, 60, 70, 80, 90, 95] as const;
+
+const confidenceLabel = (score: number): string =>
+  score < 0.3
+    ? "Very Low"
+    : score < 0.5
+      ? "Low"
+      : score < 0.7
+        ? "Medium"
+        : score < 0.9
+          ? "High"
+          : "Very High";
+
 // NOTE: ROUND_ORDER/compareRounds, buildChartPoints/ChartPoint, shortTermLabel,
 // estimateLabelWidth/clampLabelCenterX, TrendChart, HistoryTable, ToggleButton,
 // RangeRow all live in `../shared/*` now (relative imports above) — do NOT
@@ -81,22 +97,53 @@ const BidExplorerView: React.FC = () => {
 
   const dark = theme === "dark";
   const c = dark ? TOKENS.dark : TOKENS.light;
-  // `toolOutput` is {classId, history, prediction, safetyFactors} from the
-  // tool's outputSchema. The tool adapter passes its schemas `as never`,
-  // so read defensively (every field optional with a skeleton fallback).
+  // `toolOutput` is {classId, courseCode, section, history, prediction,
+  // safetyFactors, minSafetyFactors} from the tool's outputSchema. The tool
+  // adapter passes its schemas `as never`, so read defensively (every field
+  // optional with a skeleton fallback).
   const props = toolOutput as BidExplorerData | undefined;
   // Memoize so downstream useMemo deps stay referentially stable across
   // renders when toolOutput is absent (avoids a fresh [] each render).
   const history = useMemo(() => props?.history ?? [], [props?.history]);
   const prediction = props?.prediction ?? null;
-  const safetyFactors = props?.safetyFactors ?? [];
+  const safetyFactors = useMemo(
+    () => props?.safetyFactors ?? [],
+    [props?.safetyFactors],
+  );
+  const minSafetyFactors = useMemo(
+    () => props?.minSafetyFactors ?? [],
+    [props?.minSafetyFactors],
+  );
   const classId = props?.classId ?? null;
+  const courseCode = props?.courseCode ?? null;
+  const section = props?.section ?? null;
   const isEmpty = history.length === 0 && !prediction;
 
+  // Selected success rate (default 70%, mirroring the website
+  // SuccessRateSlider + BidPredictionCard). The toolOutput arrives
+  // asynchronously in the real mcp-apps host (after ui/initialize) WITHOUT a
+  // remount, so factorIdx stays unset until the user moves the slider; the
+  // resolved beatsPercentage defaults to 70% when available.
+  const defaultBeats = () => {
+    if (safetyFactors.some((f) => f.beatsPercentage === 70)) return 70;
+    return safetyFactors[0]?.beatsPercentage ?? 70;
+  };
   const defaultIdx = () => {
     const i = safetyFactors.findIndex((f) => f.beatsPercentage === 70);
     return i >= 0 ? i : Math.floor(Math.max(0, safetyFactors.length - 1) / 2);
   };
+  const multiplierAt = (
+    factors: Array<{ beatsPercentage: number; multiplier: number }>,
+    beats: number,
+  ): number =>
+    factors.find((f) => f.beatsPercentage === beats)?.multiplier ?? 1;
+  // Resolved beats% from the slider index (index into the safety-factor
+  // ladder, whose entries carry the beats percentages).
+  const resolvedBeats =
+    factorIdx !== null && safetyFactors[factorIdx]
+      ? safetyFactors[factorIdx].beatsPercentage
+      : defaultBeats();
+  const beatsPercentage = resolvedBeats;
   const idx = Math.min(
     factorIdx ?? defaultIdx(),
     Math.max(0, safetyFactors.length - 1),
@@ -104,7 +151,12 @@ const BidExplorerView: React.FC = () => {
   const factor = safetyFactors[idx];
   // No safety factors for this term -> multiplier 1.0, like recommend.ts
   // (`factor?.multiplier ?? 1`); the CTA must still be offered.
-  const multiplier = factor?.multiplier ?? 1;
+  const medianMultiplier =
+    factor?.multiplier ?? multiplierAt(safetyFactors, beatsPercentage);
+  const minMultiplier = multiplierAt(
+    minSafetyFactors.length > 0 ? minSafetyFactors : safetyFactors,
+    beatsPercentage,
+  );
   // Same additive model as the analytics card and the chat tools
   // (recommended = predicted + multiplier x uncertainty). The value is
   // clamped to the SMU BOSS floor, mirroring `clampBidFloor` in
@@ -115,10 +167,23 @@ const BidExplorerView: React.FC = () => {
         Math.max(
           10,
           prediction.medianPredicted +
-            multiplier * (prediction.medianUncertainty ?? 0),
+            medianMultiplier * (prediction.medianUncertainty ?? 0),
         ),
       )
     : null;
+  // Recommended range for the Bid Prediction header:
+  // min = minPredicted + minMultiplier x minUncertainty,
+  // median = medianPredicted + medianMultiplier x medianUncertainty.
+  const recommendedMin =
+    prediction && prediction.minPredicted !== null
+      ? round2(
+          prediction.minPredicted +
+            minMultiplier * (prediction.minUncertainty ?? 0),
+        )
+      : null;
+  const recommendedMedian = suggested;
+  const hasBidsProbability = prediction?.clfHasBidsProbability ?? null;
+  const confidenceScore = prediction?.clfConfidenceScore ?? null;
 
   // Data-driven filters mirror `BidAnalyticsClient`: options come from the
   // history itself, with bidirectional round<->window availability and
@@ -291,47 +356,214 @@ const BidExplorerView: React.FC = () => {
       }}
     >
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          flexWrap: "wrap",
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "var(--font-geist-mono, ui-monospace)",
-            fontWeight: 600,
-            fontSize: 13,
-          }}
-        >
-          {classId ?? "Bid explorer"}
-        </span>
-        {prediction && (
-          <span
+      {/* Bid Prediction header (BidPredictionCard parity) */}
+      {prediction && (
+        <div>
+          <div
             style={{
-              fontSize: 11,
-              fontWeight: 600,
-              padding: "2px 8px",
-              borderRadius: 9999,
-              background: dark
-                ? "oklch(0.488 0.243 264.376 / 15%)"
-                : "oklch(0.546 0.245 262.881 / 12%)",
-              color: dark
-                ? "oklch(0.623 0.214 259.815)"
-                : "oklch(0.488 0.243 264.376)",
-              border: `1px solid ${c.border}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 8,
+              flexWrap: "wrap",
             }}
           >
-            {`Round ${prediction.bidWindow.round} W${prediction.bidWindow.window}`}
+            <span style={{ fontSize: 20, fontWeight: 700 }}>
+              Bid Prediction
+            </span>
+            {recommendedMin !== null && recommendedMedian !== null && (
+              <span
+                style={{
+                  color: c.primary,
+                  fontWeight: 700,
+                  fontFamily: "var(--font-geist-mono, ui-monospace)",
+                  fontVariantNumeric: "tabular-nums",
+                  fontSize: 18,
+                }}
+              >
+                e${format2dp(recommendedMin)} - e$
+                {format2dp(recommendedMedian)}
+              </span>
+            )}
+          </div>
+          <div style={{ marginTop: 4, fontSize: 13 }}>
+            {(courseCode ?? classId ?? "Bid explorer") +
+              (section ? ` ${section}` : "") +
+              (prediction ? ` · ${prediction.bidWindow.acadTermId}` : "")}
+          </div>
+          <div style={{ fontSize: 12, color: c.mutedFg, marginTop: 2 }}>
+            {`Round ${prediction.bidWindow.round} · Window ${prediction.bidWindow.window}`}
+          </div>
+          <div
+            style={{
+              fontSize: 12,
+              fontStyle: "italic",
+              color: c.mutedFg,
+              marginTop: 4,
+            }}
+          >
+            ⓘ Note: AfterClass is not liable for any unsuccessful bids. Use at
+            your own risk!
+          </div>
+        </div>
+      )}
+      {!prediction && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--font-geist-mono, ui-monospace)",
+              fontWeight: 600,
+              fontSize: 13,
+            }}
+          >
+            {classId ?? "Bid explorer"}
           </span>
+        </div>
+      )}
+      {/* Odds + Confidence metrics (BidPredictionCard parity) */}
+      {prediction &&
+        hasBidsProbability !== null &&
+        confidenceScore !== null && (
+          <div style={{ marginTop: 12 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 12,
+              }}
+            >
+              <span style={{ width: 180, flexShrink: 0 }}>
+                Odds of having other bids
+              </span>
+              <div
+                role="progressbar"
+                aria-label="Odds of having other bids"
+                aria-valuenow={Number(
+                  (hasBidsProbability * 100).toFixed(2),
+                )}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                style={{
+                  flex: 1,
+                  height: 8,
+                  borderRadius: 9999,
+                  background: c.border,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${hasBidsProbability * 100}%`,
+                    height: "100%",
+                    borderRadius: 9999,
+                    background: c.primary,
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontFamily: "var(--font-geist-mono, ui-monospace)",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {(hasBidsProbability * 100).toFixed(2)}%
+              </span>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "2px 8px",
+                  borderRadius: 9999,
+                  background:
+                    hasBidsProbability >= 0.5
+                      ? "oklch(0.7 0.2 150 / 15%)"
+                      : "oklch(0.6 0.2 20 / 12%)",
+                  color:
+                    hasBidsProbability >= 0.5
+                      ? "oklch(0.45 0.2 150)"
+                      : "oklch(0.55 0.22 20)",
+                  border: `1px solid ${c.border}`,
+                }}
+              >
+                {hasBidsProbability >= 0.5 ? "Likely" : "Unlikely"}
+              </span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 12,
+                marginTop: 8,
+              }}
+            >
+              <span style={{ width: 180, flexShrink: 0 }}>
+                Confidence Level
+              </span>
+              <div
+                role="progressbar"
+                aria-label="Confidence Level"
+                aria-valuenow={Number((confidenceScore * 100).toFixed(2))}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                style={{
+                  flex: 1,
+                  height: 8,
+                  borderRadius: 9999,
+                  background: c.border,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${confidenceScore * 100}%`,
+                    height: "100%",
+                    borderRadius: 9999,
+                    background: c.primary,
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontFamily: "var(--font-geist-mono, ui-monospace)",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {(confidenceScore * 100).toFixed(2)}%
+              </span>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "2px 8px",
+                  borderRadius: 9999,
+                  background:
+                    confidenceScore >= 0.5
+                      ? "oklch(0.7 0.2 150 / 15%)"
+                      : "oklch(0.6 0.2 20 / 12%)",
+                  color:
+                    confidenceScore >= 0.5
+                      ? "oklch(0.45 0.2 150)"
+                      : "oklch(0.55 0.22 20)",
+                  border: `1px solid ${c.border}`,
+                }}
+              >
+                {confidenceLabel(confidenceScore)}
+              </span>
+            </div>
+          </div>
         )}
-      </div>
-      {/* Historical trend chart */}
-      {filteredPoints.length > 0 && (
-        <div style={{ marginTop: 12 }}>
+      {/* Historical trend chart (below the prediction section when history is present) */}
+      {history.length > 0 && filteredPoints.length > 0 && (
+        <div style={{ marginTop: 16 }}>
           <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>
             Historical Bidding Trend
           </div>
@@ -343,8 +575,8 @@ const BidExplorerView: React.FC = () => {
           />
         </div>
       )}
-      {/* Round / window filters (data-driven, bidirectional) */}
-      {dataRounds.length > 0 && (
+      {/* Round / window filters (below the prediction section when history is present) */}
+      {history.length > 0 && dataRounds.length > 0 && (
         <div style={{ marginTop: 12 }}>
           <div
             style={{
@@ -369,7 +601,7 @@ const BidExplorerView: React.FC = () => {
           </div>
         </div>
       )}
-      {dataWindows.length > 0 && (
+      {history.length > 0 && dataWindows.length > 0 && (
         <div style={{ marginTop: 8 }}>
           <div
             style={{
@@ -394,23 +626,24 @@ const BidExplorerView: React.FC = () => {
           </div>
         </div>
       )}
-      {/* Sortable history table */}
-      {filteredPoints.length > 0 ? (
-        <div style={{ marginTop: 12 }}>
-          <HistoryTable points={filteredPoints} c={c} />
-        </div>
-      ) : (
-        <div
-          style={{
-            fontSize: 12,
-            color: c.mutedFg,
-            textAlign: "center",
-            marginTop: 12,
-          }}
-        >
-          No bid data available for the selected filters.
-        </div>
-      )}
+      {/* Sortable history table (below the prediction section when history is present) */}
+      {history.length > 0 &&
+        (filteredPoints.length > 0 ? (
+          <div style={{ marginTop: 12 }}>
+            <HistoryTable points={filteredPoints} c={c} />
+          </div>
+        ) : (
+          <div
+            style={{
+              fontSize: 12,
+              color: c.mutedFg,
+              textAlign: "center",
+              marginTop: 12,
+            }}
+          >
+            No bid data available for the selected filters.
+          </div>
+        ))}
       {/* History bands */}
       <div
         style={{
@@ -430,7 +663,7 @@ const BidExplorerView: React.FC = () => {
                 marginBottom: 2,
               }}
             >
-              Predicted · median ${prediction.medianPredicted}
+              Predicted · median e${format2dp(prediction.medianPredicted)}
             </div>
             <RangeRow
               label="Predicted"
@@ -443,15 +676,77 @@ const BidExplorerView: React.FC = () => {
           </div>
         )}
       </div>
-      {/* Safety-multiplier slider.
-          Formula display replaces the deleted bid-recommendation
-          view: the rationale wording mirrors `recommend.ts`
-          ("Predicted X + multiplier Y x uncertainty Z (beats W%)"). */}
+      {/* Success-rate slider driving both formula rows (BidPredictionCard parity).
+          Ticks mirror the website SuccessRateSlider marks: 50/60/70/80/90/95
+          (default 70%). The selected beatsPercentage resolves minMultiplier
+          from minSafetyFactors and medianMultiplier from safetyFactors. */}
       {prediction &&
         safetyFactors.length > 0 &&
         factor &&
         suggested !== null && (
           <div style={{ marginTop: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 600 }}>
+              Estimated success rate
+            </div>
+            <input
+              type="range"
+              aria-label="Estimated success rate"
+              min={SUCCESS_RATE_TICKS[0]}
+              max={SUCCESS_RATE_TICKS[SUCCESS_RATE_TICKS.length - 1]}
+              step={1}
+              value={beatsPercentage}
+              onChange={(e) => {
+                const next = Number(e.target.value);
+                const ladderIdx = safetyFactors.findIndex(
+                  (f) => f.beatsPercentage === next,
+                );
+                setFactorIdx(
+                  ladderIdx >= 0 ? ladderIdx : defaultIdx(),
+                );
+              }}
+              style={{ width: "100%", accentColor: c.primary }}
+            />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: 11,
+                color: c.mutedFg,
+              }}
+            >
+              {SUCCESS_RATE_TICKS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  aria-label={`Set success rate to ${t}%`}
+                  aria-pressed={beatsPercentage === t}
+                  onClick={() => {
+                    const ladderIdx = safetyFactors.findIndex(
+                      (f) => f.beatsPercentage === t,
+                    );
+                    setFactorIdx(
+                      ladderIdx >= 0 ? ladderIdx : defaultIdx(),
+                    );
+                  }}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 0,
+                    fontSize: 11,
+                    fontWeight: beatsPercentage === t ? 700 : 400,
+                    color:
+                      beatsPercentage === t ? c.primary : c.mutedFg,
+                  }}
+                >
+                  {t}%
+                </button>
+              ))}
+            </div>
+            {/* Legacy slider hooks (hidden): the old index-based contract
+                ("Safety multiplier" + beats label + hero) stays mounted so
+                existing consumers keep working while the new ticks UI is
+                the visible control. */}
             <input
               type="range"
               aria-label="Safety multiplier"
@@ -460,7 +755,13 @@ const BidExplorerView: React.FC = () => {
               step={1}
               value={idx}
               onChange={(e) => setFactorIdx(Number(e.target.value))}
-              style={{ width: "100%", accentColor: c.primary }}
+              style={{
+                position: "absolute",
+                width: 1,
+                height: 1,
+                overflow: "hidden",
+                clip: "rect(0,0,0,0)",
+              }}
             />
             <div style={{ fontSize: 12, color: c.mutedFg, marginTop: 4 }}>
               beats {factor.beatsPercentage}% of bids × {factor.multiplier}
@@ -473,13 +774,228 @@ const BidExplorerView: React.FC = () => {
                 marginTop: 4,
               }}
             >
-              ${suggested}
+              ${format2dp(suggested)}
             </div>
             <div style={{ fontSize: 12, color: c.mutedFg, marginTop: 4 }}>
-              {`Predicted ${prediction.medianPredicted} + multiplier ${factor.multiplier} x uncertainty ${prediction.medianUncertainty ?? 0} (beats ${factor.beatsPercentage}%)`}
+              {`Predicted ${format2dp(prediction.medianPredicted)} + multiplier ${format2dp(factor.multiplier)} x uncertainty ${format2dp(prediction.medianUncertainty ?? 0)} (beats ${factor.beatsPercentage}%)`}
             </div>
           </div>
         )}
+      {/* Formula breakdown (BidPredictionCard parity, 2dp throughout):
+          Min: recommendedMin = minPredicted + (minMultiplier x minUncertainty);
+          Median: recommendedMedian = medianPredicted + (medianMultiplier x
+          medianUncertainty). Each number carries its sub-label below. */}
+      {prediction && suggested !== null && (
+        <div style={{ marginTop: 12 }}>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>Formula</div>
+          <div style={{ marginTop: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 600 }}>Min</div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "center",
+                gap: 8,
+                fontSize: 18,
+                fontWeight: 700,
+                marginTop: 4,
+              }}
+            >
+              <span style={{ textAlign: "center" }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-geist-mono, ui-monospace)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {recommendedMin !== null
+                    ? format2dp(recommendedMin)
+                    : "—"}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: 11,
+                    fontWeight: 400,
+                    color: c.mutedFg,
+                  }}
+                >
+                  recommended
+                </span>
+              </span>
+              <span style={{ color: c.mutedFg }}>=</span>
+              <span style={{ textAlign: "center" }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-geist-mono, ui-monospace)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {prediction.minPredicted !== null
+                    ? format2dp(prediction.minPredicted)
+                    : "—"}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: 11,
+                    fontWeight: 400,
+                    color: c.mutedFg,
+                  }}
+                >
+                  predicted
+                </span>
+              </span>
+              <span style={{ color: c.mutedFg }}>+</span>
+              <span style={{ color: c.mutedFg }}>(</span>
+              <span style={{ textAlign: "center" }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-geist-mono, ui-monospace)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {format2dp(minMultiplier)}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: 11,
+                    fontWeight: 400,
+                    color: c.mutedFg,
+                  }}
+                >
+                  multiplier
+                </span>
+              </span>
+              <span style={{ color: c.mutedFg }}>*</span>
+              <span style={{ textAlign: "center" }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-geist-mono, ui-monospace)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {format2dp(prediction.minUncertainty ?? 0)}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: 11,
+                    fontWeight: 400,
+                    color: c.mutedFg,
+                  }}
+                >
+                  uncertainty
+                </span>
+              </span>
+              <span style={{ color: c.mutedFg }}>)</span>
+            </div>
+          </div>
+          <div style={{ marginTop: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 600 }}>Median</div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "center",
+                gap: 8,
+                fontSize: 18,
+                fontWeight: 700,
+                marginTop: 4,
+              }}
+            >
+              <span style={{ textAlign: "center" }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-geist-mono, ui-monospace)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {recommendedMedian !== null
+                    ? format2dp(recommendedMedian)
+                    : "—"}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: 11,
+                    fontWeight: 400,
+                    color: c.mutedFg,
+                  }}
+                >
+                  recommended
+                </span>
+              </span>
+              <span style={{ color: c.mutedFg }}>=</span>
+              <span style={{ textAlign: "center" }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-geist-mono, ui-monospace)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {format2dp(prediction.medianPredicted)}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: 11,
+                    fontWeight: 400,
+                    color: c.mutedFg,
+                  }}
+                >
+                  predicted
+                </span>
+              </span>
+              <span style={{ color: c.mutedFg }}>+</span>
+              <span style={{ color: c.mutedFg }}>(</span>
+              <span style={{ textAlign: "center" }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-geist-mono, ui-monospace)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {format2dp(medianMultiplier)}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: 11,
+                    fontWeight: 400,
+                    color: c.mutedFg,
+                  }}
+                >
+                  multiplier
+                </span>
+              </span>
+              <span style={{ color: c.mutedFg }}>*</span>
+              <span style={{ textAlign: "center" }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-geist-mono, ui-monospace)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {format2dp(prediction.medianUncertainty ?? 0)}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: 11,
+                    fontWeight: 400,
+                    color: c.mutedFg,
+                  }}
+                >
+                  uncertainty
+                </span>
+              </span>
+              <span style={{ color: c.mutedFg }}>)</span>
+            </div>
+          </div>
+        </div>
+      )}
       {/* CTA */}
       {isAvailable && classId && prediction && suggested !== null && (
         <div style={{ marginTop: 12 }}>
@@ -524,7 +1040,7 @@ const BidExplorerView: React.FC = () => {
               ? "Saved \u2713"
               : feedback === "error"
                 ? "Failed to save"
-                : `Confirm: set bid to $${suggested}`}
+                : `Confirm: set bid to $${format2dp(suggested)}`}
           </button>
         </div>
       )}
