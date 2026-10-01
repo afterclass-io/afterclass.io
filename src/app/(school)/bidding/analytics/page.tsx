@@ -8,7 +8,6 @@ import {
 } from "@/common/components/card";
 import { Separator } from "@/common/components/separator";
 import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
-import { notFound } from "next/navigation";
 import { PredictionType, type UniversityAbbreviation } from "@/generated/prisma/enums";
 import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
 import { BidAnalyticsClient } from "@/modules/bidding/components/BidAnalyticsClient";
@@ -103,11 +102,35 @@ export default async function BiddingHistoryPage({
     );
   }
 
-  const _class = await api.classes.getAll(
+  let _class = await api.classes.getAll(
     classId ? { id: classId, limit: 1 } : { courseCode, section, limit: 1 },
   );
+  if (_class.length === 0 && !classId && courseCode && section) {
+    const fallback = await api.classes.getAll({
+      courseCode,
+      section,
+      allowAnyTerm: true,
+      limit: 1,
+    });
+    if (fallback.length > 0) {
+      _class = fallback;
+    }
+  }
   if (_class.length === 0) {
-    return notFound();
+    return (
+      <div className="flex w-full max-w-5xl flex-col gap-6 pt-2">
+        <EmptyState
+          title="Class not found"
+          description={
+            "No class records found for " +
+            (courseCode ?? "") +
+            " " +
+            (section ?? "") +
+            ". Try exploring available courses."
+          }
+        />
+      </div>
+    );
   }
   const classInfo = _class[0]!;
   classId = classInfo.id;
