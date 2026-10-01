@@ -17,13 +17,13 @@ import { withMcpView } from "../../.storybook/withMcpView";
  */
 
 const metaUrls = {
-  feedUrl: "https://afterclass.io/api/ical/tok123",
-  subscribeUrl: "webcal://afterclass.io/api/ical/tok123",
+  feedUrl: "https://afterclass.io/api/ical/tok123.ics",
+  subscribeUrl: "webcal://afterclass.io/api/ical/tok123.ics",
   googleSubscribeUrl:
-    "https://calendar.google.com/calendar/r?cid=webcal%3A%2F%2Fafterclass.io%2Fapi%2Fical%2Ftok123",
-  appleSubscribeUrl: "webcal://afterclass.io/api/ical/tok123",
+    "https://calendar.google.com/calendar/r?cid=https%3A%2F%2Fafterclass.io%2Fapi%2Fical%2Ftok123.ics",
+  appleSubscribeUrl: "webcal://afterclass.io/api/ical/tok123.ics",
   outlookSubscribeUrl:
-    "https://outlook.live.com/calendar/0/addfromweb?url=https%3A%2F%2Fafterclass.io%2Fapi%2Fical%2Ftok123",
+    "https://outlook.live.com/calendar/0/addfromweb?url=https%3A%2F%2Fafterclass.io%2Fapi%2Fical%2Ftok123.ics",
 };
 
 const toolOutput = { timetableId: "tt1", madeLinkShareable: false };

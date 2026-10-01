@@ -19,13 +19,13 @@ const mockedUseViewTheme = vi.mocked(useViewTheme);
 // URLs live in the View-only `_meta` channel; structuredContent (toolOutput)
 // only carries {timetableId, madeLinkShareable?}.
 const fullMeta = {
-  feedUrl: "https://afterclass.io/api/ical/tok123",
-  subscribeUrl: "webcal://afterclass.io/api/ical/tok123",
+  feedUrl: "https://afterclass.io/api/ical/tok123.ics",
+  subscribeUrl: "webcal://afterclass.io/api/ical/tok123.ics",
   googleSubscribeUrl:
-    "https://calendar.google.com/calendar/r?cid=webcal%3A%2F%2Fafterclass.io%2Fapi%2Fical%2Ftok123",
-  appleSubscribeUrl: "webcal://afterclass.io/api/ical/tok123",
+    "https://calendar.google.com/calendar/r?cid=https%3A%2F%2Fafterclass.io%2Fapi%2Fical%2Ftok123.ics",
+  appleSubscribeUrl: "webcal://afterclass.io/api/ical/tok123.ics",
   outlookSubscribeUrl:
-    "https://outlook.live.com/calendar/0/addfromweb?url=https%3A%2F%2Fafterclass.io%2Fapi%2Fical%2Ftok123",
+    "https://outlook.live.com/calendar/0/addfromweb?url=https%3A%2F%2Fafterclass.io%2Fapi%2Fical%2Ftok123.ics",
 };
 
 const toolOutput = { timetableId: "tt1", madeLinkShareable: false };
@@ -138,16 +138,18 @@ describe("CalendarLinksView (v2)", () => {
     expect(screen.getByText(/link-sharing was turned on/i)).toBeInTheDocument();
   });
 
-  it("all three subscribe links render with correct target and rel", () => {
+  it("Google and Outlook links use target=_blank; Apple link (webcal) does not", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput, meta: fullMeta });
     render(<CalendarLinksView />);
     const google = screen.getByRole("link", { name: /Google Calendar/i });
     const apple = screen.getByRole("link", { name: /Apple Calendar/i });
     const outlook = screen.getByRole("link", { name: /Outlook/i });
-    for (const a of [google, apple, outlook]) {
+    for (const a of [google, outlook]) {
       expect(a.getAttribute("target")).toBe("_blank");
       expect(a.getAttribute("rel")).toBe("noreferrer");
     }
+    expect(apple.getAttribute("target")).toBeNull();
+    expect(apple.getAttribute("rel")).toBe("noreferrer");
   });
 
   it("partial meta (only feedUrl) renders the links it has plus a fallback for the missing ones", () => {
@@ -231,6 +233,90 @@ describe("CalendarLinksView copy action", () => {
     } finally {
       Object.defineProperty(navigator, "clipboard", {
         value: origClipboard,
+        configurable: true,
+      });
+    }
+  });
+
+  it("falls back to execCommand when clipboard.writeText rejects (iframe)", async () => {
+    const origClipboard = navigator.clipboard;
+    const origExecCommand = document.execCommand;
+    let execCalledWith: string | null = null;
+    Object.defineProperty(navigator, "clipboard", {
+      value: {
+        writeText: () => Promise.reject(new Error("denied")),
+      },
+      configurable: true,
+    });
+    document.execCommand = vi.fn((cmd: string) => {
+      execCalledWith = cmd;
+      return true;
+    }) as never;
+    try {
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput,
+        meta: fullMeta,
+      });
+      render(<CalendarLinksView />);
+      fireEvent.click(screen.getByRole("button", { name: /Copy/i }));
+      await screen.findByRole("button", { name: /Copied/i });
+      expect(execCalledWith).toBe("copy");
+    } finally {
+      Object.defineProperty(navigator, "clipboard", {
+        value: origClipboard,
+        configurable: true,
+      });
+      document.execCommand = origExecCommand;
+    }
+  });
+
+  it("clicking the feed input selects its contents", () => {
+    seedContext({
+      status: "ready",
+      toolInput: {},
+      toolOutput,
+      meta: fullMeta,
+    });
+    render(<CalendarLinksView />);
+    const input = screen.getByLabelText(
+      "Calendar feed URL",
+    ) as HTMLInputElement;
+    const selectSpy = vi.spyOn(input, "select");
+    fireEvent.click(input);
+    expect(selectSpy).toHaveBeenCalled();
+    selectSpy.mockRestore();
+  });
+});
+
+describe("CalendarLinksView Apple Calendar guard", () => {
+  it("shows an informative message on non-Apple platforms instead of opening webcal", () => {
+    const origUA = navigator.userAgent;
+    Object.defineProperty(navigator, "userAgent", {
+      value:
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+      configurable: true,
+    });
+    try {
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput,
+        meta: fullMeta,
+      });
+      render(<CalendarLinksView />);
+      const apple = screen.getByRole("link", { name: /Apple Calendar/i });
+      expect(apple.getAttribute("target")).toBeNull();
+      fireEvent.click(apple);
+      expect(
+        screen.getByText(
+          /Apple Calendar is only available on macOS and iOS\. On Windows, use Outlook, Google Calendar, or copy the feed URL\./i,
+        ),
+      ).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(navigator, "userAgent", {
+        value: origUA,
         configurable: true,
       });
     }

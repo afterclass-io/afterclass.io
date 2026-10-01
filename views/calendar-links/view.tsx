@@ -31,6 +31,30 @@ export const viewConfig = {
   displayModes: ["inline", "fullscreen", "pip"],
 } satisfies ViewConfig;
 
+async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Fall through to the execCommand fallback below (clipboard API may
+    // reject inside iframes due to permissions or focus).
+  }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
 const CalendarLinksView: React.FC = () => {
   const { status, toolOutput, meta, error } =
     useToolContext<"get-timetable-calendar-link">();
@@ -38,16 +62,22 @@ const CalendarLinksView: React.FC = () => {
   const dark = theme === "dark";
   const c = dark ? TOKENS.dark : TOKENS.light;
   const [copied, setCopied] = useState(false);
+  const [appleNotice, setAppleNotice] = useState(false);
   // Local clipboard toggle (NOT a tool-call CTA): use-cta-feedback's
   // useCtaFeedback/useKeyedCtaFeedback cover tool-call saved/error feedback
   // (roadmap-view, bid-explorer, course-search). This Copy button only flips
   // `navigator.clipboard` state, so it keeps its own timer by design.
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const appleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (appleTimerRef.current) clearTimeout(appleTimerRef.current);
     };
   }, []);
+  const isApple =
+    typeof navigator !== "undefined" &&
+    /Mac|iPhone|iPad|iPod/i.test(navigator.userAgent);
   if (status === "pending") return <Skeleton dark={dark} />;
   if (status === "error") {
     return (
@@ -152,8 +182,21 @@ const CalendarLinksView: React.FC = () => {
           {appleSubscribeUrl && (
             <a
               href={appleSubscribeUrl}
-              target="_blank"
               rel="noreferrer"
+              onClick={(e) => {
+                if (!isApple) {
+                  e.preventDefault();
+                  setAppleNotice(true);
+                  if (appleTimerRef.current)
+                    clearTimeout(appleTimerRef.current);
+                  appleTimerRef.current = setTimeout(
+                    () => setAppleNotice(false),
+                    5000,
+                  );
+                } else {
+                  setAppleNotice(false);
+                }
+              }}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -195,6 +238,20 @@ const CalendarLinksView: React.FC = () => {
           )}
         </div>
       )}
+      {urls && appleNotice && (
+        <div
+          role="note"
+          style={{
+            fontSize: 11,
+            color: c.mutedFg,
+            marginBottom: 12,
+            lineHeight: 1.5,
+          }}
+        >
+          Apple Calendar is only available on macOS and iOS. On Windows, use
+          Outlook, Google Calendar, or copy the feed URL.
+        </div>
+      )}
       {urls && missingLinks.length > 0 && (
         <div
           style={{
@@ -216,6 +273,8 @@ const CalendarLinksView: React.FC = () => {
             value={feedUrl}
             readOnly
             aria-label="Calendar feed URL"
+            onClick={(e) => e.currentTarget.select()}
+            onFocus={(e) => e.target.select()}
             style={{
               flex: 1,
               padding: "6px 10px",
@@ -233,16 +292,13 @@ const CalendarLinksView: React.FC = () => {
             type="button"
             aria-live="polite"
             onClick={() => {
-              navigator.clipboard
-                .writeText(feedUrl)
-                .then(() => {
-                  setCopied(true);
-                  if (timerRef.current) clearTimeout(timerRef.current);
-                  timerRef.current = setTimeout(() => setCopied(false), 2000);
-                })
-                .catch(() => {
-                  // clipboard unavailable (non-secure context) — non-fatal
-                });
+              setAppleNotice(false);
+              void copyToClipboard(feedUrl).then((ok) => {
+                if (!ok) return;
+                setCopied(true);
+                if (timerRef.current) clearTimeout(timerRef.current);
+                timerRef.current = setTimeout(() => setCopied(false), 2000);
+              });
             }}
             style={{
               padding: "6px 14px",
