@@ -128,8 +128,10 @@ const BidExplorerView: React.FC = () => {
     return safetyFactors[0]?.beatsPercentage ?? 70;
   };
   const defaultIdx = () => {
-    const i = safetyFactors.findIndex((f) => f.beatsPercentage === 70);
-    return i >= 0 ? i : Math.floor(Math.max(0, safetyFactors.length - 1) / 2);
+    const i = safetyFactors.findIndex(
+      (f) => f.beatsPercentage === defaultBeats(),
+    );
+    return i >= 0 ? i : 0;
   };
   const multiplierAt = (
     factors: Array<{ beatsPercentage: number; multiplier: number }>,
@@ -173,6 +175,13 @@ const BidExplorerView: React.FC = () => {
   // Recommended range for the Bid Prediction header:
   // min = minPredicted + minMultiplier x minUncertainty,
   // median = medianPredicted + medianMultiplier x medianUncertainty.
+  const rawMedian = prediction
+    ? round2(
+        prediction.medianPredicted +
+          medianMultiplier * (prediction.medianUncertainty ?? 0),
+      )
+    : null;
+  const isMedianFloored = rawMedian !== null && rawMedian < 10;
   const recommendedMin =
     prediction && prediction.minPredicted !== null
       ? round2(
@@ -869,7 +878,7 @@ const BidExplorerView: React.FC = () => {
                     color: c.mutedFg,
                   }}
                 >
-                  recommended
+                  {isMedianFloored ? "recommended (floor)" : "recommended"}
                 </span>
               </span>
               <span style={{ color: c.mutedFg }}>=</span>
@@ -938,6 +947,20 @@ const BidExplorerView: React.FC = () => {
               </span>
               <span style={{ color: c.mutedFg }}>)</span>
             </div>
+            {isMedianFloored && (
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 11,
+                  fontWeight: 400,
+                  color: c.mutedFg,
+                  textAlign: "center",
+                }}
+              >
+                Floored to BOSS minimum bid of e${format2dp(10)} (raw formula: e$
+                {format2dp(rawMedian)})
+              </div>
+            )}
           </div>
         </div>
       )}

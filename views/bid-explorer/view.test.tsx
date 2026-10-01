@@ -435,6 +435,54 @@ describe("BidExplorerView (v2)", () => {
         screen.getByRole("button", { name: "Confirm: set bid to $32.16" }),
       ).toBeInTheDocument();
     });
+
+    it("aligns min and median multipliers to the same default rate when 70% is missing", () => {
+      const noSeventyMedian = [
+        { beatsPercentage: 50, multiplier: 0 },
+        { beatsPercentage: 80, multiplier: 0.88 },
+      ];
+      const noSeventyMin = [
+        { beatsPercentage: 50, multiplier: 0 },
+        { beatsPercentage: 80, multiplier: 0.79 },
+      ];
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: {
+          ...fullProps,
+          safetyFactors: noSeventyMedian,
+          minSafetyFactors: noSeventyMin,
+        },
+      });
+      render(<BidExplorerView />);
+      // Both ladders default to the first entry (50%): min 18 + (0 x 2) =
+      // 18.00, median 30 + (0 x 4) = 30.00, header e$18.00 - e$30.00.
+      expect(screen.getByText("e$18.00 - e$30.00")).toBeInTheDocument();
+      expect(screen.getAllByText("0.00")).toHaveLength(2);
+      expect(screen.queryByText("e$18.00 - e$65.20")).toBeNull();
+    });
+
+    it("shows the floor label and raw formula when the raw median is below e$10", () => {
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: {
+          ...fullProps,
+          prediction: {
+            ...fullProps.prediction,
+            medianPredicted: 5,
+            medianUncertainty: 1,
+          },
+        },
+      });
+      render(<BidExplorerView />);
+      // Raw median 5 + 0.54 x 1 = 5.54 -> floored recommended 10.00.
+      expect(screen.getAllByText("10.00")).toHaveLength(2); // header + formula
+      expect(screen.getByText("recommended (floor)")).toBeInTheDocument();
+      expect(
+        screen.getByText("Floored to BOSS minimum bid of e$10.00 (raw formula: e$5.54)"),
+      ).toBeInTheDocument();
+    });
   });
 
   describe("trend chart + filters + history table", () => {
