@@ -17,7 +17,7 @@ describe("RangeRow", () => {
       />,
     );
     expect(screen.getByText("Predicted")).toBeInTheDocument();
-    expect(screen.getByText("$18–$30")).toBeInTheDocument();
+    expect(screen.getByText("$18.00–$30.00")).toBeInTheDocument();
   });
 
   it("renders dashed (prediction) variant without crashing", () => {
@@ -31,7 +31,7 @@ describe("RangeRow", () => {
         c={TOKENS.dark}
       />,
     );
-    expect(screen.getByText("$18–$30")).toBeInTheDocument();
+    expect(screen.getByText("$18.00–$30.00")).toBeInTheDocument();
     expect(container.firstElementChild).toBeInTheDocument();
   });
 });

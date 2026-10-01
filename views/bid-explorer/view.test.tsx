@@ -136,8 +136,8 @@ describe("BidExplorerView (v2)", () => {
     expect(within(table).getByText("AY2025/26-T1")).toBeInTheDocument();
     // Newest first: first body row is AY2025/26-T1 (min 14, median 28).
     const firstRow = within(table).getAllByRole("row")[1];
-    expect(within(firstRow!).getByText("14")).toBeInTheDocument();
-    expect(within(firstRow!).getByText("28")).toBeInTheDocument();
+    expect(within(firstRow!).getByText("14.00")).toBeInTheDocument();
+    expect(within(firstRow!).getByText("28.00")).toBeInTheDocument();
   });
 
   it("renders the prediction marker and defaults the slider to the 70% factor", () => {
@@ -550,8 +550,8 @@ describe("BidExplorerView (v2)", () => {
       // Newest first: the deduped AY2024/25-T1 row carries
       // min 10/median 22.
       const dupRow = within(table).getAllByRole("row")[2];
-      expect(within(dupRow!).getByText("10")).toBeInTheDocument();
-      expect(within(dupRow!).getByText("22")).toBeInTheDocument();
+      expect(within(dupRow!).getByText("10.00")).toBeInTheDocument();
+      expect(within(dupRow!).getByText("22.00")).toBeInTheDocument();
       // Chart shows one dot per unique key.
       const chart = screen.getByRole("img", { name: /bid trend/i });
       expect(chart.querySelectorAll("circle")).toHaveLength(2);

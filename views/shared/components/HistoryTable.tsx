@@ -134,7 +134,7 @@ export const HistoryTable: React.FC<{
                     fontFamily: "var(--font-geist-mono, ui-monospace)",
                   }}
                 >
-                  {r.min}
+                  {typeof r.min === "number" ? r.min.toFixed(2) : r.min}
                 </td>
                 <td
                   style={{
@@ -143,7 +143,7 @@ export const HistoryTable: React.FC<{
                     fontFamily: "var(--font-geist-mono, ui-monospace)",
                   }}
                 >
-                  {r.median}
+                  {typeof r.median === "number" ? r.median.toFixed(2) : r.median}
                 </td>
               </tr>
             ))}

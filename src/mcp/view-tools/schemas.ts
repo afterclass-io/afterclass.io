@@ -118,6 +118,8 @@ export const reviewCardsOutput = z.object({
 
 export const bidExplorerOutput = z.object({
   classId: z.string().nullable(),
+  courseCode: z.string().nullable().optional(),
+  section: z.string().nullable().optional(),
   currentAcadTermId: z.string().nullable().optional(),
   history: z.array(
     z.object({
@@ -134,6 +136,9 @@ export const bidExplorerOutput = z.object({
       medianPredicted: z.number(),
       medianUncertainty: z.number(),
       minPredicted: z.number().nullable(),
+      minUncertainty: z.number().nullable().optional(),
+      clfHasBidsProbability: z.number().nullable().optional(),
+      clfConfidenceScore: z.number().nullable().optional(),
       bidWindow: z.object({
         id: z.number(),
         acadTermId: z.string(),
@@ -145,6 +150,9 @@ export const bidExplorerOutput = z.object({
   safetyFactors: z.array(
     z.object({ beatsPercentage: z.number(), multiplier: z.number() }),
   ),
+  minSafetyFactors: z
+    .array(z.object({ beatsPercentage: z.number(), multiplier: z.number() }))
+    .optional(),
 });
 
 export const calendarLinksOutput = z.object({

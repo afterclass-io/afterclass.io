@@ -150,7 +150,10 @@ const BidPlanView: React.FC = () => {
         </span>
         {budget ? (
           <span style={{ fontSize: 14, fontWeight: 600 }}>
-            ${budget.balance}
+            $
+            {typeof budget.balance === "number"
+              ? budget.balance.toFixed(2)
+              : budget.balance}
           </span>
         ) : (
           <span style={{ fontSize: 12, color: c.mutedFg }}>No budget set</span>
@@ -243,7 +246,10 @@ const BidPlanView: React.FC = () => {
               <span
                 style={{ fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}
               >
-                ${bid.bidAmount}
+                $
+                {typeof bid.bidAmount === "number"
+                  ? bid.bidAmount.toFixed(2)
+                  : bid.bidAmount}
               </span>
             </div>
           ))}
@@ -268,7 +274,9 @@ const BidPlanView: React.FC = () => {
             }}
           >
             <span>Remaining</span>
-            <span>${remaining}</span>
+            <span>
+              ${typeof remaining === "number" ? remaining.toFixed(2) : remaining}
+            </span>
           </div>
         </div>
       )}
