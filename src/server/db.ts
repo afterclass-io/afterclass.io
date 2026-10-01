@@ -26,7 +26,8 @@ const createPooledClient = () =>
   new PrismaClient({
     adapter: new PrismaPg({
       connectionString: env.DATABASE_URL,
-      max: env.NODE_ENV === "development" ? 2 : 5,
+      // In serverless Fluid Compute, cap pool size to 2 to prevent PgBouncer connection exhaustion
+      max: 2,
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 30000,
     }),
