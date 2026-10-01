@@ -50,12 +50,15 @@ export function getCacheControlForTrpcRequest({
   type,
   paths,
   errors,
+  eagerGeneration,
 }: {
   type: string;
   paths: readonly string[] | undefined;
   errors: readonly unknown[];
+  eagerGeneration?: boolean;
 }) {
   const cacheable =
+    !eagerGeneration &&
     type === "query" &&
     errors.length === 0 &&
     !!paths &&

@@ -89,4 +89,18 @@ describe("getCacheControlForTrpcRequest", () => {
       })["Cache-Control"],
     ).toBe(PRIVATE_CACHE_VALUE);
   });
+
+  it("returns private headers for cacheable queries when eagerGeneration is true", () => {
+    const headers = getCacheControlForTrpcRequest({
+      type: "query",
+      paths: ["courses.getByCourseCode"],
+      errors: [],
+      eagerGeneration: true,
+    });
+    expect(headers).toEqual({
+      "Cache-Control": PRIVATE_CACHE_VALUE,
+      "CDN-Cache-Control": PRIVATE_CACHE_VALUE,
+      "Vercel-CDN-Cache-Control": PRIVATE_CACHE_VALUE,
+    });
+  });
 });

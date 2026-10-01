@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
-import { act, renderHook } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
+import { createElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 import type { DependencyList } from "react";
 
@@ -24,35 +25,38 @@ function setGeometry(
 }
 
 function renderScrollHost(threshold = 80) {
-  const hook = renderHook(
-    ({ deps }: { deps: DependencyList }) =>
-      useChatScroll({ dependencies: deps, threshold }),
-    { initialProps: { deps: [] as DependencyList } },
-  );
-  const { result } = hook;
-  const host = document.createElement("div");
+  let latest: ReturnType<typeof useChatScroll> | null = null;
+  function Probe({ deps }: { deps: DependencyList }) {
+    latest = useChatScroll({ dependencies: deps, threshold });
+    const ref = latest.containerRef;
+    return createElement("div", { ref, "data-testid": "scroll-host" });
+  }
+  const utils = render(createElement(Probe, { deps: [] as DependencyList }));
+  const result = {
+    get current() {
+      if (!latest) throw new Error("hook has not rendered yet");
+      return latest;
+    },
+  };
+  const host = utils.getByTestId("scroll-host") as HTMLDivElement;
   setGeometry(host, 1000, 400, 600);
-  // Sync the hook's ref with the real DOM node via a fresh effect pass.
-  act(() => {
-    result.current.containerRef.current = host;
-    hook.rerender({ deps: [0] });
-  });
   const cleanup = () => {
-    hook.unmount();
+    utils.unmount();
   };
   return {
     result,
     host,
-    rerenderDeps: (deps: DependencyList) =>
+    rerenderDeps: (deps: DependencyList) => {
       act(() => {
-        hook.rerender({ deps });
-      }),
+        utils.rerender(createElement(Probe, { deps }));
+      });
+    },
     cleanup,
   };
 }
 
 describe("useChatScroll", () => {
-  it("starts at the bottom and sticks to bottom when content grows", () => {
+  it("starts at the bottom and sticks to bottom when content grows", async () => {
     const { result, host, rerenderDeps, cleanup } = renderScrollHost();
     // Initially pinned: distanceToBottom = 0 <= threshold.
     expect(result.current.isAtBottom).toBe(true);
@@ -65,10 +69,21 @@ describe("useChatScroll", () => {
     rerenderDeps([1]);
     expect(host.scrollTop).toBe(host.scrollHeight);
     expect(result.current.isAtBottom).toBe(true);
+
+    // DOM mutation while pinned scrolls to the new bottom via MutationObserver.
+    Object.defineProperty(host, "scrollHeight", {
+      value: 1300,
+      configurable: true,
+    });
+    await act(async () => {
+      host.appendChild(document.createElement("div"));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(host.scrollTop).toBe(1300);
     cleanup();
   });
 
-  it("releases the pin when the user scrolls up past the threshold", () => {
+  it("releases the pin when the user scrolls up past the threshold", async () => {
     const { result, host, cleanup } = renderScrollHost();
     expect(result.current.isAtBottom).toBe(true);
 
@@ -83,7 +98,10 @@ describe("useChatScroll", () => {
       value: 1400,
       configurable: true,
     });
-    host.appendChild(document.createElement("div"));
+    await act(async () => {
+      host.appendChild(document.createElement("div"));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
     expect(host.scrollTop).toBe(100);
     cleanup();
   });

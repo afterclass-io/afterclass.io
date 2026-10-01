@@ -654,7 +654,7 @@ const BidExplorerView: React.FC = () => {
               aria-label="Estimated success rate"
               min={SUCCESS_RATE_TICKS[0]}
               max={SUCCESS_RATE_TICKS[SUCCESS_RATE_TICKS.length - 1]}
-              step={1}
+              step={5}
               value={beatsPercentage}
               onChange={(e) => {
                 const next = Number(e.target.value);
