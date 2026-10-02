@@ -1,3 +1,5 @@
+import { type Metadata } from "next";
+
 import { api } from "@/common/tools/trpc/server";
 import {
   Card,
@@ -18,6 +20,12 @@ import { texts } from "@/modules/bidding/constants";
 import { EmptyState } from "@/common/components/empty-state";
 import { selectOneClassPerTerm } from "@/modules/bidding/utils/selectOneClassPerTerm";
 import { filterSafetyFactors } from "@/modules/bidding/utils/bid-prediction";
+
+// `classId`, `course`, `section`, `rounds`, `windows` and `prof` all select a
+// facet of this page, so the canonical drops them.
+export const metadata: Metadata = {
+  alternates: { canonical: "/bidding/analytics" },
+};
 
 export default async function BiddingHistoryPage({
   searchParams,

@@ -1,7 +1,12 @@
+import { type Metadata } from "next";
 import { Suspense } from "react";
 
 import { AuthCard, LoginForm } from "@/modules/auth/components";
 import { getEdgeConfig } from "@/common/providers/EdgeConfig/EdgeConfigProvider";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/account/auth/login" },
+};
 
 export default async function Login() {
   const ecfg = await getEdgeConfig().catch(() => null);

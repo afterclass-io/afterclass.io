@@ -1,9 +1,16 @@
+import { type Metadata } from "next";
+
 import { Separator } from "@/common/components/separator";
 import { api } from "@/common/tools/trpc/server";
 import { BiddingClassList } from "@/modules/bidding/components/BiddingClassList";
 import { Combobox } from "@/modules/bidding/components/Combobox";
 import { texts } from "@/modules/bidding/constants";
 import { type UniversityAbbreviation } from "@/generated/prisma/enums";
+
+// `course` and `prof` filter a view of this page, so they are dropped.
+export const metadata: Metadata = {
+  alternates: { canonical: "/bidding" },
+};
 
 export default async function BiddingHistoryPage({
   searchParams,
@@ -31,7 +38,9 @@ export default async function BiddingHistoryPage({
   // teaching that course. When a professor is selected, only show courses
   // taught by that professor. Both derived from the existing `classes` query.
   const filteredProfessors = courseCode
-    ? professors.filter((p) => classes.some((c) => c.professor?.slug === p.slug))
+    ? professors.filter((p) =>
+        classes.some((c) => c.professor?.slug === p.slug),
+      )
     : professors;
 
   const filteredCourses = profSlug
