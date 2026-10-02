@@ -14,6 +14,7 @@ export const getAll = publicProcedure
       courseCode: z.string().optional(),
       section: z.string().optional(),
       acadTermId: z.string().optional(),
+      allowAnyTerm: z.boolean().optional(),
 
       // Updated day enum to match "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" format
       day: z.enum(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]).optional(),
@@ -28,7 +29,7 @@ export const getAll = publicProcedure
     // Resolve the "current" acad term by finding the currently active or
     // upcoming bid window and deriving the term from it.
     let defaultAcadTermId: string | undefined;
-    if (!input.id && !input.acadTermId) {
+    if (!input.id && !input.acadTermId && !input.allowAnyTerm) {
       const currentWindow = await getCurrentWindowLogic(ctx.db);
       defaultAcadTermId = currentWindow?.acadTermId;
     }
@@ -68,8 +69,8 @@ export const getAll = publicProcedure
         id: input.id,
         courseId: input.courseId,
         section: input.section,
-        acadTermId: input.id
-          ? input.acadTermId // lookup by primary key: don't force term default
+        acadTermId: input.id || input.allowAnyTerm
+          ? input.acadTermId // lookup by primary key or any-term: don't force term default
           : (input.acadTermId ?? defaultAcadTermId),
         professorId: input.professorId,
         professor: {
@@ -84,14 +85,16 @@ export const getAll = publicProcedure
         } : undefined,
 
       },
-      orderBy: [
-        {
-          acadTermId: "desc",
-        },
-        {
-          section: "asc",
-        },
-      ],
+      orderBy: input.allowAnyTerm
+        ? [{ acadTerm: { startDt: "desc" } }, { section: "asc" }]
+        : [
+            {
+              acadTermId: "desc",
+            },
+            {
+              section: "asc",
+            },
+          ],
       take: input.limit > 100 ? 100 : input.limit,
     });
     return classes;

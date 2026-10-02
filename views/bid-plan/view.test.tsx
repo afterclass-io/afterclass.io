@@ -81,11 +81,11 @@ describe("BidPlanView (v2)", () => {
   it("renders budget balance and per-bid courseCode, amount, status chip when ready", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidPlanView />);
-    expect(screen.getByText(/987\.5/)).toBeInTheDocument();
+    expect(screen.getByText(/987\.50/)).toBeInTheDocument();
     expect(screen.getByText("ACCT102")).toBeInTheDocument();
     expect(screen.getByText("CS301")).toBeInTheDocument();
-    expect(screen.getByText("$25")).toBeInTheDocument();
-    expect(screen.getByText("$51")).toBeInTheDocument();
+    expect(screen.getByText("$25.00")).toBeInTheDocument();
+    expect(screen.getByText("$51.00")).toBeInTheDocument();
     // status chips contain the raw status text
     expect(screen.getByText("PLANNED")).toBeInTheDocument();
     expect(screen.getByText("SECURED")).toBeInTheDocument();
@@ -127,8 +127,8 @@ describe("BidPlanView (v2)", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: mutationPlan });
     render(<BidPlanView />);
     expect(screen.getByText("STAT203")).toBeInTheDocument();
-    expect(screen.getByText("$30")).toBeInTheDocument();
-    expect(screen.getByText(/150/)).toBeInTheDocument();
+    expect(screen.getByText("$30.00")).toBeInTheDocument();
+    expect(screen.getByText(/150\.00/)).toBeInTheDocument();
   });
 
   it("renders an error alert when the tool fails", () => {
@@ -161,10 +161,10 @@ describe("BidPlanView (v2)", () => {
     });
     render(<BidPlanView />);
     expect(screen.getByText("Starting budget")).toBeInTheDocument();
-    expect(screen.getByText("$100")).toBeInTheDocument();
+    expect(screen.getByText("$100.00")).toBeInTheDocument();
     expect(screen.queryByText("- $10")).toBeNull();
     expect(screen.getByText("Remaining")).toBeInTheDocument();
-    expect(screen.getByText("$90")).toBeInTheDocument();
+    expect(screen.getByText("$90.00")).toBeInTheDocument();
   });
 
   it("ignores PLANNED bids in the remaining balance", () => {
@@ -190,7 +190,8 @@ describe("BidPlanView (v2)", () => {
       },
     });
     render(<BidPlanView />);
+    expect(screen.queryByText("$40.00")).toBeNull();
     expect(screen.queryByText("$40")).toBeNull();
-    expect(screen.getByText("$100")).toBeInTheDocument();
+    expect(screen.getByText("$100.00")).toBeInTheDocument();
   });
 });

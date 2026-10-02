@@ -165,7 +165,7 @@ async function main() {
   // single source of truth (supersedes scripts/create-cypress-test-user.ts).
   // Password is "Test1234!" (hash must stay in sync with cypress.env.json).
   // Gated to non-production: known password must never be seeded in prod.
-  if (process.env.NODE_ENV !== "production") {
+  if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
     const smu = await prisma.universities.findFirst({
       where: { abbrv: "SMU" },
     });

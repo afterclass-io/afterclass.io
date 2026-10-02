@@ -31,18 +31,26 @@ describe("page-links", () => {
         section: "G9",
         classId: "cl9",
       }),
-    ).toBe("/bidding/analytics?course=COR-IS1702&section=G1");
+    ).toBe("/bidding/analytics?course=COR-IS1702&section=G1&classId=cl9");
+    expect(
+      exploreLinkFor(undefined, undefined, {
+        courseCode: "OTHER",
+        section: "G9",
+        classId: "cl9",
+      }),
+    ).toBe("/bidding/analytics?course=OTHER&section=G9&classId=cl9");
   });
   it("bid-estimate explorer links match exploreLinkFor(courseCode, section)", () => {
     // Parity pin: bid-estimate builds its per-section bid-explorer links via
-    // bidAnalytics({ courseCode, section }); exploreLinkFor with the same
-    // inputs must produce the identical URL so chat and MCP never diverge.
-    expect(exploreLinkFor("IS215", "G1")).toBe(
-      bidAnalytics({ courseCode: "IS215", section: "G1" }),
+    // bidAnalytics({ courseCode, section, classId }); exploreLinkFor with the
+    // resolved classId must produce the identical URL so chat and MCP never
+    // diverge.
+    expect(exploreLinkFor("IS215", "G1", { classId: "cl1" })).toBe(
+      bidAnalytics({ courseCode: "IS215", section: "G1", classId: "cl1" }),
     );
-    expect(bidAnalytics({ courseCode: "IS215", section: "G1" })).toBe(
-      "/bidding/analytics?course=IS215&section=G1",
-    );
+    expect(
+      bidAnalytics({ courseCode: "IS215", section: "G1", classId: "cl1" }),
+    ).toBe("/bidding/analytics?course=IS215&section=G1&classId=cl1");
   });
   it("links timetable and roadmaps-mine views", () => {
     expect(timetablePage()).toBe("/timetable");

@@ -47,7 +47,12 @@ export async function getSupabaseAccessToken(): Promise<string | null> {
   // In production, refuse the non-__Secure- cookie. Allowlisted raw read
   // (request-security branch, not config — the ban covers config reads
   // outside env.ts/env-gate.ts/chat-config.ts).
-  if (process.env.NODE_ENV === "production" && !secure) return null;
+  if (
+    process.env.NODE_ENV !== "development" &&
+    process.env.NODE_ENV !== "test" &&
+    !secure
+  )
+    return null;
   const raw = secure ?? plain;
   if (!raw) return null;
   const salt = secure
@@ -102,7 +107,12 @@ export async function getSupabaseRefreshToken(): Promise<string | null> {
   const secure = store.get("__Secure-authjs.session-token")?.value;
   const plain = store.get("authjs.session-token")?.value;
   // Same production rule as the access-token accessor above.
-  if (process.env.NODE_ENV === "production" && !secure) return null;
+  if (
+    process.env.NODE_ENV !== "development" &&
+    process.env.NODE_ENV !== "test" &&
+    !secure
+  )
+    return null;
   const raw = secure ?? plain;
   if (!raw) return null;
   const salt = secure

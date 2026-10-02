@@ -18,14 +18,41 @@ export async function findBidResults(
       ...where,
       bidWindow: { acadTerm: { acadYearStart: { gte: acadYearCutoff } } },
     },
-    include: {
-      bidWindow: true,
+    select: {
+      min: true,
+      median: true,
+      beforeProcessVacancy: true,
+      afterProcessVacancy: true,
+      classId: true,
+      bidWindowId: true,
+      vacancy: true,
+      bidWindow: {
+        select: {
+          id: true,
+          acadTermId: true,
+          round: true,
+          window: true,
+          opensAt: true,
+          closesAt: true,
+          resultsAt: true,
+        },
+      },
       class: {
-        include: {
-          professor: { select: { name: true } },
-          course: { select: { code: true, name: true } },
+        select: {
+          id: true,
+          section: true,
+          courseId: true,
+          professorId: true,
+          acadTermId: true,
+          professor: { select: { id: true, name: true, slug: true } },
+          course: { select: { id: true, code: true, name: true } },
           classTimings: {
-            select: { dayOfWeek: true, startTime: true, endTime: true },
+            select: {
+              dayOfWeek: true,
+              startTime: true,
+              endTime: true,
+              venue: true,
+            },
             orderBy: { startTime: "asc" },
           },
         },

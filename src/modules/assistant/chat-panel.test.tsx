@@ -165,3 +165,59 @@ describe("ChatPanel optimistic quota", () => {
     expect(mockSendMessage).toHaveBeenCalledWith({ text: "hello" });
   });
 });
+
+describe("ChatPanel scroll to bottom", () => {
+  const userMsg = (id: string) => ({
+    id,
+    role: "user" as const,
+    parts: [{ type: "text" as const, text: "hello" }],
+  });
+
+  function scrollContainer() {
+    const el = document.querySelector("[data-testid='chat-scroll-container']");
+    if (!(el instanceof HTMLElement))
+      throw new Error("missing chat scroll container");
+    return el;
+  }
+
+  function setScrollable(el: HTMLElement) {
+    Object.defineProperty(el, "scrollHeight", {
+      value: 1000,
+      configurable: true,
+    });
+    Object.defineProperty(el, "clientHeight", {
+      value: 400,
+      configurable: true,
+    });
+    el.scrollTop = 600;
+  }
+
+  function scrollUp(el: HTMLElement) {
+    setScrollable(el);
+    el.scrollTop = 0;
+    fireEvent.scroll(el);
+  }
+
+  it("shows no scroll button when there are no messages", () => {
+    mockChatState({ messages: [] });
+    render(<ChatPanel {...baseProps} />);
+    expect(screen.queryByLabelText("Scroll to bottom")).toBeNull();
+  });
+
+  it("shows no scroll button while pinned at the bottom", () => {
+    mockChatState({ messages: [userMsg("u1"), userMsg("u2")] });
+    render(<ChatPanel {...baseProps} />);
+    expect(screen.queryByLabelText("Scroll to bottom")).toBeNull();
+  });
+
+  it("shows the scroll button after scrolling up, and clicking it returns to bottom", () => {
+    mockChatState({ messages: [userMsg("u1"), userMsg("u2")] });
+    render(<ChatPanel {...baseProps} />);
+    const el = scrollContainer();
+    scrollUp(el);
+    const button = screen.getByLabelText("Scroll to bottom");
+    expect(button).toBeTruthy();
+    fireEvent.click(button);
+    expect(screen.queryByLabelText("Scroll to bottom")).toBeNull();
+  });
+});

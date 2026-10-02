@@ -56,28 +56,54 @@ const history = [
 // non-zero medianUncertainty is what makes the slider move the suggested
 // amount, like the live view (suggested = predicted + multiplier x
 // uncertainty, e$10 floor).
+// MIN factors mirror the same beats ladder (MIN prediction type) so the
+// Min formula row resolves its own multiplier per beatsPercentage.
+const medianSafetyFactors = [
+  { beatsPercentage: 50, multiplier: 0 },
+  { beatsPercentage: 55, multiplier: 0.13 },
+  { beatsPercentage: 60, multiplier: 0.25 },
+  { beatsPercentage: 65, multiplier: 0.39 },
+  { beatsPercentage: 70, multiplier: 0.54 },
+  { beatsPercentage: 75, multiplier: 0.7 },
+  { beatsPercentage: 80, multiplier: 0.88 },
+  { beatsPercentage: 85, multiplier: 1.09 },
+  { beatsPercentage: 90, multiplier: 1.37 },
+  { beatsPercentage: 95, multiplier: 1.81 },
+];
+const minSafetyFactors = [
+  { beatsPercentage: 50, multiplier: 0 },
+  { beatsPercentage: 55, multiplier: 0.11 },
+  { beatsPercentage: 60, multiplier: 0.22 },
+  { beatsPercentage: 65, multiplier: 0.34 },
+  { beatsPercentage: 70, multiplier: 0.47 },
+  { beatsPercentage: 75, multiplier: 0.62 },
+  { beatsPercentage: 80, multiplier: 0.79 },
+  { beatsPercentage: 85, multiplier: 0.99 },
+  { beatsPercentage: 90, multiplier: 1.24 },
+  { beatsPercentage: 95, multiplier: 1.63 },
+];
 const fullProps = {
   classId: "cl1",
+  courseCode: "COR-MGMT1202",
+  section: "G1",
   history,
   currentAcadTermId: "AY2025/26-T1",
   prediction: {
     medianPredicted: 30,
     medianUncertainty: 4,
     minPredicted: 18,
-    bidWindow: { id: 53, acadTermId: "AY2025/26-T1", round: "1", window: 1 },
+    minUncertainty: 2,
+    clfHasBidsProbability: 0.92,
+    clfConfidenceScore: 0.81,
+    bidWindow: {
+      id: 53,
+      acadTermId: "AY2025/26-T1",
+      round: "1",
+      window: 1,
+    },
   },
-  safetyFactors: [
-    { beatsPercentage: 50, multiplier: 0 },
-    { beatsPercentage: 55, multiplier: 0.13 },
-    { beatsPercentage: 60, multiplier: 0.25 },
-    { beatsPercentage: 65, multiplier: 0.39 },
-    { beatsPercentage: 70, multiplier: 0.54 },
-    { beatsPercentage: 75, multiplier: 0.7 },
-    { beatsPercentage: 80, multiplier: 0.88 },
-    { beatsPercentage: 85, multiplier: 1.09 },
-    { beatsPercentage: 90, multiplier: 1.37 },
-    { beatsPercentage: 95, multiplier: 1.81 },
-  ],
+  safetyFactors: medianSafetyFactors,
+  minSafetyFactors,
 };
 
 const historyOnlyProps = {
@@ -136,31 +162,36 @@ describe("BidExplorerView (v2)", () => {
     expect(within(table).getByText("AY2025/26-T1")).toBeInTheDocument();
     // Newest first: first body row is AY2025/26-T1 (min 14, median 28).
     const firstRow = within(table).getAllByRole("row")[1];
-    expect(within(firstRow!).getByText("14")).toBeInTheDocument();
-    expect(within(firstRow!).getByText("28")).toBeInTheDocument();
+    expect(within(firstRow!).getByText("14.00")).toBeInTheDocument();
+    expect(within(firstRow!).getByText("28.00")).toBeInTheDocument();
   });
 
-  it("renders the prediction marker and defaults the slider to the 70% factor", () => {
+  it("renders the prediction header range and defaults the slider to the 70% factor", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
-    expect(screen.getByText("Predicted")).toBeInTheDocument();
-    expect(screen.getByText("Round 1 W1")).toBeInTheDocument();
-    expect(screen.getByText(/median \$30/)).toBeInTheDocument(); // predicted median
+    expect(screen.getByText("Bid Prediction")).toBeInTheDocument();
+    expect(screen.getByText("Round 1 · Window 1")).toBeInTheDocument();
+    // Header price range: min 18 + 0.47 x 2 = 18.94; median 30 + 0.54 x 4.
+    expect(screen.getByText("e$18.94 - e$32.16")).toBeInTheDocument();
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
     expect(slider.getAttribute("value")).toBe("4"); // index of the 70% factor
-    expect(screen.getByText(/beats 70% of bids × 0\.54/)).toBeInTheDocument();
-    // suggested = round((30 + 0.54 x 4) x 100) / 100 = 32.16
-    expect(screen.getByText("$32.16")).toBeInTheDocument();
+    // Median formula breakdown: 32.16 = 30.00 + (0.54 x 4.00).
+    expect(screen.getByText("32.16")).toBeInTheDocument();
+    expect(screen.getByText("30.00")).toBeInTheDocument();
+    expect(screen.getByText("0.54")).toBeInTheDocument();
+    expect(screen.getByText("4.00")).toBeInTheDocument();
   });
 
-  it("updates the suggested amount and label when the slider moves", () => {
+  it("updates the formula breakdown and header range when the slider moves", () => {
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
     fireEvent.change(slider, { target: { value: "8" } });
-    expect(screen.getByText(/beats 90% of bids × 1\.37/)).toBeInTheDocument();
-    // suggested = round((30 + 1.37 x 4) x 100) / 100 = 35.48
-    expect(screen.getByText("$35.48")).toBeInTheDocument();
+    // 90%: min mult 1.24 -> 18 + 1.24 x 2 = 20.48;
+    // median mult 1.37 -> 30 + 1.37 x 4 = 35.48.
+    expect(screen.getByText("e$20.48 - e$35.48")).toBeInTheDocument();
+    expect(screen.getByText("35.48")).toBeInTheDocument();
+    expect(screen.getByText("1.37")).toBeInTheDocument();
   });
 
   it("renders history without slider or CTA when there is no prediction", () => {
@@ -216,33 +247,37 @@ describe("BidExplorerView (v2)", () => {
     rerender(<BidExplorerView />);
     const slider = screen.getByRole("slider", { name: "Safety multiplier" });
     expect(slider.getAttribute("value")).toBe("4"); // index of the 70% factor
-    expect(screen.getByText("$32.16")).toBeInTheDocument();
+    expect(screen.getByText("32.16")).toBeInTheDocument();
   });
 
   it("computes the same suggestion as the shared bid math (parity pin)", async () => {
     // Slider @70%: bid-shared.suggestBidAmount(30, 0.54, 4) = 32.16 must equal
-    // the view's hero + CTA. If the view's inline formula ever drifts from the
-    // canonical math again, this fails instead of the screenshots.
+    // the view's formula median + CTA. If the view's inline formula ever
+    // drifts from the canonical math again, this fails instead of the
+    // screenshots.
     const { suggestBidAmount } = await import("@/server/mcp/tools/bid-shared");
     seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
     render(<BidExplorerView />);
     const expected = suggestBidAmount(30, 0.54, 4);
     expect(expected).toBe(32.16);
-    expect(screen.getByText(`$${expected}`)).toBeInTheDocument();
+    expect(screen.getByText(`${expected}`)).toBeInTheDocument();
+    expect(screen.getByText("e$18.94 - e$32.16")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: `Confirm: set bid to $${expected}` }),
     ).toBeInTheDocument();
   });
 
   it("prediction without safety factors falls back to multiplier 1.0 (CTA still shows)", async () => {
-    const noFactors = { ...fullProps, safetyFactors: [] };
+    const noFactors = { ...fullProps, safetyFactors: [], minSafetyFactors: [] };
     const callTool = vi.fn().mockResolvedValue({ structuredContent: {} });
     mockedUseDynamicTool.mockReturnValue({ callTool } as never);
     seedContext({ status: "ready", toolInput: {}, toolOutput: noFactors });
     render(<BidExplorerView />);
     // no slider without factors, but the CTA offers predicted + uncertainty
     expect(screen.queryByRole("slider")).toBeNull();
-    const cta = screen.getByRole("button", { name: "Confirm: set bid to $34" });
+    const cta = screen.getByRole("button", {
+      name: "Confirm: set bid to $34.00",
+    });
     fireEvent.click(cta);
     await waitFor(() => expect(callTool).toHaveBeenCalledTimes(1));
     expect(callTool).toHaveBeenCalledWith({
@@ -294,9 +329,167 @@ describe("BidExplorerView (v2)", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("boom");
   });
 
+  describe("bid prediction card (BidPredictionCard parity)", () => {
+    it("renders the Bid Prediction header with the e$ recommended range in 2dp", () => {
+      seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+      render(<BidExplorerView />);
+      expect(screen.getByText("Bid Prediction")).toBeInTheDocument();
+      // recommendedMin = 18 + 0.47 x 2 = 18.94; median = 30 + 0.54 x 4 = 32.16
+      expect(screen.getByText("e$18.94 - e$32.16")).toBeInTheDocument();
+    });
+
+    it("renders the course/section/term subtitle and round/window subline", () => {
+      seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+      render(<BidExplorerView />);
+      expect(
+        screen.getByText("COR-MGMT1202 G1 · AY2025/26-T1"),
+      ).toBeInTheDocument();
+      expect(screen.getByText("Round 1 · Window 1")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /AfterClass is not liable for any unsuccessful bids/,
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it("renders the Odds of having other bids metric with Likely badge", () => {
+      seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+      render(<BidExplorerView />);
+      expect(
+        screen.getByText("Odds of having other bids"),
+      ).toBeInTheDocument();
+      expect(screen.getByText("92.00%")).toBeInTheDocument();
+      expect(screen.getByText("Likely")).toBeInTheDocument();
+    });
+
+    it("renders the Confidence Level metric with High badge", () => {
+      seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+      render(<BidExplorerView />);
+      expect(screen.getByText("Confidence Level")).toBeInTheDocument();
+      expect(screen.getByText("81.00%")).toBeInTheDocument();
+      expect(screen.getByText("High")).toBeInTheDocument();
+    });
+
+    it("shows the Unlikely badge when the bids probability is below 0.50", () => {
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: {
+          ...fullProps,
+          prediction: {
+            ...fullProps.prediction,
+            clfHasBidsProbability: 0.2,
+          },
+        },
+      });
+      render(<BidExplorerView />);
+      expect(screen.getByText("20.00%")).toBeInTheDocument();
+      expect(screen.getByText("Unlikely")).toBeInTheDocument();
+    });
+
+    it("defaults the Estimated success rate slider to 70% with selectable ticks", () => {
+      seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+      render(<BidExplorerView />);
+      expect(screen.getByText("Estimated success rate")).toBeInTheDocument();
+      const slider = screen.getByRole("slider", {
+        name: "Estimated success rate",
+      });
+      expect(slider).toBeInTheDocument();
+      expect(screen.getByText("50%")).toBeInTheDocument();
+      expect(screen.getByText("95%")).toBeInTheDocument();
+    });
+
+    it("updates Min and Median recommendations when the success rate slider moves", () => {
+      seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+      render(<BidExplorerView />);
+      const slider = screen.getByRole("slider", {
+        name: "Estimated success rate",
+      });
+      // 90%: min mult 1.24 -> 18 + 1.24 x 2 = 20.48;
+      // median mult 1.37 -> 30 + 1.37 x 4 = 35.48
+      fireEvent.change(slider, { target: { value: "90" } });
+      expect(screen.getByText("e$20.48 - e$35.48")).toBeInTheDocument();
+    });
+
+    it("renders the Formula section with Min and Median breakdowns in 2dp", () => {
+      seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+      render(<BidExplorerView />);
+      expect(screen.getByText("Formula")).toBeInTheDocument();
+      expect(screen.getByText("Min")).toBeInTheDocument();
+      expect(screen.getByText("Median")).toBeInTheDocument();
+      // Default 70%: min 18 + (0.47 x 2) = 18.94; median 30 + (0.54 x 4)
+      expect(screen.getByText("18.94")).toBeInTheDocument();
+      expect(screen.getByText("18.00")).toBeInTheDocument();
+      expect(screen.getByText("0.47")).toBeInTheDocument();
+      expect(screen.getByText("2.00")).toBeInTheDocument();
+      expect(screen.getByText("32.16")).toBeInTheDocument();
+      expect(screen.getByText("30.00")).toBeInTheDocument();
+      expect(screen.getByText("0.54")).toBeInTheDocument();
+      expect(screen.getByText("4.00")).toBeInTheDocument();
+    });
+
+    it("confirms with the median-based suggested amount in 2dp", () => {
+      seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+      render(<BidExplorerView />);
+      expect(
+        screen.getByRole("button", { name: "Confirm: set bid to $32.16" }),
+      ).toBeInTheDocument();
+    });
+
+    it("aligns min and median multipliers to the same default rate when 70% is missing", () => {
+      const noSeventyMedian = [
+        { beatsPercentage: 50, multiplier: 0 },
+        { beatsPercentage: 80, multiplier: 0.88 },
+      ];
+      const noSeventyMin = [
+        { beatsPercentage: 50, multiplier: 0 },
+        { beatsPercentage: 80, multiplier: 0.79 },
+      ];
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: {
+          ...fullProps,
+          safetyFactors: noSeventyMedian,
+          minSafetyFactors: noSeventyMin,
+        },
+      });
+      render(<BidExplorerView />);
+      // Both ladders default to the first entry (50%): min 18 + (0 x 2) =
+      // 18.00, median 30 + (0 x 4) = 30.00, header e$18.00 - e$30.00.
+      expect(screen.getByText("e$18.00 - e$30.00")).toBeInTheDocument();
+      expect(screen.getAllByText("0.00")).toHaveLength(2);
+      expect(screen.queryByText("e$18.00 - e$65.20")).toBeNull();
+    });
+
+    it("shows the floor label and raw formula when the raw median is below e$10", () => {
+      seedContext({
+        status: "ready",
+        toolInput: {},
+        toolOutput: {
+          ...fullProps,
+          prediction: {
+            ...fullProps.prediction,
+            medianPredicted: 5,
+            medianUncertainty: 1,
+          },
+        },
+      });
+      render(<BidExplorerView />);
+      // Raw median 5 + 0.54 x 1 = 5.54 -> floored recommended 10.00.
+      expect(screen.getAllByText("10.00")).toHaveLength(2); // header + formula
+      expect(screen.getByText("recommended (floor)")).toBeInTheDocument();
+      expect(
+        screen.getByText("Floored to BOSS minimum bid of e$10.00 (raw formula: e$5.54)"),
+      ).toBeInTheDocument();
+    });
+  });
+
   describe("trend chart + filters + history table", () => {
     const multiRoundProps = {
       classId: "cl1",
+      courseCode: "COR-MGMT1202",
+      section: "G1",
       history: [
         {
           acadTermId: "AY2024/25-T1",
@@ -327,20 +520,18 @@ describe("BidExplorerView (v2)", () => {
         medianPredicted: 30,
         medianUncertainty: 4,
         minPredicted: 18,
-        bidWindow: { id: 53, round: "1", window: 1 },
+        minUncertainty: 2,
+        clfHasBidsProbability: 0.92,
+        clfConfidenceScore: 0.81,
+        bidWindow: {
+          id: 53,
+          acadTermId: "AY2025/26-T1",
+          round: "1",
+          window: 1,
+        },
       },
-      safetyFactors: [
-        { beatsPercentage: 50, multiplier: 0 },
-        { beatsPercentage: 55, multiplier: 0.13 },
-        { beatsPercentage: 60, multiplier: 0.25 },
-        { beatsPercentage: 65, multiplier: 0.39 },
-        { beatsPercentage: 70, multiplier: 0.54 },
-        { beatsPercentage: 75, multiplier: 0.7 },
-        { beatsPercentage: 80, multiplier: 0.88 },
-        { beatsPercentage: 85, multiplier: 1.09 },
-        { beatsPercentage: 90, multiplier: 1.37 },
-        { beatsPercentage: 95, multiplier: 1.81 },
-      ],
+      safetyFactors: medianSafetyFactors,
+      minSafetyFactors,
     };
 
     it("renders an inline-SVG trend chart with min and median lines", () => {
@@ -364,10 +555,11 @@ describe("BidExplorerView (v2)", () => {
         toolOutput: multiRoundProps,
       });
       render(<BidExplorerView />);
-      expect(screen.getByRole("button", { name: "1" })).toBeInTheDocument();
+      expect(
+        screen.getAllByRole("button", { name: "1" }),
+      ).toHaveLength(2); // round 1 + window 1 share the plain number label
       expect(screen.getByRole("button", { name: "1A" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "W1" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "W2" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "2" })).toBeInTheDocument();
     });
 
     it("toggling a round filter narrows the chart and table", () => {
@@ -394,7 +586,7 @@ describe("BidExplorerView (v2)", () => {
       });
       render(<BidExplorerView />);
       const roundBtn = screen.getByRole("button", { name: "1A" });
-      const windowBtn = screen.getByRole("button", { name: "W2" });
+      const windowBtn = screen.getByRole("button", { name: "2" });
       fireEvent.click(windowBtn); // select W2 first
       fireEvent.click(roundBtn); // select 1A
       fireEvent.click(roundBtn); // deselect 1A -> round filter cleared
@@ -467,22 +659,23 @@ describe("BidExplorerView (v2)", () => {
       expect(within(table).getAllByRole("row")).toHaveLength(13); // header + 12
     });
 
-    it("shows the formula line with predicted, multiplier, and uncertainty (formula display; recommend-bid-amount is viewless)", () => {
+    it("shows the median formula breakdown in 2dp (recommend-bid-amount is viewless)", () => {
       seedContext({
         status: "ready",
         toolInput: {},
         toolOutput: multiRoundProps,
       });
       render(<BidExplorerView />);
-      // Formula display wording (recommend-bid-amount is viewless):
-      // "Predicted X + multiplier Y x uncertainty Z (beats W%)".
-      expect(
-        screen.getByText(
-          "Predicted 30 + multiplier 0.54 x uncertainty 4 (beats 70%)",
-        ),
-      ).toBeInTheDocument();
-      // Hero shows the single additive suggestion.
-      expect(screen.getByText("$32.16")).toBeInTheDocument();
+      // Median formula display (recommend-bid-amount is viewless):
+      // 32.16 = 30.00 + (0.54 x 4.00) at the default 70% factor, 2dp.
+      expect(screen.getByText("Formula")).toBeInTheDocument();
+      expect(screen.getByText("Median")).toBeInTheDocument();
+      expect(screen.getByText("32.16")).toBeInTheDocument();
+      expect(screen.getByText("30.00")).toBeInTheDocument();
+      expect(screen.getByText("0.54")).toBeInTheDocument();
+      expect(screen.getByText("4.00")).toBeInTheDocument();
+      // Header range carries the same median suggestion.
+      expect(screen.getByText("e$18.94 - e$32.16")).toBeInTheDocument();
     });
 
     it("keeps the empty state when there is no history and no prediction", () => {
@@ -550,8 +743,8 @@ describe("BidExplorerView (v2)", () => {
       // Newest first: the deduped AY2024/25-T1 row carries
       // min 10/median 22.
       const dupRow = within(table).getAllByRole("row")[2];
-      expect(within(dupRow!).getByText("10")).toBeInTheDocument();
-      expect(within(dupRow!).getByText("22")).toBeInTheDocument();
+      expect(within(dupRow!).getByText("10.00")).toBeInTheDocument();
+      expect(within(dupRow!).getByText("22.00")).toBeInTheDocument();
       // Chart shows one dot per unique key.
       const chart = screen.getByRole("img", { name: /bid trend/i });
       expect(chart.querySelectorAll("circle")).toHaveLength(2);
@@ -718,16 +911,32 @@ describe("BidExplorerView (v2)", () => {
       seedContext({ status: "ready", toolInput: {}, toolOutput: nullMinProps });
       // Additive suggestion: 30 + 0.54 x 4 = 32.16.
       const { container } = render(<BidExplorerView />);
-      expect(container.textContent).toContain("$32.16");
-      expect(
-        screen.getByText(
-          "Predicted 30 + multiplier 0.54 x uncertainty 4 (beats 70%)",
-        ),
-      ).toBeInTheDocument();
+      expect(container.textContent).toContain("32.16");
+      // Min formula row shows em-dash placeholders without a prediction.
+      expect(screen.getAllByText("—").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText("30.00")).toBeInTheDocument();
+      expect(screen.getByText("0.54")).toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: "Confirm: set bid to $32.16" }),
       ).toBeInTheDocument();
       expect(screen.queryByText("null")).toBeNull();
+    });
+
+    it("renders the history chart, filters, and table below the prediction section when history is present", () => {
+      seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
+      const { container } = render(<BidExplorerView />);
+      expect(
+        screen.getByRole("img", { name: /bid trend/i }),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("table")).toBeInTheDocument();
+      // Order: prediction header -> formula -> chart -> filters -> table.
+      const text = container.textContent ?? "";
+      expect(text.indexOf("Bid Prediction")).toBeLessThan(
+        text.indexOf("Historical Bidding Trend"),
+      );
+      expect(text.indexOf("Historical Bidding Trend")).toBeLessThan(
+        text.indexOf("AY2024/25-T1"),
+      );
     });
 
     it("renders prediction + filters gracefully when history rows are absent (tool-dropped null min/median)", () => {
@@ -741,10 +950,12 @@ describe("BidExplorerView (v2)", () => {
         toolOutput: { ...fullProps, history: [] },
       });
       render(<BidExplorerView />);
-      expect(screen.getByText("Predicted")).toBeInTheDocument();
+      expect(screen.getByText("Bid Prediction")).toBeInTheDocument();
+      // No history at all: no chart, filters, table, or filtered-empty note
+      // (those render only when history rows exist).
       expect(
-        screen.getByText("No bid data available for the selected filters."),
-      ).toBeInTheDocument();
+        screen.queryByText("No bid data available for the selected filters."),
+      ).toBeNull();
       expect(screen.queryByRole("table")).toBeNull();
       expect(screen.queryByRole("img", { name: /bid trend/i })).toBeNull();
       expect(
@@ -789,11 +1000,11 @@ describe("BidExplorerView (v2)", () => {
         },
       });
       render(<BidExplorerView />);
-      expect(screen.getByRole("button", { name: "1" })).toBeInTheDocument();
+      expect(
+        screen.getAllByRole("button", { name: "1" }),
+      ).toHaveLength(2); // round 1 + window 1 share the plain number label
       expect(screen.queryByRole("button", { name: "1A" })).toBeNull();
       expect(screen.queryByRole("button", { name: "2" })).toBeNull();
-      expect(screen.getByRole("button", { name: "W1" })).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: "W2" })).toBeNull();
     });
   });
 });

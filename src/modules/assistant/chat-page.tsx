@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { ChevronDownIcon } from "lucide-react";
 
 import type { AssistantStatus } from "@/server/assistant/status";
 import { MessageList } from "@/modules/assistant/message-list";
@@ -21,6 +22,7 @@ import { ConnectGate } from "@/modules/assistant/connect-gate";
 import { usePersistSession } from "@/modules/assistant/use-persist-session";
 import { useRefreshAfterTools } from "@/modules/assistant/use-refresh-after-tools";
 import { useChatStore } from "@/modules/assistant/chat-store";
+import { useChatScroll } from "@/modules/assistant/use-chat-scroll";
 import { SessionList } from "@/modules/assistant/session-list";
 import { QuotaMeter } from "@/modules/assistant/quota-meter/quota-meter";
 import { QuotaAlertBar } from "@/modules/assistant/quota-alert-bar";
@@ -80,8 +82,14 @@ export function ChatPage({
 
   // Wrap sendMessage: decrement instantly so quota feedback never waits on
   // the stream; refund when the send itself rejects (e.g. immediate 403).
+  // Stick-to-bottom: a fresh user message pins the thread back to the
+  // latest turn so the outgoing message + incoming stream stay in view.
+  const { containerRef, isAtBottom, scrollToBottom, handleScroll } =
+    useChatScroll({ dependencies: [chat.messages, chat.status] });
+
   const handleSendMessage = useCallback(
     async (params: Parameters<typeof chat.sendMessage>[0]) => {
+      scrollToBottom("smooth");
       setOptimisticRemaining((prev) => Math.max(0, prev - 1));
       try {
         return await chat.sendMessage(params);
@@ -90,7 +98,7 @@ export function ChatPage({
         throw e;
       }
     },
-    [chat],
+    [chat, scrollToBottom],
   );
 
   // Background sync: when a turn completes (running → ready), refetch the
@@ -214,7 +222,12 @@ export function ChatPage({
           </div>
         ) : (
           <>
-            <div className="min-h-0 flex-1 overflow-y-auto">
+            <div
+              ref={containerRef}
+              onScroll={handleScroll}
+              data-testid="chat-scroll-container"
+              className="relative min-h-0 flex-1 overflow-y-auto"
+            >
               {!hasMessages ? (
                 <div className="flex h-full flex-col items-center justify-center gap-4 px-4">
                   <h1 className="text-2xl font-semibold">
@@ -222,7 +235,9 @@ export function ChatPage({
                   </h1>
                   {consented && (
                     <WelcomeSuggestions
-                      onPick={(prompt) => void handleSendMessage({ text: prompt })}
+                      onPick={(prompt) =>
+                        void handleSendMessage({ text: prompt })
+                      }
                     />
                   )}
                 </div>
@@ -233,6 +248,17 @@ export function ChatPage({
                 <AssistantErrorMessage error={chat.error} onRetry={retry} />
               )}
               {chat.status === "submitted" && <TypingIndicator />}
+              {!isAtBottom && hasMessages && (
+                <button
+                  type="button"
+                  aria-label="Scroll to bottom"
+                  onClick={() => scrollToBottom("smooth")}
+                  className="bg-background sticky bottom-4 left-1/2 flex w-fit -translate-x-1/2 items-center gap-1 rounded-full border px-3 py-1.5 text-xs shadow-lg"
+                >
+                  <ChevronDownIcon className="size-4" />
+                  Latest
+                </button>
+              )}
             </div>
             {consented ? (
               <>

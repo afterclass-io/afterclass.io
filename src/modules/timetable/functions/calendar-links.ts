@@ -29,7 +29,7 @@ export function buildCalendarLinks(
   origin: string,
   token: string,
 ): CalendarLinks {
-  const feedUrl = `${origin}/api/ical/${token}`;
+  const feedUrl = `${origin}/api/ical/${token}.ics`;
   const subscribeUrl = feedUrl.replace(/^https?:\/\//, "webcal://");
   return {
     feedUrl,

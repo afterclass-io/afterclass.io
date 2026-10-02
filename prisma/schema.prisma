@@ -39,6 +39,8 @@ model Reviews {
   @@index([createdAt], type: BTree)
   @@index([reviewedCourseId], type: BTree)
   @@index([reviewedProfessorId], type: BTree)
+  @@index([reviewedCourseId, createdAt(sort: Desc)])
+  @@index([reviewedProfessorId, createdAt(sort: Desc)])
   @@map("reviews")
 }
 
@@ -211,6 +213,7 @@ model Classes {
   @@index([courseId], type: BTree)
   @@index([professorId], type: BTree)
   @@index([acadTermId, courseId])
+  @@index([acadTermId, professorId])
   @@map("classes")
 }
 
@@ -252,6 +255,7 @@ model ReviewLabels {
   review Reviews @relation(fields: [reviewId], references: [id])
 
   @@index([reviewId], type: BTree)
+  @@index([reviewId, labelId])
   @@map("review_labels")
 }
 
@@ -265,6 +269,7 @@ model ReviewEvents {
   review         Reviews @relation(fields: [reviewId], references: [id])
   triggeringUser Users?  @relation(fields: [triggeringUserId], references: [id])
 
+  @@index([reviewId, eventType])
   @@map("review_events")
 }
 
@@ -388,6 +393,7 @@ model BidResult {
   class     Classes   @relation(fields: [classId], references: [id])
 
   @@id([bidWindowId, classId])
+  @@index([classId])
   @@map("bid_result")
 }
 
@@ -507,6 +513,7 @@ model UserTimetableSlot {
 
   @@unique([timetableId, classId])
   @@index([timetableId])
+  @@index([classId])
   @@map("user_timetable_slot")
 }
 
@@ -579,6 +586,7 @@ model UserRoadmapEntry {
   course  Courses     @relation(fields: [courseId], references: [id])
 
   @@index([roadmapId])
+  @@index([courseId])
   @@map("user_roadmap_entry")
 }
 

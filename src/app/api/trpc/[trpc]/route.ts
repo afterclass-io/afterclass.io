@@ -4,6 +4,7 @@ import { type NextRequest } from "next/server";
 import { env } from "@/env";
 import { appRouter } from "@/server/api/root";
 import { createTRPCContext } from "@/server/api/trpc";
+import { getCacheControlForTrpcRequest } from "./caching";
 
 /**
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
@@ -21,6 +22,9 @@ const handler = (req: NextRequest) =>
     req,
     router: appRouter,
     createContext: () => createContext(req),
+    responseMeta: ({ type, paths, errors, eagerGeneration }) => ({
+      headers: new Headers(getCacheControlForTrpcRequest({ type, paths, errors, eagerGeneration }) as Record<string, string>),
+    }),
     onError:
       env.NODE_ENV === "development"
         ? ({ path, error }) => {

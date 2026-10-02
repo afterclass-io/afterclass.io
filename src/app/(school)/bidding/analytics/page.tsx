@@ -8,7 +8,6 @@ import {
 } from "@/common/components/card";
 import { Separator } from "@/common/components/separator";
 import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
-import { notFound } from "next/navigation";
 import { PredictionType, type UniversityAbbreviation } from "@/generated/prisma/enums";
 import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
 import { BidAnalyticsClient } from "@/modules/bidding/components/BidAnalyticsClient";
@@ -26,7 +25,7 @@ export default async function BiddingHistoryPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const _searchParams = await searchParams;
-  const classId = _searchParams.classId;
+  let classId = _searchParams.classId;
   let courseCode = _searchParams.course;
   let section = _searchParams.section;
   const initialRounds = _searchParams.rounds
@@ -103,16 +102,40 @@ export default async function BiddingHistoryPage({
     );
   }
 
-  const _class = await api.classes.getAll({ id: classId, limit: 1 });
-  if (!courseCode || !section) {
-    if (_class.length === 0) {
-      return notFound();
+  let _class = await api.classes.getAll(
+    classId ? { id: classId, limit: 1 } : { courseCode, section, limit: 1 },
+  );
+  if (_class.length === 0 && !classId && courseCode && section) {
+    const fallback = await api.classes.getAll({
+      courseCode,
+      section,
+      allowAnyTerm: true,
+      limit: 1,
+    });
+    if (fallback.length > 0) {
+      _class = fallback;
     }
-    courseCode = _class[0]!.course.code;
-    section = _class[0]!.section;
   }
-
-  const classInfo = _class[0];
+  if (_class.length === 0) {
+    return (
+      <div className="flex w-full max-w-5xl flex-col gap-6 pt-2">
+        <EmptyState
+          title="Class not found"
+          description={
+            "No class records found for " +
+            (courseCode ?? "") +
+            " " +
+            (section ?? "") +
+            ". Try exploring available courses."
+          }
+        />
+      </div>
+    );
+  }
+  const classInfo = _class[0]!;
+  classId = classInfo.id;
+  courseCode = classInfo.course.code;
+  section = classInfo.section;
   const professorId = classInfo?.professor?.id;
 
   // Reference timings for timing-based section selection

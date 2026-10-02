@@ -12,7 +12,7 @@ import { getChatConfig } from "@/server/config/chat-config";
  * rejects anything else (including direct browser hits). CRON_SECRET must be
  * set on Vercel (any `openssl rand -base64 32` value); when unset, every
  * invocation 500s loudly instead of running unguarded. Local dev can invoke
- * with `Authorization: Bearer dev` when `NODE_ENV !== "production"`.
+ * with `Authorization: Bearer dev` when `NODE_ENV === "development"`.
  *
  * pg_cron alternative (documented only): `SELECT cron.schedule('prune-rate-limits', '0 4 * * *', $$DELETE FROM rate_limit WHERE window_start < ...$$)` —
  * kept as a note because it bypasses the app's canonical retention config.
@@ -32,7 +32,7 @@ export async function GET(req: Request) {
   }
   const auth = req.headers.get("authorization");
   const devBypass =
-    process.env.NODE_ENV !== "production" && auth === "Bearer dev";
+    process.env.NODE_ENV === "development" && auth === "Bearer dev";
   if (auth !== `Bearer ${secret}` && !devBypass) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }

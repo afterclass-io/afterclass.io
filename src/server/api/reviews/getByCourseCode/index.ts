@@ -44,10 +44,11 @@ export const getByCourseCode = publicProcedure
       items: reviews.map(
         (review) =>
           ({
-            ...review,
+            id: review.id,
+            rating: 0,
+            countEventViews: review.countEventViews,
             body: "",
             tips: "",
-            rating: 0,
             createdAt: review.createdAt.getTime(),
             courseCode: review.reviewedCourse.code,
             courseName: review.reviewedCourse.name,

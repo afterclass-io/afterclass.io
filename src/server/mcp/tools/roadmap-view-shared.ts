@@ -60,7 +60,7 @@ function resolveCurrentPosition(
   return last ? { yearNumber: last.yearNumber, term: last.term } : null;
 }
 
-function toRoadmapViewPropsShared(
+export function toRoadmapViewPropsShared(
   data: Record<string, unknown>,
   isPublic: boolean,
   position?: { yearNumber: number; term: string } | null,
@@ -104,7 +104,7 @@ function toRoadmapViewPropsShared(
     });
   }
   return {
-    roadmapId: roadmap.id as string,
+    roadmapId: (roadmap.id ?? roadmap.roadmapId ?? data.roadmapId) as string,
     name: roadmap.name as string,
     isPublic,
     owner:
@@ -200,8 +200,16 @@ export function roadmapViewToViewProps(
   isPublic: boolean,
 ): (result: {
   content: Array<{ type: "text"; text: string }>;
+  viewProps?: Record<string, unknown>;
 }) => Record<string, unknown> {
   return (result) => {
+    if (
+      result.viewProps !== undefined &&
+      typeof result.viewProps === "object" &&
+      result.viewProps !== null
+    ) {
+      return result.viewProps as Record<string, unknown>;
+    }
     const parsed = parseViewJson(result);
     if (!("data" in parsed)) return { raw: parsed.raw };
     const data = parsed.data;

@@ -26,6 +26,23 @@ describe("TrendChart", () => {
     expect(chart.querySelectorAll("circle")).toHaveLength(manyTerms.length);
   });
 
+  it("renders one label per term segment instead of one per point", () => {
+    render(
+      <TrendChart points={manyTerms} currentKey={null} c={TOKENS.light} />,
+    );
+    const chart = screen.getByRole("img", { name: /bid trend/i });
+    const maxLabel = String(Math.max(...manyTerms.map((p) => p.median)));
+    const termLabels = Array.from(chart.querySelectorAll("text")).filter(
+      (t) => t.textContent !== "0" && t.textContent !== maxLabel,
+    );
+    // manyTerms spans 4 terms across 5 points; the shared AY2024/25-T1
+    // label renders once at the segment center.
+    expect(termLabels).toHaveLength(4);
+    expect(
+      termLabels.filter((t) => t.textContent === "24/25-T1"),
+    ).toHaveLength(1);
+  });
+
   it("shortens term labels and keeps all labels inside the viewBox", () => {
     render(
       <TrendChart points={manyTerms} currentKey={null} c={TOKENS.light} />,

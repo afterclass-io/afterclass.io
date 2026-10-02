@@ -20,8 +20,8 @@ describe("HistoryTable", () => {
     expect(within(table).getAllByText("AY2024/25-T1")).toHaveLength(2);
     expect(within(table).getByText("AY2025/26-T1")).toBeInTheDocument();
     const firstRow = within(table).getAllByRole("row")[1];
-    expect(within(firstRow!).getByText("14")).toBeInTheDocument();
-    expect(within(firstRow!).getByText("28")).toBeInTheDocument();
+    expect(within(firstRow!).getByText("14.00")).toBeInTheDocument();
+    expect(within(firstRow!).getByText("28.00")).toBeInTheDocument();
   });
 
   it("sorts by median when the column header is clicked", () => {

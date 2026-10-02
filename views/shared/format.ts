@@ -14,6 +14,16 @@ export function formatBid(n: number): string {
 }
 
 /**
+ * Format a number to 2 decimal places. Returns "" for null/undefined/NaN
+ * (views render empty rather than "NaN").
+ */
+export function format2dp(n: number | null | undefined): string {
+  if (n === null || n === undefined) return "";
+  if (typeof n !== "number" || Number.isNaN(n)) return "";
+  return n.toFixed(2);
+}
+
+/**
  * Shared ISO-date → YYYY-MM-DD slice (views must stay dependency-free, so no
  * Intl/timezone formatting here — just the date part both the timetable and
  * course-search views already rendered via `String(x).slice(0, 10)`).

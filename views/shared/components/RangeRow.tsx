@@ -73,7 +73,7 @@ export const RangeRow: React.FC<{
           textAlign: "right",
         }}
       >
-        ${min}–${median}
+        ${min.toFixed(2)}–${median.toFixed(2)}
       </span>
     </div>
   );

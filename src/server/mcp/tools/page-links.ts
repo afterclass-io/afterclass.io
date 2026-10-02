@@ -45,7 +45,11 @@ export function exploreLinkFor(
   resolved?: { courseCode?: string; section?: string; classId?: string | null },
 ): string | null {
   if (courseCodeInput || sectionInput)
-    return bidAnalytics({ courseCode: courseCodeInput, section: sectionInput });
+    return bidAnalytics({
+      courseCode: courseCodeInput,
+      section: sectionInput,
+      classId: resolved?.classId ?? undefined,
+    });
   return bidAnalytics({
     courseCode: resolved?.courseCode,
     section: resolved?.section,

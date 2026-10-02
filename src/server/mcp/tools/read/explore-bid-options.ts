@@ -218,19 +218,26 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
         beatsPercentage: number;
         multiplier: number;
       }> = [];
+      let minSafetyFactors: Array<{
+        beatsPercentage: number;
+        multiplier: number;
+      }> = [];
       if (prediction?.bidWindow) {
         const factors = await caller.safetyFactors.getAll();
-        safetyFactors = factors
-          .filter(
-            (f) =>
-              f.acadTermId === prediction.bidWindow.acadTermId &&
-              f.predictionType === "MEDIAN",
-          )
-          .map((f) => ({
-            beatsPercentage: f.beatsPercentage,
-            multiplier: f.multiplier,
-          }))
-          .sort((a, b) => a.beatsPercentage - b.beatsPercentage);
+        const byType = (predictionType: string) =>
+          factors
+            .filter(
+              (f) =>
+                f.acadTermId === prediction.bidWindow.acadTermId &&
+                f.predictionType === predictionType,
+            )
+            .map((f) => ({
+              beatsPercentage: f.beatsPercentage,
+              multiplier: f.multiplier,
+            }))
+            .sort((a, b) => a.beatsPercentage - b.beatsPercentage);
+        safetyFactors = byType("MEDIAN");
+        minSafetyFactors = byType("MIN");
       }
       // Current academic term for the view's now marker (same source the
       // website analytics page uses). Null-safe: a failure here must not
@@ -241,8 +248,31 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
       } catch {
         currentAcadTermId = null;
       }
+      // Class details for the view header (course code + section). Null-safe:
+      // a failure here must not fail the whole tool.
+      let resolvedCourseCode: string | null = null;
+      let resolvedSection: string | null = null;
+      if (resolvedClassId) {
+        try {
+          const rows = (await caller.classes.getAll({
+            id: resolvedClassId,
+            limit: 1,
+          })) as unknown as Array<{
+            section?: string;
+            course?: { code?: string };
+          }>;
+          const row = rows?.[0];
+          resolvedCourseCode = row?.course?.code ?? null;
+          resolvedSection = row?.section ?? null;
+        } catch {
+          resolvedCourseCode = null;
+          resolvedSection = null;
+        }
+      }
       return jsonText({
         classId: resolvedClassId,
+        courseCode: resolvedCourseCode,
+        section: resolvedSection,
         history,
         currentAcadTermId,
         prediction: prediction?.bidWindow
@@ -250,6 +280,10 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
               medianPredicted: prediction.medianPredicted,
               medianUncertainty: prediction.medianUncertainty ?? 0,
               minPredicted: prediction.minPredicted ?? null,
+              minUncertainty: prediction.minUncertainty ?? null,
+              clfHasBidsProbability:
+                prediction.clfHasBidsProbability ?? null,
+              clfConfidenceScore: prediction.clfConfidenceScore ?? null,
               bidWindow: {
                 id: prediction.bidWindow.id,
                 acadTermId: prediction.bidWindow.acadTermId,
@@ -269,6 +303,7 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
             }
           : null,
         safetyFactors,
+        minSafetyFactors,
       });
     } catch (e) {
       return errText(errorMessage(e));

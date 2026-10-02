@@ -5,6 +5,7 @@ import { stripSecretsFromValue } from "@/mcp/output-policy";
 import {
   buildRoadmapView,
   roadmapViewToViewProps,
+  toRoadmapViewPropsShared,
 } from "../roadmap-view-shared";
 import {
   errText,
@@ -45,9 +46,17 @@ export const getMyRoadmapTool: McpTool<typeof getMyRoadmapSchema> = {
         resolvedId = active.id;
       }
       const view = await buildRoadmapView(caller, resolvedId);
+      const normalized = toRoadmapViewPropsShared(
+        view,
+        false,
+        view.position as { yearNumber: number; term: string } | null,
+      );
       // No JSON round-trip — the view channel carries the typed view; the
       // text envelope stays for the model.
-      return { ...jsonText(view), viewProps: view };
+      return {
+        ...jsonText(normalized),
+        viewProps: normalized as unknown as Record<string, unknown>,
+      };
     } catch (e) {
       return errText(errorMessage(e));
     }

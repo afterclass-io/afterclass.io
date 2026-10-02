@@ -16,13 +16,40 @@ import { withMcpView } from "../../.storybook/withMcpView";
 // (`prisma/data/22_safety_factors.json`, AY202627T1 EMPIRICAL/MEDIAN):
 // 50/55/60/65/70/75/80/85/90/95 with ascending multipliers. The
 // explore-bid-options tool filters to the prediction term's MEDIAN
-// factors, so fixtures carry all ten rates. The prediction carries a
-// non-zero medianUncertainty so the slider actually moves the suggested
-// amount, exactly like the live view (suggested = predicted + multiplier x
+// factors (plus MIN factors for the Min formula row), so fixtures carry
+// all ten rates for both ladders. The prediction carries non-zero
+// uncertainties plus classifier scores so the slider + metrics render,
+// exactly like the live view (recommended = predicted + multiplier x
 // uncertainty, e$10 floor; see the view.tsx comment mirroring
 // `src/server/mcp/tools/bid-shared.ts`).
+const medianSafetyFactors = [
+  { beatsPercentage: 50, multiplier: 0 },
+  { beatsPercentage: 55, multiplier: 0.13 },
+  { beatsPercentage: 60, multiplier: 0.25 },
+  { beatsPercentage: 65, multiplier: 0.39 },
+  { beatsPercentage: 70, multiplier: 0.54 },
+  { beatsPercentage: 75, multiplier: 0.7 },
+  { beatsPercentage: 80, multiplier: 0.88 },
+  { beatsPercentage: 85, multiplier: 1.09 },
+  { beatsPercentage: 90, multiplier: 1.37 },
+  { beatsPercentage: 95, multiplier: 1.81 },
+];
+const minSafetyFactors = [
+  { beatsPercentage: 50, multiplier: 0 },
+  { beatsPercentage: 55, multiplier: 0.11 },
+  { beatsPercentage: 60, multiplier: 0.22 },
+  { beatsPercentage: 65, multiplier: 0.34 },
+  { beatsPercentage: 70, multiplier: 0.47 },
+  { beatsPercentage: 75, multiplier: 0.62 },
+  { beatsPercentage: 80, multiplier: 0.79 },
+  { beatsPercentage: 85, multiplier: 0.99 },
+  { beatsPercentage: 90, multiplier: 1.24 },
+  { beatsPercentage: 95, multiplier: 1.63 },
+];
 const fullProps = {
   classId: "cl1",
+  courseCode: "COR-MGMT1202",
+  section: "G1",
   history: [
     {
       acadTermId: "AY202425T1",
@@ -45,20 +72,13 @@ const fullProps = {
     medianPredicted: 30,
     medianUncertainty: 4,
     minPredicted: 18,
-    bidWindow: { id: 53, round: "1", window: 1 },
+    minUncertainty: 2,
+    clfHasBidsProbability: 0.92,
+    clfConfidenceScore: 0.81,
+    bidWindow: { id: 53, acadTermId: "AY202526T1", round: "1", window: 1 },
   },
-  safetyFactors: [
-    { beatsPercentage: 50, multiplier: 0 },
-    { beatsPercentage: 55, multiplier: 0.13 },
-    { beatsPercentage: 60, multiplier: 0.25 },
-    { beatsPercentage: 65, multiplier: 0.39 },
-    { beatsPercentage: 70, multiplier: 0.54 },
-    { beatsPercentage: 75, multiplier: 0.7 },
-    { beatsPercentage: 80, multiplier: 0.88 },
-    { beatsPercentage: 85, multiplier: 1.09 },
-    { beatsPercentage: 90, multiplier: 1.37 },
-    { beatsPercentage: 95, multiplier: 1.81 },
-  ],
+  safetyFactors: medianSafetyFactors,
+  minSafetyFactors,
 };
 
 const historyOnlyProps = {
@@ -196,11 +216,25 @@ export const ManyTerms: Story = {
 
 // Nullable branches at view level: history rows carry vacancy:null (the tool
 // passes vacancy through; the View ignores it) and the prediction carries
-// minPredicted:null (median-only suggestion, no en-dash range).
+// minPredicted:null (median-only suggestion, Min formula row shows —).
 const nullableBranchesProps = {
   ...fullProps,
   history: fullProps.history.map((h) => ({ ...h, vacancy: null })),
   prediction: { ...fullProps.prediction, minPredicted: null },
+};
+
+/** Low-confidence prediction: Unlikely bids + Very Low confidence badges. */
+const lowConfidenceProps = {
+  ...fullProps,
+  prediction: {
+    ...fullProps.prediction,
+    clfHasBidsProbability: 0.2,
+    clfConfidenceScore: 0.15,
+  },
+};
+
+export const LowConfidence: Story = {
+  decorators: [withMcpView({ status: "ready", toolOutput: lowConfidenceProps })],
 };
 
 export const NullableBranches: Story = {

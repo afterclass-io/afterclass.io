@@ -5,5 +5,19 @@
       "path": "/api/cron/prune-rate-limits",
       "schedule": "0 4 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "src/app/api/chat/route.ts": {
+      "memory": 1024,
+      "maxDuration": 300
+    },
+    "src/app/api/trpc/[trpc]/route.ts": {
+      "memory": 512,
+      "maxDuration": 15
+    },
+    "src/app/api/**": {
+      "memory": 256,
+      "maxDuration": 10
+    }
+  }
 }

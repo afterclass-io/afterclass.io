@@ -263,6 +263,8 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
                 const link = bidAnalytics({
                   courseCode: course.code,
                   section: String(e.section),
+                  classId:
+                    typeof e.classId === "string" ? e.classId : undefined,
                 });
                 return link
                   ? `- ${course.code} ${String(e.section)}: explore in the bid explorer — Open in bid analytics: ${absoluteUrl(link)}`
