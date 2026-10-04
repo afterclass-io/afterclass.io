@@ -118,4 +118,39 @@ describe("BidChart", () => {
     );
     expect(shouldShowNowMarker(sorted, "AY202425T1")).toBe(false);
   });
+
+  it("handles data with more than two academic year groups", () => {
+    const threeYearData = [
+      {
+        bidWindow: "AY202425T1/1/1",
+        price: [8, 12] as [number, number],
+        size: 30,
+      },
+      {
+        bidWindow: "AY202526T1/1/1",
+        price: [10, 16] as [number, number],
+        size: 50,
+      },
+      {
+        bidWindow: "AY202627T1/1/1",
+        price: [18, 25] as [number, number],
+        size: 45,
+      },
+    ];
+
+    const { container } = render(<BidChart chartData={threeYearData} />);
+    expect(container).toBeDefined();
+
+    const sorted = withPlotIndex(
+      [...threeYearData].map((d) => ({
+        bidWindow: d.bidWindow,
+        price: d.price,
+        min: d.price[0],
+        median: d.price[1],
+        size: d.size,
+      })),
+    );
+    const groups = computeAcadTermGroups(sorted);
+    expect(groups).toHaveLength(3);
+  });
 });

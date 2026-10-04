@@ -22,51 +22,59 @@ export const BidPredictionFormula = ({
   }, [recommended, onRecommendedChange]);
 
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div className="mx-auto flex min-w-fit items-center justify-center gap-1.5 sm:gap-2">
       <div className="text-center">
-        <div className="text-3xl font-bold">
+        <div className="text-xl font-bold sm:text-2xl md:text-3xl">
           {formatNumberShortScale(recommended, {
             minimumFractionDigits: 2,
             decimals: 2,
           })}
         </div>
-        <pre className="text-muted-foreground text-sm">recommended</pre>
+        <pre className="text-muted-foreground text-xs sm:text-sm">
+          recommended
+        </pre>
       </div>
-      <pre className="text-muted-foreground text-2xl">=</pre>
+      <pre className="text-muted-foreground text-lg sm:text-2xl">=</pre>
       <div className="text-center">
-        <div className="text-3xl font-bold">
+        <div className="text-xl font-bold sm:text-2xl md:text-3xl">
           {formatNumberShortScale(predicted, {
             minimumFractionDigits: 2,
             decimals: 2,
           })}
         </div>
-        <pre className="text-muted-foreground text-sm">predicted</pre>
+        <pre className="text-muted-foreground text-xs sm:text-sm">
+          predicted
+        </pre>
       </div>
-      <div className="text-muted-foreground text-2xl">+</div>
+      <div className="text-muted-foreground text-lg sm:text-2xl">+</div>
       <div className="flex flex-col items-center">
-        <pre className="text-muted-foreground text-2xl">(</pre>
+        <pre className="text-muted-foreground text-lg sm:text-2xl">(</pre>
       </div>
       <div className="text-center">
-        <div className="text-3xl font-bold">
+        <div className="text-xl font-bold sm:text-2xl md:text-3xl">
           {formatNumberShortScale(multiplier, {
             minimumFractionDigits: 2,
             decimals: 2,
           })}
         </div>
-        <pre className="text-muted-foreground text-sm">multiplier</pre>
+        <pre className="text-muted-foreground text-xs sm:text-sm">
+          multiplier
+        </pre>
       </div>
-      <div className="text-muted-foreground text-2xl">*</div>
+      <div className="text-muted-foreground text-lg sm:text-2xl">*</div>
       <div className="text-center">
-        <div className="text-3xl font-bold">
+        <div className="text-xl font-bold sm:text-2xl md:text-3xl">
           {formatNumberShortScale(uncertainty, {
             minimumFractionDigits: 2,
             decimals: 2,
           })}
         </div>
-        <pre className="text-muted-foreground text-sm">uncertainty</pre>
+        <pre className="text-muted-foreground text-xs sm:text-sm">
+          uncertainty
+        </pre>
       </div>
       <div className="flex flex-col items-center">
-        <pre className="text-muted-foreground text-2xl">)</pre>
+        <pre className="text-muted-foreground text-lg sm:text-2xl">)</pre>
       </div>
     </div>
   );

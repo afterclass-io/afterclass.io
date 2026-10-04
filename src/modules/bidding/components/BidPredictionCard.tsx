@@ -63,19 +63,19 @@ export const BidPredictionCard = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between pt-2">
-          <span className="text-2xl">Bid Prediction</span>
+        <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 text-2xl sm:text-3xl">
+          <span className="text-2xl sm:text-3xl">Bid Prediction</span>
           {recommendedMin !== undefined && recommendedMedian !== undefined && (
             <span className="flex items-center gap-2">
               <span className="flex items-center gap-1 font-bold tracking-tighter">
-                <span className="text-primary font-mono text-3xl tabular-nums">
+                <span className="text-primary font-mono text-2xl sm:text-3xl tabular-nums">
                   {formatBidCurrencyCompact(recommendedMin)}
                 </span>
               </span>
               <span className="text-muted-foreground text-xl font-normal">
                 -
               </span>
-              <span className="text-primary font-mono text-3xl font-bold tracking-tighter tabular-nums">
+              <span className="text-primary font-mono text-2xl sm:text-3xl font-bold tracking-tighter tabular-nums">
                 {formatBidCurrencyCompact(recommendedMedian)}
               </span>
             </span>
@@ -149,7 +149,7 @@ export const BidPredictionCard = ({
       </CardContent>
       <CardFooter className="flex flex-col items-stretch gap-4 py-2">
         <div className="text-base">Formula</div>
-        <div className="">
+        <div className="w-full overflow-x-auto">
           <div>Min</div>
           <BidPredictionFormula
             predicted={minPrediction.value}
@@ -161,7 +161,7 @@ export const BidPredictionCard = ({
             onRecommendedChange={(value) => setRecommendedMin(value)}
           />
         </div>
-        <div className="">
+        <div className="w-full overflow-x-auto">
           <div>Median</div>
           <BidPredictionFormula
             predicted={medianPrediction.value}
