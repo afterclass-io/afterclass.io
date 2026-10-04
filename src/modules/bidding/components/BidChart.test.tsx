@@ -11,6 +11,31 @@ import {
   withPlotIndex,
 } from "../utils/term-bands";
 
+import * as React from "react";
+import type * as RechartsModule from "recharts";
+
+vi.mock("recharts", async (importOriginal) => {
+  const original = await importOriginal<typeof RechartsModule>();
+  return {
+    ...original,
+    ResponsiveContainer: ({
+      children,
+      width = 800,
+      height = 400,
+    }: {
+      children: React.ReactNode;
+      width?: number;
+      height?: number;
+    }) => (
+      <div style={{ width, height }}>
+        {React.isValidElement(children)
+          ? React.cloneElement(children as React.ReactElement<{ width?: number; height?: number }>, { width, height })
+          : children}
+      </div>
+    ),
+  };
+});
+
 beforeEach(() => {
   vi.stubGlobal(
     "ResizeObserver",
@@ -139,18 +164,24 @@ describe("BidChart", () => {
     ];
 
     const { container } = render(<BidChart chartData={threeYearData} />);
-    expect(container).toBeDefined();
 
-    const sorted = withPlotIndex(
-      [...threeYearData].map((d) => ({
-        bidWindow: d.bidWindow,
-        price: d.price,
-        min: d.price[0],
-        median: d.price[1],
-        size: d.size,
-      })),
+    const tickLabels = Array.from(container.querySelectorAll("text")).filter(
+      (el) =>
+        ["24-25 T1", "25-26 T1", "26-27 T1"].includes(el.textContent ?? ""),
     );
-    const groups = computeAcadTermGroups(sorted);
-    expect(groups).toHaveLength(3);
+    expect(tickLabels).toHaveLength(3);
+
+    const [g0, g1, g2] = tickLabels;
+    expect(g0?.textContent).toBe("24-25 T1");
+    expect(g1?.textContent).toBe("25-26 T1");
+    expect(g2?.textContent).toBe("26-27 T1");
+
+    // Even groups (0, 2) on row 0 (yOffset 10), odd group (1) on row 1 (yOffset 24)
+    const y0 = Number(g0?.getAttribute("y"));
+    const y1 = Number(g1?.getAttribute("y"));
+    const y2 = Number(g2?.getAttribute("y"));
+
+    expect(y0).toBe(y2);
+    expect(y1).toBe(y0 + 14); // 24 - 10 = 14px stagger delta
   });
 });
