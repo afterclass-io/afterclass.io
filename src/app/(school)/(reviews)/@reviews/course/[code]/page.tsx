@@ -26,7 +26,11 @@ export async function generateMetadata(props: {
 
   try {
     const data = await getCoursePageData(courseCode);
-    if (!data) return { title: "Course not found" };
+    if (!data)
+      return {
+        title: "Course not found",
+        robots: { index: false, follow: false },
+      };
     const title = `${data.course.name} (${data.course.code})`;
     const description = courseDescription(data);
     const canonical = `/course/${courseCode}`;
@@ -48,7 +52,10 @@ export async function generateMetadata(props: {
       },
     };
   } catch {
-    return { title: "Course not found" };
+    return {
+      title: "Course not found",
+      robots: { index: false, follow: false },
+    };
   }
 }
 

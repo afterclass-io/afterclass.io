@@ -25,7 +25,11 @@ export async function generateMetadata(props: {
 
   try {
     const data = await getProfessorPageData(slug);
-    if (!data) return { title: "Professor not found" };
+    if (!data)
+      return {
+        title: "Professor not found",
+        robots: { index: false, follow: false },
+      };
     const title = data.professor.name;
     const description = professorDescription(data);
     const canonical = `/professor/${slug}`;
@@ -47,7 +51,10 @@ export async function generateMetadata(props: {
       },
     };
   } catch {
-    return { title: "Professor not found" };
+    return {
+      title: "Professor not found",
+      robots: { index: false, follow: false },
+    };
   }
 }
 

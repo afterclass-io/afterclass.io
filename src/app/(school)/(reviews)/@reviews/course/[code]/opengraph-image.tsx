@@ -77,7 +77,7 @@ export default async function Image({
         {course.name}
       </OgImage.Title>
       <OgImage.Content
-        rating={averageRating.toFixed(2)}
+        rating={reviewCount > 0 ? averageRating.toFixed(2) : "-"}
         reviewCount={reviewCount}
         profCount={professorCount}
         statItems={reviewLabels.map((label) => ({
@@ -88,6 +88,10 @@ export default async function Image({
     </OgImage>,
     {
       ...size,
+      headers: {
+        "Cache-Control":
+          "public, immutable, no-transform, max-age=86400, s-maxage=604800, stale-while-revalidate=86400",
+      },
     },
   );
 }

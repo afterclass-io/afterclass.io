@@ -49,19 +49,25 @@ export function buildSitemap(
   // A single sitemap holds at most 50,000 URLs; split into a sitemap index
   // before the catalogue reaches that, not after.
   return [
-    { url: abs(baseUrl, "/") },
-    { url: abs(baseUrl, "/privacy") },
-    { url: abs(baseUrl, "/terms") },
-    { url: abs(baseUrl, "/bidding") },
-    { url: abs(baseUrl, "/roadmaps") },
+    { url: abs(baseUrl, "/"), changeFrequency: "weekly", priority: 1.0 },
+    { url: abs(baseUrl, "/privacy"), changeFrequency: "yearly", priority: 0.3 },
+    { url: abs(baseUrl, "/terms"), changeFrequency: "yearly", priority: 0.3 },
+    { url: abs(baseUrl, "/bidding"), changeFrequency: "weekly", priority: 0.8 },
+    { url: abs(baseUrl, "/roadmaps"), changeFrequency: "weekly", priority: 0.8 },
     ...courses.map((course) => ({
-      url: abs(baseUrl, `/course/${course.code}`),
+      url: abs(baseUrl, `/course/${encodeURIComponent(course.code)}`),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
     })),
     ...professors.map((prof) => ({
-      url: abs(baseUrl, `/professor/${prof.slug}`),
+      url: abs(baseUrl, `/professor/${encodeURIComponent(prof.slug)}`),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
     })),
     ...roadmaps.map((roadmap) => ({
-      url: abs(baseUrl, `/roadmaps/${roadmap.id}`),
+      url: abs(baseUrl, `/roadmaps/${encodeURIComponent(roadmap.id)}`),
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
     })),
   ];
 }
@@ -135,7 +141,7 @@ export function buildCourseJsonLd({
     // Required alongside `name` and `provider` for the Course rich result.
     description,
     courseCode: code,
-    url: abs(siteUrl, `/course/${code}`),
+    url: abs(siteUrl, `/course/${encodeURIComponent(code)}`),
     provider: {
       "@type": "Organization",
       name: "AfterClass",
@@ -164,7 +170,7 @@ export function buildPersonJsonLd({
     "@context": "https://schema.org",
     "@type": "Person",
     name,
-    url: abs(siteUrl, `/professor/${slug}`),
+    url: abs(siteUrl, `/professor/${encodeURIComponent(slug)}`),
     ...(aggregateRating ? { aggregateRating } : {}),
   };
 }
