@@ -1,3 +1,5 @@
+import { type Metadata } from "next";
+
 import { AuthCard } from "@/modules/auth/components";
 import { buttonVariants } from "@/common/components/button";
 import { Heading } from "@/common/components/heading";
@@ -6,6 +8,11 @@ import { env } from "@/env";
 import { Fragment } from "react";
 import Link from "next/link";
 import { cn } from "@/common/functions";
+
+// `email` is displayed content, not a page identifier.
+export const metadata: Metadata = {
+  alternates: { canonical: "/account/auth/verify" },
+};
 
 export default async function Verify(props: {
   searchParams?: Promise<{

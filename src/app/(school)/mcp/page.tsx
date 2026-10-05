@@ -1,9 +1,14 @@
 import { headers } from "next/headers";
+import { type Metadata } from "next";
 
 import { ConnectPage } from "@/modules/settings/agents/connect-page";
 import { resolveMcpUrl } from "@/modules/settings/agents/connect-links";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function Page() {
   const heads = await headers();

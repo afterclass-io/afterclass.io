@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { type Metadata } from "next";
 
 import { auth } from "@/server/auth";
 import { getSupabaseAccessToken } from "@/server/auth/supabase-access-token";
@@ -6,6 +7,10 @@ import { getAssistantStatus } from "@/server/assistant/status";
 import { ChatPage } from "@/modules/assistant/chat-page";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function AssistantPage() {
   const session = await auth();

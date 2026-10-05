@@ -13,7 +13,7 @@ writing code for AfterClass. Every small bit helps us out immensely.
 We welcome contributions from the community to help make this project even
 better. Before submitting your contribution to this project, please read through
 the following guide. We also suggest you read the [Project
-Philosophy](PHILOSOPHY.md.md) in our documentation.
+Philosophy](PHILOSOPHY.md) in our documentation.
 
 ## Code of Conduct
 

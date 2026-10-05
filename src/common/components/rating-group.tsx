@@ -4,7 +4,8 @@ import * as React from "react";
 import { cn } from "@/common/functions";
 import { HeartUnfilledIcon } from "@/common/components/icons";
 
-const DEFAULT_MAX_RATING = 5;
+import { DEFAULT_MAX_RATING } from "./rating-group.constants";
+
 const DEFAULT_ICON_SIZE = 24;
 const DEFAULT_ICON_COLOR = "#C1694F";
 
