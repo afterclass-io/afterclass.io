@@ -126,7 +126,7 @@ const NON_INDEXABLE = [
   "/account/auth/confirm-account",
   "/assistant",
   "/mcp",
-  "/settings/agents",
+  "/mcp/connected-agents",
   "/oauth/consent",
 ];
 

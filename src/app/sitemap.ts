@@ -21,31 +21,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // SMU is the only university with a catalogue on this site; the course and professor routes are not university-scoped.
   const school = "SMU" as const;
 
-  try {
-    const api = createCaller({ db, session: null, headers: new Headers() });
+  const api = createCaller({ db, session: null, headers: new Headers() });
 
-    const [courses, professors, roadmaps] = await Promise.all([
-      api.courses.getAllByUniAbbrv({ universityAbbrv: school }),
-      api.professors.getAllByUniAbbrv({ universityAbbrv: school }),
-      drainCursorPages(async (cursor) => {
-        const page = await api.roadmaps.listPublic({ cursor });
-        return {
-          items: page.items.map((item) => item.roadmap),
-          nextCursor: page.nextCursor,
-        };
-      }),
-    ]);
+  const [courses, professors, roadmaps] = await Promise.all([
+    api.courses.getAllByUniAbbrv({ universityAbbrv: school }),
+    api.professors.getAllByUniAbbrv({ universityAbbrv: school }),
+    drainCursorPages(async (cursor) => {
+      const page = await api.roadmaps.listPublic({ cursor });
+      return {
+        items: page.items.map((item) => item.roadmap),
+        nextCursor: page.nextCursor,
+      };
+    }),
+  ]);
 
-    return buildSitemap(env.NEXTAUTH_URL, { courses, professors, roadmaps });
-  } catch (error) {
-    console.error(
-      "Failed to generate dynamic sitemap catalogue; falling back to core routes:",
-      error,
-    );
-    return buildSitemap(env.NEXTAUTH_URL, {
-      courses: [],
-      professors: [],
-      roadmaps: [],
-    });
-  }
+  return buildSitemap(env.NEXTAUTH_URL, { courses, professors, roadmaps });
 }
