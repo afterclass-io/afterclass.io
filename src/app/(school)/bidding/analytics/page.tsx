@@ -288,16 +288,15 @@ export default async function BiddingHistoryPage({
                               Exam
                             </td>
                             <td className="py-1.5 pr-2 sm:pr-4">
-                              {t.date ? (
-                                <span className="whitespace-nowrap">
-                                  {new Date(t.date).toLocaleDateString("en-GB", {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  })}
-                                </span>
-                              ) : null}
-                              {t.date && <br />}
+                              <span className="whitespace-nowrap">
+                                {new Date(t.date).toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                  timeZone: "Asia/Singapore",
+                                })}
+                              </span>
+                              <br />
                               <span>{t.dayOfWeek}</span>
                             </td>
                             <td className="py-1.5 pr-2 font-mono whitespace-nowrap tabular-nums sm:pr-4">
