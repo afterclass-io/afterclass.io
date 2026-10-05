@@ -62,7 +62,7 @@ export const BidPredictionCard = ({
             : "Very High";
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="px-4 sm:px-6">
         <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 text-2xl sm:text-3xl">
           <span className="text-2xl sm:text-3xl">Bid Prediction</span>
           {recommendedMin !== undefined && recommendedMedian !== undefined && (
@@ -95,8 +95,8 @@ export const BidPredictionCard = ({
           </div>
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <div className="grid grid-cols-3 gap-4">
+      <CardContent className="flex flex-col gap-4 px-4 sm:px-6">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
           <div>Odds of having other bids</div>
           <div className="flex items-center gap-2">
             <Progress value={hasBidsProbability * 100} />
@@ -147,10 +147,10 @@ export const BidPredictionCard = ({
           />
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col items-stretch gap-4 py-2">
-        <div className="text-base">Formula</div>
-        <div className="w-full overflow-x-auto">
-          <div>Min</div>
+      <CardFooter className="flex flex-col items-stretch gap-4 px-4 py-2 sm:px-6">
+        <div className="text-base font-medium">Formula</div>
+        <div className="w-full">
+          <div className="text-muted-foreground mb-1 text-xs font-medium">Min</div>
           <BidPredictionFormula
             predicted={minPrediction.value}
             multiplier={multiplierAt(
@@ -161,8 +161,8 @@ export const BidPredictionCard = ({
             onRecommendedChange={(value) => setRecommendedMin(value)}
           />
         </div>
-        <div className="w-full overflow-x-auto">
-          <div>Median</div>
+        <div className="w-full">
+          <div className="text-muted-foreground mb-1 text-xs font-medium">Median</div>
           <BidPredictionFormula
             predicted={medianPrediction.value}
             multiplier={multiplierAt(

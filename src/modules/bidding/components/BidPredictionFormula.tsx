@@ -22,7 +22,7 @@ export const BidPredictionFormula = ({
   }, [recommended, onRecommendedChange]);
 
   return (
-    <div className="mx-auto flex min-w-fit items-center justify-center gap-1 sm:gap-2">
+    <div className="mx-auto flex w-full max-w-sm items-center justify-center gap-1 sm:gap-2">
       <div className="text-center">
         <div className="text-base font-bold sm:text-2xl md:text-3xl">
           {formatNumberShortScale(recommended, {
