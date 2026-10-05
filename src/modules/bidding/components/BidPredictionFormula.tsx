@@ -21,52 +21,92 @@ export const BidPredictionFormula = ({
     }
   }, [recommended, onRecommendedChange]);
 
+  const formattedRecommended = formatNumberShortScale(recommended, {
+    minimumFractionDigits: 2,
+    decimals: 2,
+  });
+  const formattedPredicted = formatNumberShortScale(predicted, {
+    minimumFractionDigits: 2,
+    decimals: 2,
+  });
+  const formattedMultiplier = formatNumberShortScale(multiplier, {
+    minimumFractionDigits: 2,
+    decimals: 2,
+  });
+  const formattedUncertainty = formatNumberShortScale(uncertainty, {
+    minimumFractionDigits: 2,
+    decimals: 2,
+  });
+
   return (
-    <div className="flex items-center justify-center gap-2">
-      <div className="text-center">
-        <div className="text-3xl font-bold">
-          {formatNumberShortScale(recommended, {
-            minimumFractionDigits: 2,
-            decimals: 2,
-          })}
+    <div className="w-full overflow-x-auto">
+      <div
+        className="mx-auto flex w-max min-w-full items-center justify-center gap-1 px-1 sm:gap-2"
+        role="region"
+        aria-label={`Formula: ${formattedRecommended} recommended equals ${formattedPredicted} predicted plus (${formattedMultiplier} multiplier times ${formattedUncertainty} uncertainty)`}
+      >
+        <div className="text-center" aria-hidden="true">
+          <div className="text-base font-bold sm:text-2xl md:text-3xl">
+            {formattedRecommended}
+          </div>
+          <span className="text-muted-foreground block text-[10px] tracking-tight sm:text-xs">
+            recommended
+          </span>
         </div>
-        <pre className="text-muted-foreground text-sm">recommended</pre>
-      </div>
-      <pre className="text-muted-foreground text-2xl">=</pre>
-      <div className="text-center">
-        <div className="text-3xl font-bold">
-          {formatNumberShortScale(predicted, {
-            minimumFractionDigits: 2,
-            decimals: 2,
-          })}
+        <span
+          className="text-muted-foreground text-sm font-medium sm:text-xl"
+          aria-hidden="true"
+        >
+          =
+        </span>
+        <div className="text-center" aria-hidden="true">
+          <div className="text-base font-bold sm:text-2xl md:text-3xl">
+            {formattedPredicted}
+          </div>
+          <span className="text-muted-foreground block text-[10px] tracking-tight sm:text-xs">
+            predicted
+          </span>
         </div>
-        <pre className="text-muted-foreground text-sm">predicted</pre>
-      </div>
-      <div className="text-muted-foreground text-2xl">+</div>
-      <div className="flex flex-col items-center">
-        <pre className="text-muted-foreground text-2xl">(</pre>
-      </div>
-      <div className="text-center">
-        <div className="text-3xl font-bold">
-          {formatNumberShortScale(multiplier, {
-            minimumFractionDigits: 2,
-            decimals: 2,
-          })}
+        <span
+          className="text-muted-foreground text-sm font-medium sm:text-xl"
+          aria-hidden="true"
+        >
+          +
+        </span>
+        <span
+          className="text-muted-foreground text-sm font-medium sm:text-xl"
+          aria-hidden="true"
+        >
+          (
+        </span>
+        <div className="text-center" aria-hidden="true">
+          <div className="text-base font-bold sm:text-2xl md:text-3xl">
+            {formattedMultiplier}
+          </div>
+          <span className="text-muted-foreground block text-[10px] tracking-tight sm:text-xs">
+            multiplier
+          </span>
         </div>
-        <pre className="text-muted-foreground text-sm">multiplier</pre>
-      </div>
-      <div className="text-muted-foreground text-2xl">*</div>
-      <div className="text-center">
-        <div className="text-3xl font-bold">
-          {formatNumberShortScale(uncertainty, {
-            minimumFractionDigits: 2,
-            decimals: 2,
-          })}
+        <span
+          className="text-muted-foreground text-sm font-medium sm:text-xl"
+          aria-hidden="true"
+        >
+          *
+        </span>
+        <div className="text-center" aria-hidden="true">
+          <div className="text-base font-bold sm:text-2xl md:text-3xl">
+            {formattedUncertainty}
+          </div>
+          <span className="text-muted-foreground block text-[10px] tracking-tight sm:text-xs">
+            uncertainty
+          </span>
         </div>
-        <pre className="text-muted-foreground text-sm">uncertainty</pre>
-      </div>
-      <div className="flex flex-col items-center">
-        <pre className="text-muted-foreground text-2xl">)</pre>
+        <span
+          className="text-muted-foreground text-sm font-medium sm:text-xl"
+          aria-hidden="true"
+        >
+          )
+        </span>
       </div>
     </div>
   );

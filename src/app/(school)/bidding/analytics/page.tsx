@@ -154,7 +154,7 @@ export default async function BiddingHistoryPage({
     })) ?? [];
 
   const professors = await api.professors.getProfessorsByClassId({
-    classId: classId!,
+    classId,
   });
 
   // SPEC-2: Single data source — course+professor matching when professor exists,
@@ -200,42 +200,60 @@ export default async function BiddingHistoryPage({
       {/* Class Info Summary Card — server rendered */}
       {classInfo && (
         <Card>
-          <CardHeader>
+          <CardHeader className="px-4 sm:px-6">
             {/* SPEC-5: Course name as primary title */}
             <CardTitle className="text-xl">{classInfo.course.name}</CardTitle>
             {/* SPEC-5: Course code as subtitle */}
             <CardDescription>{classInfo.course.code}</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+          <CardContent className="flex flex-col gap-4 px-4 sm:px-6">
             {/* SPEC-5: Professor | Section | Grading Basis in 3-column grid */}
-            <div className="grid grid-cols-3 gap-4 text-sm">
+            <div className="grid grid-cols-3 gap-2 text-sm sm:gap-4">
               <div>
-                <span className="text-muted-foreground">Professor</span>
-                <p className="font-medium">
+                <span className="text-muted-foreground text-xs sm:text-sm">
+                  Professor
+                </span>
+                <p className="font-medium text-xs sm:text-sm">
                   {classInfo.professor?.name ?? "TBA"}
                 </p>
               </div>
               <div>
-                <span className="text-muted-foreground">Section</span>
-                <p className="font-medium">{classInfo.section}</p>
+                <span className="text-muted-foreground text-xs sm:text-sm">
+                  Section
+                </span>
+                <p className="font-medium text-xs sm:text-sm">
+                  {classInfo.section}
+                </p>
               </div>
               <div>
-                <span className="text-muted-foreground">Grading Basis</span>
-                <p className="font-medium">{classInfo.gradingBasis ?? "N/A"}</p>
+                <span className="text-muted-foreground text-xs sm:text-sm">
+                  Grading Basis
+                </span>
+                <p className="font-medium text-xs sm:text-sm">
+                  {classInfo.gradingBasis ?? "N/A"}
+                </p>
               </div>
             </div>
             {/* Meeting Information Table — BOSS-style */}
             {(classInfo.classTimings.length > 0 ||
               classInfo.classExamTimings.some((t) => t.date)) && (
               <>
-                <div className="overflow-x-auto text-sm">
-                  <table className="w-full text-xs">
+                <div className="w-full overflow-x-auto text-sm">
+                  <table className="w-full table-fixed text-xs">
                     <thead>
                       <tr className="text-muted-foreground border-b">
-                        <th className="py-1 text-left font-medium">Type</th>
-                        <th className="py-1 text-left font-medium">Day</th>
-                        <th className="py-1 text-left font-medium">Time</th>
-                        <th className="py-1 text-left font-medium">Venue</th>
+                        <th className="w-[12%] py-1 pr-2 text-left font-medium sm:w-[15%] sm:pr-4">
+                          Type
+                        </th>
+                        <th className="w-[24%] py-1 pr-2 text-left font-medium sm:w-[25%] sm:pr-4">
+                          Day
+                        </th>
+                        <th className="w-[28%] py-1 pr-2 text-left font-medium sm:w-[24%] sm:pr-4">
+                          Time
+                        </th>
+                        <th className="w-[36%] py-1 text-left font-medium sm:w-[36%]">
+                          Venue
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -244,13 +262,17 @@ export default async function BiddingHistoryPage({
                           key={`class-${i}`}
                           className="border-border/50 border-b"
                         >
-                          <td className="py-1.5 font-medium">Class</td>
-                          <td className="py-1.5">{t.dayOfWeek}</td>
-                          <td className="py-1.5 font-mono tabular-nums">
+                          <td className="py-1.5 pr-2 font-medium sm:pr-4">
+                            Class
+                          </td>
+                          <td className="py-1.5 pr-2 sm:pr-4">
+                            {t.dayOfWeek}
+                          </td>
+                          <td className="py-1.5 pr-2 font-mono whitespace-nowrap tabular-nums sm:pr-4">
                             {t.startTime}-{t.endTime}
                           </td>
                           {/* SPEC-5: Venue uses text-foreground for readability */}
-                          <td className="text-foreground py-1.5">
+                          <td className="text-foreground py-1.5 break-words">
                             {t.venue ?? "—"}
                           </td>
                         </tr>
@@ -262,22 +284,25 @@ export default async function BiddingHistoryPage({
                             key={`exam-${i}`}
                             className="border-border/50 border-b"
                           >
-                            <td className="py-1.5 font-medium">Exam</td>
-                            <td className="py-1.5">
-                              {t.date
-                                ? new Date(t.date).toLocaleDateString("en-GB", {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  })
-                                : ""}
+                            <td className="py-1.5 pr-2 font-medium sm:pr-4">
+                              Exam
+                            </td>
+                            <td className="py-1.5 pr-2 sm:pr-4">
+                              <span className="whitespace-nowrap">
+                                {new Date(t.date).toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                  timeZone: "Asia/Singapore",
+                                })}
+                              </span>
                               <br />
                               <span>{t.dayOfWeek}</span>
                             </td>
-                            <td className="py-1.5 font-mono tabular-nums">
+                            <td className="py-1.5 pr-2 font-mono whitespace-nowrap tabular-nums sm:pr-4">
                               {t.startTime}-{t.endTime}
                             </td>
-                            <td className="text-foreground py-1.5">
+                            <td className="text-foreground py-1.5 break-words">
                               {t.venue ?? "—"}
                             </td>
                           </tr>

@@ -22,7 +22,9 @@ import { inferAcadTerm } from "@/common/functions";
 import { formatBidCurrencyCompact } from "@/common/functions/format-bid-currency";
 import {
   clampLabelCenterX,
+  computeGroupTickLayout,
   estimateLabelWidth,
+  type GroupTickInfo,
 } from "@/modules/bidding/utils/chart-label-layout";
 
 const chartConfig = {
@@ -163,11 +165,12 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
     return () => ro.disconnect();
   }, []);
 
-  // Map the MIDDLE plot index of each AY group to its short label, so the
-  // label renders once per group, centered under the group.
+  // Map the MIDDLE plot index of each AY group to its short label and metadata,
+  // so the label renders once per group, centered under the group.
   const groupMidTicks = useMemo(() => {
-    const map = new Map<number, string>();
-    for (const group of ayGroups) {
+    const list: GroupTickInfo[] = [];
+    for (let i = 0; i < ayGroups.length; i++) {
+      const group = ayGroups[i]!;
       const firstIdx = sorted.findIndex(
         (d) => d.bidWindow === group.firstBidWindow,
       );
@@ -177,10 +180,26 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
       const midIdx =
         firstIdx + Math.max(0, Math.floor((lastIdx - firstIdx) / 2));
       const midPoint = sorted[midIdx];
-      if (midPoint) map.set(midPoint.idx, group.shortLabel);
+      if (midPoint) {
+        list.push({
+          tickValue: midPoint.idx,
+          label: group.shortLabel,
+          groupIndex: i,
+        });
+      }
     }
-    return map;
+    return list;
   }, [ayGroups, sorted]);
+
+  const groupTickLayout = useMemo(() => {
+    return computeGroupTickLayout(
+      groupMidTicks,
+      sorted.length,
+      containerWidth,
+      PLOT_LEFT,
+      CHART_MARGIN.right,
+    );
+  }, [groupMidTicks, sorted.length, containerWidth]);
 
   // Map a numeric tick back to its bidWindow key for the tooltip label.
   const bidWindowOfIdx = useMemo(() => {
@@ -221,18 +240,19 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
           axisLine={false}
           tickLine={false}
           interval={0}
-          ticks={[...groupMidTicks.keys()]}
-          tickFormatter={(idx) => groupMidTicks.get(Number(idx)) ?? ""}
+          height={38}
+          ticks={groupMidTicks.map((t) => t.tickValue)}
+          tickFormatter={(idx) => groupTickLayout.get(Number(idx))?.label ?? ""}
           tick={(props) => {
             const { x, y, payload } = props as {
               x: number;
               y: number;
               payload: { value: number };
             };
-            const label = groupMidTicks.get(payload.value);
-            if (!label) return <g />;
+            const meta = groupTickLayout.get(payload.value);
+            if (!meta?.visible) return <g />;
 
-            const labelWidth = estimateLabelWidth(label);
+            const labelWidth = estimateLabelWidth(meta.label);
             // Plot bounds: left = YAxis width (Y_AXIS_WIDTH) + margin.left;
             // right = measured container width - margin.right.
             const plotLeft = PLOT_LEFT;
@@ -246,13 +266,13 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
             return (
               <text
                 x={centerX}
-                y={y + 12}
+                y={y + meta.yOffset}
                 textAnchor="middle"
                 fill="var(--muted-foreground)"
                 fontSize={11}
                 fontWeight={600}
               >
-                {label}
+                {meta.label}
               </text>
             );
           }}

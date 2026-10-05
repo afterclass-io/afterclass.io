@@ -98,4 +98,19 @@ describe("BidPredictionCard slider math", () => {
     expect(recommendedBid(8.31, 0.54, 5.2)).toBeCloseTo(11.118, 10);
     expect(recommendedBid(18.36, 0.88, 6.04)).toBeCloseTo(23.6752, 10);
   });
+
+  it("provides accessible formula regions with descriptive aria labels", () => {
+    renderCard();
+    const formulaRegions = screen.getAllByRole("region");
+    expect(formulaRegions).toHaveLength(2);
+    expect(formulaRegions[0]).toHaveAttribute(
+      "aria-label",
+      "Formula: 11.12 recommended equals 8.31 predicted plus (0.54 multiplier times 5.20 uncertainty)",
+    );
+    expect(formulaRegions[1]).toHaveAttribute(
+      "aria-label",
+      "Formula: 21.62 recommended equals 18.36 predicted plus (0.54 multiplier times 6.04 uncertainty)",
+    );
+  });
 });
+

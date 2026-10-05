@@ -62,20 +62,20 @@ export const BidPredictionCard = ({
             : "Very High";
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between pt-2">
-          <span className="text-2xl">Bid Prediction</span>
+      <CardHeader className="px-4 sm:px-6">
+        <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 text-2xl sm:text-3xl">
+          <span className="text-2xl sm:text-3xl">Bid Prediction</span>
           {recommendedMin !== undefined && recommendedMedian !== undefined && (
             <span className="flex items-center gap-2">
               <span className="flex items-center gap-1 font-bold tracking-tighter">
-                <span className="text-primary font-mono text-3xl tabular-nums">
+                <span className="text-primary font-mono text-2xl sm:text-3xl tabular-nums">
                   {formatBidCurrencyCompact(recommendedMin)}
                 </span>
               </span>
               <span className="text-muted-foreground text-xl font-normal">
                 -
               </span>
-              <span className="text-primary font-mono text-3xl font-bold tracking-tighter tabular-nums">
+              <span className="text-primary font-mono text-2xl sm:text-3xl font-bold tracking-tighter tabular-nums">
                 {formatBidCurrencyCompact(recommendedMedian)}
               </span>
             </span>
@@ -95,8 +95,8 @@ export const BidPredictionCard = ({
           </div>
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <div className="grid grid-cols-3 gap-4">
+      <CardContent className="flex flex-col gap-4 px-4 sm:px-6">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
           <div>Odds of having other bids</div>
           <div className="flex items-center gap-2">
             <Progress value={hasBidsProbability * 100} />
@@ -147,10 +147,10 @@ export const BidPredictionCard = ({
           />
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col items-stretch gap-4 py-2">
-        <div className="text-base">Formula</div>
-        <div className="">
-          <div>Min</div>
+      <CardFooter className="flex flex-col items-stretch gap-4 px-4 py-2 sm:px-6">
+        <div className="text-base font-medium">Formula</div>
+        <div className="w-full">
+          <div className="text-muted-foreground mb-1 text-xs font-medium">Min</div>
           <BidPredictionFormula
             predicted={minPrediction.value}
             multiplier={multiplierAt(
@@ -161,8 +161,8 @@ export const BidPredictionCard = ({
             onRecommendedChange={(value) => setRecommendedMin(value)}
           />
         </div>
-        <div className="">
-          <div>Median</div>
+        <div className="w-full">
+          <div className="text-muted-foreground mb-1 text-xs font-medium">Median</div>
           <BidPredictionFormula
             predicted={medianPrediction.value}
             multiplier={multiplierAt(
