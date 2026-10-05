@@ -22,60 +22,66 @@ export const BidPredictionFormula = ({
   }, [recommended, onRecommendedChange]);
 
   return (
-    <div className="mx-auto flex min-w-fit items-center justify-center gap-1.5 sm:gap-2">
+    <div className="mx-auto flex min-w-fit items-center justify-center gap-1 sm:gap-2">
       <div className="text-center">
-        <div className="text-xl font-bold sm:text-2xl md:text-3xl">
+        <div className="text-base font-bold sm:text-2xl md:text-3xl">
           {formatNumberShortScale(recommended, {
             minimumFractionDigits: 2,
             decimals: 2,
           })}
         </div>
-        <pre className="text-muted-foreground text-xs sm:text-sm">
+        <span className="text-muted-foreground block text-[10px] tracking-tight sm:text-xs">
           recommended
-        </pre>
+        </span>
       </div>
-      <pre className="text-muted-foreground text-lg sm:text-2xl">=</pre>
+      <span className="text-muted-foreground text-sm font-medium sm:text-xl">
+        =
+      </span>
       <div className="text-center">
-        <div className="text-xl font-bold sm:text-2xl md:text-3xl">
+        <div className="text-base font-bold sm:text-2xl md:text-3xl">
           {formatNumberShortScale(predicted, {
             minimumFractionDigits: 2,
             decimals: 2,
           })}
         </div>
-        <pre className="text-muted-foreground text-xs sm:text-sm">
+        <span className="text-muted-foreground block text-[10px] tracking-tight sm:text-xs">
           predicted
-        </pre>
+        </span>
       </div>
-      <div className="text-muted-foreground text-lg sm:text-2xl">+</div>
-      <div className="flex flex-col items-center">
-        <pre className="text-muted-foreground text-lg sm:text-2xl">(</pre>
-      </div>
+      <span className="text-muted-foreground text-sm font-medium sm:text-xl">
+        +
+      </span>
+      <span className="text-muted-foreground text-sm font-medium sm:text-xl">
+        (
+      </span>
       <div className="text-center">
-        <div className="text-xl font-bold sm:text-2xl md:text-3xl">
+        <div className="text-base font-bold sm:text-2xl md:text-3xl">
           {formatNumberShortScale(multiplier, {
             minimumFractionDigits: 2,
             decimals: 2,
           })}
         </div>
-        <pre className="text-muted-foreground text-xs sm:text-sm">
+        <span className="text-muted-foreground block text-[10px] tracking-tight sm:text-xs">
           multiplier
-        </pre>
+        </span>
       </div>
-      <div className="text-muted-foreground text-lg sm:text-2xl">*</div>
+      <span className="text-muted-foreground text-sm font-medium sm:text-xl">
+        *
+      </span>
       <div className="text-center">
-        <div className="text-xl font-bold sm:text-2xl md:text-3xl">
+        <div className="text-base font-bold sm:text-2xl md:text-3xl">
           {formatNumberShortScale(uncertainty, {
             minimumFractionDigits: 2,
             decimals: 2,
           })}
         </div>
-        <pre className="text-muted-foreground text-xs sm:text-sm">
+        <span className="text-muted-foreground block text-[10px] tracking-tight sm:text-xs">
           uncertainty
-        </pre>
+        </span>
       </div>
-      <div className="flex flex-col items-center">
-        <pre className="text-muted-foreground text-lg sm:text-2xl">)</pre>
-      </div>
+      <span className="text-muted-foreground text-sm font-medium sm:text-xl">
+        )
+      </span>
     </div>
   );
 };

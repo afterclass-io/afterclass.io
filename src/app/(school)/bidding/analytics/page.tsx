@@ -154,7 +154,7 @@ export default async function BiddingHistoryPage({
     })) ?? [];
 
   const professors = await api.professors.getProfessorsByClassId({
-    classId: classId!,
+    classId,
   });
 
   // SPEC-2: Single data source — course+professor matching when professor exists,
@@ -229,12 +229,12 @@ export default async function BiddingHistoryPage({
               classInfo.classExamTimings.some((t) => t.date)) && (
               <>
                 <div className="overflow-x-auto text-sm">
-                  <table className="w-full text-xs">
+                  <table className="w-full min-w-[460px] text-xs">
                     <thead>
                       <tr className="text-muted-foreground border-b">
-                        <th className="py-1 text-left font-medium">Type</th>
-                        <th className="py-1 text-left font-medium">Day</th>
-                        <th className="py-1 text-left font-medium">Time</th>
+                        <th className="py-1 pr-4 text-left font-medium">Type</th>
+                        <th className="py-1 pr-4 text-left font-medium">Day</th>
+                        <th className="py-1 pr-4 text-left font-medium">Time</th>
                         <th className="py-1 text-left font-medium">Venue</th>
                       </tr>
                     </thead>
@@ -244,9 +244,13 @@ export default async function BiddingHistoryPage({
                           key={`class-${i}`}
                           className="border-border/50 border-b"
                         >
-                          <td className="py-1.5 font-medium">Class</td>
-                          <td className="py-1.5">{t.dayOfWeek}</td>
-                          <td className="py-1.5 font-mono tabular-nums">
+                          <td className="py-1.5 pr-4 font-medium whitespace-nowrap">
+                            Class
+                          </td>
+                          <td className="py-1.5 pr-4 whitespace-nowrap">
+                            {t.dayOfWeek}
+                          </td>
+                          <td className="py-1.5 pr-4 font-mono whitespace-nowrap tabular-nums">
                             {t.startTime}-{t.endTime}
                           </td>
                           {/* SPEC-5: Venue uses text-foreground for readability */}
@@ -262,8 +266,10 @@ export default async function BiddingHistoryPage({
                             key={`exam-${i}`}
                             className="border-border/50 border-b"
                           >
-                            <td className="py-1.5 font-medium">Exam</td>
-                            <td className="py-1.5">
+                            <td className="py-1.5 pr-4 font-medium whitespace-nowrap">
+                              Exam
+                            </td>
+                            <td className="py-1.5 pr-4 whitespace-nowrap">
                               {t.date
                                 ? new Date(t.date).toLocaleDateString("en-GB", {
                                     day: "2-digit",
@@ -274,7 +280,7 @@ export default async function BiddingHistoryPage({
                               <br />
                               <span>{t.dayOfWeek}</span>
                             </td>
-                            <td className="py-1.5 font-mono tabular-nums">
+                            <td className="py-1.5 pr-4 font-mono whitespace-nowrap tabular-nums">
                               {t.startTime}-{t.endTime}
                             </td>
                             <td className="text-foreground py-1.5">
