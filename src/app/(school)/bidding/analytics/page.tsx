@@ -238,17 +238,17 @@ export default async function BiddingHistoryPage({
             {(classInfo.classTimings.length > 0 ||
               classInfo.classExamTimings.some((t) => t.date)) && (
               <>
-                <div className="w-full text-sm">
+                <div className="w-full overflow-x-auto text-sm">
                   <table className="w-full table-fixed text-xs">
                     <thead>
                       <tr className="text-muted-foreground border-b">
-                        <th className="w-[13%] py-1 pr-2 text-left font-medium sm:w-[15%] sm:pr-4">
+                        <th className="w-[12%] py-1 pr-2 text-left font-medium sm:w-[15%] sm:pr-4">
                           Type
                         </th>
-                        <th className="w-[26%] py-1 pr-2 text-left font-medium sm:w-[25%] sm:pr-4">
+                        <th className="w-[24%] py-1 pr-2 text-left font-medium sm:w-[25%] sm:pr-4">
                           Day
                         </th>
-                        <th className="w-[25%] py-1 pr-2 text-left font-medium sm:w-[24%] sm:pr-4">
+                        <th className="w-[28%] py-1 pr-2 text-left font-medium sm:w-[24%] sm:pr-4">
                           Time
                         </th>
                         <th className="w-[36%] py-1 text-left font-medium sm:w-[36%]">
