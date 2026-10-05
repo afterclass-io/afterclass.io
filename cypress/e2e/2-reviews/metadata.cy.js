@@ -394,7 +394,7 @@ context("Reviews: Canonicals and Open Graph", function () {
       name: "Home",
       titleIncludes: null,
       descriptionIncludes: [],
-      ogPath: "",
+      ogPath: "/",
       image: false,
     },
   ];
