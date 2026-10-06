@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
-import { protectedProcedure } from "@/server/api/trpc";
+import { protectedProcedure, requireVerified } from "@/server/api/trpc";
 import {
   requireOwnedRoadmap,
   requireOwnedTimetable,
@@ -54,12 +54,7 @@ export const setVisibility = protectedProcedure
         publishedAt: true,
       });
 
-      if (visibility === "PUBLIC" && !ctx.session.user.isVerified) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only verified users can publish roadmaps",
-        });
-      }
+      if (visibility === "PUBLIC") requireVerified(ctx.session.user);
 
       let shareToken: string | null = roadmap.shareToken;
 

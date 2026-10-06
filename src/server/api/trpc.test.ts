@@ -2,7 +2,7 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import { z } from "zod";
 
 import { makeCaller } from "@/server/api/trpc-test-helpers";
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, publicProcedure, verifiedProcedure } from "@/server/api/trpc";
 
 const router = createTRPCRouter({
   ping: publicProcedure.query(() => "ok"),
@@ -56,5 +56,33 @@ describe("errorFormatter", () => {
   it("leaves data.zodError null for a non-Zod cause", () => {
     const out = formatter({ shape, error: { cause: new Error("plain") } });
     expect(out.data.zodError).toBeNull();
+  });
+});
+
+const verifiedRouter = createTRPCRouter({
+  ping: verifiedProcedure.query(() => "ok"),
+});
+
+describe("verifiedProcedure", () => {
+  it("rejects anonymous callers as UNAUTHORIZED", async () => {
+    const caller = makeCaller(verifiedRouter.createCaller, {}, null);
+    await expect(caller.ping()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  });
+
+  it("rejects signed-in but unverified users as FORBIDDEN", async () => {
+    const caller = makeCaller(verifiedRouter.createCaller, {}, {
+      user: { id: "u1" },
+    });
+    await expect(caller.ping()).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      message: "Only verified users can do this",
+    });
+  });
+
+  it("lets verified users through", async () => {
+    const caller = makeCaller(verifiedRouter.createCaller, {}, {
+      user: { id: "u1", isVerified: true },
+    });
+    await expect(caller.ping()).resolves.toBe("ok");
   });
 });

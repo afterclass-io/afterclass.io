@@ -155,3 +155,26 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+/**
+ * Throw FORBIDDEN unless the signed-in user has confirmed their university
+ * email. Exported for the one conditional case (setVisibility → PUBLIC);
+ * everything else uses `verifiedProcedure`.
+ */
+export function requireVerified(user: { isVerified?: boolean }): void {
+  if (!user.isVerified) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Only verified users can do this",
+    });
+  }
+}
+
+/**
+ * Verified (signed-in + confirmed university email) procedure, for actions
+ * where throwaway accounts would do harm: publishing and reporting.
+ */
+export const verifiedProcedure = protectedProcedure.use(({ ctx, next }) => {
+  requireVerified(ctx.session.user);
+  return next();
+});
