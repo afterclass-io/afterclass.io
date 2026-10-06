@@ -6,6 +6,7 @@ import { coursesRouter } from "@/server/api/courses/router";
 import { classesRouter } from "@/server/api/classes/router";
 import { facultiesRouter } from "@/server/api/faculties/router";
 import { labelsRouter } from "@/server/api/labels/router";
+import { moderationRouter } from "@/server/api/moderation/router";
 import { professorsRouter } from "@/server/api/professors/router";
 import { reviewsRouter } from "@/server/api/reviews/router";
 import { reviewEventsRouter } from "@/server/api/reviewEvents/router";
@@ -37,6 +38,7 @@ export const appRouter = createTRPCRouter({
   courses: coursesRouter,
   faculties: facultiesRouter,
   labels: labelsRouter,
+  moderation: moderationRouter,
   professors: professorsRouter,
   reviews: reviewsRouter,
   reviewEvents: reviewEventsRouter,

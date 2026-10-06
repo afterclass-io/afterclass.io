@@ -55,4 +55,8 @@ describe("tool schema & types smoke", () => {
     expect(allTools.some((t) => t.name === "get-usage")).toBe(false);
     expect(allTools.some((t) => t.name === "get-shared-timetable")).toBe(false);
   });
+
+  it("exposes no report or moderation tool (an automated agent must never mass-report)", () => {
+    expect(allTools.filter((t) => /report|moderat/i.test(t.name))).toEqual([]);
+  });
 });
