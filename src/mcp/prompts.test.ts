@@ -21,6 +21,7 @@ const EXPECTED_PROMPTS = [
   "find-courses",
   "review-timetable",
   "plan-term",
+  "find-meeting-time",
 ] as const;
 
 function registrations(
@@ -36,12 +37,12 @@ function registrations(
 }
 
 describe("registerPrompts", () => {
-  it("registers all 6 user-goal prompts with name, description and schema", async () => {
+  it("registers all 7 user-goal prompts with name, description and schema", async () => {
     const prompt = vi.fn();
     const server = { prompt } as never;
     registerPrompts(server);
 
-    expect(prompt).toHaveBeenCalledTimes(6);
+    expect(prompt).toHaveBeenCalledTimes(7);
     const names = (prompt.mock.calls as Array<[{ name?: string }]>).map(
       (c) => c[0]?.name,
     );
@@ -343,6 +344,27 @@ describe("registerPrompts", () => {
     expect(term.messages[0]!.content.text).toMatch(
       /get-course-reviews.*query|query.*get-course-reviews/s,
     );
+  });
+
+  it("find-meeting-time prompt routes through suggest-meeting-times and guards links and tiers", async () => {
+    const prompt = vi.fn();
+    const server = { prompt } as never;
+    registerPrompts(server);
+    const handler = registrations(prompt).get("find-meeting-time")!;
+
+    const text = (await handler({ slug: "xK9mP2vL7q", when: "Monday morning" }))
+      .messages[0]!.content.text;
+    expect(text).toContain('slug "xK9mP2vL7q"');
+    expect(text).toContain("Monday morning");
+    expect(text).toContain("suggest-meeting-times");
+    expect(text).toContain("Omit durationMinutes");
+    expect(text).toContain("NOT available");
+    expect(text).toContain("Open meeting poll");
+    expect(text).toContain("Never invent poll pages");
+
+    const noSlug = (await handler({})).messages[0]!.content.text;
+    expect(noSlug).toContain("get-my-meetings");
+    expect(noSlug).not.toContain('slug "');
   });
 
   it("plan-roadmap prompt treats public roadmaps as hints to verify", async () => {

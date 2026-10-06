@@ -93,6 +93,22 @@ const planTermSchema: z.ZodObject<any> = z.object({
     ),
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const findMeetingTimeSchema: z.ZodObject<any> = z.object({
+  slug: z
+    .string()
+    .optional()
+    .describe(
+      "Meeting poll slug (from the poll url or get-my-meetings); omit to pick from the user's polls",
+    ),
+  when: z
+    .string()
+    .optional()
+    .describe(
+      "The window the user cares about in their own words, e.g. 'Monday morning', 'this weekend', 'evenings next week'",
+    ),
+});
+
 type PromptArgs = Record<string, unknown>;
 
 function textArg(args: PromptArgs, key: string): string | undefined {
@@ -287,6 +303,35 @@ export function registerPrompts(server: MCPServer): void {
 5. Timetable + calendar: offer get-my-timetable-detail to check the weekly arrangement, then get-timetable-calendar-link for a subscribe link only if the user asks.
 6. Roadmap check: offer get-my-roadmap on the active roadmap to show where the term fits.
 Do not invent course codes - only use codes returned by the tools. Never guarantee a seat - predictions are guidance.`,
+            },
+          },
+        ],
+      };
+    },
+  );
+
+  server.prompt(
+    {
+      name: "find-meeting-time",
+      description:
+        "Find the best time for a group meeting from its availability poll. Use this for 'when should we meet', 'best time on Monday', 'what works this weekend'.",
+      schema: findMeetingTimeSchema,
+    },
+    async (args: PromptArgs) => {
+      const slug = textArg(args, "slug");
+      const when = textArg(args, "when");
+      return {
+        messages: [
+          {
+            role: "user" as const,
+            content: {
+              type: "text" as const,
+              text: `Help the user find the best time for a group meeting${when ? ` (they care about: "${when}")` : ""}.
+
+1. ${slug ? `Use the poll with slug "${slug}"` : "Call get-my-meetings and pick the poll the user means (ask only if several fit)"}. Each poll carries a url; keep it.
+2. Call suggest-meeting-times${slug ? ` with slug "${slug}"` : " with that slug"}. Translate the window into its filters: dates or from/to for days, daysOfWeek for weekdays/weekends (weekend = ["sat","sun"]), earliestStart/latestEnd for parts of the day (evenings = "18:00"-"22:00"). Omit durationMinutes unless the user stated a meeting length; polls do not define one, so never assume it.
+3. Present the options best first. Quote each option's summary: tier "everyone-free" means everybody is free; "everyone-attendable" means everybody can attend but some are only "if needed". People who are "if needed" are NOT available - never call them available. Name who is unavailable for partial options. Do not rebuild per-time tables by hand; call suggest-meeting-times again with a narrower window instead.
+4. Link the poll with the url the tools returned, as a markdown link with a short label ('Open meeting poll'). Never invent poll pages or URLs (there is no /rsvp). Offer submit-meeting-availability only if the user wants to fill in or change their own availability.`,
             },
           },
         ],

@@ -21,12 +21,36 @@ development can use the seeded development user without Supabase.
   `structuredContent` through its output schema. The remaining tools return
   text-only MCP results. View CTAs call viewless tools dynamically; secrets
   such as calendar URLs use `_meta` and never enter model text.
-- `src/mcp/prompts.ts` provides planning and review prompts, while
+- `src/mcp/prompts.ts` provides planning, review and meeting-time prompts, while
   `src/mcp/resources.ts` provides `catalog://acad-terms`.
+
+## Page links and agent steering
+
+Every feature that points users at a page follows the same four-part pattern, so
+agents (the in-app assistant and external MCP clients) relay real links:
+
+1. Build the path with a helper in `src/server/mcp/tools/page-links.ts`
+   (`coursePage`, `bidAnalytics`, `meetingPage`, ...). Never hand-write a path.
+2. Return an absolute URL with `absoluteUrl(path)` (prefixes `NEXT_PUBLIC_SITE_URL`).
+   Text-shaped tools emit a labelled line (`Open in bid analytics: <url>`);
+   JSON-shaped tools return a `url` field (`contribute`, the meeting tools) and put
+   `PAGE_LINK_NOTE` in their description. Older relative lines (`Open timetable:
+   /timetable`, `Full reviews: /course/X`) still exist; the chat renders them, external
+   clients show plain text.
+3. Steer the chat in `SYSTEM_PROMPT` (`src/app/api/chat/route.ts`): one rule per feature
+   plus the generic "Deep-links" rule. The assistant history drops old tool results, so
+   a model that is not told "use the url the tool returned" invents pages.
+4. Steer external agents in `src/mcp/prompts.ts` (they never see `SYSTEM_PROMPT`):
+   one prompt per workflow (`plan-bidding`, `review-timetable`, `find-meeting-time`).
+
+The chat renders `http(s):`, `mailto:` and site-relative (`/path`) links; any other href
+loses its link (`src/modules/assistant/markdown.tsx`). Capability copy for new features
+goes in `src/server/assistant/canned.ts`.
 
 ## Meeting tools
 
 All meeting dates and times are Singapore time (UTC+8); no tool exposes slot indices.
+Every meeting tool returns the poll's absolute `url` (see "Page links and agent steering").
 
 - `get-my-meetings`: polls the user created or joined, with `startDate`/`endDate` (YYYY-MM-DD) and `hasResponded`.
 - `get-meeting-poll-detail`: the poll window (`days`, `startHour`, `endHour`, `slotMinutes`) and each participant's availability as `{ date, start, end, status }` ranges, with `hasResponded`.
