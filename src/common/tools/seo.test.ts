@@ -20,6 +20,7 @@ const FULL_DISALLOW = [
   "/account/auth/",
   "/submit",
   "/search",
+  "/meetings/",
 ];
 
 function disallowLines(robots: ReturnType<typeof buildRobots>): string[] {
@@ -48,6 +49,11 @@ describe("buildRobots", () => {
     for (const env of ["production", "development"] as const) {
       expect(disallowLines(buildRobots(BASE, env))).toEqual(FULL_DISALLOW);
     }
+  });
+
+  it("disallows /meetings/ route to protect private student availability", () => {
+    const robots = buildRobots(BASE, "production");
+    expect(disallowLines(robots)).toContain("/meetings/");
   });
 });
 

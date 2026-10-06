@@ -24,7 +24,7 @@ import {
   StatisticsTableIcon,
   TelegramIcon,
 } from "@/common/components/icons";
-import { BotIcon, FileTextIcon, LockIcon, PlugIcon } from "lucide-react";
+import { BotIcon, FileTextIcon, LockIcon, PlugIcon, Users } from "lucide-react";
 import { env } from "@/env";
 import { toTitleCase } from "@/common/functions";
 import Link from "next/link";
@@ -76,6 +76,13 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       label: "Roadmaps",
       icon: <BooksIcon size={16} />,
       href: "/roadmaps",
+      isActiveWithoutExact: true,
+      isNew: true,
+    },
+    {
+      label: "Meetings",
+      icon: <Users size={16} />,
+      href: "/meetings",
       isActiveWithoutExact: true,
       isNew: true,
     },
