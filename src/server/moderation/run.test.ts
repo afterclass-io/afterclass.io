@@ -181,7 +181,9 @@ describe("runModeration", () => {
     expect(sent).toBe(
       full.slice(0, half) + JUDGE_TRUNCATION_MARKER + full.slice(-half),
     );
-    expect(sent).toHaveLength(MAX_JUDGE_TEXT_CHARS + JUDGE_TRUNCATION_MARKER.length);
+    expect(sent).toHaveLength(
+      MAX_JUDGE_TEXT_CHARS + JUDGE_TRUNCATION_MARKER.length,
+    );
     expect(sent.endsWith("ABUSE")).toBe(true);
     const logged = m.txLogCreate.mock.calls[0]?.[0] as {
       data: { removedText: string };

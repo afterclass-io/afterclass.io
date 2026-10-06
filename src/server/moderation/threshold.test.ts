@@ -22,6 +22,8 @@ describe("effectiveThreshold", () => {
     expect(effectiveThreshold(cfg, 10_000)).toBe(48);
   });
   it("caps a base threshold that is already above the cap", () => {
-    expect(effectiveThreshold({ ...cfg, moderationReportThreshold: 100 }, 0)).toBe(48);
+    expect(
+      effectiveThreshold({ ...cfg, moderationReportThreshold: 100 }, 0),
+    ).toBe(48);
   });
 });

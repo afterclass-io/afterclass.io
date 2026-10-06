@@ -41,9 +41,9 @@ export default function GuidelinesPage() {
 
       <PolicySection title="How reporting works">
         <p>
-          Signed-in students can report a review, a public or shared roadmap,
-          or a shared timetable. Reports are private: nobody, including the
-          author, can see who reported or how many reports there are.
+          Signed-in students can report a review, a public or shared roadmap, or
+          a shared timetable. Reports are private: nobody, including the author,
+          can see who reported or how many reports there are.
         </p>
         <p>
           Reports alone never remove anything. Once several different students

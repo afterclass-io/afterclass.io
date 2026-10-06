@@ -16,11 +16,17 @@ export type SurfaceAdapter = {
   label: string;
   /** The reportable item behind a client reference, or null when it is gone
    * or not visible to non-owners. */
-  resolve(db: Db, ref: string): Promise<{ itemId: string; ownerId: string } | null>;
+  resolve(
+    db: Db,
+    ref: string,
+  ): Promise<{ itemId: string; ownerId: string } | null>;
   /** Where clause selecting this item's reports. */
   reportsFor(itemId: string): Prisma.ModerationReportWhereInput;
   /** Row data for one report on this item. */
-  reportData(reporterId: string, itemId: string): Prisma.ModerationReportCreateManyInput;
+  reportData(
+    reporterId: string,
+    itemId: string,
+  ): Prisma.ModerationReportCreateManyInput;
   /** The live, labelled text the judge reads, or null when the item is gone. */
   readText(db: Db, itemId: string): Promise<string | null>;
   /** Take the item out of everyone else's view. Idempotent. */

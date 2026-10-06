@@ -103,7 +103,13 @@ function toJudgeResult(
   if (v.policyRule === "none") {
     return { kind: "error", reason: "uncertain_output", model };
   }
-  return { kind: "violation", policyRule: v.policyRule, language, rationale, model };
+  return {
+    kind: "violation",
+    policyRule: v.policyRule,
+    language,
+    rationale,
+    model,
+  };
 }
 
 /**

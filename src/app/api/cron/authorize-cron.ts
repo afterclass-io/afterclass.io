@@ -10,7 +10,10 @@ import { env } from "@/env";
  * `Authorization: Bearer dev` when NODE_ENV is "development".
  * Returns the response to send, or null when the caller may proceed.
  */
-export function authorizeCron(req: Request, route: string): NextResponse | null {
+export function authorizeCron(
+  req: Request,
+  route: string,
+): NextResponse | null {
   // Canonical env first (CRON_SECRET in the env schema), raw-process
   // fallback for secret-less contexts. Allowlisted raw read.
   const secret = env.CRON_SECRET ?? process.env.CRON_SECRET;

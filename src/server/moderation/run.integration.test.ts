@@ -173,9 +173,9 @@ describe("runModeration against Postgres", () => {
         model: "test-model",
       })),
     ).resolves.toBe("error");
-    await expect(runModeration(target, cfg, async () => violation)).resolves.toBe(
-      "claim_lost",
-    );
+    await expect(
+      runModeration(target, cfg, async () => violation),
+    ).resolves.toBe("claim_lost");
 
     // Claim windows are fixed windows keyed `<key>:<windowStart>`; once the
     // window has passed the next call uses a fresh, empty row. Deleting the

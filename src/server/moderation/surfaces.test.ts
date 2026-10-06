@@ -72,7 +72,9 @@ describe("MODERATION_SURFACES", () => {
     const roadmap = MODERATION_SURFACES.roadmap;
 
     it("resolves only roadmaps visible to non-owners", async () => {
-      const findFirst = vi.fn().mockResolvedValue({ id: "r1", userId: "owner" });
+      const findFirst = vi
+        .fn()
+        .mockResolvedValue({ id: "r1", userId: "owner" });
       await expect(
         roadmap.resolve(asDb({ userRoadmap: { findFirst } }), "r1"),
       ).resolves.toEqual({ itemId: "r1", ownerId: "owner" });
@@ -102,7 +104,9 @@ describe("MODERATION_SURFACES", () => {
     const timetable = MODERATION_SURFACES.timetable;
 
     it("resolves by share token, never by id", async () => {
-      const findUnique = vi.fn().mockResolvedValue({ id: "t1", userId: "owner" });
+      const findUnique = vi
+        .fn()
+        .mockResolvedValue({ id: "t1", userId: "owner" });
       await expect(
         timetable.resolve(asDb({ userTimetable: { findUnique } }), "tok"),
       ).resolves.toEqual({ itemId: "t1", ownerId: "owner" });
