@@ -40,6 +40,47 @@ describe("chat config schema", () => {
     expect(parsed.widgetEnabled).toBe(false);
     expect(parsed.mcpEnabled).toBe(false);
   });
+
+  it("defaults enableContentModeration to false when the remote config lacks it", () => {
+    const parsed = edgeConfigSchema.parse({
+      enableAnnouncementBanner: true,
+      enableCmdkTooltip: true,
+      enableReviewEventsTracking: true,
+      enableReviewSort: true,
+      enableReviewFilter: true,
+      enableReviewReactions: true,
+    });
+    expect(parsed.enableContentModeration).toBe(false);
+  });
+
+  it("keeps moderation tunables from the remote chat section (not stripped)", () => {
+    const parsed = edgeConfigSchema.parse({
+      enableAnnouncementBanner: true,
+      enableCmdkTooltip: true,
+      enableReviewEventsTracking: true,
+      enableReviewSort: true,
+      enableReviewFilter: true,
+      enableReviewReactions: true,
+      enableContentModeration: true,
+      chat: { moderationReportThreshold: 5, moderationModel: "m" },
+    });
+    expect(parsed.enableContentModeration).toBe(true);
+    expect(parsed.chat?.moderationReportThreshold).toBe(5);
+    expect(parsed.chat?.moderationModel).toBe("m");
+  });
+
+  it("an out-of-range moderation value does not invalidate the remote config", () => {
+    const result = edgeConfigSchema.safeParse({
+      enableAnnouncementBanner: true,
+      enableCmdkTooltip: true,
+      enableReviewEventsTracking: true,
+      enableReviewSort: true,
+      enableReviewFilter: true,
+      enableReviewReactions: true,
+      chat: { moderationJudgeTimeoutMs: 999_999 },
+    });
+    expect(result.success).toBe(true);
+  });
 });
 
 describe("edge config schema", () => {

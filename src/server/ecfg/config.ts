@@ -28,6 +28,19 @@ export const chatConfigSchema = z
     chatEnabled: z.boolean(),
     widgetEnabled: z.boolean(),
     mcpEnabled: z.boolean(),
+    // Content moderation tunables. Loosely typed on purpose: range checks
+    // live in the canonical strict schema (src/server/config/chat-config.ts)
+    // so a bad value fails closed at the moderation call site instead of
+    // discarding the whole remote config here.
+    moderationReportThreshold: z.number(),
+    moderationBackoffMultiplier: z.number(),
+    moderationThresholdCap: z.number(),
+    moderationJudgementsPerHour: z.number(),
+    moderationReportsPerHour: z.number(),
+    moderationClaimWindowMinutes: z.number(),
+    moderationJudgeTimeoutMs: z.number(),
+    moderationLogRetentionDays: z.number(),
+    moderationModel: z.string(),
   })
   .partial()
   .default(DEFAULT_CHAT_CONFIG)
@@ -45,6 +58,11 @@ export const edgeConfigSchema = z.object({
   // Gates password (Credentials provider) login. Defaults to false
   // (Google-only auth); flipped on via remote Edge Config when needed.
   enablePasswordLogin: z.boolean().default(false),
+  // Master switch for report-driven content moderation. Defaults to false so
+  // a remote config without the key still parses (a new required key would
+  // fail validation and discard the whole remote config). Remote-only: no
+  // env override, so it cannot be bypassed.
+  enableContentModeration: z.boolean().default(false),
   // A config whose remote Edge Config hasn't been updated with `chat` yet must
   // still parse. NOTE (zod 4.5+): an inner schema's `.default()` is now applied
   // even when the key is absent/undefined, so `chat` is always populated (with

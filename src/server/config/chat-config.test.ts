@@ -1,5 +1,5 @@
 // src/server/config/chat-config.test.ts
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_CHAT_CONFIG_VALUES,
   getBidLimits,
@@ -59,5 +59,74 @@ describe("getChatConfig", () => {
     expect(parsed.chatEnabled).toBe(false);
     expect(parsed.widgetEnabled).toBe(false);
     expect(parsed.mcpEnabled).toBe(false);
+  });
+  it("moderation tunables default to the agreed values", () => {
+    const c = getChatConfig({ NODE_ENV: "test" });
+    expect({
+      threshold: c.moderationReportThreshold,
+      multiplier: c.moderationBackoffMultiplier,
+      cap: c.moderationThresholdCap,
+      perHour: c.moderationJudgementsPerHour,
+      reportsPerHour: c.moderationReportsPerHour,
+      claimMinutes: c.moderationClaimWindowMinutes,
+      timeoutMs: c.moderationJudgeTimeoutMs,
+      retentionDays: c.moderationLogRetentionDays,
+      model: c.moderationModel,
+    }).toEqual({
+      threshold: 3,
+      multiplier: 2,
+      cap: 48,
+      perHour: 20,
+      reportsPerHour: 10,
+      claimMinutes: 5,
+      timeoutMs: 8000,
+      retentionDays: 90,
+      model: undefined,
+    });
+  });
+
+  it("moderation tunables ignore environment variables (remote config only)", () => {
+    const c = getChatConfig({
+      NODE_ENV: "test",
+      MODERATION_REPORT_THRESHOLD: "99",
+      CHAT_MODERATION_REPORT_THRESHOLD: "99",
+      MODERATION_MODEL: "env-model",
+    });
+    expect(c.moderationReportThreshold).toBe(3);
+    expect(c.moderationModel).toBeUndefined();
+  });
+
+  it("fails closed on an out-of-range judge timeout or claim window", async () => {
+    const { chatConfigSchema } = await import("./chat-config");
+    const strict = chatConfigSchema.strict();
+    expect(
+      strict.safeParse({
+        ...DEFAULT_CHAT_CONFIG_VALUES,
+        moderationJudgeTimeoutMs: 20_000,
+      }).success,
+    ).toBe(false);
+    expect(
+      strict.safeParse({
+        ...DEFAULT_CHAT_CONFIG_VALUES,
+        moderationClaimWindowMinutes: 0,
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("getChatConfigAsync moderation layer", () => {
+  afterEach(() => vi.resetModules());
+
+  it("reads moderation tunables from the remote chat section", async () => {
+    vi.resetModules();
+    vi.doMock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+      getEdgeConfig: async () => ({
+        chat: { moderationReportThreshold: 7, moderationModel: "judge-model" },
+      }),
+    }));
+    const { getChatConfigAsync } = await import("./chat-config");
+    const c = await getChatConfigAsync();
+    expect(c.moderationReportThreshold).toBe(7);
+    expect(c.moderationModel).toBe("judge-model");
   });
 });

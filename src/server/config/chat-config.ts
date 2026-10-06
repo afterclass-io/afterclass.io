@@ -45,6 +45,15 @@
  * | chatEnabled | true | ecfg kill-switch: chat route 503 when false (ecfg-only, no ENV_BINDINGS) |
  * | widgetEnabled | true | ecfg kill-switch: widget hidden when false (surfaced via status; ecfg-only, no ENV_BINDINGS) |
  * | mcpEnabled | true | ecfg kill-switch: MCP transport refuses when false (server-side only; ecfg-only, no ENV_BINDINGS) |
+ * | moderationReportThreshold | 3 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationBackoffMultiplier | 2 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationThresholdCap | 48 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationJudgementsPerHour | 20 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationReportsPerHour | 10 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationClaimWindowMinutes | 5 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationJudgeTimeoutMs | 8000 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationLogRetentionDays | 90 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationModel | undefined | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  */
 import { z } from "zod";
 
@@ -94,6 +103,28 @@ export const chatConfigSchema = z.object({
   chatEnabled: z.boolean(),
   widgetEnabled: z.boolean(),
   mcpEnabled: z.boolean(),
+  // Content moderation: ecfg-owned ONLY — deliberately NO ENV_BINDINGS so
+  // the remote value always wins and changes without a deploy. Read via
+  // getChatConfigAsync() at every moderation call site.
+  moderationReportThreshold: positiveInt("moderationReportThreshold"),
+  moderationBackoffMultiplier: positiveInt("moderationBackoffMultiplier"),
+  moderationThresholdCap: positiveInt("moderationThresholdCap"),
+  moderationJudgementsPerHour: positiveInt("moderationJudgementsPerHour"),
+  moderationReportsPerHour: positiveInt("moderationReportsPerHour"),
+  moderationClaimWindowMinutes: z
+    .number({ error: "moderationClaimWindowMinutes must be an int in [1, 60]" })
+    .int()
+    .min(1)
+    .max(60),
+  moderationJudgeTimeoutMs: z
+    .number({
+      error: "moderationJudgeTimeoutMs must be an int in [1000, 12000]",
+    })
+    .int()
+    .min(1000)
+    .max(12000),
+  moderationLogRetentionDays: positiveInt("moderationLogRetentionDays"),
+  moderationModel: z.string().min(1).optional(),
 });
 
 export type ChatConfig = z.infer<typeof chatConfigSchema>;
@@ -124,6 +155,16 @@ export const DEFAULT_CHAT_CONFIG_VALUES: ChatConfig = {
   chatEnabled: true,
   widgetEnabled: true,
   mcpEnabled: true,
+  moderationReportThreshold: 3,
+  moderationBackoffMultiplier: 2,
+  moderationThresholdCap: 48,
+  moderationJudgementsPerHour: 20,
+  moderationReportsPerHour: 10,
+  moderationClaimWindowMinutes: 5,
+  moderationJudgeTimeoutMs: 8000,
+  moderationLogRetentionDays: 90,
+  // Explicit undefined: normalizeChatLayer keeps only keys present here.
+  moderationModel: undefined,
 };
 
 /** Env key → config field, with the parser applied to the raw env string.

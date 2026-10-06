@@ -1,6 +1,7 @@
 {
   "enableAnnouncementBanner": false,
   "enablePasswordLogin": false,
+  "enableContentModeration": false,
   "enableCmdkTooltip": true,
   "enableReviewEventsTracking": true,
   "enableReviewSort": true,
