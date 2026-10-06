@@ -639,6 +639,7 @@ describe("meetingsRouter", () => {
           createdAt: new Date("2026-10-01"),
           updatedAt: new Date("2026-10-01"),
           _count: { participants: 4 },
+          participants: [{ availableSlots: [1, 2], ifNeededSlots: [] }],
         },
         {
           id: "poll-uuid-2",
@@ -658,6 +659,7 @@ describe("meetingsRouter", () => {
           createdAt: new Date("2026-09-28"),
           updatedAt: new Date("2026-09-28"),
           _count: { participants: 2 },
+          participants: [],
         },
       ]);
 
@@ -676,8 +678,19 @@ describe("meetingsRouter", () => {
       // Verify creator status flags
       expect(result[0]?.isCreator).toBe(true);
       expect(result[0]?.participantCount).toBe(4);
+      expect(result[0]?.hasResponded).toBe(true);
       expect(result[1]?.isCreator).toBe(false);
       expect(result[1]?.participantCount).toBe(2);
+      expect(result[1]?.hasResponded).toBe(false);
+
+      expect(findManyMock.mock.calls[0]?.[0]).toMatchObject({
+        select: {
+          participants: {
+            where: { userId: CREATOR_ID },
+            take: 1,
+          },
+        },
+      });
 
       // STRICT PRIVACY INVARIANT: Ensure creatorId and userId are NOT present
       const serialized = JSON.stringify(result);
@@ -685,12 +698,76 @@ describe("meetingsRouter", () => {
       expect(serialized).not.toContain(PARTICIPANT_USER_ID_1);
       expect(serialized).not.toContain('"creatorId"');
       expect(serialized).not.toContain('"userId"');
+      expect(serialized).not.toContain("availableSlots");
 
       for (const item of result) {
         expect(item).not.toHaveProperty("creatorId");
         expect(item).toHaveProperty("isCreator");
         expect(item).toHaveProperty("participantCount");
       }
+    });
+
+    it("treats a participant row with no slots as not responded", async () => {
+      const findManyMock = vi
+        .fn()
+        .mockResolvedValueOnce([
+          {
+            id: "poll-uuid-1",
+            slug: "pollslug01",
+            title: "Poll 1",
+            description: null,
+            startDate: new Date("2026-10-10"),
+            endDate: new Date("2026-10-15"),
+            startHour: 9,
+            endHour: 18,
+            slotDurationMinutes: 15,
+            creatorId: CREATOR_ID,
+            course: null,
+            section: null,
+            teamIdentifier: null,
+            acadTerm: null,
+            createdAt: new Date("2026-10-01"),
+            updatedAt: new Date("2026-10-01"),
+            _count: { participants: 1 },
+            participants: [{ availableSlots: [], ifNeededSlots: [] }],
+          },
+        ])
+        .mockResolvedValueOnce([
+          {
+            id: "poll-uuid-1",
+            slug: "pollslug01",
+            title: "Poll 1",
+            description: null,
+            startDate: new Date("2026-10-10"),
+            endDate: new Date("2026-10-15"),
+            startHour: 9,
+            endHour: 18,
+            slotDurationMinutes: 15,
+            creatorId: CREATOR_ID,
+            course: null,
+            section: null,
+            teamIdentifier: null,
+            acadTerm: null,
+            createdAt: new Date("2026-10-01"),
+            updatedAt: new Date("2026-10-01"),
+            _count: { participants: 1 },
+            participants: [{ availableSlots: [], ifNeededSlots: [3] }],
+          },
+        ]);
+
+      const caller = makeCaller(
+        meetingsRouter.createCaller,
+        {
+          meetingPoll: { findMany: findManyMock },
+        },
+        { user: { id: CREATOR_ID } },
+      );
+
+      const res1 = await caller.listMyMeetings();
+      expect(res1[0]?.hasResponded).toBe(false);
+
+      const res2 = await caller.listMyMeetings();
+      expect(res2[0]?.hasResponded).toBe(true);
     });
 
     it("throws UNAUTHORIZED when session is null", async () => {

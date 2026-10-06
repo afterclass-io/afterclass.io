@@ -36,6 +36,11 @@ export const listMyMeetings = protectedProcedure
         _count: {
           select: { participants: true },
         },
+        participants: {
+          where: { userId: ctx.session.user.id },
+          select: { availableSlots: true, ifNeededSlots: true },
+          take: 1,
+        },
       },
     });
 
@@ -56,6 +61,10 @@ export const listMyMeetings = protectedProcedure
       teamIdentifier: p.teamIdentifier,
       acadTerm: p.acadTerm,
       participantCount: p._count.participants,
+      hasResponded:
+        (p.participants[0]?.availableSlots.length ?? 0) +
+          (p.participants[0]?.ifNeededSlots.length ?? 0) >
+        0,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
     }));
