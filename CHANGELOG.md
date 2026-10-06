@@ -1,18 +1,3 @@
-<a id="unreleased"></a>
-# Unreleased
-
-## What's Changed
-### 🚀 Features
-* feat(meetings): create meetings inside the current academic term with a themed date range picker and a searchable list of that term's classes
-* feat(meetings): compact meeting room with the grid above the fold, your timetable and Google Calendar events overlaid on My availability, and drag-to-select a time range in the Group view with Add to calendar (Google, Outlook, .ics)
-* feat(meetings): clickable meeting cards grouped into Upcoming and Past, with a one-line summary
-* feat(meetings): participants show their real names with initials avatars
-### 👾 Bug Fixes
-* fix(meetings): creating a meeting without a class no longer fails with "Invalid UUID"
-### Other Changes
-* refactor(meetings): remove the finalize flow (lock, finalized time, meeting link and location); meetings are always open for updates
-* feat(db): drop `is_locked`, `finalized_slot`, `meeting_url`, `location` from `meeting_polls` and `name` from `meeting_participants`
-
 <a id="v1.5.0"></a>
 # [v1.5.0](https://github.com/afterclass-io/afterclass.io/releases/tag/v1.5.0) - 2026-09-29
 
