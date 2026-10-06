@@ -99,6 +99,22 @@ describe("runModeration", () => {
     });
   });
 
+  it("judges again at the capped threshold once reports reach it", async () => {
+    // 3 * 2^10 is far above the cap, so the effective threshold is the cap.
+    givenClearances(10, new Date("2026-10-01T00:00:00Z"));
+    const judge = vi.fn<Judge>().mockResolvedValue(cleared);
+
+    m.count.mockResolvedValue(47);
+    await expect(runModeration(target, cfg, judge)).resolves.toBe(
+      "below_threshold",
+    );
+    expect(judge).not.toHaveBeenCalled();
+
+    m.count.mockResolvedValue(48);
+    await expect(runModeration(target, cfg, judge)).resolves.toBe("cleared");
+    expect(judge).toHaveBeenCalledTimes(1);
+  });
+
   it("claims per item and clearance count before the hourly ceiling", async () => {
     m.checkAndIncrement.mockResolvedValueOnce({
       ok: false,

@@ -157,6 +157,41 @@ describe("runModeration against Postgres", () => {
     );
   });
 
+  it("an errored item is judged again once the claim window has passed", async () => {
+    const review = await seedReview(db, {
+      reviewerId: authorId,
+      courseId,
+      body: "vile text",
+    });
+    await reportReview(review.id, 3);
+    const target = { surface: "review" as const, itemId: review.id };
+
+    await expect(
+      runModeration(target, cfg, async () => ({
+        kind: "error",
+        reason: "timeout",
+        model: "test-model",
+      })),
+    ).resolves.toBe("error");
+    await expect(runModeration(target, cfg, async () => violation)).resolves.toBe(
+      "claim_lost",
+    );
+
+    // Claim windows are fixed windows keyed `<key>:<windowStart>`; once the
+    // window has passed the next call uses a fresh, empty row. Deleting the
+    // current row is equivalent to that time passing.
+    await db.rateLimitWindow.deleteMany({
+      where: { key: { startsWith: `moderation:claim:REVIEW:${review.id}:0:` } },
+    });
+
+    const judge = vi.fn<Judge>().mockResolvedValue(violation);
+    await expect(runModeration(target, cfg, judge)).resolves.toBe("violation");
+    expect(judge).toHaveBeenCalledTimes(1);
+    expect(
+      await db.reviews.findUnique({ where: { id: review.id } }),
+    ).toBeNull();
+  });
+
   it("a violating public roadmap becomes private everywhere", async () => {
     const roadmap = await db.userRoadmap.create({
       data: {
