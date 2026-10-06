@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { z } from "zod";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
+import { getGoogleNameFields } from "./google-name";
 import * as Sentry from "@sentry/nextjs";
 import { type Users } from "@/generated/prisma/client";
 
@@ -301,6 +302,7 @@ export const authConfig = {
                 isVerified: true,
                 universityId: uniOfThisEmail.id,
                 photoUrl: (profile as { picture?: string } | null)?.picture,
+                ...getGoogleNameFields(profile as GoogleProfile | null),
               },
             });
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -349,6 +351,20 @@ export const authConfig = {
               level: "warning",
             });
           }
+        }
+        // Backfill names for accounts created before Google names were stored.
+        const googleName = getGoogleNameFields(profile as GoogleProfile | null);
+        if (
+          (googleName.firstName && !dbUser.firstName) ||
+          (googleName.lastName && !dbUser.lastName)
+        ) {
+          dbUser = await db.users.update({
+            where: { id: dbUser.id },
+            data: {
+              ...(dbUser.firstName ? {} : { firstName: googleName.firstName }),
+              ...(dbUser.lastName ? {} : { lastName: googleName.lastName }),
+            },
+          });
         }
         // strip user object of unwanted sensitive fields before populating to token
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

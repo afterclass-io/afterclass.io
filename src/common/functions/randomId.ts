@@ -1,8 +1,9 @@
 import { customAlphabet } from "nanoid";
 
 const nonAmbiguous = "cdefhjkmnprtvwxy2345689";
-const nanoid = customAlphabet(nonAmbiguous, 12);
+const nanoidDefault = customAlphabet(nonAmbiguous, 12);
 
-export default function randomId() {
-  return nanoid(); // returns something like 'cy5p69dym4tx'
+export default function randomId(length: number = 12): string {
+  if (length === 12) return nanoidDefault();
+  return customAlphabet(nonAmbiguous, length)();
 }

@@ -19,7 +19,9 @@ vi.mock("@sentry/nextjs", () => ({
 
 // `isVerified` is optional so procedures gating on it (e.g. roadmaps.publish,
 // sharing.setVisibility) can be exercised without every caller spelling it out.
-type MockSession = { user: { id: string; isVerified?: boolean } } | null;
+type MockSession = {
+  user: { id: string; isVerified?: boolean; name?: string | null };
+} | null;
 
 // A partial stand-in for the Prisma client: keys must be real client members
 // (a typo'd model name — `userRoadmaps` for `userRoadmap` — is a compile
