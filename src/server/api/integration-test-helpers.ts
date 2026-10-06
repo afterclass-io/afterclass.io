@@ -70,6 +70,27 @@ export function seedProfessor(
   });
 }
 
+/** A course review by `reviewerId` in the seeded university/faculty. */
+export function seedReview(
+  db: Db,
+  {
+    reviewerId,
+    courseId,
+    body = "seed review body",
+  }: { reviewerId: string; courseId: string; body?: string },
+) {
+  return db.reviews.create({
+    data: {
+      body,
+      rating: 3,
+      reviewedCourseId: courseId,
+      reviewedUniversityId: universityId(),
+      reviewedFacultyId: facultyId(),
+      reviewerId,
+    },
+  });
+}
+
 /**
  * An acad term. `id` defaults to a unique value; `acadYearEnd` and the term
  * dates derive from `acadYearStart` (default 2024) unless given explicitly.

@@ -35,6 +35,7 @@ model Reviews {
   votes              ReviewVotes[]
   reviewEvents       ReviewEvents[]
   reviewReactions    ReviewReactions[]
+  moderationReports  ModerationReport[]
 
   @@index([createdAt], type: BTree)
   @@index([reviewedCourseId], type: BTree)
@@ -68,6 +69,7 @@ model Users {
   reviewReactions    ReviewReactions[]
   hackSubmissionVote HackSubmissionVote[]
   userBid            UserBid[]
+  moderationReports  ModerationReport[]
   userTimetable      UserTimetable[]
   userRoadmap        UserRoadmap[]
   userBidBudget      UserBidBudget[]
@@ -227,7 +229,7 @@ model ReviewVotes {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  review Reviews @relation(fields: [reviewId], references: [id])
+  review Reviews @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   voter  Users   @relation(fields: [voterId], references: [id])
 
   @@id([reviewId, voterId])
@@ -255,7 +257,7 @@ model ReviewLabels {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   label  Labels  @relation(fields: [labelId], references: [id])
-  review Reviews @relation(fields: [reviewId], references: [id])
+  review Reviews @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
   @@index([reviewId], type: BTree)
   @@index([reviewId, labelId])
@@ -269,7 +271,7 @@ model ReviewEvents {
   triggeringUserId String?         @map("triggering_user_id")
   createdAt        DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  review         Reviews @relation(fields: [reviewId], references: [id])
+  review         Reviews @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   triggeringUser Users?  @relation(fields: [triggeringUserId], references: [id])
 
   @@index([reviewId, eventType])
@@ -283,7 +285,7 @@ model ReviewReactions {
   createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt      DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  review       Reviews @relation(fields: [reviewId], references: [id])
+  review       Reviews @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   reactingUser Users   @relation(fields: [reactingUserId], references: [id])
 
   @@id([reviewId, reactingUserId])
@@ -502,6 +504,7 @@ model UserTimetable {
   user     Users               @relation(fields: [userId], references: [id])
   acadTerm AcadTerm            @relation(fields: [acadTermId], references: [id])
   slots    UserTimetableSlot[]
+  moderationReports ModerationReport[]
 
   @@index([userId, acadTermId])
   @@map("user_timetable")
@@ -544,6 +547,7 @@ model UserRoadmap {
   entries     UserRoadmapEntry[]
   votes       RoadmapVote[]
   reactions   RoadmapReaction[]
+  moderationReports ModerationReport[]
 
   @@index([userId])
   @@index([visibility, publishedAt])
@@ -765,4 +769,67 @@ model MeetingParticipant {
   @@unique([pollId, userId])                 // Atomic upsert constraint & 1 response per user
   @@index([userId, createdAt(sort: Desc)])   // Powers listMyMeetings dashboard query
   @@map("meeting_participants")
+}
+
+// ==========================================
+// CONTENT MODERATION
+// ==========================================
+
+enum ModerationSurface {
+  REVIEW
+  ROADMAP
+  TIMETABLE
+}
+
+enum ModerationVerdict {
+  VIOLATION
+  CLEARED
+  ERROR
+}
+
+/// One row per (reporter, item). Exactly one item relation is set — enforced
+/// by the CHECK `moderation_reports_exactly_one_item` in the migration.
+/// Adding a moderated surface = one more optional relation + unique + index here.
+model ModerationReport {
+  id          String   @id @default(uuid())
+  reporterId  String   @map("reporter_id")
+  reviewId    String?  @map("review_id")
+  roadmapId   String?  @map("roadmap_id")
+  timetableId String?  @map("timetable_id")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  reporter  Users          @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  review    Reviews?       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  roadmap   UserRoadmap?   @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  timetable UserTimetable? @relation(fields: [timetableId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, reporterId])
+  @@unique([roadmapId, reporterId])
+  @@unique([timetableId, reporterId])
+  @@index([reporterId])
+  @@index([reviewId, createdAt])
+  @@index([roadmapId, createdAt])
+  @@index([timetableId, createdAt])
+  @@map("moderation_reports")
+}
+
+/// Append-only audit of every judgement attempt. Deliberately NO relation to
+/// the item: rows must outlive deleted reviews. Read in a SQL client.
+/// removedText is set on VIOLATION rows only and is cleared after the
+/// retention period by the moderation log prune cron.
+model ModerationLog {
+  id          String            @id @default(uuid())
+  surface     ModerationSurface
+  itemId      String            @map("item_id")
+  verdict     ModerationVerdict
+  policyRule  String?           @map("policy_rule") @db.VarChar(40)
+  language    String?           @db.VarChar(20)
+  rationale   String?           @db.VarChar(300)
+  model       String            @db.VarChar(120)
+  removedText String?           @map("removed_text")
+  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([surface, itemId, verdict, createdAt(sort: Desc)])
+  @@index([createdAt])
+  @@map("moderation_logs")
 }
