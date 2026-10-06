@@ -30,8 +30,8 @@ All meeting dates and times are Singapore time (UTC+8); no tool exposes slot ind
 
 - `get-my-meetings`: polls the user created or joined, with `startDate`/`endDate` (YYYY-MM-DD) and `hasResponded`.
 - `get-meeting-poll-detail`: the poll window (`days`, `startHour`, `endHour`, `slotMinutes`) and each participant's availability as `{ date, start, end, status }` ranges, with `hasResponded`.
-- `suggest-meeting-times`: ranked options for a meeting length (`durationMinutes`, default 60) inside a window (`dates` or `from`/`to`, `daysOfWeek`, `earliestStart`/`latestEnd`, `requireParticipants`, `includePast`, `limit`). Each option names who is free, if needed, or unavailable; `bestPerDay` gives the best option for every day. Ranking: most attendees, then most fully free, then earliest.
-- `submit-meeting-availability`: `availability: [{ date, start, end, status }]` on the poll's slot grid, with `mode` `replace` (default) or `merge`.
+- `suggest-meeting-times`: ranked options for a meeting length (`durationMinutes`, default 60) inside a window (`dates` or `from`/`to`, `daysOfWeek`, `earliestStart`/`latestEnd`, `requireParticipants`, `includePast`, `limit`). Each option names who is free, if needed, or unavailable; `bestPerDay` gives the best option for every day. Ranking: most attendees, then most fully free, then earliest. If no time works for every `requireParticipants` name, the closest options are returned with an explanatory `message`.
+- `submit-meeting-availability`: `availability: [{ date, start, end, status }]` on the poll's slot grid, with `mode` `replace` (default) or `merge`. In `merge` mode a range with `status: "unavailable"` removes those times.
 
 ## Safety and limits
 
