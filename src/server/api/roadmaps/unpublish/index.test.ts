@@ -10,7 +10,9 @@ describe("roadmaps.unpublish", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("requires an authenticated caller", async () => {
-    const dbMock = { userRoadmap: { findUnique: vi.fn(), update: vi.fn() } };
+    const dbMock = {
+      userRoadmap: { findUnique: vi.fn(), updateMany: vi.fn() },
+    };
     const caller = makeCaller(router.createCaller, dbMock, null);
     await expect(caller.unpublish({ roadmapId: "r1" })).rejects.toMatchObject({
       code: "UNAUTHORIZED",
@@ -21,7 +23,7 @@ describe("roadmaps.unpublish", () => {
     const dbMock = {
       userRoadmap: {
         findUnique: vi.fn().mockResolvedValue({ userId: "u1" }),
-        update: vi.fn().mockResolvedValue({}),
+        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       },
     };
     const caller = makeCaller(router.createCaller, dbMock);
@@ -29,7 +31,7 @@ describe("roadmaps.unpublish", () => {
     const result = await caller.unpublish({ roadmapId: "r1" });
 
     expect(result).toEqual({ success: true });
-    expect(dbMock.userRoadmap.update).toHaveBeenCalledWith({
+    expect(dbMock.userRoadmap.updateMany).toHaveBeenCalledWith({
       where: { id: "r1" },
       data: {
         visibility: "PRIVATE",
@@ -44,7 +46,7 @@ describe("roadmaps.unpublish", () => {
     const dbMock = {
       userRoadmap: {
         findUnique: vi.fn().mockResolvedValue({ userId: "someone-else" }),
-        update: vi.fn(),
+        updateMany: vi.fn(),
       },
     };
     const caller = makeCaller(router.createCaller, dbMock);
@@ -52,6 +54,6 @@ describe("roadmaps.unpublish", () => {
     await expect(caller.unpublish({ roadmapId: "r1" })).rejects.toMatchObject({
       code: "FORBIDDEN",
     });
-    expect(dbMock.userRoadmap.update).not.toHaveBeenCalled();
+    expect(dbMock.userRoadmap.updateMany).not.toHaveBeenCalled();
   });
 });

@@ -7,6 +7,7 @@ import {
   requireOwnedTimetable,
   mintToken,
 } from "@/server/api/ownership";
+import { hideRoadmap, hideTimetable } from "@/server/api/sharing/hide";
 
 export const setVisibility = protectedProcedure
   .input(
@@ -29,20 +30,17 @@ export const setVisibility = protectedProcedure
 
       const timetable = await requireOwnedTimetable(ctx.db, id, ctx.session.user.id);
 
-      let shareToken: string | null = timetable.shareToken;
-      let icalToken: string | null = timetable.icalToken;
-
-      if (visibility === "UNLISTED") {
-        shareToken ??= mintToken();
-      } else {
-        // PRIVATE — clear BOTH the share link and the calendar feed token.
-        shareToken = null;
-        icalToken = null;
+      if (visibility === "PRIVATE") {
+        // Clears BOTH the share link and the calendar feed token.
+        await hideTimetable(ctx.db, id);
+        return { visibility, shareToken: null };
       }
+
+      const shareToken = timetable.shareToken ?? mintToken();
 
       await ctx.db.userTimetable.update({
         where: { id },
-        data: { visibility, shareToken, icalToken },
+        data: { visibility, shareToken, icalToken: timetable.icalToken },
       });
 
       return { visibility, shareToken };
@@ -54,16 +52,14 @@ export const setVisibility = protectedProcedure
         publishedAt: true,
       });
 
+      if (visibility === "PRIVATE") {
+        await hideRoadmap(ctx.db, id);
+        return { visibility, shareToken: null };
+      }
+
       if (visibility === "PUBLIC") requireVerified(ctx.session.user);
 
-      let shareToken: string | null = roadmap.shareToken;
-
-      if (visibility === "UNLISTED" || visibility === "PUBLIC") {
-        shareToken ??= mintToken();
-      } else {
-        // PRIVATE — clear the token
-        shareToken = null;
-      }
+      const shareToken = roadmap.shareToken ?? mintToken();
 
       await ctx.db.userRoadmap.update({
         where: { id },

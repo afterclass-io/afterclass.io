@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { protectedProcedure } from "@/server/api/trpc";
 import { requireOwnedRoadmap } from "@/server/api/ownership";
+import { hideRoadmap } from "@/server/api/sharing/hide";
 
 export const unpublish = protectedProcedure
   .input(z.object({ roadmapId: z.string() }))
@@ -10,15 +11,7 @@ export const unpublish = protectedProcedure
       userId: true,
     });
 
-    await ctx.db.userRoadmap.update({
-      where: { id: input.roadmapId },
-      data: {
-        visibility: "PRIVATE",
-        slug: null,
-        publishedAt: null,
-        shareToken: null, // prevents old share-link access
-      },
-    });
+    await hideRoadmap(ctx.db, input.roadmapId);
 
     return { success: true };
   });
