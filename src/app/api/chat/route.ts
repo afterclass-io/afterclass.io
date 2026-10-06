@@ -1,4 +1,3 @@
-import { after } from "next/server";
 import {
   createUIMessageStreamResponse,
   isStepCount,
@@ -7,6 +6,7 @@ import {
   type UIMessage,
 } from "ai";
 
+import { runAfterResponse } from "@/server/after-response";
 import { auth } from "@/server/auth";
 import { createCallerForUser } from "@/server/mcp/caller";
 import { buildAssistantTools } from "@/server/assistant/tools";
@@ -390,11 +390,7 @@ export async function POST(req: Request) {
         // unavailable (tests, non-Vercel runtimes). A crash before the work
         // settles stays best-effort (accepted: the pre-reserved slot closes
         // free messages).
-        try {
-          after(settle);
-        } catch {
-          void settle();
-        }
+        runAfterResponse(settle);
       },
     });
 
