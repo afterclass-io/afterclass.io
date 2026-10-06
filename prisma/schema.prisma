@@ -74,6 +74,8 @@ model Users {
   roadmapVotes       RoadmapVote[]
   roadmapReactions   RoadmapReaction[]
   chatUsage          ChatUsage[]
+  createdMeetingPolls   MeetingPoll[]        @relation("MeetingPollCreator")
+  meetingParticipations MeetingParticipant[]
 
   @@map("users")
 }
@@ -125,6 +127,7 @@ model Courses {
   classes            Classes[]
   reviews            Reviews[]
   userRoadmapEntry   UserRoadmapEntry[]
+  meetingPolls       MeetingPoll[]
 
   @@map("courses")
 }
@@ -304,6 +307,7 @@ model AcadTerm {
   userTimetable UserTimetable[]
   userBidBudget UserBidBudget[]
   matricRoadmaps UserRoadmap[]
+  meetingPolls   MeetingPoll[]
 
   @@map("acad_term")
 }
@@ -697,4 +701,68 @@ model RateLimitWindow {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("rate_limit")
+}
+
+// ==========================================
+// GROUP MEETINGS & COORDINATION SUBSYSTEM
+// ==========================================
+
+model MeetingPoll {
+  id                  String   @id @default(uuid())
+  slug                String   @unique // 10-character nanoid for sharing (/meetings/[slug])
+  title               String   @db.VarChar(120)
+  description         String?  @db.VarChar(500)
+  agenda              String?  @db.VarChar(2000) // What the meeting is for; editable by the creator
+  links               String[] @default([])      // Up to MAX_MEETING_LINKS https URLs (call, docs, repo)
+
+  // Creator relation (required, authenticated user)
+  creatorId           String   @map("creator_id")
+  creator             Users    @relation("MeetingPollCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  // Optional Academic Anchors (Course Backtracking)
+  courseId            String?  @map("course_id")
+  course              Courses? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  section             String?  @db.VarChar(10)     // e.g. "G1"
+  teamIdentifier      String?  @map("team_identifier") @db.VarChar(50) // e.g. "Team 3", "G1-T2"
+  acadTermId          String?  @map("acad_term_id")
+  acadTerm            AcadTerm? @relation(fields: [acadTermId], references: [id], onDelete: SetNull)
+
+  // Date and Time Range Boundaries (Strict ISO dates, no rolling offset)
+  startDate           DateTime @map("start_date") @db.Date // Inclusive start date
+  endDate             DateTime @map("end_date") @db.Date   // Inclusive end date
+  startHour           Int      @default(8) @map("start_hour")   // 08:00 (24h)
+  endHour             Int      @default(22) @map("end_hour")    // 22:00 (24h)
+  slotDurationMinutes Int      @default(15) @map("slot_duration_minutes") // 15-minute standard slots
+
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  participants        MeetingParticipant[]
+
+  // High-Impact Indexes (ESR-Compliant):
+  @@index([creatorId, createdAt(sort: Desc)]) // ESR: Equality on creator, Sort on createdAt
+  @@index([courseId, acadTermId])            // Fast lookup of meetings by course & term
+  @@index([acadTermId])                      // Fast filtering by semester
+  @@map("meeting_polls")
+}
+
+model MeetingParticipant {
+  id             String   @id @default(uuid())
+  pollId         String   @map("poll_id")
+  userId         String   @map("user_id") // Authenticated user
+
+  // Availability arrays of 15-minute integer slot indices
+  availableSlots Int[]    @default([]) @map("available_slots") // Green
+  ifNeededSlots  Int[]    @default([]) @map("if_needed_slots") // Orange / Amber
+
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  poll           MeetingPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  user           Users       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // High-Impact Indexes:
+  @@unique([pollId, userId])                 // Atomic upsert constraint & 1 response per user
+  @@index([userId, createdAt(sort: Desc)])   // Powers listMyMeetings dashboard query
+  @@map("meeting_participants")
 }

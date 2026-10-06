@@ -161,6 +161,159 @@ async function main() {
     data: userBidsData as Prisma.UserBidCreateManyInput[],
   });
 
+  // === Group Meetings availability coordination seed data ===
+
+  // Demo teammates with realistic names so the meeting room reads like production.
+  const demoTeammates = [
+    { id: "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e01", firstName: "Alice", lastName: "Tan", username: "alice_tan" },
+    { id: "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e02", firstName: "Ben", lastName: "Lim", username: "ben_lim" },
+    { id: "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e03", firstName: "Chloe", lastName: "Ong", username: "chloe_ong" },
+  ];
+  await prisma.users.createMany({
+    data: demoTeammates.map((u) => ({
+      ...u,
+      email: `${u.username}@example.org`,
+      isVerified: true,
+      universityId: 1,
+    })),
+    skipDuplicates: true,
+  });
+
+  await prisma.meetingPoll.createMany({
+    data: [
+      {
+        id: "d3b07384-d113-4603-a1c7-c752b7194601",
+        slug: "xK9mP2vL7q",
+        title: "IS215 Group Project Sync",
+        description: "Coordination for Sprint 1 milestones and deliverables.",
+        agenda:
+          "1. Review Sprint 1 deliverables\n2. Assign Sprint 2 tasks\n3. Agree on demo date",
+        links: ["https://meet.google.com/abc-defg-hij"],
+        creatorId: "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+        courseId: "2a45bab1-5ec4-4d2e-b245-27a142a78890",
+        section: "G1",
+        teamIdentifier: "Team 3",
+        acadTermId: "AY202627T1",
+        startDate: new Date("2026-10-12"),
+        endDate: new Date("2026-10-16"),
+        startHour: 8,
+        endHour: 22,
+        slotDurationMinutes: 15,
+      },
+      {
+        id: "a1c08495-e224-4714-b2d8-d863c8205712",
+        slug: "vN8wQ3zR5k",
+        title: "IS215 Final Presentation Dry Run",
+        description: "Rehearsal for final presentation slides and demo.",
+        creatorId: "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+        courseId: "2a45bab1-5ec4-4d2e-b245-27a142a78890",
+        section: "G1",
+        teamIdentifier: "Team 3",
+        acadTermId: "AY202627T1",
+        startDate: new Date("2026-10-19"),
+        endDate: new Date("2026-10-23"),
+        startHour: 9,
+        endHour: 18,
+        slotDurationMinutes: 15,
+      },
+      {
+        id: "b7e29183-c335-4925-a3d9-e974d9316823",
+        slug: "qP4mR9sT2w",
+        title: "CS201 Algorithm Study Group",
+        description: "Weekly problem solving session for dynamic programming and graph algorithms.",
+        agenda:
+          "1. Review LeetCode Hard problems\n2. Discuss Dijkstra vs A* search\n3. Mock interview practice",
+        creatorId: demoTeammates[0]!.id,
+        courseId: "2a45bab1-5ec4-4d2e-b245-27a142a78890",
+        section: "G2",
+        teamIdentifier: "Study Group A",
+        acadTermId: "AY202627T1",
+        startDate: new Date("2026-10-14"),
+        endDate: new Date("2026-10-18"),
+        startHour: 10,
+        endHour: 20,
+        slotDurationMinutes: 15,
+      },
+      {
+        id: "c8f30294-d446-4036-b4ea-f085ea427934",
+        slug: "mK7vX2yZ9p",
+        title: "SMU Hackathon Team Brainstorm",
+        description: "Ideation and pitch deck drafting for the upcoming fintech hackathon.",
+        creatorId: demoTeammates[2]!.id,
+        teamIdentifier: "FinTech Hackers",
+        acadTermId: "AY202627T1",
+        startDate: new Date("2026-10-24"),
+        endDate: new Date("2026-10-28"),
+        startHour: 12,
+        endHour: 22,
+        slotDurationMinutes: 30,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  await prisma.meetingParticipant.createMany({
+    data: [
+      {
+        id: "e4a18274-9843-4e3a-9694-555566667777",
+        pollId: "d3b07384-d113-4603-a1c7-c752b7194601",
+        userId: "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+        availableSlots: [0, 1, 2, 3, 8, 9, 10, 11],
+        ifNeededSlots: [4, 5, 12, 13],
+      },
+      {
+        id: "f5b29385-a954-4f4b-a705-666677778888",
+        pollId: "d3b07384-d113-4603-a1c7-c752b7194601",
+        userId: demoTeammates[0]!.id,
+        availableSlots: [0, 1, 8, 9, 16, 17],
+        ifNeededSlots: [2, 3, 10, 11],
+      },
+      {
+        id: "f5b29385-a954-4f4b-a705-666677778889",
+        pollId: "d3b07384-d113-4603-a1c7-c752b7194601",
+        userId: demoTeammates[1]!.id,
+        availableSlots: [0, 1, 2, 8, 9, 10, 16, 17],
+        ifNeededSlots: [3, 11],
+      },
+      {
+        id: "f5b29385-a954-4f4b-a705-666677778890",
+        pollId: "d3b07384-d113-4603-a1c7-c752b7194601",
+        userId: demoTeammates[2]!.id,
+        availableSlots: [8, 9, 10, 11, 16, 17],
+        ifNeededSlots: [0, 1],
+      },
+      {
+        id: "c7d30496-b065-4a5c-b816-777788889999",
+        pollId: "a1c08495-e224-4714-b2d8-d863c8205712",
+        userId: "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+        availableSlots: [4, 5, 6, 7],
+        ifNeededSlots: [],
+      },
+      {
+        id: "d8e40597-c176-4b6d-c927-888899990001",
+        pollId: "b7e29183-c335-4925-a3d9-e974d9316823",
+        userId: demoTeammates[0]!.id,
+        availableSlots: [4, 5, 12, 13, 20, 21],
+        ifNeededSlots: [6, 14],
+      },
+      {
+        id: "d8e40597-c176-4b6d-c927-888899990002",
+        pollId: "b7e29183-c335-4925-a3d9-e974d9316823",
+        userId: demoTeammates[1]!.id,
+        availableSlots: [4, 5, 12, 20],
+        ifNeededSlots: [13, 21],
+      },
+      {
+        id: "d8e40597-c176-4b6d-c927-888899990003",
+        pollId: "c8f30294-d446-4036-b4ea-f085ea427934",
+        userId: demoTeammates[2]!.id,
+        availableSlots: [0, 1, 2, 8, 9],
+        ifNeededSlots: [3, 10],
+      },
+    ],
+    skipDuplicates: true,
+  });
+
   // Cypress E2E test user — idempotent upsert so `prisma db seed` is the
   // single source of truth (supersedes scripts/create-cypress-test-user.ts).
   // Password is "Test1234!" (hash must stay in sync with cypress.env.json).
