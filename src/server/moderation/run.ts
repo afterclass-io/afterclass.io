@@ -32,10 +32,22 @@ export type RunOutcome =
 
 /**
  * Item text is user-controlled and review bodies/tips are uncapped, so the
- * judge only ever reads this many characters. The audit log keeps the full
- * removed text.
+ * judge reads at most about this many characters. Longer text is sent as its
+ * head and tail (a prefix alone would let an author hide abuse behind benign
+ * padding). The audit log keeps the full removed text.
  */
 export const MAX_JUDGE_TEXT_CHARS = 20_000;
+const JUDGE_WINDOW_CHARS = MAX_JUDGE_TEXT_CHARS / 2;
+export const JUDGE_TRUNCATION_MARKER = "\n[...]\n";
+
+function judgeWindow(text: string): string {
+  if (text.length <= MAX_JUDGE_TEXT_CHARS) return text;
+  return (
+    text.slice(0, JUDGE_WINDOW_CHARS) +
+    JUDGE_TRUNCATION_MARKER +
+    text.slice(-JUDGE_WINDOW_CHARS)
+  );
+}
 
 /** Global fixed-window ceiling on judgements (rate_limit row per hour). */
 const JUDGE_CEILING_KEY = "moderation:judge-hourly";
@@ -93,7 +105,7 @@ export async function runModeration(
 
   const result = await judge({
     surfaceLabel: adapter.label,
-    text: text.slice(0, MAX_JUDGE_TEXT_CHARS),
+    text: judgeWindow(text),
   });
 
   if (result.kind === "violation") {

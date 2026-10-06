@@ -37,6 +37,7 @@ vi.mock("@/server/config/chat-config", () => ({
 }));
 
 import {
+  JUDGE_TRUNCATION_MARKER,
   MAX_JUDGE_TEXT_CHARS,
   createModerationJudge,
   runModeration,
@@ -147,8 +148,9 @@ describe("runModeration", () => {
     });
   });
 
-  it("caps the text sent to the judge but logs the full removed text", async () => {
-    const long = "x".repeat(MAX_JUDGE_TEXT_CHARS + 500);
+  it("sends the head and tail of long text to the judge but logs the full removed text", async () => {
+    const half = MAX_JUDGE_TEXT_CHARS / 2;
+    const long = `${"a".repeat(half * 2)}${"m".repeat(5_000)}ABUSE`;
     m.findUnique.mockResolvedValue({ body: long, tips: null });
     const judge = vi.fn<Judge>().mockResolvedValue({
       kind: "violation",
@@ -158,17 +160,25 @@ describe("runModeration", () => {
       model: "m",
     });
     await runModeration(target, cfg, judge);
+    const full = `Review:\n${long}`;
     const sent = judge.mock.calls[0]![0].text;
-    expect(sent).toHaveLength(MAX_JUDGE_TEXT_CHARS);
-    expect(
-      `Review:
-${long}`.startsWith(sent),
-    ).toBe(true);
+    expect(sent).toBe(
+      full.slice(0, half) + JUDGE_TRUNCATION_MARKER + full.slice(-half),
+    );
+    expect(sent).toHaveLength(MAX_JUDGE_TEXT_CHARS + JUDGE_TRUNCATION_MARKER.length);
+    expect(sent.endsWith("ABUSE")).toBe(true);
     const logged = m.txLogCreate.mock.calls[0]?.[0] as {
       data: { removedText: string };
     };
-    expect(logged.data.removedText).toBe(`Review:
-${long}`);
+    expect(logged.data.removedText).toBe(full);
+  });
+
+  it("sends text at the cap to the judge unchanged", async () => {
+    const body = "y".repeat(MAX_JUDGE_TEXT_CHARS - "Review:\n".length);
+    m.findUnique.mockResolvedValue({ body, tips: null });
+    const judge = vi.fn<Judge>().mockResolvedValue(cleared);
+    await runModeration(target, cfg, judge);
+    expect(judge.mock.calls[0]![0].text).toBe(`Review:\n${body}`);
   });
 
   it("on violation deletes and logs the removed text in one transaction", async () => {
