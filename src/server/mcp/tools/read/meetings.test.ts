@@ -2,7 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { SessionUser } from "@/server/auth/config";
 import type { ToolContext } from "../../types";
-import { getMyMeetingsTool, getMeetingPollDetailTool } from "./meetings";
+import {
+  getMyMeetingsTool,
+  getMeetingPollDetailTool,
+  suggestMeetingTimesTool,
+} from "./meetings";
 
 const fakeUser: SessionUser = {
   id: "u1",
@@ -157,6 +161,280 @@ describe("getMeetingPollDetailTool", () => {
     expect(parsed.poll.title).toBe("Sprint Retrospective");
     expect(parsed.participantCount).toBe(1);
     expect(parsed.url).toBe("/meetings/meeting-101");
+  });
+});
+
+describe("suggestMeetingTimesTool", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-06T11:30:00.000Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const mockPoll = {
+    id: "p1",
+    slug: "abc1234567",
+    title: "Sync",
+    description: "Initial brainstorm",
+    agenda: null,
+    links: [],
+    isCreator: true,
+    startDate: new Date("2026-10-12T00:00:00.000Z"),
+    endDate: new Date("2026-10-12T00:00:00.000Z"),
+    startHour: 10,
+    endHour: 12,
+    slotDurationMinutes: 15,
+    course: null,
+    section: null,
+    teamIdentifier: null,
+    acadTerm: null,
+  };
+
+  const mockParticipants = [
+    {
+      participantId: "part-1",
+      name: "Alice Tan",
+      availableSlots: [0, 1, 2, 3, 4, 5, 6, 7],
+      ifNeededSlots: [],
+      isCurrentUser: true,
+    },
+    {
+      participantId: "part-2",
+      name: "Ben Lim",
+      availableSlots: [0, 1, 2, 3],
+      ifNeededSlots: [],
+      isCurrentUser: false,
+    },
+    {
+      participantId: "part-3",
+      name: "Student",
+      availableSlots: [],
+      ifNeededSlots: [],
+      isCurrentUser: false,
+    },
+    {
+      participantId: "part-4",
+      name: "Student",
+      availableSlots: [],
+      ifNeededSlots: [],
+      isCurrentUser: false,
+    },
+  ];
+
+  function makeSuggestCtx(getPollBySlug: ReturnType<typeof vi.fn>): ToolContext {
+    return {
+      user: fakeUser,
+      caller: {
+        meetings: {
+          getPollBySlug,
+        },
+      } as unknown as ToolContext["caller"],
+    };
+  }
+
+  it("returns ranked options with names and no ids", async () => {
+    const getPollFn = vi.fn().mockResolvedValue({
+      poll: mockPoll,
+      participants: mockParticipants,
+      heatmap: {},
+    });
+    const ctx = makeSuggestCtx(getPollFn);
+
+    const result = await suggestMeetingTimesTool.run(ctx, {
+      slug: "abc1234567",
+    });
+    expect(getPollFn).toHaveBeenCalledTimes(1);
+    expect(getPollFn).toHaveBeenCalledWith({ slug: "abc1234567" });
+    expect(result.isError).toBeFalsy();
+
+    const rawText =
+      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    expect(rawText).not.toContain("part-1");
+    expect(rawText).not.toContain("Slots");
+    expect(rawText).not.toContain("isCurrentUser");
+    expect(rawText).not.toContain("participantId");
+
+    const parsed = JSON.parse(rawText) as {
+      poll: { slug: string; title: string; timezone: string; slotMinutes: number };
+      asOf: string;
+      participants: { total: number; noResponse: string[] };
+      query: { durationMinutes: number };
+      options: Array<{
+        date: string;
+        weekday: string;
+        start: string;
+        end: string;
+        startRange: { earliest: string; latest: string };
+        free: string[];
+        ifNeeded: string[];
+        unavailable: string[];
+        attendable: number;
+        total: number;
+      }>;
+      url: string;
+    };
+    expect(parsed.poll).toEqual({
+      slug: "abc1234567",
+      title: "Sync",
+      timezone: "Asia/Singapore",
+      slotMinutes: 15,
+    });
+    expect(parsed.asOf).toBe("2026-10-06T19:30:00+08:00");
+    expect(parsed.participants).toEqual({
+      total: 4,
+      noResponse: ["Student", "Student 2"],
+    });
+    expect(parsed.query).toEqual({ durationMinutes: 60 });
+    expect(parsed.options[0]).toEqual({
+      date: "2026-10-12",
+      weekday: "Mon",
+      start: "10:00",
+      end: "11:00",
+      startRange: { earliest: "10:00", latest: "10:00" },
+      free: ["Alice Tan", "Ben Lim"],
+      ifNeeded: [],
+      unavailable: ["Student", "Student 2"],
+      attendable: 2,
+      total: 4,
+    });
+    expect(parsed.url).toBe("/meetings/abc1234567");
+  });
+
+  it("echoes structured filters in query", async () => {
+    const getPollFn = vi.fn().mockResolvedValue({
+      poll: mockPoll,
+      participants: mockParticipants,
+      heatmap: {},
+    });
+    const ctx = makeSuggestCtx(getPollFn);
+
+    const result = await suggestMeetingTimesTool.run(ctx, {
+      slug: "abc1234567",
+      daysOfWeek: ["mon"],
+    });
+    expect(result.isError).toBeFalsy();
+    const rawText =
+      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const parsed = JSON.parse(rawText) as {
+      query: { daysOfWeek: string[]; durationMinutes: number };
+    };
+    expect(parsed.query).toEqual({
+      daysOfWeek: ["mon"],
+      durationMinutes: 60,
+    });
+  });
+
+  it("surfaces validation errors as errText", async () => {
+    const getPollFn = vi.fn().mockResolvedValue({
+      poll: mockPoll,
+      participants: mockParticipants,
+      heatmap: {},
+    });
+    const ctx = makeSuggestCtx(getPollFn);
+
+    const result = await suggestMeetingTimesTool.run(ctx, {
+      slug: "abc1234567",
+      dates: ["2026-10-20"],
+    });
+    expect(result.isError).toBe(true);
+    expect(result.content[0]?.text).toBe(
+      "Date 2026-10-20 is outside the poll window 2026-10-12 to 2026-10-12.",
+    );
+  });
+
+  it("explains an all-past window", async () => {
+    vi.setSystemTime(new Date("2026-10-12T04:00:00.000Z"));
+    const getPollFn = vi.fn().mockResolvedValue({
+      poll: mockPoll,
+      participants: mockParticipants,
+      heatmap: {},
+    });
+    const ctx = makeSuggestCtx(getPollFn);
+
+    const result = await suggestMeetingTimesTool.run(ctx, {
+      slug: "abc1234567",
+    });
+    expect(result.isError).toBeFalsy();
+    const rawText =
+      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const parsed = JSON.parse(rawText) as {
+      options: unknown[];
+      message: string;
+    };
+    expect(parsed.options).toEqual([]);
+    expect(parsed.message).toBe(
+      "Every matching time is already in the past. Pass includePast: true to see past times.",
+    );
+  });
+
+  it("explains when nobody can attend", async () => {
+    const emptyParticipants = mockParticipants.map((p) => ({
+      ...p,
+      availableSlots: [],
+      ifNeededSlots: [],
+    }));
+    const getPollFn = vi.fn().mockResolvedValue({
+      poll: mockPoll,
+      participants: emptyParticipants,
+      heatmap: {},
+    });
+    const ctx = makeSuggestCtx(getPollFn);
+
+    const result = await suggestMeetingTimesTool.run(ctx, {
+      slug: "abc1234567",
+    });
+    expect(result.isError).toBeFalsy();
+    const rawText =
+      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const parsed = JSON.parse(rawText) as {
+      nobodyCanAttend: boolean;
+      message: string;
+    };
+    expect(parsed.nobodyCanAttend).toBe(true);
+    expect(parsed.message).toBe(
+      "Nobody has marked any time in this window as available or if needed; these are the earliest open times.",
+    );
+  });
+
+  it("explains an unmet requireParticipants", async () => {
+    const getPollFn = vi.fn().mockResolvedValue({
+      poll: mockPoll,
+      participants: mockParticipants,
+      heatmap: {},
+    });
+    const ctx = makeSuggestCtx(getPollFn);
+
+    const result = await suggestMeetingTimesTool.run(ctx, {
+      slug: "abc1234567",
+      requireParticipants: ["Alice Tan", "Ben Lim", "Student"],
+    });
+    expect(result.isError).toBeFalsy();
+    const rawText =
+      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const parsed = JSON.parse(rawText) as {
+      options: unknown[];
+      message: string;
+    };
+    expect(parsed.options.length).toBeGreaterThan(0);
+    expect(parsed.message).toBe(
+      "No time in this window works for all of: Alice Tan, Ben Lim, Student. These are the closest options; see each option's unavailable list.",
+    );
+  });
+
+  it("returns errText when the poll is missing", async () => {
+    const getPollFn = vi
+      .fn()
+      .mockRejectedValue(new Error("Meeting poll not found"));
+    const ctx = makeSuggestCtx(getPollFn);
+
+    const result = await suggestMeetingTimesTool.run(ctx, {
+      slug: "abc1234567",
+    });
+    expect(result.isError).toBe(true);
+    expect(result.content[0]?.text).toContain("Meeting poll not found");
   });
 });
 

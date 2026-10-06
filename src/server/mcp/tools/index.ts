@@ -59,7 +59,11 @@ import { getTimetableCalendarLinkTool } from "./write/calendar-link";
 import { exploreBidOptionsTool } from "./read/explore-bid-options";
 import { saveBidsTool } from "./write/save-bids";
 import { upsertRoadmapEntryTool } from "./write/upsert-roadmap-entry";
-import { getMyMeetingsTool, getMeetingPollDetailTool } from "./read/meetings";
+import {
+  getMyMeetingsTool,
+  getMeetingPollDetailTool,
+  suggestMeetingTimesTool,
+} from "./read/meetings";
 import {
   createMeetingPollTool,
   submitMeetingAvailabilityTool,
@@ -102,6 +106,7 @@ export const allTools: McpTool[] = [
   listFacultiesTool,
   getMyMeetingsTool,
   getMeetingPollDetailTool,
+  suggestMeetingTimesTool,
   // write - timetables
   createTimetableTool,
   renameTimetableTool,
