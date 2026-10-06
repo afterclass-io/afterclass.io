@@ -145,7 +145,7 @@ export function DateRangePicker({
           startMonth={min ? parseISO(min) : undefined}
           endMonth={max ? parseISO(max) : undefined}
           disabled={disabledDays}
-          className="border-0 shadow-none rounded-none"
+          className="w-full min-w-[17.5rem] rounded-none border-0 bg-transparent shadow-none"
         />
 
         {presets.length > 0 && (

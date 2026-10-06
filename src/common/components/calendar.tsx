@@ -231,7 +231,7 @@ export function Calendar(props: CalendarProps) {
           return (
             <div
               key={d.toISOString()}
-              className="relative h-9 w-9 flex items-center justify-center p-0"
+              className="relative h-9 w-full flex items-center justify-center p-0"
             >
               {/* Continuous Range Background Ribbon */}
               {isInRange && hasRangeBoth && !isSingleSelectedDay && (

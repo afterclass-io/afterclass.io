@@ -152,7 +152,7 @@ export function MeetingMatrixGrid({
           gridTemplateColumns: `56px repeat(${dates.length}, minmax(80px, 1fr))`,
         }}
       >
-        <div className="bg-muted sticky top-16 left-0 z-30 flex h-12 items-center justify-center border-r border-b text-[11px] font-medium text-muted-foreground">
+        <div className="bg-muted sticky left-0 z-30 flex h-12 items-center justify-center border-r border-b text-[11px] font-medium text-muted-foreground">
           SGT
         </div>
 
@@ -162,7 +162,7 @@ export function MeetingMatrixGrid({
             <div
               key={date.toISOString()}
               className={cn(
-                "bg-background sticky top-16 z-20 flex h-12 flex-col items-center justify-center border-r border-b px-2 text-center",
+                "bg-background flex h-12 flex-col items-center justify-center border-r border-b px-2 text-center",
                 isToday && "bg-primary/5",
               )}
             >
