@@ -1,3 +1,4 @@
+import { Prisma } from "@/generated/prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as ChatConfig from "@/server/config/chat-config";
 
@@ -100,6 +101,36 @@ describe("moderation.report", () => {
     const db = dbWith({ id: "rv1", reviewerId: "author" }, 0);
     const caller = makeCaller(router.createCaller, db, verified);
     await expect(caller.report({ surface: "review", ref: "rv1" })).resolves.toEqual(REPORT_ACK);
+    expect(m.runAfterResponse).not.toHaveBeenCalled();
+  });
+
+  it("acknowledges a report on an item deleted between resolve and insert (P2003)", async () => {
+    const db = dbWith({ id: "rv1", reviewerId: "author" });
+    db.moderationReport.createMany.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("Foreign key violation", {
+        code: "P2003",
+        clientVersion: "test",
+      }),
+    );
+    const caller = makeCaller(router.createCaller, db, verified);
+    await expect(
+      caller.report({ surface: "review", ref: "rv1" }),
+    ).resolves.toEqual(REPORT_ACK);
+    expect(m.runAfterResponse).not.toHaveBeenCalled();
+  });
+
+  it("rethrows any other insert failure", async () => {
+    const db = dbWith({ id: "rv1", reviewerId: "author" });
+    db.moderationReport.createMany.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("Unique constraint", {
+        code: "P2002",
+        clientVersion: "test",
+      }),
+    );
+    const caller = makeCaller(router.createCaller, db, verified);
+    await expect(
+      caller.report({ surface: "review", ref: "rv1" }),
+    ).rejects.toMatchObject({ code: "INTERNAL_SERVER_ERROR" });
     expect(m.runAfterResponse).not.toHaveBeenCalled();
   });
 

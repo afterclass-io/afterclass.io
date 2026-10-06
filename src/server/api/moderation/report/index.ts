@@ -1,3 +1,4 @@
+import { Prisma } from "@/generated/prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -54,10 +55,23 @@ export const report = verifiedProcedure
     if (!item || item.ownerId === reporterId) return REPORT_ACK;
 
     // ON CONFLICT DO NOTHING: a duplicate is a silent no-op, not an error.
-    const { count } = await ctx.db.moderationReport.createMany({
-      data: [adapter.reportData(reporterId, item.itemId)],
-      skipDuplicates: true,
-    });
+    let count: number;
+    try {
+      ({ count } = await ctx.db.moderationReport.createMany({
+        data: [adapter.reportData(reporterId, item.itemId)],
+        skipDuplicates: true,
+      }));
+    } catch (error) {
+      // The item was deleted between resolve and insert (FK violation):
+      // answer exactly like any other report.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2003"
+      ) {
+        return REPORT_ACK;
+      }
+      throw error;
+    }
     if (count > 0) {
       runAfterResponse(() =>
         runModerationTask({ surface: input.surface, itemId: item.itemId }),
