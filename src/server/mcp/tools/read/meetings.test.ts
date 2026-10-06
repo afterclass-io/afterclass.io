@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { env } from "@/env";
 import type { SessionUser } from "@/server/auth/config";
 import type { ToolContext } from "../../types";
+import { PAGE_LINK_NOTE } from "../page-links";
 import {
   getMyMeetingsTool,
   getMeetingPollDetailTool,
@@ -607,5 +608,15 @@ describe("suggestMeetingTimesTool", () => {
     });
     expect(result.isError).toBe(true);
     expect(result.content[0]?.text).toContain("Meeting poll not found");
+  });
+
+  it("every meeting read tool tells agents to relay the returned url verbatim", () => {
+    for (const tool of [
+      getMyMeetingsTool,
+      getMeetingPollDetailTool,
+      suggestMeetingTimesTool,
+    ]) {
+      expect(tool.description).toContain(PAGE_LINK_NOTE);
+    }
   });
 });

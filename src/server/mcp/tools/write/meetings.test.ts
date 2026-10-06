@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { env } from "@/env";
 import type { SessionUser } from "@/server/auth/config";
 import type { ToolContext } from "../../types";
+import { PAGE_LINK_NOTE } from "../page-links";
 import {
   createMeetingPollTool,
   submitMeetingAvailabilityTool,
@@ -514,5 +515,11 @@ describe("submitMeetingAvailabilityTool", () => {
 
     expect(result.isError).toBe(true);
     expect(result.content[0]?.text).toContain("Rate limit exceeded");
+  });
+
+  it("every meeting write tool tells agents to relay the returned url verbatim", () => {
+    for (const tool of [createMeetingPollTool, submitMeetingAvailabilityTool]) {
+      expect(tool.description).toContain(PAGE_LINK_NOTE);
+    }
   });
 });

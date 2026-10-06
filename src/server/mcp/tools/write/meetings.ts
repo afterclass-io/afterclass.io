@@ -9,7 +9,7 @@ import {
 } from "@/modules/meetings/functions/slot-time";
 import { db } from "@/server/db";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
-import { absoluteUrl, meetingPage } from "../page-links";
+import { absoluteUrl, meetingPage, PAGE_LINK_NOTE } from "../page-links";
 
 const createMeetingPollSchema = z.object({
   title: z
@@ -70,8 +70,7 @@ const createMeetingPollSchema = z.object({
 
 export const createMeetingPollTool: McpTool<typeof createMeetingPollSchema> = {
   name: "create-meeting-poll",
-  description:
-    "Create a new meeting poll in the current academic term to coordinate availability with classmates.",
+  description: `Create a new meeting poll in the current academic term to coordinate availability with classmates. ${PAGE_LINK_NOTE}`,
   inputSchema: createMeetingPollSchema,
   run: async ({ caller }, input) => {
     try {
@@ -156,8 +155,7 @@ export const submitMeetingAvailabilityTool: McpTool<
   typeof submitMeetingAvailabilitySchema
 > = {
   name: "submit-meeting-availability",
-  description:
-    'Submit the signed-in user\'s availability for a meeting poll as Singapore-time date/time ranges on the poll\'s slot grid. mode "replace" (default) overwrites all of the user\'s availability; "merge" adds these ranges to what the user already has, and the new status wins where ranges overlap; in merge mode a range with status "unavailable" removes those times. Read the poll window with get-meeting-poll-detail first.',
+  description: `Submit the signed-in user's availability for a meeting poll as Singapore-time date/time ranges on the poll's slot grid. mode "replace" (default) overwrites all of the user's availability; "merge" adds these ranges to what the user already has, and the new status wins where ranges overlap; in merge mode a range with status "unavailable" removes those times. Read the poll window with get-meeting-poll-detail first. ${PAGE_LINK_NOTE}`,
   inputSchema: submitMeetingAvailabilitySchema,
   run: async ({ caller }, input) => {
     try {

@@ -31,6 +31,12 @@ export function absoluteUrl(path: string): string {
   return `${env.NEXT_PUBLIC_SITE_URL}${path}`;
 }
 
+/** Tool-description sentence for tools that return a page `url`: agents must
+ * relay it verbatim (older turns' tool results are pruned, so a model that
+ * paraphrases invents paths such as `/rsvp`). */
+export const PAGE_LINK_NOTE =
+  "To link the page, use the returned url exactly as given (it is already absolute); never build or guess other page URLs.";
+
 export function timetablePage(): string {
   return "/timetable";
 }
