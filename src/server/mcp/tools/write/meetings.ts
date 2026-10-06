@@ -78,7 +78,9 @@ export const createMeetingPollTool: McpTool<typeof createMeetingPollSchema> = {
       let courseId: string | undefined;
       if (input.courseCode?.trim()) {
         const course = await db.courses.findFirst({
-          where: { code: { equals: input.courseCode.trim(), mode: "insensitive" } },
+          where: {
+            code: { equals: input.courseCode.trim(), mode: "insensitive" },
+          },
           select: { id: true },
         });
         if (!course) {
@@ -123,9 +125,13 @@ const submitMeetingAvailabilitySchema = z.object({
   availability: z
     .array(
       z.object({
-        date: isoDate.describe("Day in YYYY-MM-DD (SGT), inside the poll window"),
+        date: isoDate.describe(
+          "Day in YYYY-MM-DD (SGT), inside the poll window",
+        ),
         start: hhmm.describe("Start time HH:MM (SGT) on the poll's slot grid"),
-        end: hhmm.describe("End time HH:MM (SGT), after start, on the slot grid"),
+        end: hhmm.describe(
+          "End time HH:MM (SGT), after start, on the slot grid",
+        ),
         status: z
           .enum(["available", "ifNeeded", "unavailable"])
           .optional()

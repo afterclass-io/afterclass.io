@@ -45,7 +45,9 @@ export const getMyMeetingsTool: McpTool<typeof getMyMeetingsSchema> = {
           description: m.description,
           startDate: toIsoDate(m.startDate),
           endDate: toIsoDate(m.endDate),
-          course: m.course ? { code: m.course.code, name: m.course.name } : null,
+          course: m.course
+            ? { code: m.course.code, name: m.course.name }
+            : null,
           section: m.section,
           teamIdentifier: m.teamIdentifier,
           participantCount: m.participantCount,
@@ -146,9 +148,7 @@ const suggestMeetingTimesSchema = z.object({
     .min(1)
     .max(14)
     .optional()
-    .describe(
-      "Only these SGT dates (YYYY-MM-DD). Do not combine with from/to",
-    ),
+    .describe("Only these SGT dates (YYYY-MM-DD). Do not combine with from/to"),
   from: isoDate.optional().describe("Inclusive start date (YYYY-MM-DD, SGT)"),
   to: isoDate.optional().describe("Inclusive end date (YYYY-MM-DD, SGT)"),
   daysOfWeek: z
@@ -234,4 +234,3 @@ export const suggestMeetingTimesTool: McpTool<
     }
   },
 };
-

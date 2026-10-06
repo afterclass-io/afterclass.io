@@ -109,7 +109,9 @@ describe("getMyMeetingsTool", () => {
   });
 
   it("handles errors from caller gracefully", async () => {
-    const listFn = vi.fn().mockRejectedValue(new Error("Database connection lost"));
+    const listFn = vi
+      .fn()
+      .mockRejectedValue(new Error("Database connection lost"));
     const ctx = makeCtx(listFn);
 
     const result = await getMyMeetingsTool.run(ctx, {});
@@ -174,8 +176,7 @@ describe("getMeetingPollDetailTool", () => {
     expect(getPollFn).toHaveBeenCalledWith({ slug: "meeting-101" });
     expect(result.isError).toBeFalsy();
 
-    const rawText =
-      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const rawText = result.content.find((c) => c.type === "text")?.text ?? "{}";
     expect(rawText).not.toContain("Slots");
     expect(rawText).not.toContain("heatmap");
     expect(rawText).not.toContain("participantId");
@@ -352,7 +353,9 @@ describe("suggestMeetingTimesTool", () => {
     },
   ];
 
-  function makeSuggestCtx(getPollBySlug: ReturnType<typeof vi.fn>): ToolContext {
+  function makeSuggestCtx(
+    getPollBySlug: ReturnType<typeof vi.fn>,
+  ): ToolContext {
     return {
       user: fakeUser,
       caller: {
@@ -378,15 +381,19 @@ describe("suggestMeetingTimesTool", () => {
     expect(getPollFn).toHaveBeenCalledWith({ slug: "abc1234567" });
     expect(result.isError).toBeFalsy();
 
-    const rawText =
-      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const rawText = result.content.find((c) => c.type === "text")?.text ?? "{}";
     expect(rawText).not.toContain("part-1");
     expect(rawText).not.toContain("Slots");
     expect(rawText).not.toContain("isCurrentUser");
     expect(rawText).not.toContain("participantId");
 
     const parsed = JSON.parse(rawText) as {
-      poll: { slug: string; title: string; timezone: string; slotMinutes: number };
+      poll: {
+        slug: string;
+        title: string;
+        timezone: string;
+        slotMinutes: number;
+      };
       asOf: string;
       participants: { total: number; noResponse: string[] };
       query: { durationMinutes?: number };
@@ -449,8 +456,7 @@ describe("suggestMeetingTimesTool", () => {
       durationMinutes: 60,
     });
     expect(result.isError).toBeFalsy();
-    const rawText =
-      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const rawText = result.content.find((c) => c.type === "text")?.text ?? "{}";
     const parsed = JSON.parse(rawText) as {
       query: { durationMinutes: number };
       options: Array<{
@@ -480,8 +486,7 @@ describe("suggestMeetingTimesTool", () => {
       daysOfWeek: ["mon"],
     });
     expect(result.isError).toBeFalsy();
-    const rawText =
-      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const rawText = result.content.find((c) => c.type === "text")?.text ?? "{}";
     const parsed = JSON.parse(rawText) as {
       query: { daysOfWeek: string[]; durationMinutes?: number };
     };
@@ -491,7 +496,9 @@ describe("suggestMeetingTimesTool", () => {
   });
 
   it("description tells agents not to assume a duration and not to call if-needed people available", () => {
-    expect(suggestMeetingTimesTool.description).toContain("omit durationMinutes");
+    expect(suggestMeetingTimesTool.description).toContain(
+      "omit durationMinutes",
+    );
     expect(suggestMeetingTimesTool.description).toContain("NOT available");
   });
 
@@ -526,8 +533,7 @@ describe("suggestMeetingTimesTool", () => {
       slug: "abc1234567",
     });
     expect(result.isError).toBeFalsy();
-    const rawText =
-      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const rawText = result.content.find((c) => c.type === "text")?.text ?? "{}";
     const parsed = JSON.parse(rawText) as {
       options: unknown[];
       message: string;
@@ -555,8 +561,7 @@ describe("suggestMeetingTimesTool", () => {
       slug: "abc1234567",
     });
     expect(result.isError).toBeFalsy();
-    const rawText =
-      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const rawText = result.content.find((c) => c.type === "text")?.text ?? "{}";
     const parsed = JSON.parse(rawText) as {
       nobodyCanAttend: boolean;
       message: string;
@@ -580,8 +585,7 @@ describe("suggestMeetingTimesTool", () => {
       requireParticipants: ["Alice Tan", "Ben Lim", "Student"],
     });
     expect(result.isError).toBeFalsy();
-    const rawText =
-      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const rawText = result.content.find((c) => c.type === "text")?.text ?? "{}";
     const parsed = JSON.parse(rawText) as {
       options: unknown[];
       message: string;
@@ -605,4 +609,3 @@ describe("suggestMeetingTimesTool", () => {
     expect(result.content[0]?.text).toContain("Meeting poll not found");
   });
 });
-

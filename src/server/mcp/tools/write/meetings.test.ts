@@ -135,7 +135,9 @@ describe("createMeetingPollTool", () => {
   });
 
   it("returns error text on failure", async () => {
-    const createFn = vi.fn().mockRejectedValue(new Error("Rate limit exceeded"));
+    const createFn = vi
+      .fn()
+      .mockRejectedValue(new Error("Rate limit exceeded"));
     const ctx = makeCtx({ createPoll: createFn });
 
     const result = await createMeetingPollTool.run(ctx, {
@@ -201,7 +203,12 @@ describe("submitMeetingAvailabilityTool", () => {
       slug: "newpoll123",
       availability: [
         { date: "2026-10-13", start: "10:00", end: "11:00" },
-        { date: "2026-10-13", start: "11:00", end: "11:30", status: "ifNeeded" },
+        {
+          date: "2026-10-13",
+          start: "11:00",
+          end: "11:30",
+          status: "ifNeeded",
+        },
       ],
     });
 
@@ -211,8 +218,7 @@ describe("submitMeetingAvailabilityTool", () => {
       ifNeededSlots: [68, 69],
     });
 
-    const rawText =
-      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const rawText = result.content.find((c) => c.type === "text")?.text ?? "{}";
     expect(rawText).not.toContain("Slots");
     expect(rawText).not.toContain("participantId");
 
@@ -288,8 +294,18 @@ describe("submitMeetingAvailabilityTool", () => {
       slug: "newpoll123",
       mode: "merge",
       availability: [
-        { date: "2026-10-12", start: "08:15", end: "08:45", status: "unavailable" },
-        { date: "2026-10-13", start: "10:00", end: "10:15", status: "unavailable" },
+        {
+          date: "2026-10-12",
+          start: "08:15",
+          end: "08:45",
+          status: "unavailable",
+        },
+        {
+          date: "2026-10-13",
+          start: "10:00",
+          end: "10:15",
+          status: "unavailable",
+        },
       ],
     });
 
@@ -371,9 +387,7 @@ describe("submitMeetingAvailabilityTool", () => {
       name: "off-grid time",
       input: {
         slug: "newpoll123",
-        availability: [
-          { date: "2026-10-13", start: "10:10", end: "11:00" },
-        ],
+        availability: [{ date: "2026-10-13", start: "10:10", end: "11:00" }],
       },
       expectedError: "Time 10:10 on 2026-10-13 is not on a 15-minute boundary.",
     },
@@ -381,9 +395,7 @@ describe("submitMeetingAvailabilityTool", () => {
       name: "date outside poll window",
       input: {
         slug: "newpoll123",
-        availability: [
-          { date: "2026-10-14", start: "10:00", end: "11:00" },
-        ],
+        availability: [{ date: "2026-10-14", start: "10:00", end: "11:00" }],
       },
       expectedError:
         "Date 2026-10-14 is outside the poll window 2026-10-12 to 2026-10-13.",
@@ -392,9 +404,7 @@ describe("submitMeetingAvailabilityTool", () => {
       name: "end before start",
       input: {
         slug: "newpoll123",
-        availability: [
-          { date: "2026-10-13", start: "11:00", end: "10:00" },
-        ],
+        availability: [{ date: "2026-10-13", start: "11:00", end: "10:00" }],
       },
       expectedError:
         "Range 11:00-10:00 on 2026-10-13 must end after it starts.",
@@ -403,9 +413,7 @@ describe("submitMeetingAvailabilityTool", () => {
       name: "outside poll hours",
       input: {
         slug: "newpoll123",
-        availability: [
-          { date: "2026-10-13", start: "07:00", end: "08:00" },
-        ],
+        availability: [{ date: "2026-10-13", start: "07:00", end: "08:00" }],
       },
       expectedError:
         "Time 07:00-08:00 on 2026-10-13 is outside the poll hours 08:00-22:00 SGT.",
@@ -443,24 +451,27 @@ describe("submitMeetingAvailabilityTool", () => {
       expectedError:
         'status "unavailable" only applies with mode "merge"; in replace mode leave those times out.',
     },
-  ])("rejects bad ranges without submitting ($name)", async ({ input, expectedError }) => {
-    const getPollFn = vi.fn().mockResolvedValue({
-      poll: mockPoll,
-      participants: defaultParticipants,
-      heatmap: {},
-    });
-    const submitFn = vi.fn();
-    const ctx = makeCtx({
-      getPollBySlug: getPollFn,
-      submitAvailability: submitFn,
-    });
+  ])(
+    "rejects bad ranges without submitting ($name)",
+    async ({ input, expectedError }) => {
+      const getPollFn = vi.fn().mockResolvedValue({
+        poll: mockPoll,
+        participants: defaultParticipants,
+        heatmap: {},
+      });
+      const submitFn = vi.fn();
+      const ctx = makeCtx({
+        getPollBySlug: getPollFn,
+        submitAvailability: submitFn,
+      });
 
-    const result = await submitMeetingAvailabilityTool.run(ctx, input);
+      const result = await submitMeetingAvailabilityTool.run(ctx, input);
 
-    expect(result.isError).toBe(true);
-    expect(result.content[0]?.text).toContain(expectedError);
-    expect(submitFn).not.toHaveBeenCalled();
-  });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]?.text).toContain(expectedError);
+      expect(submitFn).not.toHaveBeenCalled();
+    },
+  );
 
   it("returns error when the poll is missing", async () => {
     const getPollFn = vi
