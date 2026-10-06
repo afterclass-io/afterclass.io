@@ -133,51 +133,73 @@ describe("IS215 acceptance replay", () => {
         date: "2026-10-12",
         weekday: "Mon",
         start: "10:00",
-        end: "11:00",
-        startRange: { earliest: "10:00", latest: "10:00" },
-        free: ["Jordan Teo", "Chloe Ong"],
-        ifNeeded: ["Alice Tan", "Ben Lim"],
+        end: "10:30",
+        free: ["Jordan Teo", "Alice Tan", "Ben Lim", "Chloe Ong"],
+        ifNeeded: [],
         unavailable: [],
         attendable: 4,
         total: 4,
+        tier: "everyone-free",
+        summary: "All 4 free",
       },
       {
         date: "2026-10-12",
         weekday: "Mon",
         start: "08:00",
-        end: "09:00",
-        startRange: { earliest: "08:00", latest: "08:00" },
-        free: ["Jordan Teo"],
+        end: "08:30",
+        free: ["Jordan Teo", "Alice Tan", "Ben Lim"],
+        ifNeeded: ["Chloe Ong"],
+        unavailable: [],
+        attendable: 4,
+        total: 4,
+        tier: "everyone-attendable",
+        summary: "All 4 can attend: 3 free, 1 if needed",
+      },
+      {
+        date: "2026-10-12",
+        weekday: "Mon",
+        start: "10:30",
+        end: "10:45",
+        free: ["Jordan Teo", "Ben Lim", "Chloe Ong"],
+        ifNeeded: ["Alice Tan"],
+        unavailable: [],
+        attendable: 4,
+        total: 4,
+        tier: "everyone-attendable",
+        summary: "All 4 can attend: 3 free, 1 if needed",
+      },
+      {
+        date: "2026-10-12",
+        weekday: "Mon",
+        start: "10:45",
+        end: "11:00",
+        free: ["Jordan Teo", "Chloe Ong"],
         ifNeeded: ["Alice Tan", "Ben Lim"],
-        unavailable: ["Chloe Ong"],
+        unavailable: [],
+        attendable: 4,
+        total: 4,
+        tier: "everyone-attendable",
+        summary: "All 4 can attend: 2 free, 2 if needed",
+      },
+      {
+        date: "2026-10-12",
+        weekday: "Mon",
+        start: "12:00",
+        end: "12:30",
+        free: ["Alice Tan", "Ben Lim", "Chloe Ong"],
+        ifNeeded: [],
+        unavailable: ["Jordan Teo"],
         attendable: 3,
         total: 4,
-      },
-      {
-        date: "2026-10-12",
-        weekday: "Mon",
-        start: "08:15",
-        end: "09:15",
-        startRange: { earliest: "08:15", latest: "08:30" },
-        free: [],
-        ifNeeded: ["Jordan Teo"],
-        unavailable: ["Alice Tan", "Ben Lim", "Chloe Ong"],
-        attendable: 1,
-        total: 4,
-      },
-      {
-        date: "2026-10-12",
-        weekday: "Mon",
-        start: "10:15",
-        end: "11:15",
-        startRange: { earliest: "10:15", latest: "10:30" },
-        free: [],
-        ifNeeded: ["Jordan Teo"],
-        unavailable: ["Alice Tan", "Ben Lim", "Chloe Ong"],
-        attendable: 1,
-        total: 4,
+        tier: "partial",
+        summary:
+          "3 of 4 can attend: 3 free, 0 if needed; unavailable: Jordan Teo",
       },
     ]);
+
+    for (const opt of parsed.options) {
+      expect("startRange" in (opt as object)).toBe(false);
+    }
 
     expect(parsed.bestPerDay).toHaveLength(5);
     expect(parsed.bestPerDay[0]).toEqual(parsed.options[0]);
@@ -195,15 +217,129 @@ describe("IS215 acceptance replay", () => {
         date: dayInfo.date,
         weekday: dayInfo.weekday,
         start: "08:00",
-        end: "09:00",
-        startRange: { earliest: "08:00", latest: "21:00" },
+        end: "22:00",
         free: [],
         ifNeeded: [],
         unavailable: ["Jordan Teo", "Alice Tan", "Ben Lim", "Chloe Ong"],
         attendable: 0,
         total: 4,
+        tier: "none",
+        summary: "Nobody can attend",
       });
     }
+  });
+
+  it("Monday 08:00-10:00 question", async () => {
+    const getPollFn = vi.fn().mockResolvedValue(IS215_DETAIL);
+    const ctx = makeCtx(getPollFn);
+
+    const result = await suggestMeetingTimesTool.run(ctx, {
+      slug: "xK9mP2vL7q",
+      dates: ["2026-10-12"],
+      earliestStart: "08:00",
+      latestEnd: "10:00",
+    });
+
+    expect(result.isError).toBeFalsy();
+    const rawText = result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const parsed = JSON.parse(rawText) as {
+      options: unknown[];
+      bestPerDay: unknown[];
+    };
+
+    expect(parsed.options).toEqual([
+      {
+        date: "2026-10-12",
+        weekday: "Mon",
+        start: "08:00",
+        end: "08:30",
+        free: ["Jordan Teo", "Alice Tan", "Ben Lim"],
+        ifNeeded: ["Chloe Ong"],
+        unavailable: [],
+        attendable: 4,
+        total: 4,
+        tier: "everyone-attendable",
+        summary: "All 4 can attend: 3 free, 1 if needed",
+      },
+      {
+        date: "2026-10-12",
+        weekday: "Mon",
+        start: "08:30",
+        end: "08:45",
+        free: ["Jordan Teo", "Ben Lim"],
+        ifNeeded: ["Alice Tan"],
+        unavailable: ["Chloe Ong"],
+        attendable: 3,
+        total: 4,
+        tier: "partial",
+        summary:
+          "3 of 4 can attend: 2 free, 1 if needed; unavailable: Chloe Ong",
+      },
+      {
+        date: "2026-10-12",
+        weekday: "Mon",
+        start: "08:45",
+        end: "09:00",
+        free: ["Jordan Teo"],
+        ifNeeded: ["Alice Tan", "Ben Lim"],
+        unavailable: ["Chloe Ong"],
+        attendable: 3,
+        total: 4,
+        tier: "partial",
+        summary:
+          "3 of 4 can attend: 1 free, 2 if needed; unavailable: Chloe Ong",
+      },
+      {
+        date: "2026-10-12",
+        weekday: "Mon",
+        start: "09:00",
+        end: "09:30",
+        free: [],
+        ifNeeded: ["Jordan Teo"],
+        unavailable: ["Alice Tan", "Ben Lim", "Chloe Ong"],
+        attendable: 1,
+        total: 4,
+        tier: "partial",
+        summary:
+          "1 of 4 can attend: 0 free, 1 if needed; unavailable: Alice Tan, Ben Lim, Chloe Ong",
+      },
+    ]);
+    expect(parsed.bestPerDay).toEqual([parsed.options[0]]);
+  });
+
+  it("explicit duration keeps start range", async () => {
+    const getPollFn = vi.fn().mockResolvedValue(IS215_DETAIL);
+    const ctx = makeCtx(getPollFn);
+
+    const result = await suggestMeetingTimesTool.run(ctx, {
+      slug: "xK9mP2vL7q",
+      dates: ["2026-10-12"],
+      durationMinutes: 60,
+      limit: 1,
+    });
+
+    expect(result.isError).toBeFalsy();
+    const rawText = result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const parsed = JSON.parse(rawText) as {
+      options: unknown[];
+    };
+
+    expect(parsed.options).toEqual([
+      {
+        date: "2026-10-12",
+        weekday: "Mon",
+        start: "10:00",
+        end: "11:00",
+        startRange: { earliest: "10:00", latest: "10:00" },
+        free: ["Jordan Teo", "Chloe Ong"],
+        ifNeeded: ["Alice Tan", "Ben Lim"],
+        unavailable: [],
+        attendable: 4,
+        total: 4,
+        tier: "everyone-attendable",
+        summary: "All 4 can attend: 2 free, 2 if needed",
+      },
+    ]);
   });
 
   it("weekend question on a weekday-only poll gets a clear error", async () => {

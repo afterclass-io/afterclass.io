@@ -386,18 +386,20 @@ describe("suggestMeetingTimesTool", () => {
       poll: { slug: string; title: string; timezone: string; slotMinutes: number };
       asOf: string;
       participants: { total: number; noResponse: string[] };
-      query: { durationMinutes: number };
+      query: { durationMinutes?: number };
       options: Array<{
         date: string;
         weekday: string;
         start: string;
         end: string;
-        startRange: { earliest: string; latest: string };
+        startRange?: { earliest: string; latest: string };
         free: string[];
         ifNeeded: string[];
         unavailable: string[];
         attendable: number;
         total: number;
+        tier: string;
+        summary: string;
       }>;
       url: string;
     };
@@ -412,20 +414,54 @@ describe("suggestMeetingTimesTool", () => {
       total: 4,
       noResponse: ["Student", "Student 2"],
     });
-    expect(parsed.query).toEqual({ durationMinutes: 60 });
+    expect(parsed.query).toEqual({});
     expect(parsed.options[0]).toEqual({
       date: "2026-10-12",
       weekday: "Mon",
       start: "10:00",
       end: "11:00",
-      startRange: { earliest: "10:00", latest: "10:00" },
       free: ["Alice Tan", "Ben Lim"],
       ifNeeded: [],
       unavailable: ["Student", "Student 2"],
       attendable: 2,
       total: 4,
+      tier: "partial",
+      summary:
+        "2 of 4 can attend: 2 free, 0 if needed; unavailable: Student, Student 2",
     });
+    expect("startRange" in (parsed.options[0] ?? {})).toBe(false);
     expect(parsed.url).toBe("/meetings/abc1234567");
+  });
+
+  it("with durationMinutes it returns startRange", async () => {
+    const getPollFn = vi.fn().mockResolvedValue({
+      poll: mockPoll,
+      participants: mockParticipants,
+      heatmap: {},
+    });
+    const ctx = makeSuggestCtx(getPollFn);
+
+    const result = await suggestMeetingTimesTool.run(ctx, {
+      slug: "abc1234567",
+      durationMinutes: 60,
+    });
+    expect(result.isError).toBeFalsy();
+    const rawText =
+      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    const parsed = JSON.parse(rawText) as {
+      query: { durationMinutes: number };
+      options: Array<{
+        start: string;
+        end: string;
+        startRange?: { earliest: string; latest: string };
+      }>;
+    };
+    expect(parsed.query).toEqual({ durationMinutes: 60 });
+    expect(parsed.options[0]?.end).toBe("11:00");
+    expect(parsed.options[0]?.startRange).toEqual({
+      earliest: "10:00",
+      latest: "10:00",
+    });
   });
 
   it("echoes structured filters in query", async () => {
@@ -444,12 +480,16 @@ describe("suggestMeetingTimesTool", () => {
     const rawText =
       result.content.find((c) => c.type === "text")?.text ?? "{}";
     const parsed = JSON.parse(rawText) as {
-      query: { daysOfWeek: string[]; durationMinutes: number };
+      query: { daysOfWeek: string[]; durationMinutes?: number };
     };
     expect(parsed.query).toEqual({
       daysOfWeek: ["mon"],
-      durationMinutes: 60,
     });
+  });
+
+  it("description tells agents not to assume a duration and not to call if-needed people available", () => {
+    expect(suggestMeetingTimesTool.description).toContain("omit durationMinutes");
+    expect(suggestMeetingTimesTool.description).toContain("NOT available");
   });
 
   it("surfaces validation errors as errText", async () => {
