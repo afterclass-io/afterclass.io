@@ -36,7 +36,7 @@ function makeCtx(listMyMeetings: ReturnType<typeof vi.fn>): ToolContext {
 }
 
 describe("getMyMeetingsTool", () => {
-  it("returns formatted meetings list limited by input limit", async () => {
+  it("returns formatted meetings list limited by input limit with ISO dates and hasResponded", async () => {
     const mockMeetings = [
       {
         id: "m1",
@@ -53,6 +53,7 @@ describe("getMyMeetingsTool", () => {
         section: "G1",
         teamIdentifier: "Team Alpha",
         participantCount: 4,
+        hasResponded: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -71,6 +72,7 @@ describe("getMyMeetingsTool", () => {
         section: null,
         teamIdentifier: null,
         participantCount: 3,
+        hasResponded: false,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -79,17 +81,25 @@ describe("getMyMeetingsTool", () => {
     const listFn = vi.fn().mockResolvedValue(mockMeetings);
     const ctx = makeCtx(listFn);
 
-    const result = await getMyMeetingsTool.run(ctx, { limit: 1 });
+    const result = await getMyMeetingsTool.run(ctx, { limit: 2 });
     expect(listFn).toHaveBeenCalled();
 
     const text = result.content.find((c) => c.type === "text")?.text ?? "{}";
     const parsed = JSON.parse(text) as {
       total: number;
-      meetings: Array<{ slug: string; url: string }>;
+      meetings: Array<{
+        slug: string;
+        url: string;
+        startDate: string;
+        hasResponded: boolean;
+      }>;
     };
     expect(parsed.total).toBe(2);
-    expect(parsed.meetings).toHaveLength(1);
+    expect(parsed.meetings).toHaveLength(2);
     expect(parsed.meetings[0]?.slug).toBe("slug-1");
+    expect(parsed.meetings[0]?.startDate).toBe("2026-10-10");
+    expect(parsed.meetings[0]?.hasResponded).toBe(true);
+    expect(parsed.meetings[1]?.hasResponded).toBe(false);
     expect(parsed.meetings[0]).not.toHaveProperty("status");
     expect(parsed.meetings[0]).not.toHaveProperty("finalizedSlot");
     expect(parsed.meetings[0]?.url).toBe("/meetings/slug-1");
@@ -106,7 +116,7 @@ describe("getMyMeetingsTool", () => {
 });
 
 describe("getMeetingPollDetailTool", () => {
-  it("returns meeting poll detail with participants and url", async () => {
+  it("returns window and availability ranges", async () => {
     const mockDetail = {
       poll: {
         id: "p1",
@@ -116,10 +126,10 @@ describe("getMeetingPollDetailTool", () => {
         agenda: "Action items",
         links: ["https://meet.google.com/xyz"],
         isCreator: true,
-        startDate: new Date("2026-10-10"),
-        endDate: new Date("2026-10-12"),
-        startHour: 9,
-        endHour: 17,
+        startDate: new Date("2026-10-12T00:00:00.000Z"),
+        endDate: new Date("2026-10-13T00:00:00.000Z"),
+        startHour: 8,
+        endHour: 22,
         slotDurationMinutes: 15,
         course: null,
         section: null,
@@ -130,12 +140,19 @@ describe("getMeetingPollDetailTool", () => {
         {
           participantId: "part-1",
           name: "Alice Tan",
-          availableSlots: [1, 2, 3],
-          ifNeededSlots: [4],
+          availableSlots: [0, 1, 2, 3, 64],
+          ifNeededSlots: [4, 5],
           isCurrentUser: true,
         },
+        {
+          participantId: "part-2",
+          name: "Ben Lim",
+          availableSlots: [],
+          ifNeededSlots: [],
+          isCurrentUser: false,
+        },
       ],
-      heatmap: { 1: { availableCount: 1, ifNeededCount: 0 } },
+      heatmap: {},
     };
 
     const getPollFn = vi.fn().mockResolvedValue(mockDetail);
@@ -148,19 +165,127 @@ describe("getMeetingPollDetailTool", () => {
       } as unknown as ToolContext["caller"],
     };
 
-    const result = await getMeetingPollDetailTool.run(ctx, { slug: "meeting-101" });
+    const result = await getMeetingPollDetailTool.run(ctx, {
+      slug: "meeting-101",
+    });
     expect(getPollFn).toHaveBeenCalledWith({ slug: "meeting-101" });
     expect(result.isError).toBeFalsy();
 
-    const text = result.content.find((c) => c.type === "text")?.text ?? "{}";
-    const parsed = JSON.parse(text) as {
-      poll: { title: string };
+    const rawText =
+      result.content.find((c) => c.type === "text")?.text ?? "{}";
+    expect(rawText).not.toContain("Slots");
+    expect(rawText).not.toContain("heatmap");
+    expect(rawText).not.toContain("participantId");
+    expect(rawText).not.toContain("p1");
+
+    const parsed = JSON.parse(rawText) as {
+      poll: {
+        slug: string;
+        title: string;
+        description: string | null;
+        agenda: string | null;
+        links: string[];
+        isCreator: boolean;
+        course: { code: string; name: string } | null;
+        section: string | null;
+        teamIdentifier: string | null;
+        startDate: string;
+        endDate: string;
+        timezone: string;
+      };
+      window: {
+        days: Array<{ date: string; weekday: string }>;
+        startHour: number;
+        endHour: number;
+        slotMinutes: number;
+      };
       participantCount: number;
+      respondedCount: number;
+      participants: Array<{
+        name: string;
+        isCurrentUser: boolean;
+        hasResponded: boolean;
+        availability: Array<{
+          date: string;
+          start: string;
+          end: string;
+          status: string;
+        }>;
+      }>;
       url: string;
     };
-    expect(parsed.poll.title).toBe("Sprint Retrospective");
-    expect(parsed.participantCount).toBe(1);
-    expect(parsed.url).toBe("/meetings/meeting-101");
+
+    expect(parsed.window).toEqual({
+      days: [
+        { date: "2026-10-12", weekday: "Mon" },
+        { date: "2026-10-13", weekday: "Tue" },
+      ],
+      startHour: 8,
+      endHour: 22,
+      slotMinutes: 15,
+    });
+    expect(parsed.poll.startDate).toBe("2026-10-12");
+    expect(parsed.poll.timezone).toBe("Asia/Singapore");
+    expect(parsed.participantCount).toBe(2);
+    expect(parsed.respondedCount).toBe(1);
+    expect(parsed.participants[0]).toEqual({
+      name: "Alice Tan",
+      isCurrentUser: true,
+      hasResponded: true,
+      availability: [
+        {
+          date: "2026-10-12",
+          start: "08:00",
+          end: "09:00",
+          status: "available",
+        },
+        {
+          date: "2026-10-12",
+          start: "09:00",
+          end: "09:30",
+          status: "ifNeeded",
+        },
+        {
+          date: "2026-10-13",
+          start: "10:00",
+          end: "10:15",
+          status: "available",
+        },
+      ],
+    });
+    expect(parsed.participants[1]).toEqual({
+      name: "Ben Lim",
+      isCurrentUser: false,
+      hasResponded: false,
+      availability: [],
+    });
+  });
+
+  it("description no longer claims a heatmap", () => {
+    expect(getMeetingPollDetailTool.description).not.toMatch(/heatmap/i);
+    expect(getMeetingPollDetailTool.description).toContain(
+      "suggest-meeting-times",
+    );
+  });
+
+  it("returns errText when the poll is missing", async () => {
+    const getPollFn = vi
+      .fn()
+      .mockRejectedValue(new Error("Meeting poll not found"));
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: {
+        meetings: {
+          getPollBySlug: getPollFn,
+        },
+      } as unknown as ToolContext["caller"],
+    };
+
+    const result = await getMeetingPollDetailTool.run(ctx, {
+      slug: "nonexistent",
+    });
+    expect(result.isError).toBe(true);
+    expect(result.content[0]?.text).toContain("Meeting poll not found");
   });
 });
 

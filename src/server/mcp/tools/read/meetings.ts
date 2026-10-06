@@ -1,12 +1,16 @@
 import { z } from "zod";
 
+import { toIsoDate } from "@/common/functions/term-date-bounds";
 import {
+  availabilityToRanges,
   formatSgtIso,
+  pollDays,
   SGT_TIMEZONE,
   toPollGrid,
 } from "@/modules/meetings/functions/slot-time";
 import {
   DEFAULT_DURATION_MINUTES,
+  disambiguateNames,
   suggestMeetingTimes,
 } from "@/modules/meetings/functions/suggest-times";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
@@ -25,7 +29,7 @@ const getMyMeetingsSchema = z.object({
 export const getMyMeetingsTool: McpTool<typeof getMyMeetingsSchema> = {
   name: "get-my-meetings",
   description:
-    "List the group meetings and availability polls the user created or joined.",
+    "List the group meeting polls the user created or joined, with dates (YYYY-MM-DD, SGT) and whether the user has filled in their availability (hasResponded). Use suggest-meeting-times to find the best time for a poll.",
   inputSchema: getMyMeetingsSchema,
   readOnly: true,
   run: async ({ caller }, input) => {
@@ -39,13 +43,14 @@ export const getMyMeetingsTool: McpTool<typeof getMyMeetingsSchema> = {
           slug: m.slug,
           title: m.title,
           description: m.description,
-          startDate: m.startDate,
-          endDate: m.endDate,
+          startDate: toIsoDate(m.startDate),
+          endDate: toIsoDate(m.endDate),
           course: m.course ? { code: m.course.code, name: m.course.name } : null,
           section: m.section,
           teamIdentifier: m.teamIdentifier,
           participantCount: m.participantCount,
           isCreator: m.isCreator,
+          hasResponded: m.hasResponded,
           url: `/meetings/${m.slug}`,
         })),
         total: meetings.length,
@@ -57,28 +62,59 @@ export const getMyMeetingsTool: McpTool<typeof getMyMeetingsSchema> = {
 };
 
 const getMeetingPollDetailSchema = z.object({
-  slug: z.string().describe("The 10-character slug of the meeting poll"),
+  slug: z
+    .string()
+    .min(6)
+    .max(20)
+    .describe("The meeting poll slug (from /meetings/[slug])"),
 });
 
-export const getMeetingPollDetailTool: McpTool<typeof getMeetingPollDetailSchema> = {
+export const getMeetingPollDetailTool: McpTool<
+  typeof getMeetingPollDetailSchema
+> = {
   name: "get-meeting-poll-detail",
   description:
-    "Get full details, participants, and aggregate availability heatmap for a group meeting poll by its slug.",
+    "Get a group meeting poll's details, its date/time window, and each participant's availability as Singapore-time date/time ranges (with hasResponded). To pick a meeting time or see who can make it, use suggest-meeting-times instead.",
   inputSchema: getMeetingPollDetailSchema,
   readOnly: true,
   run: async ({ caller }, input) => {
     try {
       const detail = await caller.meetings.getPollBySlug({ slug: input.slug });
+      const grid = toPollGrid(detail.poll);
+      const names = disambiguateNames(detail.participants.map((p) => p.name));
+      const participants = detail.participants.map((p, i) => ({
+        name: names[i]!,
+        isCurrentUser: p.isCurrentUser,
+        hasResponded: p.availableSlots.length + p.ifNeededSlots.length > 0,
+        availability: availabilityToRanges(grid, p),
+      }));
+      const respondedCount = participants.filter((p) => p.hasResponded).length;
       return jsonText({
-        poll: detail.poll,
-        participantCount: detail.participants.length,
-        participants: detail.participants.map((p) => ({
-          participantId: p.participantId,
-          name: p.name,
-          availableSlotsCount: p.availableSlots.length,
-          ifNeededSlotsCount: p.ifNeededSlots.length,
-          isCurrentUser: p.isCurrentUser,
-        })),
+        poll: {
+          slug: detail.poll.slug,
+          title: detail.poll.title,
+          description: detail.poll.description,
+          agenda: detail.poll.agenda,
+          links: detail.poll.links,
+          isCreator: detail.poll.isCreator,
+          course: detail.poll.course
+            ? { code: detail.poll.course.code, name: detail.poll.course.name }
+            : null,
+          section: detail.poll.section,
+          teamIdentifier: detail.poll.teamIdentifier,
+          startDate: grid.startDate,
+          endDate: grid.endDate,
+          timezone: SGT_TIMEZONE,
+        },
+        window: {
+          days: pollDays(grid),
+          startHour: grid.startHour,
+          endHour: grid.endHour,
+          slotMinutes: grid.slotMinutes,
+        },
+        participantCount: participants.length,
+        respondedCount,
+        participants,
         url: `/meetings/${detail.poll.slug}`,
       });
     } catch (e) {
