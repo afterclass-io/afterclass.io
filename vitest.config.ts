@@ -53,6 +53,7 @@ export default defineConfig({
         "src/mcp/**/*.ts",
         "src/server/mcp/**/*.ts",
         "src/server/assistant/**/*.ts",
+        "src/server/moderation/**/*.ts",
         "views/**/*.tsx",
         "views/**/*.ts",
         "prisma/**/*.ts",
