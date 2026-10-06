@@ -66,7 +66,7 @@ const SYSTEM = [
 function fence(text: string): string {
   let current = text;
   for (;;) {
-    const next = current.replace(/<\s*\/?\s*text\s*>/gi, "");
+    const next = current.replace(/<\s*(?:\/\s*)?text\s*>/gi, "");
     if (next === current) return current;
     current = next;
   }
