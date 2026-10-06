@@ -24,7 +24,14 @@ import {
   StatisticsTableIcon,
   TelegramIcon,
 } from "@/common/components/icons";
-import { BotIcon, FileTextIcon, LockIcon, PlugIcon, Users } from "lucide-react";
+import {
+  BotIcon,
+  FileTextIcon,
+  LockIcon,
+  PlugIcon,
+  ShieldCheckIcon,
+  Users,
+} from "lucide-react";
 import { env } from "@/env";
 import { toTitleCase } from "@/common/functions";
 import Link from "next/link";
@@ -152,6 +159,11 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       label: "Privacy",
       icon: <LockIcon size={16} />,
       href: "/privacy",
+    },
+    {
+      label: "Guidelines",
+      icon: <ShieldCheckIcon size={16} />,
+      href: "/guidelines",
     },
   ],
 };
