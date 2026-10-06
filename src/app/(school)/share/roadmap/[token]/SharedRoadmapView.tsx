@@ -16,6 +16,7 @@ import {
 import { api } from "@/common/tools/trpc/react";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
 import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
+import { ReportButton } from "@/modules/moderation/components/ReportButton";
 import { Button } from "@/common/components/button";
 import { PageTitle } from "@/common/components/page-title";
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
@@ -147,6 +148,12 @@ export function SharedRoadmapView({
               <span className="hidden sm:inline">Timeline</span>
             </ToggleGroupItem>
           </ToggleGroup>
+
+          <ReportButton
+            surface="roadmap"
+            refId={roadmapId}
+            ownerUsername={ownerUsername}
+          />
         </div>
       </div>
 

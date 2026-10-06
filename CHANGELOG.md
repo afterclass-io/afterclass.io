@@ -1,3 +1,9 @@
+# Unreleased
+
+## What's Changed
+### 🚀 Features
+* feat(moderation): report button on reviews, public and shared roadmaps, and shared timetables; reported content is checked against the new Community Guidelines (off until `enableContentModeration` is enabled)
+
 <a id="v1.5.0"></a>
 # [v1.5.0](https://github.com/afterclass-io/afterclass.io/releases/tag/v1.5.0) - 2026-09-29
 
