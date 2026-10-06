@@ -205,6 +205,7 @@ export interface TagProps
     VariantProps<typeof tagVariants> {
   size?: "xs" | "sm" | "md";
   deletable?: boolean;
+  onDelete?: () => void;
   avatar?: React.JSX.Element;
   deleteIcon?: React.JSX.Element;
 }
@@ -216,6 +217,7 @@ function Tag({
   color = "default",
   avatar,
   deletable = true,
+  onDelete,
   deleteIcon,
   onClick,
   className,
@@ -230,9 +232,23 @@ function Tag({
       <div className="label align-middle">{children}</div>
       {!!deletable && (
         <div
+          role="button"
+          tabIndex={0}
+          aria-label="Delete"
           className={cn(deletableVariants({ variant, color }), "deletable")}
           data-variant={variant}
           data-color={color}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete?.();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete?.();
+            }
+          }}
         >
           {deleteIcon ?? <X strokeWidth={3} />}
         </div>

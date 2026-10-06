@@ -1,0 +1,22 @@
+/*
+ * Meetings availability matrix palette.
+ * Scoped to `.meetings-theme` to provide tokens for heatmap slots and calendar overlays.
+ * UI controls (buttons, pills, links) inherit standard brand primary purple.
+ */
+.meetings-theme {
+  --mt-available: #00994c;
+  --mt-available-soft: #8ad0a9;
+  --mt-if-needed: #ffe8b8;
+  --mt-if-needed-line: #997700;
+  --mt-busy: #fbd5d5;
+  --mt-event: #006be8;
+}
+
+.dark .meetings-theme {
+  --mt-available: #29bc68;
+  --mt-available-soft: #2f7a4f;
+  --mt-if-needed: #5c4a16;
+  --mt-if-needed-line: #e5a800;
+  --mt-busy: #5b2a2a;
+  --mt-event: #53a2ff;
+}
