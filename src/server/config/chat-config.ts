@@ -40,7 +40,7 @@
  * | inFlightStaleMs | 300000 | quota.ts IN_FLIGHT_STALE_MS = 5*60_000 |
  * | rateLimitRetentionWindows | 1440 | ratelimit.ts pruneRateLimits default 1440 |
  * | llmBaseUrl | https://openrouter.ai/api/v1 | providers.ts DEFAULT_LLM_BASE_URL |
- * | llmModel | @preset/afterclass | providers.ts DEFAULT_LLM_MODEL |
+ * | llmModel | @preset/afterclass | chat-config.ts DEFAULT_CHAT_CONFIG_VALUES (LLM_MODEL env > config.json > default) |
  * | chatMaxDurationSec | 300 | route.ts `maxDuration = 300` (Vercel Pro ceiling; keep in sync) |
  * | chatEnabled | true | ecfg kill-switch: chat route 503 when false (ecfg-only, no ENV_BINDINGS) |
  * | widgetEnabled | true | ecfg kill-switch: widget hidden when false (surfaced via status; ecfg-only, no ENV_BINDINGS) |

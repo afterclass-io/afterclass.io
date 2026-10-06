@@ -80,8 +80,8 @@ vi.mock("@/server/assistant/consent", () => ({
 }));
 // route.ts schedules settlement via after() (Vercel waitUntil
 // semantics). In tests there is no request scope, so run the work inline —
-// the failure-fallback path (real after() throwing) is covered by the
-// try/catch in the route itself.
+// the failure-fallback path (real after() throwing) lives in
+// src/server/after-response.ts and is covered by after-response.test.ts.
 vi.mock("next/server", () => ({
   after: (task: unknown) => {
     if (typeof task === "function") void (task as () => unknown)();

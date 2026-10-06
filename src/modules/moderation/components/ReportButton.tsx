@@ -33,6 +33,8 @@ export function ReportButton({
   const ecfg = useEdgeConfigs();
   const { data: session, status } = useSession();
   const toastId = `report-${surface}-${refId}`;
+  // No cached query to update and counts are never fetched (spec 7), so the
+  // optimistic-mutation helper does not apply.
   const report = api.moderation.report.useMutation({
     onSuccess: () => toast.success(REPORT_CONFIRMATION, { id: toastId }),
     onError: (error) => {

@@ -33,7 +33,7 @@ User opens widget -> AssistantProvider mounts -> GET /api/assistant/status
                                                            buildAssistantTools(ctx)
                                                                           |
                                                                           v
-                                                           getModel() -> LLM_MODEL
+                                                           getModel("assistant") -> LLM_MODEL
                                                            (LLM_* env)
                                                                           |
                                                                           v
@@ -85,7 +85,7 @@ User opens widget -> AssistantProvider mounts -> GET /api/assistant/status
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `canned.ts`    | Canned answers for static capability-style prompts, short-circuited **before** the quota reserve.                                                                   |
 | `tools.ts`     | `buildAssistantTools(ctx)` - converts the shared MCP `allTools` into an AI SDK `ToolSet`.                                                                           |
-| `providers.ts` | `getModel()` - single OpenAI-compatible provider configured from generic `LLM_API_KEY` plus `LLM_BASE_URL`/`LLM_MODEL` (defaults: OpenRouter `@preset/afterclass`). |
+| `providers.ts` | `getModel(purpose)` - single OpenAI-compatible provider configured from generic `LLM_API_KEY` plus `LLM_BASE_URL`/`LLM_MODEL` (defaults: OpenRouter `@preset/afterclass`). The model id is resolved by `resolveModelId` through chat-config; `getModel("moderation")` uses the optional remote-only `moderationModel`, falling back to `llmModel`. |
 | `trim.ts`      | `trimToBudget(messages)` - prunes reasoning/tool-call bloat, then drops oldest messages until under max input tokens.                                               |
 | `quota.ts`     | `reserveMessage`, `settleUsage` - monthly message quota and token-count tracking.                                                                                   |
 | `ratelimit.ts` | `checkAndIncrement` - fixed-window rate limiter per user.                                                                                                           |
