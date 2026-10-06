@@ -153,3 +153,81 @@ export const roadmapsTourSteps: TourStep[] = [
     },
   },
 ];
+
+/**
+ * Meeting room tour. Edit-mode steps (brush, calendars, autofill, save) are
+ * skipped at runtime unless the viewer is editing, so replaying the tour from
+ * inside Edit availability shows the full walkthrough.
+ */
+export const meetingsRoomTourSteps: TourStep[] = [
+  {
+    element: '[data-test="meeting-edit-availability"]',
+    popover: {
+      title: "Add your availability",
+      description:
+        "The grid shows everyone's availability combined: darker green means more people are free. Press Edit availability to mark when you are free.",
+      side: "bottom",
+      align: "end",
+    },
+  },
+  {
+    element: '[data-test="meeting-brush-group"]',
+    popover: {
+      title: "Pick a colour, then paint",
+      description:
+        "Choose Available, If needed or Unavailable, then click or drag across the grid. Keys 1, 2 and 3 switch colours.",
+      side: "left",
+      align: "start",
+    },
+  },
+  {
+    element: '[data-test="meeting-autofill"]',
+    popover: {
+      title: "Autofill from your calendar",
+      description:
+        "Mark every slot your timetable or Google Calendar leaves free, then adjust by hand.",
+      side: "left",
+      align: "start",
+    },
+  },
+  {
+    element: '[data-test="meeting-calendars"]',
+    popover: {
+      title: "See your own commitments",
+      description:
+        "Tick a calendar to draw your classes or events on the grid as boxes, so you can see what you already have on.",
+      side: "left",
+      align: "start",
+    },
+  },
+  {
+    element: '[data-test="save-availability-button"]',
+    popover: {
+      title: "Save when you are done",
+      description:
+        "Your changes are only shared with the group once you save.",
+      side: "bottom",
+      align: "end",
+    },
+  },
+  {
+    element: '[data-test="meeting-details"]',
+    popover: {
+      title: "Agenda and links",
+      description:
+        "What the meeting is about and where to join. The person who created the meeting can edit these.",
+      side: "left",
+      align: "start",
+    },
+  },
+  {
+    element: '[data-test="meeting-copy-link"]',
+    popover: {
+      title: "Invite your group",
+      description:
+        "Copy the link and share it. Anyone who opens it can add their availability, and the meeting shows up in their list.",
+      side: "bottom",
+      align: "end",
+    },
+  },
+];
