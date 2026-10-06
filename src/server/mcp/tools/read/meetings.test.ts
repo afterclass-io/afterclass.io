@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { env } from "@/env";
 import type { SessionUser } from "@/server/auth/config";
 import type { ToolContext } from "../../types";
 import {
@@ -102,7 +103,9 @@ describe("getMyMeetingsTool", () => {
     expect(parsed.meetings[1]?.hasResponded).toBe(false);
     expect(parsed.meetings[0]).not.toHaveProperty("status");
     expect(parsed.meetings[0]).not.toHaveProperty("finalizedSlot");
-    expect(parsed.meetings[0]?.url).toBe("/meetings/slug-1");
+    expect(parsed.meetings[0]?.url).toBe(
+      `${env.NEXT_PUBLIC_SITE_URL}/meetings/slug-1`,
+    );
   });
 
   it("handles errors from caller gracefully", async () => {
@@ -430,7 +433,7 @@ describe("suggestMeetingTimesTool", () => {
         "2 of 4 can attend: 2 free, 0 if needed; unavailable: Student, Student 2",
     });
     expect("startRange" in (parsed.options[0] ?? {})).toBe(false);
-    expect(parsed.url).toBe("/meetings/abc1234567");
+    expect(parsed.url).toBe(`${env.NEXT_PUBLIC_SITE_URL}/meetings/abc1234567`);
   });
 
   it("with durationMinutes it returns startRange", async () => {

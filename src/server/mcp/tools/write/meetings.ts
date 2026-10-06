@@ -9,6 +9,7 @@ import {
 } from "@/modules/meetings/functions/slot-time";
 import { db } from "@/server/db";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { absoluteUrl, meetingPage } from "../page-links";
 
 const createMeetingPollSchema = z.object({
   title: z
@@ -101,8 +102,8 @@ export const createMeetingPollTool: McpTool<typeof createMeetingPollSchema> = {
       return jsonText({
         id: res.id,
         slug: res.slug,
-        url: `/meetings/${res.slug}`,
-        message: `Meeting poll "${input.title}" created successfully. Share the link /meetings/${res.slug} with participants to collect availability.`,
+        url: absoluteUrl(meetingPage(res.slug)),
+        message: `Meeting poll "${input.title}" created successfully. Share the link ${absoluteUrl(meetingPage(res.slug))} with participants to collect availability.`,
       });
     } catch (e) {
       return errText(errorMessage(e));
@@ -235,8 +236,8 @@ export const submitMeetingAvailabilityTool: McpTool<
         slug: input.slug,
         mode,
         availability: ranges,
-        url: `/meetings/${input.slug}`,
-        message: `Availability saved for /meetings/${input.slug} (${mode}, ${ranges.length} ranges).`,
+        url: absoluteUrl(meetingPage(input.slug)),
+        message: `Availability saved for ${absoluteUrl(meetingPage(input.slug))} (${mode}, ${ranges.length} ranges).`,
       });
     } catch (e) {
       return errText(errorMessage(e));

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { env } from "@/env";
 import type { SessionUser } from "@/server/auth/config";
 import type { ToolContext } from "../../types";
 import {
@@ -77,7 +78,7 @@ describe("createMeetingPollTool", () => {
     const text = result.content.find((c) => c.type === "text")?.text ?? "{}";
     const parsed = JSON.parse(text) as { slug: string; url: string };
     expect(parsed.slug).toBe("newpoll123");
-    expect(parsed.url).toBe("/meetings/newpoll123");
+    expect(parsed.url).toBe(`${env.NEXT_PUBLIC_SITE_URL}/meetings/newpoll123`);
   });
 
   it("resolves courseCode to courseId if provided", async () => {
@@ -233,9 +234,9 @@ describe("submitMeetingAvailabilityTool", () => {
       { date: "2026-10-13", start: "10:00", end: "11:00", status: "available" },
       { date: "2026-10-13", start: "11:00", end: "11:30", status: "ifNeeded" },
     ]);
-    expect(parsed.url).toBe("/meetings/newpoll123");
+    expect(parsed.url).toBe(`${env.NEXT_PUBLIC_SITE_URL}/meetings/newpoll123`);
     expect(parsed.message).toBe(
-      "Availability saved for /meetings/newpoll123 (replace, 2 ranges).",
+      `Availability saved for ${env.NEXT_PUBLIC_SITE_URL}/meetings/newpoll123 (replace, 2 ranges).`,
     );
   });
 

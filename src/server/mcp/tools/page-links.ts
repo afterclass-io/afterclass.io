@@ -39,6 +39,10 @@ export function roadmapsMinePage(): string {
   return "/roadmaps?view=mine";
 }
 
+export function meetingPage(slug: string): string {
+  return `/meetings/${encodeURIComponent(slug)}`;
+}
+
 export function exploreLinkFor(
   courseCodeInput?: string,
   sectionInput?: string,

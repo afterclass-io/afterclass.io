@@ -13,6 +13,7 @@ import {
   suggestMeetingTimes,
 } from "@/modules/meetings/functions/suggest-times";
 import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { absoluteUrl, meetingPage } from "../page-links";
 
 const getMyMeetingsSchema = z.object({
   limit: z
@@ -50,7 +51,7 @@ export const getMyMeetingsTool: McpTool<typeof getMyMeetingsSchema> = {
           participantCount: m.participantCount,
           isCreator: m.isCreator,
           hasResponded: m.hasResponded,
-          url: `/meetings/${m.slug}`,
+          url: absoluteUrl(meetingPage(m.slug)),
         })),
         total: meetings.length,
       });
@@ -114,7 +115,7 @@ export const getMeetingPollDetailTool: McpTool<
         participantCount: participants.length,
         respondedCount,
         participants,
-        url: `/meetings/${detail.poll.slug}`,
+        url: absoluteUrl(meetingPage(detail.poll.slug)),
       });
     } catch (e) {
       return errText(errorMessage(e));
@@ -187,7 +188,7 @@ export const suggestMeetingTimesTool: McpTool<
 > = {
   name: "suggest-meeting-times",
   description:
-    'Find the best meeting times in a group meeting poll and who can make each one. Use this, not get-meeting-poll-detail, to answer \'best time / when can we meet / who can make it\' questions, and for per-time breakdowns (do not build tables by hand). Polls do not define a meeting length: omit durationMinutes unless the user stated one, and never assume one. Each option is a time window (start to end) in Singapore time with a tier and a summary; quote the summary. People listed under ifNeeded are NOT available, only willing if needed; never call them available. Best first: everyone free, then everyone free or if needed, then partial. Pass structured filters for the window the user asked about (weekend = daysOfWeek ["sat","sun"]; evenings = earliestStart "18:00", latestEnd "22:00"). Also returns the best option for each day.',
+    'Find the best meeting times in a group meeting poll and who can make each one. Use this, not get-meeting-poll-detail, to answer \'best time / when can we meet / who can make it\' questions, and for per-time breakdowns (do not build tables by hand). Polls do not define a meeting length: omit durationMinutes unless the user stated one, and never assume one. Each option is a time window (start to end) in Singapore time with a tier and a summary; quote the summary. People listed under ifNeeded are NOT available, only willing if needed; never call them available. Best first: everyone free, then everyone free or if needed, then partial. Pass structured filters for the window the user asked about (weekend = daysOfWeek ["sat","sun"]; evenings = earliestStart "18:00", latestEnd "22:00"). Also returns the best option for each day. To link the poll, use the returned url exactly as given (it is already absolute).',
   inputSchema: suggestMeetingTimesSchema,
   readOnly: true,
   run: async ({ caller }, input) => {
@@ -226,7 +227,7 @@ export const suggestMeetingTimesTool: McpTool<
         bestPerDay: result.bestPerDay,
         nobodyCanAttend: result.nobodyCanAttend,
         ...(message ? { message } : {}),
-        url: `/meetings/${detail.poll.slug}`,
+        url: absoluteUrl(meetingPage(detail.poll.slug)),
       });
     } catch (e) {
       return errText(errorMessage(e));
