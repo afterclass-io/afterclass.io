@@ -163,21 +163,13 @@ async function main() {
 
   // === Group Meetings availability coordination seed data ===
 
-  // Demo teammates with realistic names so the meeting room reads like production.
-  const demoTeammates = [
-    { id: "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e01", firstName: "Alice", lastName: "Tan", username: "alice_tan" },
-    { id: "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e02", firstName: "Ben", lastName: "Lim", username: "ben_lim" },
-    { id: "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e03", firstName: "Chloe", lastName: "Ong", username: "chloe_ong" },
-  ];
-  await prisma.users.createMany({
-    data: demoTeammates.map((u) => ({
-      ...u,
-      email: `${u.username}@example.org`,
-      isVerified: true,
-      universityId: 1,
-    })),
-    skipDuplicates: true,
-  });
+  // Demo teammates (Alice Tan, Ben Lim, Chloe Ong) are defined in
+  // data/4_users.json so the meeting room reads like production.
+  const demoTeammateIds = [
+    "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e01",
+    "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e02",
+    "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e03",
+  ] as const;
 
   await prisma.meetingPoll.createMany({
     data: [
@@ -223,7 +215,7 @@ async function main() {
         description: "Weekly problem solving session for dynamic programming and graph algorithms.",
         agenda:
           "1. Review LeetCode Hard problems\n2. Discuss Dijkstra vs A* search\n3. Mock interview practice",
-        creatorId: demoTeammates[0]!.id,
+        creatorId: demoTeammateIds[0],
         courseId: "2a45bab1-5ec4-4d2e-b245-27a142a78890",
         section: "G2",
         teamIdentifier: "Study Group A",
@@ -239,7 +231,7 @@ async function main() {
         slug: "mK7vX2yZ9p",
         title: "SMU Hackathon Team Brainstorm",
         description: "Ideation and pitch deck drafting for the upcoming fintech hackathon.",
-        creatorId: demoTeammates[2]!.id,
+        creatorId: demoTeammateIds[2],
         teamIdentifier: "FinTech Hackers",
         acadTermId: "AY202627T1",
         startDate: new Date("2026-10-24"),
@@ -264,21 +256,21 @@ async function main() {
       {
         id: "f5b29385-a954-4f4b-a705-666677778888",
         pollId: "d3b07384-d113-4603-a1c7-c752b7194601",
-        userId: demoTeammates[0]!.id,
+        userId: demoTeammateIds[0],
         availableSlots: [0, 1, 8, 9, 16, 17],
         ifNeededSlots: [2, 3, 10, 11],
       },
       {
         id: "f5b29385-a954-4f4b-a705-666677778889",
         pollId: "d3b07384-d113-4603-a1c7-c752b7194601",
-        userId: demoTeammates[1]!.id,
+        userId: demoTeammateIds[1],
         availableSlots: [0, 1, 2, 8, 9, 10, 16, 17],
         ifNeededSlots: [3, 11],
       },
       {
         id: "f5b29385-a954-4f4b-a705-666677778890",
         pollId: "d3b07384-d113-4603-a1c7-c752b7194601",
-        userId: demoTeammates[2]!.id,
+        userId: demoTeammateIds[2],
         availableSlots: [8, 9, 10, 11, 16, 17],
         ifNeededSlots: [0, 1],
       },
@@ -292,21 +284,21 @@ async function main() {
       {
         id: "d8e40597-c176-4b6d-c927-888899990001",
         pollId: "b7e29183-c335-4925-a3d9-e974d9316823",
-        userId: demoTeammates[0]!.id,
+        userId: demoTeammateIds[0],
         availableSlots: [4, 5, 12, 13, 20, 21],
         ifNeededSlots: [6, 14],
       },
       {
         id: "d8e40597-c176-4b6d-c927-888899990002",
         pollId: "b7e29183-c335-4925-a3d9-e974d9316823",
-        userId: demoTeammates[1]!.id,
+        userId: demoTeammateIds[1],
         availableSlots: [4, 5, 12, 20],
         ifNeededSlots: [13, 21],
       },
       {
         id: "d8e40597-c176-4b6d-c927-888899990003",
         pollId: "c8f30294-d446-4036-b4ea-f085ea427934",
-        userId: demoTeammates[2]!.id,
+        userId: demoTeammateIds[2],
         availableSlots: [0, 1, 2, 8, 9],
         ifNeededSlots: [3, 10],
       },

@@ -1413,5 +1413,47 @@
     "facultyId": null,
     "createdAt": "2022-08-01T07:48:56.035Z",
     "updatedAt": "2023-08-03T12:58:32.721Z"
+  },
+  {
+    "id": "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e01",
+    "username": "alice_tan",
+    "firstName": "Alice",
+    "lastName": "Tan",
+    "email": "alice_tan@example.org",
+    "telegramId": null,
+    "photoUrl": null,
+    "isVerified": true,
+    "universityId": 1,
+    "facultyId": null,
+    "createdAt": "2026-10-05T00:00:00.000Z",
+    "updatedAt": "2026-10-05T00:00:00.000Z"
+  },
+  {
+    "id": "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e02",
+    "username": "ben_lim",
+    "firstName": "Ben",
+    "lastName": "Lim",
+    "email": "ben_lim@example.org",
+    "telegramId": null,
+    "photoUrl": null,
+    "isVerified": true,
+    "universityId": 1,
+    "facultyId": null,
+    "createdAt": "2026-10-05T00:00:00.000Z",
+    "updatedAt": "2026-10-05T00:00:00.000Z"
+  },
+  {
+    "id": "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e03",
+    "username": "chloe_ong",
+    "firstName": "Chloe",
+    "lastName": "Ong",
+    "email": "chloe_ong@example.org",
+    "telegramId": null,
+    "photoUrl": null,
+    "isVerified": true,
+    "universityId": 1,
+    "facultyId": null,
+    "createdAt": "2026-10-05T00:00:00.000Z",
+    "updatedAt": "2026-10-05T00:00:00.000Z"
   }
 ]
