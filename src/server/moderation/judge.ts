@@ -16,6 +16,7 @@ import {
 
 export type JudgeModel = Exclude<LanguageModel, string>;
 
+/** `surfaceLabel` must be a fixed constant chosen by the caller, never user input. */
 export type JudgeInput = { surfaceLabel: string; text: string };
 
 export type JudgeErrorReason =
@@ -63,7 +64,12 @@ const SYSTEM = [
 
 /** Remove delimiter tags so the text cannot close its own data block. */
 function fence(text: string): string {
-  return text.replace(/<\/?text>/gi, "");
+  let current = text;
+  for (;;) {
+    const next = current.replace(/<\s*\/?\s*text\s*>/gi, "");
+    if (next === current) return current;
+    current = next;
+  }
 }
 
 function isTimeout(error: unknown): boolean {
