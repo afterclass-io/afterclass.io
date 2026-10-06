@@ -13,10 +13,15 @@ import {
   type WeekdayLabel,
 } from "./slot-time";
 
-export const DEFAULT_DURATION_MINUTES = 60;
 export const MAX_DURATION_MINUTES = 480;
 export const DEFAULT_SUGGESTION_LIMIT = 5;
 export const MAX_SUGGESTION_LIMIT = 10;
+
+export type OptionTier =
+  | "everyone-free"
+  | "everyone-attendable"
+  | "partial"
+  | "none";
 
 export type SuggestParticipant = {
   name: string;
@@ -42,12 +47,15 @@ export type TimeOption = {
   weekday: WeekdayLabel;
   start: string;
   end: string;
-  startRange: { earliest: string; latest: string };
+  /** Only when durationMinutes was given: the possible start times of a meeting of that length. */
+  startRange?: { earliest: string; latest: string };
   free: string[];
   ifNeeded: string[];
   unavailable: string[];
   attendable: number;
   total: number;
+  tier: OptionTier;
+  summary: string;
 };
 
 export type SuggestEmptyReason = "all-past";
@@ -61,6 +69,35 @@ export type SuggestTimesResult = {
   requiredUnmet: boolean;
   emptyReason: SuggestEmptyReason | null;
 };
+
+export function describeAttendance(a: {
+  free: readonly string[];
+  ifNeeded: readonly string[];
+  unavailable: readonly string[];
+}): { tier: OptionTier; summary: string } {
+  const total = a.free.length + a.ifNeeded.length + a.unavailable.length;
+  const attendable = a.free.length + a.ifNeeded.length;
+
+  if (total === 0) {
+    return { tier: "none", summary: "No participants" };
+  }
+  if (attendable === 0) {
+    return { tier: "none", summary: "Nobody can attend" };
+  }
+  if (a.free.length === total) {
+    return { tier: "everyone-free", summary: `All ${total} free` };
+  }
+  if (attendable === total) {
+    return {
+      tier: "everyone-attendable",
+      summary: `All ${total} can attend: ${a.free.length} free, ${a.ifNeeded.length} if needed`,
+    };
+  }
+  return {
+    tier: "partial",
+    summary: `${attendable} of ${total} can attend: ${a.free.length} free, ${a.ifNeeded.length} if needed; unavailable: ${a.unavailable.join(", ")}`,
+  };
+}
 
 export function disambiguateNames(names: readonly string[]): string[] {
   const originalNames = new Set(names);
@@ -134,20 +171,23 @@ export function suggestMeetingTimes(input: {
   query: SuggestQuery;
   now: Date;
 }): SuggestTimesResult {
+  const isDurationMode = input.query.durationMinutes !== undefined;
+
   // 1. durationMinutes validation
-  const durationMinutes =
-    input.query.durationMinutes ?? DEFAULT_DURATION_MINUTES;
-  if (durationMinutes > MAX_DURATION_MINUTES) {
-    throw new SlotTimeError("durationMinutes must be at most 480.");
-  }
-  if (
-    durationMinutes <= 0 ||
-    !Number.isInteger(durationMinutes) ||
-    durationMinutes % input.grid.slotMinutes !== 0
-  ) {
-    throw new SlotTimeError(
-      `durationMinutes must be a multiple of ${input.grid.slotMinutes} for this poll.`,
-    );
+  if (isDurationMode) {
+    const durationMinutes = input.query.durationMinutes!;
+    if (durationMinutes > MAX_DURATION_MINUTES) {
+      throw new SlotTimeError("durationMinutes must be at most 480.");
+    }
+    if (
+      durationMinutes <= 0 ||
+      !Number.isInteger(durationMinutes) ||
+      durationMinutes % input.grid.slotMinutes !== 0
+    ) {
+      throw new SlotTimeError(
+        `durationMinutes must be a multiple of ${input.grid.slotMinutes} for this poll.`,
+      );
+    }
   }
 
   // 2. limit validation
@@ -257,10 +297,19 @@ export function suggestMeetingTimes(input: {
   const lo = Math.max(input.grid.startHour * 60, ceilToGrid);
   const hi = Math.min(input.grid.endHour * 60, floorToGrid);
 
-  if (hi - lo < durationMinutes) {
-    throw new SlotTimeError(
-      `A ${durationMinutes}-minute meeting does not fit between ${formatHhmm(lo)} and ${formatHhmm(hi)} SGT.`,
-    );
+  if (isDurationMode) {
+    const durationMinutes = input.query.durationMinutes!;
+    if (hi - lo < durationMinutes) {
+      throw new SlotTimeError(
+        `A ${durationMinutes}-minute meeting does not fit between ${formatHhmm(lo)} and ${formatHhmm(hi)} SGT.`,
+      );
+    }
+  } else {
+    if (hi - lo < input.grid.slotMinutes) {
+      throw new SlotTimeError(
+        `No poll hours fall between ${formatHhmm(lo)} and ${formatHhmm(hi)} SGT.`,
+      );
+    }
   }
 
   // 8. Participants disambiguation and requireParticipants validation
@@ -319,7 +368,10 @@ export function suggestMeetingTimes(input: {
   }));
 
   const spd = slotsPerDay(input.grid);
-  const L = durationMinutes / input.grid.slotMinutes;
+  const L = isDurationMode
+    ? input.query.durationMinutes! / input.grid.slotMinutes
+    : 1;
+  const blockMinutes = L * input.grid.slotMinutes;
   const includePast = input.query.includePast ?? false;
   const nowMs = input.now.getTime();
 
@@ -336,7 +388,7 @@ export function suggestMeetingTimes(input: {
     for (let s = 0; s <= spd - L; s++) {
       const slotStartMin =
         input.grid.startHour * 60 + s * input.grid.slotMinutes;
-      const slotEndMin = slotStartMin + durationMinutes;
+      const slotEndMin = slotStartMin + blockMinutes;
 
       if (slotStartMin < lo || slotEndMin > hi) {
         continue;
@@ -428,24 +480,34 @@ export function suggestMeetingTimes(input: {
         statusVectorsEqual(block.statusVector, currentGroup.statusVector)
       ) {
         currentGroup.lastS = block.s;
-        currentGroup.option.startRange.latest = block.start;
+        if (isDurationMode) {
+          currentGroup.option.startRange!.latest = block.start;
+        } else {
+          currentGroup.option.end = block.end;
+        }
       } else {
         if (currentGroup !== null) {
           allGroups.push(currentGroup.option);
         }
+        const { tier, summary } = describeAttendance(block);
+        const option: TimeOption = {
+          date: block.date,
+          weekday: block.weekday,
+          start: block.start,
+          end: block.end,
+          ...(isDurationMode
+            ? { startRange: { earliest: block.start, latest: block.start } }
+            : {}),
+          free: block.free,
+          ifNeeded: block.ifNeeded,
+          unavailable: block.unavailable,
+          attendable: block.attendable,
+          total: block.total,
+          tier,
+          summary,
+        };
         currentGroup = {
-          option: {
-            date: block.date,
-            weekday: block.weekday,
-            start: block.start,
-            end: block.end,
-            startRange: { earliest: block.start, latest: block.start },
-            free: block.free,
-            ifNeeded: block.ifNeeded,
-            unavailable: block.unavailable,
-            attendable: block.attendable,
-            total: block.total,
-          },
+          option,
           lastS: block.s,
           statusVector: block.statusVector,
         };

@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { type PollGrid, SlotTimeError } from "./slot-time";
 import {
-  DEFAULT_DURATION_MINUTES,
   DEFAULT_SUGGESTION_LIMIT,
+  describeAttendance,
   disambiguateNames,
   MAX_DURATION_MINUTES,
   MAX_SUGGESTION_LIMIT,
@@ -40,12 +40,52 @@ function range(a: number, b: number): number[] {
   return result;
 }
 
+const IS215_PARTICIPANTS: SuggestParticipant[] = [
+  p("Jordan Teo", [0, 1, 2, 3, 8, 9, 10, 11], [4, 5, 12, 13]),
+  p("Alice Tan", [0, 1, 8, 9, 16, 17], [2, 3, 10, 11]),
+  p("Ben Lim", [0, 1, 2, 8, 9, 10, 16, 17], [3, 11]),
+  p("Chloe Ong", [8, 9, 10, 11, 16, 17], [0, 1]),
+];
+
 describe("suggest-times constants", () => {
   it("exports expected defaults and limits", () => {
-    expect(DEFAULT_DURATION_MINUTES).toBe(60);
     expect(MAX_DURATION_MINUTES).toBe(480);
     expect(DEFAULT_SUGGESTION_LIMIT).toBe(5);
     expect(MAX_SUGGESTION_LIMIT).toBe(10);
+  });
+});
+
+describe("describeAttendance", () => {
+  it("describes attendance counts and names", () => {
+    expect(
+      describeAttendance({ free: [], ifNeeded: [], unavailable: [] }),
+    ).toEqual({ tier: "none", summary: "No participants" });
+
+    expect(
+      describeAttendance({ free: [], ifNeeded: [], unavailable: ["A", "B"] }),
+    ).toEqual({ tier: "none", summary: "Nobody can attend" });
+
+    expect(
+      describeAttendance({ free: ["A", "B"], ifNeeded: [], unavailable: [] }),
+    ).toEqual({ tier: "everyone-free", summary: "All 2 free" });
+
+    expect(
+      describeAttendance({ free: ["A"], ifNeeded: ["B"], unavailable: [] }),
+    ).toEqual({
+      tier: "everyone-attendable",
+      summary: "All 2 can attend: 1 free, 1 if needed",
+    });
+
+    expect(
+      describeAttendance({
+        free: ["A"],
+        ifNeeded: [],
+        unavailable: ["Ben Lim"],
+      }),
+    ).toEqual({
+      tier: "partial",
+      summary: "1 of 2 can attend: 1 free, 0 if needed; unavailable: Ben Lim",
+    });
   });
 });
 
@@ -74,7 +114,7 @@ describe("suggestMeetingTimes", () => {
         p("B", range(4, 7), range(0, 3)),
         p("C", [], range(0, 7)),
       ],
-      query: {},
+      query: { durationMinutes: 60 },
       now: EARLY,
     });
 
@@ -90,6 +130,8 @@ describe("suggestMeetingTimes", () => {
         unavailable: [],
         attendable: 3,
         total: 3,
+        tier: "everyone-attendable",
+        summary: "All 3 can attend: 2 free, 1 if needed",
       },
       {
         date: "2026-10-12",
@@ -102,6 +144,8 @@ describe("suggestMeetingTimes", () => {
         unavailable: [],
         attendable: 3,
         total: 3,
+        tier: "everyone-attendable",
+        summary: "All 3 can attend: 1 free, 2 if needed",
       },
     ]);
     expect(result.nobodyCanAttend).toBe(false);
@@ -112,7 +156,7 @@ describe("suggestMeetingTimes", () => {
     const result = suggestMeetingTimes({
       grid: grid("2026-10-12", "2026-10-12", 10, 12),
       participants: [p("A", [0, 1, 2]), p("B", range(0, 3))],
-      query: {},
+      query: { durationMinutes: 60 },
       now: EARLY,
     });
 
@@ -128,6 +172,8 @@ describe("suggestMeetingTimes", () => {
         unavailable: ["A"],
         attendable: 1,
         total: 2,
+        tier: "partial",
+        summary: "1 of 2 can attend: 1 free, 0 if needed; unavailable: A",
       },
     ]);
   });
@@ -136,7 +182,7 @@ describe("suggestMeetingTimes", () => {
     const result = suggestMeetingTimes({
       grid: grid("2026-10-12", "2026-10-13", 10, 12),
       participants: [p("A", [6, 7, 8, 9])],
-      query: {},
+      query: { durationMinutes: 60 },
       now: EARLY,
     });
 
@@ -153,6 +199,8 @@ describe("suggestMeetingTimes", () => {
         unavailable: ["A"],
         attendable: 0,
         total: 1,
+        tier: "none",
+        summary: "Nobody can attend",
       },
       {
         date: "2026-10-13",
@@ -165,6 +213,8 @@ describe("suggestMeetingTimes", () => {
         unavailable: ["A"],
         attendable: 0,
         total: 1,
+        tier: "none",
+        summary: "Nobody can attend",
       },
     ]);
     expect(result.bestPerDay.map((o) => o.date)).toEqual([
@@ -180,7 +230,7 @@ describe("suggestMeetingTimes", () => {
         p("A", [...range(0, 7), ...range(8, 11), ...range(24, 31)]),
         p("B", [...range(0, 7), ...range(24, 31)]),
       ],
-      query: { daysOfWeek: ["sat", "sun"] },
+      query: { daysOfWeek: ["sat", "sun"], durationMinutes: 60 },
       now: EARLY,
     });
 
@@ -196,6 +246,8 @@ describe("suggestMeetingTimes", () => {
         unavailable: ["B"],
         attendable: 1,
         total: 2,
+        tier: "partial",
+        summary: "1 of 2 can attend: 1 free, 0 if needed; unavailable: B",
       },
     ]);
     expect(result.bestPerDay).toEqual([
@@ -211,6 +263,8 @@ describe("suggestMeetingTimes", () => {
         unavailable: ["A", "B"],
         attendable: 0,
         total: 2,
+        tier: "none",
+        summary: "Nobody can attend",
       },
     ]);
   });
@@ -223,7 +277,7 @@ describe("suggestMeetingTimes", () => {
         p("B", range(0, 7)),
         p("C", [...range(0, 3), ...range(8, 11)]),
       ],
-      query: { limit: 1 },
+      query: { limit: 1, durationMinutes: 60 },
       now: EARLY,
     });
 
@@ -239,6 +293,8 @@ describe("suggestMeetingTimes", () => {
         unavailable: [],
         attendable: 3,
         total: 3,
+        tier: "everyone-free",
+        summary: "All 3 free",
       },
     ]);
     expect(result.bestPerDay[1]).toEqual({
@@ -252,6 +308,8 @@ describe("suggestMeetingTimes", () => {
       unavailable: ["A", "B"],
       attendable: 1,
       total: 3,
+      tier: "partial",
+      summary: "1 of 3 can attend: 1 free, 0 if needed; unavailable: A, B",
     });
   });
 
@@ -259,7 +317,7 @@ describe("suggestMeetingTimes", () => {
     const result = suggestMeetingTimes({
       grid: grid("2026-10-12", "2026-10-12", 8, 12),
       participants: [p("A", range(0, 7))],
-      query: {},
+      query: { durationMinutes: 60 },
       now: EARLY,
     });
 
@@ -275,6 +333,8 @@ describe("suggestMeetingTimes", () => {
       unavailable: [],
       attendable: 1,
       total: 1,
+      tier: "everyone-free",
+      summary: "All 1 free",
     });
   });
 
@@ -288,7 +348,7 @@ describe("suggestMeetingTimes", () => {
     const withB = suggestMeetingTimes({
       grid: grid("2026-10-12", "2026-10-12", 10, 12),
       participants,
-      query: { requireParticipants: ["  b "] },
+      query: { requireParticipants: ["  b "], durationMinutes: 60 },
       now: EARLY,
     });
     expect(withB.options).toEqual([
@@ -303,6 +363,8 @@ describe("suggestMeetingTimes", () => {
         unavailable: ["A"],
         attendable: 2,
         total: 3,
+        tier: "partial",
+        summary: "2 of 3 can attend: 2 free, 0 if needed; unavailable: A",
       },
     ]);
     expect(withB.requiredUnmet).toBe(false);
@@ -310,7 +372,7 @@ describe("suggestMeetingTimes", () => {
     const withAB = suggestMeetingTimes({
       grid: grid("2026-10-12", "2026-10-12", 10, 12),
       participants,
-      query: { requireParticipants: ["A", "B"] },
+      query: { requireParticipants: ["A", "B"], durationMinutes: 60 },
       now: EARLY,
     });
     expect(withAB.requiredUnmet).toBe(true);
@@ -328,6 +390,8 @@ describe("suggestMeetingTimes", () => {
         unavailable: ["B"],
         attendable: 2,
         total: 3,
+        tier: "partial",
+        summary: "2 of 3 can attend: 2 free, 0 if needed; unavailable: B",
       },
       {
         date: "2026-10-12",
@@ -340,6 +404,8 @@ describe("suggestMeetingTimes", () => {
         unavailable: ["A"],
         attendable: 2,
         total: 3,
+        tier: "partial",
+        summary: "2 of 3 can attend: 2 free, 0 if needed; unavailable: A",
       },
       {
         date: "2026-10-12",
@@ -352,6 +418,8 @@ describe("suggestMeetingTimes", () => {
         unavailable: ["A", "B"],
         attendable: 1,
         total: 3,
+        tier: "partial",
+        summary: "1 of 3 can attend: 1 free, 0 if needed; unavailable: A, B",
       },
     ]);
 
@@ -359,7 +427,7 @@ describe("suggestMeetingTimes", () => {
       suggestMeetingTimes({
         grid: grid("2026-10-12", "2026-10-12", 10, 12),
         participants,
-        query: { requireParticipants: ["Zed"] },
+        query: { requireParticipants: ["Zed"], durationMinutes: 60 },
         now: EARLY,
       }),
     ).toThrowError(
@@ -376,7 +444,7 @@ describe("suggestMeetingTimes", () => {
     const partialPast = suggestMeetingTimes({
       grid: g,
       participants,
-      query: {},
+      query: { durationMinutes: 60 },
       now: new Date("2026-10-12T02:30:00.000Z"),
     });
     expect(partialPast.options[0]?.start).toBe("10:30");
@@ -388,7 +456,7 @@ describe("suggestMeetingTimes", () => {
     const allPast = suggestMeetingTimes({
       grid: g,
       participants,
-      query: {},
+      query: { durationMinutes: 60 },
       now: new Date("2026-10-12T04:00:00.000Z"),
     });
     expect(allPast).toEqual({
@@ -403,7 +471,7 @@ describe("suggestMeetingTimes", () => {
     const includePast = suggestMeetingTimes({
       grid: g,
       participants,
-      query: { includePast: true },
+      query: { includePast: true, durationMinutes: 60 },
       now: new Date("2026-10-12T04:00:00.000Z"),
     });
     expect(includePast.options[0]?.startRange).toEqual({
@@ -416,7 +484,7 @@ describe("suggestMeetingTimes", () => {
     const result = suggestMeetingTimes({
       grid: grid("2026-10-12", "2026-10-12", 10, 12),
       participants: [p("A", []), p("B", [])],
-      query: {},
+      query: { durationMinutes: 60 },
       now: EARLY,
     });
 
@@ -432,6 +500,8 @@ describe("suggestMeetingTimes", () => {
         unavailable: ["A", "B"],
         attendable: 0,
         total: 2,
+        tier: "none",
+        summary: "Nobody can attend",
       },
     ]);
     expect(result.nobodyCanAttend).toBe(true);
@@ -446,7 +516,7 @@ describe("suggestMeetingTimes", () => {
     const result = suggestMeetingTimes({
       grid: grid("2026-10-12", "2026-10-12", 10, 12),
       participants: [p("Student", []), p("Student", [])],
-      query: {},
+      query: { durationMinutes: 60 },
       now: EARLY,
     });
 
@@ -457,7 +527,7 @@ describe("suggestMeetingTimes", () => {
     const result = suggestMeetingTimes({
       grid: grid("2026-10-24", "2026-10-24", 12, 22, 30),
       participants: [p("A", [0, 1, 2, 8, 9], [3, 10])],
-      query: {},
+      query: { durationMinutes: 60 },
       now: EARLY,
     });
 
@@ -465,7 +535,7 @@ describe("suggestMeetingTimes", () => {
       result.options.map((o) => [
         o.start,
         o.end,
-        o.startRange.latest,
+        o.startRange?.latest,
         o.free.length,
       ]),
     ).toEqual([
@@ -493,7 +563,7 @@ describe("suggestMeetingTimes", () => {
     const result = suggestMeetingTimes({
       grid: grid("2026-10-12", "2026-10-12", 18, 22),
       participants: [p("A", range(0, 15))],
-      query: { earliestStart: "18:10", latestEnd: "21:50" },
+      query: { earliestStart: "18:10", latestEnd: "21:50", durationMinutes: 60 },
       now: EARLY,
     });
 
@@ -507,7 +577,7 @@ describe("suggestMeetingTimes", () => {
     const result = suggestMeetingTimes({
       grid: grid("2026-10-12", "2026-10-13", 10, 12),
       participants: [p("A", range(0, 15))],
-      query: { from: "2026-10-01", to: "2026-10-12" },
+      query: { from: "2026-10-01", to: "2026-10-12", durationMinutes: 60 },
       now: EARLY,
     });
 
@@ -521,7 +591,7 @@ describe("suggestMeetingTimes", () => {
     it.each([
       [
         { dates: ["2026-10-20"] },
-        'Date 2026-10-20 is outside the poll window 2026-10-12 to 2026-10-13.',
+        "Date 2026-10-20 is outside the poll window 2026-10-12 to 2026-10-13.",
       ],
       [
         { dates: ["2026-10-12"], from: "2026-10-12" },
@@ -536,7 +606,7 @@ describe("suggestMeetingTimes", () => {
         "No poll days match the requested dates/days. The poll runs 2026-10-12 (Mon) to 2026-10-13 (Tue).",
       ],
       [
-        { earliestStart: "11:30" },
+        { earliestStart: "11:30", durationMinutes: 60 },
         "A 60-minute meeting does not fit between 11:30 and 12:00 SGT.",
       ],
       [
@@ -551,16 +621,19 @@ describe("suggestMeetingTimes", () => {
         { limit: 11 },
         "limit must be between 1 and 10.",
       ],
-    ])("rejects invalid query %j with error %s", (query: SuggestQuery, expectedError: string) => {
-      expect(() =>
-        suggestMeetingTimes({
-          grid: baseGrid,
-          participants,
-          query,
-          now: EARLY,
-        }),
-      ).toThrowError(new SlotTimeError(expectedError));
-    });
+    ])(
+      "rejects invalid query %j with error %s",
+      (query: SuggestQuery, expectedError: string) => {
+        expect(() =>
+          suggestMeetingTimes({
+            grid: baseGrid,
+            participants,
+            query,
+            now: EARLY,
+          }),
+        ).toThrowError(new SlotTimeError(expectedError));
+      },
+    );
   });
 
   describe("15. does not depend on host TZ", () => {
@@ -586,7 +659,7 @@ describe("suggestMeetingTimes", () => {
             p("B", range(4, 7), range(0, 3)),
             p("C", [], range(0, 7)),
           ],
-          query: {},
+          query: { durationMinutes: 60 },
           now: EARLY,
         });
 
@@ -602,6 +675,8 @@ describe("suggestMeetingTimes", () => {
             unavailable: [],
             attendable: 3,
             total: 3,
+            tier: "everyone-attendable",
+            summary: "All 3 can attend: 2 free, 1 if needed",
           },
           {
             date: "2026-10-12",
@@ -614,11 +689,293 @@ describe("suggestMeetingTimes", () => {
             unavailable: [],
             attendable: 3,
             total: 3,
+            tier: "everyone-attendable",
+            summary: "All 3 can attend: 1 free, 2 if needed",
           },
         ]);
         expect(result.nobodyCanAttend).toBe(false);
         expect(result.emptyReason).toBeNull();
       },
     );
+  });
+
+  describe("window mode (Task 8 new tests)", () => {
+    it("window mode: IS215 whole poll, no duration", () => {
+      const result = suggestMeetingTimes({
+        grid: grid("2026-10-12", "2026-10-16", 8, 22, 15),
+        participants: IS215_PARTICIPANTS,
+        query: {},
+        now: EARLY,
+      });
+
+      expect(result.nobodyCanAttend).toBe(false);
+      expect(result.options).toEqual([
+        {
+          date: "2026-10-12",
+          weekday: "Mon",
+          start: "10:00",
+          end: "10:30",
+          free: ["Jordan Teo", "Alice Tan", "Ben Lim", "Chloe Ong"],
+          ifNeeded: [],
+          unavailable: [],
+          attendable: 4,
+          total: 4,
+          tier: "everyone-free",
+          summary: "All 4 free",
+        },
+        {
+          date: "2026-10-12",
+          weekday: "Mon",
+          start: "08:00",
+          end: "08:30",
+          free: ["Jordan Teo", "Alice Tan", "Ben Lim"],
+          ifNeeded: ["Chloe Ong"],
+          unavailable: [],
+          attendable: 4,
+          total: 4,
+          tier: "everyone-attendable",
+          summary: "All 4 can attend: 3 free, 1 if needed",
+        },
+        {
+          date: "2026-10-12",
+          weekday: "Mon",
+          start: "10:30",
+          end: "10:45",
+          free: ["Jordan Teo", "Ben Lim", "Chloe Ong"],
+          ifNeeded: ["Alice Tan"],
+          unavailable: [],
+          attendable: 4,
+          total: 4,
+          tier: "everyone-attendable",
+          summary: "All 4 can attend: 3 free, 1 if needed",
+        },
+        {
+          date: "2026-10-12",
+          weekday: "Mon",
+          start: "10:45",
+          end: "11:00",
+          free: ["Jordan Teo", "Chloe Ong"],
+          ifNeeded: ["Alice Tan", "Ben Lim"],
+          unavailable: [],
+          attendable: 4,
+          total: 4,
+          tier: "everyone-attendable",
+          summary: "All 4 can attend: 2 free, 2 if needed",
+        },
+        {
+          date: "2026-10-12",
+          weekday: "Mon",
+          start: "12:00",
+          end: "12:30",
+          free: ["Alice Tan", "Ben Lim", "Chloe Ong"],
+          ifNeeded: [],
+          unavailable: ["Jordan Teo"],
+          attendable: 3,
+          total: 4,
+          tier: "partial",
+          summary:
+            "3 of 4 can attend: 3 free, 0 if needed; unavailable: Jordan Teo",
+        },
+      ]);
+
+      for (const opt of result.options) {
+        expect("startRange" in opt).toBe(false);
+      }
+
+      expect(result.bestPerDay).toHaveLength(5);
+      expect(result.bestPerDay[0]).toEqual(result.options[0]);
+      expect(result.bestPerDay.slice(1)).toEqual([
+        {
+          date: "2026-10-13",
+          weekday: "Tue",
+          start: "08:00",
+          end: "22:00",
+          free: [],
+          ifNeeded: [],
+          unavailable: ["Jordan Teo", "Alice Tan", "Ben Lim", "Chloe Ong"],
+          attendable: 0,
+          total: 4,
+          tier: "none",
+          summary: "Nobody can attend",
+        },
+        {
+          date: "2026-10-14",
+          weekday: "Wed",
+          start: "08:00",
+          end: "22:00",
+          free: [],
+          ifNeeded: [],
+          unavailable: ["Jordan Teo", "Alice Tan", "Ben Lim", "Chloe Ong"],
+          attendable: 0,
+          total: 4,
+          tier: "none",
+          summary: "Nobody can attend",
+        },
+        {
+          date: "2026-10-15",
+          weekday: "Thu",
+          start: "08:00",
+          end: "22:00",
+          free: [],
+          ifNeeded: [],
+          unavailable: ["Jordan Teo", "Alice Tan", "Ben Lim", "Chloe Ong"],
+          attendable: 0,
+          total: 4,
+          tier: "none",
+          summary: "Nobody can attend",
+        },
+        {
+          date: "2026-10-16",
+          weekday: "Fri",
+          start: "08:00",
+          end: "22:00",
+          free: [],
+          ifNeeded: [],
+          unavailable: ["Jordan Teo", "Alice Tan", "Ben Lim", "Chloe Ong"],
+          attendable: 0,
+          total: 4,
+          tier: "none",
+          summary: "Nobody can attend",
+        },
+      ]);
+    });
+
+    it("window mode: Monday 08:00-10:00", () => {
+      const result = suggestMeetingTimes({
+        grid: grid("2026-10-12", "2026-10-16", 8, 22, 15),
+        participants: IS215_PARTICIPANTS,
+        query: {
+          dates: ["2026-10-12"],
+          earliestStart: "08:00",
+          latestEnd: "10:00",
+        },
+        now: EARLY,
+      });
+
+      expect(result.options).toEqual([
+        {
+          date: "2026-10-12",
+          weekday: "Mon",
+          start: "08:00",
+          end: "08:30",
+          free: ["Jordan Teo", "Alice Tan", "Ben Lim"],
+          ifNeeded: ["Chloe Ong"],
+          unavailable: [],
+          attendable: 4,
+          total: 4,
+          tier: "everyone-attendable",
+          summary: "All 4 can attend: 3 free, 1 if needed",
+        },
+        {
+          date: "2026-10-12",
+          weekday: "Mon",
+          start: "08:30",
+          end: "08:45",
+          free: ["Jordan Teo", "Ben Lim"],
+          ifNeeded: ["Alice Tan"],
+          unavailable: ["Chloe Ong"],
+          attendable: 3,
+          total: 4,
+          tier: "partial",
+          summary:
+            "3 of 4 can attend: 2 free, 1 if needed; unavailable: Chloe Ong",
+        },
+        {
+          date: "2026-10-12",
+          weekday: "Mon",
+          start: "08:45",
+          end: "09:00",
+          free: ["Jordan Teo"],
+          ifNeeded: ["Alice Tan", "Ben Lim"],
+          unavailable: ["Chloe Ong"],
+          attendable: 3,
+          total: 4,
+          tier: "partial",
+          summary:
+            "3 of 4 can attend: 1 free, 2 if needed; unavailable: Chloe Ong",
+        },
+        {
+          date: "2026-10-12",
+          weekday: "Mon",
+          start: "09:00",
+          end: "09:30",
+          free: [],
+          ifNeeded: ["Jordan Teo"],
+          unavailable: ["Alice Tan", "Ben Lim", "Chloe Ong"],
+          attendable: 1,
+          total: 4,
+          tier: "partial",
+          summary:
+            "1 of 4 can attend: 0 free, 1 if needed; unavailable: Alice Tan, Ben Lim, Chloe Ong",
+        },
+      ]);
+
+      expect(result.bestPerDay).toEqual([result.options[0]]);
+    });
+
+    it("duration mode keeps startRange", () => {
+      const result = suggestMeetingTimes({
+        grid: grid("2026-10-12", "2026-10-16", 8, 22, 15),
+        participants: IS215_PARTICIPANTS,
+        query: { durationMinutes: 60, dates: ["2026-10-12"], limit: 1 },
+        now: EARLY,
+      });
+
+      expect(result.options).toEqual([
+        {
+          date: "2026-10-12",
+          weekday: "Mon",
+          start: "10:00",
+          end: "11:00",
+          startRange: { earliest: "10:00", latest: "10:00" },
+          free: ["Jordan Teo", "Chloe Ong"],
+          ifNeeded: ["Alice Tan", "Ben Lim"],
+          unavailable: [],
+          attendable: 4,
+          total: 4,
+          tier: "everyone-attendable",
+          summary: "All 4 can attend: 2 free, 2 if needed",
+        },
+      ]);
+    });
+
+    it("window mode merges identical consecutive slots", () => {
+      const result = suggestMeetingTimes({
+        grid: grid("2026-10-12", "2026-10-12", 10, 12, 15),
+        participants: [p("A", range(0, 7))],
+        query: {},
+        now: EARLY,
+      });
+
+      expect(result.options).toEqual([
+        {
+          date: "2026-10-12",
+          weekday: "Mon",
+          start: "10:00",
+          end: "12:00",
+          free: ["A"],
+          ifNeeded: [],
+          unavailable: [],
+          attendable: 1,
+          total: 1,
+          tier: "everyone-free",
+          summary: "All 1 free",
+        },
+      ]);
+      expect("startRange" in result.options[0]!).toBe(false);
+    });
+
+    it("window mode error", () => {
+      expect(() =>
+        suggestMeetingTimes({
+          grid: grid("2026-10-12", "2026-10-12", 10, 12, 15),
+          participants: [p("A", range(0, 7))],
+          query: { earliestStart: "11:50" },
+          now: EARLY,
+        }),
+      ).toThrowError(
+        new SlotTimeError("No poll hours fall between 12:00 and 12:00 SGT."),
+      );
+    });
   });
 });

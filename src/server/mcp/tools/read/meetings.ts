@@ -9,7 +9,6 @@ import {
   toPollGrid,
 } from "@/modules/meetings/functions/slot-time";
 import {
-  DEFAULT_DURATION_MINUTES,
   disambiguateNames,
   suggestMeetingTimes,
 } from "@/modules/meetings/functions/suggest-times";
@@ -222,11 +221,7 @@ export const suggestMeetingTimesTool: McpTool<
         },
         asOf: formatSgtIso(now),
         participants: result.participants,
-        query: {
-          ...query,
-          durationMinutes:
-            query.durationMinutes ?? DEFAULT_DURATION_MINUTES,
-        },
+        query,
         options: result.options,
         bestPerDay: result.bestPerDay,
         nobodyCanAttend: result.nobodyCanAttend,
