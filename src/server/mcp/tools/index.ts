@@ -59,6 +59,11 @@ import { getTimetableCalendarLinkTool } from "./write/calendar-link";
 import { exploreBidOptionsTool } from "./read/explore-bid-options";
 import { saveBidsTool } from "./write/save-bids";
 import { upsertRoadmapEntryTool } from "./write/upsert-roadmap-entry";
+import { getMyMeetingsTool, getMeetingPollDetailTool } from "./read/meetings";
+import {
+  createMeetingPollTool,
+  submitMeetingAvailabilityTool,
+} from "./write/meetings";
 
 export const allTools: McpTool[] = [
   // get-me / get-usage / get-shared-timetable are INTENTIONALLY
@@ -95,6 +100,8 @@ export const allTools: McpTool[] = [
   planSemesterTool,
   checkRoadmapFeasibilityTool,
   listFacultiesTool,
+  getMyMeetingsTool,
+  getMeetingPollDetailTool,
   // write - timetables
   createTimetableTool,
   renameTimetableTool,
@@ -103,6 +110,9 @@ export const allTools: McpTool[] = [
   removeClassFromTimetableTool,
   setTimetableVisibilityTool,
   getTimetableCalendarLinkTool,
+  // write - meetings
+  createMeetingPollTool,
+  submitMeetingAvailabilityTool,
   // write - bids
   upsertBidTool,
   removeBidTool,

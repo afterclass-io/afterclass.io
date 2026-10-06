@@ -11,6 +11,7 @@ export const pageContextSchema = z
     section: z.string().min(1).max(120).optional(),
     classId: z.string().min(1).max(120).optional(),
     profSlug: z.string().min(1).max(120).optional(),
+    meetingSlug: z.string().min(1).max(120).optional(),
   })
   .strict();
 
@@ -42,12 +43,16 @@ export function buildPageContextSuffix(
   const section = ctx.section ? escapePageContextValue(ctx.section) : "";
   const classId = ctx.classId ? escapePageContextValue(ctx.classId) : "";
   const profSlug = ctx.profSlug ? escapePageContextValue(ctx.profSlug) : "";
+  const meetingSlug = ctx.meetingSlug
+    ? escapePageContextValue(ctx.meetingSlug)
+    : "";
   return (
     `\n<page_context>\nUser is viewing ${pathname}` +
     (course ? ` — course ${course}` : "") +
     (section ? ` section ${section}` : "") +
     (classId ? ` (classId ${classId})` : "") +
     (profSlug ? ` — professor ${profSlug}` : "") +
+    (meetingSlug ? ` — meeting poll ${meetingSlug}` : "") +
     `\nResolve "this course / this prof / this section" against this view when the user does not name one. Explicit user mentions always win over this context. State your assumption ("Based on IS215 G1 you're viewing…"). Earlier <page_context> blocks in history are stale — only the latest applies.\n</page_context>`
   );
 }

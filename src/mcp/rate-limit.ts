@@ -82,6 +82,8 @@ export const constructiveTools = new Set([
   "set-active-roadmap", // flips the singleton active roadmap
   "sync-roadmap-progress", // bulk-adds courses across all terms
   "copy-public-roadmap", // additive copy into own account — deletes nothing
+  "create-meeting-poll",
+  "submit-meeting-availability",
 ]);
 
 /**

@@ -71,4 +71,23 @@ describe("usePageContext", () => {
       section: "G".repeat(PAGE_CONTEXT_MAX_LEN),
     });
   });
+
+  it("extracts meetingSlug from /meetings/:slug pathname", () => {
+    mockUsePathname.mockReturnValue("/meetings/team-sync-123");
+    mockUseSearchParams.mockReturnValue(new URLSearchParams(""));
+    const { result } = renderHook(() => usePageContext());
+    expect(result.current).toEqual({
+      pathname: "/meetings/team-sync-123",
+      meetingSlug: "team-sync-123",
+    });
+  });
+
+  it("does not extract meetingSlug when pathname is /meetings/new", () => {
+    mockUsePathname.mockReturnValue("/meetings/new");
+    mockUseSearchParams.mockReturnValue(new URLSearchParams(""));
+    const { result } = renderHook(() => usePageContext());
+    expect(result.current).toEqual({
+      pathname: "/meetings/new",
+    });
+  });
 });

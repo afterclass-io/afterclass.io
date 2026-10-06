@@ -208,7 +208,7 @@ export function roadmapViewToViewProps(
       typeof result.viewProps === "object" &&
       result.viewProps !== null
     ) {
-      return result.viewProps as Record<string, unknown>;
+      return result.viewProps;
     }
     const parsed = parseViewJson(result);
     if (!("data" in parsed)) return { raw: parsed.raw };

@@ -8,6 +8,7 @@ const invalidate = {
   timetable: { invalidate: vi.fn(async () => undefined) },
   userBids: { invalidate: vi.fn(async () => undefined) },
   courses: { invalidate: vi.fn(async () => undefined) },
+  meetings: { invalidate: vi.fn(async () => undefined) },
 };
 
 vi.mock("@/common/tools/trpc/react", () => ({
@@ -57,6 +58,7 @@ describe("refreshTargets", () => {
       timetable: false,
       userBids: false,
       courses: false,
+      meetings: false,
     });
   });
 
@@ -68,6 +70,7 @@ describe("refreshTargets", () => {
       timetable: true,
       userBids: false,
       courses: false,
+      meetings: false,
     });
   });
 
@@ -81,6 +84,7 @@ describe("refreshTargets", () => {
       timetable: false,
       userBids: true,
       courses: false,
+      meetings: false,
     });
   });
 
@@ -91,8 +95,21 @@ describe("refreshTargets", () => {
         timetable: false,
         userBids: false,
         courses: true,
+        meetings: false,
       },
     );
+  });
+
+  it("maps a meeting tool name to the meetings router only", () => {
+    expect(
+      refreshTargets([msg([toolPart("create-meeting-poll") as never])]),
+    ).toEqual({
+      roadmaps: false,
+      timetable: false,
+      userBids: false,
+      courses: false,
+      meetings: true,
+    });
   });
 
   it("inspects the tool result when the name is generic", () => {
@@ -109,21 +126,24 @@ describe("refreshTargets", () => {
       timetable: false,
       userBids: true,
       courses: true,
+      meetings: false,
     });
   });
 
-  it("falls back to all four routers when nothing is recognized", () => {
+  it("falls back to all five routers when nothing is recognized", () => {
     expect(refreshTargets([])).toEqual({
       roadmaps: true,
       timetable: true,
       userBids: true,
       courses: true,
+      meetings: true,
     });
     expect(refreshTargets([msg([toolPart("get-me") as never])])).toEqual({
       roadmaps: true,
       timetable: true,
       userBids: true,
       courses: true,
+      meetings: true,
     });
   });
 });
@@ -137,6 +157,15 @@ describe("useRefreshAfterTools - narrowed invalidation (M12)", () => {
     expect(invalidate.timetable.invalidate).not.toHaveBeenCalled();
     expect(invalidate.userBids.invalidate).not.toHaveBeenCalled();
     expect(invalidate.courses.invalidate).not.toHaveBeenCalled();
+    expect(invalidate.meetings.invalidate).not.toHaveBeenCalled();
+  });
+
+  it("invalidates meetings router on meeting tool completion", () => {
+    const messages = [msg([toolPart("submit-meeting-availability") as never])];
+    const { rerender } = renderRefresh(messages);
+    act(() => rerender({ status: "ready", messages }));
+    expect(invalidate.meetings.invalidate).toHaveBeenCalledTimes(1);
+    expect(invalidate.roadmaps.invalidate).not.toHaveBeenCalled();
   });
 
   it("invalidates everything when the turn is unrecognized", () => {
@@ -147,6 +176,7 @@ describe("useRefreshAfterTools - narrowed invalidation (M12)", () => {
     expect(invalidate.timetable.invalidate).toHaveBeenCalledTimes(1);
     expect(invalidate.userBids.invalidate).toHaveBeenCalledTimes(1);
     expect(invalidate.courses.invalidate).toHaveBeenCalledTimes(1);
+    expect(invalidate.meetings.invalidate).toHaveBeenCalledTimes(1);
   });
 
   it("does not invalidate while the run is still going or on unrelated rerenders", () => {
