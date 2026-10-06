@@ -318,6 +318,18 @@ export const authConfig = {
             if (!dbUser) throw e;
           }
         }
+        // Names Google knows that the row lacks (accounts created before
+        // Google names were stored). Never overwrites a stored name. Applied
+        // in the same write as the id reconcile below when both are needed.
+        const googleName = getGoogleNameFields(profile as GoogleProfile | null);
+        const nameBackfill = {
+          ...(googleName.firstName && !dbUser.firstName
+            ? { firstName: googleName.firstName }
+            : {}),
+          ...(googleName.lastName && !dbUser.lastName
+            ? { lastName: googleName.lastName }
+            : {}),
+        };
         // Reconcile legacy generated-id rows: when a later exchange succeeds
         // with a Supabase id, move the row to it (FKs are ON UPDATE CASCADE)
         // so resolveMcpUser matches. Never block login on the reconcile.
@@ -336,7 +348,7 @@ export const authConfig = {
             } else {
               const updated = await db.users.update({
                 where: { email: emailToUse },
-                data: { id: link.supabaseUserId },
+                data: { id: link.supabaseUserId, ...nameBackfill },
               });
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { deprecatedPasswordDigest, ...rest } = updated;
@@ -352,18 +364,11 @@ export const authConfig = {
             });
           }
         }
-        // Backfill names for accounts created before Google names were stored.
-        const googleName = getGoogleNameFields(profile as GoogleProfile | null);
-        if (
-          (googleName.firstName && !dbUser.firstName) ||
-          (googleName.lastName && !dbUser.lastName)
-        ) {
+        // No reconcile happened (or it was skipped/failed): backfill alone.
+        if (Object.keys(nameBackfill).length > 0) {
           dbUser = await db.users.update({
             where: { id: dbUser.id },
-            data: {
-              ...(dbUser.firstName ? {} : { firstName: googleName.firstName }),
-              ...(dbUser.lastName ? {} : { lastName: googleName.lastName }),
-            },
+            data: nameBackfill,
           });
         }
         // strip user object of unwanted sensitive fields before populating to token
