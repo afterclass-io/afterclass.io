@@ -40,6 +40,9 @@ export function findBestSlot(
 ): BestSlot | null {
   const [top] = findTopSlots(heatmap, totalSlots, 1);
   if (!top) return null;
-  const { rank: _rank, ...best } = top;
-  return best;
+  return {
+    slotIndex: top.slotIndex,
+    availableCount: top.availableCount,
+    ifNeededCount: top.ifNeededCount,
+  };
 }

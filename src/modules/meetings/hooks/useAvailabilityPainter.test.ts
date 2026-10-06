@@ -70,7 +70,10 @@ describe("useAvailabilityPainter hook touch interactions", () => {
     slotEl.setAttribute("data-slot-index", "2");
     document.body.appendChild(slotEl);
 
-    const origElementFromPoint = document.elementFromPoint;
+    const origElementFromPoint =
+      typeof document.elementFromPoint === "function"
+        ? document.elementFromPoint.bind(document)
+        : undefined;
     document.elementFromPoint = () => slotEl;
 
     const preventDefault = vi.fn();
@@ -95,7 +98,12 @@ describe("useAvailabilityPainter hook touch interactions", () => {
       ifNeededSlots: [],
     });
 
-    document.elementFromPoint = origElementFromPoint;
+    if (origElementFromPoint) {
+      document.elementFromPoint = origElementFromPoint;
+    } else {
+      // @ts-expect-error jsdom cleanup
+      delete document.elementFromPoint;
+    }
     document.body.removeChild(slotEl);
   });
 });

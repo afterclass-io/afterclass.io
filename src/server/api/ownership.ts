@@ -153,11 +153,11 @@ export async function requireOwnedPoll(
 ): Promise<unknown> {
   const row: { creatorId: string } | null = select
     ? await db.meetingPoll.findUnique({
-        where: slugOrId as Prisma.MeetingPollWhereUniqueInput,
+        where: slugOrId,
         select: { ...select, creatorId: true },
       })
     : await db.meetingPoll.findUnique({
-        where: slugOrId as Prisma.MeetingPollWhereUniqueInput,
+        where: slugOrId,
       });
   if (row?.creatorId !== userId) {
     throw new TRPCError({ code: "FORBIDDEN" });

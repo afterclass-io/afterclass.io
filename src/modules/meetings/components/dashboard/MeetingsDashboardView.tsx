@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Calendar, Plus, Users } from "lucide-react";
 
@@ -17,6 +18,9 @@ const CARD_GRID = "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3";
 
 export function MeetingsDashboardView() {
   const { data: session, status: sessionStatus } = useSession();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const {
     data: meetings,
@@ -32,8 +36,21 @@ export function MeetingsDashboardView() {
     [meetings],
   );
 
-  const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
+  const tabParam = searchParams.get("tab");
+  const tab: "upcoming" | "past" = tabParam === "past" ? "past" : "upcoming";
   const visible = tab === "upcoming" ? upcoming : past;
+
+  const handleTabChange = (nextTab: string) => {
+    if (!nextTab) return;
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextTab === "past") {
+      params.set("tab", "past");
+    } else {
+      params.delete("tab");
+    }
+    const query = params.toString();
+    router.replace(`${pathname}${query ? `?${query}` : ""}`, { scroll: false });
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -109,9 +126,7 @@ export function MeetingsDashboardView() {
           <ToggleGroup
             type="single"
             value={tab}
-            onValueChange={(value) => {
-              if (value) setTab(value as "upcoming" | "past");
-            }}
+            onValueChange={handleTabChange}
             variant="segmented"
             size="sm"
             className="self-start"

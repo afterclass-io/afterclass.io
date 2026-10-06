@@ -13,18 +13,19 @@ import { formatDateSGT } from "@/common/functions/format-date-sgt";
 import { api, type RouterOutputs } from "@/common/tools/trpc/react";
 import { meetingsRoomTourSteps } from "@/common/tour/steps";
 import { useAutoStartTour } from "@/common/tour/useAutoStartTour";
-import { hasSeenMeetingsTourAtom } from "@/modules/meetings/atoms/meetings";
-import type { AvailabilityBrushMode } from "@/modules/meetings/components/grid/MeetingAvailabilityBrush";
+import {
+  hasSeenMeetingsTourAtom,
+  meetingBrushModeAtom,
+  meetingHideIfNeededAtom,
+  meetingVisibleOverlaysAtom,
+} from "@/modules/meetings/atoms/meetings";
 import { MeetingMatrixGrid } from "@/modules/meetings/components/grid/MeetingMatrixGrid";
 import {
   MeetingDetailsPanel,
   type MeetingDetails,
 } from "@/modules/meetings/components/room/MeetingDetailsPanel";
 import { MeetingRoomHeader } from "@/modules/meetings/components/room/MeetingRoomHeader";
-import {
-  MeetingEditPanel,
-  type OverlaySource,
-} from "@/modules/meetings/components/room/MeetingEditPanel";
+import { MeetingEditPanel } from "@/modules/meetings/components/room/MeetingEditPanel";
 import { MeetingGroupPanel } from "@/modules/meetings/components/room/MeetingGroupPanel";
 import { SelectedRangeBar } from "@/modules/meetings/components/room/SelectedRangeBar";
 import { findBestSlot, findTopSlots } from "@/modules/meetings/functions/best-slot";
@@ -47,11 +48,9 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
   const { data: session } = useSession();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [brushMode, setBrushMode] = useState<AvailabilityBrushMode>("AVAILABLE");
-  const [hideIfNeeded, setHideIfNeeded] = useState(false);
-  const [visibleSources, setVisibleSources] = useState<
-    Record<OverlaySource, boolean>
-  >({ timetable: true, google: true });
+  const [brushMode, setBrushMode] = useAtom(meetingBrushModeAtom);
+  const [hideIfNeeded, setHideIfNeeded] = useAtom(meetingHideIfNeededAtom);
+  const [visibleSources, setVisibleSources] = useAtom(meetingVisibleOverlaysAtom);
   const [selectedRange, setSelectedRange] = useState<SlotRange | null>(null);
 
   const utils = api.useUtils();
