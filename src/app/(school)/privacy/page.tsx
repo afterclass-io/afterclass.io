@@ -79,11 +79,16 @@ export default function PrivacyPage() {
           <span className="text-foreground">
             Reported content (moderation only):
           </span>{" "}
-          when other students report a review, a roadmap, or a shared timetable
-          name, that text alone is sent to a third party AI provider to check it
-          against our Community Guidelines. Your name, email and account details
-          are never sent, and neither is who reported it. Report counts are
-          never shown to anyone.
+          when other students report a review or a roadmap, that text alone is
+          sent to a third party AI provider to check it against our{" "}
+          <Link
+            href="/terms#community-guidelines"
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            terms
+          </Link>
+          . Your name, email and account details are never sent, and neither is
+          who reported it. Report counts are never shown to anyone.
         </p>
         <p>
           <span className="text-foreground">Infrastructure:</span> hosting,
@@ -102,10 +107,9 @@ export default function PrivacyPage() {
           prompts cannot be un-trained once processed.
         </p>
         <p>
-          When reported content is removed for breaking the Community
-          Guidelines, a copy of the removed text is kept for up to 90 days so
-          the decision can be audited, then deleted. The record of the decision
-          itself is kept.
+          When reported content is removed for breaking the terms, a copy of the
+          removed text is kept for up to 90 days so the decision can be audited,
+          then deleted. The record of the decision itself is kept.
         </p>
       </PolicySection>
 

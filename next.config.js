@@ -55,6 +55,11 @@ const config = withSentryConfig(
           permanent: true,
         },
         {
+          source: "/guidelines",
+          destination: "/terms#community-guidelines",
+          permanent: true,
+        },
+        {
           // redirect old afterclass professor pages to new ones
           source: "/professor/smu-:path(.*)",
           destination: "/professor/:path",

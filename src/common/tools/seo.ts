@@ -53,7 +53,6 @@ export function buildSitemap(
     { url: abs(baseUrl, "/"), changeFrequency: "weekly", priority: 1.0 },
     { url: abs(baseUrl, "/privacy"), changeFrequency: "yearly", priority: 0.3 },
     { url: abs(baseUrl, "/terms"), changeFrequency: "yearly", priority: 0.3 },
-    { url: abs(baseUrl, "/guidelines"), changeFrequency: "yearly", priority: 0.3 },
     { url: abs(baseUrl, "/bidding"), changeFrequency: "weekly", priority: 0.8 },
     { url: abs(baseUrl, "/roadmaps"), changeFrequency: "weekly", priority: 0.8 },
     ...courses.map((course) => ({

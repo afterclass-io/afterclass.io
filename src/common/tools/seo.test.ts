@@ -71,7 +71,7 @@ describe("buildSitemap", () => {
     expect(urls).toContain(`${BASE}/`);
     expect(urls).toContain(`${BASE}/privacy`);
     expect(urls).toContain(`${BASE}/terms`);
-    expect(urls).toContain(`${BASE}/guidelines`);
+    expect(urls).not.toContain(`${BASE}/guidelines`);
     expect(urls).toContain(`${BASE}/bidding`);
     expect(urls).toContain(`${BASE}/roadmaps`);
   });

@@ -114,7 +114,7 @@ function toJudgeResult(
 }
 
 /**
- * Judge one item's text against the community guidelines. Safe by default:
+ * Judge one item's text against the terms. Safe by default:
  * every failure (timeout, provider error, refusal, unparseable or uncertain
  * output) comes back as `kind: "error"` — never a violation, never a
  * clearance — so nothing is removed and nothing raises the threshold.

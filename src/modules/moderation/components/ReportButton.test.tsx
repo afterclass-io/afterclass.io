@@ -56,6 +56,12 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("ReportButton", () => {
+  it("declares confirmation pointing to the terms", () => {
+    expect(REPORT_CONFIRMATION).toBe(
+      "Thanks for the report. Reported content is checked against our terms.",
+    );
+  });
+
   it("renders nothing when the master flag is off", () => {
     m.ecfg = { enableContentModeration: false };
     render(<ReportButton surface="review" refId="rv1" />);

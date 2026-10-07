@@ -1,6 +1,6 @@
 /**
  * Community guidelines: the single source the moderation judge evaluates
- * against and the /guidelines page renders. Change wording here only.
+ * against and the terms page renders. Change wording here only.
  */
 export const POLICY_RULE_IDS = [
   "hate",

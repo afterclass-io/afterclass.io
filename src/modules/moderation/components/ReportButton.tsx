@@ -15,7 +15,7 @@ import { api, type RouterInputs } from "@/common/tools/trpc/react";
 
 /** Shown for every report outcome that must not reveal anything. */
 export const REPORT_CONFIRMATION =
-  "Thanks for the report. Reported content is checked against our community guidelines.";
+  "Thanks for the report. Reported content is checked against our terms.";
 
 export type ReportButtonProps = {
   surface: RouterInputs["moderation"]["report"]["surface"];

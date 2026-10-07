@@ -29,7 +29,6 @@ import {
   FileTextIcon,
   LockIcon,
   PlugIcon,
-  ShieldCheckIcon,
   Users,
 } from "lucide-react";
 import { env } from "@/env";
@@ -159,11 +158,6 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       label: "Privacy",
       icon: <LockIcon size={16} />,
       href: "/privacy",
-    },
-    {
-      label: "Guidelines",
-      icon: <ShieldCheckIcon size={16} />,
-      href: "/guidelines",
     },
   ],
 };

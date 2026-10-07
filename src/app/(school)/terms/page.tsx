@@ -2,6 +2,11 @@ import { type Metadata } from "next";
 import Link from "next/link";
 
 import { PolicySection } from "@/common/components/policy-section";
+import {
+  POLICY_ALLOWED,
+  POLICY_RULE_IDS,
+  POLICY_RULES,
+} from "@/common/constants/community-guidelines";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -41,7 +46,7 @@ export default function TermsPage() {
           Use the site for lawful course planning and honest discussion. Do not
           post spam, abuse, hate, or unlawful content; do not scrape, probe, or
           attempt to disrupt the service; and do not misrepresent yourself or
-          others in reviews, roadmaps, or timetables.
+          others in reviews or roadmaps.
         </p>
         <p>
           Course reviews are other students&apos; opinions for planning
@@ -49,18 +54,49 @@ export default function TermsPage() {
           every claim in them.
         </p>
         <p>
-          Reviews, public and shared roadmaps, and shared timetable names must
-          follow our{" "}
+          Reviews and public or shared roadmaps must follow our{" "}
           <Link
-            href="/guidelines"
+            href="#community-guidelines"
             className="text-primary underline-offset-4 hover:underline"
           >
-            Community Guidelines
-          </Link>
-          . When several students report the same content, it is checked
-          automatically against those guidelines. Reviews that break them are
-          deleted, and roadmaps and timetables that break them are made private,
-          without notice.
+            community guidelines
+          </Link>{" "}
+          below. When several students report the same content, it is checked
+          automatically against those rules. Reviews that break them are
+          deleted, and roadmaps that break them are made private, without notice.
+        </p>
+      </PolicySection>
+
+      <PolicySection id="community-guidelines" title="Community guidelines">
+        <p>
+          AfterClass is for honest, useful information about courses and
+          professors. Criticism is welcome. These rules cover what is not.
+        </p>
+        <h3 className="text-foreground font-semibold pt-2">Not allowed</h3>
+        <ul className="list-disc space-y-2 pl-5">
+          {POLICY_RULE_IDS.map((id) => (
+            <li key={id}>
+              <span className="text-foreground">{POLICY_RULES[id].title}:</span>{" "}
+              {POLICY_RULES[id].description}
+            </li>
+          ))}
+        </ul>
+        <h3 className="text-foreground font-semibold pt-2">Always allowed</h3>
+        <p>{POLICY_ALLOWED}</p>
+        <h3 className="text-foreground font-semibold pt-2">
+          How reporting works
+        </h3>
+        <p>
+          Signed-in students can report a review or a public or shared roadmap.
+          Reports are private: nobody, including the author, can see who
+          reported or how many reports there are.
+        </p>
+        <p>
+          Reports alone never remove anything. Once several different students
+          report the same content, it is checked automatically against these
+          guidelines. Reviews that break them are deleted; roadmaps that break
+          them are made private. Content that is only negative or critical stays
+          up, however many reports it gets.
         </p>
       </PolicySection>
 
