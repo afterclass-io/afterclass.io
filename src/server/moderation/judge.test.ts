@@ -65,28 +65,28 @@ describe("judgeText", () => {
     });
   });
 
-  it("returns a violation for a contradicting rating", async () => {
+  it("returns a violation for a slur", async () => {
     const model = modelReturning(
       verdict({
         violation: true,
-        policyRule: "unjustified_rating",
+        policyRule: "hate",
         language: "en",
-        rationale: "Rating contradicts positive review text.",
+        rationale: "Attacks the professor for their ethnicity.",
       }),
     );
     await expect(
       judgeText(
         {
           surfaceLabel: "anonymous course or professor review",
-          text: "Rating: 1 out of 5\nReview:\nBest professor ever! Clear and helpful.",
+          text: "Rating: 1 out of 5\nReview:\nAbusive text.",
         },
         opts(model),
       ),
     ).resolves.toEqual({
       kind: "violation",
-      policyRule: "unjustified_rating",
+      policyRule: "hate",
       language: "en",
-      rationale: "Rating contradicts positive review text.",
+      rationale: "Attacks the professor for their ethnicity.",
       model: "mock-model-id",
     });
   });

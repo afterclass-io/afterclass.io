@@ -8,7 +8,6 @@ export const POLICY_RULE_IDS = [
   "threats",
   "personal_info",
   "sexual",
-  "spam",
   "unjustified_rating",
 ] as const;
 
@@ -41,17 +40,12 @@ export const POLICY_RULES: Record<
     title: "Sexual content",
     description: "Sexual or sexually explicit content.",
   },
-  spam: {
-    title: "Spam",
-    description:
-      "Advertising, promotion, or text unrelated to the course, professor or roadmap.",
-  },
   unjustified_rating: {
-    title: "Unjustified rating",
+    title: "Unjustified low rating",
     description:
-      "A rating that clearly contradicts what the review says, or an extreme rating with no reason or with text unrelated to the course or professor.",
+      "A low rating (1 or 2 out of 5) whose review gives no real reason for it: empty, placeholder, gibberish or off-topic text, or text that praises the course. Positive and neutral ratings are never flagged under this rule.",
   },
 };
 
 export const POLICY_ALLOWED =
-  "Negative, harsh or critical opinions about a course, a professor's teaching, workload or grading, however strongly worded, as long as they break none of the rules above.";
+  "Negative, harsh or critical opinions about a course, a professor's teaching, workload or grading, however strongly worded, as long as they break none of the rules above. Off-topic, placeholder or low-effort text is allowed too, unless it backs a low rating (see unjustified_rating).";
