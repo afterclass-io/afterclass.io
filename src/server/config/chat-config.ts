@@ -51,7 +51,7 @@
  * | moderationJudgementsPerHour | 20 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  * | moderationReportsPerHour | 10 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  * | moderationClaimWindowMinutes | 5 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
- * | moderationJudgeTimeoutMs | 8000 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationJudgeTimeoutMs | 90000 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  * | moderationLogRetentionDays | 90 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  * | moderationModel | undefined | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  */
@@ -118,11 +118,11 @@ export const chatConfigSchema = z.object({
     .max(60),
   moderationJudgeTimeoutMs: z
     .number({
-      error: "moderationJudgeTimeoutMs must be an int in [1000, 12000]",
+      error: "moderationJudgeTimeoutMs must be an int in [1000, 120000]",
     })
     .int()
     .min(1000)
-    .max(12000),
+    .max(120000),
   moderationLogRetentionDays: positiveInt("moderationLogRetentionDays"),
   moderationModel: z.string().min(1).optional(),
 });
@@ -161,7 +161,7 @@ export const DEFAULT_CHAT_CONFIG_VALUES: ChatConfig = {
   moderationJudgementsPerHour: 20,
   moderationReportsPerHour: 10,
   moderationClaimWindowMinutes: 5,
-  moderationJudgeTimeoutMs: 8000,
+  moderationJudgeTimeoutMs: 90000,
   moderationLogRetentionDays: 90,
   // Explicit undefined: normalizeChatLayer keeps only keys present here.
   moderationModel: undefined,

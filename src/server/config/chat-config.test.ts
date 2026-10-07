@@ -79,7 +79,7 @@ describe("getChatConfig", () => {
       perHour: 20,
       reportsPerHour: 10,
       claimMinutes: 5,
-      timeoutMs: 8000,
+      timeoutMs: 90000,
       retentionDays: 90,
       model: undefined,
     });
@@ -102,7 +102,7 @@ describe("getChatConfig", () => {
     expect(
       strict.safeParse({
         ...DEFAULT_CHAT_CONFIG_VALUES,
-        moderationJudgeTimeoutMs: 20_000,
+        moderationJudgeTimeoutMs: 200_000,
       }).success,
     ).toBe(false);
     expect(
