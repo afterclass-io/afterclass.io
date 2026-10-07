@@ -7,11 +7,15 @@ import { setVisibility } from "./index";
 const router = createTRPCRouter({ setVisibility });
 
 // `findUnique` returns `row`; caller supplies the `update` spy it asserts on.
+// `updateMany` backs the shared hide functions (the PRIVATE path).
 const mkDb = (
   entity: "userRoadmap" | "userTimetable",
   row: Record<string, unknown>,
   update: ReturnType<typeof vi.fn>,
-) => ({ [entity]: { findUnique: vi.fn().mockResolvedValue(row), update } });
+  updateMany: ReturnType<typeof vi.fn> = vi.fn(),
+) => ({
+  [entity]: { findUnique: vi.fn().mockResolvedValue(row), update, updateMany },
+});
 
 describe("sharing.setVisibility", () => {
   it("rejects PUBLIC visibility for timetables", async () => {
@@ -29,7 +33,8 @@ describe("sharing.setVisibility", () => {
   // visibility check of their own — a shared link stops working only because
   // going PRIVATE nulls the share token here. These pin that invariant.
   it("clears the roadmap's share token when visibility drops to PRIVATE", async () => {
-    const update = vi.fn().mockResolvedValue({});
+    const update = vi.fn();
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
     const caller = makeCaller(
       router.createCaller,
       mkDb(
@@ -41,6 +46,7 @@ describe("sharing.setVisibility", () => {
           publishedAt: null,
         },
         update,
+        updateMany,
       ),
     );
 
@@ -51,20 +57,28 @@ describe("sharing.setVisibility", () => {
     });
 
     expect(result).toEqual({ visibility: "PRIVATE", shareToken: null });
-    expect(update).toHaveBeenCalledWith({
+    expect(updateMany).toHaveBeenCalledWith({
       where: { id: "r1" },
-      data: { visibility: "PRIVATE", shareToken: null, publishedAt: null },
+      data: {
+        visibility: "PRIVATE",
+        slug: null,
+        publishedAt: null,
+        shareToken: null,
+      },
     });
+    expect(update).not.toHaveBeenCalled();
   });
 
   it("clears both the timetable's share token and iCal token when visibility drops to PRIVATE", async () => {
-    const update = vi.fn().mockResolvedValue({});
+    const update = vi.fn();
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
     const caller = makeCaller(
       router.createCaller,
       mkDb(
         "userTimetable",
         { userId: "u1", shareToken: "tok_live", icalToken: "ical_live" },
         update,
+        updateMany,
       ),
     );
 
@@ -74,10 +88,11 @@ describe("sharing.setVisibility", () => {
       visibility: "PRIVATE",
     });
 
-    expect(update).toHaveBeenCalledWith({
+    expect(updateMany).toHaveBeenCalledWith({
       where: { id: "t1" },
       data: { visibility: "PRIVATE", shareToken: null, icalToken: null },
     });
+    expect(update).not.toHaveBeenCalled();
   });
 
   // `shareToken ??= mintToken()` has two arms: mint when absent, preserve when

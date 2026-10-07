@@ -23,6 +23,7 @@ import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
 import { RoadmapVoteGroup } from "@/modules/roadmaps/components/RoadmapVoteGroup";
 import { RoadmapReactionButton } from "@/modules/roadmaps/components/RoadmapReactionButton";
 import { RoadmapReactionsGroup } from "@/modules/roadmaps/components/RoadmapReactionsGroup";
+import { ReportButton } from "@/modules/moderation/components/ReportButton";
 import { Button } from "@/common/components/button";
 import { PageTitle } from "@/common/components/page-title";
 import { ShareIcon } from "@/common/components/icons";
@@ -226,6 +227,12 @@ export function PublicRoadmapView({
             </TooltipTrigger>
             <TooltipContent>Copy link to this roadmap</TooltipContent>
           </Tooltip>
+
+          <ReportButton
+            surface="roadmap"
+            refId={roadmapId}
+            ownerUsername={ownerUsername}
+          />
 
           {/* View mode toggle */}
           <ToggleGroup

@@ -7,6 +7,7 @@ import { ReviewVoteGroup } from "../ReviewVoteGroup";
 import { ReviewReactionsGroup } from "../ReviewReactionsGroup";
 import { ReviewReactionButton } from "../ReviewReactionButton";
 import { useEdgeConfigs } from "@/common/hooks";
+import { ReportButton } from "@/modules/moderation/components/ReportButton";
 
 export type ReviewFooterProps = {
   review: Review;
@@ -22,7 +23,7 @@ export const ReviewFooter = ({ review }: ReviewFooterProps) => {
         <ReviewReactionsGroup reviewId={review.id} />
       )}
 
-      <div className="flex gap-4">
+      <div className="flex flex-wrap gap-4">
         <ReviewVoteGroup reviewId={review.id} />
 
         {shouldShowReviewReactions && (
@@ -30,6 +31,8 @@ export const ReviewFooter = ({ review }: ReviewFooterProps) => {
         )}
 
         <ReviewShareButton reviewId={review.id} />
+
+        <ReportButton surface="review" refId={review.id} />
 
         <div className="flex items-center gap-1.5 px-2">
           <EyeIcon className="size-4" />

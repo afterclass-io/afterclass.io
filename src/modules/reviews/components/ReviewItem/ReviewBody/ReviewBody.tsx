@@ -1,3 +1,4 @@
+import { censorProfanity } from "@/common/functions";
 import { type Review } from "@/modules/reviews/types";
 
 import { ReviewRatingGroup } from "../ReviewRatingGroup";
@@ -14,7 +15,7 @@ export const ReviewBody = ({ review }: ReviewBodyProps) => {
       <ReviewRatingGroup rating={review.rating} />
       <ReviewLabelGroup reviewLabels={review.reviewLabels} />
       <div className="text-accent-foreground line-clamp-5 wrap-anywhere md:line-clamp-3 md:text-sm">
-        {review.body}
+        {censorProfanity(review.body)}
       </div>
     </div>
   );

@@ -1,12 +1,13 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
-import { protectedProcedure } from "@/server/api/trpc";
+import { protectedProcedure, requireVerified } from "@/server/api/trpc";
 import {
   requireOwnedRoadmap,
   requireOwnedTimetable,
   mintToken,
 } from "@/server/api/ownership";
+import { hideRoadmap, hideTimetable } from "@/server/api/sharing/hide";
 
 export const setVisibility = protectedProcedure
   .input(
@@ -29,20 +30,17 @@ export const setVisibility = protectedProcedure
 
       const timetable = await requireOwnedTimetable(ctx.db, id, ctx.session.user.id);
 
-      let shareToken: string | null = timetable.shareToken;
-      let icalToken: string | null = timetable.icalToken;
-
-      if (visibility === "UNLISTED") {
-        shareToken ??= mintToken();
-      } else {
-        // PRIVATE — clear BOTH the share link and the calendar feed token.
-        shareToken = null;
-        icalToken = null;
+      if (visibility === "PRIVATE") {
+        // Clears BOTH the share link and the calendar feed token.
+        await hideTimetable(ctx.db, id);
+        return { visibility, shareToken: null };
       }
+
+      const shareToken = timetable.shareToken ?? mintToken();
 
       await ctx.db.userTimetable.update({
         where: { id },
-        data: { visibility, shareToken, icalToken },
+        data: { visibility, shareToken, icalToken: timetable.icalToken },
       });
 
       return { visibility, shareToken };
@@ -54,21 +52,14 @@ export const setVisibility = protectedProcedure
         publishedAt: true,
       });
 
-      if (visibility === "PUBLIC" && !ctx.session.user.isVerified) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only verified users can publish roadmaps",
-        });
+      if (visibility === "PRIVATE") {
+        await hideRoadmap(ctx.db, id);
+        return { visibility, shareToken: null };
       }
 
-      let shareToken: string | null = roadmap.shareToken;
+      if (visibility === "PUBLIC") requireVerified(ctx.session.user);
 
-      if (visibility === "UNLISTED" || visibility === "PUBLIC") {
-        shareToken ??= mintToken();
-      } else {
-        // PRIVATE — clear the token
-        shareToken = null;
-      }
+      const shareToken = roadmap.shareToken ?? mintToken();
 
       await ctx.db.userRoadmap.update({
         where: { id },

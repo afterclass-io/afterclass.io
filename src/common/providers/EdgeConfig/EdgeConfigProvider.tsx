@@ -1,5 +1,6 @@
 import { getAll } from "@vercel/edge-config";
 import { edgeConfigSchema } from "@/server/ecfg/config";
+import fallbackConfig from "@/server/ecfg/config.json";
 import { EdgeConfigContextProvider } from "./EdgeConfigContextProvider";
 
 async function fetchAndValidateEdgeConfig() {
@@ -30,12 +31,12 @@ async function fetchAndValidateEdgeConfig() {
   }
 }
 
-async function getFallbackConfig() {
-  return (await import("@/server/ecfg/config.json")).default;
+function getFallbackConfig() {
+  return fallbackConfig;
 }
 
 export async function getEdgeConfig() {
-  return (await fetchAndValidateEdgeConfig()) ?? (await getFallbackConfig());
+  return (await fetchAndValidateEdgeConfig()) ?? getFallbackConfig();
 }
 
 export async function EdgeConfigProvider({

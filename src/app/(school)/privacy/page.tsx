@@ -1,6 +1,8 @@
 import { type Metadata } from "next";
 import Link from "next/link";
 
+import { PolicySection } from "@/common/components/policy-section";
+
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
@@ -8,23 +10,6 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 86400;
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mt-8">
-      <h2 className="text-lg font-semibold">{title}</h2>
-      <div className="text-muted-foreground mt-2 space-y-2 text-sm leading-relaxed">
-        {children}
-      </div>
-    </section>
-  );
-}
 
 export default function PrivacyPage() {
   return (
@@ -45,7 +30,7 @@ export default function PrivacyPage() {
         .
       </p>
 
-      <Section title="Data we collect">
+      <PolicySection title="Data we collect">
         <p>
           <span className="text-foreground">Account data:</span> your name,
           email, username, faculty, and university, which you provide when you
@@ -67,9 +52,9 @@ export default function PrivacyPage() {
           that review bodies and the names you give your timetables are free
           text, so avoid putting personal details in them.
         </p>
-      </Section>
+      </PolicySection>
 
-      <Section title="Cookies and local storage">
+      <PolicySection title="Cookies and local storage">
         <p>
           We use cookies and browser storage for login sessions and small
           usability state — for example remembering the assistant widget&apos;s
@@ -77,9 +62,9 @@ export default function PrivacyPage() {
           dismissals. There is no third-party advertising or cross-site
           tracking.
         </p>
-      </Section>
+      </PolicySection>
 
-      <Section title="Who we share data with">
+      <PolicySection title="Who we share data with">
         <p>
           <span className="text-foreground">
             AI processors (AI turns only):
@@ -91,6 +76,21 @@ export default function PrivacyPage() {
           agents to the MCP, or simply not using the AI feature.
         </p>
         <p>
+          <span className="text-foreground">
+            Reported content (moderation only):
+          </span>{" "}
+          when other students report a review or a roadmap, that text alone is
+          sent to a third party AI provider to check it against our{" "}
+          <Link
+            href="/terms#community-guidelines"
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            terms
+          </Link>
+          . Your name, email and account details are never sent, and neither is
+          who reported it. Report counts are never shown to anyone.
+        </p>
+        <p>
           <span className="text-foreground">Infrastructure:</span> hosting,
           database, and error-monitoring providers that run the deployed site.
           Diagnostic logs exclude prompt contents and authentication secrets.
@@ -98,17 +98,22 @@ export default function PrivacyPage() {
         <p>
           We do not sell personal data, and we do not share it with advertisers.
         </p>
-      </Section>
+      </PolicySection>
 
-      <Section title="Retention">
+      <PolicySection title="Retention">
         <p>
           Account and activity data is kept while you are enrolled and using the
           site. AI prompts are retained per each provider&apos;s own terms. Past
           prompts cannot be un-trained once processed.
         </p>
-      </Section>
+        <p>
+          When reported content is removed for breaking the terms, a copy of the
+          removed text is kept for up to 90 days so the decision can be audited,
+          then deleted. The record of the decision itself is kept.
+        </p>
+      </PolicySection>
 
-      <Section title="Your rights">
+      <PolicySection title="Your rights">
         <p>
           You may request access to or correction of your personal data, and you
           may ask for your account to be removed. For the AI feature, choosing
@@ -121,7 +126,7 @@ export default function PrivacyPage() {
           <span className="text-foreground">@afterclass</span> (the AfterClass
           helpdesk link on the login page).
         </p>
-      </Section>
+      </PolicySection>
     </main>
   );
 }

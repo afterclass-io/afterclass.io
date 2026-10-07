@@ -26,13 +26,15 @@ export function SharedTimetableView({
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div>
-        <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">
-          Shared Timetable: {timetableName}
-        </PageTitle>
-        <p className="text-sm text-muted-foreground">
-          by {ownerUsername}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">
+            Shared Timetable: {timetableName}
+          </PageTitle>
+          <p className="text-sm text-muted-foreground">
+            by {ownerUsername}
+          </p>
+        </div>
       </div>
 
       {/* Grid */}

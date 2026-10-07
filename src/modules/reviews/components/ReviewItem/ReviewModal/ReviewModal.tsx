@@ -23,6 +23,7 @@ import { ReviewLabelGroup } from "../ReviewLabelGroup";
 import { useEdgeConfigs } from "@/common/hooks";
 import { ReviewFooter } from "../ReviewFooter";
 import { Separator } from "@/common/components/separator";
+import { censorProfanity } from "@/common/functions";
 
 export const ReviewModal = ({
   review,
@@ -81,7 +82,7 @@ export const ReviewModal = ({
           </DialogDescription>
         </DialogHeader>
         <DialogBody className="wrap-anywhere whitespace-pre-wrap">
-          {review.body}
+          {censorProfanity(review.body)}
         </DialogBody>
         <DialogFooter className="flex-col sm:flex-col">
           <ReviewFooter review={review} />

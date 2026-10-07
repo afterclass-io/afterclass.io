@@ -40,11 +40,20 @@
  * | inFlightStaleMs | 300000 | quota.ts IN_FLIGHT_STALE_MS = 5*60_000 |
  * | rateLimitRetentionWindows | 1440 | ratelimit.ts pruneRateLimits default 1440 |
  * | llmBaseUrl | https://openrouter.ai/api/v1 | providers.ts DEFAULT_LLM_BASE_URL |
- * | llmModel | @preset/afterclass | providers.ts DEFAULT_LLM_MODEL |
+ * | llmModel | @preset/afterclass | chat-config.ts DEFAULT_CHAT_CONFIG_VALUES (LLM_MODEL env > config.json > default) |
  * | chatMaxDurationSec | 300 | route.ts `maxDuration = 300` (Vercel Pro ceiling; keep in sync) |
  * | chatEnabled | true | ecfg kill-switch: chat route 503 when false (ecfg-only, no ENV_BINDINGS) |
  * | widgetEnabled | true | ecfg kill-switch: widget hidden when false (surfaced via status; ecfg-only, no ENV_BINDINGS) |
  * | mcpEnabled | true | ecfg kill-switch: MCP transport refuses when false (server-side only; ecfg-only, no ENV_BINDINGS) |
+ * | moderationReportThreshold | 3 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationBackoffMultiplier | 2 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationThresholdCap | 48 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationJudgementsPerHour | 20 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationReportsPerHour | 10 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationClaimWindowMinutes | 5 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationJudgeTimeoutMs | 90000 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationLogRetentionDays | 90 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationModel | undefined | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  */
 import { z } from "zod";
 
@@ -94,6 +103,28 @@ export const chatConfigSchema = z.object({
   chatEnabled: z.boolean(),
   widgetEnabled: z.boolean(),
   mcpEnabled: z.boolean(),
+  // Content moderation: ecfg-owned ONLY — deliberately NO ENV_BINDINGS so
+  // the remote value always wins and changes without a deploy. Read via
+  // getChatConfigAsync() at every moderation call site.
+  moderationReportThreshold: positiveInt("moderationReportThreshold"),
+  moderationBackoffMultiplier: positiveInt("moderationBackoffMultiplier"),
+  moderationThresholdCap: positiveInt("moderationThresholdCap"),
+  moderationJudgementsPerHour: positiveInt("moderationJudgementsPerHour"),
+  moderationReportsPerHour: positiveInt("moderationReportsPerHour"),
+  moderationClaimWindowMinutes: z
+    .number({ error: "moderationClaimWindowMinutes must be an int in [1, 60]" })
+    .int()
+    .min(1)
+    .max(60),
+  moderationJudgeTimeoutMs: z
+    .number({
+      error: "moderationJudgeTimeoutMs must be an int in [1000, 120000]",
+    })
+    .int()
+    .min(1000)
+    .max(120000),
+  moderationLogRetentionDays: positiveInt("moderationLogRetentionDays"),
+  moderationModel: z.string().min(1).optional(),
 });
 
 export type ChatConfig = z.infer<typeof chatConfigSchema>;
@@ -124,6 +155,16 @@ export const DEFAULT_CHAT_CONFIG_VALUES: ChatConfig = {
   chatEnabled: true,
   widgetEnabled: true,
   mcpEnabled: true,
+  moderationReportThreshold: 3,
+  moderationBackoffMultiplier: 2,
+  moderationThresholdCap: 48,
+  moderationJudgementsPerHour: 20,
+  moderationReportsPerHour: 10,
+  moderationClaimWindowMinutes: 5,
+  moderationJudgeTimeoutMs: 90000,
+  moderationLogRetentionDays: 90,
+  // Explicit undefined: normalizeChatLayer keeps only keys present here.
+  moderationModel: undefined,
 };
 
 /** Env key → config field, with the parser applied to the raw env string.

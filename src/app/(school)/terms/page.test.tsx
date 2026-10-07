@@ -37,4 +37,17 @@ describe("TermsPage", () => {
       expect(link.getAttribute("href")).toBe("/privacy");
     }
   });
+
+  it("renders the community guidelines section with anchor and rules", () => {
+    const { container } = render(<TermsPage />);
+    expect(
+      screen.getByRole("heading", { name: "Community guidelines" }),
+    ).toBeTruthy();
+    expect(container.querySelector("#community-guidelines")).toBeTruthy();
+    const link = screen.getByRole("link", { name: "community guidelines" });
+    expect(link.getAttribute("href")).toBe("#community-guidelines");
+    expect(screen.getByText(/Not allowed/i)).toBeTruthy();
+    expect(screen.getByText(/Always allowed/i)).toBeTruthy();
+    expect(screen.getByText(/How reporting works/i)).toBeTruthy();
+  });
 });

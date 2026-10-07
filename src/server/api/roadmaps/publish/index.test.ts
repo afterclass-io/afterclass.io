@@ -52,7 +52,7 @@ describe("roadmaps.publish", () => {
 
     await expect(caller.publish({ roadmapId: "r1" })).rejects.toMatchObject({
       code: "FORBIDDEN",
-      message: "Only verified users can publish roadmaps",
+      message: "Only verified users can do this",
     });
     expect(dbMock.userRoadmap.findUnique).not.toHaveBeenCalled();
     expect(dbMock.userRoadmap.update).not.toHaveBeenCalled();

@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/prune-rate-limits",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/prune-moderation-log",
+      "schedule": "30 4 * * *"
     }
   ],
   "functions": {

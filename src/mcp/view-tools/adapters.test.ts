@@ -518,6 +518,47 @@ describe("viewProps unwrap path (my-bid-plan via toViewProps fallback)", () => {
       voteCount: null,
     });
   });
+
+  it("get-course-reviews: masks profanity in review body and tips in summary", async () => {
+    const { handler } = registration("get-course-reviews");
+    toolRun.mockResolvedValue({
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            context: "ACCT102",
+            reviews: [
+              {
+                id: "rv1",
+                body: "This professor is shit",
+                tips: null,
+                rating: 1,
+                labels: [],
+                voteCount: 0,
+                createdAt: "2026-01-01",
+                courseCode: "ACCT102",
+                professorName: "Prof X",
+              },
+              {
+                id: "rv2",
+                body: null,
+                tips: "Avoid this bastard",
+                rating: 2,
+                labels: [],
+                voteCount: 0,
+                createdAt: "2026-01-01",
+                courseCode: "ACCT102",
+                professorName: null,
+              },
+            ],
+          }),
+        },
+      ],
+    });
+    const res = await handler({}, {});
+    expect(res.content[0]?.text).toContain("Prof X — This professor is ****");
+    expect(res.content[0]?.text).toContain("— Avoid this *******");
+  });
 });
 
 describe("shared view-tool plumbing", () => {
