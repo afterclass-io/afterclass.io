@@ -1,5 +1,6 @@
 import { server } from "../server";
 import { coursePage } from "@/server/mcp/tools/page-links";
+import { censorProfanity } from "@/common/functions";
 import { asSchema } from "../schema";
 import { reviewCardsOutput } from "./schemas";
 import { runViewTool } from "./results";
@@ -64,7 +65,9 @@ export const getCourseReviews = server.tool(
               ? ` [${r.labels.join(", ")}]`
               : "";
           const prof = r.professorName ? ` ${r.professorName}` : "";
-          const snippet = (r.body ?? r.tips ?? "").slice(0, 120);
+          const snippet = censorProfanity(
+            (r.body ?? r.tips ?? "").slice(0, 120),
+          );
           return `${stars}${labels}${prof} — ${snippet}`.trim();
         });
         return `${head}:\n${lines.join("\n")}${link}`;
