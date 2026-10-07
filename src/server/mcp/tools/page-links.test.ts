@@ -4,6 +4,7 @@ import {
   bidAnalytics,
   coursePage,
   exploreLinkFor,
+  meetingPage,
   professorPage,
   roadmapsMinePage,
   searchPage,
@@ -55,6 +56,10 @@ describe("page-links", () => {
   it("links timetable and roadmaps-mine views", () => {
     expect(timetablePage()).toBe("/timetable");
     expect(roadmapsMinePage()).toBe("/roadmaps?view=mine");
+  });
+  it("links a meeting poll and encodes the slug", () => {
+    expect(meetingPage("xK9mP2vL7q")).toBe("/meetings/xK9mP2vL7q");
+    expect(meetingPage("a b")).toBe("/meetings/a%20b");
   });
   it("absoluteUrl prefixes the site host so chat links open", () => {
     expect(absoluteUrl("/bidding/analytics?course=X")).toMatch(

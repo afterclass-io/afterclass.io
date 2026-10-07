@@ -128,6 +128,43 @@ export async function requireOwnedBid(
   return row;
 }
 
+// -- requireOwnedPoll ------------------------------------------------------
+
+export async function requireOwnedPoll(
+  db: PrismaClient,
+  slugOrId: { slug: string } | { id: string },
+  userId: string,
+): Promise<
+  NonNullable<Awaited<ReturnType<PrismaClient["meetingPoll"]["findUnique"]>>>
+>;
+export async function requireOwnedPoll<
+  Select extends Prisma.MeetingPollSelect,
+>(
+  db: PrismaClient,
+  slugOrId: { slug: string } | { id: string },
+  userId: string,
+  select: Select,
+): Promise<Prisma.MeetingPollGetPayload<{ select: Select }>>;
+export async function requireOwnedPoll(
+  db: PrismaClient,
+  slugOrId: { slug: string } | { id: string },
+  userId: string,
+  select?: Prisma.MeetingPollSelect,
+): Promise<unknown> {
+  const row: { creatorId: string } | null = select
+    ? await db.meetingPoll.findUnique({
+        where: slugOrId,
+        select: { ...select, creatorId: true },
+      })
+    : await db.meetingPoll.findUnique({
+        where: slugOrId,
+      });
+  if (row?.creatorId !== userId) {
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
+  return row;
+}
+
 /** Mint a high-entropy capability token for share links / iCal feeds. */
 export function mintToken(): string {
   return nanoid(21);

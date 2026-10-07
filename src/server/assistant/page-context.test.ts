@@ -33,4 +33,13 @@ describe("buildPageContextSuffix", () => {
     expect(lines.filter((l) => l === "<page_context>")).toHaveLength(1);
     expect(lines.filter((l) => l === "</page_context>")).toHaveLength(1);
   });
+
+  it("formats meeting poll context when meetingSlug is present", () => {
+    const suffix = buildPageContextSuffix({
+      pathname: "/meetings/abc123xyz",
+      meetingSlug: "abc123xyz",
+    });
+    expect(suffix).toContain("User is viewing /meetings/abc123xyz");
+    expect(suffix).toContain("meeting poll abc123xyz");
+  });
 });

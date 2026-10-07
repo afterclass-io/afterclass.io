@@ -29,12 +29,12 @@ describe("tool schema & types smoke", () => {
     expect((j.content[0] as { text: string }).text).toContain("1");
   });
 
-  it("catalog keeps the documented 50 tools (personal account/shared-token tools removed): 28 readOnly + 22 write", () => {
-    expect(allTools).toHaveLength(50);
+  it("catalog keeps the documented 55 tools (personal account/shared-token tools removed): 31 readOnly + 24 write", () => {
+    expect(allTools).toHaveLength(55);
     // Every tool except `recommend-bid-amount` and `explore-bid-options`
     // (read-only tools) is non-readOnly.
     const writeTools = allTools.filter((t) => !t.readOnly);
-    expect(writeTools).toHaveLength(22);
+    expect(writeTools).toHaveLength(24);
     expect(writeTools.some((t) => t.name === "recommend-bid-amount")).toBe(
       false,
     );
@@ -46,6 +46,9 @@ describe("tool schema & types smoke", () => {
     );
     expect(
       allTools.find((t) => t.name === "explore-bid-options")?.readOnly,
+    ).toBe(true);
+    expect(
+      allTools.find((t) => t.name === "suggest-meeting-times")?.readOnly,
     ).toBe(true);
     // Authz: get-me/get-usage/get-shared-timetable are intentionally absent.
     expect(allTools.some((t) => t.name === "get-me")).toBe(false);

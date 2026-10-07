@@ -66,3 +66,9 @@ cypress.env.json
 # Cypress artifacts
 cypress/screenshots/
 cypress/videos/
+
+# agent and harness files (never commit)
+AGENTS.md
+.agents/
+.superpowers/
+.dispatch/

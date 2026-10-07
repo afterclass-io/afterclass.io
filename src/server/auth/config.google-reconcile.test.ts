@@ -87,6 +87,95 @@ describe("google jwt reconcile (legacy id self-heal)", () => {
     expect(token?.googleLinkFailed).toBe(false);
   });
 
+  it("backfills Google names in the same write as the id reconcile", async () => {
+    linkMock.mockResolvedValue({
+      accessToken: "supa-access",
+      refreshToken: "supa-refresh",
+      expiresAt: 9999999999,
+      supabaseUserId: "supa-uid",
+    });
+    usersFindUnique
+      .mockResolvedValueOnce(legacyRow)
+      .mockResolvedValueOnce(null);
+    const updated = {
+      ...legacyRow,
+      id: "supa-uid",
+      firstName: "Jordan",
+      lastName: "Teo",
+    };
+    usersUpdate.mockResolvedValue(updated);
+
+    const token = await jwt(
+      googleParams({
+        profile: {
+          email: "a@smu.edu.sg",
+          given_name: "Jordan",
+          family_name: "Teo",
+        },
+      }),
+    );
+
+    expect(usersUpdate).toHaveBeenCalledTimes(1);
+    expect(usersUpdate).toHaveBeenCalledWith({
+      where: { email: "a@smu.edu.sg" },
+      data: { id: "supa-uid", firstName: "Jordan", lastName: "Teo" },
+    });
+    expect(token?.sub).toBe("supa-uid");
+    expect(token?.user).toMatchObject({ firstName: "Jordan", lastName: "Teo" });
+  });
+
+  it("backfills names alone when no reconcile is needed", async () => {
+    linkMock.mockResolvedValue({
+      accessToken: "supa-access",
+      refreshToken: "supa-refresh",
+      expiresAt: 9999999999,
+      supabaseUserId: "random-uuid",
+    });
+    usersFindUnique.mockResolvedValue(legacyRow);
+    usersUpdate.mockResolvedValue({ ...legacyRow, firstName: "Jordan" });
+
+    const token = await jwt(
+      googleParams({
+        profile: { email: "a@smu.edu.sg", given_name: "Jordan" },
+      }),
+    );
+
+    expect(usersUpdate).toHaveBeenCalledTimes(1);
+    expect(usersUpdate).toHaveBeenCalledWith({
+      where: { id: "random-uuid" },
+      data: { firstName: "Jordan" },
+    });
+    expect(token?.user).toMatchObject({ firstName: "Jordan" });
+  });
+
+  it("never overwrites a stored name", async () => {
+    linkMock.mockRejectedValue(new Error("skip link"));
+    const errSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    try {
+      usersFindUnique.mockResolvedValue({
+        ...legacyRow,
+        firstName: "Stored",
+        lastName: "Name",
+      });
+
+      await jwt(
+        googleParams({
+          profile: {
+            email: "a@smu.edu.sg",
+            given_name: "Jordan",
+            family_name: "Teo",
+          },
+        }),
+      );
+
+      expect(usersUpdate).not.toHaveBeenCalled();
+    } finally {
+      errSpy.mockRestore();
+    }
+  });
+
   it("clears tokens fail-closed when another row owns the Supabase id", async () => {
     linkMock.mockResolvedValue({
       accessToken: "supa-access",

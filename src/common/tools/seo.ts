@@ -13,6 +13,7 @@ const DISALLOW = [
   "/account/auth/",
   "/submit",
   "/search",
+  "/meetings/",
 ];
 
 /** Absolute sitemap entry from a site-relative path. */

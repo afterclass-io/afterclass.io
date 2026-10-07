@@ -21,6 +21,7 @@ const CAPABILITIES_ANSWER = [
   "- Search courses, classes, and professors",
   "- Manage your timetables, bids, and roadmaps",
   "- Recommend bid amounts",
+  "- Find the best time for your group meetings",
   "- Help you plan your studies",
 ].join("\n");
 
@@ -30,6 +31,7 @@ const CANNED: Record<string, string> = {
     "- Search courses, classes, and professors",
     "- Manage your timetables, bids, and roadmaps",
     "- Recommend bid amounts",
+    "- Find the best time for your group meetings",
     "- Help you plan your studies",
     "You'll always find these options as buttons when you open the chat.",
   ].join("\n"),

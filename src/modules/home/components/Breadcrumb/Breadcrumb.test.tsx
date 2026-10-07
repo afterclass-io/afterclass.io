@@ -22,6 +22,19 @@ vi.mock("@/common/tools/trpc/react", () => ({
       getByCourseCode: { useQuery: () => ({ isSuccess: false, data: undefined }) },
     },
     roadmaps: { getById: { useQuery: () => ({ data: undefined }) } },
+    meetings: {
+      getPollBySlug: {
+        useQuery: ({ slug }: { slug: string }) => {
+          if (slug === "test-poll-slug") {
+            return {
+              isSuccess: true,
+              data: { poll: { title: "CS101 Project Sync" } },
+            };
+          }
+          return { isSuccess: false, data: undefined };
+        },
+      },
+    },
   },
 }));
 
@@ -50,5 +63,53 @@ describe("HomeBreadcrumb", () => {
       "/",
     );
     expect(screen.getByText("MCP")).toBeInTheDocument();
+  });
+
+  it("renders Home > Meetings on /meetings", () => {
+    mockUsePathname.mockReturnValue("/meetings");
+    render(<HomeBreadcrumb />);
+    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute(
+      "href",
+      "/",
+    );
+    expect(screen.getByText("Meetings")).toBeInTheDocument();
+  });
+
+  it("renders Home > Meetings > New Meeting on /meetings/new", () => {
+    mockUsePathname.mockReturnValue("/meetings/new");
+    render(<HomeBreadcrumb />);
+    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute(
+      "href",
+      "/",
+    );
+    expect(screen.getByRole("link", { name: "Meetings" })).toHaveAttribute(
+      "href",
+      "/meetings",
+    );
+    expect(screen.getByText("New Meeting")).toBeInTheDocument();
+  });
+
+  it("renders Home > Meetings > {Poll Title} on /meetings/[slug]", () => {
+    mockUsePathname.mockReturnValue("/meetings/test-poll-slug");
+    render(<HomeBreadcrumb />);
+    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute(
+      "href",
+      "/",
+    );
+    expect(screen.getByRole("link", { name: "Meetings" })).toHaveAttribute(
+      "href",
+      "/meetings",
+    );
+    expect(screen.getByText("CS101 Project Sync")).toBeInTheDocument();
+  });
+
+  it("renders Home > Meetings > Meeting Details fallback when title not loaded", () => {
+    mockUsePathname.mockReturnValue("/meetings/unknown-slug");
+    render(<HomeBreadcrumb />);
+    expect(screen.getByRole("link", { name: "Meetings" })).toHaveAttribute(
+      "href",
+      "/meetings",
+    );
+    expect(screen.getByText("Meeting Details")).toBeInTheDocument();
   });
 });

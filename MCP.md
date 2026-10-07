@@ -1,7 +1,7 @@
 # afterclass.io MCP server
 
 The afterclass.io Model Context Protocol (MCP) server uses mcp-use v2 and
-streamable HTTP to expose the same 50-tool catalog used by the in-app
+streamable HTTP to expose the same 55-tool catalog used by the in-app
 assistant. Production access is protected by Supabase OAuth 2.1; local
 development can use the seeded development user without Supabase.
 
@@ -9,10 +9,10 @@ development can use the seeded development user without Supabase.
 
 - `src/server/mcp/tools` is the single source of truth for the catalog. Tools
   cover courses, classes, professors, reviews, bidding, timetables, roadmaps,
-  planning, and calendar links. Read tools are annotated read-only; writes
+  planning, calendar links, and group meeting polls. Read tools are annotated read-only; writes
   return the updated plan or roadmap where useful.
 - `src/mcp/index.ts` exposes the shared server from `src/mcp/server.ts`.
-  `src/mcp/register.ts` registers 43 viewless tools; `src/mcp/view-tools/`
+  `src/mcp/register.ts` registers 48 viewless tools; `src/mcp/view-tools/`
   registers the seven view-bound tools.
 - `views/<name>/view.tsx` contains the seven MCP Apps Views: `course-search`,
   `calendar-links`, `bid-plan`, `roadmap-view`, `review-cards`,
@@ -21,8 +21,41 @@ development can use the seeded development user without Supabase.
   `structuredContent` through its output schema. The remaining tools return
   text-only MCP results. View CTAs call viewless tools dynamically; secrets
   such as calendar URLs use `_meta` and never enter model text.
-- `src/mcp/prompts.ts` provides planning and review prompts, while
+- `src/mcp/prompts.ts` provides planning, review and meeting-time prompts, while
   `src/mcp/resources.ts` provides `catalog://acad-terms`.
+
+## Page links and agent steering
+
+Every feature that points users at a page follows the same four-part pattern, so
+agents (the in-app assistant and external MCP clients) relay real links:
+
+1. Build the path with a helper in `src/server/mcp/tools/page-links.ts`
+   (`coursePage`, `bidAnalytics`, `meetingPage`, ...). Never hand-write a path.
+2. Return an absolute URL with `absoluteUrl(path)` (prefixes `NEXT_PUBLIC_SITE_URL`).
+   Text-shaped tools emit a labelled line (`Open in bid analytics: <url>`);
+   JSON-shaped tools return a `url` field (`contribute`, the meeting tools) and put
+   `PAGE_LINK_NOTE` in their description. Older relative lines (`Open timetable:
+   /timetable`, `Full reviews: /course/X`) still exist; the chat renders them, external
+   clients show plain text.
+3. Steer the chat in `SYSTEM_PROMPT` (`src/app/api/chat/route.ts`): one rule per feature
+   plus the generic "Deep-links" rule. The assistant history drops old tool results, so
+   a model that is not told "use the url the tool returned" invents pages.
+4. Steer external agents in `src/mcp/prompts.ts` (they never see `SYSTEM_PROMPT`):
+   one prompt per workflow (`plan-bidding`, `review-timetable`, `find-meeting-time`).
+
+The chat renders `http(s):`, `mailto:` and site-relative (`/path`) links; any other href
+loses its link (`src/modules/assistant/markdown.tsx`). Capability copy for new features
+goes in `src/server/assistant/canned.ts`.
+
+## Meeting tools
+
+All meeting dates and times are Singapore time (UTC+8); no tool exposes slot indices.
+Every meeting tool returns the poll's absolute `url` (see "Page links and agent steering").
+
+- `get-my-meetings`: polls the user created or joined, with `startDate`/`endDate` (YYYY-MM-DD) and `hasResponded`.
+- `get-meeting-poll-detail`: the poll window (`days`, `startHour`, `endHour`, `slotMinutes`) and each participant's availability as `{ date, start, end, status }` ranges, with `hasResponded`.
+- `suggest-meeting-times`: ranked options inside a window (`dates` or `from`/`to`, `daysOfWeek`, `earliestStart`/`latestEnd`, `requireParticipants`, `includePast`, `limit`). `durationMinutes` is optional and should only be set when the user states a meeting length; by default each option is a time window with a `tier` (`everyone-free`, `everyone-attendable`, `partial`, `none`) and a `summary` string naming who is free, if needed or unavailable. Each option names who is free, if needed, or unavailable; `bestPerDay` gives the best option for every day. Ranking: most attendees, then most fully free, then earliest. If no time works for every `requireParticipants` name, the closest options are returned with an explanatory `message`.
+- `submit-meeting-availability`: `availability: [{ date, start, end, status }]` on the poll's slot grid, with `mode` `replace` (default) or `merge`. In `merge` mode a range with `status: "unavailable"` removes those times.
 
 ## Safety and limits
 
@@ -69,7 +102,7 @@ Useful commands:
 The MCP server ships inside the web app at `/api/mcp` via the `mcp-use/next`
 embedded adapter — no separate host. `next.config.js` is wrapped with
 `withMcpUse()` (builds views, tracing, CORS with `next build`);
-`src/app/api/mcp/[[...path]]/route.ts` serves the 50-tool catalog + 7 views
+`src/app/api/mcp/[[...path]]/route.ts` serves the 55-tool catalog + 7 views
 through `createNextHandler`. The Settings connect page (`/mcp`) derives the
 public URL automatically from the request origin + `/api/mcp`, so agent
 connection links always point at the deployed route with nothing to configure.

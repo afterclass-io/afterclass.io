@@ -13,6 +13,7 @@ import { removeSlot } from "./removeSlot";
 import { setSlotSection } from "./setSlotSection";
 import { getOrCreateIcalToken } from "./getOrCreateIcalToken";
 import { revokeIcalToken } from "./revokeIcalToken";
+import { getMyTimetableDetail } from "./getMyTimetableDetail";
 
 export const timetableRouter = createTRPCRouter({
   getArrangement,
@@ -28,4 +29,5 @@ export const timetableRouter = createTRPCRouter({
   setSlotSection,
   getOrCreateIcalToken,
   revokeIcalToken,
+  getMyTimetableDetail,
 });

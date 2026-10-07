@@ -19,6 +19,7 @@ import { sharingRouter } from "@/server/api/sharing/router";
 import { timetableRouter } from "@/server/api/timetable/router";
 import { userBidsRouter } from "@/server/api/userBids/router";
 import { usersRouter } from "@/server/api/users/router";
+import { meetingsRouter } from "@/server/api/meetings/router";
 
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 
@@ -49,6 +50,7 @@ export const appRouter = createTRPCRouter({
   timetable: timetableRouter,
   userBids: userBidsRouter,
   users: usersRouter,
+  meetings: meetingsRouter,
 });
 
 // export type definition of API

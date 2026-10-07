@@ -809,6 +809,20 @@ describe("POST /api/chat", () => {
     expect(instructions).toMatch(/Open in bid explorer/);
   });
 
+  it("steers meeting-time questions to suggest-meeting-times and guards poll links", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    await POST(buildReq({ messages: [{ role: "user", content: "hi" }] }));
+    const instructions = mockStreamText.mock.calls[0]?.[0]
+      ?.instructions as string;
+    expect(instructions).toMatch(/Group meeting polls are in scope/);
+    expect(instructions).toMatch(/suggest-meeting-times/);
+    expect(instructions).toMatch(/omit durationMinutes/);
+    expect(instructions).toMatch(/'if needed' are NOT available/);
+    expect(instructions).toMatch(/Open meeting poll/);
+    expect(instructions).toMatch(/never invent poll pages/);
+    expect(instructions).toMatch(/meeting poll's url field/);
+  });
+
   // -- long planning chains must leave a round for the closing summary --
   it("tells the model to stop calling tools and summarize before the round cap", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });

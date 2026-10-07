@@ -14,6 +14,8 @@ import coursesData from "./data/3_courses.json";
 import facultiesData from "./data/2_faculties.json";
 import hackSubmissionData from "./data/20_hack_submissions.json";
 import labelsData from "./data/8_labels.json";
+import meetingParticipantsData from "./data/30_meeting_participants.json";
+import meetingPollsData from "./data/29_meeting_polls.json";
 import professorFacultiesData from "./data/6_professor_faculties.json";
 import professorsData from "./data/5_professors.json";
 import reviewLabelsData from "./data/10_review_labels.json";
@@ -159,6 +161,16 @@ async function main() {
 
   await prisma.userBid.createMany({
     data: userBidsData as Prisma.UserBidCreateManyInput[],
+  });
+
+  // === Group Meetings availability coordination seed data ===
+
+  await prisma.meetingPoll.createMany({
+    data: meetingPollsData,
+  });
+
+  await prisma.meetingParticipant.createMany({
+    data: meetingParticipantsData,
   });
 
   // Cypress E2E test user — idempotent upsert so `prisma db seed` is the

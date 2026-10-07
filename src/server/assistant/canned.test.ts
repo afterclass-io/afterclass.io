@@ -20,6 +20,13 @@ describe("canned", () => {
     ).toBeTruthy();
     expect(findCannedAnswer([userMsg("What can you do?")])).toBeTruthy();
   });
+  it("lists group meeting times among the capabilities", () => {
+    for (const q of ["What can you do?", "What are your capabilities?"]) {
+      expect(findCannedAnswer([userMsg(q)])).toContain(
+        "Find the best time for your group meetings",
+      );
+    }
+  });
   it("matches the first welcome suggestion prompt as an exact canned phrase", () => {
     // WELCOME_SUGGESTIONS[0].prompt normalizes to an explicit CANNED key so the
     // suggestion chip stays quota-free without substring matching.

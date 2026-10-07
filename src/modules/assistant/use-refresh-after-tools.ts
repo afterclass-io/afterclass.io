@@ -39,6 +39,7 @@ export function useRefreshAfterTools(
     if (targets.timetable) jobs.push(utils.timetable.invalidate());
     if (targets.userBids) jobs.push(utils.userBids.invalidate());
     if (targets.courses) jobs.push(utils.courses.invalidate());
+    if (targets.meetings) jobs.push(utils.meetings.invalidate());
     void Promise.allSettled(jobs);
   }, [status, messages, utils]);
 }
@@ -48,6 +49,7 @@ export type RefreshTargets = {
   timetable: boolean;
   userBids: boolean;
   courses: boolean;
+  meetings: boolean;
 };
 
 const ROUTER_HINTS: Array<{ roots: RegExp; target: keyof RefreshTargets }> = [
@@ -55,6 +57,7 @@ const ROUTER_HINTS: Array<{ roots: RegExp; target: keyof RefreshTargets }> = [
   { roots: /timetable/i, target: "timetable" },
   { roots: /bid/i, target: "userBids" },
   { roots: /course|professor|review/i, target: "courses" },
+  { roots: /meeting/i, target: "meetings" },
 ];
 
 /**
@@ -90,6 +93,7 @@ export function refreshTargets(messages: UIMessage[]): RefreshTargets {
     timetable: false,
     userBids: false,
     courses: false,
+    meetings: false,
   };
   for (const h of haystacks) {
     for (const { roots, target } of ROUTER_HINTS) {
@@ -98,8 +102,20 @@ export function refreshTargets(messages: UIMessage[]): RefreshTargets {
   }
   // Unrecognized turn (no tool parts, or none matching a root): keep the old
   // invalidate-everything behavior rather than silently refreshing nothing.
-  if (!hits.roadmaps && !hits.timetable && !hits.userBids && !hits.courses) {
-    return { roadmaps: true, timetable: true, userBids: true, courses: true };
+  if (
+    !hits.roadmaps &&
+    !hits.timetable &&
+    !hits.userBids &&
+    !hits.courses &&
+    !hits.meetings
+  ) {
+    return {
+      roadmaps: true,
+      timetable: true,
+      userBids: true,
+      courses: true,
+      meetings: true,
+    };
   }
   return hits;
 }

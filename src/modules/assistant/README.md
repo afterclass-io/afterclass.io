@@ -2,7 +2,7 @@
 
 The **Assistant** module powers both the floating chat widget (bottom-right, draggable/resizable) and the full-page chat at `/assistant`. Both share one hand-rolled chat stack built on the **AI SDK** (`useChat` + `DefaultChatTransport` -> `POST /api/chat`) - there is **no assistant-ui** layer and **no file upload** (the composer is text-only by design).
 
-Signed-in users can ask natural-language questions about SMU courses, professors, timetables, bids, and roadmaps. The chat answers using the same MCP skill catalog available to external AI agents, streams tool calls as live cards, and persists sessions **on this device only** (IndexedDB).
+Signed-in users can ask natural-language questions about SMU courses, professors, timetables, bids, roadmaps, and group meeting times. The chat answers using the same MCP skill catalog available to external AI agents, streams tool calls as live cards, and persists sessions **on this device only** (IndexedDB).
 
 ## Architecture
 

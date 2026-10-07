@@ -142,6 +142,9 @@ export const env = createEnv({
           process.env.NEXT_PUBLIC_VERCEL_URL),
     ),
     NEXT_PUBLIC_OLD_SITE_URL: z.url().default("https://old.afterclass.io"),
+    // Same OAuth client as GOOGLE_CLIENT_ID; its origin must be an authorised
+    // JavaScript origin so the browser can request Google Calendar tokens.
+    NEXT_PUBLIC_GOOGLE_CLIENT_ID: z.string().optional(),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
     NEXT_PUBLIC_SUPABASE_URL: z.string(),
     NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS: z
@@ -220,6 +223,7 @@ export const env = createEnv({
     CRON_SECRET: process.env.CRON_SECRET,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_OLD_SITE_URL: process.env.NEXT_PUBLIC_OLD_SITE_URL,
+    NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS:

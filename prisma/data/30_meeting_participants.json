@@ -1,0 +1,58 @@
+[
+  {
+    "id": "e4a18274-9843-4e3a-9694-555566667777",
+    "pollId": "d3b07384-d113-4603-a1c7-c752b7194601",
+    "userId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "availableSlots": [0, 1, 2, 3, 8, 9, 10, 11],
+    "ifNeededSlots": [4, 5, 12, 13]
+  },
+  {
+    "id": "f5b29385-a954-4f4b-a705-666677778888",
+    "pollId": "d3b07384-d113-4603-a1c7-c752b7194601",
+    "userId": "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e01",
+    "availableSlots": [0, 1, 8, 9, 16, 17],
+    "ifNeededSlots": [2, 3, 10, 11]
+  },
+  {
+    "id": "f5b29385-a954-4f4b-a705-666677778889",
+    "pollId": "d3b07384-d113-4603-a1c7-c752b7194601",
+    "userId": "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e02",
+    "availableSlots": [0, 1, 2, 8, 9, 10, 16, 17],
+    "ifNeededSlots": [3, 11]
+  },
+  {
+    "id": "f5b29385-a954-4f4b-a705-666677778890",
+    "pollId": "d3b07384-d113-4603-a1c7-c752b7194601",
+    "userId": "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e03",
+    "availableSlots": [8, 9, 10, 11, 16, 17],
+    "ifNeededSlots": [0, 1]
+  },
+  {
+    "id": "c7d30496-b065-4a5c-b816-777788889999",
+    "pollId": "a1c08495-e224-4714-b2d8-d863c8205712",
+    "userId": "85498973-b416-45d4-a3d1-fe8d7d2d5821",
+    "availableSlots": [4, 5, 6, 7],
+    "ifNeededSlots": []
+  },
+  {
+    "id": "d8e40597-c176-4b6d-c927-888899990001",
+    "pollId": "b7e29183-c335-4925-a3d9-e974d9316823",
+    "userId": "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e01",
+    "availableSlots": [4, 5, 12, 13, 20, 21],
+    "ifNeededSlots": [6, 14]
+  },
+  {
+    "id": "d8e40597-c176-4b6d-c927-888899990002",
+    "pollId": "b7e29183-c335-4925-a3d9-e974d9316823",
+    "userId": "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e02",
+    "availableSlots": [4, 5, 12, 20],
+    "ifNeededSlots": [13, 21]
+  },
+  {
+    "id": "d8e40597-c176-4b6d-c927-888899990003",
+    "pollId": "c8f30294-d446-4036-b4ea-f085ea427934",
+    "userId": "3f9a6c52-8d1e-4b7a-9c20-1a2b3c4d5e03",
+    "availableSlots": [0, 1, 2, 8, 9],
+    "ifNeededSlots": [3, 10]
+  }
+]

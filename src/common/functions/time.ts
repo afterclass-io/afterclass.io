@@ -38,3 +38,16 @@ export function parseTimePartsSafe(t: string): [number, number] | null {
   if (h < 0 || h > 23 || m < 0 || m > 59) return null;
   return [h, m];
 }
+
+/** Format hours and minutes as "HH:MM" (24h). */
+export function formatTimeParts(hours: number, minutes: number): string {
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+/** Format minutes since midnight as "HH:MM". */
+export function minutesToTimeString(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return formatTimeParts(h, m);
+}
+

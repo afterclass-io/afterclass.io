@@ -93,6 +93,16 @@ export const HomeBreadcrumb = (
     { code: pathSegments[1] ?? "" },
     { enabled: pathSegments[0] === "course" },
   );
+  const meetingQuery = api.meetings.getPollBySlug.useQuery(
+    { slug: pathSegments[1] ?? "" },
+    {
+      enabled:
+        pathSegments[0] === "meetings" &&
+        Boolean(pathSegments[1]) &&
+        pathSegments[1] !== "new",
+      retry: false,
+    },
+  );
 
   const elements = [HOME_BREADCRUMB];
   let isSuccess = false;
@@ -187,6 +197,28 @@ export const HomeBreadcrumb = (
           isSuccess = true;
           break;
         }
+      }
+      break;
+    }
+
+    case "meetings": {
+      if (!pathSegments[1]) {
+        elements.push({ label: "Meetings" });
+        isSuccess = true;
+      } else if (pathSegments[1] === "new") {
+        elements.push(
+          { label: "Meetings", href: "/meetings" },
+          { label: "New Meeting" },
+        );
+        isSuccess = true;
+      } else {
+        const pollTitle =
+          meetingQuery.data?.poll.title ?? "Meeting Details";
+        elements.push(
+          { label: "Meetings", href: "/meetings" },
+          { label: pollTitle },
+        );
+        isSuccess = true;
       }
       break;
     }
