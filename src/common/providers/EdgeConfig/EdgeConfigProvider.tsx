@@ -35,7 +35,19 @@ async function getFallbackConfig() {
 }
 
 export async function getEdgeConfig() {
-  return (await fetchAndValidateEdgeConfig()) ?? (await getFallbackConfig());
+  const config =
+    (await fetchAndValidateEdgeConfig()) ?? (await getFallbackConfig());
+  // The moderation switch is remote-only, and local dev usually has no working
+  // remote store, so it would stay off and hide the report buttons. Like
+  // password login, dev turns it on unless ENABLE_CONTENT_MODERATION is
+  // "false". Production never takes this branch.
+  if (
+    process.env.NODE_ENV === "development" &&
+    process.env.ENABLE_CONTENT_MODERATION !== "false"
+  ) {
+    return { ...config, enableContentModeration: true };
+  }
+  return config;
 }
 
 export async function EdgeConfigProvider({
