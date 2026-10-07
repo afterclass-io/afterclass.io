@@ -168,6 +168,9 @@ describe("moderation.report", () => {
   it("rejects an unknown surface and an empty ref", async () => {
     const caller = makeCaller(router.createCaller, dbWith(null), verified);
     await expect(
+      caller.report({ surface: "timetable" as never, ref: "x" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
       caller.report({ surface: "meeting" as never, ref: "x" }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     await expect(

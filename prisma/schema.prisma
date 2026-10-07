@@ -504,7 +504,6 @@ model UserTimetable {
   user     Users               @relation(fields: [userId], references: [id])
   acadTerm AcadTerm            @relation(fields: [acadTermId], references: [id])
   slots    UserTimetableSlot[]
-  moderationReports ModerationReport[]
 
   @@index([userId, acadTermId])
   @@map("user_timetable")
@@ -778,7 +777,6 @@ model MeetingParticipant {
 enum ModerationSurface {
   REVIEW
   ROADMAP
-  TIMETABLE
 }
 
 enum ModerationVerdict {
@@ -791,25 +789,21 @@ enum ModerationVerdict {
 /// by the CHECK `moderation_reports_exactly_one_item` in the migration.
 /// Adding a moderated surface = one more optional relation + unique + index here.
 model ModerationReport {
-  id          String   @id @default(uuid())
-  reporterId  String   @map("reporter_id")
-  reviewId    String?  @map("review_id")
-  roadmapId   String?  @map("roadmap_id")
-  timetableId String?  @map("timetable_id")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  id         String   @id @default(uuid())
+  reporterId String   @map("reporter_id")
+  reviewId   String?  @map("review_id")
+  roadmapId  String?  @map("roadmap_id")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  reporter  Users          @relation(fields: [reporterId], references: [id], onDelete: Cascade)
-  review    Reviews?       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  roadmap   UserRoadmap?   @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
-  timetable UserTimetable? @relation(fields: [timetableId], references: [id], onDelete: Cascade)
+  reporter Users        @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  review   Reviews?     @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  roadmap  UserRoadmap? @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
 
   @@unique([reviewId, reporterId])
   @@unique([roadmapId, reporterId])
-  @@unique([timetableId, reporterId])
   @@index([reporterId])
   @@index([reviewId, createdAt])
   @@index([roadmapId, createdAt])
-  @@index([timetableId, createdAt])
   @@map("moderation_reports")
 }
 

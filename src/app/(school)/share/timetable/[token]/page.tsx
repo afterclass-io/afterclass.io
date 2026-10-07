@@ -36,7 +36,6 @@ export default async function SharedTimetablePage(props: {
       timetableName={data.timetable.name}
       ownerUsername={data.timetable.ownerUsername}
       slots={data.slots}
-      token={token}
     />
   );
 }

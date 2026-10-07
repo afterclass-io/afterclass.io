@@ -19,7 +19,7 @@ export const REPORT_CONFIRMATION =
 
 export type ReportButtonProps = {
   surface: RouterInputs["moderation"]["report"]["surface"];
-  /** Review id, roadmap id, or timetable share token. */
+  /** Review id or roadmap id. */
   refId: string;
   /** Owner shown on the page; the button is hidden for that viewer. */
   ownerUsername?: string;

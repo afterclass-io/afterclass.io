@@ -3,7 +3,6 @@
 import { TimetableGrid } from "@/modules/timetable/components/TimetableGrid";
 import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
 import { PageTitle } from "@/common/components/page-title";
-import { ReportButton } from "@/modules/moderation/components/ReportButton";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -13,8 +12,6 @@ export type SharedTimetableViewProps = {
   timetableName: string;
   ownerUsername: string;
   slots: ArrangedClass[];
-  /** Share token — the report reference; the view never receives the timetable id. */
-  token: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -25,7 +22,6 @@ export function SharedTimetableView({
   timetableName,
   ownerUsername,
   slots,
-  token,
 }: SharedTimetableViewProps) {
   return (
     <div className="flex flex-col gap-6">
@@ -39,11 +35,6 @@ export function SharedTimetableView({
             by {ownerUsername}
           </p>
         </div>
-        <ReportButton
-          surface="timetable"
-          refId={token}
-          ownerUsername={ownerUsername}
-        />
       </div>
 
       {/* Grid */}

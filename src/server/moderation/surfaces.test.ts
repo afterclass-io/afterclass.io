@@ -4,7 +4,6 @@ import type { Prisma } from "@/generated/prisma/client";
 
 const hide = vi.hoisted(() => ({
   hideRoadmap: vi.fn(),
-  hideTimetable: vi.fn(),
 }));
 vi.mock("@/server/api/sharing/hide", () => hide);
 
@@ -97,36 +96,6 @@ describe("MODERATION_SURFACES", () => {
       const tx = asDb({});
       await roadmap.applyViolation(tx, "r1");
       expect(hide.hideRoadmap).toHaveBeenCalledWith(tx, "r1");
-    });
-  });
-
-  describe("timetable", () => {
-    const timetable = MODERATION_SURFACES.timetable;
-
-    it("resolves by share token, never by id", async () => {
-      const findUnique = vi
-        .fn()
-        .mockResolvedValue({ id: "t1", userId: "owner" });
-      await expect(
-        timetable.resolve(asDb({ userTimetable: { findUnique } }), "tok"),
-      ).resolves.toEqual({ itemId: "t1", ownerId: "owner" });
-      expect(findUnique).toHaveBeenCalledWith({
-        where: { shareToken: "tok", visibility: { not: "PRIVATE" } },
-        select: { id: true, userId: true },
-      });
-    });
-
-    it("judges the name only", async () => {
-      const findUnique = vi.fn().mockResolvedValue({ name: "My term" });
-      await expect(
-        timetable.readText(asDb({ userTimetable: { findUnique } }), "t1"),
-      ).resolves.toBe("Title: My term");
-    });
-
-    it("hides the timetable on violation", async () => {
-      const tx = asDb({});
-      await timetable.applyViolation(tx, "t1");
-      expect(hide.hideTimetable).toHaveBeenCalledWith(tx, "t1");
     });
   });
 });

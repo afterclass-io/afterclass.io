@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, inject, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 // Point the module-level clients (used by runModeration and
 // checkAndIncrement) at the Testcontainers database.
@@ -224,41 +224,6 @@ describe("runModeration against Postgres", () => {
       publishedAt: null,
       shareToken: null,
       slug: null,
-    });
-  });
-
-  it("a violating shared timetable loses its share link and calendar feed", async () => {
-    const timetable = await db.userTimetable.create({
-      data: {
-        userId: authorId,
-        acadTermId: inject("acadTermId"),
-        name: "bad name",
-        visibility: "UNLISTED",
-        shareToken: `tok-${crypto.randomUUID()}`,
-        icalToken: `ical-${crypto.randomUUID()}`,
-      },
-    });
-    for (let i = 0; i < 3; i++) {
-      const reporter = await seedUser(db);
-      await db.moderationReport.create({
-        data: { reporterId: reporter.id, timetableId: timetable.id },
-      });
-    }
-
-    await expect(
-      runModeration(
-        { surface: "timetable", itemId: timetable.id },
-        cfg,
-        async () => violation,
-      ),
-    ).resolves.toBe("violation");
-
-    await expect(
-      db.userTimetable.findUniqueOrThrow({ where: { id: timetable.id } }),
-    ).resolves.toMatchObject({
-      visibility: "PRIVATE",
-      shareToken: null,
-      icalToken: null,
     });
   });
 });

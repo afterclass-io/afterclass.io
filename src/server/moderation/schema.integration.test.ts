@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { beforeAll, describe, expect, inject, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { ReviewType } from "@/generated/prisma/enums";
 import {
@@ -116,23 +116,6 @@ describe("cascades", () => {
     await db.userRoadmap.delete({ where: { id: roadmap.id } });
     expect(
       await db.moderationReport.count({ where: { roadmapId: roadmap.id } }),
-    ).toBe(0);
-  });
-
-  it("deleting a timetable removes its reports", async () => {
-    const timetable = await db.userTimetable.create({
-      data: {
-        userId: authorId,
-        acadTermId: inject("acadTermId"),
-        name: "Timetable",
-      },
-    });
-    await db.moderationReport.create({
-      data: { reporterId, timetableId: timetable.id },
-    });
-    await db.userTimetable.delete({ where: { id: timetable.id } });
-    expect(
-      await db.moderationReport.count({ where: { timetableId: timetable.id } }),
     ).toBe(0);
   });
 

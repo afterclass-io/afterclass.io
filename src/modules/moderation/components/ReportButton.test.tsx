@@ -77,10 +77,10 @@ describe("ReportButton", () => {
 
   it("reports the item on click", async () => {
     render(
-      <ReportButton surface="timetable" refId="tok" ownerUsername="someone" />,
+      <ReportButton surface="roadmap" refId="r1" ownerUsername="someone" />,
     );
     await userEvent.click(screen.getByRole("button", { name: "Report" }));
-    expect(m.mutate).toHaveBeenCalledWith({ surface: "timetable", ref: "tok" });
+    expect(m.mutate).toHaveBeenCalledWith({ surface: "roadmap", ref: "r1" });
   });
 
   it("shows the same confirmation for success and for an unverified reporter", () => {

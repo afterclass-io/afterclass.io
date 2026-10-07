@@ -1,6 +1,6 @@
 import type { Prisma } from "@/generated/prisma/client";
 import { ModerationSurface, Visibility } from "@/generated/prisma/enums";
-import { hideRoadmap, hideTimetable } from "@/server/api/sharing/hide";
+import { hideRoadmap } from "@/server/api/sharing/hide";
 
 type Db = Prisma.TransactionClient;
 
@@ -33,7 +33,7 @@ export type SurfaceAdapter = {
   applyViolation(db: Db, itemId: string): Promise<void>;
 };
 
-export const REPORT_SURFACES = ["review", "roadmap", "timetable"] as const;
+export const REPORT_SURFACES = ["review", "roadmap"] as const;
 export type ReportSurface = (typeof REPORT_SURFACES)[number];
 
 export const MODERATION_SURFACES: Record<ReportSurface, SurfaceAdapter> = {
@@ -88,28 +88,5 @@ export const MODERATION_SURFACES: Record<ReportSurface, SurfaceAdapter> = {
         : `Title: ${row.name}`;
     },
     applyViolation: (db, itemId) => hideRoadmap(db, itemId),
-  },
-  timetable: {
-    surface: ModerationSurface.TIMETABLE,
-    label: "shared timetable name",
-    resolve: async (db, ref) => {
-      // ref is the share token: timetables are link-shared only and the
-      // shared view never receives the timetable id.
-      const row = await db.userTimetable.findUnique({
-        where: { shareToken: ref, visibility: { not: Visibility.PRIVATE } },
-        select: { id: true, userId: true },
-      });
-      return row && { itemId: row.id, ownerId: row.userId };
-    },
-    reportsFor: (itemId) => ({ timetableId: itemId }),
-    reportData: (reporterId, itemId) => ({ reporterId, timetableId: itemId }),
-    readText: async (db, itemId) => {
-      const row = await db.userTimetable.findUnique({
-        where: { id: itemId },
-        select: { name: true },
-      });
-      return row ? `Title: ${row.name}` : null;
-    },
-    applyViolation: (db, itemId) => hideTimetable(db, itemId),
   },
 };
