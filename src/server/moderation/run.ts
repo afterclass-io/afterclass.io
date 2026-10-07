@@ -153,7 +153,7 @@ export async function runModeration(
 }
 
 /** The production judge: the moderation-purpose model, configured timeout. */
-export function createModerationJudge(timeoutMs: number = 90_000): Judge {
+export function createModerationJudge(timeoutMs = 90_000): Judge {
   return async (input) => {
     let model: Awaited<ReturnType<typeof getModel>>;
     try {
