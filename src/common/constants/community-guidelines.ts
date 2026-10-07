@@ -9,6 +9,7 @@ export const POLICY_RULE_IDS = [
   "personal_info",
   "sexual",
   "spam",
+  "unjustified_rating",
 ] as const;
 
 export type PolicyRuleId = (typeof POLICY_RULE_IDS)[number];
@@ -43,7 +44,12 @@ export const POLICY_RULES: Record<
   spam: {
     title: "Spam",
     description:
-      "Advertising, promotion, or text unrelated to the course, professor, roadmap or timetable.",
+      "Advertising, promotion, or text unrelated to the course, professor or roadmap.",
+  },
+  unjustified_rating: {
+    title: "Unjustified rating",
+    description:
+      "A rating that clearly contradicts what the review says, or an extreme rating with no reason or with text unrelated to the course or professor.",
   },
 };
 

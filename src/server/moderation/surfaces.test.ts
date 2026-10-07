@@ -43,13 +43,30 @@ describe("MODERATION_SURFACES", () => {
       ).resolves.toBeNull();
     });
 
-    it("labels body and tips for the judge", async () => {
-      const findUnique = vi
-        .fn()
-        .mockResolvedValue({ body: "Body text", tips: "Tip text" });
+    it("labels rating, body and tips for the judge", async () => {
+      const findUnique = vi.fn().mockResolvedValue({
+        rating: 4,
+        body: "Body text",
+        tips: "Tip text",
+      });
       await expect(
         review.readText(asDb({ reviews: { findUnique } }), "rv1"),
-      ).resolves.toBe("Review:\nBody text\n\nTips:\nTip text");
+      ).resolves.toBe("Rating: 4 out of 5\nReview:\nBody text\n\nTips:\nTip text");
+      expect(findUnique).toHaveBeenCalledWith({
+        where: { id: "rv1" },
+        select: { rating: true, body: true, tips: true },
+      });
+    });
+
+    it("labels rating and body when tips are absent", async () => {
+      const findUnique = vi.fn().mockResolvedValue({
+        rating: 1,
+        body: "Body text",
+        tips: null,
+      });
+      await expect(
+        review.readText(asDb({ reviews: { findUnique } }), "rv1"),
+      ).resolves.toBe("Rating: 1 out of 5\nReview:\nBody text");
     });
 
     it("deletes the review on violation (idempotent)", async () => {

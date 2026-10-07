@@ -52,12 +52,13 @@ export const MODERATION_SURFACES: Record<ReportSurface, SurfaceAdapter> = {
     readText: async (db, itemId) => {
       const row = await db.reviews.findUnique({
         where: { id: itemId },
-        select: { body: true, tips: true },
+        select: { rating: true, body: true, tips: true },
       });
       if (!row) return null;
-      return row.tips
+      const content = row.tips
         ? `Review:\n${row.body}\n\nTips:\n${row.tips}`
         : `Review:\n${row.body}`;
+      return `Rating: ${row.rating} out of 5\n${content}`;
     },
     applyViolation: async (db, itemId) => {
       // Cascades to votes, labels, events, reactions and reports. Ratings are

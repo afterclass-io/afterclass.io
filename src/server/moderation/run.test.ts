@@ -72,7 +72,7 @@ beforeEach(() => {
   givenClearances(0);
   m.count.mockResolvedValue(3);
   m.checkAndIncrement.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
-  m.findUnique.mockResolvedValue({ body: "Body", tips: null });
+  m.findUnique.mockResolvedValue({ rating: 5, body: "Body", tips: null });
 });
 
 describe("runModeration", () => {
@@ -160,14 +160,14 @@ describe("runModeration", () => {
     await runModeration(target, cfg, judge);
     expect(judge).toHaveBeenCalledWith({
       surfaceLabel: "anonymous course or professor review",
-      text: "Review:\nBody",
+      text: "Rating: 5 out of 5\nReview:\nBody",
     });
   });
 
   it("sends the head and tail of long text to the judge but logs the full removed text", async () => {
     const half = MAX_JUDGE_TEXT_CHARS / 2;
     const long = `${"a".repeat(half * 2)}${"m".repeat(5_000)}ABUSE`;
-    m.findUnique.mockResolvedValue({ body: long, tips: null });
+    m.findUnique.mockResolvedValue({ rating: 5, body: long, tips: null });
     const judge = vi.fn<Judge>().mockResolvedValue({
       kind: "violation",
       policyRule: "hate",
@@ -176,7 +176,7 @@ describe("runModeration", () => {
       model: "m",
     });
     await runModeration(target, cfg, judge);
-    const full = `Review:\n${long}`;
+    const full = `Rating: 5 out of 5\nReview:\n${long}`;
     const sent = judge.mock.calls[0]![0].text;
     expect(sent).toBe(
       full.slice(0, half) + JUDGE_TRUNCATION_MARKER + full.slice(-half),
@@ -192,11 +192,15 @@ describe("runModeration", () => {
   });
 
   it("sends text at the cap to the judge unchanged", async () => {
-    const body = "y".repeat(MAX_JUDGE_TEXT_CHARS - "Review:\n".length);
-    m.findUnique.mockResolvedValue({ body, tips: null });
+    const body = "y".repeat(
+      MAX_JUDGE_TEXT_CHARS - "Rating: 5 out of 5\nReview:\n".length,
+    );
+    m.findUnique.mockResolvedValue({ rating: 5, body, tips: null });
     const judge = vi.fn<Judge>().mockResolvedValue(cleared);
     await runModeration(target, cfg, judge);
-    expect(judge.mock.calls[0]![0].text).toBe(`Review:\n${body}`);
+    expect(judge.mock.calls[0]![0].text).toBe(
+      `Rating: 5 out of 5\nReview:\n${body}`,
+    );
   });
 
   it("on violation deletes and logs the removed text in one transaction", async () => {
@@ -218,7 +222,7 @@ describe("runModeration", () => {
         language: "ms",
         rationale: "slur",
         model: "m",
-        removedText: "Review:\nBody",
+        removedText: "Rating: 5 out of 5\nReview:\nBody",
       },
     });
     expect(m.logCreate).not.toHaveBeenCalled();

@@ -1,3 +1,5 @@
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { Prisma } from "@/generated/prisma/client";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
@@ -143,5 +145,27 @@ describe("reviews.create", () => {
     await expect(caller.create(courseOnlyInput())).rejects.toMatchObject({
       code: "INTERNAL_SERVER_ERROR",
     });
+  });
+
+  it("never imports from moderation and triggers no judge call or moderation run", async () => {
+    const source = fs.readFileSync(
+      path.resolve(__dirname, "./index.ts"),
+      "utf-8",
+    );
+    expect(source).not.toMatch(/from\s+["'].*moderation/);
+
+    const dbMock = makeDbMock();
+    dbMock.courses.findFirst.mockResolvedValue({
+      id: "course-1",
+      belongToFacultyId: 1,
+      belongToUniversityId: 2,
+    });
+    dbMock.reviews.create.mockResolvedValue({ id: "review-1" });
+    const caller = makeCaller(router.createCaller, dbMock);
+    await caller.create(courseOnlyInput());
+
+    expect(dbMock.reviews.create).toHaveBeenCalledOnce();
+    expect(dbMock).not.toHaveProperty("moderationReport");
+    expect(dbMock).not.toHaveProperty("moderationLog");
   });
 });

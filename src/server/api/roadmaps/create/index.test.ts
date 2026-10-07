@@ -1,3 +1,5 @@
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { makeCaller } from "@/server/api/trpc-test-helpers";
@@ -48,5 +50,23 @@ describe("roadmaps.create", () => {
       caller.create({ name: "x".repeat(101) }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     expect(dbMock.userRoadmap.create).not.toHaveBeenCalled();
+  });
+
+  it("never imports from moderation and triggers no judge call or moderation run", async () => {
+    const source = fs.readFileSync(
+      path.resolve(__dirname, "./index.ts"),
+      "utf-8",
+    );
+    expect(source).not.toMatch(/from\s+["'].*moderation/);
+
+    const dbMock = {
+      userRoadmap: { create: vi.fn().mockResolvedValue({ id: "r1" }) },
+    };
+    const caller = makeCaller(router.createCaller, dbMock);
+    await caller.create({ name: "Plan" });
+
+    expect(dbMock.userRoadmap.create).toHaveBeenCalledOnce();
+    expect(dbMock).not.toHaveProperty("moderationReport");
+    expect(dbMock).not.toHaveProperty("moderationLog");
   });
 });
