@@ -41,7 +41,7 @@ describe("chat config schema", () => {
     expect(parsed.mcpEnabled).toBe(false);
   });
 
-  it("defaults enableContentModeration to false when the remote config lacks it", () => {
+  it("defaults enableContentModeration to true when the remote config lacks it", () => {
     const parsed = edgeConfigSchema.parse({
       enableAnnouncementBanner: true,
       enableCmdkTooltip: true,
@@ -49,6 +49,19 @@ describe("chat config schema", () => {
       enableReviewSort: true,
       enableReviewFilter: true,
       enableReviewReactions: true,
+    });
+    expect(parsed.enableContentModeration).toBe(true);
+  });
+
+  it("turns moderation off only when the remote config sets it to false", () => {
+    const parsed = edgeConfigSchema.parse({
+      enableAnnouncementBanner: true,
+      enableCmdkTooltip: true,
+      enableReviewEventsTracking: true,
+      enableReviewSort: true,
+      enableReviewFilter: true,
+      enableReviewReactions: true,
+      enableContentModeration: false,
     });
     expect(parsed.enableContentModeration).toBe(false);
   });

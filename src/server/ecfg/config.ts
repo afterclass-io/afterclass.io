@@ -58,11 +58,12 @@ export const edgeConfigSchema = z.object({
   // Gates password (Credentials provider) login. Defaults to false
   // (Google-only auth); flipped on via remote Edge Config when needed.
   enablePasswordLogin: z.boolean().default(false),
-  // Master switch for report-driven content moderation. Defaults to false so
-  // a remote config without the key still parses (a new required key would
-  // fail validation and discard the whole remote config). Remote-only: no
-  // env override, so it cannot be bypassed.
-  enableContentModeration: z.boolean().default(false),
+  // Master switch for report-driven content moderation. Defaults to true:
+  // moderation is on unless the remote config sets it to false. It is also
+  // optional so a remote config without the key still parses (a new required
+  // key would fail validation and discard the whole remote config).
+  // Remote-only: no env override, so it cannot be bypassed.
+  enableContentModeration: z.boolean().default(true),
   // A config whose remote Edge Config hasn't been updated with `chat` yet must
   // still parse. NOTE (zod 4.5+): an inner schema's `.default()` is now applied
   // even when the key is absent/undefined, so `chat` is always populated (with
