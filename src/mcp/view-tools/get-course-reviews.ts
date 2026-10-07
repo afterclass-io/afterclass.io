@@ -1,6 +1,6 @@
 import { server } from "../server";
 import { coursePage } from "@/server/mcp/tools/page-links";
-import { censorProfanity } from "@/common/functions";
+import { censorProfanity } from "@/common/functions/profanity";
 import { asSchema } from "../schema";
 import { reviewCardsOutput } from "./schemas";
 import { runViewTool } from "./results";

@@ -13,8 +13,15 @@ import * as nextServer from "next/server";
  */
 export function runAfterResponse(task: () => Promise<void>): void {
   try {
-    nextServer.after(task);
+    const afterFn = Reflect.get(nextServer, "after") as
+      | ((task: () => Promise<void>) => void)
+      | undefined;
+    if (typeof afterFn === "function") {
+      afterFn(task);
+      return;
+    }
   } catch {
-    void task();
+    // outside a request scope
   }
+  void task();
 }

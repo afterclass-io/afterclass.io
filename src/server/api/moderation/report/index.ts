@@ -7,7 +7,6 @@ import { runAfterResponse } from "@/server/after-response";
 import { verifiedProcedure } from "@/server/api/trpc";
 import { checkAndIncrement } from "@/server/assistant/ratelimit";
 import { getChatConfigAsync } from "@/server/config/chat-config";
-import { runModerationTask } from "@/server/moderation/run";
 import {
   MODERATION_SURFACES,
   REPORT_SURFACES,
@@ -73,9 +72,10 @@ export const report = verifiedProcedure
       throw error;
     }
     if (count > 0) {
-      runAfterResponse(() =>
-        runModerationTask({ surface: input.surface, itemId: item.itemId }),
-      );
+      runAfterResponse(async () => {
+        const { runModerationTask } = await import("@/server/moderation/run");
+        await runModerationTask({ surface: input.surface, itemId: item.itemId });
+      });
     }
     return REPORT_ACK;
   });
