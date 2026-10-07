@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Script from "next/script";
 import { useSession } from "next-auth/react";
 import { useAtom } from "jotai";
 import { Check, Loader2 } from "lucide-react";
@@ -68,6 +69,7 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
       await utils.meetings.getPollBySlug.invalidate({ slug });
       await utils.meetings.listMyMeetings.invalidate();
     },
+    onError: (err) => toast.error(err.message || "Could not join this meeting"),
   });
   const hasJoined = participants.some((p) => p.isCurrentUser);
   useEffect(() => {
@@ -235,6 +237,10 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
 
   return (
     <div className="flex flex-col gap-2">
+      {/* Google Identity Services, used by the Google Calendar sync. */}
+      {isSignedIn && (
+        <Script src="https://accounts.google.com/gsi/client" strategy="lazyOnload" />
+      )}
       <MeetingRoomHeader
         title={poll.title}
         description={poll.description}

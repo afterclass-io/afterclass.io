@@ -94,6 +94,54 @@ describe("mapGoogleEventsToSlots (pure algorithm)", () => {
     expect(overlayEvents).toHaveLength(0);
   });
 
+  it("does not block slots for events marked free or not accepted by the viewer", () => {
+    const at = (summary: string, extra: Partial<GoogleCalendarEventItem>) => ({
+      summary,
+      start: { dateTime: "2026-10-06T09:00:00+08:00" },
+      end: { dateTime: "2026-10-06T10:00:00+08:00" },
+      ...extra,
+    });
+
+    const { blockedSlots, overlayEvents } = mapGoogleEventsToSlots({
+      events: [
+        at("Shown as free", { transparency: "transparent" }),
+        at("Declined", { attendees: [{ self: true, responseStatus: "declined" }] }),
+        at("Not answered", { attendees: [{ self: true, responseStatus: "needsAction" }] }),
+      ],
+      startDate: "2026-10-06",
+      endDate: "2026-10-06",
+    });
+
+    expect(blockedSlots.size).toBe(0);
+    expect(overlayEvents).toHaveLength(0);
+  });
+
+  it("blocks slots for accepted invites and events without a self attendee", () => {
+    const { overlayEvents } = mapGoogleEventsToSlots({
+      events: [
+        {
+          summary: "Accepted",
+          start: { dateTime: "2026-10-06T09:00:00+08:00" },
+          end: { dateTime: "2026-10-06T10:00:00+08:00" },
+          attendees: [
+            { responseStatus: "declined" },
+            { self: true, responseStatus: "accepted" },
+          ],
+        },
+        {
+          summary: "Own event",
+          start: { dateTime: "2026-10-06T11:00:00+08:00" },
+          end: { dateTime: "2026-10-06T12:00:00+08:00" },
+          transparency: "opaque",
+        },
+      ],
+      startDate: "2026-10-06",
+      endDate: "2026-10-06",
+    });
+
+    expect(overlayEvents.map((event) => event.title)).toEqual(["Accepted", "Own event"]);
+  });
+
   it("ignores malformed events with missing or invalid dates", () => {
     const malformedEvents: GoogleCalendarEventItem[] = [
       { summary: "No start", end: { dateTime: "2026-10-06T10:00:00Z" } },
@@ -220,6 +268,155 @@ describe("useGoogleCalendarOverlay (hook & timeout invariant)", () => {
     );
     expect(result.current.isSyncing).toBe(false);
     expect(result.current.error).toContain("403");
+  });
+
+  it("requests only regular and out-of-office events with a trimmed field mask", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ items: [] }),
+    });
+
+    const { result } = renderHook(() =>
+      useGoogleCalendarOverlay({ startDate: "2026-10-06", endDate: "2026-10-06" }),
+    );
+    await act(async () => {
+      await result.current.syncCalendar("mock-token");
+    });
+
+    const url = new URL((globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0]![0] as string);
+    expect(url.searchParams.get("singleEvents")).toBe("true");
+    expect(url.searchParams.getAll("eventTypes")).toEqual(["default", "outOfOffice"]);
+    expect(url.searchParams.get("fields")).toContain("nextPageToken");
+  });
+
+  it("follows nextPageToken until every page is read", async () => {
+    const event = (summary: string, hour: number): GoogleCalendarEventItem => ({
+      summary,
+      start: { dateTime: `2026-10-06T${String(hour).padStart(2, "0")}:00:00+08:00` },
+      end: { dateTime: `2026-10-06T${String(hour + 1).padStart(2, "0")}:00:00+08:00` },
+    });
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ items: [event("First page", 9)], nextPageToken: "page-2" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ items: [event("Second page", 11)] }),
+      });
+
+    const { result } = renderHook(() =>
+      useGoogleCalendarOverlay({ startDate: "2026-10-06", endDate: "2026-10-06" }),
+    );
+    await act(async () => {
+      await result.current.syncCalendar("mock-token");
+    });
+
+    const calls = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls;
+    expect(calls).toHaveLength(2);
+    expect(new URL(calls[1]![0] as string).searchParams.get("pageToken")).toBe("page-2");
+    expect(result.current.googleEvents.map((e) => e.title)).toEqual([
+      "First page",
+      "Second page",
+    ]);
+  });
+
+  describe("Google Identity Services token flow", () => {
+    type TokenConfig = Parameters<
+      NonNullable<NonNullable<NonNullable<Window["google"]>["accounts"]>["oauth2"]>["initTokenClient"]
+    >[0];
+
+    const installGis = (granted = true) => {
+      const requestAccessToken = vi.fn();
+      const initTokenClient = vi.fn((config: TokenConfig) => ({ requestAccessToken, config }));
+      window.google = {
+        accounts: {
+          oauth2: { initTokenClient, hasGrantedAllScopes: vi.fn(() => granted) },
+        },
+      };
+      return { initTokenClient, requestAccessToken };
+    };
+
+    afterEach(() => {
+      delete window.google;
+    });
+
+    const renderOverlay = () =>
+      renderHook(() =>
+        useGoogleCalendarOverlay({
+          startDate: "2026-10-06",
+          endDate: "2026-10-06",
+          clientId: "test-client",
+        }),
+      );
+
+    it("asks the user to retry while the GIS script has not loaded", async () => {
+      const { result } = renderOverlay();
+      await act(async () => {
+        await result.current.syncCalendar();
+      });
+      expect(toast.error).toHaveBeenCalledWith(
+        "Google sign-in is still loading. Try again in a moment.",
+      );
+      expect(result.current.isSyncing).toBe(false);
+    });
+
+    it("requests a read-only calendar token and syncs once granted", async () => {
+      const { initTokenClient, requestAccessToken } = installGis();
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ items: [] }),
+      });
+      const { result } = renderOverlay();
+
+      await act(async () => {
+        await result.current.syncCalendar();
+      });
+      expect(requestAccessToken).toHaveBeenCalledTimes(1);
+      const config = initTokenClient.mock.calls[0]![0];
+      expect(config.client_id).toBe("test-client");
+      expect(config.scope).toBe("https://www.googleapis.com/auth/calendar.events.readonly");
+
+      await act(async () => {
+        config.callback({ access_token: "gis-token" });
+      });
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/calendars/primary/events"),
+        expect.objectContaining({ headers: { Authorization: "Bearer gis-token" } }),
+      );
+      expect(result.current.isConnected).toBe(true);
+    });
+
+    it("stops syncing when the consent popup is closed", async () => {
+      const { initTokenClient } = installGis();
+      const { result } = renderOverlay();
+      await act(async () => {
+        await result.current.syncCalendar();
+      });
+      expect(result.current.isSyncing).toBe(true);
+
+      act(() => {
+        initTokenClient.mock.calls[0]![0].error_callback?.({ type: "popup_closed" });
+      });
+      expect(result.current.isSyncing).toBe(false);
+    });
+
+    it("does not fetch when the user unticks the calendar permission", async () => {
+      const { initTokenClient } = installGis(false);
+      globalThis.fetch = vi.fn();
+      const { result } = renderOverlay();
+      await act(async () => {
+        await result.current.syncCalendar();
+      });
+
+      act(() => {
+        initTokenClient.mock.calls[0]![0].callback({ access_token: "partial-token" });
+      });
+      expect(globalThis.fetch).not.toHaveBeenCalled();
+      expect(result.current.isSyncing).toBe(false);
+      expect(result.current.error).toBe("Calendar access was not granted");
+    });
   });
 
   it("clears events when clearEvents is called", async () => {

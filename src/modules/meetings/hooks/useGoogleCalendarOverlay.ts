@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { env } from "@/env";
 import { generateDateRange } from "@/modules/meetings/utils/matrix";
 
 export interface GoogleCalendarEventItem {
@@ -17,6 +18,32 @@ export interface GoogleCalendarEventItem {
     date?: string;
     timeZone?: string;
   };
+  transparency?: string;
+  attendees?: { self?: boolean; responseStatus?: string }[];
+}
+
+/** Read-only access to the viewer's calendar events; nothing is stored server-side. */
+export const GOOGLE_CALENDAR_SCOPE =
+  "https://www.googleapis.com/auth/calendar.events.readonly";
+
+const CALENDAR_EVENTS_URL =
+  "https://www.googleapis.com/calendar/v3/calendars/primary/events";
+
+// Ask Google for only the fields we read; the rest of each event stays put.
+const EVENT_FIELDS =
+  "nextPageToken,items(id,summary,start,end,transparency,attendees(self,responseStatus))";
+
+// Google returns 250 events per page; two weeks of calendar fits in a few pages.
+const MAX_EVENT_PAGES = 10;
+
+/**
+ * Mirrors Timeful: an event leaves the viewer free when it is marked "Show as
+ * free", or when the viewer is an invitee who has not accepted it.
+ */
+function isFreeEvent(event: GoogleCalendarEventItem): boolean {
+  if (event.transparency === "transparent") return true;
+  const self = event.attendees?.find((attendee) => attendee.self);
+  return self !== undefined && self.responseStatus !== "accepted";
 }
 
 export interface GoogleOverlayEvent {
@@ -76,6 +103,8 @@ export function mapGoogleEventsToSlots({
   }
 
   for (const event of events) {
+    if (isFreeEvent(event)) continue;
+
     let eventStart: Date | null = null;
     let eventEnd: Date | null = null;
 
@@ -155,7 +184,12 @@ export interface UseGoogleCalendarOverlayReturn {
   clearEvents: () => void;
 }
 
-// Global declaration for Google Identity Services
+interface GoogleTokenResponse {
+  access_token?: string;
+  error?: string;
+}
+
+// Global declaration for Google Identity Services (https://accounts.google.com/gsi/client)
 declare global {
   interface Window {
     google?: {
@@ -164,10 +198,16 @@ declare global {
           initTokenClient: (config: {
             client_id: string;
             scope: string;
-            callback: (response: { access_token?: string; error?: unknown }) => void;
+            callback: (response: GoogleTokenResponse) => void;
+            error_callback?: (error: { type: string }) => void;
           }) => {
             requestAccessToken: (overrideConfig?: { prompt?: string }) => void;
           };
+          hasGrantedAllScopes: (
+            response: GoogleTokenResponse,
+            firstScope: string,
+            ...restScopes: string[]
+          ) => boolean;
         };
       };
     };
@@ -229,21 +269,40 @@ export function useGoogleCalendarOverlay({
         const timeMin = new Date(`${startIso}T00:00:00+08:00`).toISOString();
         const timeMax = new Date(`${endIso}T23:59:59.999+08:00`).toISOString();
 
-        const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(
-          timeMin,
-        )}&timeMax=${encodeURIComponent(timeMax)}&singleEvents=true`;
+        const items: GoogleCalendarEventItem[] = [];
+        let pageToken: string | undefined;
 
-        const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}` },
-          signal: controller.signal,
-        });
+        for (let page = 0; page < MAX_EVENT_PAGES; page++) {
+          const params = new URLSearchParams({
+            timeMin,
+            timeMax,
+            singleEvents: "true",
+            maxResults: "250",
+            fields: EVENT_FIELDS,
+          });
+          // Regular and out-of-office events only: focus time, working
+          // location and birthdays would otherwise block whole days.
+          params.append("eventTypes", "default");
+          params.append("eventTypes", "outOfOffice");
+          if (pageToken) params.set("pageToken", pageToken);
 
-        if (!res.ok) {
-          throw new Error(`Google Calendar API responded with status ${res.status}`);
+          const res = await fetch(`${CALENDAR_EVENTS_URL}?${params.toString()}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: controller.signal,
+          });
+
+          if (!res.ok) {
+            throw new Error(`Google Calendar API responded with status ${res.status}`);
+          }
+
+          const data = (await res.json()) as {
+            items?: GoogleCalendarEventItem[];
+            nextPageToken?: string;
+          };
+          items.push(...(data.items ?? []));
+          pageToken = data.nextPageToken;
+          if (!pageToken) break;
         }
-
-        const data = (await res.json()) as { items?: GoogleCalendarEventItem[] };
-        const items = data.items ?? [];
 
         const { blockedSlots: mappedBlocked, overlayEvents: mappedEvents } =
           mapGoogleEventsToSlots({
@@ -292,43 +351,54 @@ export function useGoogleCalendarOverlay({
       }
 
       // Client-side GIS flow
-      const effectiveClientId =
-        clientId ??
-        (typeof process !== "undefined" ? process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID : undefined);
+      const effectiveClientId = clientId ?? env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+      const oauth2 =
+        typeof window === "undefined" ? undefined : window.google?.accounts?.oauth2;
 
-      if (
-        typeof window !== "undefined" &&
-        window.google?.accounts?.oauth2 &&
-        effectiveClientId
-      ) {
-        setIsSyncing(true);
-        try {
-          const tokenClient = window.google.accounts.oauth2.initTokenClient({
-            client_id: effectiveClientId,
-            scope: "https://www.googleapis.com/auth/calendar.events.readonly",
-            callback: (response) => {
-              if (response.error) {
-                setIsSyncing(false);
-                setError("Google Calendar authorization was cancelled or failed");
-                toast.error("Google Calendar authorization was cancelled");
-                return;
-              }
-              if (response.access_token) {
-                void fetchCalendarEvents(response.access_token);
-              } else {
-                setIsSyncing(false);
-              }
-            },
-          });
-          tokenClient.requestAccessToken({ prompt: "" });
-        } catch (initErr) {
-          setIsSyncing(false);
-          const msg = initErr instanceof Error ? initErr.message : "Could not initialize Google client";
-          setError(msg);
-          toast.error(msg);
-        }
-      } else {
-        toast.error("Google Calendar integration is not available in this environment.");
+      if (!effectiveClientId) {
+        toast.error("Google Calendar sync is not configured.");
+        return;
+      }
+      if (!oauth2) {
+        toast.error("Google sign-in is still loading. Try again in a moment.");
+        return;
+      }
+
+      setIsSyncing(true);
+      try {
+        const tokenClient = oauth2.initTokenClient({
+          client_id: effectiveClientId,
+          scope: GOOGLE_CALENDAR_SCOPE,
+          callback: (response) => {
+            if (response.error || !response.access_token) {
+              setIsSyncing(false);
+              setError("Google Calendar authorization was cancelled or failed");
+              toast.error("Google Calendar authorization was cancelled");
+              return;
+            }
+            // The consent screen lets people untick individual scopes.
+            if (!oauth2.hasGrantedAllScopes(response, GOOGLE_CALENDAR_SCOPE)) {
+              setIsSyncing(false);
+              setError("Calendar access was not granted");
+              toast.error("Allow access to calendar events to sync your Google Calendar");
+              return;
+            }
+            void fetchCalendarEvents(response.access_token);
+          },
+          // The callback never fires when the popup is closed or blocked.
+          error_callback: (popupError) => {
+            setIsSyncing(false);
+            if (popupError.type === "popup_failed_to_open") {
+              toast.error("Allow pop-ups for this site to connect Google Calendar");
+            }
+          },
+        });
+        tokenClient.requestAccessToken();
+      } catch (initErr) {
+        setIsSyncing(false);
+        const msg = initErr instanceof Error ? initErr.message : "Could not initialize Google client";
+        setError(msg);
+        toast.error(msg);
       }
     },
     [clientId, fetchCalendarEvents],
