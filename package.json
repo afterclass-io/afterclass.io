@@ -101,7 +101,7 @@
     "recharts": "^3.10.1",
     "remark-gfm": "^4.0.1",
     "server-only": "0.0.1",
-    "sharp": "0.35.4",
+    "sharp": "0.35.5",
     "sonner": "^2.0.8",
     "superjson": "2.2.6",
     "tailwind-merge": "^3.6.0",
