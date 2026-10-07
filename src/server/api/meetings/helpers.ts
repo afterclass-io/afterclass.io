@@ -10,6 +10,7 @@ import {
 import { meetingLinksSchema } from "@/modules/meetings/functions/meeting-links";
 import {
   MAX_AGENDA_LENGTH,
+  MAX_MEETING_PARTICIPANTS,
   MAX_POLL_DAYS,
   MAX_POLL_SLOTS,
 } from "@/modules/meetings/functions/meeting-limits";
@@ -73,6 +74,30 @@ export function assertValidWindow(input: CreatePollInput, term: AcadTermSummary)
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "Start hour must be earlier than end hour",
+    });
+  }
+}
+
+/**
+ * Rejects a user who would become the poll's 11th participant. Users already
+ * in the poll always pass so they can keep editing their availability.
+ */
+export async function assertParticipantCapacity(
+  db: PrismaClient,
+  pollId: string,
+  userId: string,
+): Promise<void> {
+  const existing = await db.meetingParticipant.findUnique({
+    where: { pollId_userId: { pollId, userId } },
+    select: { id: true },
+  });
+  if (existing) return;
+
+  const count = await db.meetingParticipant.count({ where: { pollId } });
+  if (count >= MAX_MEETING_PARTICIPANTS) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: `This meeting is full (max ${MAX_MEETING_PARTICIPANTS} participants)`,
     });
   }
 }

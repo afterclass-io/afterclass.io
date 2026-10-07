@@ -423,6 +423,33 @@ describe("meetingsRouter", () => {
       expect(result.heatmap[2]?.availableCount).toBe(3);
     });
 
+    it("rejects a new responder once the poll has 10 participants", async () => {
+      const upsertMock = vi.fn();
+      const caller = makeCaller(
+        meetingsRouter.createCaller,
+        {
+          meetingPoll: {
+            findUnique: vi.fn().mockResolvedValue({ id: "poll-uuid-1" }),
+          },
+          meetingParticipant: {
+            findUnique: vi.fn().mockResolvedValue(null),
+            count: vi.fn().mockResolvedValue(10),
+            upsert: upsertMock,
+          },
+        },
+        { user: { id: CREATOR_ID } },
+      );
+
+      await expect(
+        caller.submitAvailability({
+          slug: "abcdefghij",
+          availableSlots: [1],
+          ifNeededSlots: [],
+        }),
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      expect(upsertMock).not.toHaveBeenCalled();
+    });
+
     it("throws NOT_FOUND if poll does not exist", async () => {
       const findUniqueMock = vi.fn().mockResolvedValue(null);
 
@@ -451,7 +478,11 @@ describe("meetingsRouter", () => {
           meetingPoll: {
             findUnique: vi.fn().mockResolvedValue({ id: "poll-uuid-1" }),
           },
-          meetingParticipant: { upsert: upsertMock },
+          meetingParticipant: {
+            findUnique: vi.fn().mockResolvedValue(null),
+            count: vi.fn().mockResolvedValue(0),
+            upsert: upsertMock,
+          },
         },
         { user: { id: PARTICIPANT_USER_ID_1 } },
       );
@@ -469,6 +500,53 @@ describe("meetingsRouter", () => {
         update: {},
         create: { pollId: "poll-uuid-1", userId: PARTICIPANT_USER_ID_1 },
       });
+    });
+
+    it("rejects a new participant once the poll has 10", async () => {
+      const upsertMock = vi.fn();
+      const caller = makeCaller(
+        meetingsRouter.createCaller,
+        {
+          meetingPoll: {
+            findUnique: vi.fn().mockResolvedValue({ id: "poll-uuid-1" }),
+          },
+          meetingParticipant: {
+            findUnique: vi.fn().mockResolvedValue(null),
+            count: vi.fn().mockResolvedValue(10),
+            upsert: upsertMock,
+          },
+        },
+        { user: { id: PARTICIPANT_USER_ID_1 } },
+      );
+
+      await expect(caller.joinPoll({ slug: "abcdefghij" })).rejects.toMatchObject({
+        code: "FORBIDDEN",
+      });
+      expect(upsertMock).not.toHaveBeenCalled();
+    });
+
+    it("lets an existing participant rejoin a full poll", async () => {
+      const upsertMock = vi.fn().mockResolvedValue({ id: "part-1" });
+      const countMock = vi.fn().mockResolvedValue(10);
+      const caller = makeCaller(
+        meetingsRouter.createCaller,
+        {
+          meetingPoll: {
+            findUnique: vi.fn().mockResolvedValue({ id: "poll-uuid-1" }),
+          },
+          meetingParticipant: {
+            findUnique: vi.fn().mockResolvedValue({ id: "part-1" }),
+            count: countMock,
+            upsert: upsertMock,
+          },
+        },
+        { user: { id: PARTICIPANT_USER_ID_1 } },
+      );
+
+      await expect(caller.joinPoll({ slug: "abcdefghij" })).resolves.toEqual({
+        success: true,
+      });
+      expect(countMock).not.toHaveBeenCalled();
     });
 
     it("throws NOT_FOUND for an unknown poll", async () => {
@@ -555,7 +633,11 @@ describe("meetingsRouter", () => {
         meetingsRouter.createCaller,
         {
           meetingPoll: { findUnique: findUniqueMock },
-          meetingParticipant: { upsert: upsertMock },
+          meetingParticipant: {
+            findUnique: vi.fn().mockResolvedValue(null),
+            count: vi.fn().mockResolvedValue(0),
+            upsert: upsertMock,
+          },
         },
         { user: { id: CREATOR_ID } },
       );

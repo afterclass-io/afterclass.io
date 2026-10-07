@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure } from "@/server/api/trpc";
-import { calculateTotalSlots, slotListSchema } from "../helpers";
+import {
+  assertParticipantCapacity,
+  calculateTotalSlots,
+  slotListSchema,
+} from "../helpers";
 
 export const submitAvailability = protectedProcedure
   .input(
@@ -61,6 +65,8 @@ export const submitAvailability = protectedProcedure
         });
       }
     }
+
+    await assertParticipantCapacity(ctx.db, poll.id, ctx.session.user.id);
 
     const participant = await ctx.db.meetingParticipant.upsert({
       where: {

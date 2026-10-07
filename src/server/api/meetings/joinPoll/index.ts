@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure } from "@/server/api/trpc";
+import { assertParticipantCapacity } from "../helpers";
 
 export const joinPoll = protectedProcedure
   .input(z.object({ slug: z.string().min(6).max(20) }))
@@ -15,6 +16,8 @@ export const joinPoll = protectedProcedure
         message: "Meeting poll not found",
       });
     }
+
+    await assertParticipantCapacity(ctx.db, poll.id, ctx.session.user.id);
 
     await ctx.db.meetingParticipant.upsert({
       where: {
