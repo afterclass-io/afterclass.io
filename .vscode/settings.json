@@ -24,10 +24,10 @@
   },
   // Show in vscode "Problems" tab when there are errors
   "typescript.tsserver.experimental.enableProjectDiagnostics": true,
-  // For tailwind-variants
+  // For class-variance-authority (cva)
   "tailwindCSS.experimental.classRegex": [
     [
-      "tv\\(([^)]*)\\)",
+      "cva\\(([^)]*)\\)",
       "[\"'`]([^\"'`]*).*?[\"'`]"
     ]
   ],
