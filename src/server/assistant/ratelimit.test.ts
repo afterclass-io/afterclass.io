@@ -10,7 +10,6 @@ const {
   txRateLimitWindowFindUnique,
   txRateLimitWindowUpsert,
   txRateLimitWindowUpdateMany,
-  mockRateLimitWindowDeleteMany,
   mockTxTransaction,
 } = vi.hoisted(() => ({
   mockQueryRaw: vi.fn() as Mock,
@@ -18,7 +17,6 @@ const {
   txRateLimitWindowFindUnique: vi.fn() as Mock,
   txRateLimitWindowUpsert: vi.fn() as Mock,
   txRateLimitWindowUpdateMany: vi.fn() as Mock,
-  mockRateLimitWindowDeleteMany: vi.fn() as Mock,
   mockTxTransaction: vi.fn() as Mock,
 }));
 
@@ -30,7 +28,6 @@ vi.mock("@/server/db", () => ({
       findUnique: txRateLimitWindowFindUnique,
       upsert: txRateLimitWindowUpsert,
       updateMany: txRateLimitWindowUpdateMany,
-      deleteMany: mockRateLimitWindowDeleteMany,
     },
   },
   txDb: {
@@ -50,7 +47,6 @@ describe("checkAndIncrement", () => {
     txRateLimitWindowFindUnique.mockReset();
     txRateLimitWindowUpsert.mockReset();
     txRateLimitWindowUpdateMany.mockReset();
-    mockRateLimitWindowDeleteMany.mockReset();
   });
 
   afterEach(() => {
@@ -179,21 +175,48 @@ describe("peekRateLimit", () => {
 });
 
 describe("pruneRateLimits", () => {
-  it("deletes windows older than the retention cutoff and returns the count", async () => {
-    mockRateLimitWindowDeleteMany.mockResolvedValue({ count: 7 });
+  beforeEach(() => {
+    vi.useRealTimers();
+    mockExecuteRaw.mockReset();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("prune single short batch", async () => {
+    mockExecuteRaw.mockResolvedValueOnce(7);
     const r = await pruneRateLimits();
     expect(r).toEqual({ deleted: 7 });
-    expect(mockRateLimitWindowDeleteMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { windowStart: { lt: expect.any(BigInt) as bigint } },
-      }) as Record<string, unknown>,
-    );
-    // Cutoff is in the past (retention keeps ~24h of windows).
-    const cutoff = (
-      mockRateLimitWindowDeleteMany.mock.calls[0]?.[0] as {
-        where: { windowStart: { lt: bigint } };
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(1);
+    const rawCall = mockExecuteRaw.mock.calls[0] as [string[], ...unknown[]];
+    const cutoffParam = rawCall[1];
+    expect(typeof cutoffParam).toBe("bigint");
+    expect((cutoffParam as bigint) < BigInt(Date.now())).toBe(true);
+  });
+
+  it("prune continues on full batches", async () => {
+    mockExecuteRaw
+      .mockResolvedValueOnce(1000)
+      .mockResolvedValueOnce(1000)
+      .mockResolvedValueOnce(5);
+    const r = await pruneRateLimits();
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(3);
+    expect(r).toEqual({ deleted: 2005 });
+  });
+
+  it("prune stops at the time budget", async () => {
+    vi.useFakeTimers();
+    const now = 1700000000000;
+    vi.setSystemTime(now);
+    mockExecuteRaw.mockImplementation(async () => {
+      if (mockExecuteRaw.mock.calls.length === 2) {
+        vi.advanceTimersByTime(8001);
       }
-    ).where.windowStart.lt;
-    expect(cutoff < BigInt(Date.now())).toBe(true);
+      return 1000;
+    });
+    const r = await pruneRateLimits();
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(2);
+    expect(r).toEqual({ deleted: 2000 });
   });
 });

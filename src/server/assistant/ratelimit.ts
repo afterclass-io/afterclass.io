@@ -82,6 +82,9 @@ export async function checkAndIncrement(
     : { ok: false, retryAfterSeconds: retryAfter };
 }
 
+const PRUNE_BATCH_SIZE = 1000;
+const PRUNE_TIME_BUDGET_MS = 8_000; // vercel.json caps src/app/api/** at 10 s
+
 /**
  * GC for `RateLimitWindow` rows. Deletes windows older than
  * `retentionWindows` (default 1440 = ~24h of 1-minute windows; canonical
@@ -95,13 +98,25 @@ export async function checkAndIncrement(
 export async function pruneRateLimits(
   retentionWindows = 1440,
   windowMinutes = 1,
+  batchSize = PRUNE_BATCH_SIZE,
 ): Promise<{ deleted: number }> {
   const windowMs = windowMinutes * 60_000;
   const cutoff = BigInt(
     Math.floor(Date.now() / windowMs) * windowMs - retentionWindows * windowMs,
   );
-  const res = await db.rateLimitWindow.deleteMany({
-    where: { windowStart: { lt: cutoff } },
-  });
-  return { deleted: res.count };
+  const deadline = Date.now() + PRUNE_TIME_BUDGET_MS;
+  let deleted = 0;
+  for (;;) {
+    const n = await db.$executeRaw`
+      DELETE FROM "rate_limit"
+      WHERE "key" IN (
+        SELECT "key" FROM "rate_limit"
+        WHERE "window_start" < ${cutoff}::bigint
+        ORDER BY "window_start"
+        LIMIT ${batchSize}::int
+        FOR UPDATE SKIP LOCKED
+      )`;
+    deleted += n;
+    if (n < batchSize || Date.now() >= deadline) return { deleted };
+  }
 }

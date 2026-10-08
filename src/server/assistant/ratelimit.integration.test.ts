@@ -7,7 +7,8 @@ vi.mock("@/server/db", async () => {
 });
 
 import { idb as db } from "@/server/api/integration-test-helpers";
-import { checkAndIncrement } from "./ratelimit";
+import { checkAndIncrement, pruneRateLimits } from "./ratelimit";
+import pruneRowsFixture from "./ratelimit.prune-rows.json";
 
 describe("checkAndIncrement integration", () => {
   it("50 parallel calls with limit 10", async () => {
@@ -123,5 +124,51 @@ describe("checkAndIncrement integration", () => {
       SELECT indexname FROM pg_indexes WHERE tablename = 'rate_limit'`;
     const names = rows.map((r) => r.indexname);
     expect(names).toContain("rate_limit_window_start_idx");
+  });
+});
+
+describe("pruneRateLimits integration", () => {
+  it("prune deletes only old rows", async () => {
+    // Other integration files share this database and write live rows, so
+    // the test owns only the keys that start with "fixture:".
+    await db.rateLimitWindow.deleteMany({
+      where: { key: { startsWith: "fixture:" } },
+    });
+    const now = Date.now();
+    const baseWindow = Math.floor(now / 60_000) * 60_000;
+
+    await db.rateLimitWindow.createMany({
+      data: pruneRowsFixture.map((row) => {
+        const windowStart = BigInt(baseWindow - row.ageWindows * 60_000);
+        return {
+          key: `${row.keyPrefix}:${windowStart}`,
+          windowStart,
+          count: row.count,
+        };
+      }),
+    });
+
+    const expectedDeleted = pruneRowsFixture.filter(
+      (r) => r.ageWindows > 1440,
+    ).length;
+    const res = await pruneRateLimits(1440, 1, 2);
+    expect(res).toEqual({ deleted: expectedDeleted });
+
+    const remainingRows = await db.rateLimitWindow.findMany({
+      where: { key: { startsWith: "fixture:" } },
+      orderBy: { windowStart: "asc" },
+    });
+    const expectedLive = pruneRowsFixture.filter(
+      (r) => r.ageWindows <= 1440,
+    ).length;
+    expect(remainingRows).toHaveLength(expectedLive);
+    for (const row of remainingRows) {
+      expect(row.key).toContain("fixture:live");
+    }
+  });
+
+  it("prune is idempotent", async () => {
+    const res = await pruneRateLimits(1440, 1, 2);
+    expect(res).toEqual({ deleted: 0 });
   });
 });
