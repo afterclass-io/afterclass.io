@@ -16,10 +16,7 @@ export type TermTimetableLinkProps = {
   className?: string;
 };
 
-import {
-  mapRoadmapTermToAcadCode,
-  extractAcadTermCode,
-} from "@/modules/roadmaps/functions/term-mapping";
+import { findAcadTermForRoadmapTerm } from "@/modules/roadmaps/functions/term-mapping";
 
 // ---------------------------------------------------------------------------
 // Component
@@ -30,18 +27,9 @@ export function TermTimetableLink({
   acadTerms,
   className,
 }: TermTimetableLinkProps) {
-  const targetTermCode = mapRoadmapTermToAcadCode(term);
+  const matched = findAcadTermForRoadmapTerm(term, acadTerms);
 
-  // Find AcadTerms whose label term matches our target
-  const matchingTerms = acadTerms.filter((at) => {
-    const code = extractAcadTermCode(at.label);
-    return code === targetTermCode;
-  });
-
-  if (matchingTerms.length === 0) return null;
-
-  // Show the first matching AcadTerm (most relevant)
-  const matched = matchingTerms[0]!;
+  if (!matched) return null;
 
   return (
     <Link

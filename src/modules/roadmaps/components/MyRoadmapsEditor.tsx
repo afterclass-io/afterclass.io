@@ -19,7 +19,10 @@ import {
   saveEntriesWithConflictRetry,
 } from "@/modules/roadmaps/functions/save-with-retry";
 import { findEntryByCourse } from "@/modules/roadmaps/functions/conflicts";
-import { extractAcadTermCode } from "@/modules/roadmaps/functions/term-mapping";
+import {
+  extractAcadTermCode,
+  findAcadTermForRoadmapTerm,
+} from "@/modules/roadmaps/functions/term-mapping";
 import { roadmapPanelWidthsAtom } from "@/modules/roadmaps/atoms/roadmap";
 import { hasSeenRoadmapsTourAtom } from "@/modules/roadmaps/atoms/roadmap";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
@@ -553,7 +556,9 @@ export function MyRoadmapsEditor() {
   // ---- termFooter renderer for timetable links ----
   const termFooter = useCallback(
     (yearNumber: number, term: string) => {
-      if (!acadTermsData) return null;
+      if (!acadTermsData || !findAcadTermForRoadmapTerm(term, acadTermsData)) {
+        return null;
+      }
       return (
         <TermTimetableLink
           yearNumber={yearNumber}

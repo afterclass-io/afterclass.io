@@ -130,3 +130,90 @@ export const ReadOnly: Story = {
     readOnly: true,
   },
 };
+
+export const T3Stacked: Story = {
+  args: {
+    entries: [
+      {
+        courseId: "cs101",
+        courseCode: "CS101",
+        courseName: "Introduction to Computer Science",
+        creditUnits: 4,
+        yearNumber: 1,
+        term: "T1",
+      },
+      {
+        courseId: "math201",
+        courseCode: "MATH201",
+        courseName: "Calculus I",
+        creditUnits: 4,
+        yearNumber: 1,
+        term: "T2",
+      },
+      {
+        courseId: "is111",
+        courseCode: "IS111",
+        courseName: "Introduction to Programming",
+        creditUnits: 1,
+        yearNumber: 1,
+        term: "T3A",
+      },
+      {
+        courseId: "is112",
+        courseCode: "IS112",
+        courseName: "Data Management",
+        creditUnits: 1,
+        yearNumber: 1,
+        term: "T3B",
+      },
+    ],
+  },
+};
+
+export const EmptyYears: Story = {
+  args: {
+    entries: [],
+  },
+};
+
+export const ConflictInT3: Story = {
+  args: {
+    entries: [
+      {
+        courseId: "c1",
+        courseCode: "CS101",
+        courseName: "Introduction to Computer Science",
+        creditUnits: 2,
+        yearNumber: 1,
+        term: "T3A",
+      },
+      {
+        courseId: "c2",
+        courseCode: "CS102",
+        courseName: "Programming Fundamentals",
+        creditUnits: 2,
+        yearNumber: 1,
+        term: "T3A",
+      },
+      {
+        courseId: "c3",
+        courseCode: "CS103",
+        courseName: "Web Applications",
+        creditUnits: 2,
+        yearNumber: 1,
+        term: "T3A",
+      },
+    ],
+  },
+};
+
+export const WithTimetableFooters: Story = {
+  args: {
+    entries: SAMPLE_ENTRIES,
+    termFooter: (yearNumber, term) => (
+      <span className="text-muted-foreground text-[11px] font-medium">
+        {term} timetable
+      </span>
+    ),
+  },
+};
