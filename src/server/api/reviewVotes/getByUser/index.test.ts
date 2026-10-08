@@ -11,7 +11,9 @@ describe("reviewVotes.getByUser", () => {
 
   it("queries by (reviewId, session user)", async () => {
     const findFirst = vi.fn().mockResolvedValue({ weight: 1 });
-    const caller = makeCaller(router.createCaller, { reviewVotes: { findFirst } });
+    const caller = makeCaller(router.createCaller, {
+      reviewVotes: { findFirst },
+    });
 
     const result = await caller.getByUser({ reviewId: "rv1" });
 
@@ -23,7 +25,9 @@ describe("reviewVotes.getByUser", () => {
 
   it("ignores a client-supplied userId and binds to the session user", async () => {
     const findFirst = vi.fn().mockResolvedValue({ weight: 1 });
-    const caller = makeCaller(router.createCaller, { reviewVotes: { findFirst } });
+    const caller = makeCaller(router.createCaller, {
+      reviewVotes: { findFirst },
+    });
 
     await caller.getByUser({ userId: "u2", reviewId: "rv1" } as never);
 

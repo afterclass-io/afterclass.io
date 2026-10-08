@@ -4,12 +4,15 @@ import type { Mock } from "vitest";
 // vi.mock factories are hoisted above top-level const declarations, so the mock
 // fns must be created via vi.hoisted to avoid a TDZ ("Cannot access ... before
 // initialization") error.
-const { txRateLimitWindowFindUnique, txRateLimitWindowUpsert, txRateLimitWindowUpdateMany } =
-  vi.hoisted(() => ({
-    txRateLimitWindowFindUnique: vi.fn() as Mock,
-    txRateLimitWindowUpsert: vi.fn() as Mock,
-    txRateLimitWindowUpdateMany: vi.fn() as Mock,
-  }));
+const {
+  txRateLimitWindowFindUnique,
+  txRateLimitWindowUpsert,
+  txRateLimitWindowUpdateMany,
+} = vi.hoisted(() => ({
+  txRateLimitWindowFindUnique: vi.fn() as Mock,
+  txRateLimitWindowUpsert: vi.fn() as Mock,
+  txRateLimitWindowUpdateMany: vi.fn() as Mock,
+}));
 
 const { mockRateLimitWindowDeleteMany } = vi.hoisted(() => ({
   mockRateLimitWindowDeleteMany: vi.fn() as Mock,
@@ -39,11 +42,7 @@ vi.mock("@/server/db", () => ({
   },
 }));
 
-import {
-  checkAndIncrement,
-  peekRateLimit,
-  pruneRateLimits,
-} from "./ratelimit";
+import { checkAndIncrement, peekRateLimit, pruneRateLimits } from "./ratelimit";
 
 describe("checkAndIncrement", () => {
   beforeEach(() => {

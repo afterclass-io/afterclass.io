@@ -236,10 +236,10 @@ describe("userBids.setStatus", () => {
         updateMany: vi.fn().mockResolvedValue({ count: 0 }),
       },
     };
-    const conflictError = new Prisma.PrismaClientKnownRequestError(
-      "conflict",
-      { code: "P2034", clientVersion: "7.10.0" },
-    );
+    const conflictError = new Prisma.PrismaClientKnownRequestError("conflict", {
+      code: "P2034",
+      clientVersion: "7.10.0",
+    });
     let attempts = 0;
     const dbMock = {
       userBid: {
@@ -270,10 +270,10 @@ describe("userBids.setStatus", () => {
   });
 
   it("rejects with CONFLICT after three consecutive P2034 rejections", async () => {
-    const conflictError = new Prisma.PrismaClientKnownRequestError(
-      "conflict",
-      { code: "P2034", clientVersion: "7.10.0" },
-    );
+    const conflictError = new Prisma.PrismaClientKnownRequestError("conflict", {
+      code: "P2034",
+      clientVersion: "7.10.0",
+    });
     const dbMock = {
       userBid: {
         findUnique: vi.fn().mockResolvedValue({

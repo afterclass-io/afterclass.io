@@ -7,7 +7,9 @@ import { MODERATION_JUDGE_TIMEOUT_MAX_MS } from "./chat-config";
 describe("chat config route limit guard", () => {
   it("ensures the tRPC route limit in vercel.json accommodates the maximum judge timeout plus margin", () => {
     const vercelJsonPath = path.join(process.cwd(), "vercel.json");
-    const vercelConfig = JSON.parse(fs.readFileSync(vercelJsonPath, "utf-8")) as {
+    const vercelConfig = JSON.parse(
+      fs.readFileSync(vercelJsonPath, "utf-8"),
+    ) as {
       functions: Record<string, { maxDuration: number }>;
     };
     const maxDurationSec =

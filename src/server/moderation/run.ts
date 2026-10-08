@@ -1,8 +1,5 @@
 import { ModerationVerdict } from "@/generated/prisma/enums";
-import {
-  checkAndIncrement,
-  peekRateLimit,
-} from "@/server/assistant/ratelimit";
+import { checkAndIncrement, peekRateLimit } from "@/server/assistant/ratelimit";
 import { getModel } from "@/server/assistant/providers";
 import {
   getChatConfigAsync,

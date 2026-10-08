@@ -136,4 +136,3 @@ describe("getCacheControlForTrpcRequest", () => {
     expect(headers["Cache-Control"]).toBe(PRIVATE_CACHE_VALUE);
   });
 });
-

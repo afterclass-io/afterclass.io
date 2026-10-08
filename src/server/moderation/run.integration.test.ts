@@ -234,11 +234,7 @@ describe("runModeration against Postgres", () => {
     const judge = vi.fn<Judge>().mockResolvedValue(cleared);
 
     await expect(
-      runModeration(
-        target,
-        { ...cfg, moderationJudgementsPerHour: 0 },
-        judge,
-      ),
+      runModeration(target, { ...cfg, moderationJudgementsPerHour: 0 }, judge),
     ).resolves.toBe("ceiling_reached");
     expect(judge).not.toHaveBeenCalled();
 
@@ -253,4 +249,3 @@ describe("runModeration against Postgres", () => {
     expect(judge).toHaveBeenCalledTimes(1);
   });
 });
-
