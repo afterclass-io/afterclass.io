@@ -14,6 +14,7 @@ import {
   REVIEW_PAGE_MAX,
   REVIEW_SKIP_MAX,
 } from "./constants";
+import { loadReviewEngagement } from "./engagement";
 import { getOrderBy } from "./functions";
 
 export const reviewPageInput = z.object({
@@ -169,6 +170,22 @@ export async function listReviews(
       ? (reviews as unknown as PublicReviewRow[]).map(toPublicReview)
       : (reviews as unknown as PrivateReviewRow[]).map(toMemberReview);
 
+  if (
+    viewer.kind === "member" &&
+    viewer.includeEngagement &&
+    items.length > 0
+  ) {
+    const itemIds = items.map((item) => item.id);
+    const engagementMap = await loadReviewEngagement(
+      db,
+      viewer.userId,
+      itemIds,
+    );
+    for (const item of items) {
+      item.engagement = engagementMap[item.id];
+    }
+  }
+
   return {
     items,
     nextCursor,
@@ -178,7 +195,7 @@ export async function listReviews(
 export async function getReviewById(
   db: PrismaClient,
   reviewId: string,
-  _viewerId?: string,
+  viewerId: string,
 ): Promise<Review> {
   const review = await db.reviews.findUnique({
     where: { id: reviewId },
@@ -190,5 +207,8 @@ export async function getReviewById(
       message: "Review not found",
     });
   }
-  return toMemberReview(review);
+  const mapped = toMemberReview(review);
+  const engagementMap = await loadReviewEngagement(db, viewerId, [reviewId]);
+  mapped.engagement = engagementMap[reviewId];
+  return mapped;
 }

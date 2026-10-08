@@ -191,6 +191,66 @@ describe("review service (service.ts)", () => {
       expect("engagement" in res.items[0]!).toBe(false);
     });
 
+    it("member viewer with includeEngagement: true attaches engagement and calls reviewVotes.findMany once with ids", async () => {
+      const row1 = makeRow({ id: "rev-1" });
+      const row2 = makeRow({ id: "rev-2" });
+      const findMany = vi.fn().mockResolvedValue([row1, row2]);
+      const reviewVotesFindMany = vi
+        .fn()
+        .mockResolvedValue([{ reviewId: "rev-1", weight: 1 }]);
+      const reviewReactionsGroupBy = vi
+        .fn()
+        .mockResolvedValue([
+          { reviewId: "rev-1", reaction: "LIKE", _count: { _all: 3 } },
+        ]);
+      const reviewReactionsFindMany = vi
+        .fn()
+        .mockResolvedValue([{ reviewId: "rev-1", reaction: "LIKE" }]);
+      const reviewEventsGroupBy = vi
+        .fn()
+        .mockResolvedValue([{ reviewId: "rev-1", _count: { _all: 2 } }]);
+
+      const db = {
+        reviews: { findMany },
+        reviewVotes: { findMany: reviewVotesFindMany },
+        reviewReactions: {
+          groupBy: reviewReactionsGroupBy,
+          findMany: reviewReactionsFindMany,
+        },
+        reviewEvents: { groupBy: reviewEventsGroupBy },
+      } as unknown as PrismaClient;
+
+      const res = await listReviews(db, {
+        scope: { kind: "all" },
+        page: {
+          filterFor: ReviewsFilterFor.ALL,
+          sortBy: ReviewsSortBy.LATEST,
+          limit: 10,
+          skip: 0,
+        },
+        viewer: { kind: "member", userId: "u1", includeEngagement: true },
+      });
+
+      expect(res.items).toHaveLength(2);
+      expect(reviewVotesFindMany).toHaveBeenCalledTimes(1);
+      expect(reviewVotesFindMany).toHaveBeenCalledWith({
+        where: { voterId: "u1", reviewId: { in: ["rev-1", "rev-2"] } },
+        select: { reviewId: true, weight: true },
+      });
+      expect(res.items[0]?.engagement).toEqual({
+        viewerVote: 1,
+        viewerReaction: "LIKE",
+        reactionCounts: [{ reaction: "LIKE", count: 3 }],
+        shareCount: 2,
+      });
+      expect(res.items[1]?.engagement).toEqual({
+        viewerVote: 0,
+        viewerReaction: null,
+        reactionCounts: [],
+        shareCount: 0,
+      });
+    });
+
     it("public viewer does not access review engagement tables", async () => {
       const row = makeRow();
       const db = {
@@ -346,15 +406,27 @@ describe("review service (service.ts)", () => {
   });
 
   describe("getReviewById", () => {
-    it("returns member review when found", async () => {
+    it("returns member review with engagement when found", async () => {
       const row = makeRow({ id: "rev-1" });
       const db = {
         reviews: { findUnique: vi.fn().mockResolvedValue(row) },
+        reviewVotes: { findMany: vi.fn().mockResolvedValue([]) },
+        reviewReactions: {
+          groupBy: vi.fn().mockResolvedValue([]),
+          findMany: vi.fn().mockResolvedValue([]),
+        },
+        reviewEvents: { groupBy: vi.fn().mockResolvedValue([]) },
       } as unknown as PrismaClient;
 
       const review = await getReviewById(db, "rev-1", "u1");
       expect(review.id).toBe("rev-1");
       expect(review.username).toBe("alice");
+      expect(review.engagement).toEqual({
+        viewerVote: 0,
+        viewerReaction: null,
+        reactionCounts: [],
+        shareCount: 0,
+      });
     });
 
     it("throws TRPCError NOT_FOUND when review is missing", async () => {

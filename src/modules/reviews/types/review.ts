@@ -3,6 +3,7 @@ import type {
   ReviewType,
   UniversityAbbreviation,
 } from "@/generated/prisma/enums";
+import type { ReviewEngagement } from "./engagement";
 
 export type Review = {
   id: string;
@@ -20,4 +21,5 @@ export type Review = {
   reviewFor: ReviewType;
   professorName?: string;
   professorSlug?: string;
+  engagement?: ReviewEngagement;
 };
