@@ -17,7 +17,7 @@ vi.mock("@sentry/nextjs", () => ({
   trpcMiddleware: () => (opts: { next: () => unknown }) => opts.next(),
 }));
 
-// `isVerified` is optional so procedures gating on it (e.g. roadmaps.publish,
+// `isVerified` is optional so procedures gating on it (e.g.
 // sharing.setVisibility) can be exercised without every caller spelling it out.
 type MockSession = {
   user: { id: string; isVerified?: boolean; name?: string | null };
