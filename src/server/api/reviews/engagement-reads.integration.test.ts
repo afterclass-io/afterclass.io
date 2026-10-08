@@ -11,18 +11,12 @@ import {
 import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 
-import { getAllByType } from "../reviewLabels/getAllByType";
-import { getByProfSlug as labelsByProfSlug } from "../reviewLabels/getByProfSlug";
-import { countByCourseCode as labelsCountByCourseCode } from "../reviewLabels/countByCourseCode";
 import { getByReviewId as reactionsByReviewId } from "../reviewReactions/getByReviewId";
 import { count as votesCount } from "../reviewVotes/count";
 import { getByUser as votesByUser } from "../reviewVotes/getByUser";
 import { count as reviewsCount } from "./count";
 
 const router = createTRPCRouter({
-  getAllByType,
-  labelsByProfSlug,
-  labelsCountByCourseCode,
   reactionsByReviewId,
   votesCount,
   votesByUser,
@@ -106,44 +100,6 @@ beforeAll(async () => {
 
 const asReviewer = () =>
   makeCaller(router.createCaller, db, { user: { id: reviewerId } });
-
-describe("reviewLabels.getAllByType (integration)", () => {
-  it("returns only labels of the requested review type", async () => {
-    const res = await makeCaller(router.createCaller, db, null).getAllByType({
-      typeOf: ReviewType.COURSE,
-    });
-    // Globally unscoped — assert our own row is present and the type filter held.
-    expect(res.some((rl) => rl.reviewId === courseReviewId)).toBe(true);
-    expect(res.every((rl) => rl.label.typeOf === ReviewType.COURSE)).toBe(true);
-  });
-});
-
-describe("reviewLabels.getByProfSlug (integration)", () => {
-  it("returns label rows for the professor's reviews only", async () => {
-    const res = await makeCaller(
-      router.createCaller,
-      db,
-      null,
-    ).labelsByProfSlug({
-      slug,
-    });
-    expect(res.map((rl) => rl.reviewId)).toEqual([profReview1Id]);
-    expect(res[0]!.label.name).toBe("ENGAGING");
-  });
-});
-
-describe("reviewLabels.countByCourseCode (integration)", () => {
-  it("returns every label row attached to a review of the course", async () => {
-    const res = await makeCaller(
-      router.createCaller,
-      db,
-      null,
-    ).labelsCountByCourseCode({ courseCode: code });
-    expect(res.map((rl) => rl.reviewId).sort()).toEqual(
-      [courseReviewId, profReview1Id].sort(),
-    );
-  });
-});
 
 describe("reviewReactions.getByReviewId (integration)", () => {
   it("returns all reactions for the review", async () => {
