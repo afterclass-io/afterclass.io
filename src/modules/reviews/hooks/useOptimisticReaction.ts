@@ -5,50 +5,60 @@ import { ReviewEventType } from "@/generated/prisma/enums";
 import { useCallback, useMemo, useRef } from "react";
 
 import { debounce } from "@/common/functions/debounce";
+import {
+  cancelReviewCaches,
+  patchReviewInCaches,
+  restoreReviewCaches,
+  type Snapshot,
+} from "./patch-review-caches";
+import { withReaction } from "../functions/engagement";
 
 export function useOptimisticReaction() {
   const ecfg = useEdgeConfigs();
 
   const utils = api.useUtils();
   const lastInputRef = useRef<{ reviewId: string } | null>(null);
+  const snapshotRef = useRef<Snapshot | undefined>(undefined);
   const { mutate: track } = api.reviewEvents.track.useMutation();
 
   const mutation = api.reviewReactions.upsert.useMutation({
     ...createOptimisticMutationCallbacks<
       RouterInputs["reviewReactions"]["upsert"],
-      unknown
+      Snapshot
     >(
       // eslint-disable-next-line react-hooks/refs -- callbacks run in the mutation lifecycle (cancel/snapshot/restore), never during render; the ref carries the debounced input
       {
         cancel: async () => {
-          if (lastInputRef.current) {
-            await utils.reviewReactions.getByReviewId.cancel(
-              lastInputRef.current,
-            );
-          }
+          await cancelReviewCaches(utils);
         },
-        getSnapshot: () =>
-          lastInputRef.current
-            ? utils.reviewReactions.getByReviewId.getData(lastInputRef.current)
-            : undefined,
+        getSnapshot: () => snapshotRef.current,
         // Pattern A: the caller (mutateWithDebounce) already applied the optimistic
         // update for instant feedback — re-applying here would double-increment.
         applyOptimistic: () => {
           /* Pattern A: caller (mutateWithDebounce) already applied */
         },
         restoreSnapshot: (prev) => {
-          if (lastInputRef.current) {
-            utils.reviewReactions.getByReviewId.setData(
-              lastInputRef.current,
-              prev as never,
-            );
-          }
+          restoreReviewCaches(utils, prev);
         },
         invalidate: async () => {
           if (lastInputRef.current) {
-            await utils.reviewReactions.getByReviewId.invalidate(
-              lastInputRef.current,
-            );
+            const reviewId = lastInputRef.current.reviewId;
+            try {
+              if (utils.client?.reviews?.getEngagement) {
+                const res = await utils.client.reviews.getEngagement.query({
+                  reviewIds: [reviewId],
+                });
+                const engagement = res[reviewId];
+                if (engagement) {
+                  patchReviewInCaches(utils, reviewId, (r) => ({
+                    ...r,
+                    engagement,
+                  }));
+                }
+              }
+            } catch {
+              // ignore
+            }
           }
         },
       },
@@ -67,34 +77,11 @@ export function useOptimisticReaction() {
   const applyOptimisticUpdate = useCallback(
     (variables: Parameters<typeof mutate>[0]) => {
       const { reviewId, reaction } = variables;
-
-      utils.reviewReactions.getByReviewId.setData(
-        { reviewId },
-        (oldQueryData) => {
-          // when user undo their reaction
-          if (!reaction) {
-            return oldQueryData?.filter((reaction) => !reaction.byViewer);
-          }
-
-          // when user has new reaction
-          const newReaction = {
-            reaction: reaction,
-            byViewer: true,
-          };
-
-          // when there are no other reactions on this review
-          if (!oldQueryData) return [newReaction];
-
-          // remove the other reaction by the same user if it exists
-          const updatedReactions = oldQueryData.filter(
-            (reaction) => !reaction.byViewer,
-          );
-
-          return [...updatedReactions, newReaction];
-        },
+      snapshotRef.current = patchReviewInCaches(utils, reviewId, (r) =>
+        withReaction(r, reaction),
       );
     },
-    [utils.reviewReactions.getByReviewId],
+    [utils],
   );
 
   const debouncedMutate = useMemo(

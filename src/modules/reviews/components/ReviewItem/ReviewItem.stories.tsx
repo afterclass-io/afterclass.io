@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { ReviewItem } from "./ReviewItem";
-import { ReviewType, UniversityAbbreviation } from "@/generated/prisma/enums";
+import {
+  ReviewReactionType,
+  ReviewType,
+  UniversityAbbreviation,
+} from "@/generated/prisma/enums";
 import { type Review } from "@/modules/reviews/types";
 
 const review = {
@@ -56,6 +60,24 @@ type Story = StoryObj<typeof meta>;
 export const DefaultHomePage: Story = {
   args: {
     variant: "home",
+  },
+};
+export const WithEngagement: Story = {
+  ...DefaultHomePage,
+  args: {
+    ...DefaultHomePage.args,
+    review: {
+      ...review,
+      engagement: {
+        viewerVote: 1,
+        viewerReaction: ReviewReactionType.LIKE,
+        reactionCounts: [
+          { reaction: ReviewReactionType.LIKE, count: 5 },
+          { reaction: ReviewReactionType.SLAY, count: 2 },
+        ],
+        shareCount: 3,
+      },
+    },
   },
 };
 export const LockedHomePage: Story = {

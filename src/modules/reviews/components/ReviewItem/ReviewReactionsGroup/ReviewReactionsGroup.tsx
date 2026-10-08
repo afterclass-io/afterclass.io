@@ -2,50 +2,29 @@
 import { useSession } from "next-auth/react";
 import { type ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/enums";
 
-import { api } from "@/common/tools/trpc/react";
-import { ReviewReactionType } from "@/modules/reviews/types";
+import { ReviewReactionType, type Review } from "@/modules/reviews/types";
 import { useOptimisticReaction } from "@/modules/reviews/hooks";
 import { Button } from "@/common/components/button";
 
-export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
+export const ReviewReactionsGroup = ({ review }: { review: Review }) => {
   const { data: session } = useSession();
-
-  const reviewReactionsQuery = api.reviewReactions.getByReviewId.useQuery({
-    reviewId,
-  });
-
   const { mutate: upsertReaction } = useOptimisticReaction();
 
-  if (!reviewReactionsQuery.data || !session) {
-    return;
+  const reactionCounts = review.engagement?.reactionCounts;
+  const viewerReaction = review.engagement?.viewerReaction;
+
+  if (!reactionCounts || reactionCounts.length === 0 || !session) {
+    return null;
   }
 
-  const reactionsMetadataMap = reviewReactionsQuery.data.reduce(
-    (acc, reviewReaction) => {
-      const reaction = reviewReaction.reaction;
-
-      acc[reaction] ??= {
-        count: 0,
-        hasThisUserReacted: false,
-      };
-
-      acc[reaction].count += 1;
-      acc[reaction].hasThisUserReacted =
-        acc[reaction].hasThisUserReacted || reviewReaction.byViewer;
-
-      return acc;
-    },
-    {} as Record<string, { count: number; hasThisUserReacted: boolean }>,
-  );
-
   const handleReactionChange = (newReaction: DbReviewReactionType) => {
-    if (reactionsMetadataMap[newReaction]!.hasThisUserReacted) {
+    if (viewerReaction === newReaction) {
       upsertReaction({
-        reviewId,
+        reviewId: review.id,
       });
     } else {
       upsertReaction({
-        reviewId,
+        reviewId: review.id,
         reaction: newReaction,
       });
     }
@@ -53,24 +32,23 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
 
   return (
     <div className="flex gap-2 overflow-auto">
-      {Object.entries(reactionsMetadataMap).map(
-        ([reaction, { count, hasThisUserReacted }]) => (
+      {reactionCounts.map(({ reaction, count }) => {
+        const hasThisUserReacted = viewerReaction === reaction;
+        return (
           <Button
             onClick={(e) => {
               e.stopPropagation();
-              handleReactionChange(reaction as DbReviewReactionType);
+              handleReactionChange(reaction);
             }}
             key={reaction}
             variant={hasThisUserReacted ? "default" : "outline"}
             className="flex min-w-fit cursor-pointer gap-1 rounded-full border px-2 py-0 select-none"
           >
-            <span className="text-lg">
-              {ReviewReactionType[reaction as keyof typeof ReviewReactionType]}
-            </span>
+            <span className="text-lg">{ReviewReactionType[reaction]}</span>
             <span className="font-mono">{count}</span>
           </Button>
-        ),
-      )}
+        );
+      })}
     </div>
   );
 };

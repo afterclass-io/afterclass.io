@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { ReviewEventType } from "@/generated/prisma/enums";
 
@@ -8,52 +8,68 @@ import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimis
 import { useEdgeConfigs } from "@/common/hooks";
 import { VoteGroup } from "@/common/components/vote-group";
 import { debounce } from "@/common/functions/debounce";
+import { type Review } from "@/modules/reviews/types";
+import {
+  cancelReviewCaches,
+  getReviewCachesSnapshot,
+  patchReviewInCaches,
+  restoreReviewCaches,
+  type Snapshot,
+} from "@/modules/reviews/hooks/patch-review-caches";
+import { withVote } from "@/modules/reviews/functions/engagement";
 
-export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
+export const ReviewVoteGroup = ({ review }: { review: Review }) => {
   const { data: session } = useSession();
   const ecfg = useEdgeConfigs();
 
   const utils = api.useUtils();
+  const snapshotRef = useRef<Snapshot | undefined>(undefined);
   const { mutate: track } = api.reviewEvents.track.useMutation();
-  const reviewVotesCountQuery = api.reviewVotes.count.useQuery({ reviewId });
-  const getUserVoteQuery = api.reviewVotes.getByUser.useQuery({ reviewId });
 
   const mutation = api.reviewVotes.voteOrUnvote.useMutation({
     ...createOptimisticMutationCallbacks<
       RouterInputs["reviewVotes"]["voteOrUnvote"],
-      { previousCount?: number; previousUserVote?: { weight: number } | null }
-    >({
-      cancel: async () => {
-        await utils.reviewVotes.count.cancel({ reviewId });
-        await utils.reviewVotes.getByUser.cancel({ reviewId });
+      Snapshot
+    >(
+      // eslint-disable-next-line react-hooks/refs -- callbacks run in the mutation lifecycle (cancel/snapshot/restore), never during render; the ref carries the debounced input
+      {
+        cancel: async () => {
+          await cancelReviewCaches(utils);
+        },
+        getSnapshot: () =>
+          snapshotRef.current ?? getReviewCachesSnapshot(utils),
+        applyOptimistic: ({ weight }) => {
+          patchReviewInCaches(utils, review.id, (r) => withVote(r, weight));
+        },
+        restoreSnapshot: (prev) => {
+          restoreReviewCaches(utils, prev);
+        },
+        invalidate: async () => {
+          try {
+            if (utils.client?.reviews?.getEngagement) {
+              const res = await utils.client.reviews.getEngagement.query({
+                reviewIds: [review.id],
+              });
+              const engagement = res[review.id];
+              if (engagement) {
+                patchReviewInCaches(utils, review.id, (r) => ({
+                  ...r,
+                  engagement,
+                }));
+              }
+            }
+          } catch {
+            // ignore
+          }
+        },
       },
-      getSnapshot: () => ({
-        previousCount: utils.reviewVotes.count.getData({ reviewId }),
-        previousUserVote: utils.reviewVotes.getByUser.getData({ reviewId }),
-      }),
-      // Pattern A: the caller (mutateWithDebounce) already applied the
-      // optimistic update — re-applying here would double-count.
-      applyOptimistic: () => {
-        /* Pattern A: caller (mutateWithDebounce) already applied */
-      },
-      restoreSnapshot: (prev) => {
-        utils.reviewVotes.count.setData({ reviewId }, prev?.previousCount);
-        utils.reviewVotes.getByUser.setData(
-          { reviewId },
-          prev?.previousUserVote as never,
-        );
-      },
-      invalidate: async () => {
-        await utils.reviewVotes.count.invalidate({ reviewId });
-        await utils.reviewVotes.getByUser.invalidate({ reviewId });
-      },
-    }),
+    ),
     onSuccess: (_, { weight }) => {
       if (ecfg.enableReviewEventsTracking) {
         const eventType =
           weight > 0 ? ReviewEventType.UPVOTE : ReviewEventType.DOWNVOTE;
 
-        track({ reviewId, eventType });
+        track({ reviewId: review.id, eventType });
       }
     },
   });
@@ -65,74 +81,25 @@ export const ReviewVoteGroup = ({ reviewId }: { reviewId: string }) => {
         likeOrUnlike(variables);
       }, 300),
     [likeOrUnlike],
-  ); // 300 ms before likeOrUnlike is called
-
-  const applyOptimisticUpdate = useCallback(
-    (variables: Parameters<typeof likeOrUnlike>[0]) => {
-      const { reviewId, weight } = variables;
-
-      // Snapshot the previous value
-      const previousUserVote = utils.reviewVotes.getByUser.getData({
-        reviewId,
-      });
-
-      // Optimistically update vote count
-      utils.reviewVotes.count.setData(
-        { reviewId },
-        (oldQueryData: number | undefined) => {
-          const prevVoteCount = oldQueryData ?? 0;
-
-          if (previousUserVote?.weight) {
-            if (weight === 0) {
-              // user undid their vote
-              return prevVoteCount - previousUserVote.weight;
-            }
-            // user changed their vote
-            return prevVoteCount + weight * 2;
-          }
-          // user voted for the first time
-          return prevVoteCount + weight;
-        },
-      );
-
-      // Optimistically update user weight
-      utils.reviewVotes.getByUser.setData({ reviewId }, (oldQueryData) => {
-        if (!oldQueryData) return null;
-        return {
-          ...oldQueryData,
-          weight,
-        };
-      });
-    },
-    [utils.reviewVotes.count, utils.reviewVotes.getByUser],
   );
 
-  const mutateWithDebounce = useCallback(
-    (variables: Parameters<typeof likeOrUnlike>[0]) => {
-      applyOptimisticUpdate(variables); // immediate UI update
-      debouncedLikeOrUnlike(variables); // debounced server mutation
-    },
-    [applyOptimisticUpdate, debouncedLikeOrUnlike],
-  );
-
-  const getUserVoteWeight = useCallback(() => {
-    if (getUserVoteQuery.data) {
-      return getUserVoteQuery.data.weight;
-    }
-    return 0;
-  }, [getUserVoteQuery.data]);
+  const viewerVote = review.engagement?.viewerVote ?? 0;
 
   return (
     <VoteGroup
-      upvotes={reviewVotesCountQuery.data ?? 0}
+      upvotes={review.likeCount}
       downvotes={0}
-      upvoted={getUserVoteWeight() > 0}
-      downvoted={getUserVoteWeight() < 0}
+      upvoted={viewerVote > 0}
+      downvoted={viewerVote < 0}
       onVoteChange={({ upvoted, downvoted }) => {
         if (!session) return;
-        mutateWithDebounce({
-          reviewId,
-          weight: upvoted ? 1 : downvoted ? -1 : 0,
+        const weight: -1 | 0 | 1 = upvoted ? 1 : downvoted ? -1 : 0;
+        snapshotRef.current = patchReviewInCaches(utils, review.id, (r) =>
+          withVote(r, weight),
+        );
+        debouncedLikeOrUnlike({
+          reviewId: review.id,
+          weight,
         });
       }}
     />

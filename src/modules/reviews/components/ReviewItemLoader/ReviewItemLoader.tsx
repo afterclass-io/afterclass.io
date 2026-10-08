@@ -85,9 +85,16 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
           ? api.reviews.getByCourseCodeProtected
           : api.reviews.getByCourseCode;
         return apiFn.useSuspenseInfiniteQuery(
-          { code, slugs, filterFor, sortBy },
           {
-            getNextPageParam: (lastPage: { nextCursor?: string }) => lastPage.nextCursor,
+            code,
+            slugs,
+            filterFor,
+            sortBy,
+            ...(session ? { includeEngagement: true } : {}),
+          },
+          {
+            getNextPageParam: (lastPage: { nextCursor?: string }) =>
+              lastPage.nextCursor,
           },
         );
       }
@@ -97,9 +104,16 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
           ? api.reviews.getByProfSlugProtected
           : api.reviews.getByProfSlug;
         return apiFn.useSuspenseInfiniteQuery(
-          { slug, courseCodes, filterFor, sortBy },
           {
-            getNextPageParam: (lastPage: { nextCursor?: string }) => lastPage.nextCursor,
+            slug,
+            courseCodes,
+            filterFor,
+            sortBy,
+            ...(session ? { includeEngagement: true } : {}),
+          },
+          {
+            getNextPageParam: (lastPage: { nextCursor?: string }) =>
+              lastPage.nextCursor,
           },
         );
       }
@@ -108,9 +122,14 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
           ? api.reviews.getAllProtected
           : api.reviews.getAll;
         return apiFn.useSuspenseInfiniteQuery(
-          { filterFor, sortBy },
           {
-            getNextPageParam: (lastPage: { nextCursor?: string }) => lastPage.nextCursor,
+            filterFor,
+            sortBy,
+            ...(session ? { includeEngagement: true } : {}),
+          },
+          {
+            getNextPageParam: (lastPage: { nextCursor?: string }) =>
+              lastPage.nextCursor,
           },
         );
       }
