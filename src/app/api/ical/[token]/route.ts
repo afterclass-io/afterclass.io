@@ -1,6 +1,7 @@
 import { type NextRequest } from "next/server";
 import { getFeedData } from "@/server/api/timetable/getFeedData";
 import { buildIcal } from "@/modules/timetable/functions/build-ical";
+import { clientKey } from "@/server/api/engagement-limit";
 import { checkBudget } from "@/server/assistant/budget";
 import { getChatConfigAsync } from "@/server/config/chat-config";
 
@@ -15,6 +16,8 @@ import { getChatConfigAsync } from "@/server/config/chat-config";
  * server-side, and returns a valid iCalendar (.ics) feed.
  *
  * Abuse controls:
+ * - WAF layer: Vercel WAF rule `rate-limit-ical` limits anonymous floods
+ *   (120/min per IP) before the function runs.
  * - Throttle: token-guessing spray against this unauthenticated endpoint is
  *   rate-limited per IP (`ical:<ip>`, 60/min fixed window via the shared
  *   `checkAndIncrement` store). Over-limit callers get 429; the token lookup
@@ -41,13 +44,13 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ token: string }> },
 ): Promise<Response> {
-  // Per-IP throttle BEFORE the token lookup so spray never reaches the DB.
+  // Per-IP throttle (layer 2 behind Vercel WAF) BEFORE the token lookup so
+  // spray never reaches the DB.
   // Limit comes from the canonical chat-config (`icalThrottlePerMinute`,
   // default 60 — same number as the old literal, centralized source).
   // Fail-closed: checkBudget throws on a misconfigured limit instead of
   // silently 429ing the whole world.
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ip = clientKey(req.headers);
   const { icalThrottlePerMinute } = await getChatConfigAsync();
   // `checkBudget` composes the bucket as `<prefix>:<user.id>`, so prefix
   // "ical" + the raw IP keeps the `ical:<ip>` bucket and shared limits.
