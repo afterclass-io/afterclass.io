@@ -1,0 +1,57 @@
+[
+  {
+    "theme": "light",
+    "fg": "--warning-text",
+    "bg": "--background",
+    "overlay": { "token": "--warning", "alpha": 0.1 },
+    "min": 4.5
+  },
+  {
+    "theme": "light",
+    "fg": "--warning-text",
+    "bg": "--card",
+    "overlay": { "token": "--warning", "alpha": 0.15 },
+    "min": 4.5
+  },
+  {
+    "theme": "light",
+    "fg": "--warning-text",
+    "bg": "--card",
+    "overlay": { "token": "--warning", "alpha": 0.35 },
+    "min": 4.5
+  },
+  { "theme": "light", "fg": "--warning-text", "bg": "--card", "min": 4.5 },
+  {
+    "theme": "light",
+    "fg": "--warning-foreground",
+    "bg": "--warning",
+    "min": 4.5
+  },
+  {
+    "theme": "dark",
+    "fg": "--warning-text",
+    "bg": "--background",
+    "overlay": { "token": "--warning", "alpha": 0.1 },
+    "min": 4.5
+  },
+  {
+    "theme": "dark",
+    "fg": "--warning-text",
+    "bg": "--card",
+    "overlay": { "token": "--warning", "alpha": 0.15 },
+    "min": 4.5
+  },
+  {
+    "theme": "dark",
+    "fg": "--warning-text",
+    "bg": "--card",
+    "overlay": { "token": "--warning", "alpha": 0.35 },
+    "min": 4.5
+  },
+  {
+    "theme": "dark",
+    "fg": "--warning-foreground",
+    "bg": "--warning",
+    "min": 4.5
+  }
+]

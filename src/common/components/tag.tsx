@@ -105,19 +105,19 @@ const tagVariants = cva(
         variant: "filled",
         color: "warning",
         className:
-          "text-white bg-warning data-[clickable=true]:hover:bg-warning/90",
+          "text-warning-foreground bg-warning data-[clickable=true]:hover:bg-warning/90",
       },
       {
         variant: "outline",
         color: "warning",
         className:
-          "text-warning border-warning border data-[clickable=true]:hover:bg-warning/5",
+          "text-warning-text border-warning border data-[clickable=true]:hover:bg-warning/5",
       },
       {
         variant: "soft",
         color: "warning",
         className:
-          "text-warning bg-warning/15 data-[clickable=true]:hover:bg-warning/35",
+          "text-warning-text bg-warning/15 data-[clickable=true]:hover:bg-warning/35",
       },
       // Error color
       {
@@ -201,7 +201,8 @@ const deletableVariants = cva(
 );
 
 export interface TagProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "color">,
+  extends
+    Omit<React.HTMLAttributes<HTMLDivElement>, "color">,
     VariantProps<typeof tagVariants> {
   size?: "xs" | "sm" | "md";
   deletable?: boolean;

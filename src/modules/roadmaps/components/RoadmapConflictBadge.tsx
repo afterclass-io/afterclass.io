@@ -33,7 +33,7 @@ const SEVERITY: Record<Conflict["kind"], { label: string; className: string }> =
     },
     "cu-overload": {
       label: "CU",
-      className: "bg-warning/10 text-warning border border-warning/30",
+      className: "bg-warning/10 text-warning-text border border-warning/30",
     },
   } as const;
 

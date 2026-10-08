@@ -272,7 +272,7 @@ export function RoadmapList({
                       className="inline-flex shrink-0"
                       aria-label="Unlisted roadmap"
                     >
-                      <Share2 className="text-warning size-3 shrink-0" />
+                      <Share2 className="text-warning-text size-3 shrink-0" />
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>
