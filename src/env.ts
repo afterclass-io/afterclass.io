@@ -28,10 +28,10 @@ export const env = createEnv({
       .enum(["development", "test", "production"])
       .default("development"),
     NEXTAUTH_SECRET:
-      process.env.NODE_ENV !== "development" &&
-      process.env.NODE_ENV !== "test"
+      process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test"
         ? z.string()
         : z.string().optional(),
+    ENABLE_PASSWORD_LOGIN: z.enum(["true", "false"]).optional(),
     // VERCEL_URL is automatically set by Vercel
     // as system environment variable. doesn't include `https`
     // https://vercel.com/docs/projects/environment-variables/system-environment-variables
@@ -139,7 +139,7 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
         ? process.env.NEXT_PUBLIC_VERCEL_URL
         : (process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ??
-          process.env.NEXT_PUBLIC_VERCEL_URL),
+            process.env.NEXT_PUBLIC_VERCEL_URL),
     ),
     NEXT_PUBLIC_OLD_SITE_URL: z.url().default("https://old.afterclass.io"),
     // Same OAuth client as GOOGLE_CLIENT_ID; its origin must be an authorised
@@ -181,6 +181,7 @@ export const env = createEnv({
     EDGE_CONFIG: process.env.EDGE_CONFIG,
     NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    ENABLE_PASSWORD_LOGIN: process.env.ENABLE_PASSWORD_LOGIN,
     // Leave undefined when unset so the schema's siteUrlValidator fallback
     // (VERCEL_PROJECT_PRODUCTION_URL on production, VERCEL_URL otherwise) runs.
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,

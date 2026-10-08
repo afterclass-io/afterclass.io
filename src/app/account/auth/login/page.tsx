@@ -2,18 +2,14 @@ import { type Metadata } from "next";
 import { Suspense } from "react";
 
 import { AuthCard, LoginForm } from "@/modules/auth/components";
-import { getEdgeConfig } from "@/common/providers/EdgeConfig/EdgeConfigProvider";
+import { isPasswordLoginEnabled } from "@/server/auth/password-login";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/account/auth/login" },
 };
 
 export default async function Login() {
-  const ecfg = await getEdgeConfig().catch(() => null);
-  const isDev = process.env.NODE_ENV === "development";
-  const enablePasswordLogin = isDev
-    ? process.env.ENABLE_PASSWORD_LOGIN !== "false"
-    : (ecfg?.enablePasswordLogin ?? false);
+  const enablePasswordLogin = await isPasswordLoginEnabled();
   return (
     <AuthCard title="Login">
       {/*
