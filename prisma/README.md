@@ -56,3 +56,9 @@ bun run db:reset
 See [Prisma
 Seeding](https://www.prisma.io/docs/orm/prisma-migrate/workflows/seeding) for
 more details.
+
+## Row Level Security
+
+- Every `public` table keeps Row Level Security (RLS) enabled with no policy.
+- The application role is the table owner and skips RLS.
+- Add the one-line `ENABLE ROW LEVEL SECURITY` (or `REVOKE`) to the migration that creates a new table or function.
