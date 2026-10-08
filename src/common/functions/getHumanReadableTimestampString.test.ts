@@ -1,19 +1,17 @@
 import { describe, expect, it } from "vitest";
+import cases from "./getHumanReadableTimestampString.cases.json";
 import { getHumanReadableTimestampString } from "./getHumanReadableTimestampString";
 
 describe("getHumanReadableTimestampString", () => {
-  it("formats as '<localeDate> <localeTime>'", () => {
-    const ms = Date.UTC(2022, 5, 15, 12, 30, 45);
-    const d = new Date(ms);
-    expect(getHumanReadableTimestampString(ms)).toBe(
-      `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`,
-    );
+  it("formats as '<SGT date> <SGT time>'", () => {
+    for (const { ms, expected } of cases) {
+      expect(getHumanReadableTimestampString(ms)).toBe(expected);
+    }
   });
 
   it("passes the argument straight to `new Date` (milliseconds, not seconds)", () => {
-    const d = new Date(1_000);
-    expect(getHumanReadableTimestampString(1_000)).toBe(
-      `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`,
+    expect(getHumanReadableTimestampString(1672504200000)).toBe(
+      "1 Jan 2023 00:30",
     );
   });
 });

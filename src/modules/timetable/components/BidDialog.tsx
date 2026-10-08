@@ -47,6 +47,7 @@ import { useDebouncedValue } from "@/common/hooks/useDebouncedValue";
 import { activeTimetableIdAtom } from "@/modules/timetable/atoms/timetable";
 import { pickCurrentBidWindow } from "@/modules/timetable/functions/current-window";
 import { formatBidAmount } from "@/modules/timetable/functions/format";
+import { formatDateSGT } from "@/common/functions/format-date-sgt";
 import {
   BID_STATUS_OPTIONS,
   type UserBidStatus,
@@ -920,7 +921,7 @@ export function BidDialog({
                         </p>
                         <p className="text-muted-foreground text-xs">
                           {bid.bidWindow.resultsAt
-                            ? `Results: ${new Date(bid.bidWindow.resultsAt).toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" })}`
+                            ? `Results: ${formatDateSGT(bid.bidWindow.resultsAt)}`
                             : "Results date not set"}
                         </p>
                         {/* Keyed on notes so local state resets after a save */}

@@ -25,11 +25,11 @@ import { inferAcadTerm } from "@/common/functions";
 import { getCurrentWindowOrNull } from "@/server/api/bidWindows/getCurrentWindow/safe";
 import { ProgressLink } from "@/common/components/progress-link";
 import { Button } from "@/common/components/button";
+import { formatDateTimeSGT } from "@/common/functions/format-date-sgt";
 
 interface TimelineItemData {
   title: string;
   date: Date;
-  dateFormat: string;
   icon: React.ReactNode;
 }
 
@@ -38,49 +38,6 @@ const EVENT_ICONS = {
   closes: <Lock />,
   results: <ScreenShare />,
 } as const;
-
-const EVENT_DATE_FORMAT = "dd MMM yyyy, EEE haaa";
-
-/** Format a Date in Singapore Time (SGT, UTC+8) using Intl.DateTimeFormat */
-function formatSgt(date: Date, formatStr: string): string {
-  if (formatStr === EVENT_DATE_FORMAT) {
-    // "dd MMM yyyy, EEE haaa" → e.g. "06 Jul 2026, Mon 5PM"
-    const parts = new Intl.DateTimeFormat("en-SG", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      weekday: "short",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: "Asia/Singapore",
-    }).formatToParts(date);
-
-    const get = (type: string) =>
-      parts.find((p) => p.type === type)?.value ?? "";
-    const month = get("month");
-    const day = get("day");
-    const year = get("year");
-    const weekday = get("weekday");
-    let hour = parseInt(get("hour"));
-    const minute = get("minute");
-    const dayPeriod = get("dayPeriod").toUpperCase();
-
-    // Convert 12-hour to 1-12 without leading zero
-    if (hour === 0) hour = 12;
-
-    const timeStr =
-      minute === "00" ? `${hour}${dayPeriod}` : `${hour}:${minute}${dayPeriod}`;
-
-    return `${day} ${month} ${year}, ${weekday} ${timeStr}`;
-  }
-  // Fallback: use Intl.DateTimeFormat directly
-  return new Intl.DateTimeFormat("en-SG", {
-    dateStyle: "full",
-    timeStyle: "full",
-    timeZone: "Asia/Singapore",
-  }).format(date);
-}
 
 /**
  * Build 3 timeline events for a single bidding window from stored
@@ -96,7 +53,6 @@ function buildTimelineItems(bw: {
       ? {
           title: "Opens",
           date: bw.opensAt,
-          dateFormat: EVENT_DATE_FORMAT,
           icon: EVENT_ICONS.opens,
         }
       : null,
@@ -104,7 +60,6 @@ function buildTimelineItems(bw: {
       ? {
           title: "Closes",
           date: bw.closesAt,
-          dateFormat: EVENT_DATE_FORMAT,
           icon: EVENT_ICONS.closes,
         }
       : null,
@@ -112,7 +67,6 @@ function buildTimelineItems(bw: {
       ? {
           title: "Results Released",
           date: bw.resultsAt,
-          dateFormat: EVENT_DATE_FORMAT,
           icon: EVENT_ICONS.results,
         }
       : null,
@@ -192,7 +146,7 @@ const TimelineWithIcon = ({
                 )}
               </TimelineTitle>
               <TimelineDescription className="font-mono">
-                {formatSgt(item.date, item.dateFormat)}
+                {formatDateTimeSGT(item.date)}
               </TimelineDescription>
             </TimelineContent>
           </TimelineItem>

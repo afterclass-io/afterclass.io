@@ -10,7 +10,10 @@ import {
 } from "@/common/components/card";
 import { Separator } from "@/common/components/separator";
 import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
-import { PredictionType, type UniversityAbbreviation } from "@/generated/prisma/enums";
+import {
+  PredictionType,
+  type UniversityAbbreviation,
+} from "@/generated/prisma/enums";
 import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
 import { BidAnalyticsClient } from "@/modules/bidding/components/BidAnalyticsClient";
 import { AddToTimetableButton } from "@/modules/bidding/components/AddToTimetableButton";
@@ -20,6 +23,7 @@ import { texts } from "@/modules/bidding/constants";
 import { EmptyState } from "@/common/components/empty-state";
 import { selectOneClassPerTerm } from "@/modules/bidding/utils/selectOneClassPerTerm";
 import { filterSafetyFactors } from "@/modules/bidding/utils/bid-prediction";
+import { formatDateSGT } from "@/common/functions/format-date-sgt";
 
 // `classId`, `course`, `section`, `rounds`, `windows` and `prof` all select a
 // facet of this page, so the canonical drops them.
@@ -213,7 +217,7 @@ export default async function BiddingHistoryPage({
                 <span className="text-muted-foreground text-xs sm:text-sm">
                   Professor
                 </span>
-                <p className="font-medium text-xs sm:text-sm">
+                <p className="text-xs font-medium sm:text-sm">
                   {classInfo.professor?.name ?? "TBA"}
                 </p>
               </div>
@@ -221,7 +225,7 @@ export default async function BiddingHistoryPage({
                 <span className="text-muted-foreground text-xs sm:text-sm">
                   Section
                 </span>
-                <p className="font-medium text-xs sm:text-sm">
+                <p className="text-xs font-medium sm:text-sm">
                   {classInfo.section}
                 </p>
               </div>
@@ -229,7 +233,7 @@ export default async function BiddingHistoryPage({
                 <span className="text-muted-foreground text-xs sm:text-sm">
                   Grading Basis
                 </span>
-                <p className="font-medium text-xs sm:text-sm">
+                <p className="text-xs font-medium sm:text-sm">
                   {classInfo.gradingBasis ?? "N/A"}
                 </p>
               </div>
@@ -265,9 +269,7 @@ export default async function BiddingHistoryPage({
                           <td className="py-1.5 pr-2 font-medium sm:pr-4">
                             Class
                           </td>
-                          <td className="py-1.5 pr-2 sm:pr-4">
-                            {t.dayOfWeek}
-                          </td>
+                          <td className="py-1.5 pr-2 sm:pr-4">{t.dayOfWeek}</td>
                           <td className="py-1.5 pr-2 font-mono whitespace-nowrap tabular-nums sm:pr-4">
                             {t.startTime}-{t.endTime}
                           </td>
@@ -289,11 +291,10 @@ export default async function BiddingHistoryPage({
                             </td>
                             <td className="py-1.5 pr-2 sm:pr-4">
                               <span className="whitespace-nowrap">
-                                {new Date(t.date).toLocaleDateString("en-GB", {
+                                {formatDateSGT(t.date, {
                                   day: "2-digit",
                                   month: "short",
                                   year: "numeric",
-                                  timeZone: "Asia/Singapore",
                                 })}
                               </span>
                               <br />

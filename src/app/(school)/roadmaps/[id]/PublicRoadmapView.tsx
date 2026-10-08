@@ -34,6 +34,7 @@ import {
 } from "@/common/components/tooltip";
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
 import { censorProfanity, censorProfanityOrNull } from "@/common/functions";
+import { formatDateSGT } from "@/common/functions/format-date-sgt";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
 
 // ---------------------------------------------------------------------------
@@ -131,13 +132,7 @@ export function PublicRoadmapView({
     }
   }, [roadmapId, recordShareMutation]);
 
-  const formattedDate = publishedAt
-    ? new Date(publishedAt).toLocaleDateString("en-SG", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
-    : null;
+  const formattedDate = publishedAt ? formatDateSGT(publishedAt) : null;
 
   const safeName = censorProfanity(roadmapName);
   const safeUsername = censorProfanity(ownerUsername);
@@ -158,7 +153,9 @@ export function PublicRoadmapView({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">{safeName}</PageTitle>
+          <PageTitle className="text-left text-2xl font-bold tracking-tight md:text-2xl!">
+            {safeName}
+          </PageTitle>
           {/* Author line: who made this roadmap, their faculty, and when it
               was published */}
           <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">

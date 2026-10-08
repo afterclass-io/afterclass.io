@@ -82,6 +82,36 @@ const config = [
       "@typescript-eslint/no-unsafe-assignment": "off",
     },
   },
+  {
+    files: ["src/**/*.{ts,tsx}", "views/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "CallExpression[callee.property.name='toLocaleDateString']",
+          message: "Use formatDateSGT from @/common/functions/format-date-sgt.",
+        },
+        {
+          selector: "CallExpression[callee.property.name='toLocaleTimeString']",
+          message: "Use formatTimeSGT from @/common/functions/format-date-sgt.",
+        },
+        {
+          selector:
+            "NewExpression[callee.object.name='Intl'][callee.property.name='DateTimeFormat']",
+          message:
+            "Use the shared SGT helpers in @/common/functions/format-date-sgt.",
+        },
+      ],
+    },
+  },
+  {
+    files: [
+      "src/common/functions/format-date-sgt.ts",
+      "**/*.test.{ts,tsx}",
+      "**/*.stories.{ts,tsx}",
+    ],
+    rules: { "no-restricted-syntax": "off" },
+  },
 ];
 
 export default config;
