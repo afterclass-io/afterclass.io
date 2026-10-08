@@ -17,11 +17,12 @@ export const RevieweeGroup = ({ review, variant }: RevieweeGroupProps) => {
 
   return (
     <div className="flex w-full min-w-0 items-start md:w-auto">
-      <SchoolIcon school={review.university} className="mt-0.5 mr-2 shrink-0" />
-      <div className="flex min-w-0 flex-wrap items-center gap-x-1">
+      <SchoolIcon school={review.university} className="mt-0 mr-2 shrink-0" />
+      <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0">
         {isShowProf ? (
           <ProgressLink
             variant="link"
+            size="inline"
             href={`/professor/${review.professorSlug}`}
             className="hover:text-primary text-muted-foreground min-w-0 shrink break-words whitespace-normal hover:no-underline"
             data-test="review-professor-label"

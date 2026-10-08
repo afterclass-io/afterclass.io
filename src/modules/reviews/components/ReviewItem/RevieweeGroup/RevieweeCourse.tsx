@@ -19,8 +19,9 @@ export const RevieweeCourse = ({
       <TooltipTrigger asChild>
         <ProgressLink
           variant="link"
+          size="inline"
           href={`/course/${courseCode}`}
-          className="hover:text-primary text-muted-foreground min-w-0 shrink break-words whitespace-normal hover:no-underline"
+          className="hover:text-primary text-muted-foreground min-w-0 shrink break-words wrap-anywhere whitespace-normal hover:no-underline"
           data-test="review-course-label"
         >
           {courseCode}
