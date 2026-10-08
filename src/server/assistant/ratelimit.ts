@@ -1,17 +1,18 @@
-import { db, txDb } from "@/server/db";
+import { db } from "@/server/db";
 
 /**
  * Fixed-window per-key counter with atomic check+increment.
  *
  * Window semantics: FIXED windows (`windowStart` = floor(now / windowMs) *
- * windowMs, one `RateLimitWindow` row per `<key>:<windowStart>`). A caller can
+ * windowMs, one `rate_limit` row per `<key>:<windowStart>`). A caller can
  * burst up to 2× the limit at a window boundary (last second of window N +
  * first second of window N+1). This is DOCUMENTED and accepted: the buckets
  * guard cost/nuisance (chat turns, tool writes, ical spray), not hard
- * real-time fairness — the atomic conditional `updateMany WHERE count < limit`
- * still makes every window's cap exact under concurrency (no lost-update
- * overshoot within a window). A sliding-window upgrade would cost a
- * read-modify-write per call; revisit only if boundary bursts show up in
+ * real-time fairness — a single atomic SQL statement
+ * (`INSERT ... ON CONFLICT DO UPDATE ... WHERE r."count" < limit RETURNING r."count"`)
+ * on the pooled client makes every window's cap exact under concurrency
+ * (no lost-update overshoot within a window). A sliding-window upgrade would
+ * cost a read-modify-write per call; revisit only if boundary bursts show up in
  * abuse review.
  *
  * Row lifecycle: windows rotate every minute, so stale rows accumulate one
@@ -64,31 +65,21 @@ export async function checkAndIncrement(
   windowMinutes: number,
 ): Promise<{ ok: boolean; retryAfterSeconds: number }> {
   const { windowMs, windowStart, rowKey } = windowFor(key, windowMinutes);
+  const retryAfter = retryAfterSeconds(windowStart, windowMs);
+  // A limit below 1 admits nobody. This keeps the old contract and skips the DB.
+  if (limit < 1) return { ok: false, retryAfterSeconds: retryAfter };
 
-  // Interactive transaction → direct (non-pooled) client: pooled 6543
-  // pgbouncer breaks interactive $transaction.
-  return txDb.$transaction(async (tx) => {
-    // Ensure a row exists for this window (idempotent no-op if present).
-    await tx.rateLimitWindow.upsert({
-      where: { key: rowKey },
-      create: { key: rowKey, windowStart: BigInt(windowStart), count: 0 },
-      update: {},
-    });
-    // Conditional increment - only when still under limit. The WHERE + increment
-    // is atomic; concurrent callers cannot both read `count < limit` and both
-    // increment (only one UPDATE matches, the other sees count 0 and is blocked).
-    const result = await tx.rateLimitWindow.updateMany({
-      where: { key: rowKey, count: { lt: limit } },
-      data: { count: { increment: 1 } },
-    });
-    if (result.count === 0) {
-      return {
-        ok: false,
-        retryAfterSeconds: retryAfterSeconds(windowStart, windowMs),
-      };
-    }
-    return { ok: true, retryAfterSeconds: 0 };
-  });
+  const rows = await db.$queryRaw<{ count: number }[]>`
+    INSERT INTO "rate_limit" AS r ("key", "window_start", "count", "updated_at")
+    VALUES (${rowKey}::text, ${BigInt(windowStart)}::bigint, 1, (now() AT TIME ZONE 'UTC'))
+    ON CONFLICT ("key") DO UPDATE
+      SET "count" = r."count" + 1,
+          "updated_at" = (now() AT TIME ZONE 'UTC')
+      WHERE r."count" < ${limit}::int
+    RETURNING r."count"`;
+  return rows.length > 0
+    ? { ok: true, retryAfterSeconds: 0 }
+    : { ok: false, retryAfterSeconds: retryAfter };
 }
 
 /**
