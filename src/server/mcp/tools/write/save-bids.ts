@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { bidPlanToViewProps, buildBidPlan } from "../bid-plan-shared";
-import { buildTermMap, resolveEntryClass } from "../bid-write-helpers";
+import { buildTermMap } from "../bid-write-helpers";
 import { stripBidNotes } from "../bid-shared";
 import {
   confirmField,
@@ -92,8 +92,19 @@ export const saveBidsTool: McpTool<typeof saveBidsSchema> = {
             error: string;
           };
 
-      const updated: PerEntry[] = [];
+      const updated: PerEntry[] = new Array<PerEntry>(bids.length);
       const succeededAcadTermIds = new Set<string>();
+
+      type ValidWindowEntry = {
+        index: number;
+        courseCode: string;
+        section: string;
+        bidAmount: number;
+        bidWindowId: number;
+        notes?: string;
+      };
+
+      const validWindowEntries: ValidWindowEntry[] = [];
 
       for (let i = 0; i < bids.length; i++) {
         const entry = bids[i]!;
@@ -104,87 +115,156 @@ export const saveBidsTool: McpTool<typeof saveBidsSchema> = {
         let bidWindowId: number | undefined = entry.bidWindowId;
         if (bidWindowId === undefined) {
           if (defaultWindowErr) {
-            updated.push({
+            updated[i] = {
               ok: false,
               index: i,
               courseCode,
               section,
               error: defaultWindowErr,
-            });
+            };
             continue;
           }
           bidWindowId = defaultWindowId ?? undefined;
           if (bidWindowId === undefined) {
-            updated.push({
+            updated[i] = {
               ok: false,
               index: i,
               courseCode,
               section,
               error: "No bid window is currently open for bidding.",
-            });
+            };
             continue;
           }
         }
 
-        // Resolve classId by courseCode+section, hinted with the hoisted current
-        // window's term (no per-entry fetch). Overrides targeting other windows
-        // fall back to a broad search inside resolveEntryClass — courseCode +
-        // section narrows well on its own.
-        const termId = cw?.acadTermId ?? undefined;
-        let classId: string | null = null;
+        validWindowEntries.push({
+          index: i,
+          courseCode,
+          section,
+          bidAmount,
+          bidWindowId,
+          notes: entry.notes,
+        });
+      }
+
+      type ResolvedEntry = {
+        index: number;
+        courseCode: string;
+        section: string;
+        classId: string;
+        bidWindowId: number;
+        bidAmount: number;
+        notes?: string;
+      };
+
+      const validResolvedEntries: ResolvedEntry[] = [];
+      const termId = cw?.acadTermId ?? undefined;
+
+      if (validWindowEntries.length > 0) {
+        let resolvedItems: Array<{
+          courseCode: string;
+          section: string;
+          classId: string | null;
+        }> = [];
         try {
-          classId = await resolveEntryClass(caller, {
-            courseCode,
-            section,
-            termId,
+          resolvedItems = await caller.classes.resolveByCodeSections({
+            items: validWindowEntries.map((e) => ({
+              courseCode: e.courseCode,
+              section: e.section,
+            })),
+            acadTermId: termId,
           });
-          if (!classId) {
-            updated.push({
+        } catch (e) {
+          const errMsg = errorMessage(e);
+          for (const entry of validWindowEntries) {
+            updated[entry.index] = {
               ok: false,
-              index: i,
-              courseCode,
-              section,
-              error: `Class for ${courseCode} section ${section} not found${termId ? ` in term ${termId}` : ""}.`,
-            });
-            continue;
+              index: entry.index,
+              courseCode: entry.courseCode,
+              section: entry.section,
+              error: errMsg,
+            };
           }
-        } catch (e) {
-          updated.push({
-            ok: false,
-            index: i,
-            courseCode,
-            section,
-            error: errorMessage(e),
-          });
-          continue;
         }
 
-        // Upsert via existing procedure (thin wrapper — no duplicated data-access logic).
+        if (resolvedItems.length > 0) {
+          for (let k = 0; k < validWindowEntries.length; k++) {
+            const entry = validWindowEntries[k]!;
+            const resolved = resolvedItems[k];
+            const classId = resolved?.classId ?? null;
+            if (!classId) {
+              updated[entry.index] = {
+                ok: false,
+                index: entry.index,
+                courseCode: entry.courseCode,
+                section: entry.section,
+                error: `Class for ${entry.courseCode} section ${entry.section} not found${termId ? ` in term ${termId}` : ""}.`,
+              };
+            } else {
+              validResolvedEntries.push({
+                index: entry.index,
+                courseCode: entry.courseCode,
+                section: entry.section,
+                classId,
+                bidWindowId: entry.bidWindowId,
+                bidAmount: entry.bidAmount,
+                notes: entry.notes,
+              });
+            }
+          }
+        }
+      }
+
+      if (validResolvedEntries.length > 0) {
         try {
-          const result = await caller.userBids.upsert({
-            classId,
-            bidWindowId,
-            bidAmount,
-            notes: entry.notes,
+          const upsertResults = await caller.userBids.upsertMany({
+            entries: validResolvedEntries.map((e) => ({
+              classId: e.classId,
+              bidWindowId: e.bidWindowId,
+              bidAmount: e.bidAmount,
+              notes: e.notes,
+            })),
           });
-          // Learn the term for plan building from the hoisted index (note: the
-          // index predates this call's upserts — see the fallback below).
-          const known = termMap.get(`${classId ?? ""}|${bidWindowId}`);
-          if (known) succeededAcadTermIds.add(known);
-          // The pre-loop listMine cannot contain rows created by this call
-          // (e.g. a first-time bidder whose list was empty), so fall back to
-          // the current window's term when the upsert targeted it.
-          else if (cw?.id === bidWindowId && cw?.acadTermId)
-            succeededAcadTermIds.add(cw.acadTermId);
-          updated.push({ ok: true, index: i, courseCode, section, result });
+
+          for (let j = 0; j < validResolvedEntries.length; j++) {
+            const entry = validResolvedEntries[j]!;
+            const res = upsertResults[j];
+            if (res?.ok) {
+              const known = termMap.get(
+                `${entry.classId}|${entry.bidWindowId}`,
+              );
+              if (known) succeededAcadTermIds.add(known);
+              else if (cw?.id === entry.bidWindowId && cw?.acadTermId)
+                succeededAcadTermIds.add(cw.acadTermId);
+
+              updated[entry.index] = {
+                ok: true,
+                index: entry.index,
+                courseCode: entry.courseCode,
+                section: entry.section,
+                result: res.bid,
+              };
+            } else {
+              updated[entry.index] = {
+                ok: false,
+                index: entry.index,
+                courseCode: entry.courseCode,
+                section: entry.section,
+                error: res?.message ?? "Failed to save bid",
+              };
+            }
+          }
         } catch (e) {
-          updated.push({
-            ok: false,
-            index: i,
-            courseCode,
-            section,
-            error: errorMessage(e),
-          });
+          const errMsg = errorMessage(e);
+          for (const entry of validResolvedEntries) {
+            updated[entry.index] = {
+              ok: false,
+              index: entry.index,
+              courseCode: entry.courseCode,
+              section: entry.section,
+              error: errMsg,
+            };
+          }
         }
       }
 
