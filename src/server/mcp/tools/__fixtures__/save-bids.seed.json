@@ -1,0 +1,346 @@
+{
+  "user": {
+    "id": "usr-parity-savebids",
+    "email": "usr-parity-savebids@example.edu",
+    "username": "usr_parity_savebids"
+  },
+  "acadTerms": [
+    {
+      "id": "AY202425T1-PARITY",
+      "acadYearStart": 2024,
+      "acadYearEnd": 2025,
+      "term": "1"
+    },
+    {
+      "id": "AY202425T2-PARITY",
+      "acadYearStart": 2024,
+      "acadYearEnd": 2025,
+      "term": "2"
+    }
+  ],
+  "bidWindows": [
+    {
+      "id": 9101,
+      "acadTermId": "AY202425T1-PARITY",
+      "round": "1",
+      "window": 1,
+      "opensAt": "2020-01-01T00:00:00.000Z",
+      "resultsAt": "2035-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 9102,
+      "acadTermId": "AY202425T2-PARITY",
+      "round": "1",
+      "window": 1,
+      "opensAt": "2020-01-01T00:00:00.000Z",
+      "resultsAt": "2035-01-01T00:00:00.000Z"
+    }
+  ],
+  "userBidBudget": {
+    "balance": 1000
+  },
+  "classes": [
+    {
+      "courseCode": "SB201",
+      "section": "G1",
+      "classId": "cl-sb-01",
+      "bossId": 92001,
+      "bidId": "ub-sb-01"
+    },
+    {
+      "courseCode": "SB202",
+      "section": "G1",
+      "classId": "cl-sb-02",
+      "bossId": 92002,
+      "bidId": "ub-sb-02"
+    },
+    {
+      "courseCode": "SB203",
+      "section": "G1",
+      "classId": "cl-sb-03",
+      "bossId": 92003,
+      "bidId": "ub-sb-03"
+    },
+    {
+      "courseCode": "SB204",
+      "section": "G1",
+      "classId": "cl-sb-04",
+      "bossId": 92004,
+      "bidId": "ub-sb-04"
+    },
+    {
+      "courseCode": "SB205",
+      "section": "G1",
+      "classId": "cl-sb-05",
+      "bossId": 92005,
+      "bidId": "ub-sb-05"
+    },
+    {
+      "courseCode": "SB206",
+      "section": "G1",
+      "classId": "cl-sb-06",
+      "bossId": 92006,
+      "bidId": "ub-sb-06"
+    },
+    {
+      "courseCode": "SB207",
+      "section": "G1",
+      "classId": "cl-sb-07",
+      "bossId": 92007,
+      "bidId": "ub-sb-07"
+    },
+    {
+      "courseCode": "SB208",
+      "section": "G1",
+      "classId": "cl-sb-08",
+      "bossId": 92008,
+      "bidId": "ub-sb-08"
+    },
+    {
+      "courseCode": "SB209",
+      "section": "G1",
+      "classId": "cl-sb-09",
+      "bossId": 92009,
+      "bidId": "ub-sb-09"
+    },
+    {
+      "courseCode": "SB210",
+      "section": "G1",
+      "classId": "cl-sb-10",
+      "bossId": 92010,
+      "bidId": "ub-sb-10"
+    },
+    {
+      "courseCode": "SB211",
+      "section": "G1",
+      "classId": "cl-sb-11",
+      "bossId": 92011,
+      "bidId": "ub-sb-11"
+    },
+    {
+      "courseCode": "SB212",
+      "section": "G1",
+      "classId": "cl-sb-12",
+      "bossId": 92012,
+      "bidId": "ub-sb-12"
+    },
+    {
+      "courseCode": "SB213",
+      "section": "G1",
+      "classId": "cl-sb-13",
+      "bossId": 92013,
+      "bidId": "ub-sb-13"
+    },
+    {
+      "courseCode": "SB214",
+      "section": "G1",
+      "classId": "cl-sb-14",
+      "bossId": 92014,
+      "bidId": "ub-sb-14"
+    },
+    {
+      "courseCode": "SB215",
+      "section": "G1",
+      "classId": "cl-sb-15",
+      "bossId": 92015,
+      "bidId": "ub-sb-15"
+    },
+    {
+      "courseCode": "SB216",
+      "section": "G1",
+      "classId": "cl-sb-16",
+      "bossId": 92016,
+      "bidId": "ub-sb-16"
+    },
+    {
+      "courseCode": "SB217",
+      "section": "G1",
+      "classId": "cl-sb-17",
+      "bossId": 92017,
+      "bidId": "ub-sb-17"
+    },
+    {
+      "courseCode": "SB218",
+      "section": "G1",
+      "classId": "cl-sb-18",
+      "bossId": 92018,
+      "bidId": "ub-sb-18"
+    },
+    {
+      "courseCode": "SB219",
+      "section": "G1",
+      "classId": "cl-sb-19",
+      "bossId": 92019,
+      "bidId": "ub-sb-19"
+    },
+    {
+      "courseCode": "SB220",
+      "section": "G1",
+      "classId": "cl-sb-20",
+      "bossId": 92020,
+      "bidId": "ub-sb-20"
+    }
+  ],
+  "validBids": [
+    {
+      "courseCode": "SB201",
+      "section": "G1",
+      "bidAmount": 25,
+      "bidWindowId": 9101,
+      "notes": "bid note 1"
+    },
+    {
+      "courseCode": "SB202",
+      "section": "G1",
+      "bidAmount": 26,
+      "bidWindowId": 9101,
+      "notes": "bid note 2"
+    },
+    {
+      "courseCode": "SB203",
+      "section": "G1",
+      "bidAmount": 27,
+      "bidWindowId": 9101,
+      "notes": "bid note 3"
+    },
+    {
+      "courseCode": "SB204",
+      "section": "G1",
+      "bidAmount": 28,
+      "bidWindowId": 9101,
+      "notes": "bid note 4"
+    },
+    {
+      "courseCode": "SB205",
+      "section": "G1",
+      "bidAmount": 29,
+      "bidWindowId": 9101,
+      "notes": "bid note 5"
+    },
+    {
+      "courseCode": "SB206",
+      "section": "G1",
+      "bidAmount": 30,
+      "bidWindowId": 9101,
+      "notes": "bid note 6"
+    },
+    {
+      "courseCode": "SB207",
+      "section": "G1",
+      "bidAmount": 31,
+      "bidWindowId": 9101,
+      "notes": "bid note 7"
+    },
+    {
+      "courseCode": "SB208",
+      "section": "G1",
+      "bidAmount": 32,
+      "bidWindowId": 9101,
+      "notes": "bid note 8"
+    },
+    {
+      "courseCode": "SB209",
+      "section": "G1",
+      "bidAmount": 33,
+      "bidWindowId": 9101,
+      "notes": "bid note 9"
+    },
+    {
+      "courseCode": "SB210",
+      "section": "G1",
+      "bidAmount": 34,
+      "bidWindowId": 9101,
+      "notes": "bid note 10"
+    },
+    {
+      "courseCode": "SB211",
+      "section": "G1",
+      "bidAmount": 35,
+      "bidWindowId": 9101,
+      "notes": "bid note 11"
+    },
+    {
+      "courseCode": "SB212",
+      "section": "G1",
+      "bidAmount": 36,
+      "bidWindowId": 9101,
+      "notes": "bid note 12"
+    },
+    {
+      "courseCode": "SB213",
+      "section": "G1",
+      "bidAmount": 37,
+      "bidWindowId": 9101,
+      "notes": "bid note 13"
+    },
+    {
+      "courseCode": "SB214",
+      "section": "G1",
+      "bidAmount": 38,
+      "bidWindowId": 9101,
+      "notes": "bid note 14"
+    },
+    {
+      "courseCode": "SB215",
+      "section": "G1",
+      "bidAmount": 39,
+      "bidWindowId": 9101,
+      "notes": "bid note 15"
+    },
+    {
+      "courseCode": "SB216",
+      "section": "G1",
+      "bidAmount": 40,
+      "bidWindowId": 9101,
+      "notes": "bid note 16"
+    },
+    {
+      "courseCode": "SB217",
+      "section": "G1",
+      "bidAmount": 41,
+      "bidWindowId": 9101,
+      "notes": "bid note 17"
+    },
+    {
+      "courseCode": "SB218",
+      "section": "G1",
+      "bidAmount": 42,
+      "bidWindowId": 9101,
+      "notes": "bid note 18"
+    },
+    {
+      "courseCode": "SB219",
+      "section": "G1",
+      "bidAmount": 43,
+      "bidWindowId": 9101,
+      "notes": "bid note 19"
+    },
+    {
+      "courseCode": "SB220",
+      "section": "G1",
+      "bidAmount": 44,
+      "bidWindowId": 9101,
+      "notes": "bid note 20"
+    }
+  ],
+  "failureBids": [
+    {
+      "courseCode": "SB-UNKNOWN-99",
+      "section": "G1",
+      "bidAmount": 25,
+      "bidWindowId": 9101
+    },
+    {
+      "courseCode": "SB201",
+      "section": "G1",
+      "bidAmount": 25,
+      "bidWindowId": 9102
+    },
+    {
+      "courseCode": "SB201",
+      "section": "G1",
+      "bidAmount": 25,
+      "bidWindowId": 999999
+    }
+  ]
+}

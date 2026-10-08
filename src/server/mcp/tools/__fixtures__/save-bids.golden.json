@@ -1,0 +1,560 @@
+{
+  "valid": {
+    "updated": [
+      {
+        "ok": true,
+        "index": 0,
+        "courseCode": "SB201",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-01",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-01",
+          "bidWindowId": 9101,
+          "bidAmount": 25,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 1,
+        "courseCode": "SB202",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-02",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-02",
+          "bidWindowId": 9101,
+          "bidAmount": 26,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 2,
+        "courseCode": "SB203",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-03",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-03",
+          "bidWindowId": 9101,
+          "bidAmount": 27,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 3,
+        "courseCode": "SB204",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-04",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-04",
+          "bidWindowId": 9101,
+          "bidAmount": 28,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 4,
+        "courseCode": "SB205",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-05",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-05",
+          "bidWindowId": 9101,
+          "bidAmount": 29,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 5,
+        "courseCode": "SB206",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-06",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-06",
+          "bidWindowId": 9101,
+          "bidAmount": 30,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 6,
+        "courseCode": "SB207",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-07",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-07",
+          "bidWindowId": 9101,
+          "bidAmount": 31,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 7,
+        "courseCode": "SB208",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-08",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-08",
+          "bidWindowId": 9101,
+          "bidAmount": 32,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 8,
+        "courseCode": "SB209",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-09",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-09",
+          "bidWindowId": 9101,
+          "bidAmount": 33,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 9,
+        "courseCode": "SB210",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-10",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-10",
+          "bidWindowId": 9101,
+          "bidAmount": 34,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 10,
+        "courseCode": "SB211",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-11",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-11",
+          "bidWindowId": 9101,
+          "bidAmount": 35,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 11,
+        "courseCode": "SB212",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-12",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-12",
+          "bidWindowId": 9101,
+          "bidAmount": 36,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 12,
+        "courseCode": "SB213",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-13",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-13",
+          "bidWindowId": 9101,
+          "bidAmount": 37,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 13,
+        "courseCode": "SB214",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-14",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-14",
+          "bidWindowId": 9101,
+          "bidAmount": 38,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 14,
+        "courseCode": "SB215",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-15",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-15",
+          "bidWindowId": 9101,
+          "bidAmount": 39,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 15,
+        "courseCode": "SB216",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-16",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-16",
+          "bidWindowId": 9101,
+          "bidAmount": 40,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 16,
+        "courseCode": "SB217",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-17",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-17",
+          "bidWindowId": 9101,
+          "bidAmount": 41,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 17,
+        "courseCode": "SB218",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-18",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-18",
+          "bidWindowId": 9101,
+          "bidAmount": 42,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 18,
+        "courseCode": "SB219",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-19",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-19",
+          "bidWindowId": 9101,
+          "bidAmount": 43,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "ok": true,
+        "index": 19,
+        "courseCode": "SB220",
+        "section": "G1",
+        "result": {
+          "id": "ub-sb-20",
+          "userId": "usr-parity-savebids",
+          "classId": "cl-sb-20",
+          "bidWindowId": 9101,
+          "bidAmount": 44,
+          "status": "PLANNED",
+          "createdAt": "2024-01-01T00:00:00.000Z"
+        }
+      }
+    ],
+    "plan": {
+      "acadTermId": "AY202425T1-PARITY",
+      "budget": {
+        "balance": 1000
+      },
+      "bids": [
+        {
+          "id": "ub-sb-01",
+          "bidAmount": 25,
+          "status": "PLANNED",
+          "courseCode": "SB201",
+          "courseName": "Course SB201",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-02",
+          "bidAmount": 26,
+          "status": "PLANNED",
+          "courseCode": "SB202",
+          "courseName": "Course SB202",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-03",
+          "bidAmount": 27,
+          "status": "PLANNED",
+          "courseCode": "SB203",
+          "courseName": "Course SB203",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-04",
+          "bidAmount": 28,
+          "status": "PLANNED",
+          "courseCode": "SB204",
+          "courseName": "Course SB204",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-05",
+          "bidAmount": 29,
+          "status": "PLANNED",
+          "courseCode": "SB205",
+          "courseName": "Course SB205",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-06",
+          "bidAmount": 30,
+          "status": "PLANNED",
+          "courseCode": "SB206",
+          "courseName": "Course SB206",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-07",
+          "bidAmount": 31,
+          "status": "PLANNED",
+          "courseCode": "SB207",
+          "courseName": "Course SB207",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-08",
+          "bidAmount": 32,
+          "status": "PLANNED",
+          "courseCode": "SB208",
+          "courseName": "Course SB208",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-09",
+          "bidAmount": 33,
+          "status": "PLANNED",
+          "courseCode": "SB209",
+          "courseName": "Course SB209",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-10",
+          "bidAmount": 34,
+          "status": "PLANNED",
+          "courseCode": "SB210",
+          "courseName": "Course SB210",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-11",
+          "bidAmount": 35,
+          "status": "PLANNED",
+          "courseCode": "SB211",
+          "courseName": "Course SB211",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-12",
+          "bidAmount": 36,
+          "status": "PLANNED",
+          "courseCode": "SB212",
+          "courseName": "Course SB212",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-13",
+          "bidAmount": 37,
+          "status": "PLANNED",
+          "courseCode": "SB213",
+          "courseName": "Course SB213",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-14",
+          "bidAmount": 38,
+          "status": "PLANNED",
+          "courseCode": "SB214",
+          "courseName": "Course SB214",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-15",
+          "bidAmount": 39,
+          "status": "PLANNED",
+          "courseCode": "SB215",
+          "courseName": "Course SB215",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-16",
+          "bidAmount": 40,
+          "status": "PLANNED",
+          "courseCode": "SB216",
+          "courseName": "Course SB216",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-17",
+          "bidAmount": 41,
+          "status": "PLANNED",
+          "courseCode": "SB217",
+          "courseName": "Course SB217",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-18",
+          "bidAmount": 42,
+          "status": "PLANNED",
+          "courseCode": "SB218",
+          "courseName": "Course SB218",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-19",
+          "bidAmount": 43,
+          "status": "PLANNED",
+          "courseCode": "SB219",
+          "courseName": "Course SB219",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        },
+        {
+          "id": "ub-sb-20",
+          "bidAmount": 44,
+          "status": "PLANNED",
+          "courseCode": "SB220",
+          "courseName": "Course SB220",
+          "section": "G1",
+          "professorName": null,
+          "round": "1",
+          "window": 1
+        }
+      ]
+    }
+  },
+  "failures": {
+    "updated": [
+      {
+        "ok": false,
+        "index": 0,
+        "courseCode": "SB-UNKNOWN-99",
+        "section": "G1",
+        "error": "Class for SB-UNKNOWN-99 section G1 not found in term AY202425T1-PARITY."
+      },
+      {
+        "ok": false,
+        "index": 1,
+        "courseCode": "SB201",
+        "section": "G1",
+        "error": "Class does not belong to this academic term"
+      },
+      {
+        "ok": false,
+        "index": 2,
+        "courseCode": "SB201",
+        "section": "G1",
+        "error": "Unknown bid window"
+      }
+    ],
+    "plan": null
+  }
+}

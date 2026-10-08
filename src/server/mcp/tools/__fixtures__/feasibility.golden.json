@@ -1,0 +1,17 @@
+{
+  "issues": [
+    {
+      "type": "PREREQ_MISSING",
+      "courseCode": "CS121",
+      "courseName": "Specialization 1",
+      "detail": "Course CS121 requires CS999 which isn't planned in an earlier term. Raw requirement: \"Pre-Requisite: CS999\""
+    },
+    {
+      "type": "PREREQ_MISSING",
+      "courseCode": "CS131",
+      "courseName": "Senior Seminar 1",
+      "detail": "Course CS131 requires CS136 which isn't planned in an earlier term. Raw requirement: \"Pre-Requisite: CS136\""
+    }
+  ],
+  "isFeasible": false
+}
