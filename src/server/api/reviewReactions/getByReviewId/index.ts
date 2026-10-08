@@ -10,12 +10,16 @@ export const getByReviewId = protectedProcedure
       eventType: z.enum(ReviewReactionType).optional(),
     }),
   )
-  .query(
-    async ({ ctx, input }) =>
-      await ctx.db.reviewReactions.findMany({
-        where: {
-          reviewId: input.reviewId,
-          reaction: input.eventType,
-        },
-      }),
-  );
+  .query(async ({ ctx, input }) => {
+    const rows = await ctx.db.reviewReactions.findMany({
+      where: {
+        reviewId: input.reviewId,
+        reaction: input.eventType,
+      },
+      select: { reaction: true, reactingUserId: true },
+    });
+    return rows.map((r) => ({
+      reaction: r.reaction,
+      byViewer: r.reactingUserId === ctx.session.user.id,
+    }));
+  });

@@ -2,13 +2,11 @@ import { useEdgeConfigs } from "@/common/hooks";
 import { api, type RouterInputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { ReviewEventType } from "@/generated/prisma/enums";
-import { useSession } from "next-auth/react";
 import { useCallback, useMemo, useRef } from "react";
 
 import { debounce } from "@/common/functions/debounce";
 
 export function useOptimisticReaction() {
-  const { data: session } = useSession();
   const ecfg = useEdgeConfigs();
 
   const utils = api.useUtils();
@@ -73,23 +71,15 @@ export function useOptimisticReaction() {
       utils.reviewReactions.getByReviewId.setData(
         { reviewId },
         (oldQueryData) => {
-          const reactingUserId = session?.user.id ?? "";
-
           // when user undo their reaction
           if (!reaction) {
-            return oldQueryData?.filter(
-              (reaction) => reaction.reactingUserId !== reactingUserId,
-            );
+            return oldQueryData?.filter((reaction) => !reaction.byViewer);
           }
 
           // when user has new reaction
-          const now = new Date();
           const newReaction = {
             reaction: reaction,
-            reactingUserId,
-            reviewId,
-            createdAt: now,
-            updatedAt: now,
+            byViewer: true,
           };
 
           // when there are no other reactions on this review
@@ -97,14 +87,14 @@ export function useOptimisticReaction() {
 
           // remove the other reaction by the same user if it exists
           const updatedReactions = oldQueryData.filter(
-            (reaction) => reaction.reactingUserId !== reactingUserId,
+            (reaction) => !reaction.byViewer,
           );
 
           return [...updatedReactions, newReaction];
         },
       );
     },
-    [session?.user.id, utils.reviewReactions.getByReviewId],
+    [utils.reviewReactions.getByReviewId],
   );
 
   const debouncedMutate = useMemo(

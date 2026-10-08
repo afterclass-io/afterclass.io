@@ -32,7 +32,7 @@ export const ReviewReactionsGroup = ({ reviewId }: { reviewId: string }) => {
       acc[reaction].count += 1;
       acc[reaction].hasThisUserReacted =
         acc[reaction].hasThisUserReacted ||
-        reviewReaction.reactingUserId === session.user.id;
+        reviewReaction.byViewer;
 
       return acc;
     },

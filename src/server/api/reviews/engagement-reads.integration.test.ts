@@ -158,7 +158,7 @@ describe("reviewReactions.getByReviewId (integration)", () => {
       reviewId: profReview1Id,
       eventType: "LIKE",
     });
-    expect(res.map((r) => r.reactingUserId)).toEqual([reviewerId]);
+    expect(res).toEqual([{ reaction: "LIKE", byViewer: true }]);
   });
 });
 
@@ -186,20 +186,31 @@ describe("reviewVotes.getByUser (integration)", () => {
     expect(res).toMatchObject({ voterId: reviewerId, reviewId: profReview1Id });
   });
 
-  it("looks up another user's vote when userId is given", async () => {
+  it("ignores a client-supplied userId", async () => {
     const res = await asReviewer().votesByUser({
       userId: otherId,
       reviewId: profReview1Id,
-    });
-    expect(res).toMatchObject({ voterId: otherId });
+    } as never);
+    expect(res).toMatchObject({ voterId: reviewerId });
   });
 
   it("returns null when the user has not voted", async () => {
-    const res = await asReviewer().votesByUser({
-      userId: strangerId,
+    const res = await makeCaller(router.createCaller, db, {
+      user: { id: strangerId },
+    }).votesByUser({
       reviewId: profReview1Id,
     });
     expect(res).toBeNull();
+  });
+
+  it("receives only the caller's own row when another userId is supplied", async () => {
+    const res = await makeCaller(router.createCaller, db, {
+      user: { id: otherId },
+    }).votesByUser({
+      userId: reviewerId,
+      reviewId: profReview1Id,
+    } as never);
+    expect(res).toMatchObject({ voterId: otherId });
   });
 });
 

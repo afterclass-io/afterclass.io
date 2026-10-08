@@ -27,4 +27,15 @@ describe("roadmapVotes.getByUser", () => {
       where: { userId: "u1", roadmapId: "r1" },
     });
   });
+
+  it("ignores a client-supplied userId and binds to the session user", async () => {
+    const findFirst = vi.fn().mockResolvedValue({ weight: 1 });
+    const caller = makeCaller(router.createCaller, { roadmapVote: { findFirst } });
+
+    await caller.getByUser({ userId: "u2", roadmapId: "r1" } as never);
+
+    expect(findFirst).toHaveBeenCalledWith({
+      where: { userId: "u1", roadmapId: "r1" },
+    });
+  });
 });
