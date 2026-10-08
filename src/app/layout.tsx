@@ -38,7 +38,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(env.NEXTAUTH_URL),
+  metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
   title: { default: appName, template: `%s | ${appName}` },
   description: appDesc,
   openGraph: {

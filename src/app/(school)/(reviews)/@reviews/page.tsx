@@ -14,7 +14,9 @@ import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocu
 export default function Home() {
   return (
     <>
-      <JsonLd data={buildWebSiteJsonLd({ siteUrl: env.NEXTAUTH_URL })} />
+      <JsonLd
+        data={buildWebSiteJsonLd({ siteUrl: env.NEXT_PUBLIC_SITE_URL })}
+      />
       <ReviewSection>
         <ReviewSectionHeader>
           <ReviewSectionHeaderSortGroup />

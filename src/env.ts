@@ -2,6 +2,10 @@ import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 import validator from "validator";
 
+const isVercelDeployment =
+  process.env.VERCEL_ENV === "production" ||
+  process.env.VERCEL_ENV === "preview";
+
 const siteUrlValidator = (vercelUrlEnv?: string) =>
   z
     .optional(z.string())
@@ -10,7 +14,14 @@ const siteUrlValidator = (vercelUrlEnv?: string) =>
       url = url.startsWith("http") ? url : `https://${url}`;
       return url;
     })
-    .pipe(z.url());
+    .pipe(z.url())
+    .refine(
+      (url) => !(isVercelDeployment && new URL(url).hostname === "localhost"),
+      {
+        message:
+          "NEXT_PUBLIC_SITE_URL resolved to localhost on a Vercel deployment. Check the system environment variable setting.",
+      },
+    );
 
 export const env = createEnv({
   /**
@@ -32,14 +43,6 @@ export const env = createEnv({
         ? z.string()
         : z.string().optional(),
     ENABLE_PASSWORD_LOGIN: z.enum(["true", "false"]).optional(),
-    // VERCEL_URL is automatically set by Vercel
-    // as system environment variable. doesn't include `https`
-    // https://vercel.com/docs/projects/environment-variables/system-environment-variables
-    NEXTAUTH_URL: siteUrlValidator(
-      process.env.VERCEL_ENV === "development"
-        ? process.env.VERCEL_URL
-        : (process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL),
-    ),
     // Vercel deployment context, exposed so generated files (robots.ts) read
     // it through the validated schema rather than process.env directly.
     // Unset locally and in CI.
@@ -182,9 +185,6 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     ENABLE_PASSWORD_LOGIN: process.env.ENABLE_PASSWORD_LOGIN,
-    // Leave undefined when unset so the schema's siteUrlValidator fallback
-    // (VERCEL_PROJECT_PRODUCTION_URL on production, VERCEL_URL otherwise) runs.
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     VERCEL_ENV: process.env.VERCEL_ENV,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,

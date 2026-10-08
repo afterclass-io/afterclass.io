@@ -35,5 +35,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   ]);
 
-  return buildSitemap(env.NEXTAUTH_URL, { courses, professors, roadmaps });
+  return buildSitemap(env.NEXT_PUBLIC_SITE_URL, {
+    courses,
+    professors,
+    roadmaps,
+  });
 }

@@ -10,5 +10,5 @@ import { env } from "@/env";
  * directly.
  */
 export default function robots(): MetadataRoute.Robots {
-  return buildRobots(env.NEXTAUTH_URL, env.VERCEL_ENV);
+  return buildRobots(env.NEXT_PUBLIC_SITE_URL, env.VERCEL_ENV);
 }

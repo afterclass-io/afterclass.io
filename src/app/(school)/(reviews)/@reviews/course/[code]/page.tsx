@@ -83,7 +83,7 @@ export default async function Course(props: {
         <>
           <JsonLd
             data={buildCourseJsonLd({
-              siteUrl: env.NEXTAUTH_URL,
+              siteUrl: env.NEXT_PUBLIC_SITE_URL,
               name: data.course.name,
               description: courseDescription(data),
               code: data.course.code,
@@ -93,7 +93,7 @@ export default async function Course(props: {
           />
           <JsonLd
             data={buildBreadcrumbJsonLd({
-              siteUrl: env.NEXTAUTH_URL,
+              siteUrl: env.NEXT_PUBLIC_SITE_URL,
               name: data.course.name,
               path: `/course/${courseCode}`,
             })}

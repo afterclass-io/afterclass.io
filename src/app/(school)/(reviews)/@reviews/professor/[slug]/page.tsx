@@ -83,7 +83,7 @@ export default async function Professor(props: {
         <>
           <JsonLd
             data={buildPersonJsonLd({
-              siteUrl: env.NEXTAUTH_URL,
+              siteUrl: env.NEXT_PUBLIC_SITE_URL,
               name: data.professor.name,
               slug: params.slug,
               averageRating: data.averageRating,
@@ -92,7 +92,7 @@ export default async function Professor(props: {
           />
           <JsonLd
             data={buildBreadcrumbJsonLd({
-              siteUrl: env.NEXTAUTH_URL,
+              siteUrl: env.NEXT_PUBLIC_SITE_URL,
               name: data.professor.name,
               path: `/professor/${params.slug}`,
             })}
