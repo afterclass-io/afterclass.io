@@ -1,9 +1,9 @@
 import { TRPCError } from "@trpc/server";
-import type { PrismaClient } from "@/generated/prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 
 /** Sum of SECURED bid amounts for a user+term, optionally excluding one bid. */
 export async function spentForTerm(
-  db: PrismaClient,
+  db: Prisma.TransactionClient,
   userId: string,
   acadTermId: string,
   excludeBidId?: string,
@@ -22,7 +22,7 @@ export async function spentForTerm(
 
 /** Throw if marking `bidAmount` secured would exceed the term budget. */
 export async function assertSecuredWithinBudget(
-  db: PrismaClient,
+  db: Prisma.TransactionClient,
   userId: string,
   acadTermId: string,
   bidAmount: number,
