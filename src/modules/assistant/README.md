@@ -117,8 +117,8 @@ All limits are driven by the `chat` section of the Edge Config. The hardcoded de
 
 ### Changing Config
 
-1. Edit the `chat` section in `src/server/ecfg/config.json`.
-2. Run `bun run ecfg:update` - this pushes the entire JSON to Vercel Edge Config.
+1. Edit the `chat` section in the Vercel dashboard (or update `src/server/ecfg/config.json` for initial defaults).
+2. Because Edge Config uses a seed-only model, existing store values are never overwritten from code. Edit values directly in the Vercel dashboard.
 3. The change takes effect within ~30 seconds (Edge Config propagation). No deploy needed.
 
 The `DEFAULT_CHAT_CONFIG` in `src/server/ecfg/config.ts` is the **hardcoded fallback** - used when the Edge Config is unreachable (e.g., in local dev without a Vercel token) or when the `chat` key is absent from the remote config. If you want new defaults to apply everywhere, update both `config.json` and `DEFAULT_CHAT_CONFIG`.
@@ -180,7 +180,7 @@ The LLM provider is a single generic OpenAI-compatible backend (defaults route t
    - A **real `LLM_API_KEY`** in `.env` (the placeholder will fail).
    - A **signed-in browser session** (Google OAuth).
    - A running dev server with the database seeded.
-5. To simulate the quota gate: temporarily set `chat.quotaPerMonth` to `1` in `config.json`, run `bun run ecfg:update`, then send a second message - the widget should show the ConnectGate.
+5. To simulate the quota gate: temporarily set `chat.quotaPerMonth` to `1` in the Vercel dashboard, then send a second message - the widget should show the ConnectGate.
 
 ## Testing
 

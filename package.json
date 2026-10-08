@@ -18,7 +18,7 @@
     "db:reset": "prisma migrate reset --force && prisma db seed",
     "db:seed": "prisma db seed",
     "ecfg:fetch": "bun run scripts/ecfg/fetch-all.ts",
-    "ecfg:update": "bun run scripts/ecfg/update-remote.ts",
+    "ecfg:seed": "bun run scripts/ecfg/seed.ts",
     "ecfg:test": "bun run scripts/ecfg/validate-json.ts src/server/ecfg/config.json",
     "mcp:dev": "bun run scripts/mcp-dev.ts",
     "mcp:build": "mcp-use build --mcp-dir src/mcp --views-dir views",

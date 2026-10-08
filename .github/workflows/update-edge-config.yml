@@ -5,7 +5,7 @@ on:
     branches:
       - "main"
     paths:
-      - "src/server/ecfg/**"
+      - "src/server/ecfg/config.json"
 
 jobs:
   update-edge-config:
@@ -27,42 +27,8 @@ jobs:
       - name: Validate Edge Config
         run: bun run ecfg:test
 
-      - name: Update Edge Config
-        run: bun run ecfg:update -- ${{ secrets.VERCEL_TOKEN }} ${{ secrets.VERCEL_EDGE_CONFIG_ID }} src/server/ecfg/config.json
-
-      # - name: Update Local copy of Edge Config
-      #   run: bun run ecfg:fetch -- ${{ secrets.VERCEL_TOKEN }} ${{ secrets.VERCEL_EDGE_CONFIG_ID }} src/server/ecfg/config.json
-
-      # - name: Set Git Username and Email
-      #   id: git_config
-      #   run: |
-      #     git config user.name "${{ github.actor }}"
-      #     git config user.email "noreply@github.com"
-
-      # - name: Check for Changes
-      #   id: changes_check
-      #   run: |
-      #     if [ -n "$(git status --porcelain)" ]; then
-      #       echo "changes_detected=true" >> $GITHUB_ENV
-      #     else
-      #       echo "changes_detected=false" >> $GITHUB_ENV
-      #     fi
-
-      # - name: Commit and Push Changes
-      #   if: env.changes_detected == 'true'
-      #   run: |
-      #     git add .
-      #     git commit -m 'chore(ecfg): sync local config with remote'
-      #     git push origin HEAD:chore/update-edge-config
-
-      # - name: Create Pull Request
-      #   if: env.changes_detected == 'true'
-      #   run: |
-      #     gh pr create \
-      #     --title "chore(ecfg): sync local config with remote" \
-      #     --body "Created by [`update-edge-config` GitHub Action](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" \
-      #     --base main \
-      #     --head chore/update-edge-config \
-      #     --label "skip-changelog"
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Seed missing Edge Config keys
+        run: bun run ecfg:seed -- --apply
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_EDGE_CONFIG_ID: ${{ secrets.VERCEL_EDGE_CONFIG_ID }}
