@@ -3,7 +3,12 @@
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 
-import { Combobox } from "@/modules/submit/components/Combobox";
+import { Combobox, type ComboboxOption } from "@/common/components/combobox";
+import {
+  useSearchCatalog,
+  type CourseCatalogRow,
+  type ProfessorCatalogRow,
+} from "@/common/hooks/useSearchCatalog";
 import { Button } from "@/common/components/button";
 import { RatingGroup } from "@/common/components/rating-group";
 import { TagToggleGroup } from "@/common/components/tag-toggle-group";
@@ -22,22 +27,45 @@ import {
 import { Separator } from "@/common/components/separator";
 
 export type ReviewFormSectionProps = {
-  type: ReviewableType;
-  comboboxItems: { value: string; label: string }[];
+  type?: ReviewableType;
+  entity?: "course" | "professor";
   maxRating: number;
   reviewLabels: { value: string; label: string }[];
   isOptional?: boolean;
 };
 
 export const ReviewFormSection = ({
-  type,
-  comboboxItems,
+  type: propType,
+  entity: propEntity,
   maxRating,
   reviewLabels,
   isOptional = false,
 }: ReviewFormSectionProps) => {
+  const type = propType ?? propEntity ?? "course";
+  const entity = propEntity ?? propType ?? "course";
   const { control, setValue } = useFormContext<ReviewFormInputsSchema>();
   const [isSkipped, setIsSkipped] = useState(false);
+  const [query, setQuery] = useState("");
+  const [selectedOption, setSelectedOption] = useState<ComboboxOption | null>(
+    null,
+  );
+
+  const catalog = useSearchCatalog(
+    entity === "course"
+      ? { entity: "course", query }
+      : { entity: "professor", query },
+  );
+
+  const options: ComboboxOption[] =
+    entity === "course"
+      ? (catalog.rows as CourseCatalogRow[]).map((course) => ({
+          value: course.id,
+          label: `${course.code} ${course.name}`,
+        }))
+      : (catalog.rows as ProfessorCatalogRow[]).map((prof) => ({
+          value: prof.id,
+          label: prof.name,
+        }));
 
   return (
     <div
@@ -53,10 +81,26 @@ export const ReviewFormSection = ({
               <FormLabel>{texts.COMBOBOX.FIELD_LABEL[type]}</FormLabel>
               <FormControl>
                 <Combobox
-                  items={comboboxItems}
+                  options={options}
+                  total={catalog.total}
+                  value={
+                    field.value
+                      ? (selectedOption ?? {
+                          value: field.value,
+                          label: field.value,
+                        })
+                      : null
+                  }
+                  onValueChange={(next) => {
+                    setSelectedOption(next);
+                    field.onChange(next?.value ?? "");
+                  }}
+                  query={query}
+                  onQueryChange={setQuery}
+                  isFetching={catalog.isFetching}
+                  isStale={catalog.isStale}
                   placeholder={texts.COMBOBOX.PLACEHOLDER[type]}
                   triggerLabel={texts.COMBOBOX.TRIGGER_LABEL[type]}
-                  onSelectChange={field.onChange}
                 />
               </FormControl>
               <FormMessage />
@@ -71,6 +115,7 @@ export const ReviewFormSection = ({
               className="min-w-fit text-sm"
               onClick={() => {
                 setIsSkipped(false);
+                setSelectedOption(null);
                 setValue("type", ReviewableEnum.PROFESSOR);
                 setValue(ReviewableEnum.PROFESSOR, {});
               }}
@@ -85,6 +130,7 @@ export const ReviewFormSection = ({
               className="min-w-fit text-sm"
               onClick={() => {
                 setIsSkipped(true);
+                setSelectedOption(null);
                 setValue("type", ReviewableEnum.COURSE);
                 setValue(ReviewableEnum.PROFESSOR, {});
               }}

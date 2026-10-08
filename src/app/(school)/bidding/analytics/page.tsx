@@ -1,4 +1,5 @@
 import { type Metadata } from "next";
+import { Suspense } from "react";
 
 import { api } from "@/common/tools/trpc/server";
 import {
@@ -10,16 +11,13 @@ import {
 } from "@/common/components/card";
 import { Separator } from "@/common/components/separator";
 import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
-import {
-  PredictionType,
-  type UniversityAbbreviation,
-} from "@/generated/prisma/enums";
+import { PredictionType } from "@/generated/prisma/enums";
 import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
 import { BidAnalyticsClient } from "@/modules/bidding/components/BidAnalyticsClient";
 import { AddToTimetableButton } from "@/modules/bidding/components/AddToTimetableButton";
 import { BiddingClassList } from "@/modules/bidding/components/BiddingClassList";
-import { Combobox } from "@/modules/bidding/components/Combobox";
-import { texts } from "@/modules/bidding/constants";
+import { CourseProfessorFilter } from "@/modules/bidding/components/CourseProfessorFilter";
+import type { ComboboxOption } from "@/common/components/combobox";
 import { EmptyState } from "@/common/components/empty-state";
 import { selectOneClassPerTerm } from "@/modules/bidding/utils/selectOneClassPerTerm";
 import { filterSafetyFactors } from "@/modules/bidding/utils/bid-prediction";
@@ -52,53 +50,39 @@ export default async function BiddingHistoryPage({
     : [];
 
   // Entry state: no class identified yet — let the user pick a course and/or
-  // professor via the Comboboxes (same bidirectional pattern as /bidding),
+  // professor via CourseProfessorFilter (same bidirectional pattern as /bidding),
   // then a section from the class list (each card links back here with
   // course/section/classId params).
   if (!classId && (!courseCode || !section)) {
-    const school = "SMU" satisfies UniversityAbbreviation;
     const profSlug = _searchParams.prof;
-    const [courses, professors, classes] = await Promise.all([
-      api.courses.getAllByUniAbbrv({ universityAbbrv: school }),
-      api.professors.getAllByUniAbbrv({ universityAbbrv: school }),
+    const [classes, selectedCourseData, selectedProfData] = await Promise.all([
       api.classes.getAll({ courseCode, profSlug }),
+      courseCode ? api.courses.getByCourseCode({ code: courseCode }) : null,
+      profSlug ? api.professors.getBySlug({ slug: profSlug }) : null,
     ]);
 
-    // Bidirectional scoping (mirrors /bidding): a selected course scopes the
-    // professor list, a selected professor scopes the course list.
-    const filteredProfessors = courseCode
-      ? professors.filter((p) =>
-          classes.some((c) => c.professor?.slug === p.slug),
-        )
-      : professors;
-    const filteredCourses = profSlug
-      ? courses.filter((co) => classes.some((c) => c.course.code === co.code))
-      : courses;
+    const selectedCourse: ComboboxOption | null = selectedCourseData
+      ? {
+          value: selectedCourseData.code,
+          label: `${selectedCourseData.code} ${selectedCourseData.name}`,
+        }
+      : null;
+
+    const selectedProfessor: ComboboxOption | null = selectedProfData
+      ? {
+          value: selectedProfData.slug,
+          label: selectedProfData.name,
+        }
+      : null;
 
     return (
       <div className="flex flex-col gap-6 pt-2">
-        <div className="flex flex-col gap-4 md:flex-row">
-          <Combobox
-            items={filteredCourses.map((course) => ({
-              value: course.code,
-              label: `${course.code} ${course.name}`,
-            }))}
-            queryStringKey="course"
-            selectedValue={courseCode}
-            placeholder={texts.COMBOBOX.PLACEHOLDER.course}
-            triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.course}
+        <Suspense>
+          <CourseProfessorFilter
+            selectedCourse={selectedCourse}
+            selectedProfessor={selectedProfessor}
           />
-          <Combobox
-            items={filteredProfessors.map((prof) => ({
-              value: prof.slug,
-              label: prof.name,
-            }))}
-            queryStringKey="prof"
-            selectedValue={profSlug}
-            placeholder={texts.COMBOBOX.PLACEHOLDER.professor}
-            triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.professor}
-          />
-        </div>
+        </Suspense>
         <Separator />
         <BiddingClassList
           initialClasses={classes.map((c) => ({

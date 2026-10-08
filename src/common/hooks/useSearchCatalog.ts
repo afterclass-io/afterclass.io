@@ -49,6 +49,13 @@ export function useSearchCatalog(args: {
   isFetching: boolean;
   isStale: boolean;
 };
+export function useSearchCatalog(args: UseSearchCatalogArgs): {
+  rows: (CourseCatalogRow | ProfessorCatalogRow)[];
+  total: number;
+  debouncedQuery: string;
+  isFetching: boolean;
+  isStale: boolean;
+};
 export function useSearchCatalog(args: UseSearchCatalogArgs) {
   const { query, limit = 10, enabled = true } = args;
   const trimmedQuery = query.trim();

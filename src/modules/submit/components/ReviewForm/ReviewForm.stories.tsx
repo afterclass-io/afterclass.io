@@ -1,62 +1,61 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
+import { useState, type ReactNode } from "react";
 import { FormProvider, type SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { ReviewFormSection } from "./ReviewFormSection";
 
+import { api } from "@/common/tools/trpc/react";
 import {
   type ReviewFormInputsSchema,
   reviewFormSchema,
 } from "@/common/tools/zod/schemas";
 import { ReviewableEnum } from "@/modules/submit/types";
 
-const comboboxItems = [
-  {
-    value: "megan-figueroa",
-    label: "Megan Figueroa",
-  },
-  {
-    value: "spencer-randolph",
-    label: "Spencer Randolph",
-  },
-  {
-    value: "kailey-xiong",
-    label: "Kailey Xiong",
-  },
-  {
-    value: "azrael-powers",
-    label: "Azrael Powers",
-  },
-  {
-    value: "michelle-madden",
-    label: "Michelle Madden",
-  },
-  {
-    value: "everest-fuentes",
-    label: "Everest Fuentes",
-  },
-  {
-    value: "madeleine-weiss",
-    label: "Madeleine Weiss",
-  },
-  {
-    value: "koa-nicholson",
-    label: "Koa Nicholson",
-  },
-  {
-    value: "justice-hamilton",
-    label: "Justice Hamilton",
-  },
-  {
-    value: "jason-choi",
-    label: "Jason Choi",
-  },
-  {
-    value: "karla-freeman",
-    label: "Karla Freeman",
-  },
+const MOCK_COURSES = [
+  { id: "c1", code: "ACCT101", name: "Financial Accounting" },
+  { id: "c2", code: "ACCT102", name: "Management Accounting" },
+  { id: "c3", code: "IS216", name: "Enterprise Architecture" },
 ];
+
+const MOCK_PROFESSORS = [
+  { id: "p1", slug: "megan-figueroa", name: "Megan Figueroa" },
+  { id: "p2", slug: "spencer-randolph", name: "Spencer Randolph" },
+  { id: "p3", slug: "kailey-xiong", name: "Kailey Xiong" },
+];
+
+function SeedReviewFormData({ children }: { children: ReactNode }) {
+  const utils = api.useUtils();
+  useState(() => {
+    const updatedAt = Date.now() + 60 * 60 * 1000;
+    const queries = ["", "acct", "ACCT", "is", "IS", "stat", "STAT"];
+    for (const q of queries) {
+      utils.search.courses.setData(
+        { query: q, limit: 10 },
+        { rows: MOCK_COURSES, total: MOCK_COURSES.length },
+        { updatedAt },
+      );
+    }
+    const profQueries = [
+      "",
+      "megan",
+      "Megan",
+      "spencer",
+      "Spencer",
+      "kailey",
+      "Kailey",
+    ];
+    for (const q of profQueries) {
+      utils.search.professors.setData(
+        { query: q, limit: 10 },
+        { rows: MOCK_PROFESSORS, total: MOCK_PROFESSORS.length },
+        { updatedAt },
+      );
+    }
+  });
+  return <>{children}</>;
+}
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -64,8 +63,14 @@ const meta = {
   component: ReviewFormSection,
   // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
   tags: ["autodocs"],
+  decorators: [
+    (Story) => (
+      <SeedReviewFormData>
+        <Story />
+      </SeedReviewFormData>
+    ),
+  ],
   args: {
-    comboboxItems: comboboxItems,
     reviewLabels: [
       {
         label: "Engaging",
