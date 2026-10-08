@@ -171,10 +171,10 @@ export function PublicRoadmapsGallery() {
                 href={`/roadmaps/${item.roadmap.id}`}
                 className="group block h-full"
               >
-                <Card className="h-full transition-shadow hover:shadow-md">
+                <Card className="h-full gap-3 py-4 transition-shadow hover:shadow-md">
                   <CardHeader>
                     <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="group-hover:text-primary text-lg transition-colors">
+                      <CardTitle className="group-hover:text-primary line-clamp-2 min-h-[2lh] min-w-0 text-lg leading-snug transition-colors">
                         {censorProfanity(item.roadmap.name)}
                       </CardTitle>
                       {item.faculty && (
@@ -190,39 +190,39 @@ export function PublicRoadmapsGallery() {
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    {item.roadmap.description && (
-                      <p className="text-muted-foreground line-clamp-2 text-sm">
-                        {censorProfanityOrNull(item.roadmap.description)}
-                      </p>
-                    )}
-                    <p className="text-muted-foreground text-sm">
-                      by {censorProfanity(item.ownerUsername)}
+                  <CardContent className="flex flex-1 flex-col gap-2">
+                    <p className="text-muted-foreground line-clamp-2 min-h-[2lh] text-sm whitespace-pre-line">
+                      {censorProfanityOrNull(item.roadmap.description)}
                     </p>
+                    <div className="mt-auto space-y-2">
+                      <p className="text-muted-foreground text-sm">
+                        by {censorProfanity(item.ownerUsername)}
+                      </p>
 
-                    <div className="text-muted-foreground flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 pr-10 text-xs">
-                      <span className="inline-flex items-center gap-1">
-                        <BookOpen className="size-3" />
-                        {item.entryCount}{" "}
-                        {item.entryCount === 1 ? "course" : "courses"}
-                      </span>
-
-                      <span className="inline-flex items-center gap-1">
-                        <Heart className="size-3" />
-                        {item.voteCount}
-                      </span>
-
-                      <span className="inline-flex items-center gap-1">
-                        <Eye className="size-3" />
-                        {item.roadmap.viewCount}
-                      </span>
-
-                      {item.roadmap.publishedAt && (
+                      <div className="text-muted-foreground flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 pr-10 text-xs">
                         <span className="inline-flex items-center gap-1">
-                          <CalendarDays className="size-3" />
-                          {formatDateSGT(item.roadmap.publishedAt)}
+                          <BookOpen className="size-3" />
+                          {item.entryCount}{" "}
+                          {item.entryCount === 1 ? "course" : "courses"}
                         </span>
-                      )}
+
+                        <span className="inline-flex items-center gap-1">
+                          <Heart className="size-3" />
+                          {item.voteCount}
+                        </span>
+
+                        <span className="inline-flex items-center gap-1">
+                          <Eye className="size-3" />
+                          {item.roadmap.viewCount}
+                        </span>
+
+                        {item.roadmap.publishedAt && (
+                          <span className="inline-flex items-center gap-1">
+                            <CalendarDays className="size-3" />
+                            {formatDateSGT(item.roadmap.publishedAt)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
