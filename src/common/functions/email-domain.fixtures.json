@@ -1,0 +1,15 @@
+[
+  { "email": "a@smu.edu.sg", "domain": "smu.edu.sg", "expected": true },
+  { "email": "a@scis.smu.edu.sg", "domain": "smu.edu.sg", "expected": true },
+  { "email": "a@business.smu.edu.sg", "domain": "smu.edu.sg", "expected": true },
+  { "email": "Student@SCIS.SMU.EDU.SG", "domain": "smu.edu.sg", "expected": true },
+  { "email": "a@evilsmu.edu.sg", "domain": "smu.edu.sg", "expected": false },
+  { "email": "a@attacker-smu.edu.sg", "domain": "smu.edu.sg", "expected": false },
+  { "email": "a@smu.edu.sg.evil.com", "domain": "smu.edu.sg", "expected": false },
+  { "email": "smu.edu.sg@evil.com", "domain": "smu.edu.sg", "expected": false },
+  { "email": "a@smu.edu.sg@evil.com", "domain": "smu.edu.sg", "expected": false },
+  { "email": "a@smu.edu.sg.", "domain": "smu.edu.sg", "expected": false },
+  { "email": "@smu.edu.sg", "domain": "smu.edu.sg", "expected": false },
+  { "email": "a@", "domain": "smu.edu.sg", "expected": false },
+  { "email": "a@smu.edu.sg", "domain": "", "expected": false }
+]

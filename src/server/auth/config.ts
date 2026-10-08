@@ -14,6 +14,7 @@ import { exchangeGoogleIdToken } from "./supabase-link";
 import { db } from "@/server/db";
 import randomId from "@/common/functions/randomId";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
+import { emailMatchesDomain } from "@/common/functions/email-domain";
 
 export type SessionUser = Omit<Users, "deprecatedPasswordDigest">;
 
@@ -154,7 +155,7 @@ export const authConfig = {
           include: { domains: true },
         });
         const uniOfThisEmail = universities.find((u) =>
-          u.domains.some((d) => emailDomain!.endsWith(d.domain)),
+          u.domains.some((d) => emailMatchesDomain(c.data.email, d.domain)),
         );
         if (!uniOfThisEmail) {
           Sentry.addBreadcrumb({
@@ -290,7 +291,7 @@ export const authConfig = {
             include: { domains: true },
           });
           const uniOfThisEmail = universities.find((u) =>
-            u.domains.some((d) => emailToUse.endsWith(d.domain)),
+            u.domains.some((d) => emailMatchesDomain(emailToUse, d.domain)),
           );
           if (!uniOfThisEmail) throw new Error("Email not found in database");
           try {
@@ -434,7 +435,9 @@ export const authConfig = {
           include: { domains: true },
         });
         const uniOfThisEmail = universities.find((u) =>
-          u.domains.some((d) => googleProfile.email.endsWith(d.domain)),
+          u.domains.some((d) =>
+            emailMatchesDomain(googleProfile.email, d.domain),
+          ),
         );
         if (!uniOfThisEmail) {
           Sentry.addBreadcrumb({

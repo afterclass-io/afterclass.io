@@ -4,6 +4,7 @@
 import { env } from "@/env";
 import { z } from "zod";
 
+import { emailMatchesDomain } from "@/common/functions/email-domain";
 import { ReviewableEnum, ReviewerEnum } from "@/modules/submit/types";
 
 /**
@@ -18,7 +19,7 @@ export const emailValidationSchema = z
   .refine(
     (email) =>
       env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.some((domain) =>
-        email.endsWith(domain),
+        emailMatchesDomain(email, domain),
       ),
     `Unsupported email domain, please choose from: ${env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.join(", ")}`,
   );
