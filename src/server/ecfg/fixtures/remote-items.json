@@ -1,9 +1,5 @@
 [
   {
-    "key": "enableAnnouncementBanner",
-    "value": false
-  },
-  {
     "key": "enablePasswordLogin",
     "value": false
   },

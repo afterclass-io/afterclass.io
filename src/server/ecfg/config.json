@@ -1,5 +1,4 @@
 {
-  "enableAnnouncementBanner": false,
   "enablePasswordLogin": false,
   "enableContentModeration": true,
   "enableCmdkTooltip": true,
