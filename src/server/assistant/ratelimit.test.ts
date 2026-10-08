@@ -39,7 +39,11 @@ vi.mock("@/server/db", () => ({
   },
 }));
 
-import { checkAndIncrement, pruneRateLimits } from "./ratelimit";
+import {
+  checkAndIncrement,
+  peekRateLimit,
+  pruneRateLimits,
+} from "./ratelimit";
 
 describe("checkAndIncrement", () => {
   beforeEach(() => {
@@ -153,6 +157,41 @@ describe("checkAndIncrement", () => {
     expect(r2).toEqual({ ok: true, retryAfterSeconds: 0 });
     expect(txRateLimitWindowUpdateMany).toHaveBeenCalledTimes(2);
     expect(txRateLimitWindowUpsert).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("peekRateLimit", () => {
+  beforeEach(() => {
+    txRateLimitWindowFindUnique.mockReset();
+    txRateLimitWindowUpsert.mockReset();
+    txRateLimitWindowUpdateMany.mockReset();
+  });
+
+  it("returns ok: true when no row exists without creating or incrementing a row", async () => {
+    txRateLimitWindowFindUnique.mockResolvedValue(null);
+    const r = await peekRateLimit("k", 10, 1);
+    expect(r).toEqual({ ok: true, retryAfterSeconds: 0 });
+    expect(txRateLimitWindowUpsert).not.toHaveBeenCalled();
+    expect(txRateLimitWindowUpdateMany).not.toHaveBeenCalled();
+    expect(txRateLimitWindowFindUnique).toHaveBeenCalledWith({
+      where: { key: expect.stringContaining("k:") as string },
+      select: { count: true },
+    });
+  });
+
+  it("returns ok: false and retryAfterSeconds >= 1 when count equals limit", async () => {
+    txRateLimitWindowFindUnique.mockResolvedValue({ count: 10 });
+    const r = await peekRateLimit("k", 10, 1);
+    expect(r.ok).toBe(false);
+    expect(r.retryAfterSeconds).toBeGreaterThanOrEqual(1);
+    expect(txRateLimitWindowUpsert).not.toHaveBeenCalled();
+    expect(txRateLimitWindowUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("returns ok: true when count is limit - 1", async () => {
+    txRateLimitWindowFindUnique.mockResolvedValue({ count: 9 });
+    const r = await peekRateLimit("k", 10, 1);
+    expect(r).toEqual({ ok: true, retryAfterSeconds: 0 });
   });
 });
 

@@ -8,6 +8,7 @@ const m = vi.hoisted(() => ({
   deleteMany: vi.fn(),
   txLogCreate: vi.fn(),
   checkAndIncrement: vi.fn(),
+  peekRateLimit: vi.fn(),
   getModel: vi.fn(),
   getChatConfigAsync: vi.fn(),
 }));
@@ -30,6 +31,7 @@ vi.mock("@/server/db", () => {
 });
 vi.mock("@/server/assistant/ratelimit", () => ({
   checkAndIncrement: m.checkAndIncrement,
+  peekRateLimit: m.peekRateLimit,
 }));
 vi.mock("@/server/assistant/providers", () => ({ getModel: m.getModel }));
 vi.mock("@/server/config/chat-config", () => ({
@@ -72,10 +74,34 @@ beforeEach(() => {
   givenClearances(0);
   m.count.mockResolvedValue(3);
   m.checkAndIncrement.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
+  m.peekRateLimit.mockResolvedValue({ ok: true, retryAfterSeconds: 0 });
   m.findUnique.mockResolvedValue({ rating: 5, body: "Body", tips: null });
 });
 
 describe("runModeration", () => {
+  it("stops when the hourly ceiling peek fails before taking a claim", async () => {
+    m.peekRateLimit.mockResolvedValueOnce({ ok: false, retryAfterSeconds: 60 });
+    const judge = vi.fn<Judge>();
+    await expect(runModeration(target, cfg, judge)).resolves.toBe(
+      "ceiling_reached",
+    );
+    expect(m.checkAndIncrement).not.toHaveBeenCalled();
+    expect(judge).not.toHaveBeenCalled();
+  });
+
+  it("peeks the hourly ceiling before taking a claim", async () => {
+    const judge = vi.fn<Judge>().mockResolvedValue(cleared);
+    await runModeration(target, cfg, judge);
+    expect(m.peekRateLimit).toHaveBeenCalledWith(
+      "moderation:judge-hourly",
+      20,
+      60,
+    );
+    expect(m.peekRateLimit.mock.invocationCallOrder[0]!).toBeLessThan(
+      m.checkAndIncrement.mock.invocationCallOrder[0]!,
+    );
+  });
+
   it("never judges below the threshold", async () => {
     m.count.mockResolvedValue(2);
     const judge = vi.fn<Judge>();

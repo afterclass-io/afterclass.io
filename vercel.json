@@ -15,7 +15,7 @@
       "maxDuration": 300
     },
     "src/app/api/trpc/[trpc]/route.ts": {
-      "maxDuration": 15
+      "maxDuration": 60
     },
     "src/app/api/**": {
       "maxDuration": 10

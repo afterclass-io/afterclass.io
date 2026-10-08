@@ -79,7 +79,7 @@ describe("getChatConfig", () => {
       perHour: 20,
       reportsPerHour: 10,
       claimMinutes: 5,
-      timeoutMs: 90000,
+      timeoutMs: 30000,
       retentionDays: 90,
       model: undefined,
     });
@@ -94,6 +94,23 @@ describe("getChatConfig", () => {
     });
     expect(c.moderationReportThreshold).toBe(3);
     expect(c.moderationModel).toBeUndefined();
+  });
+
+  it("enforces the 45 000 ms ceiling on the judge timeout", async () => {
+    const { chatConfigSchema } = await import("./chat-config");
+    const strict = chatConfigSchema.strict();
+    expect(
+      strict.safeParse({
+        ...DEFAULT_CHAT_CONFIG_VALUES,
+        moderationJudgeTimeoutMs: 45_001,
+      }).success,
+    ).toBe(false);
+    expect(
+      strict.safeParse({
+        ...DEFAULT_CHAT_CONFIG_VALUES,
+        moderationJudgeTimeoutMs: 45_000,
+      }).success,
+    ).toBe(true);
   });
 
   it("fails closed on an out-of-range judge timeout or claim window", async () => {

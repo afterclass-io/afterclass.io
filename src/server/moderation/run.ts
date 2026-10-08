@@ -1,5 +1,8 @@
 import { ModerationVerdict } from "@/generated/prisma/enums";
-import { checkAndIncrement } from "@/server/assistant/ratelimit";
+import {
+  checkAndIncrement,
+  peekRateLimit,
+} from "@/server/assistant/ratelimit";
 import { getModel } from "@/server/assistant/providers";
 import {
   getChatConfigAsync,
@@ -57,11 +60,13 @@ const JUDGE_CEILING_KEY = "moderation:judge-hourly";
  *  1. count distinct reporters since the last clearance (a report written
  *     while a judgement is in flight predates the CLEARED row and is not
  *     counted next round — accepted, costs at most one extra reporter);
- *  2. take the claim (limit 1 per item + clearance count + claim window), so
+ *  2. peek the hourly ceiling before the claim, so an exhausted ceiling
+ *     never locks an item; only claim winners spend the ceiling;
+ *  3. take the claim (limit 1 per item + clearance count + claim window), so
  *     concurrent crossings judge once; a fixed-window boundary can rarely
  *     admit two (one wasted judgement, accepted);
- *  3. only claim winners spend the hourly ceiling;
- *  4. judge the LIVE text — never client-supplied text.
+ *  4. spend the hourly ceiling;
+ *  5. judge the LIVE text — never client-supplied text.
  */
 export async function runModeration(
   target: ModerationTarget,
@@ -86,6 +91,13 @@ export async function runModeration(
     },
   });
   if (reporters < effectiveThreshold(cfg, clearances)) return "below_threshold";
+
+  const peek = await peekRateLimit(
+    JUDGE_CEILING_KEY,
+    cfg.moderationJudgementsPerHour,
+    60,
+  );
+  if (!peek.ok) return "ceiling_reached";
 
   const claim = await checkAndIncrement(
     `moderation:claim:${surface}:${itemId}:${clearances}`,
@@ -153,7 +165,7 @@ export async function runModeration(
 }
 
 /** The production judge: the moderation-purpose model, configured timeout. */
-export function createModerationJudge(timeoutMs = 90_000): Judge {
+export function createModerationJudge(timeoutMs: number): Judge {
   return async (input) => {
     let model: Awaited<ReturnType<typeof getModel>>;
     try {

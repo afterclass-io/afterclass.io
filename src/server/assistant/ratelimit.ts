@@ -22,14 +22,48 @@ import { db, txDb } from "@/server/db";
  * any scheduler that can import this module. Until wired, rows are harmless
  * (tiny, keyed, indexed by PK) but unbounded.
  */
+function windowFor(
+  key: string,
+  windowMinutes: number,
+): {
+  windowMs: number;
+  windowStart: number;
+  rowKey: string;
+} {
+  const windowMs = windowMinutes * 60_000;
+  const windowStart = Math.floor(Date.now() / windowMs) * windowMs;
+  const rowKey = `${key}:${windowStart}`;
+  return { windowMs, windowStart, rowKey };
+}
+
+function retryAfterSeconds(windowStart: number, windowMs: number): number {
+  return Math.max(1, Math.ceil((windowStart + windowMs - Date.now()) / 1000));
+}
+
+/** Read-only. Never creates or increments a row. */
+export async function peekRateLimit(
+  key: string,
+  limit: number,
+  windowMinutes: number,
+): Promise<{ ok: boolean; retryAfterSeconds: number }> {
+  const { windowMs, windowStart, rowKey } = windowFor(key, windowMinutes);
+  const row = await db.rateLimitWindow.findUnique({
+    where: { key: rowKey },
+    select: { count: true },
+  });
+  const ok = (row?.count ?? 0) < limit;
+  return {
+    ok,
+    retryAfterSeconds: ok ? 0 : retryAfterSeconds(windowStart, windowMs),
+  };
+}
+
 export async function checkAndIncrement(
   key: string,
   limit: number,
   windowMinutes: number,
 ): Promise<{ ok: boolean; retryAfterSeconds: number }> {
-  const windowMs = windowMinutes * 60_000;
-  const windowStart = Math.floor(Date.now() / windowMs) * windowMs;
-  const rowKey = `${key}:${windowStart}`;
+  const { windowMs, windowStart, rowKey } = windowFor(key, windowMinutes);
 
   // Interactive transaction → direct (non-pooled) client: pooled 6543
   // pgbouncer breaks interactive $transaction.
@@ -48,11 +82,10 @@ export async function checkAndIncrement(
       data: { count: { increment: 1 } },
     });
     if (result.count === 0) {
-      const retryAfterSeconds = Math.max(
-        1,
-        Math.ceil((windowStart + windowMs - Date.now()) / 1000),
-      );
-      return { ok: false, retryAfterSeconds };
+      return {
+        ok: false,
+        retryAfterSeconds: retryAfterSeconds(windowStart, windowMs),
+      };
     }
     return { ok: true, retryAfterSeconds: 0 };
   });
