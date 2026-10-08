@@ -1,8 +1,10 @@
 "use client";
 import { z } from "zod";
 import { useState } from "react";
-import { type SearchCourseResult } from "@/modules/search/functions/searchCourse";
-import { type SearchProfResult } from "@/modules/search/functions/searchProf";
+import {
+  type SearchCourseResult,
+  type SearchProfResult,
+} from "@/modules/search/types";
 import {
   BooksIcon,
   GraduationCapIcon,

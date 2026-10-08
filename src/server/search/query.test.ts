@@ -20,6 +20,8 @@ describe("buildTsQuery", () => {
     ["; SELECT * FROM courses;--", "SELECT:* & FROM:* & courses:*"],
     ["&&& (( ::", null],
     ["a b c d e f g h i j", "a:* & b:* & c:* & d:* & e:* & f:* & g:* & h:*"],
+    ["  computing  ", "computing:*"],
+    ["a  b", "a:* & b:*"],
   ];
 
   it.each(vectors)(

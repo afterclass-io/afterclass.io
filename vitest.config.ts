@@ -70,7 +70,6 @@ export default defineConfig({
         // Re-export barrels. Listed by exact path because procedure entrypoints
         // are also named index.ts and must stay in scope.
         "src/modules/auth/functions/index.ts",
-        "src/modules/search/functions/index.ts",
         "src/common/functions/index.ts",
         "src/common/functions/crypto/index.ts",
         "src/common/hooks/index.ts",

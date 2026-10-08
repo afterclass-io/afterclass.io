@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { SearchResult } from "./SearchResult";
-import { type SearchCourseResult } from "@/modules/search/functions/searchCourse";
-import { type SearchProfResult } from "@/modules/search/functions/searchProf";
+import {
+  type SearchCourseResult,
+  type SearchProfResult,
+} from "@/modules/search/types";
 import {
   BooksIcon,
   GraduationCapIcon,

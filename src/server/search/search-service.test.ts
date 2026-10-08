@@ -80,6 +80,23 @@ describe("search-service", () => {
       expect(params).toContain("statistics:*");
     });
 
+    it("binds 'intro:* & to:* & computing:*' and caller-supplied limit (e.g. 5, 20)", async () => {
+      queryRawMock.mockResolvedValue([]);
+
+      await searchCourses(mockDb, { query: "intro to computing", limit: 5 });
+      let rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+      let params = rawCall.slice(1);
+      expect(params).toContain("intro:* & to:* & computing:*");
+      expect(params).toContain(5);
+
+      queryRawMock.mockClear();
+      await searchCourses(mockDb, { query: "intro to computing", limit: 20 });
+      rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+      params = rawCall.slice(1);
+      expect(params).toContain("intro:* & to:* & computing:*");
+      expect(params).toContain(20);
+    });
+
     it("binds 'CORSTAT1202' for query 'COR STAT 1202'", async () => {
       queryRawMock.mockResolvedValue([]);
 
@@ -323,6 +340,17 @@ describe("search-service", () => {
 
       expect(result.rows[0]?.courseCount).toBe(0);
       expect(result.rows[0]?.reviewCount).toBe(0);
+    });
+
+    it("binds 'ada:* & lovelace:*' and caller-supplied limit for professor multi-word queries", async () => {
+      queryRawMock.mockResolvedValue([]);
+
+      await searchProfessors(mockDb, { query: "ada lovelace", limit: 3 });
+
+      const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+      const params = rawCall.slice(1);
+      expect(params).toContain("ada:* & lovelace:*");
+      expect(params).toContain(3);
     });
 
     it("executes browse mode when query is empty with courseCode scope, binding hasQuery as false", async () => {

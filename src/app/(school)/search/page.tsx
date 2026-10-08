@@ -4,12 +4,15 @@ import { ConstrainedContainer } from "@/common/components/constrained-container"
 import { SearchResult } from "@/modules/search/components/SearchResult";
 import {
   type SearchCourseResult,
-  searchCourse,
-} from "@/modules/search/functions/searchCourse";
-import {
   type SearchProfResult,
-  searchProf,
-} from "@/modules/search/functions/searchProf";
+} from "@/modules/search/types";
+import { auth } from "@/server/auth";
+import { db } from "@/server/db";
+import {
+  DEFAULT_UNIVERSITY_ABBRV,
+  searchCourses,
+  searchProfessors,
+} from "@/server/search/search-service";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -19,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Search(props: {
-  searchParams: Promise<{ q: string }>;
+  searchParams: Promise<{ q?: string }>;
 }) {
   const searchParams = await props.searchParams;
   const query = searchParams?.q ?? "";
@@ -28,10 +31,38 @@ export default async function Search(props: {
   let searchedProf: SearchProfResult[] = [];
   if (query) {
     try {
-      [searchedCourse, searchedProf] = await Promise.all([
-        searchCourse(query),
-        searchProf(query),
+      const session = await auth();
+      const withCounts = Boolean(session);
+      const [coursesResult, profsResult] = await Promise.all([
+        searchCourses(db, {
+          query,
+          limit: 5,
+          withCounts,
+          universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
+        }),
+        searchProfessors(db, {
+          query,
+          limit: 5,
+          withCounts,
+          universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
+        }),
       ]);
+
+      searchedCourse = coursesResult.rows.map((row) => ({
+        uniAbbrv: row.uniAbbrv,
+        courseCode: row.code,
+        courseName: row.name,
+        profCount: row.profCount,
+        reviewCount: row.reviewCount,
+      }));
+
+      searchedProf = profsResult.rows.map((row) => ({
+        uniAbbrv: row.uniAbbrv,
+        profName: row.name,
+        profSlug: row.slug,
+        courseCount: row.courseCount,
+        reviewCount: row.reviewCount,
+      }));
     } catch (e) {
       console.error(e);
     }
