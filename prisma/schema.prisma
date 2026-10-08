@@ -703,6 +703,7 @@ model RateLimitWindow {
   count       Int      @default(0)
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  @@index([windowStart])
   @@map("rate_limit")
 }
 
