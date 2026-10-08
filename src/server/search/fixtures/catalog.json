@@ -1,0 +1,146 @@
+{
+  "courses": [
+    {
+      "code": "COR-STAT1202",
+      "name": "Statistical Analysis",
+      "description": "Probability and statistics",
+      "creditUnits": 1,
+      "universityAbbrv": "SMU"
+    },
+    {
+      "code": "COR-STAT1203",
+      "name": "Statistical Inference",
+      "description": "Advanced statistical methods",
+      "creditUnits": 1,
+      "universityAbbrv": "SMU"
+    },
+    {
+      "code": "COR-STAT1204",
+      "name": "Statistical Computing",
+      "description": "Computational statistics with R",
+      "creditUnits": 1,
+      "universityAbbrv": "SMU"
+    },
+    {
+      "code": "IS216",
+      "name": "Web Application Development II",
+      "description": "Full stack web development",
+      "creditUnits": 1,
+      "universityAbbrv": "SMU"
+    },
+    {
+      "code": "ACCT102",
+      "name": "Financial Accounting",
+      "description": "Principles of financial accounting",
+      "creditUnits": 1,
+      "universityAbbrv": "SMU"
+    },
+    {
+      "code": "CS201",
+      "name": "Data Structures and Algorithms",
+      "description": "Fundamental data structures and algorithms",
+      "creditUnits": 1,
+      "universityAbbrv": "SMU"
+    },
+    {
+      "code": "MATH101",
+      "name": "Calculus I",
+      "description": "Differential calculus",
+      "creditUnits": 1,
+      "universityAbbrv": "SMU"
+    },
+    {
+      "code": "MATH101A",
+      "name": "Calculus I Advanced",
+      "description": "Advanced differential calculus",
+      "creditUnits": 1,
+      "universityAbbrv": "SMU"
+    },
+    {
+      "code": "TEST100",
+      "name": "Course 100% Mastery",
+      "description": "Literal 100% course",
+      "creditUnits": 1,
+      "universityAbbrv": "SMU"
+    },
+    {
+      "code": "ECON101",
+      "name": "Introductory Economics",
+      "description": "Micro and macro economics",
+      "creditUnits": 1,
+      "universityAbbrv": "SMU"
+    },
+    {
+      "code": "EC1101E",
+      "name": "Introductory Economics",
+      "description": "NUS introductory economics",
+      "creditUnits": 1,
+      "universityAbbrv": "NUS"
+    }
+  ],
+  "professors": [
+    {
+      "name": "Goh, Jing Rong",
+      "slug": "goh-jing-rong",
+      "bossAliases": [],
+      "universityAbbrv": "SMU"
+    },
+    {
+      "name": "Kwan, Chee Wei",
+      "slug": "kwan-chee-wei",
+      "bossAliases": ["Kwan CW", "Chee Wei Kwan"],
+      "universityAbbrv": "SMU"
+    },
+    {
+      "name": "Tan, Ah Teck",
+      "slug": "tan-ah-teck",
+      "bossAliases": ["AT Tan"],
+      "universityAbbrv": "SMU"
+    },
+    {
+      "name": "Lim, Boon Keng",
+      "slug": "lim-boon-keng",
+      "bossAliases": [],
+      "universityAbbrv": "NUS"
+    }
+  ],
+  "classes": [
+    {
+      "courseCode": "IS216",
+      "professorSlug": "goh-jing-rong",
+      "section": "G1"
+    },
+    {
+      "courseCode": "COR-STAT1202",
+      "professorSlug": "kwan-chee-wei",
+      "section": "G1"
+    },
+    {
+      "courseCode": "CS201",
+      "professorSlug": "tan-ah-teck",
+      "section": "G1"
+    },
+    {
+      "courseCode": "ECON101",
+      "professorSlug": "goh-jing-rong",
+      "section": "G1"
+    },
+    {
+      "courseCode": "EC1101E",
+      "professorSlug": "lim-boon-keng",
+      "section": "G1"
+    }
+  ],
+  "reviews": [
+    {
+      "courseCode": "ACCT102",
+      "professorSlug": null,
+      "body": "A course-only review for ACCT102"
+    },
+    {
+      "courseCode": "IS216",
+      "professorSlug": "goh-jing-rong",
+      "body": "A review for IS216 taught by Prof Goh"
+    }
+  ]
+}
