@@ -16,6 +16,7 @@ import { roadmapReactionsRouter } from "@/server/api/roadmapReactions/router";
 import { roadmapsRouter } from "@/server/api/roadmaps/router";
 import { roadmapVotesRouter } from "@/server/api/roadmapVotes/router";
 import { safetyFactorsRouter } from "@/server/api/safetyFactors/router";
+import { searchRouter } from "@/server/api/search/router";
 import { sharingRouter } from "@/server/api/sharing/router";
 import { timetableRouter } from "@/server/api/timetable/router";
 import { userBidsRouter } from "@/server/api/userBids/router";
@@ -48,6 +49,7 @@ export const appRouter = createTRPCRouter({
   roadmaps: roadmapsRouter,
   roadmapVotes: roadmapVotesRouter,
   safetyFactors: safetyFactorsRouter,
+  search: searchRouter,
   sharing: sharingRouter,
   timetable: timetableRouter,
   userBids: userBidsRouter,
