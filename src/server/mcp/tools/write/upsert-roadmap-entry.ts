@@ -181,7 +181,11 @@ async function runFeasibility(
 ): Promise<{ issues: FeasibilityIssue[]; isFeasible: boolean }> {
   const c = caller as {
     roadmaps: { getMine: (a: { roadmapId: string }) => Promise<unknown> };
-    courses: { getByCourseCode: (a: { code: string }) => Promise<unknown> };
+    courses: {
+      getEnrolmentRequirementsByCodes: (a: {
+        codes: string[];
+      }) => Promise<unknown>;
+    };
     timetable: {
       listMine: (a: { acadTermId: string }) => Promise<unknown>;
       getArrangement: (a: { timetableId: string }) => Promise<unknown>;
@@ -197,23 +201,26 @@ async function runFeasibility(
   // TERM_DUPLICATE
   checkTermDuplicates(entries, flagCourse);
 
-  // PREREQ_MISSING (best-effort per course: lookup failure -> no requirements)
+  // PREREQ_MISSING (best-effort: batch lookup failure -> no requirements)
+  const codes = Array.from(
+    new Set(entries.map((e) => e.course.code).filter(Boolean)),
+  );
   const courseDetail = new Map<string, string | null>();
+  if (codes.length > 0) {
+    try {
+      const rows = (await c.courses.getEnrolmentRequirementsByCodes({
+        codes,
+      })) as Array<{ code: string; enrolmentRequirements: string | null }>;
+      for (const row of rows) {
+        courseDetail.set(row.code, row.enrolmentRequirements);
+      }
+    } catch {
+      // failure gives an empty Map -> treat every course as no requirements
+    }
+  }
   await checkPrereqs(
     entries,
-    async (code) => {
-      if (!courseDetail.has(code)) {
-        try {
-          const detail = (await c.courses.getByCourseCode({ code })) as {
-            enrolmentRequirements: string | null;
-          } | null;
-          courseDetail.set(code, detail?.enrolmentRequirements ?? null);
-        } catch {
-          courseDetail.set(code, null);
-        }
-      }
-      return courseDetail.get(code) ?? null;
-    },
+    async (code) => courseDetail.get(code) ?? null,
     flagCourse,
   );
 

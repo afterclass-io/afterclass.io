@@ -72,19 +72,21 @@ export const checkRoadmapFeasibilityTool: McpTool<
       // ---- 3. PREREQ_MISSING: prerequisite not in an earlier term ----
       // "Taken" = course codes planned in strictly earlier (year, term) slots.
       // A lookup failure rejects the whole tool (surfaced as errText below).
-      const courseDetail = new Map<
-        string,
-        { enrolmentRequirements: string | null } | null
-      >();
+      const codes = Array.from(
+        new Set(entries.map((e) => e.course.code).filter(Boolean)),
+      );
+      const reqMap = new Map<string, string | null>();
+      if (codes.length > 0) {
+        const rows = await caller.courses.getEnrolmentRequirementsByCodes({
+          codes,
+        });
+        for (const row of rows) {
+          reqMap.set(row.code, row.enrolmentRequirements);
+        }
+      }
       await checkPrereqs(
         entries,
-        async (code) => {
-          if (!courseDetail.has(code)) {
-            const detail = await caller.courses.getByCourseCode({ code });
-            courseDetail.set(code, detail);
-          }
-          return courseDetail.get(code)?.enrolmentRequirements ?? null;
-        },
+        async (code) => reqMap.get(code) ?? null,
         flagCourse,
       );
 

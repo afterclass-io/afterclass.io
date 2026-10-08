@@ -35,7 +35,35 @@ function makeCaller(procs: Record<string, unknown>) {
       getMine: procs.roadmapsGetMine,
       listMine: procs.roadmapsListMine,
     },
-    courses: { getByCourseCode: procs.coursesGetByCourseCode },
+    courses: {
+      getByCourseCode: procs.coursesGetByCourseCode,
+      getEnrolmentRequirementsByCodes:
+        procs.coursesGetEnrolmentRequirementsByCodes ??
+        (procs.coursesGetByCourseCode
+          ? vi.fn(async ({ codes }: { codes: string[] }) => {
+              const fn = procs.coursesGetByCourseCode as (args: {
+                code: string;
+              }) => Promise<{
+                code?: string;
+                enrolmentRequirements?: string | null;
+              } | null>;
+              const results: Array<{
+                code: string;
+                enrolmentRequirements: string | null;
+              }> = [];
+              for (const code of codes) {
+                const row = await fn({ code });
+                if (row) {
+                  results.push({
+                    code: row.code ?? code,
+                    enrolmentRequirements: row.enrolmentRequirements ?? null,
+                  });
+                }
+              }
+              return results;
+            })
+          : vi.fn().mockResolvedValue([])),
+    },
     timetable: {
       listMine: procs.timetableListMine,
       getArrangement: procs.timetableGetArrangement,
@@ -102,30 +130,37 @@ describe("check-roadmap-feasibility", () => {
         entry("IS215", "Digital Business", 2, "T1", "e2"),
       ],
     };
-    const getByCourseCode = vi.fn(async ({ code }: { code: string }) => {
-      if (code === "IS215") {
-        return {
-          code: "IS215",
-          name: "Digital Business",
-          courseArea: null,
-          enrolmentRequirements: "Pre-Requisite: COR-IS1702",
-        };
-      }
-      if (code === "COR-STAT1202") {
-        return {
-          code: "COR-STAT1202",
-          name: "Stats",
-          courseArea: null,
-          enrolmentRequirements: null,
-        };
-      }
-      return null;
-    });
+    const getEnrolmentRequirementsByCodes = vi.fn(
+      async ({ codes }: { codes: string[] }) => {
+        return codes.flatMap<{
+          code: string;
+          enrolmentRequirements: string | null;
+        }>((code) => {
+          if (code === "IS215") {
+            return [
+              {
+                code: "IS215",
+                enrolmentRequirements: "Pre-Requisite: COR-IS1702",
+              },
+            ];
+          }
+          if (code === "COR-STAT1202") {
+            return [
+              {
+                code: "COR-STAT1202",
+                enrolmentRequirements: null,
+              },
+            ];
+          }
+          return [];
+        });
+      },
+    );
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({
         roadmapsGetMine: vi.fn().mockResolvedValue(roadmap),
-        coursesGetByCourseCode: getByCourseCode,
+        coursesGetEnrolmentRequirementsByCodes: getEnrolmentRequirementsByCodes,
       }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
@@ -148,27 +183,27 @@ describe("check-roadmap-feasibility", () => {
         entry("IS215", "Digital Business", 2, "T1", "e2"),
       ],
     };
-    const getByCourseCode = vi.fn(async ({ code }: { code: string }) => {
-      if (code === "IS215") {
-        return {
-          code: "IS215",
-          name: "Digital Business",
-          courseArea: null,
-          enrolmentRequirements: "Pre-Requisite: COR-IS1702",
-        };
-      }
-      return {
-        code,
-        name: code,
-        courseArea: null,
-        enrolmentRequirements: null,
-      };
-    });
+    const getEnrolmentRequirementsByCodes = vi.fn(
+      async ({ codes }: { codes: string[] }) => {
+        return codes.map((code) => {
+          if (code === "IS215") {
+            return {
+              code: "IS215",
+              enrolmentRequirements: "Pre-Requisite: COR-IS1702",
+            };
+          }
+          return {
+            code,
+            enrolmentRequirements: null,
+          };
+        });
+      },
+    );
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({
         roadmapsGetMine: vi.fn().mockResolvedValue(roadmap),
-        coursesGetByCourseCode: getByCourseCode,
+        coursesGetEnrolmentRequirementsByCodes: getEnrolmentRequirementsByCodes,
       }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
@@ -187,28 +222,28 @@ describe("check-roadmap-feasibility", () => {
         entry("ACCT104", "Company Accounting", 2, "T1", "e2"),
       ],
     };
-    const getByCourseCode = vi.fn(async ({ code }: { code: string }) => {
-      if (code === "ACCT104") {
-        return {
-          code: "ACCT104",
-          name: "Company Accounting",
-          courseArea: null,
-          enrolmentRequirements:
-            "Pre-Requisite: COR-IS1702 Mutually Exclusive: EITHER ACCT102 OR ACCT104/112 Management Accounting",
-        };
-      }
-      return {
-        code,
-        name: code,
-        courseArea: null,
-        enrolmentRequirements: null,
-      };
-    });
+    const getEnrolmentRequirementsByCodes = vi.fn(
+      async ({ codes }: { codes: string[] }) => {
+        return codes.map((code) => {
+          if (code === "ACCT104") {
+            return {
+              code: "ACCT104",
+              enrolmentRequirements:
+                "Pre-Requisite: COR-IS1702 Mutually Exclusive: EITHER ACCT102 OR ACCT104/112 Management Accounting",
+            };
+          }
+          return {
+            code,
+            enrolmentRequirements: null,
+          };
+        });
+      },
+    );
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({
         roadmapsGetMine: vi.fn().mockResolvedValue(roadmap),
-        coursesGetByCourseCode: getByCourseCode,
+        coursesGetEnrolmentRequirementsByCodes: getEnrolmentRequirementsByCodes,
       }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });
@@ -517,14 +552,12 @@ describe("check-roadmap-feasibility", () => {
       user: fakeUser,
       caller: makeCaller({
         roadmapsGetMine: vi.fn().mockResolvedValue(roadmap),
-        coursesGetByCourseCode: vi
-          .fn()
-          .mockResolvedValue({
-            code: "COR-STAT1202",
-            name: "Stats",
-            courseArea: null,
-            enrolmentRequirements: null,
-          }),
+        coursesGetByCourseCode: vi.fn().mockResolvedValue({
+          code: "COR-STAT1202",
+          name: "Stats",
+          courseArea: null,
+          enrolmentRequirements: null,
+        }),
       }),
     };
     const res = await checkRoadmapFeasibilityTool.run(ctx, { roadmapId: "r1" });

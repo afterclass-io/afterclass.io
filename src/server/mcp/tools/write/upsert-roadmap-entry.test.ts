@@ -26,7 +26,35 @@ function makeCaller(procs: Record<string, unknown>) {
       getMine: procs.roadmapsGetMine,
       saveEntries: procs.roadmapsSaveEntries,
     },
-    courses: { getByCourseCode: procs.coursesGetByCourseCode },
+    courses: {
+      getByCourseCode: procs.coursesGetByCourseCode,
+      getEnrolmentRequirementsByCodes:
+        procs.coursesGetEnrolmentRequirementsByCodes ??
+        (procs.coursesGetByCourseCode
+          ? vi.fn(async ({ codes }: { codes: string[] }) => {
+              const fn = procs.coursesGetByCourseCode as (args: {
+                code: string;
+              }) => Promise<{
+                code?: string;
+                enrolmentRequirements?: string | null;
+              } | null>;
+              const results: Array<{
+                code: string;
+                enrolmentRequirements: string | null;
+              }> = [];
+              for (const code of codes) {
+                const row = await fn({ code });
+                if (row) {
+                  results.push({
+                    code: row.code ?? code,
+                    enrolmentRequirements: row.enrolmentRequirements ?? null,
+                  });
+                }
+              }
+              return results;
+            })
+          : vi.fn().mockResolvedValue([])),
+    },
     timetable: {
       listMine: procs.timetableListMine,
       getArrangement: procs.timetableGetArrangement,
@@ -60,12 +88,10 @@ describe("upsert-roadmap-entry", () => {
       entry("c1", "COR-IS1702", "Comp Thinking", 1, "T1", 0),
       entry("c2", "IS215", "Digital Business", 1, "T2", 0),
     ];
-    const getMine = vi
-      .fn()
-      .mockResolvedValue({
-        roadmap: { id: "r1", name: "My Plan" },
-        entries: existing,
-      });
+    const getMine = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "My Plan" },
+      entries: existing,
+    });
     // after saveEntries, getMine for buildRoadmapView should reflect the added entry
     const getMineAfter = vi.fn().mockResolvedValue({
       roadmap: { id: "r1", name: "My Plan" },
@@ -90,13 +116,11 @@ describe("upsert-roadmap-entry", () => {
     const caller = makeCaller({
       roadmapsGetMine: getMineCombined,
       roadmapsSaveEntries: saveEntries,
-      coursesGetByCourseCode: vi
-        .fn()
-        .mockResolvedValue({
-          id: "c3",
-          code: "ACCT102",
-          name: "Management Accounting",
-        }),
+      coursesGetByCourseCode: vi.fn().mockResolvedValue({
+        id: "c3",
+        code: "ACCT102",
+        name: "Management Accounting",
+      }),
       acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
       timetableListMine: vi.fn().mockResolvedValue([]),
     });
@@ -133,12 +157,10 @@ describe("upsert-roadmap-entry", () => {
       entry("c1", "COR-IS1702", "Comp Thinking", 1, "T1", 0),
       entry("c2", "ACCT102", "Management Accounting", 2, "T1", 0),
     ];
-    const getMine = vi
-      .fn()
-      .mockResolvedValue({
-        roadmap: { id: "r1", name: "My Plan" },
-        entries: existing,
-      });
+    const getMine = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "My Plan" },
+      entries: existing,
+    });
     const getMineAfter = vi.fn().mockResolvedValue({
       roadmap: { id: "r1", name: "My Plan" },
       entries: [
@@ -160,13 +182,11 @@ describe("upsert-roadmap-entry", () => {
     const caller = makeCaller({
       roadmapsGetMine: combined,
       roadmapsSaveEntries: saveEntries,
-      coursesGetByCourseCode: vi
-        .fn()
-        .mockResolvedValue({
-          id: "c2",
-          code: "ACCT102",
-          name: "Management Accounting",
-        }),
+      coursesGetByCourseCode: vi.fn().mockResolvedValue({
+        id: "c2",
+        code: "ACCT102",
+        name: "Management Accounting",
+      }),
       acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
     });
     const ctx: ToolContext = { user: fakeUser, caller };
@@ -191,12 +211,10 @@ describe("upsert-roadmap-entry", () => {
       { id: "r2", name: "Secondary", isActive: false },
       { id: "r1", name: "Primary", isActive: true },
     ]);
-    const getMine = vi
-      .fn()
-      .mockResolvedValue({
-        roadmap: { id: "r1", name: "Primary" },
-        entries: existing,
-      });
+    const getMine = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "Primary" },
+      entries: existing,
+    });
     const getMineAfter = vi.fn().mockResolvedValue({
       roadmap: { id: "r1", name: "Primary" },
       entries: [entry("c3", "ACCT102", "Management Accounting", 3, "T1", 0)],
@@ -216,13 +234,11 @@ describe("upsert-roadmap-entry", () => {
       roadmapsListMine: listMine,
       roadmapsGetMine: combined,
       roadmapsSaveEntries: saveEntries,
-      coursesGetByCourseCode: vi
-        .fn()
-        .mockResolvedValue({
-          id: "c3",
-          code: "ACCT102",
-          name: "Management Accounting",
-        }),
+      coursesGetByCourseCode: vi.fn().mockResolvedValue({
+        id: "c3",
+        code: "ACCT102",
+        name: "Management Accounting",
+      }),
       acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
     });
     const ctx: ToolContext = { user: fakeUser, caller };
@@ -237,12 +253,10 @@ describe("upsert-roadmap-entry", () => {
 
   it("returns errText when the course is not found", async () => {
     const caller = makeCaller({
-      roadmapsGetMine: vi
-        .fn()
-        .mockResolvedValue({
-          roadmap: { id: "r1", name: "My Plan" },
-          entries: [],
-        }),
+      roadmapsGetMine: vi.fn().mockResolvedValue({
+        roadmap: { id: "r1", name: "My Plan" },
+        entries: [],
+      }),
       coursesGetByCourseCode: vi.fn().mockResolvedValue(null),
     });
     const ctx: ToolContext = { user: fakeUser, caller };
@@ -275,22 +289,18 @@ describe("upsert-roadmap-entry", () => {
 
   it("returns errText when saveEntries rejects (e.g. CONFLICT)", async () => {
     const caller = makeCaller({
-      roadmapsGetMine: vi
-        .fn()
-        .mockResolvedValue({
-          roadmap: { id: "r1", name: "My Plan" },
-          entries: [],
-        }),
+      roadmapsGetMine: vi.fn().mockResolvedValue({
+        roadmap: { id: "r1", name: "My Plan" },
+        entries: [],
+      }),
       roadmapsSaveEntries: vi
         .fn()
         .mockRejectedValue(new Error("CONFLICT: roadmap updated elsewhere")),
-      coursesGetByCourseCode: vi
-        .fn()
-        .mockResolvedValue({
-          id: "c3",
-          code: "ACCT102",
-          name: "Management Accounting",
-        }),
+      coursesGetByCourseCode: vi.fn().mockResolvedValue({
+        id: "c3",
+        code: "ACCT102",
+        name: "Management Accounting",
+      }),
     });
     const ctx: ToolContext = { user: fakeUser, caller };
     const res = await upsertRoadmapEntryTool.run(ctx, {
@@ -305,12 +315,10 @@ describe("upsert-roadmap-entry", () => {
 
   it("toViewProps normalizes the nested roadmapView payload", async () => {
     const existing: unknown[] = [];
-    const getMine = vi
-      .fn()
-      .mockResolvedValue({
-        roadmap: { id: "r1", name: "My Plan" },
-        entries: existing,
-      });
+    const getMine = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "My Plan" },
+      entries: existing,
+    });
     const getMineAfter = vi.fn().mockResolvedValue({
       roadmap: { id: "r1", name: "My Plan" },
       entries: [entry("c3", "ACCT102", "Management Accounting", 3, "T1", 0)],
@@ -329,13 +337,11 @@ describe("upsert-roadmap-entry", () => {
     const caller = makeCaller({
       roadmapsGetMine: combined,
       roadmapsSaveEntries: saveEntries,
-      coursesGetByCourseCode: vi
-        .fn()
-        .mockResolvedValue({
-          id: "c3",
-          code: "ACCT102",
-          name: "Management Accounting",
-        }),
+      coursesGetByCourseCode: vi.fn().mockResolvedValue({
+        id: "c3",
+        code: "ACCT102",
+        name: "Management Accounting",
+      }),
       acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
     });
     const ctx: ToolContext = { user: fakeUser, caller };
@@ -353,23 +359,19 @@ describe("upsert-roadmap-entry", () => {
 
   it("includes feasibility with PREREQ_MISSING when the new course's prereq is not planned earlier", async () => {
     const existing = [entry("c1", "COR-STAT1202", "Stats", 1, "T1", 0)];
-    const getMine = vi
-      .fn()
-      .mockResolvedValue({
-        roadmap: { id: "r1", name: "My Plan" },
-        entries: existing,
-      });
+    const getMine = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "My Plan" },
+      entries: existing,
+    });
     // After upsert, entries include IS215 in Y2T1 whose prereq COR-IS1702 is missing.
     const afterEntries = [
       entry("c1", "COR-STAT1202", "Stats", 1, "T1", 0),
       entry("c9", "IS215", "Digital Business", 2, "T1", 0),
     ];
-    const getMineAfter = vi
-      .fn()
-      .mockResolvedValue({
-        roadmap: { id: "r1", name: "My Plan" },
-        entries: afterEntries,
-      });
+    const getMineAfter = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "My Plan" },
+      entries: afterEntries,
+    });
     // runFeasibility calls getMine again after saveEntries -> also afterEntries
     let idx = 0;
     const combined = vi.fn(
@@ -383,28 +385,32 @@ describe("upsert-roadmap-entry", () => {
     );
     const saveEntries = vi.fn().mockResolvedValue({});
     const getByCourseCode = vi.fn(
-      async ({ code }: { code: string }): Promise<unknown> => {
-        if (code === "IS215")
-          return {
-            id: "c9",
-            code: "IS215",
-            name: "Digital Business",
-            enrolmentRequirements: "Pre-Requisite: COR-IS1702",
-          };
-        if (code === "COR-STAT1202")
-          return {
-            id: "c1",
-            code: "COR-STAT1202",
-            name: "Stats",
-            enrolmentRequirements: null,
-          };
+      async ({ code: _code }: { code: string }): Promise<unknown> => {
         return { id: "c9", code: "IS215", name: "Digital Business" };
+      },
+    );
+    const getEnrolmentRequirementsByCodes = vi.fn(
+      async ({ codes }: { codes: string[] }): Promise<unknown> => {
+        return codes.map((code) => {
+          if (code === "IS215")
+            return {
+              code: "IS215",
+              enrolmentRequirements: "Pre-Requisite: COR-IS1702",
+            };
+          if (code === "COR-STAT1202")
+            return {
+              code: "COR-STAT1202",
+              enrolmentRequirements: null,
+            };
+          return { code, enrolmentRequirements: null };
+        });
       },
     );
     const caller = makeCaller({
       roadmapsGetMine: combined,
       roadmapsSaveEntries: saveEntries,
       coursesGetByCourseCode: getByCourseCode,
+      coursesGetEnrolmentRequirementsByCodes: getEnrolmentRequirementsByCodes,
       acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
     });
     const ctx: ToolContext = { user: fakeUser, caller };
@@ -425,12 +431,10 @@ describe("upsert-roadmap-entry", () => {
 
   it("defaults sortOrder to next slot in the target year/term", async () => {
     const existing = [entry("c1", "COR-IS1702", "Comp Thinking", 3, "T1", 0)];
-    const getMine = vi
-      .fn()
-      .mockResolvedValue({
-        roadmap: { id: "r1", name: "My Plan" },
-        entries: existing,
-      });
+    const getMine = vi.fn().mockResolvedValue({
+      roadmap: { id: "r1", name: "My Plan" },
+      entries: existing,
+    });
     const getMineAfter = vi.fn().mockResolvedValue({
       roadmap: { id: "r1", name: "My Plan" },
       entries: [
@@ -452,13 +456,11 @@ describe("upsert-roadmap-entry", () => {
     const caller = makeCaller({
       roadmapsGetMine: combined,
       roadmapsSaveEntries: saveEntries,
-      coursesGetByCourseCode: vi
-        .fn()
-        .mockResolvedValue({
-          id: "c3",
-          code: "ACCT102",
-          name: "Management Accounting",
-        }),
+      coursesGetByCourseCode: vi.fn().mockResolvedValue({
+        id: "c3",
+        code: "ACCT102",
+        name: "Management Accounting",
+      }),
       acadTermsGetCurrent: vi.fn().mockResolvedValue(null),
     });
     const ctx: ToolContext = { user: fakeUser, caller };
