@@ -22,6 +22,21 @@ export default async function setup(project: TestProject) {
   const container = await new PostgreSqlContainer("postgres:18-alpine").start();
   const dbUrl = container.getConnectionUri();
 
+  // Plain Postgres has no Supabase roles. Create mock ones so the lockdown
+  // migration revokes real grants and the RLS guard has roles to test.
+  const roles = await container.exec([
+    "psql",
+    "-U",
+    container.getUsername(),
+    "-d",
+    container.getDatabase(),
+    "-c",
+    "CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN;",
+  ]);
+  if (roles.exitCode !== 0) {
+    throw new Error(`Mock Supabase role setup failed: ${roles.stderr}`);
+  }
+
   execSync("bunx prisma migrate deploy", {
     env: { ...process.env, DATABASE_URL: dbUrl, DIRECT_URL: dbUrl },
     stdio: "inherit",
