@@ -88,7 +88,10 @@ export function TimetableSlotCard({
 
   return (
     <div
-      className="group absolute"
+      className={cn(
+        "group absolute p-px focus-within:z-10 hover:z-10",
+        highlightNow && "z-20",
+      )}
       data-test="timetable-slot-card"
       style={{
         top: `${topPct}%`,
@@ -103,13 +106,13 @@ export function TimetableSlotCard({
         onClick={readOnly ? undefined : onClick}
         data-test={isSecured ? "timetable-slot-card-secured" : undefined}
         className={cn(
-          "block h-full w-full overflow-hidden rounded-md border px-1.5 py-0.5 text-left text-xs leading-tight transition-shadow",
+          "block h-full w-full overflow-hidden rounded-md border px-1.5 py-0.5 text-left text-xs leading-tight transition-shadow ring-inset",
           cardClasses,
           isExam && "border-dashed",
           readOnly
             ? "cursor-default"
-            : "focus-visible:ring-ring cursor-pointer hover:z-10 hover:shadow-md focus-visible:ring-1",
-          highlightNow && "ring-primary z-20 ring-2 ring-offset-1",
+            : "focus-visible:ring-ring cursor-pointer hover:shadow-md focus-visible:ring-1",
+          highlightNow && "ring-primary ring-2",
         )}
       >
         <span className="block truncate font-semibold">
@@ -140,8 +143,7 @@ export function TimetableSlotCard({
               bidChipVariant(bidInfo.status as UserBidStatus),
             )}
           >
-            {formatBidAmount(bidInfo.amount)}{" "}
-            · R{bidInfo.round}
+            {formatBidAmount(bidInfo.amount)} · R{bidInfo.round}
           </span>
         )}
       </button>
