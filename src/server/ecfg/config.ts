@@ -49,7 +49,6 @@ export const chatConfigSchema = z
 export type ChatConfig = z.infer<typeof chatConfigSchema>;
 
 export const edgeConfigSchema = z.object({
-  enableAnnouncementBanner: z.boolean(),
   enableCmdkTooltip: z.boolean(),
   enableReviewEventsTracking: z.boolean(),
   enableReviewSort: z.boolean(),
