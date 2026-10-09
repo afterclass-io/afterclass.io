@@ -88,7 +88,8 @@ context("Reviews: Course", function () {
       cy.wait("@getReviews");
 
       cy.scrollTo("bottom");
-      cy.wait(2000);
+      // Anonymous users get no load-more sentinel, so no further page can load
+      cy.get("[data-test=review-load-more-sentinel]").should("not.exist");
 
       cy.get("[data-test=review]").should("have.length", 10);
     });

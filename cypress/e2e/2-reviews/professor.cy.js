@@ -84,7 +84,8 @@ context("Reviews: Professor", function () {
       cy.wait("@getReviews");
 
       cy.scrollTo("bottom");
-      cy.wait(2000);
+      // Anonymous users get no load-more sentinel, so no further page can load
+      cy.get("[data-test=review-load-more-sentinel]").should("not.exist");
 
       cy.get("[data-test=review]").should("have.length", 10);
     });
@@ -137,13 +138,17 @@ context("Reviews: Professor", function () {
       // Remember initial count
       cy.get("[data-test=review]", { timeout: 15000 }).then(($before) => {
         const initial = $before.length;
+        // Changing the filter refetches the reviews; wait for that response
+        cy.intercept("GET", "**/api/trpc/*reviews.getByProfSlug*").as(
+          "getFilteredReviews",
+        );
         cy.get("[data-test=filter-toggle-section] [data-test=filter-item]", {
           timeout: 15000,
         })
           .should("be.visible")
           .last()
           .click();
-        cy.wait(1500);
+        cy.wait("@getFilteredReviews");
         cy.get("body").then(($body) => {
           const count = $body.find("[data-test=review]").length;
           const empty = $body.find(":contains('Oh no!')").length > 0;
