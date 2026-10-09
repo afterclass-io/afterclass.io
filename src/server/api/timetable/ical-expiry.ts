@@ -1,5 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
+import { LINK_SHARING_REQUIRED_MESSAGE } from "@/modules/timetable/functions/calendar-links";
+
 /**
  * Determine whether an academic term has ended.
  * Returns true when current time is strictly after the term end date.
@@ -22,8 +24,7 @@ export function assertCalendarLinkAllowed(
   if (timetable.visibility === "PRIVATE") {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message:
-        "Set your timetable to link-sharing before creating a calendar link",
+      message: LINK_SHARING_REQUIRED_MESSAGE,
     });
   }
 

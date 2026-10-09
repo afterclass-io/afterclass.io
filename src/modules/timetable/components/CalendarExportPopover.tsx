@@ -27,7 +27,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/common/components/tooltip";
-import { buildCalendarLinks } from "@/modules/timetable/functions/calendar-links";
+import {
+  buildCalendarLinks,
+  LINK_SHARING_REQUIRED_MESSAGE,
+} from "@/modules/timetable/functions/calendar-links";
 
 export type CalendarExportPopoverProps = {
   timetableId: string;
@@ -372,7 +375,7 @@ export function CalendarExportPopover({
       // "turn on link sharing" action instead of a dead-end error toast.
       if (
         error.data?.code === "BAD_REQUEST" &&
-        error.message.includes("link-sharing")
+        error.message === LINK_SHARING_REQUIRED_MESSAGE
       ) {
         setNeedsLinkSharing(true);
         return;

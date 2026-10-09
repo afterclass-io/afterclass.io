@@ -173,4 +173,30 @@ describe("get-timetable-calendar-link", () => {
     expect(result.content[0]!.text).toMatch(/Something went wrong/);
     expect(result.content[0]!.text).not.toContain("10.0.0.1");
   });
+
+  it("surfaces the ended-term error instead of the link-sharing prompt when enableLinkSharing=true and confirm is missing", async () => {
+    const tokenFn = vi
+      .fn()
+      .mockRejectedValue(
+        new Error(
+          "This term has ended, so a calendar link can no longer be created",
+        ),
+      );
+    const visFn = vi.fn().mockResolvedValue({});
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        getOrCreateIcalToken: tokenFn,
+        setVisibility: visFn,
+      }),
+    };
+    const result = await getTimetableCalendarLinkTool.run(ctx, {
+      timetableId: "tt1",
+      enableLinkSharing: true,
+    });
+    expect(visFn).not.toHaveBeenCalled();
+    expect(result.isError).toBe(true);
+    expect(result.content[0]!.text).toContain("term has ended");
+    expect(result.content[0]!.text).not.toContain("link-sharing");
+  });
 });

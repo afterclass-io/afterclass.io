@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 import { env } from "@/env";
-import { buildCalendarLinks } from "@/modules/timetable/functions/calendar-links";
+import {
+  buildCalendarLinks,
+  LINK_SHARING_REQUIRED_MESSAGE,
+} from "@/modules/timetable/functions/calendar-links";
 
 import {
   confirmField,
@@ -37,10 +40,11 @@ export const getTimetableCalendarLinkTool: McpTool<
         await caller.timetable.getOrCreateIcalToken({ timetableId });
       } catch (e) {
         // PRIVATE timetables refuse to mint a token — flip to UNLISTED only
-        // when the user explicitly opted in AND confirmed the visibility
-        // escalation. Narrow to the private-visibility error so random
-        // failures (network etc.) don't over-eagerly escalate visibility.
+        // when the error is exactly that refusal (an ended term or a random
+        // failure must not offer or cause a visibility change), the user
+        // explicitly opted in AND confirmed the visibility escalation.
         if (!enableLinkSharing) throw e;
+        if (errorMessage(e) !== LINK_SHARING_REQUIRED_MESSAGE) throw e;
         if (confirm !== true) {
           return errText(
             "Set your timetable to link-sharing before creating a calendar link. " +
@@ -48,7 +52,6 @@ export const getTimetableCalendarLinkTool: McpTool<
               "call again with enableLinkSharing:true AND confirm:true to confirm.",
           );
         }
-        if (!errorMessage(e).includes("link-sharing")) throw e;
         await caller.sharing.setVisibility({
           entity: "timetable",
           id: timetableId,
