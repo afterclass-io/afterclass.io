@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import {
   Card,
   CardContent,
@@ -8,11 +9,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/common/components/card";
-import { BidChart, sortChartData } from "@/modules/bidding/components/BidChart";
+import { Skeleton } from "@/common/components/skeleton";
+import { sortChartData } from "@/modules/bidding/utils/sort-chart-data";
 import { BidTable } from "@/modules/bidding/components/BidTable";
 import { TagToggleGroup } from "@/common/components/tag-toggle-group";
 import { DisclosureDisclaimer } from "@/modules/bidding/components/DisclosureDisclaimer";
 import { compareRounds } from "@/modules/bidding/utils/round-order";
+
+// recharts is heavy and the chart is below the fold: load it on the client only.
+const BidChart = dynamic(
+  () => import("@/modules/bidding/components/BidChart").then((m) => m.BidChart),
+  { ssr: false, loading: () => <Skeleton className="aspect-video w-full" /> },
+);
 
 interface BidResultRow {
   bidWindow: {

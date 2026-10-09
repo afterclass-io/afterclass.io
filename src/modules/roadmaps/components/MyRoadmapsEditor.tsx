@@ -27,7 +27,7 @@ import { roadmapPanelWidthsAtom } from "@/modules/roadmaps/atoms/roadmap";
 import { hasSeenRoadmapsTourAtom } from "@/modules/roadmaps/atoms/roadmap";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
 import { RoadmapList } from "@/modules/roadmaps/components/RoadmapList";
-import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
+import { LazyRoadmapTimeline } from "@/modules/roadmaps/components/LazyRoadmapTimeline";
 import { CourseSearchSidebar } from "@/modules/roadmaps/components/CourseSearchSidebar";
 import { TermTimetableLink } from "@/modules/roadmaps/components/TermTimetableLink";
 import { ShareDialog } from "@/modules/sharing/components/ShareDialog";
@@ -884,7 +884,7 @@ export function MyRoadmapsEditor() {
           !entriesError &&
           (viewMode === "timeline" ? (
             <div className="p-4">
-              <RoadmapTimeline entries={entries} readOnly />
+              <LazyRoadmapTimeline entries={entries} readOnly />
             </div>
           ) : (
             <div

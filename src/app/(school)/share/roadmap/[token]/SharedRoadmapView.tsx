@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
-import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
+import { LazyRoadmapTimeline } from "@/modules/roadmaps/components/LazyRoadmapTimeline";
 import { ReportButton } from "@/modules/moderation/components/ReportButton";
 import { Button } from "@/common/components/button";
 import { PageTitle } from "@/common/components/page-title";
@@ -163,7 +163,7 @@ export function SharedRoadmapView({
           onEntriesChange={noop}
         />
       ) : (
-        <RoadmapTimeline entries={entries} readOnly />
+        <LazyRoadmapTimeline entries={entries} readOnly />
       )}
     </div>
   );

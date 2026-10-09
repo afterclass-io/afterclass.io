@@ -20,7 +20,7 @@ import {
 import { api } from "@/common/tools/trpc/react";
 import { useCopyToClipboard } from "@/common/hooks/use-copy-to-clipboard";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
-import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
+import { LazyRoadmapTimeline } from "@/modules/roadmaps/components/LazyRoadmapTimeline";
 import { RoadmapVoteGroup } from "@/modules/roadmaps/components/RoadmapVoteGroup";
 import { RoadmapReactionButton } from "@/modules/roadmaps/components/RoadmapReactionButton";
 import { RoadmapReactionsGroup } from "@/modules/roadmaps/components/RoadmapReactionsGroup";
@@ -268,7 +268,7 @@ export function PublicRoadmapView({
           onEntriesChange={noop}
         />
       ) : (
-        <RoadmapTimeline entries={entries} readOnly />
+        <LazyRoadmapTimeline entries={entries} readOnly />
       )}
     </div>
   );
