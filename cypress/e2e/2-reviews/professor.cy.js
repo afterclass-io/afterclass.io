@@ -83,11 +83,13 @@ context("Reviews: Professor", function () {
       );
       cy.wait("@getReviews");
 
+      // The first page must be rendered before the absence check, or the
+      // sentinel assertion passes vacuously on an empty list.
+      cy.get("[data-test=review]").should("have.length", 10);
+
       cy.scrollTo("bottom");
       // Anonymous users get no load-more sentinel, so no further page can load
       cy.get("[data-test=review-load-more-sentinel]").should("not.exist");
-
-      cy.get("[data-test=review]").should("have.length", 10);
     });
 
     it("should not be able to navigate to review submission", function () {
