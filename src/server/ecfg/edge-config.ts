@@ -1,10 +1,42 @@
 import { getAll } from "@vercel/edge-config";
+import { unstable_cache } from "next/cache";
 import { edgeConfigSchema, type EdgeConfig } from "@/server/ecfg/config";
 import fallbackConfig from "@/server/ecfg/config.json";
 
 type EdgeConfigKey = keyof EdgeConfig;
 
 const edgeConfigKeys = Object.keys(edgeConfigSchema.shape) as EdgeConfigKey[];
+
+/** Tag for on-demand invalidation, see `/api/revalidate/edge-config`. */
+export const EDGE_CONFIG_CACHE_TAG = "edge-config";
+
+// A window of 24 hours is safe because an operator can push a change at once
+// by revalidating the tag. Edge Config bills per read, and this call sat in
+// the root layout, so it used to run on every server render of every route.
+const EDGE_CONFIG_REVALIDATE_SECONDS = 86_400;
+
+// Only the raw store read is cached. A failed read throws before anything is
+// stored, so a transient outage never pins the `config.json` fallback for the
+// whole window. Validation and the per-key fallback below run on every call.
+const readCachedStore = unstable_cache(
+  async (): Promise<unknown> => getAll(),
+  ["edge-config", "store"],
+  { revalidate: EDGE_CONFIG_REVALIDATE_SECONDS, tags: [EDGE_CONFIG_CACHE_TAG] },
+);
+
+async function readStore(): Promise<unknown> {
+  try {
+    return await readCachedStore();
+  } catch (error) {
+    // Outside the Next.js runtime (standalone `mcp-use dev/start`, scripts,
+    // unit tests) `unstable_cache` throws "incrementalCache missing". Read
+    // directly there. Any other failure rethrows to the caller's fallback.
+    if (error instanceof Error && error.message.includes("incrementalCache")) {
+      return getAll();
+    }
+    throw error;
+  }
+}
 
 function parseFallbackConfig(): EdgeConfig {
   return edgeConfigSchema.parse(fallbackConfig);
@@ -39,10 +71,7 @@ function mergeStoreWithFallback(raw: Record<string, unknown>): EdgeConfig {
 
 export async function getEdgeConfig(): Promise<EdgeConfig> {
   try {
-    // * FUTURE NOTE *
-    // if edge requests count nears the threshold,
-    // we should consider caching the edge config & revalidate every 24h
-    const rawConfig: unknown = await getAll();
+    const rawConfig = await readStore();
 
     if (
       typeof rawConfig !== "object" ||

@@ -118,6 +118,19 @@ describe("performance invariants", () => {
     });
   });
 
+  describe("edge config read (#518)", () => {
+    it("caches only the raw store read, under a tag, with a window", () => {
+      const source = read("src/server/ecfg/edge-config.ts");
+      expect(source).toContain("unstable_cache(");
+      expect(source).toContain("EDGE_CONFIG_CACHE_TAG");
+      expect(source).toMatch(/revalidate:\s*EDGE_CONFIG_REVALIDATE_SECONDS/);
+      // The per-key fallback must run after the cached read, never inside it.
+      expect(
+        source.indexOf("mergeStoreWithFallback(rawConfig"),
+      ).toBeGreaterThan(source.indexOf("readCachedStore = unstable_cache"));
+    });
+  });
+
   describe("field vitals (#504)", () => {
     it("mounts the web vitals reporter in the root layout", () => {
       const layout = read("src/app/layout.tsx");
