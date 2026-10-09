@@ -16,6 +16,18 @@ import randomId from "@/common/functions/randomId";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import { emailMatchesDomain } from "@/common/functions/email-domain";
 
+/**
+ * Prisma error messages echo the failing query arguments, which hold the
+ * user email. Report only the error class and code for Prisma errors.
+ */
+function redactDbError(e: unknown): unknown {
+  if (e instanceof Error && e.name.startsWith("PrismaClient")) {
+    const code = (e as { code?: unknown }).code;
+    return new Error(typeof code === "string" ? `${e.name} ${code}` : e.name);
+  }
+  return e;
+}
+
 // supabaseUserId is an internal identity link, not session data.
 export type SessionUser = Omit<
   Users,
@@ -406,7 +418,7 @@ export const authConfig = {
             token.supabaseExpiresAt = null;
             // Sign-in still succeeds, so no event would carry a breadcrumb
             // to Sentry. Report the error itself.
-            Sentry.captureException(e, {
+            Sentry.captureException(redactDbError(e), {
               tags: { area: "auth.google-reconcile" },
               level: "warning",
             });

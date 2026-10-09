@@ -12,7 +12,8 @@ Sentry.init({
 
   // Add optional integrations for additional features
   integrations: [
-    Sentry.replayIntegration({ maskAllText: false, blockAllMedia: false }),
+    // Review text is student-written: replay must never capture it verbatim.
+    Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),
     ...(!isProd ? [Sentry.browserProfilingIntegration()] : []),
   ],
 

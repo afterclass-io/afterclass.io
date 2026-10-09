@@ -78,4 +78,31 @@ describe("google jwt reconcile failure reporting", () => {
       expect.objectContaining({ tags: { area: "auth.google-reconcile" } }),
     );
   });
+
+  it("reports a Prisma error without its argument text (the email)", async () => {
+    m.linkMock.mockResolvedValue({
+      accessToken: "supa-access",
+      refreshToken: "supa-refresh",
+      expiresAt: 9999999999,
+      supabaseUserId: "supa-uid",
+    });
+    m.usersFindUnique
+      .mockResolvedValueOnce(legacyRow)
+      .mockResolvedValueOnce(null);
+    const prismaError = Object.assign(
+      new Error("Invalid invocation: data: { email: a@smu.edu.sg }"),
+      { name: "PrismaClientKnownRequestError", code: "P2002" },
+    );
+    m.usersUpdate.mockRejectedValueOnce(prismaError);
+
+    await jwt(params);
+
+    const [reported, options] = m.captureException.mock.calls[0] as [
+      Error,
+      { tags: Record<string, string> },
+    ];
+    expect(reported.message).toBe("PrismaClientKnownRequestError P2002");
+    expect(JSON.stringify(reported)).not.toContain("smu.edu.sg");
+    expect(options.tags).toEqual({ area: "auth.google-reconcile" });
+  });
 });
