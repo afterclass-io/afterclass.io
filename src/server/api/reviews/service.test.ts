@@ -355,6 +355,17 @@ describe("review service (service.ts)", () => {
     });
   });
 
+  describe("reviewer username masking", () => {
+    it("masks the reviewer username in the member review, including the spread reviewer object", () => {
+      const row = makeRow({ reviewer: { username: "bastard" } });
+      const mapped = toMemberReview(
+        row as unknown as Parameters<typeof toMemberReview>[0],
+      );
+      expect(mapped.username).toBe("*******");
+      expect(JSON.stringify(mapped)).not.toContain("bastard");
+    });
+  });
+
   describe("reviewPageInput schema caps and defaults", () => {
     it("enforces limit and skip constraints and defaults", () => {
       // Defaults

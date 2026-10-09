@@ -108,4 +108,18 @@ describe("sharing.getSharedRoadmap", () => {
       "user",
     ]);
   });
+
+  it("never ships the raw owner username anywhere in the response", async () => {
+    const findUnique = vi.fn().mockResolvedValue({
+      ...roadmapFixture,
+      user: { username: "bastard" },
+    });
+    const caller = makeCaller(router.createCaller, {
+      userRoadmap: { findUnique },
+    });
+
+    const result = await caller.getSharedRoadmap({ token: "tok_valid" });
+
+    expect(JSON.stringify(result)).not.toContain("bastard");
+  });
 });

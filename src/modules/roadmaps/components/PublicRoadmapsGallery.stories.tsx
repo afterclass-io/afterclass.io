@@ -72,7 +72,6 @@ function sampleItem({
       publishedAt,
       viewCount,
       shareCount: 0,
-      user: { username },
       _count: { entries: entryCount, votes: voteCount },
     },
     ownerUsername: username,

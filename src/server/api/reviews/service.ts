@@ -80,7 +80,7 @@ const sharedFields = (row: PublicReviewRow) => ({
   createdAt: row.createdAt.getTime(),
   courseCode: row.reviewedCourse.code,
   courseName: row.reviewedCourse.name,
-  username: row.reviewer.username ?? "Anonymous",
+  username: censorProfanity(row.reviewer.username ?? "Anonymous"),
   reviewLabels: row.reviewLabels.map((rl) => ({ name: rl.label.name })),
   likeCount: row.countVotes,
   reviewFor:
@@ -102,13 +102,20 @@ export const toPublicReview = (row: PublicReviewRow): Review =>
     ...sharedFields(row),
   }) satisfies Review;
 
-export const toMemberReview = (row: PrivateReviewRow): Review =>
-  ({
+export const toMemberReview = (row: PrivateReviewRow): Review => {
+  const review = {
     ...row,
+    // `reviewer` is spread from the row; keep the key but mask the name.
+    reviewer: {
+      ...row.reviewer,
+      username: censorProfanity(row.reviewer.username),
+    },
     body: censorProfanity(row.body),
     tips: censorProfanity(row.tips ?? ""),
     ...sharedFields(row),
-  }) satisfies Review;
+  };
+  return review;
+};
 
 export function buildReviewWhere(
   scope: ReviewScope,

@@ -79,14 +79,18 @@ export const getById = publicProcedure
       ownerFaculty = f ? { name: f.name, acronym: f.acronym } : null;
     }
 
+    // The raw username never leaves the server: only the masked copy ships.
+    // `entries` is returned once, at the top level.
+    const { user, entries, ...roadmapFields } = roadmap;
+
     return {
       roadmap: {
-        ...roadmap,
+        ...roadmapFields,
         name: censorProfanity(roadmap.name),
         description: censorProfanityOrNull(roadmap.description),
       },
-      entries: roadmap.entries,
-      ownerUsername: censorProfanity(roadmap.user.username),
+      entries,
+      ownerUsername: censorProfanity(user.username),
       ownerFaculty,
       voteCount: roadmap._count.votes,
       viewerHasVoted,

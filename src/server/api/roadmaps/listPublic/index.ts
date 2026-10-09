@@ -85,13 +85,14 @@ export const listPublic = publicProcedure
       : [];
     const facultyById = new Map(faculties.map((f) => [f.id, f]));
 
-    const items = roadmaps.map((r) => ({
+    const items = roadmaps.map(({ user, ...r }) => ({
       roadmap: {
         ...r,
         name: censorProfanity(r.name),
         description: censorProfanityOrNull(r.description),
       },
-      ownerUsername: censorProfanity(r.user.username),
+      // The raw username never leaves the server: only the masked copy ships.
+      ownerUsername: censorProfanity(user.username),
       entryCount: r._count.entries,
       voteCount: r._count.votes,
       faculty:

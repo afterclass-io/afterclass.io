@@ -233,4 +233,22 @@ describe("listPublic", () => {
     expect(result.items[0]?.ownerUsername).toBe("*******");
     expect(result.items[1]?.roadmap.description).toBeNull();
   });
+
+  it("never ships the raw owner username anywhere in the response", async () => {
+    const findMany = vi
+      .fn()
+      .mockResolvedValue([
+        roadmapRow({ id: "r1", user: { username: "bastard" } }),
+      ]);
+    const dbMock = {
+      userRoadmap: { findMany },
+      faculties: { findMany: vi.fn().mockResolvedValue([]) },
+    };
+    const caller = makeCaller(router.createCaller, dbMock, null);
+
+    const result = await caller.listPublic({});
+
+    expect(JSON.stringify(result)).not.toContain("bastard");
+    expect(result.items[0]?.ownerUsername).toBe("*******");
+  });
 });

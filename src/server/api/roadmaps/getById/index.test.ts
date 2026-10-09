@@ -175,4 +175,14 @@ describe("roadmaps.getById", () => {
     expect(res.roadmap.description).toBe("A **** of a plan");
     expect(res.ownerUsername).toBe("*******");
   });
+
+  it("never ships the raw owner username anywhere in the response", async () => {
+    const db = makeDb(makeRoadmapRow({ user: { username: "bastard" } }));
+    const res = await makeCaller(router.createCaller, db, anon).getById({
+      id: "rm1",
+    });
+    expect(JSON.stringify(res)).not.toContain("bastard");
+    expect(res.ownerUsername).toBe("*******");
+    expect(res.entries).toHaveLength(1);
+  });
 });

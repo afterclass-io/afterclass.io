@@ -50,9 +50,16 @@ export const getSharedRoadmap = publicProcedure
       throw new TRPCError({ code: "NOT_FOUND" });
     }
 
+    const ownerUsername = censorProfanity(roadmap.user.username);
+
     return {
-      roadmap: { ...roadmap, name: censorProfanity(roadmap.name) },
+      roadmap: {
+        ...roadmap,
+        name: censorProfanity(roadmap.name),
+        // Keep the `user` shape but never ship the raw username.
+        user: { ...roadmap.user, username: ownerUsername },
+      },
       entries: roadmap.entries,
-      ownerUsername: censorProfanity(roadmap.user.username),
+      ownerUsername,
     };
   });
