@@ -1,4 +1,6 @@
 "use client";
+import { useRef } from "react";
+
 import { ReviewEventType, ReviewType } from "@/generated/prisma/enums";
 
 import { api } from "@/common/tools/trpc/react";
@@ -38,6 +40,7 @@ export const ReviewModal = ({
   defaultOpen?: boolean;
 }) => {
   const ecfg = useEdgeConfigs();
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const reviewPath =
     review.reviewFor === ReviewType.PROFESSOR
@@ -61,7 +64,15 @@ export const ReviewModal = ({
     >
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        ref={contentRef}
+        tabIndex={-1}
+        // Focus the dialog itself, not the first control: the close button
+        // would otherwise show a focus ring as soon as the modal opens.
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          contentRef.current?.focus();
+        }}
+        className="focus:outline-hidden"
         data-test="review-modal"
       >
         <DialogHeader className="text-left">
