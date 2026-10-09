@@ -102,8 +102,8 @@ const toPublicReview = (row: PublicReviewRow): Review =>
     ...sharedFields(row),
   }) satisfies Review;
 
-export const toMemberReview = (row: PrivateReviewRow): Review => {
-  const review = {
+export const toMemberReview = (row: PrivateReviewRow): Review =>
+  ({
     ...row,
     // `reviewer` is spread from the row; keep the key but mask the name.
     reviewer: {
@@ -113,9 +113,7 @@ export const toMemberReview = (row: PrivateReviewRow): Review => {
     body: censorProfanity(row.body),
     tips: censorProfanity(row.tips ?? ""),
     ...sharedFields(row),
-  };
-  return review;
-};
+  }) satisfies Review;
 
 export function buildReviewWhere(
   scope: ReviewScope,

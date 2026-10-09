@@ -13,6 +13,8 @@ export type Review = {
   courseCode: string;
   courseName: string;
   username: string;
+  /** Member reviews only: the author row, with a masked username. */
+  reviewer?: { username: string };
   likeCount: number;
   countEventViews: number;
   createdAt: number;
