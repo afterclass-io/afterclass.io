@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { cn } from "@/common/functions";
 import {
   GRID_START_MIN,
@@ -40,32 +40,39 @@ export type CurrentTimeIndicatorProps = {
   highlightNow?: boolean;
 };
 
+// Re-render every 60 s so the line moves with real time.
+function subscribeToMinuteTick(onChange: () => void): () => void {
+  const interval = setInterval(onChange, 60_000);
+  return () => clearInterval(interval);
+}
+
+function subscribeToNothing(): () => void {
+  return () => undefined;
+}
+
+function getNoMinutes(): null {
+  return null;
+}
+
 /**
  * A horizontal line displaying the current SGT time on the timetable grid.
  *
  * Updates every 60 seconds.  Only renders when `highlightNow` is true and
  * the current SGT time is within 08:00–22:15.
+ *
+ * The server snapshot is `null`, so server HTML and the first client render
+ * agree (no line). The line appears after hydration, at the client's time.
  */
 export function CurrentTimeIndicator({
   highlightNow = false,
 }: CurrentTimeIndicatorProps) {
-  const [, setTick] = useState(0);
+  const nowMin = useSyncExternalStore(
+    highlightNow ? subscribeToMinuteTick : subscribeToNothing,
+    highlightNow ? getSGTMinutes : getNoMinutes,
+    getNoMinutes,
+  );
 
-  // Re-render every 60 s so the line moves with real time
-  useEffect(() => {
-    if (!highlightNow) return;
-
-    const interval = setInterval(() => {
-      setTick((n) => n + 1);
-    }, 60_000);
-
-    return () => clearInterval(interval);
-  }, [highlightNow]);
-
-  if (!highlightNow) return null;
-
-  const nowMin = getSGTMinutes();
-  if (!isWithinGrid(nowMin)) return null;
+  if (nowMin === null || !isWithinGrid(nowMin)) return null;
 
   const topPct = minutesToPositionPct(nowMin);
 
