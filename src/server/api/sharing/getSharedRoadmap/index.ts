@@ -22,12 +22,17 @@ export const getSharedRoadmap = publicProcedure
     // a PRIVATE row with a lingering token is invisible, not just refused.
     const roadmap = await ctx.db.userRoadmap.findUnique({
       where: { shareToken: input.token, visibility: { not: "PRIVATE" } },
-      include: {
+      select: {
+        id: true,
+        name: true,
         user: {
           select: { username: true },
         },
         entries: {
-          include: {
+          select: {
+            courseId: true,
+            yearNumber: true,
+            term: true,
             course: {
               select: {
                 code: true,

@@ -87,4 +87,25 @@ describe("sharing.getSharedRoadmap", () => {
     expect(result.roadmap.name).toBe("**** plan");
     expect(result.ownerUsername).toBe("*******");
   });
+
+  it("selects only the fields the page uses, never the share token or user id", async () => {
+    const findUnique = vi.fn().mockResolvedValue(roadmapFixture);
+    const caller = makeCaller(router.createCaller, {
+      userRoadmap: { findUnique },
+    });
+
+    await caller.getSharedRoadmap({ token: "tok_valid" });
+
+    const args = findUnique.mock.calls[0]?.[0] as {
+      include?: unknown;
+      select?: Record<string, unknown>;
+    };
+    expect(args.include).toBeUndefined();
+    expect(Object.keys(args.select ?? {}).sort()).toEqual([
+      "entries",
+      "id",
+      "name",
+      "user",
+    ]);
+  });
 });
