@@ -1,6 +1,16 @@
+import { createHash, timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 
 import { env } from "@/env";
+
+/**
+ * Constant-time string compare. Hashing first gives both sides the same
+ * length, so `timingSafeEqual` never throws and the length stays hidden.
+ */
+function safeEqual(a: string, b: string): boolean {
+  const digest = (v: string) => createHash("sha256").update(v).digest();
+  return timingSafeEqual(digest(a), digest(b));
+}
 
 /**
  * Shared guard for Vercel Cron routes. Vercel sends
@@ -27,7 +37,8 @@ export function authorizeCron(
   // Allowlisted raw read (dev-only bypass flag, not config).
   const devBypass =
     process.env.NODE_ENV === "development" && auth === "Bearer dev";
-  if (auth !== `Bearer ${secret}` && !devBypass) {
+  const authorized = auth !== null && safeEqual(auth, `Bearer ${secret}`);
+  if (!authorized && !devBypass) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   return null;
