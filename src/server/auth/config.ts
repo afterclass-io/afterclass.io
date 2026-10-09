@@ -404,9 +404,10 @@ export const authConfig = {
             token.supabaseAccessToken = null;
             token.supabaseRefreshToken = null;
             token.supabaseExpiresAt = null;
-            Sentry.addBreadcrumb({
-              category: "auth",
-              message: `Google user reconcile failed: ${e instanceof Error ? e.message : String(e)}`,
+            // Sign-in still succeeds, so no event would carry a breadcrumb
+            // to Sentry. Report the error itself.
+            Sentry.captureException(e, {
+              tags: { area: "auth.google-reconcile" },
               level: "warning",
             });
           }

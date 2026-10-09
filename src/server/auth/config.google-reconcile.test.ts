@@ -27,6 +27,7 @@ vi.mock("./supabase-link", () => ({
 
 vi.mock("@sentry/nextjs", () => ({
   addBreadcrumb: vi.fn(),
+  captureException: vi.fn(),
 }));
 
 import { authConfig } from "./config";
