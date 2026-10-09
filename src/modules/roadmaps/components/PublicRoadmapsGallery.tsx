@@ -126,7 +126,7 @@ export function PublicRoadmapsGallery() {
       {isLoading && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-lg" />
+            <Skeleton key={i} className="h-52 rounded-lg xl:h-57.5" />
           ))}
         </div>
       )}

@@ -19,7 +19,7 @@ export default function Loading() {
           </Tag>
         }
       >
-        <Skeleton className="h-[23.98px] w-[200px]" />
+        <Skeleton className="h-7 w-[200px] md:h-9" />
       </PageTitle>
     </div>
   );
