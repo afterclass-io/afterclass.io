@@ -14,7 +14,7 @@ import { RatingGroup } from "@/common/components/rating-group";
 import { TagToggleGroup } from "@/common/components/tag-toggle-group";
 import { Textarea } from "@/common/components/textarea";
 import { type ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
-import { ReviewableEnum, type ReviewableType } from "@/modules/submit/types";
+import { ReviewableEnum, type ReviewableType } from "@/common/types/reviews";
 import { texts } from "@/modules/submit/constants";
 
 import {

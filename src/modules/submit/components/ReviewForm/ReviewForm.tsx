@@ -13,7 +13,7 @@ import {
 } from "@/common/tools/zod/schemas";
 import { api } from "@/common/tools/trpc/react";
 import { Form } from "@/common/components/form";
-import { ReviewableEnum } from "@/modules/submit/types";
+import { ReviewableEnum } from "@/common/types/reviews";
 import { SubmitButtonGroup } from "../SubmitButtonGroup";
 import { useProgress } from "@/common/providers/ProgressProvider";
 

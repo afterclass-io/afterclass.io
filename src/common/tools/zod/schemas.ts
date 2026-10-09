@@ -5,7 +5,7 @@ import { env } from "@/env";
 import { z } from "zod";
 
 import { emailMatchesDomain } from "@/common/functions/email-domain";
-import { ReviewableEnum, ReviewerEnum } from "@/modules/submit/types";
+import { ReviewableEnum, ReviewerEnum } from "@/common/types/reviews";
 
 /**
  * Schema for the authentication form inputs

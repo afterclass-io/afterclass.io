@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 
 import { reviewFormSchema } from "@/common/tools/zod/schemas";
 import { verifiedProcedure } from "@/server/api/trpc";
-import { ReviewableEnum } from "@/modules/submit/types";
+import { ReviewableEnum } from "@/common/types/reviews";
 
 export const create = verifiedProcedure
   .input(reviewFormSchema)

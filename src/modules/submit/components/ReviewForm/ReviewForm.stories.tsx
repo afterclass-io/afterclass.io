@@ -11,7 +11,7 @@ import {
   type ReviewFormInputsSchema,
   reviewFormSchema,
 } from "@/common/tools/zod/schemas";
-import { ReviewableEnum } from "@/modules/submit/types";
+import { ReviewableEnum } from "@/common/types/reviews";
 
 const MOCK_COURSES = [
   { id: "c1", code: "ACCT101", name: "Financial Accounting" },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ReviewableEnum, ReviewerEnum } from "@/modules/submit/types";
+import { ReviewableEnum, ReviewerEnum } from "@/common/types/reviews";
 import { emailValidationSchema, reviewFormSchema } from "./schemas";
 
 describe("emailValidationSchema", () => {

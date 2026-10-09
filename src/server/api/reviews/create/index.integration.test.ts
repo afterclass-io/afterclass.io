@@ -8,7 +8,7 @@ import {
 } from "@/server/api/integration-test-helpers";
 import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
-import { ReviewableEnum, ReviewerEnum } from "@/modules/submit/types";
+import { ReviewableEnum, ReviewerEnum } from "@/common/types/reviews";
 import { create } from "./index";
 
 const router = createTRPCRouter({ create });
