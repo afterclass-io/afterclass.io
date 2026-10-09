@@ -15,6 +15,7 @@ import { api } from "@/common/tools/trpc/react";
 import { Form } from "@/common/components/form";
 import { ReviewableEnum } from "@/common/types/reviews";
 import { SubmitButtonGroup } from "../SubmitButtonGroup";
+import { buildReviewSubmitBreadcrumb } from "./review-breadcrumb";
 import { ReviewScopeProvider } from "./review-scope";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
@@ -41,7 +42,7 @@ export const ReviewForm = ({ children }: { children: ReactNode }) => {
     },
   });
 
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const progress = useProgress();
 
@@ -73,14 +74,7 @@ export const ReviewForm = ({ children }: { children: ReactNode }) => {
   // }, [formMethods.watch]);
 
   const onSubmit: SubmitHandler<ReviewFormInputsSchema> = (data) => {
-    Sentry.addBreadcrumb({
-      category: "review.submit",
-      message:
-        "Review Submitted." +
-        `\n\tSession:\n${JSON.stringify(session)}\n` +
-        `\n\tData:\n${JSON.stringify(data)}`,
-      level: "info",
-    });
+    Sentry.addBreadcrumb(buildReviewSubmitBreadcrumb(data));
 
     reviewsMutation.mutate({
       ...data,
