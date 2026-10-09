@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+
 import { ModerationVerdict } from "@/generated/prisma/enums";
 import { checkAndIncrement, peekRateLimit } from "@/server/assistant/ratelimit";
 import { getModel } from "@/server/assistant/providers";
@@ -167,9 +169,10 @@ export function createModerationJudge(timeoutMs: number): Judge {
     let model: Awaited<ReturnType<typeof getModel>>;
     try {
       model = await getModel();
-    } catch {
+    } catch (error) {
       // Missing key or invalid model config: nothing is removed; the ERROR
-      // row is the signal for a human.
+      // row is the signal for a human, and Sentry gets the cause.
+      Sentry.captureException(error, { tags: { area: "moderation.model" } });
       return {
         kind: "error",
         reason: "model_unavailable",
