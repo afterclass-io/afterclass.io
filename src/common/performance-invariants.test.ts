@@ -165,6 +165,41 @@ describe("performance invariants", () => {
     });
   });
 
+  describe("parallel route lookups (#521)", () => {
+    // The `@header`, `@information` and `@reviews` segments render in
+    // parallel. A direct tRPC call in each would run the same lookup again.
+    const reviewRoute = listFiles("src/app/(school)/(reviews)").filter(
+      (file) => file.endsWith(".tsx") && !file.includes(".test."),
+    );
+    const reviewHelpers = listFiles("src/modules/reviews/functions").filter(
+      (file) => file.endsWith(".ts") && !file.includes(".test."),
+    );
+
+    it("looks the course up through the request-cached helper", () => {
+      const direct = [...reviewRoute, ...reviewHelpers].filter(
+        (file) =>
+          !file.endsWith("/getCourseByCode.ts") &&
+          read(file).includes("api.courses.getByCourseCode"),
+      );
+      expect(direct).toEqual([]);
+      expect(read("src/modules/reviews/functions/getCourseByCode.ts")).toMatch(
+        /cache\(/,
+      );
+    });
+
+    it("looks the professor up through the request-cached helper", () => {
+      const direct = [...reviewRoute, ...reviewHelpers].filter(
+        (file) =>
+          !file.endsWith("/getProfessorBySlug.ts") &&
+          read(file).includes("api.professors.getBySlug"),
+      );
+      expect(direct).toEqual([]);
+      expect(
+        read("src/modules/reviews/functions/getProfessorBySlug.ts"),
+      ).toMatch(/cache\(/);
+    });
+  });
+
   describe("field vitals (#504)", () => {
     it("mounts the web vitals reporter in the root layout", () => {
       const layout = read("src/app/layout.tsx");

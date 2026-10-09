@@ -1,17 +1,17 @@
-import { api } from "@/common/tools/trpc/server";
 import { notFound } from "next/navigation";
 import { InformationCard } from "@/modules/reviews/components/InformationSection/InformationCard";
 import { DetailCard } from "@/modules/reviews/components/InformationSection/DetailCard";
+import { getCourseByCode } from "@/modules/reviews/functions/getCourseByCode";
 import { auth } from "@/server/auth";
 
 export default async function CourseInfo(props: {
   params: Promise<{ code: string }>;
 }) {
   const params = await props.params;
-  const session = await auth();
-  const course = await api.courses.getByCourseCode({
-    code: params.code.toUpperCase(),
-  });
+  const [session, course] = await Promise.all([
+    auth(),
+    getCourseByCode(params.code.toUpperCase()),
+  ]);
 
   if (!course) {
     return notFound();
