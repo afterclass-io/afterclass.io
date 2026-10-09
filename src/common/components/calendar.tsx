@@ -269,7 +269,7 @@ export function Calendar(props: CalendarProps) {
                       ? "text-primary hover:bg-primary/25 rounded-full font-semibold"
                       : isCurrentMonth
                         ? "text-foreground hover:bg-muted rounded-full"
-                        : "text-muted-foreground/30 hover:bg-muted/40 rounded-full",
+                        : "text-muted-foreground hover:bg-muted/40 rounded-full font-normal",
                   // Today marker when not currently selected
                   isToday &&
                     !isSelected &&
