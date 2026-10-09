@@ -42,6 +42,9 @@ export const env = createEnv({
       process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test"
         ? z.string()
         : z.string().optional(),
+    // Auth.js alias for NEXTAUTH_SECRET. Read only through getAuthSecret()
+    // in @/server/auth/auth-secret. Production still requires NEXTAUTH_SECRET.
+    AUTH_SECRET: z.string().min(1).optional(),
     ENABLE_PASSWORD_LOGIN: z.enum(["true", "false"]).optional(),
     // Vercel deployment context, exposed so generated files (robots.ts) read
     // it through the validated schema rather than process.env directly.
@@ -184,6 +187,7 @@ export const env = createEnv({
     EDGE_CONFIG: process.env.EDGE_CONFIG,
     NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    AUTH_SECRET: process.env.AUTH_SECRET,
     ENABLE_PASSWORD_LOGIN: process.env.ENABLE_PASSWORD_LOGIN,
     VERCEL_ENV: process.env.VERCEL_ENV,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,

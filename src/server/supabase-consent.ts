@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 import { env } from "@/env";
 import { serverSupabaseAuthOptions } from "@/server/supabase";
+import { getAuthSecret } from "@/server/auth/auth-secret";
 
 /**
  * Per-call Supabase client authenticated as the user via their access token.
@@ -135,7 +136,7 @@ export interface UserGrant {
 const CONSENT_CSRF_TTL_MS = 10 * 60_000;
 
 export function resolveConsentCsrfSecret(): string | undefined {
-  return process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+  return getAuthSecret();
 }
 
 export function issueConsentCsrf(accessToken: string, secret: string): string {

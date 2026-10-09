@@ -3,7 +3,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { decode } from "next-auth/jwt";
 
-import { env } from "@/env";
+import { getAuthSecret } from "./auth-secret";
 
 /**
  * Seconds of clock skew before `supabaseExpiresAt` at which the token
@@ -60,8 +60,7 @@ export async function getSupabaseAccessToken(): Promise<string | null> {
     : "authjs.session-token";
   // Mirror Auth.js's secret resolution (NEXTAUTH_SECRET is optional outside
   // production in the env schema; Auth.js falls back to AUTH_SECRET).
-  // Allowlisted raw read (third-party fallback secret, not app config).
-  const secret = env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+  const secret = getAuthSecret();
   if (!secret) return null;
   // Malformed/tampered cookies decode-throw — map to null (401), not 500.
   try {
@@ -118,7 +117,7 @@ export async function getSupabaseRefreshToken(): Promise<string | null> {
   const salt = secure
     ? "__Secure-authjs.session-token"
     : "authjs.session-token";
-  const secret = env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+  const secret = getAuthSecret();
   if (!secret) return null;
   try {
     const token = await decode({

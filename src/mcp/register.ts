@@ -22,6 +22,7 @@ import { getMyRoadmap } from "./view-tools/get-my-roadmap";
 import { getCourseReviews } from "./view-tools/get-course-reviews";
 import { exploreBidOptions } from "./view-tools/explore-bid-options";
 import { getMyTimetableDetail } from "./view-tools/get-my-timetable-detail";
+import { getAuthSecret } from "@/server/auth/auth-secret";
 
 // The 7 view-bound tool names are registered by view-tools/* (module scope,
 // exported ToolRefs); this loop skips them and registers the remaining 43 as
@@ -91,8 +92,7 @@ export function registerViewlessTools(server: MCPServer): void {
             // Token pass-through: MCP hosts forward a confirmToken
             // issued out-of-band; the gate verifies it against the same app
             // secret the chat path uses.
-            confirmSecret:
-              process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
+            confirmSecret: getAuthSecret(),
           },
         });
         if ("error" in out)

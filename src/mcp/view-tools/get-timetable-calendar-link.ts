@@ -4,6 +4,7 @@ import { dispatchToolCall } from "../dispatch";
 import { calendarLinksOutput } from "./schemas";
 import { errorResult, checkMcpEnabled, guardedParse } from "./results";
 import { makeViewTool } from "./make-view-tool";
+import { getAuthSecret } from "@/server/auth/auth-secret";
 
 // Shared lookup + named-throw + registration derivation.
 // This adapter is destructive (PRIVATE → UNLISTED escalation), so the
@@ -51,7 +52,7 @@ export const getTimetableCalendarLink = server.tool(
         confirm: true,
         budget: "write",
         shape: "view",
-        confirmSecret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
+        confirmSecret: getAuthSecret(),
       },
     });
     if ("error" in out) return errorResult(out.error);
