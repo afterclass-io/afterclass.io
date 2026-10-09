@@ -17,6 +17,8 @@ import { type ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
 import { ReviewableEnum, type ReviewableType } from "@/common/types/reviews";
 import { texts } from "@/modules/submit/constants";
 
+import { useReviewScope } from "./review-scope";
+
 import {
   FormControl,
   FormField,
@@ -50,11 +52,43 @@ export const ReviewFormSection = ({
     null,
   );
 
+  const reviewScope = useReviewScope();
+
+  // The course list narrows to the chosen professor and the professor list to
+  // the chosen course, the way the bidding filter does.
   const catalog = useSearchCatalog(
     entity === "course"
-      ? { entity: "course", query }
-      : { entity: "professor", query },
+      ? {
+          entity: "course",
+          query,
+          scope: reviewScope?.professorSlug
+            ? { professorSlug: reviewScope.professorSlug }
+            : undefined,
+        }
+      : {
+          entity: "professor",
+          query,
+          scope: reviewScope?.courseCode
+            ? { courseCode: reviewScope.courseCode }
+            : undefined,
+        },
   );
+
+  // Publish this section code or slug so the other section can scope by it.
+  const publishScope = (selectedId: string | undefined) => {
+    if (!reviewScope) return;
+    if (entity === "course") {
+      const row = (catalog.rows as CourseCatalogRow[]).find(
+        (course) => course.id === selectedId,
+      );
+      reviewScope.setCourseCode(row?.code);
+    } else {
+      const row = (catalog.rows as ProfessorCatalogRow[]).find(
+        (prof) => prof.id === selectedId,
+      );
+      reviewScope.setProfessorSlug(row?.slug);
+    }
+  };
 
   const options: ComboboxOption[] =
     entity === "course"
@@ -93,6 +127,7 @@ export const ReviewFormSection = ({
                   }
                   onValueChange={(next) => {
                     setSelectedOption(next);
+                    publishScope(next?.value);
                     field.onChange(next?.value ?? "");
                   }}
                   query={query}
@@ -116,6 +151,7 @@ export const ReviewFormSection = ({
               onClick={() => {
                 setIsSkipped(false);
                 setSelectedOption(null);
+                publishScope(undefined);
                 setValue("type", ReviewableEnum.PROFESSOR);
                 setValue(ReviewableEnum.PROFESSOR, {});
               }}
@@ -131,6 +167,7 @@ export const ReviewFormSection = ({
               onClick={() => {
                 setIsSkipped(true);
                 setSelectedOption(null);
+                publishScope(undefined);
                 setValue("type", ReviewableEnum.COURSE);
                 setValue(ReviewableEnum.PROFESSOR, {});
               }}

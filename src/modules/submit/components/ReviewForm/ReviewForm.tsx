@@ -15,6 +15,7 @@ import { api } from "@/common/tools/trpc/react";
 import { Form } from "@/common/components/form";
 import { ReviewableEnum } from "@/common/types/reviews";
 import { SubmitButtonGroup } from "../SubmitButtonGroup";
+import { ReviewScopeProvider } from "./review-scope";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
 export const ReviewForm = ({ children }: { children: ReactNode }) => {
@@ -92,7 +93,7 @@ export const ReviewForm = ({ children }: { children: ReactNode }) => {
         className="flex flex-col items-start gap-5 md:gap-14"
         onSubmit={formMethods.handleSubmit(onSubmit)}
       >
-        {children}
+        <ReviewScopeProvider>{children}</ReviewScopeProvider>
         <SubmitButtonGroup isLoading={isLoading} />
       </form>
     </Form>
