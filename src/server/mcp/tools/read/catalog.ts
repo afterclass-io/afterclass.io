@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import { ReviewsFilterFor, ReviewsSortBy } from "@/common/types/reviews";
 
+import { toCodeKey } from "@/server/search/query";
+
 import { resolveTermId } from "../../current";
 import {
   errText,
@@ -162,10 +164,8 @@ export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
           query: q,
         })) as Array<{ code: string }>;
         if (hits.length === 0) return errText(`No courses found for "${q}".`);
-        const norm = q.toUpperCase().replace(/[\s-]/g, "");
-        const exact = hits.find(
-          (h) => h.code.toUpperCase().replace(/[\s-]/g, "") === norm,
-        );
+        const norm = toCodeKey(q);
+        const exact = hits.find((h) => toCodeKey(h.code) === norm);
         resolvedCode = (exact ?? hits[0]!).code;
       }
       const data = await caller.reviews.getByCourseCodeProtected({

@@ -140,6 +140,30 @@ describe("catalog read tools", () => {
     expect(result.isError).toBeUndefined();
   });
 
+  it("get-course-reviews matches an exact code typed with an en dash", async () => {
+    const searchFn = vi.fn().mockResolvedValue([
+      { id: "c0", code: "ACCT1001", name: "Accounting" },
+      { id: "c1", code: "COR-COMM1304", name: "Management Communication" },
+    ]);
+    const reviewsFn = vi
+      .fn()
+      .mockResolvedValue({ items: [], nextCursor: undefined });
+    const ctx: ToolContext = {
+      user: fakeUser,
+      caller: makeCaller({
+        getByCourseCodeProtected: reviewsFn,
+        searchCourses: searchFn,
+      }),
+    };
+    await getCourseReviewsTool.run(ctx, {
+      query: "COR–COMM1304",
+      limit: 10,
+    });
+    expect(reviewsFn).toHaveBeenCalledWith(
+      expect.objectContaining({ code: "COR-COMM1304" }),
+    );
+  });
+
   it("get-course-reviews rejects code+query together and neither alone", () => {
     expect(
       getCourseReviewsTool.inputSchema.safeParse({
