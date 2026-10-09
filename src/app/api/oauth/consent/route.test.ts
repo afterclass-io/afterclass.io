@@ -299,6 +299,24 @@ describe("POST /api/oauth/consent", () => {
     expect(mockDenyConsent).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["a null literal", "null"],
+    ["a number literal", "7"],
+    ["an array", "[]"],
+    [
+      "a non-string authorization_id",
+      '{"authorization_id":5,"decision":"approve"}',
+    ],
+    ["a non-string decision", '{"authorization_id":"a1","decision":true}'],
+  ])("400s %s instead of 500 or a provider call", async (_label, raw) => {
+    const res = await POST(
+      req("http://localhost/api/oauth/consent", { method: "POST", body: raw }),
+    );
+    expect(res.status).toBe(400);
+    expect(mockApproveConsent).not.toHaveBeenCalled();
+    expect(mockDenyConsent).not.toHaveBeenCalled();
+  });
+
   it("403s same-site fetch-site on POST (only same-origin passes)", async () => {
     const res = await POST(
       req("http://localhost/api/oauth/consent", {
