@@ -68,7 +68,6 @@ docker compose up
 > On first run, you will need to run the migrations to create the
 > database schema
 
-
 > [!TIP]
 > If you're using Supabase for your Postgres database, go to the [connect](https://supabase.com/dashboard/project/_?showConnect=true) tab and use the Transaction Pooler configuration details. Postgres host should be something like `aws-1-ap-southeast-1.pooler.supabase.com`.
 
@@ -77,7 +76,6 @@ bunx prisma migrate dev
 ```
 
 Creates the database schema. Run `bunx prisma db seed` separately to seed data.
-
 
 > [!TIP]
 > The seed data are in the [`prisma/data`](prisma/data/) directory's json
@@ -139,7 +137,7 @@ import { Search, Star } from "lucide-react";
 Keep the local icon set (`src/common/components/icons/`) ONLY for brand/colored
 glyphs that lucide can't express: `afterclass-icon`, `afterclass-text`,
 `books-colored-icon`, `graduation-cap-colored-icon`, `school-icon`, and filled
-variants (e.g. `thumb-up-filled-icon`). Do not add new generic glyphs to the
+variants. Do not add new generic glyphs to the
 local set — use lucide instead.
 
 Stroke-based local icons need `fill="none"` by default so they match lucide's

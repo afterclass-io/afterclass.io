@@ -1,19 +1,4 @@
-import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import type { Conflict, Entry } from "../functions/conflicts";
-
-// ---------------------------------------------------------------------------
-// Local editing state — mirrors server data but allows optimistic updates
-// ---------------------------------------------------------------------------
-
-/** The entries currently displayed in the roadmap editor. */
-export const roadmapEntriesAtom = atom<Entry[]>([]);
-
-/** True when local entries differ from the last saved state. */
-export const roadmapDirtyAtom = atom(false);
-
-/** Conflicts detected in the current set of entries. */
-export const roadmapConflictsAtom = atom<Conflict[]>([]);
 
 // ---------------------------------------------------------------------------
 // Editor layout — resizable panel widths (px), persisted in localStorage
