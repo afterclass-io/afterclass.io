@@ -11,6 +11,37 @@ const read = (relativePath: string) =>
   fs.readFileSync(path.join(repoRoot, relativePath), "utf-8");
 
 describe("performance invariants", () => {
+  describe("build config (#514)", () => {
+    // next.config.js is read as text: importing it runs env validation and
+    // the Sentry and MCP wrappers.
+    const config = read("next.config.js");
+
+    it("serves AVIF and WebP", () => {
+      expect(config).toContain('formats: ["image/avif", "image/webp"]');
+    });
+
+    it("allows the avatar hosts for next/image", () => {
+      expect(config).toContain('hostname: "lh3.googleusercontent.com"');
+      expect(config).toContain(
+        'hostname: "afterclass-user-profile-pics.s3.amazonaws.com"',
+      );
+    });
+
+    it("removes console output in production but keeps errors and warnings", () => {
+      expect(config).toMatch(
+        /removeConsole:\s*\{\s*exclude:\s*\[[^\]]*"error"/,
+      );
+      expect(config).toMatch(/removeConsole:\s*\{\s*exclude:\s*\[[^\]]*"warn"/);
+    });
+
+    it("optimises the large barrel packages that Next.js does not cover", () => {
+      expect(config).toContain("optimizePackageImports");
+      expect(config).toContain('"@xyflow/react"');
+      expect(config).toContain('"@dnd-kit/core"');
+      expect(config).toContain('"@dnd-kit/sortable"');
+    });
+  });
+
   describe("field vitals (#504)", () => {
     it("mounts the web vitals reporter in the root layout", () => {
       const layout = read("src/app/layout.tsx");

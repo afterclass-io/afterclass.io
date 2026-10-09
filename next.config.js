@@ -16,6 +16,50 @@ const config = withSentryConfig(
   {
     reactStrictMode: true,
 
+    images: {
+      // AVIF first: the browser's Accept header picks the best match, and the
+      // optimiser falls back to WebP, then to the source format.
+      formats: ["image/avif", "image/webp"],
+      // Only these hosts may be optimised. The avatar host is a precondition
+      // for serving avatars through next/image (#522). Google sign-in writes
+      // `lh3.googleusercontent.com` pictures; the seeded and legacy profile
+      // pictures live in the S3 bucket.
+      remotePatterns: [
+        {
+          protocol: "https",
+          hostname: "lh3.googleusercontent.com",
+          pathname: "/**",
+          search: "",
+        },
+        {
+          protocol: "https",
+          hostname: "afterclass-user-profile-pics.s3.amazonaws.com",
+          pathname: "/**",
+          search: "",
+        },
+      ],
+    },
+
+    compiler: {
+      // Strip debug output from production bundles. `error` and `warn` stay.
+      // `log` also stays: the assistant usage lines and the MCP write-audit
+      // line are operational records for the server log pipeline. Each
+      // console.log in app code carries an "intentional:" comment.
+      removeConsole: { exclude: ["error", "warn", "log"] },
+    },
+
+    experimental: {
+      // lucide-react, date-fns and recharts are optimised by default in
+      // Next.js, so only the other large barrel packages are listed here.
+      optimizePackageImports: [
+        "@xyflow/react",
+        "@dnd-kit/core",
+        "@dnd-kit/sortable",
+        "@radix-ui/react-dialog",
+        "@radix-ui/react-alert-dialog",
+      ],
+    },
+
     // File tracing for the MCP view manifest: withMcpUse() only traces
     // .mcp-use/build into the /api/mcp function bundle, but the
     // /.well-known discovery route (src/app/.well-known) primes the same
