@@ -6,16 +6,18 @@ on:
       - "main"
     paths:
       - "src/**"
+      - "views/**"
       - "package.json"
       - "bun.lock"
-      - "knip.json"
+      - "knip.jsonc"
   pull_request:
     types: [opened, reopened, synchronize]
     paths:
       - "src/**"
+      - "views/**"
       - "package.json"
       - "bun.lock"
-      - "knip.json"
+      - "knip.jsonc"
 
 jobs:
   knip:
@@ -39,4 +41,9 @@ jobs:
       # and prisma.config.ts outside the production entry graph. Those three
       # were verified by inspection, not by this gate. See .scratch/specs/deps-remediation.md § "Scope of the declaration pass".
       - name: Check unlisted and unused dependencies
-        run: bunx knip --production
+        run: bunx knip --production --exclude files,exports,types
+
+      # Default mode counts tests, stories and tool config as users, so this
+      # step reports only files, exports and types that nothing reaches.
+      - name: Check unused files, exports and types
+        run: bunx knip
