@@ -163,7 +163,7 @@ export function useDynamicTool<
 
 // Mock hooks intentionally ignore/omit no-op args (signature parity with the
 // real mcp-use/react module); empty bodies below are the correct behavior.
-/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-empty-function -- mock hooks keep the real module signatures, so empty bodies are intended */
 
 export function useDisplayMode(): {
   displayMode: DisplayMode;
@@ -184,7 +184,9 @@ export function useDisplayMode(): {
 // `T` return — nothing type-checks against it).
 export function useViewState<
   State extends Record<string, unknown> = Record<string, unknown>,
->(_defaultState?: State | (() => State)): readonly [
+>(
+  _defaultState?: State | (() => State),
+): readonly [
   State | null,
   (updater: (prev: State | null) => State | null) => void,
 ] {

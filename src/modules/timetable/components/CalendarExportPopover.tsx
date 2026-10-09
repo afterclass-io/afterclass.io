@@ -418,7 +418,7 @@ export function CalendarExportPopover({
     if (open && !token && !tokenMutation.isPending) {
       tokenMutation.mutate({ timetableId });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mint the token when the popover opens; tokenMutation changes every render
   }, [open, timetableId]);
 
   const handleOpenChange = (next: boolean) => {

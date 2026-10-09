@@ -19,7 +19,7 @@ const InputContext = React.createContext<InputContextProps>({
   autoFocus: false,
   controlRef: { current: null },
   disabled: false,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- default context value is a no-op until a provider supplies the handler
   onFocusedChange: () => {},
 });
 

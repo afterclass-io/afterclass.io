@@ -241,7 +241,7 @@ export const authConfig = {
     async jwt({ token, user, account, profile, trigger }) {
       if (token.sub && user) {
         // strip user object of unwanted sensitive fields before populating to token
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured only to omit these fields from the token user
         const { deprecatedPasswordDigest, supabaseUserId, ...rest } =
           user as Users;
         // to expose user object in session
@@ -337,7 +337,7 @@ export const authConfig = {
                 ...getGoogleNameFields(profile as GoogleProfile | null),
               },
             });
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured only to omit these fields from the token user
             const { deprecatedPasswordDigest, supabaseUserId, ...rest } =
               created;
             token.sub = rest.id;
@@ -391,7 +391,7 @@ export const authConfig = {
                   ...nameBackfill,
                 },
               });
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured only to omit these fields from the token user
               const { deprecatedPasswordDigest, supabaseUserId, ...rest } =
                 updated;
               token.sub = rest.id;
@@ -420,7 +420,7 @@ export const authConfig = {
           });
         }
         // strip user object of unwanted sensitive fields before populating to token
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured only to omit these fields from the token user
         const { deprecatedPasswordDigest, supabaseUserId, ...rest } = dbUser;
         // Keep token.sub on the local row so trigger:"update" lookups hit
         // it (Auth.js seeds sub from the provider id, not Users.id).
@@ -436,7 +436,7 @@ export const authConfig = {
           where: { id: token.sub },
         });
         if (dbUser) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured only to omit these fields from the token user
           const { deprecatedPasswordDigest, supabaseUserId, ...rest } = dbUser;
           token.user = rest;
         }

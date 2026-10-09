@@ -17,7 +17,7 @@ import { SearchResultEmpty } from "../SearchResultEmpty";
 import { type UniversityAbbreviation } from "@/generated/prisma/enums";
 import { Separator } from "@/common/components/separator";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- the schema is used only for its inferred type
 const filterOptions = z.object({
   school: z.enum(["all", "SMU", "NUS", "NTU"]),
   type: z.enum(["all", "professor", "course"]),

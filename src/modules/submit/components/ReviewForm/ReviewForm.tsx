@@ -60,7 +60,7 @@ export const ReviewForm = ({ children }: { children: ReactNode }) => {
     }
     // router should not be a dependency here
     // https://stackoverflow.com/a/75008835
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- router must not be a dependency; see the comment above
   }, [reviewsMutation.isSuccess]);
 
   // uncomment this useEffect to see the form values in the console on change

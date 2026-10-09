@@ -9,7 +9,7 @@ export type PasswordInputContextProps = Required<
 
 const PasswordInputContext = React.createContext<PasswordInputContextProps>({
   visible: false,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- default context value is a no-op until a provider supplies the handler
   onVisibleChange: () => {},
 });
 

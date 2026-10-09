@@ -69,7 +69,7 @@ export const Default: Story = {
                 tickLine={false}
                 tickMargin={10}
                 axisLine={false}
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- recharts passes an untyped tick value to tickFormatter
                 tickFormatter={(value) => value.slice(0, 3)}
               />
               <ChartTooltip content={<ChartTooltipContent hideLabel />} />

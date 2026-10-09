@@ -32,7 +32,7 @@ vi.mock("@sentry/nextjs", () => ({
 
 import { authConfig } from "./config";
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
+// eslint-disable-next-line @typescript-eslint/unbound-method -- the callback is a plain function that does not use this
 const jwt = authConfig.callbacks.jwt;
 
 function googleParams(over: Record<string, unknown> = {}) {

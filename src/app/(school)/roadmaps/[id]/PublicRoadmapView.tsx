@@ -96,7 +96,7 @@ export function PublicRoadmapView({
       // sessionStorage unavailable (privacy mode) — record anyway
     }
     recordViewMutation.mutate({ roadmapId });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- record one view per roadmapId; the mutation object changes every render
   }, [roadmapId]);
 
   const recordShareMutation = api.roadmaps.recordShare.useMutation();

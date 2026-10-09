@@ -48,7 +48,7 @@ describe("spentForTerm", () => {
     );
     expect(aggregate).toHaveBeenCalledWith(
       expect.objectContaining({
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- expect.objectContaining returns any
         where: expect.objectContaining({ id: { not: "b9" } }),
       }),
     );

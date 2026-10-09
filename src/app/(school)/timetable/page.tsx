@@ -338,7 +338,7 @@ export default function TimetablePage() {
       createMutation.mutate({ acadTermId: selectedTermId });
     }
     // Only run when term changes or list resolves
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- rerun only on term or list changes, not when the mutation or ref identity changes
   }, [isLoggedIn, selectedTermId, timetablesLoading, timetables?.length === 0]);
 
   // Auto-select first timetable when list loads and none is active

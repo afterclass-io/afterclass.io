@@ -31,7 +31,7 @@ describe("getFeedData", () => {
         }),
       },
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- the partial db mock does not satisfy the Prisma client type
     const result = await getFeedData("tok", db as any);
     expect(result).toBeNull();
   });
@@ -40,7 +40,7 @@ describe("getFeedData", () => {
     const db = {
       userTimetable: { findUnique: vi.fn().mockResolvedValue(null) },
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- the partial db mock does not satisfy the Prisma client type
     const result = await getFeedData("bad-tok", db as any);
     expect(result).toBeNull();
   });
@@ -78,7 +78,7 @@ describe("getFeedData", () => {
         }),
       },
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- the partial db mock does not satisfy the Prisma client type
     const result = await getFeedData("tok", db as any);
 
     expect(result).toEqual({
@@ -123,7 +123,7 @@ describe("getFeedData", () => {
         }),
       },
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- the partial db mock does not satisfy the Prisma client type
     const result = await getFeedData("tok", db as any);
     expect(result).toBeNull();
   });
@@ -143,7 +143,7 @@ describe("getFeedData", () => {
         }),
       },
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- the partial db mock does not satisfy the Prisma client type
     const result = await getFeedData("tok", db as any);
     expect(result).toEqual({
       timetableName: "My Plan",

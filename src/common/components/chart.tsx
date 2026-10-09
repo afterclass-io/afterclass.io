@@ -183,7 +183,7 @@ function ChartTooltipContent({
         {payload.map((item, index) => {
           const key = `${nameKey ?? String(item.name ?? item.dataKey ?? "value")}`;
           const itemConfig = getPayloadConfigFromPayload(config, item, key);
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- recharts tooltip payload items are untyped
           const indicatorColor = color ?? item.payload.fill ?? item.color;
 
           return (
@@ -195,7 +195,7 @@ function ChartTooltipContent({
               )}
             >
               {formatter && item?.value !== undefined && item.name ? (
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- recharts tooltip payload items are untyped
                 formatter(item.value, item.name, item, index, item.payload)
               ) : (
                 <>
@@ -216,9 +216,9 @@ function ChartTooltipContent({
                         )}
                         style={
                           {
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- indicatorColor comes from the untyped recharts payload
                             "--color-bg": indicatorColor,
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- indicatorColor comes from the untyped recharts payload
                             "--color-border": indicatorColor,
                           } as React.CSSProperties
                         }
@@ -284,7 +284,7 @@ function ChartLegendContent({
       )}
     >
       {payload.map((item) => {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions -- dataKey may be a number; template conversion is intended
         const key = `${nameKey ?? item.dataKey ?? "value"}`;
         const itemConfig = getPayloadConfigFromPayload(config, item, key);
 

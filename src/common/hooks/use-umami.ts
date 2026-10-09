@@ -41,7 +41,7 @@ export default function useUmami(): Umami {
   const isUmamiAvailable = useCallback(() => {
     return (
       typeof window !== "undefined" &&
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access -- window.umami is injected by the Umami script and has no type declaration
       typeof (window as any).umami !== "undefined"
     );
   }, []);
@@ -52,7 +52,7 @@ export default function useUmami(): Umami {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access -- window.umami is injected by the Umami script and has no type declaration
     return (window as any).umami as _Umami;
   }, [isUmamiAvailable]);
 

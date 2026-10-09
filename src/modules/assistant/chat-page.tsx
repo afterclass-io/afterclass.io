@@ -150,7 +150,7 @@ export function ChatPage({
     ) {
       chat.setMessages(session.messages);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hydrate once when the store loads; later message changes must not reset the thread
   }, [hydrated]);
 
   const openSession = useCallback(

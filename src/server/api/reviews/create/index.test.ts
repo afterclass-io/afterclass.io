@@ -119,7 +119,7 @@ describe("reviews.create", () => {
     await caller.create(courseOnlyInput(["1"]));
 
     expect(dbMock.reviews.create).toHaveBeenCalledOnce();
-    /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+    /* eslint-disable @typescript-eslint/no-unsafe-assignment -- expect.objectContaining returns any */
     expect(dbMock.reviews.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         body: longBody,
