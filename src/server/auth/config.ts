@@ -399,6 +399,11 @@ export const authConfig = {
               return token;
             }
           } catch (e) {
+            // The reconcile write lost (for example a unique clash on the
+            // Supabase id): same fail-closed rule as the clash branch.
+            token.supabaseAccessToken = null;
+            token.supabaseRefreshToken = null;
+            token.supabaseExpiresAt = null;
             Sentry.addBreadcrumb({
               category: "auth",
               message: `Google user reconcile failed: ${e instanceof Error ? e.message : String(e)}`,

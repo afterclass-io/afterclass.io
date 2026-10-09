@@ -221,6 +221,28 @@ describe("google jwt reconcile (legacy id self-heal)", () => {
     expect(token?.user).toMatchObject({ id: "random-uuid" });
   });
 
+  it("clears the Supabase tokens when the reconcile write hits a unique violation", async () => {
+    linkMock.mockResolvedValue({
+      accessToken: "supa-access",
+      refreshToken: "supa-refresh",
+      expiresAt: 9999999999,
+      supabaseUserId: "supa-uid",
+    });
+    usersFindUnique
+      .mockResolvedValueOnce(legacyRow)
+      .mockResolvedValueOnce(null);
+    usersUpdate.mockRejectedValueOnce(
+      new Error("Unique constraint failed on the fields: (`supabase_user_id`)"),
+    );
+
+    const token = await jwt(googleParams());
+
+    expect(token?.sub).toBe("random-uuid");
+    expect(token?.supabaseAccessToken).toBeNull();
+    expect(token?.supabaseRefreshToken).toBeNull();
+    expect(token?.supabaseExpiresAt).toBeNull();
+  });
+
   it("backfills names alone when no reconcile is needed", async () => {
     linkMock.mockResolvedValue({
       accessToken: "supa-access",
