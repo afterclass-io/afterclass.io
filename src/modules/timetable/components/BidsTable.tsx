@@ -2,17 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
-import { Plus } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
-import { Button } from "@/common/components/button";
 import { Skeleton } from "@/common/components/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/common/components/select";
 import {
   selectedTermIdAtom,
   activeTimetableIdAtom,
@@ -24,6 +15,7 @@ import { BidDialog, type UserBidRow } from "./BidDialog";
 import { BidClassInfoPanel } from "./BidClassInfoPanel";
 import { Th, SortableTh } from "@/common/components/table-primitives";
 import { BidTableRow } from "./BidTableRow";
+import { BidsTableToolbar } from "./BidsTableToolbar";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -197,70 +189,19 @@ export function BidsTable() {
         <BidsDashboard acadTermId={effectiveTermId} bids={termBids} />
       )}
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <Select
-          value={effectiveTermId ?? undefined}
-          onValueChange={(v) => setTermFilter(v)}
-        >
-          <SelectTrigger size="sm" className="w-44" aria-label="Filter by term">
-            <SelectValue placeholder="Term" />
-          </SelectTrigger>
-          <SelectContent>
-            {(termsQuery.data ?? []).map((t) => (
-              <SelectItem key={t.id} value={t.id}>
-                {t.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={roundFilter} onValueChange={setRoundFilter}>
-          <SelectTrigger
-            size="sm"
-            className="w-32"
-            aria-label="Filter by round"
-          >
-            <SelectValue placeholder="Round" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All rounds</SelectItem>
-            {roundOptions.map((r) => (
-              <SelectItem key={r} value={r}>
-                Round {r}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={windowFilter} onValueChange={setWindowFilter}>
-          <SelectTrigger
-            size="sm"
-            className="w-32"
-            aria-label="Filter by window"
-          >
-            <SelectValue placeholder="Window" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All windows</SelectItem>
-            {windowOptions.map((w) => (
-              <SelectItem key={w} value={String(w)}>
-                Window {w}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Button
-          size="sm"
-          className="ml-auto"
-          onClick={() => setShowAddDialog(true)}
-          disabled={!effectiveTermId}
-        >
-          <Plus className="size-3.5" />
-          Add bid
-        </Button>
-      </div>
+      <BidsTableToolbar
+        terms={termsQuery.data ?? []}
+        termId={effectiveTermId}
+        onTermChange={setTermFilter}
+        roundFilter={roundFilter}
+        onRoundChange={setRoundFilter}
+        roundOptions={roundOptions}
+        windowFilter={windowFilter}
+        onWindowChange={setWindowFilter}
+        windowOptions={windowOptions}
+        onAddBid={() => setShowAddDialog(true)}
+        addDisabled={!effectiveTermId}
+      />
 
       {/* Table (horizontal scroll on small screens). `contain:inline-size`
           keeps the table's min-content width from leaking up through flex
