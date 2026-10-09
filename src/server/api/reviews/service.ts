@@ -139,6 +139,19 @@ export function buildReviewWhere(
   return where;
 }
 
+/** Drops the look-ahead row and uses its id as the next cursor. */
+function toReviewPage<Row extends { id: string }>(
+  rows: Row[],
+  limit: number,
+  toReview: (row: Row) => Review,
+): ReviewPage {
+  let nextCursor: string | undefined = undefined;
+  if (rows.length > limit) {
+    nextCursor = rows.pop()?.id;
+  }
+  return { items: rows.map(toReview), nextCursor };
+}
+
 export async function listReviews(
   db: PrismaClient,
   args: {
@@ -149,28 +162,32 @@ export async function listReviews(
 ): Promise<ReviewPage> {
   const { scope, page, viewer } = args;
   const where = buildReviewWhere(scope, page.filterFor, viewer);
-  const select =
-    viewer.kind === "public" ? PUBLIC_REVIEW_FIELDS : PRIVATE_REVIEW_FIELDS;
-
-  const reviews = await db.reviews.findMany({
+  const pageArgs = {
     skip: page.skip,
     take: page.limit + 1,
     cursor: page.cursor ? { id: page.cursor } : undefined,
     where,
     orderBy: getOrderBy(page.sortBy),
-    select,
-  });
+  } satisfies Prisma.ReviewsFindManyArgs;
 
-  let nextCursor: string | undefined = undefined;
-  if (reviews.length > page.limit) {
-    const nextItem = reviews.pop();
-    nextCursor = nextItem?.id;
-  }
-
-  const items =
+  const { items, nextCursor } =
     viewer.kind === "public"
-      ? (reviews as unknown as PublicReviewRow[]).map(toPublicReview)
-      : (reviews as unknown as PrivateReviewRow[]).map(toMemberReview);
+      ? toReviewPage(
+          await db.reviews.findMany({
+            ...pageArgs,
+            select: PUBLIC_REVIEW_FIELDS,
+          }),
+          page.limit,
+          toPublicReview,
+        )
+      : toReviewPage(
+          await db.reviews.findMany({
+            ...pageArgs,
+            select: PRIVATE_REVIEW_FIELDS,
+          }),
+          page.limit,
+          toMemberReview,
+        );
 
   if (
     viewer.kind === "member" &&
