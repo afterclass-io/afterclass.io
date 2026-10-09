@@ -58,6 +58,9 @@ model Users {
   telegramId               String?  @unique @map("telegram_id")
   photoUrl                 String?  @map("photo_url")
   facultyId                Int?     @map("faculty_id")
+  // Supabase auth id for Google users whose Users.id differs from it. Users.id
+  // never changes: 15 foreign keys reference it with NO ACTION on update.
+  supabaseUserId           String?  @unique @map("supabase_user_id")
   createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
@@ -687,9 +690,9 @@ model ChatUsage {
   cachedInputTokens Int      @default(0) @map("cached_input_tokens")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
-  // Ephemeral usage rows follow the user id through Google id reconciles
-  // (ON UPDATE CASCADE) and are removed with the user (ON DELETE CASCADE,
-  // same as other user-owned ephemeral rows like RoadmapVote).
+  // Ephemeral usage rows are removed with the user (ON DELETE CASCADE, same
+  // as other user-owned ephemeral rows like RoadmapVote). Users.id never
+  // changes, so no ON UPDATE rule is needed.
   user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, period])

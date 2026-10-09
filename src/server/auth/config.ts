@@ -16,7 +16,11 @@ import randomId from "@/common/functions/randomId";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import { emailMatchesDomain } from "@/common/functions/email-domain";
 
-export type SessionUser = Omit<Users, "deprecatedPasswordDigest">;
+// supabaseUserId is an internal identity link, not session data.
+export type SessionUser = Omit<
+  Users,
+  "deprecatedPasswordDigest" | "supabaseUserId"
+>;
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
