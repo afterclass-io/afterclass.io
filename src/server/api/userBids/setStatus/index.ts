@@ -9,20 +9,7 @@ import {
   demoteSiblingBids,
   syncSecuredBidToActiveTimetable,
 } from "@/server/api/userBids/sync-secured";
-
-const MAX_ATTEMPTS = 3;
-
-// The transaction that won the conflict may still be committing. A short,
-// jittered pause lets it finish, so the retry sees its rows instead of
-// colliding with it again.
-const pauseBeforeRetry = (attempt: number) =>
-  new Promise<void>((resolve) =>
-    setTimeout(resolve, 50 * attempt + Math.floor(Math.random() * 30)),
-  );
-
-const isRetryableConflict = (err: unknown) =>
-  err instanceof Prisma.PrismaClientKnownRequestError &&
-  (err.code === "P2002" || err.code === "P2034");
+import { withConflictRetry } from "@/server/api/userBids/retry-conflict";
 
 export const setStatus = protectedProcedure
   .input(
@@ -119,21 +106,5 @@ export const setStatus = protectedProcedure
           : undefined,
       );
 
-    for (let attempt = 1; ; attempt++) {
-      try {
-        return await runTx();
-      } catch (err) {
-        if (!isRetryableConflict(err)) {
-          throw err;
-        }
-        if (attempt === MAX_ATTEMPTS) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            cause: err,
-            message: "Another change is in progress. Try again.",
-          });
-        }
-        await pauseBeforeRetry(attempt);
-      }
-    }
+    return withConflictRetry(runTx);
   });

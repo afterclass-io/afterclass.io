@@ -1,11 +1,13 @@
 import { z } from "zod";
 
 import { TRPCError } from "@trpc/server";
-import type { PrismaClient } from "@/generated/prisma/client";
+import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 
 import { protectedProcedure } from "@/server/api/trpc";
 import { requireOwnedBid } from "@/server/api/ownership";
 import { assertClassInTerm } from "@/server/api/classes/assertClassInTerm";
+import { assertSecuredWithinBudget } from "@/server/api/userBids/assert-budget";
+import { withConflictRetry } from "@/server/api/userBids/retry-conflict";
 
 /**
  * A bid's class and bid window must exist and belong to the SAME academic
@@ -55,6 +57,8 @@ export const update = protectedProcedure
     const bid = await requireOwnedBid(ctx.db, input.id, ctx.session.user.id, {
       classId: true,
       bidWindowId: true,
+      bidAmount: true,
+      status: true,
     });
 
     const nextClassId = input.classId ?? bid.classId;
@@ -66,17 +70,55 @@ export const update = protectedProcedure
       await validateClassWindowPair(ctx.db, nextClassId, nextBidWindowId);
     }
 
+    const data = {
+      ...(input.classId !== undefined && { classId: input.classId }),
+      ...(input.bidWindowId !== undefined && {
+        bidWindowId: input.bidWindowId,
+      }),
+      ...(input.bidAmount !== undefined && { bidAmount: input.bidAmount }),
+      ...(input.notes !== undefined && { notes: input.notes }),
+    };
+
+    const amountChanged =
+      input.bidAmount !== undefined && input.bidAmount !== bid.bidAmount;
+    const classChanged = nextClassId !== bid.classId;
+
+    if (bid.status === "SECURED" && (amountChanged || classChanged)) {
+      return withConflictRetry(() =>
+        ctx.db.$transaction(
+          async (tx) => {
+            const cls = await tx.classes.findUnique({
+              where: { id: nextClassId },
+              select: { acadTermId: true },
+            });
+            if (!cls) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Class not found",
+              });
+            }
+            const nextAmount = input.bidAmount ?? bid.bidAmount;
+            await assertSecuredWithinBudget(
+              tx,
+              ctx.session.user.id,
+              cls.acadTermId,
+              nextAmount,
+              input.id,
+            );
+            return tx.userBid.update({
+              where: { id: input.id, userId: ctx.session.user.id },
+              data,
+            });
+          },
+          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+        ),
+      );
+    }
+
     // Ownership already verified by requireOwnedBid above; scope the
     // in-statement where too (uniformity: the write itself is owner-scoped).
     return ctx.db.userBid.update({
       where: { id: input.id, userId: ctx.session.user.id },
-      data: {
-        ...(input.classId !== undefined && { classId: input.classId }),
-        ...(input.bidWindowId !== undefined && {
-          bidWindowId: input.bidWindowId,
-        }),
-        ...(input.bidAmount !== undefined && { bidAmount: input.bidAmount }),
-        ...(input.notes !== undefined && { notes: input.notes }),
-      },
+      data,
     });
   });
