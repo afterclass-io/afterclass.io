@@ -242,7 +242,8 @@ export const authConfig = {
       if (token.sub && user) {
         // strip user object of unwanted sensitive fields before populating to token
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { deprecatedPasswordDigest, ...rest } = user as Users;
+        const { deprecatedPasswordDigest, supabaseUserId, ...rest } =
+          user as Users;
         // to expose user object in session
         token.user = rest;
         // Persist the Supabase access token in the JWT so the OAuth consent
@@ -322,7 +323,12 @@ export const authConfig = {
           try {
             const created = await db.users.create({
               data: {
-                ...(link ? { id: link.supabaseUserId } : {}),
+                ...(link
+                  ? {
+                      id: link.supabaseUserId,
+                      supabaseUserId: link.supabaseUserId,
+                    }
+                  : {}),
                 email: emailToUse,
                 username: `user_${randomId()}`,
                 isVerified: true,
@@ -332,7 +338,8 @@ export const authConfig = {
               },
             });
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { deprecatedPasswordDigest, ...rest } = created;
+            const { deprecatedPasswordDigest, supabaseUserId, ...rest } =
+              created;
             token.sub = rest.id;
             token.user = rest;
             return token;
@@ -356,10 +363,15 @@ export const authConfig = {
             ? { lastName: googleName.lastName }
             : {}),
         };
-        // Reconcile legacy generated-id rows: when a later exchange succeeds
-        // with a Supabase id, move the row to it (FKs are ON UPDATE CASCADE)
-        // so resolveMcpUser matches. Never block login on the reconcile.
-        if (link && dbUser.id !== link.supabaseUserId) {
+        // Reconcile legacy generated-id rows: the row keeps its id; the
+        // Supabase id is stored in supabaseUserId so resolveMcpUser matches;
+        // foreign keys use NO ACTION on update, so the primary key never changes.
+        // Never block login on the reconcile.
+        if (
+          link &&
+          dbUser.id !== link.supabaseUserId &&
+          dbUser.supabaseUserId !== link.supabaseUserId
+        ) {
           try {
             const clash = await db.users.findUnique({
               where: { id: link.supabaseUserId },
@@ -373,11 +385,15 @@ export const authConfig = {
               token.supabaseExpiresAt = null;
             } else {
               const updated = await db.users.update({
-                where: { email: emailToUse },
-                data: { id: link.supabaseUserId, ...nameBackfill },
+                where: { id: dbUser.id },
+                data: {
+                  supabaseUserId: link.supabaseUserId,
+                  ...nameBackfill,
+                },
               });
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { deprecatedPasswordDigest, ...rest } = updated;
+              const { deprecatedPasswordDigest, supabaseUserId, ...rest } =
+                updated;
               token.sub = rest.id;
               token.user = rest;
               return token;
@@ -399,7 +415,7 @@ export const authConfig = {
         }
         // strip user object of unwanted sensitive fields before populating to token
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { deprecatedPasswordDigest, ...rest } = dbUser;
+        const { deprecatedPasswordDigest, supabaseUserId, ...rest } = dbUser;
         // Keep token.sub on the local row so trigger:"update" lookups hit
         // it (Auth.js seeds sub from the provider id, not Users.id).
         token.sub = rest.id;
@@ -415,7 +431,7 @@ export const authConfig = {
         });
         if (dbUser) {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { deprecatedPasswordDigest, ...rest } = dbUser;
+          const { deprecatedPasswordDigest, supabaseUserId, ...rest } = dbUser;
           token.user = rest;
         }
       }

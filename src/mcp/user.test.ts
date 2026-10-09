@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 
-const { usersFindUnique } = vi.hoisted(() => ({
+const { usersFindUnique, usersFindFirst } = vi.hoisted(() => ({
   usersFindUnique: vi.fn() as Mock,
+  usersFindFirst: vi.fn() as Mock,
 }));
 
 // `server-only` is a Next.js build-time guard that throws when imported outside a
@@ -11,7 +12,12 @@ const { usersFindUnique } = vi.hoisted(() => ({
 vi.mock("server-only", () => ({}));
 
 vi.mock("@/server/db", () => ({
-  db: { users: { findUnique: usersFindUnique } },
+  db: {
+    users: {
+      findUnique: usersFindUnique,
+      findFirst: usersFindFirst,
+    },
+  },
 }));
 
 import { resolveMcpUser, buildToolContext } from "./user";
@@ -32,28 +38,54 @@ const row = {
 };
 
 describe("resolveMcpUser", () => {
-  beforeEach(() => usersFindUnique.mockReset());
+  beforeEach(() => {
+    usersFindUnique.mockReset();
+    usersFindFirst.mockReset();
+  });
 
-  it("resolves by Supabase user id (v2 shape: auth.user.id)", async () => {
-    usersFindUnique.mockResolvedValue(row);
+  it("resolves by id when row id matches auth.user.id", async () => {
+    usersFindFirst.mockResolvedValue(row);
     await expect(
       resolveMcpUser({ user: { id: "supa-1", email: "a@x.com", amr: [] } }),
     ).resolves.toMatchObject({ id: "supa-1", email: "a@x.com" });
-    expect(usersFindUnique).toHaveBeenCalledWith({ where: { id: "supa-1" } });
+    expect(usersFindFirst).toHaveBeenCalledWith({
+      where: { OR: [{ supabaseUserId: "supa-1" }, { id: "supa-1" }] },
+    });
   });
 
-  it("returns undefined when the id lookup misses (no email fallback — Supabase carries no verified-email claim)", async () => {
-    usersFindUnique.mockResolvedValue(null);
+  it("resolves by supabaseUserId when row id differs from auth.user.id (Google user)", async () => {
+    const googleRow = {
+      ...row,
+      id: "legacy-local-id",
+      supabaseUserId: "supa-google-uid",
+    };
+    usersFindFirst.mockResolvedValue(googleRow);
+    await expect(
+      resolveMcpUser({
+        user: { id: "supa-google-uid", email: "a@x.com", amr: [] },
+      }),
+    ).resolves.toMatchObject({ id: "legacy-local-id", email: "a@x.com" });
+    expect(usersFindFirst).toHaveBeenCalledWith({
+      where: {
+        OR: [{ supabaseUserId: "supa-google-uid" }, { id: "supa-google-uid" }],
+      },
+    });
+  });
+
+  it("returns undefined when the lookup misses (no email fallback — Supabase carries no verified-email claim)", async () => {
+    usersFindFirst.mockResolvedValue(null);
     await expect(
       resolveMcpUser({ user: { id: "ghost", email: "a@x.com", amr: [] } }),
     ).resolves.toBeUndefined();
-    expect(usersFindUnique).toHaveBeenCalledTimes(1);
-    expect(usersFindUnique).toHaveBeenCalledWith({ where: { id: "ghost" } });
+    expect(usersFindFirst).toHaveBeenCalledTimes(1);
+    expect(usersFindFirst).toHaveBeenCalledWith({
+      where: { OR: [{ supabaseUserId: "ghost" }, { id: "ghost" }] },
+    });
   });
 
   it("returns undefined with no identity", async () => {
     await expect(resolveMcpUser({})).resolves.toBeUndefined();
-    expect(usersFindUnique).not.toHaveBeenCalled();
+    expect(usersFindFirst).not.toHaveBeenCalled();
   });
 
   it("returns undefined when auth is falsy", async () => {
@@ -66,6 +98,7 @@ describe("buildToolContext", () => {
   describe("auth bridging", () => {
     beforeEach(() => {
       usersFindUnique.mockReset();
+      usersFindFirst.mockReset();
       vi.unstubAllEnvs();
     });
     afterEach(() => {
@@ -73,19 +106,22 @@ describe("buildToolContext", () => {
     });
 
     it("resolves via ctx.auth.user.id (v2 Supabase)", async () => {
-      usersFindUnique.mockResolvedValue(row);
+      usersFindFirst.mockResolvedValue(row);
       await expect(
         buildToolContext({
           auth: { user: { id: "supa-1", email: "a@x.com", amr: [] } as never },
         } as never),
       ).resolves.toMatchObject({ user: { id: "supa-1" } });
-      expect(usersFindUnique).toHaveBeenCalledWith({ where: { id: "supa-1" } });
+      expect(usersFindFirst).toHaveBeenCalledWith({
+        where: { OR: [{ supabaseUserId: "supa-1" }, { id: "supa-1" }] },
+      });
     });
   });
 
   describe("buildToolContext dev bypass", () => {
     beforeEach(() => {
       usersFindUnique.mockReset();
+      usersFindFirst.mockReset();
       vi.unstubAllEnvs();
     });
 
@@ -163,14 +199,16 @@ describe("buildToolContext", () => {
     it("real identity still wins over the bypass (token path unchanged)", async () => {
       vi.stubEnv("NODE_ENV", "development");
       vi.stubEnv("MCP_DEV_BYPASS", "true");
-      usersFindUnique.mockResolvedValue(row);
+      usersFindFirst.mockResolvedValue(row);
       await expect(
         buildToolContext({
           auth: { user: { id: "supa-1", amr: [] } as never },
         } as never),
       ).resolves.toMatchObject({ user: { id: "supa-1" } });
-      expect(usersFindUnique).toHaveBeenCalledWith({ where: { id: "supa-1" } });
-      expect(usersFindUnique).toHaveBeenCalledTimes(1);
+      expect(usersFindFirst).toHaveBeenCalledWith({
+        where: { OR: [{ supabaseUserId: "supa-1" }, { id: "supa-1" }] },
+      });
+      expect(usersFindFirst).toHaveBeenCalledTimes(1);
     });
   });
 });
