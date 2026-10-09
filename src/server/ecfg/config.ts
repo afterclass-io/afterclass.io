@@ -40,7 +40,6 @@ export const chatConfigSchema = z
     moderationClaimWindowMinutes: z.number(),
     moderationJudgeTimeoutMs: z.number(),
     moderationLogRetentionDays: z.number(),
-    moderationModel: z.string(),
   })
   .partial()
   .default(DEFAULT_CHAT_CONFIG)

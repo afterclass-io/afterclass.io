@@ -298,7 +298,7 @@ describe("createModerationJudge", () => {
       reason: "model_unavailable",
       model: "unresolved",
     });
-    expect(m.getModel).toHaveBeenCalledWith("moderation");
+    expect(m.getModel).toHaveBeenCalledWith();
   });
 });
 

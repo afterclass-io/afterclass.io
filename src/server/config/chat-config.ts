@@ -53,7 +53,6 @@
  * | moderationClaimWindowMinutes | 5 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  * | moderationJudgeTimeoutMs | 30000 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  * | moderationLogRetentionDays | 90 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
- * | moderationModel | undefined | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  */
 import { z } from "zod";
 
@@ -130,7 +129,6 @@ export const chatConfigSchema = z.object({
     .min(1000)
     .max(MODERATION_JUDGE_TIMEOUT_MAX_MS),
   moderationLogRetentionDays: positiveInt("moderationLogRetentionDays"),
-  moderationModel: z.string().min(1).optional(),
 });
 
 export type ChatConfig = z.infer<typeof chatConfigSchema>;
@@ -170,7 +168,6 @@ export const DEFAULT_CHAT_CONFIG_VALUES: ChatConfig = {
   moderationJudgeTimeoutMs: 30_000,
   moderationLogRetentionDays: 90,
   // Explicit undefined: normalizeChatLayer keeps only keys present here.
-  moderationModel: undefined,
 };
 
 /** Env key → config field, with the parser applied to the raw env string.

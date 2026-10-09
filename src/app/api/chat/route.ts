@@ -297,7 +297,7 @@ export async function POST(req: Request) {
     const quotaSettled = { value: false };
 
     const result = streamText({
-      model: await getModel("assistant"),
+      model: await getModel(),
       instructions: SYSTEM_PROMPT + contextSuffix,
       messages: modelMessages,
       tools,

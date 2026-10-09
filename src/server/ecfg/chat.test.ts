@@ -75,11 +75,10 @@ describe("chat config schema", () => {
       enableReviewFilter: true,
       enableReviewReactions: true,
       enableContentModeration: true,
-      chat: { moderationReportThreshold: 5, moderationModel: "m" },
+      chat: { moderationReportThreshold: 5 },
     });
     expect(parsed.enableContentModeration).toBe(true);
     expect(parsed.chat?.moderationReportThreshold).toBe(5);
-    expect(parsed.chat?.moderationModel).toBe("m");
   });
 
   it("an out-of-range moderation value does not invalidate the remote config", () => {

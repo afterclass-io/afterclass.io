@@ -166,7 +166,7 @@ export function createModerationJudge(timeoutMs: number): Judge {
   return async (input) => {
     let model: Awaited<ReturnType<typeof getModel>>;
     try {
-      model = await getModel("moderation");
+      model = await getModel();
     } catch {
       // Missing key or invalid model config: nothing is removed; the ERROR
       // row is the signal for a human.
