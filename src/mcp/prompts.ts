@@ -8,8 +8,7 @@ import { z } from "zod";
 // (provider cache prefix), so keep the line in sync manually and let the
 // verbatim tests pin both sides.
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const planSemesterSchema: z.ZodObject<any> = z.object({
+const planSemesterSchema = z.object({
   targetTermId: z
     .string()
     .optional()
@@ -30,8 +29,7 @@ const planSemesterSchema: z.ZodObject<any> = z.object({
     ),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const planRoadmapSchema: z.ZodObject<any> = z.object({
+const planRoadmapSchema = z.object({
   goal: z
     .string()
     .describe(
@@ -43,8 +41,7 @@ const planRoadmapSchema: z.ZodObject<any> = z.object({
     .describe("Roadmap id from my-roadmaps; omit to use the active roadmap"),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const planBiddingSchema: z.ZodObject<any> = z.object({
+const planBiddingSchema = z.object({
   acadTermId: z
     .string()
     .optional()
@@ -53,8 +50,7 @@ const planBiddingSchema: z.ZodObject<any> = z.object({
     ),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const findCoursesSchema: z.ZodObject<any> = z.object({
+const findCoursesSchema = z.object({
   interest: z
     .string()
     .describe(
@@ -62,8 +58,7 @@ const findCoursesSchema: z.ZodObject<any> = z.object({
     ),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const reviewTimetableSchema: z.ZodObject<any> = z.object({
+const reviewTimetableSchema = z.object({
   acadTermId: z
     .string()
     .optional()
@@ -72,8 +67,7 @@ const reviewTimetableSchema: z.ZodObject<any> = z.object({
     ),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const planTermSchema: z.ZodObject<any> = z.object({
+const planTermSchema = z.object({
   goal: z
     .string()
     .describe(
@@ -93,8 +87,7 @@ const planTermSchema: z.ZodObject<any> = z.object({
     ),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const findMeetingTimeSchema: z.ZodObject<any> = z.object({
+const findMeetingTimeSchema = z.object({
   slug: z
     .string()
     .optional()

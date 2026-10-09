@@ -150,8 +150,7 @@ export default async function BiddingHistoryPage({
   const allBidResults = professorId
     ? selectOneClassPerTerm(
         await api.bidResults.getByCourseProfessor({
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-          courseCode: courseCode!,
+          courseCode,
           professorId,
         }),
         referenceTimings,
@@ -324,10 +323,8 @@ export default async function BiddingHistoryPage({
       {/* Chart + Filters + Table — client component */}
       <BidAnalyticsClient
         allBidResults={allBidResults}
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        courseCode={courseCode!}
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        section={section!}
+        courseCode={courseCode}
+        section={section}
         initialRounds={initialRounds}
         initialWindows={initialWindows}
         currentAcadTermId={currentTerm?.id}

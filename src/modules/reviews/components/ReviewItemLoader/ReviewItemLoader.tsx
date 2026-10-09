@@ -142,9 +142,8 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
   // we only want to refetch when the search params change. refetch is a
   // stable React Query function, so `reviewQuery` is intentionally excluded.
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    reviewQuery.refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    void reviewQuery.refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when the search params change; reviewQuery changes every render
   }, [searchParams]);
 
   const reviews = pages.flatMap((page) => page.items);
