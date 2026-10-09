@@ -8,6 +8,8 @@
  * All functions are pure — no side effects, no dependencies beyond stdlib.
  */
 
+import type { ClassTimingLike } from "@/common/types/timetable";
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -39,13 +41,6 @@ export const SMU_PERIODS: {
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-export type ClassTimingLike = {
-  dayOfWeek?: string | null;
-  startTime: string;
-  endTime: string;
-  venue?: string | null;
-};
 
 export type PositionedSlot = {
   timing: ClassTimingLike;

@@ -9,7 +9,7 @@ import {
   hasTimeConflict,
   toTimingLikes,
 } from "./slot-math";
-import type { ClassTimingLike } from "./slot-math";
+import type { ClassTimingLike } from "@/common/types/timetable";
 
 // ---------------------------------------------------------------------------
 // timeToMinutes

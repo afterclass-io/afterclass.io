@@ -1,4 +1,9 @@
-import type { ClassTimingLike } from "@/modules/timetable/functions/slot-math";
+export type ClassTimingLike = {
+  dayOfWeek?: string | null;
+  startTime: string;
+  endTime: string;
+  venue?: string | null;
+};
 
 export type ArrangedClass = {
   classId: string;
