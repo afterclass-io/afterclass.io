@@ -42,6 +42,51 @@ describe("performance invariants", () => {
     });
   });
 
+  describe("fonts and favicon (#506)", () => {
+    const listSourceFiles = (dir: string): string[] =>
+      fs
+        .readdirSync(path.join(repoRoot, dir), { withFileTypes: true })
+        .flatMap((entry) => {
+          const relative = `${dir}/${entry.name}`;
+          return entry.isDirectory() ? listSourceFiles(relative) : [relative];
+        });
+    const sourceFiles = [
+      ...listSourceFiles("src"),
+      ...listSourceFiles("views"),
+    ].filter((file) => !file.startsWith("src/generated/"));
+
+    it("downloads a webfont only when a stylesheet binds its variable", () => {
+      const styles = sourceFiles
+        .filter((file) => file.endsWith(".css"))
+        .map(read)
+        .join("\n");
+      const declarations = sourceFiles
+        .filter((file) => /\.tsx?$/.test(file) && !file.includes(".test."))
+        .filter((file) => read(file).includes("next/font/"))
+        .flatMap((file) =>
+          [...read(file).matchAll(/variable:\s*"(--[\w-]+)"/g)].map(
+            (match) => ({ file, variable: match[1] }),
+          ),
+        );
+      const unbound = declarations.filter(
+        ({ variable }) => !styles.includes(`var(${variable}`),
+      );
+      expect(unbound).toEqual([]);
+    });
+
+    it("injects no font class into the root element or the error boundary", () => {
+      expect(read("src/app/layout.tsx")).not.toContain(".variable");
+      expect(read("src/app/global-error.tsx")).not.toContain(".variable");
+    });
+
+    it("keeps the favicon under 10 KB", () => {
+      const bytes = fs.statSync(
+        path.join(repoRoot, "src/app/favicon.ico"),
+      ).size;
+      expect(bytes).toBeLessThan(10 * 1024);
+    });
+  });
+
   describe("field vitals (#504)", () => {
     it("mounts the web vitals reporter in the root layout", () => {
       const layout = read("src/app/layout.tsx");
