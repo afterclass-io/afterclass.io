@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { UserBid } from "@/generated/prisma/client";
 import { protectedProcedure } from "@/server/api/trpc";
+import { getBidLimits } from "@/server/config/chat-config";
 
 export type UpsertManyResult =
   { ok: true; bid: UserBid } | { ok: false; message: string };
@@ -13,7 +14,7 @@ export const upsertMany = protectedProcedure
           z.object({
             classId: z.string(),
             bidWindowId: z.number().int().positive(),
-            bidAmount: z.number().positive().max(99999),
+            bidAmount: z.number().positive().max(getBidLimits().maxBidAmount),
             notes: z.string().max(500).optional(),
           }),
         )

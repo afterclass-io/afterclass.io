@@ -34,7 +34,7 @@
  * | minBid | 10 | `MIN_BID` in `src/server/mcp/tools/bid-shared.ts` |
  * | maxBidBudget | 10000 | `MAX_BUDGET` in `src/server/mcp/tools/write/bids.ts` |
  * | defaultBeatsPct | 70 | `DEFAULT_BEATS_PERCENTAGE` in bid-shared.ts |
- * | maxBidAmount | 99999 | upsert-bid / userBids `.max(99999)` schemas |
+ * | maxBidAmount | 99999 | userBids update/upsert/upsertMany and MCP save-bids `.max(...)` schemas |
  * | appTimezone | Asia/Singapore | `src/server/assistant/month.ts` TZ + format-date-sgt.ts |
  * | icalThrottlePerMinute | 60 | ical route `checkAndIncrement(\`ical:${ip}\`, 60, 1)` |
  * | inFlightStaleMs | 300000 | quota.ts IN_FLIGHT_STALE_MS = 5*60_000 |

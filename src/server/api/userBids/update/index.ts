@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 
 import { protectedProcedure } from "@/server/api/trpc";
+import { getBidLimits } from "@/server/config/chat-config";
 import { requireOwnedBid } from "@/server/api/ownership";
 import { assertClassInTerm } from "@/server/api/classes/assertClassInTerm";
 import { assertSecuredWithinBudget } from "@/server/api/userBids/assert-budget";
@@ -49,7 +50,11 @@ export const update = protectedProcedure
       id: z.string(),
       classId: z.string().optional(),
       bidWindowId: z.number().int().positive().optional(),
-      bidAmount: z.number().positive().max(99999).optional(), // sync-mirror of canonical maxBidAmount (chat-config.ts)
+      bidAmount: z
+        .number()
+        .positive()
+        .max(getBidLimits().maxBidAmount)
+        .optional(),
       notes: z.string().max(500).nullable().optional(),
     }),
   )

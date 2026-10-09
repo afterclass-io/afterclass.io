@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { getBidLimits } from "@/server/config/chat-config";
 import { bidPlanToViewProps, buildBidPlan } from "../bid-plan-shared";
 import { buildTermMap } from "../bid-write-helpers";
 import { stripBidNotes } from "../bid-shared";
@@ -17,7 +18,7 @@ const bidEntrySchema = z.object({
   bidAmount: z
     .number()
     .positive()
-    .max(99999)
+    .max(getBidLimits().maxBidAmount)
     .describe("Bid amount in e-credits"),
   bidWindowId: z
     .number()
