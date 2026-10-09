@@ -148,6 +148,19 @@ export function RoadmapGrid({
     };
   }, [localEntries, dirty, onSave, saving]);
 
+  // Closing or reloading the tab does not unmount React, so the flush below
+  // never runs for it. While an edit is unsaved (or its save is in flight or
+  // failing), ask the browser to confirm before the page goes away.
+  const hasUnsavedEdits = (dirty || saving) && !!onSave;
+  useEffect(() => {
+    if (!hasUnsavedEdits) return;
+    const confirmLeave = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    window.addEventListener("beforeunload", confirmLeave);
+    return () => window.removeEventListener("beforeunload", confirmLeave);
+  }, [hasUnsavedEdits]);
+
   useEffect(() => {
     return () => {
       if (debounceRef.current) {
