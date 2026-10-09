@@ -44,7 +44,8 @@ export const create = protectedProcedure
             await tx.reviewLabels.createMany({
               data: r.labels.map((label) => ({
                 reviewId: review.id,
-                labelId: parseInt(label),
+                // Schema validates label as a positive 32-bit integer string.
+                labelId: Number.parseInt(label, 10),
               })),
             });
           }
