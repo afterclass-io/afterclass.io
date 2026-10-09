@@ -1,9 +1,7 @@
 import type { PrismaClient } from "@/generated/prisma/client";
 import { requirePublicRoadmap } from "@/server/api/roadmaps/requirePublicRoadmap";
-import {
-  checkEngagementBudget,
-  clientKey,
-} from "@/server/api/engagement-limit";
+import { checkEngagementBudget } from "@/server/api/engagement-limit";
+import { clientKey } from "@/server/api/client-key";
 
 type EngagementField = "viewCount" | "shareCount";
 

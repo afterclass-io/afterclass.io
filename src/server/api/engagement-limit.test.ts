@@ -1,10 +1,10 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
 import {
   checkEngagementBudget,
-  clientKey,
   resetLimits,
   getBucketCount,
 } from "./engagement-limit";
+import { clientKey } from "./client-key";
 
 describe("checkEngagementBudget", () => {
   afterEach(() => resetLimits());

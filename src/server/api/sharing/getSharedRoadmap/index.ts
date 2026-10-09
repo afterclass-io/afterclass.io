@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { publicProcedure } from "@/server/api/trpc";
 import { censorProfanity } from "@/server/profanity";
 import { checkBudget } from "@/server/assistant/budget";
-import { clientKey } from "@/server/api/engagement-limit";
+import { clientKey } from "@/server/api/client-key";
 
 export const getSharedRoadmap = publicProcedure
   .input(z.object({ token: z.string() }))

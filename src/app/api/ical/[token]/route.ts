@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import { getFeedData } from "@/server/api/timetable/getFeedData";
 import { buildIcal } from "@/modules/timetable/functions/build-ical";
-import { clientKey } from "@/server/api/engagement-limit";
+import { clientKey } from "@/server/api/client-key";
 import { checkBudget } from "@/server/assistant/budget";
 import { getChatConfigAsync } from "@/server/config/chat-config";
 

@@ -5,7 +5,7 @@ import { publicProcedure } from "@/server/api/trpc";
 import { censorProfanity } from "@/server/profanity";
 import { toArrangedClass } from "@/modules/timetable/functions/arranged-class";
 import { checkBudget } from "@/server/assistant/budget";
-import { clientKey } from "@/server/api/engagement-limit";
+import { clientKey } from "@/server/api/client-key";
 
 export const getSharedTimetable = publicProcedure
   .input(z.object({ token: z.string() }))
