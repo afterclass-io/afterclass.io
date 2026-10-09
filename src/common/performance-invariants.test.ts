@@ -10,6 +10,14 @@ const repoRoot = path.resolve(import.meta.dirname, "../..");
 const read = (relativePath: string) =>
   fs.readFileSync(path.join(repoRoot, relativePath), "utf-8");
 
+const listFiles = (dir: string): string[] =>
+  fs
+    .readdirSync(path.join(repoRoot, dir), { withFileTypes: true })
+    .flatMap((entry) => {
+      const relative = `${dir}/${entry.name}`;
+      return entry.isDirectory() ? listFiles(relative) : [relative];
+    });
+
 describe("performance invariants", () => {
   describe("build config (#514)", () => {
     // next.config.js is read as text: importing it runs env validation and
@@ -43,17 +51,9 @@ describe("performance invariants", () => {
   });
 
   describe("fonts and favicon (#506)", () => {
-    const listSourceFiles = (dir: string): string[] =>
-      fs
-        .readdirSync(path.join(repoRoot, dir), { withFileTypes: true })
-        .flatMap((entry) => {
-          const relative = `${dir}/${entry.name}`;
-          return entry.isDirectory() ? listSourceFiles(relative) : [relative];
-        });
-    const sourceFiles = [
-      ...listSourceFiles("src"),
-      ...listSourceFiles("views"),
-    ].filter((file) => !file.startsWith("src/generated/"));
+    const sourceFiles = [...listFiles("src"), ...listFiles("views")].filter(
+      (file) => !file.startsWith("src/generated/"),
+    );
 
     it("downloads a webfont only when a stylesheet binds its variable", () => {
       const styles = sourceFiles
@@ -84,6 +84,37 @@ describe("performance invariants", () => {
         path.join(repoRoot, "src/app/favicon.ico"),
       ).size;
       expect(bytes).toBeLessThan(10 * 1024);
+    });
+  });
+
+  describe("sidebar first paint (#517)", () => {
+    it("keeps the CSS breakpoint equal to the hook breakpoint", () => {
+      const css = read("src/common/styles/globals.css");
+      const hook = read("src/common/hooks/use-mobile.ts");
+      const cssWidth = /--breakpoint-sidebar:\s*(\d+)px/.exec(css)?.[1];
+      const hookWidth = /MOBILE_BREAKPOINT\s*=\s*(\d+)/.exec(hook)?.[1];
+      expect(cssWidth).toBeDefined();
+      expect(cssWidth).toBe(hookWidth);
+    });
+
+    it("shows the desktop shell with CSS, not with the isMobile hook", () => {
+      const sidebar = read("src/common/components/sidebar.tsx");
+      expect(sidebar).toContain("sidebar:block");
+      expect(sidebar).toContain("sidebar:flex");
+      // `md` is 768 px: using it left a desktop shell on the server render
+      // for 768 to 1249 px, which flipped to the sheet after hydration.
+      expect(sidebar).not.toMatch(/md:(block|flex|hidden)/);
+    });
+
+    it("uses no random number in the sidebar or any skeleton", () => {
+      const files = [
+        "src/common/components/sidebar.tsx",
+        ...listFiles("src").filter((file) => /Skeleton.*\.tsx$/.test(file)),
+      ];
+      const offenders = files.filter((file) =>
+        read(file).includes("Math.random"),
+      );
+      expect(offenders).toEqual([]);
     });
   });
 

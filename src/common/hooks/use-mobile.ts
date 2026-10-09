@@ -1,5 +1,8 @@
 import * as React from "react";
 
+// Keep equal to `--breakpoint-sidebar` in src/common/styles/globals.css. The
+// layout is driven by that media query, so the first paint is correct without
+// this hook. Use the hook only where JavaScript needs the boolean.
 const MOBILE_BREAKPOINT = 1250;
 
 export function useIsMobile() {
