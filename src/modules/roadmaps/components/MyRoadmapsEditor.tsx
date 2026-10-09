@@ -28,12 +28,12 @@ import { hasSeenRoadmapsTourAtom } from "@/modules/roadmaps/atoms/roadmap";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
 import { RoadmapList } from "@/modules/roadmaps/components/RoadmapList";
 import { LazyRoadmapTimeline } from "@/modules/roadmaps/components/LazyRoadmapTimeline";
+import { DescriptionEditor } from "@/modules/roadmaps/components/DescriptionEditor";
 import { CourseSearchSidebar } from "@/modules/roadmaps/components/CourseSearchSidebar";
 import { TermTimetableLink } from "@/modules/roadmaps/components/TermTimetableLink";
 import { ShareDialog } from "@/modules/sharing/components/ShareDialog";
 import { Button } from "@/common/components/button";
 import { Skeleton } from "@/common/components/skeleton";
-import { Textarea } from "@/common/components/textarea";
 import {
   Select,
   SelectContent,
@@ -67,8 +67,6 @@ const SIDEBAR_MIN_WIDTH = 200;
 const SIDEBAR_MAX_WIDTH = 400;
 /** Keep at least this much width for the grid/timeline area when resizing. */
 const MAIN_MIN_WIDTH = 480;
-
-const DESCRIPTION_MAX_LENGTH = 500;
 
 /** Sentinel Select value for the "Clear" matriculation-year item. */
 const CLEAR_MATRIC_VALUE = "__clear__";
@@ -921,43 +919,6 @@ export function MyRoadmapsEditor() {
             </div>
           ))}
       </div>
-    </div>
-  );
-}
-
-// =============================================================================
-// Helpers
-// =============================================================================
-
-/**
- * Roadmap description editor — multiline, capped at DESCRIPTION_MAX_LENGTH
- * characters with a live counter. Newlines are preserved on save.
- */
-function DescriptionEditor({
-  initialValue,
-  onSave,
-}: {
-  initialValue: string;
-  onSave: (description: string) => void;
-}) {
-  const [value, setValue] = useState(initialValue);
-
-  return (
-    <div className="relative min-w-56 flex-1">
-      <Textarea
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="Add a description (shown when you publish)…"
-        maxLength={DESCRIPTION_MAX_LENGTH}
-        rows={3}
-        className="min-h-16 resize-y pb-5 text-sm"
-        onBlur={() => onSave(value)}
-        aria-label="Roadmap description"
-        data-test="roadmap-description"
-      />
-      <span className="text-muted-foreground pointer-events-none absolute right-2 bottom-1.5 text-xs tabular-nums">
-        {value.length}/{DESCRIPTION_MAX_LENGTH}
-      </span>
     </div>
   );
 }
