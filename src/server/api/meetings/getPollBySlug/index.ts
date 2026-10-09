@@ -103,7 +103,9 @@ export const getPollBySlug = publicProcedure
         slotDurationMinutes: poll.slotDurationMinutes,
         course: poll.course,
         section: poll.section,
-        teamIdentifier: poll.teamIdentifier,
+        teamIdentifier: isCreator
+          ? poll.teamIdentifier
+          : censorProfanityOrNull(poll.teamIdentifier),
         acadTerm: poll.acadTerm,
       },
       participants: poll.participants.map((p) => {

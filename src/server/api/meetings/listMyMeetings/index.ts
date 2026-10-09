@@ -70,7 +70,9 @@ export const listMyMeetings = protectedProcedure
         isCreator,
         course: p.course,
         section: p.section,
-        teamIdentifier: p.teamIdentifier,
+        teamIdentifier: isCreator
+          ? p.teamIdentifier
+          : censorProfanityOrNull(p.teamIdentifier),
         acadTerm: p.acadTerm,
         participantCount: p._count.participants,
         hasResponded:
