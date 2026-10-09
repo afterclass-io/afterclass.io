@@ -294,17 +294,26 @@ export default function TimetablePage() {
   );
 
   // ---- On mount / term change: ensure a default timetable exists ----
-  const autoCreatedTermIdRef = useRef<string | null>(null);
+  // Term ids whose auto-create call was already sent. Keyed per term so a
+  // term switch mid-flight still creates the plan for the new term.
+  const autoCreatedTermIdsRef = useRef(new Set<string>());
+  const selectedTermIdRef = useRef(selectedTermId);
+  useEffect(() => {
+    selectedTermIdRef.current = selectedTermId;
+  }, [selectedTermId]);
 
   const createMutation = api.timetable.create.useMutation({
     onSuccess: (created) => {
       void utils.timetable.listMine.invalidate({
-        acadTermId: selectedTermId!,
+        acadTermId: created.acadTermId,
       });
-      setActiveTimetableId(created.id);
+      // A late response for a term the user left must not set the active plan.
+      if (created.acadTermId === selectedTermIdRef.current) {
+        setActiveTimetableId(created.id);
+      }
     },
-    onError: () => {
-      autoCreatedTermIdRef.current = null;
+    onError: (_err, variables) => {
+      autoCreatedTermIdsRef.current.delete(variables.acadTermId);
     },
   });
 
@@ -322,13 +331,10 @@ export default function TimetablePage() {
       !timetablesLoading &&
       timetables?.length === 0
     ) {
-      if (
-        createMutation.isPending ||
-        autoCreatedTermIdRef.current === selectedTermId
-      ) {
+      if (autoCreatedTermIdsRef.current.has(selectedTermId)) {
         return;
       }
-      autoCreatedTermIdRef.current = selectedTermId;
+      autoCreatedTermIdsRef.current.add(selectedTermId);
       createMutation.mutate({ acadTermId: selectedTermId });
     }
     // Only run when term changes or list resolves
