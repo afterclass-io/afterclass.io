@@ -139,14 +139,14 @@ export function HeatmapHoverCard({
         label="Available"
         names={available}
         dotClass="bg-(--mt-available)"
-        labelClass="text-(--mt-available)"
+        labelClass="text-(--mt-available-text)"
       />
       {!hideIfNeeded && (
         <NameList
           label="If needed"
           names={ifNeeded}
           dotClass="border border-(--mt-if-needed-line) bg-(--mt-if-needed)"
-          labelClass="text-(--mt-if-needed-line)"
+          labelClass="text-(--mt-if-needed-text)"
         />
       )}
       <NameList
