@@ -22,7 +22,7 @@ export const getAll = publicProcedure
       endsBefore: z.string().optional(), // "14:30"
       // -------------------
 
-      limit: z.number().default(100),
+      limit: z.number().int().min(1).default(100),
     }),
   )
   .query(async ({ ctx, input }) => {
@@ -96,7 +96,7 @@ export const getAll = publicProcedure
               section: "asc",
             },
           ],
-      take: input.limit > 100 ? 100 : input.limit,
+      take: Math.min(input.limit, 100),
     });
     return classes;
   });

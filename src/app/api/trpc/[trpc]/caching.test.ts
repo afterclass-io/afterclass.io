@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { appRouter } from "@/server/api/root";
 import {
   getCacheControlForTrpcRequest,
   PUBLIC_CACHEABLE_PROCEDURES,
@@ -134,5 +135,12 @@ describe("getCacheControlForTrpcRequest", () => {
       errors: [],
     });
     expect(headers["Cache-Control"]).toBe(PRIVATE_CACHE_VALUE);
+  });
+
+  it("resolves every name in PUBLIC_CACHEABLE_PROCEDURES to a real procedure in appRouter", () => {
+    const procedureKeys = Object.keys(appRouter._def.procedures);
+    for (const name of PUBLIC_CACHEABLE_PROCEDURES) {
+      expect(procedureKeys).toContain(name);
+    }
   });
 });
