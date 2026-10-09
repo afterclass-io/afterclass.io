@@ -34,7 +34,7 @@ describe("reviews.create (integration)", () => {
     const { course, professor, user, courseLabel, professorLabel } =
       await seedFixture();
     const caller = makeCaller(router.createCaller, db, {
-      user: { id: user.id },
+      user: { id: user.id, isVerified: true },
     });
 
     await caller.create({
@@ -91,7 +91,7 @@ describe("reviews.create (integration)", () => {
   it("throws BAD_REQUEST when a label id violates a real foreign key constraint", async () => {
     const { course, user } = await seedFixture();
     const caller = makeCaller(router.createCaller, db, {
-      user: { id: user.id },
+      user: { id: user.id, isVerified: true },
     });
 
     await expect(

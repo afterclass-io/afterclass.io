@@ -10,6 +10,8 @@ import { create } from "./index";
 
 const router = createTRPCRouter({ create });
 
+const verifiedSession = { user: { id: "u1", isVerified: true } };
+
 const longBody = "a".repeat(200);
 
 function courseOnlyInput(labels?: string[]) {
@@ -60,9 +62,32 @@ describe("reviews.create", () => {
     });
   });
 
+  it("rejects unverified sessions with FORBIDDEN without querying courses", async () => {
+    const dbMock = makeDbMock();
+    const caller = makeCaller(router.createCaller, dbMock, {
+      user: { id: "u1", isVerified: false },
+    });
+    await expect(caller.create(courseOnlyInput())).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
+    expect(dbMock.courses.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("permits verified sessions to proceed to course lookup", async () => {
+    const dbMock = makeDbMock();
+    dbMock.courses.findFirst.mockResolvedValue(null);
+    const caller = makeCaller(router.createCaller, dbMock, verifiedSession);
+    await expect(caller.create(courseOnlyInput())).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+    expect(dbMock.courses.findFirst).toHaveBeenCalledWith({
+      where: { id: "course-1" },
+    });
+  });
+
   it("rejects a review body shorter than 200 characters", async () => {
     const dbMock = makeDbMock();
-    const caller = makeCaller(router.createCaller, dbMock);
+    const caller = makeCaller(router.createCaller, dbMock, verifiedSession);
     const input = courseOnlyInput();
     input.course.body = "too short";
     await expect(caller.create(input)).rejects.toMatchObject({
@@ -74,7 +99,7 @@ describe("reviews.create", () => {
   it("throws NOT_FOUND when the course does not exist", async () => {
     const dbMock = makeDbMock();
     dbMock.courses.findFirst.mockResolvedValue(null);
-    const caller = makeCaller(router.createCaller, dbMock);
+    const caller = makeCaller(router.createCaller, dbMock, verifiedSession);
     await expect(caller.create(courseOnlyInput())).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
@@ -89,7 +114,7 @@ describe("reviews.create", () => {
     });
     dbMock.reviews.create.mockResolvedValue({ id: "review-1" });
     dbMock.reviewLabels.createMany.mockResolvedValue({ count: 1 });
-    const caller = makeCaller(router.createCaller, dbMock);
+    const caller = makeCaller(router.createCaller, dbMock, verifiedSession);
 
     await caller.create(courseOnlyInput(["1"]));
 
@@ -127,7 +152,7 @@ describe("reviews.create", () => {
         clientVersion: "6.3.0",
       }),
     );
-    const caller = makeCaller(router.createCaller, dbMock);
+    const caller = makeCaller(router.createCaller, dbMock, verifiedSession);
     await expect(caller.create(courseOnlyInput())).rejects.toMatchObject({
       code: "BAD_REQUEST",
     });
@@ -141,7 +166,7 @@ describe("reviews.create", () => {
       belongToUniversityId: 2,
     });
     dbMock.reviews.create.mockRejectedValue(new Error("connection reset"));
-    const caller = makeCaller(router.createCaller, dbMock);
+    const caller = makeCaller(router.createCaller, dbMock, verifiedSession);
     await expect(caller.create(courseOnlyInput())).rejects.toMatchObject({
       code: "INTERNAL_SERVER_ERROR",
     });
@@ -161,7 +186,7 @@ describe("reviews.create", () => {
       belongToUniversityId: 2,
     });
     dbMock.reviews.create.mockResolvedValue({ id: "review-1" });
-    const caller = makeCaller(router.createCaller, dbMock);
+    const caller = makeCaller(router.createCaller, dbMock, verifiedSession);
     await caller.create(courseOnlyInput());
 
     expect(dbMock.reviews.create).toHaveBeenCalledOnce();
@@ -173,7 +198,7 @@ describe("reviews.create", () => {
     "rejects invalid label %j with BAD_REQUEST",
     async (label) => {
       const dbMock = makeDbMock();
-      const caller = makeCaller(router.createCaller, dbMock);
+      const caller = makeCaller(router.createCaller, dbMock, verifiedSession);
       await expect(
         caller.create(courseOnlyInput([label])),
       ).rejects.toMatchObject({
@@ -192,7 +217,7 @@ describe("reviews.create", () => {
     });
     dbMock.reviews.create.mockResolvedValue({ id: "review-1" });
     dbMock.reviewLabels.createMany.mockResolvedValue({ count: 2 });
-    const caller = makeCaller(router.createCaller, dbMock);
+    const caller = makeCaller(router.createCaller, dbMock, verifiedSession);
 
     await caller.create(courseOnlyInput(["1", "2"]));
 
@@ -208,7 +233,7 @@ describe("reviews.create", () => {
 
   it("rejects a review body longer than 5000 characters", async () => {
     const dbMock = makeDbMock();
-    const caller = makeCaller(router.createCaller, dbMock);
+    const caller = makeCaller(router.createCaller, dbMock, verifiedSession);
     const input = courseOnlyInput();
     input.course.body = "a".repeat(5001);
     await expect(caller.create(input)).rejects.toMatchObject({
@@ -219,7 +244,7 @@ describe("reviews.create", () => {
 
   it("rejects tips longer than 2000 characters", async () => {
     const dbMock = makeDbMock();
-    const caller = makeCaller(router.createCaller, dbMock);
+    const caller = makeCaller(router.createCaller, dbMock, verifiedSession);
     const input = courseOnlyInput();
     input.course.tips = "a".repeat(2001);
     await expect(caller.create(input)).rejects.toMatchObject({
@@ -230,7 +255,7 @@ describe("reviews.create", () => {
 
   it("rejects more than 20 labels", async () => {
     const dbMock = makeDbMock();
-    const caller = makeCaller(router.createCaller, dbMock);
+    const caller = makeCaller(router.createCaller, dbMock, verifiedSession);
     const labels = Array.from({ length: 21 }, (_, i) => String(i + 1));
     await expect(caller.create(courseOnlyInput(labels))).rejects.toMatchObject({
       code: "BAD_REQUEST",

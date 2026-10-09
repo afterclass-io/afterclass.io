@@ -100,6 +100,14 @@ export const authConfig = {
           passwordDigest &&
           (await bcrypt.compare(c.data.password, passwordDigest))
         ) {
+          if (!user.isVerified) {
+            Sentry.addBreadcrumb({
+              category: "auth",
+              message: `User ${user.id} attempted login with unverified email.`,
+              level: "warning",
+            });
+            return null;
+          }
           Sentry.addBreadcrumb({
             category: "auth",
             message: `User ${user.id} logged in with v1 credentials.`,
@@ -129,7 +137,20 @@ export const authConfig = {
           // The user will be sent to the error page with the error message as a query parameter
         }
 
+        const isConfirmed = !!data.user.confirmed_at;
+
         if (user) {
+          if (!user.isVerified && !isConfirmed) return null;
+          if (!user.isVerified && isConfirmed) {
+            const updated = await db.users.update({
+              where: { id: user.id },
+              data: { isVerified: true },
+            });
+            return {
+              ...updated,
+              supabaseAccessToken: data.session?.access_token ?? null,
+            };
+          }
           // Any object returned will be saved in `user` property of the JWT.
           // Carry the Supabase access token so the OAuth consent flow can
           // re-authenticate as the user against Supabase's OAuth server.
@@ -138,6 +159,8 @@ export const authConfig = {
             supabaseAccessToken: data.session?.access_token ?? null,
           };
         }
+
+        if (!isConfirmed) return null;
 
         // user signed into supabase successfully, but user doesn't exist in our database
         const universities = await db.universities.findMany({
@@ -164,7 +187,7 @@ export const authConfig = {
             id: data.user.id,
             email: data.user.email ?? c.data.email,
             username: `user_${randomId()}`,
-            isVerified: !!data.user.confirmed_at || false,
+            isVerified: true,
             universityId: uniOfThisEmail.id,
           },
         });
