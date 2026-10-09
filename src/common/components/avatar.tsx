@@ -65,6 +65,17 @@ function AvatarImage({
 }: AvatarImageProps) {
   const { status, setStatus } = useAvatar();
 
+  // The status belongs to one file. When `src` changes, start again: an error
+  // must not hide the new file, and a loaded state must not hide the initials
+  // while the new file loads. A layout effect runs before any load event can
+  // arrive, so it never overwrites the new file's own result.
+  const previousSrc = React.useRef(src);
+  React.useLayoutEffect(() => {
+    if (previousSrc.current === src) return;
+    previousSrc.current = src;
+    setStatus("loading");
+  }, [src, setStatus]);
+
   if (!src || status === "error") return null;
 
   return (

@@ -52,3 +52,37 @@ describe("Avatar", () => {
     expect(screen.getByText("A")).toBeTruthy();
   });
 });
+
+describe("Avatar when the src changes", () => {
+  const OTHER_PHOTO = "https://lh3.googleusercontent.com/a/other=s96-c";
+
+  function avatar(src: string) {
+    return (
+      <Avatar className="size-6">
+        <AvatarImage src={src} alt="" size={24} />
+        <AvatarFallback>A</AvatarFallback>
+      </Avatar>
+    );
+  }
+
+  it("tries the new file after the previous one failed", async () => {
+    const { container, rerender } = render(avatar(PHOTO));
+    fireEvent.error(container.querySelector("img")!);
+    expect(container.querySelector("img")).toBeNull();
+
+    rerender(avatar(OTHER_PHOTO));
+
+    await waitFor(() => expect(container.querySelector("img")).not.toBeNull());
+    expect(screen.getByText("A")).toBeTruthy();
+  });
+
+  it("shows the initials again while the new file loads", async () => {
+    const { container, rerender } = render(avatar(PHOTO));
+    fireEvent.load(container.querySelector("img")!);
+    await waitFor(() => expect(screen.queryByText("A")).toBeNull());
+
+    rerender(avatar(OTHER_PHOTO));
+
+    await waitFor(() => expect(screen.getByText("A")).toBeTruthy());
+  });
+});
