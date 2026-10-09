@@ -3,6 +3,10 @@ import { TRPCError } from "@trpc/server";
 
 import { protectedProcedure } from "@/server/api/trpc";
 import {
+  isForeignKeyViolation,
+  isUniqueConstraintViolation,
+} from "@/server/db-errors";
+import {
   copyRoadmapToUser,
   loadCopyableRoadmap,
 } from "@/server/api/roadmaps/copyRoadmap";
@@ -27,21 +31,17 @@ export const copyShared = protectedProcedure
     try {
       return await copyRoadmapToUser(ctx.db, source, ctx.session.user.id);
     } catch (err) {
-      if (typeof err === "object" && err !== null && "code" in err) {
-        const code = (err as { code: string }).code;
-        if (code === "P2003") {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message:
-              "Failed to copy roadmap — source contains an invalid course",
-          });
-        }
-        if (code === "P2002") {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Duplicate course detected — refresh and try again.",
-          });
-        }
+      if (isForeignKeyViolation(err)) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to copy roadmap — source contains an invalid course",
+        });
+      }
+      if (isUniqueConstraintViolation(err)) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Duplicate course detected — refresh and try again.",
+        });
       }
       throw err;
     }

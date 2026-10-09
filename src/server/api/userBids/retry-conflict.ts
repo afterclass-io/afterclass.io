@@ -1,5 +1,9 @@
 import { TRPCError } from "@trpc/server";
-import { Prisma } from "@/generated/prisma/client";
+
+import {
+  isUniqueConstraintViolation,
+  prismaErrorCode,
+} from "@/server/db-errors";
 
 const MAX_ATTEMPTS = 3;
 
@@ -15,11 +19,12 @@ const pauseBeforeRetry = (attempt: number) =>
 // also throw its own error whose cause kind is "TransactionWriteConflict" from
 // a raw query inside the transaction, before Prisma maps it.
 const isRetryableConflict = (err: unknown) => {
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    return err.code === "P2002" || err.code === "P2034";
-  }
-  const kind = (err as { cause?: { kind?: unknown } } | null)?.cause?.kind;
-  return kind === "TransactionWriteConflict";
+  const cause = (err as { cause?: { kind?: unknown } } | null)?.cause;
+  return (
+    isUniqueConstraintViolation(err) ||
+    prismaErrorCode(err) === "P2034" ||
+    cause?.kind === "TransactionWriteConflict"
+  );
 };
 
 /** Run a transaction attempt again when it loses a write conflict. */

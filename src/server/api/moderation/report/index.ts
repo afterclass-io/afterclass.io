@@ -1,6 +1,7 @@
-import { Prisma } from "@/generated/prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+
+import { isForeignKeyViolation } from "@/server/db-errors";
 
 import { getEdgeConfig } from "@/common/providers/EdgeConfig/EdgeConfigProvider";
 import { runAfterResponse } from "@/server/after-response";
@@ -63,10 +64,7 @@ export const report = verifiedProcedure
     } catch (error) {
       // The item was deleted between resolve and insert (FK violation):
       // answer exactly like any other report.
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2003"
-      ) {
+      if (isForeignKeyViolation(error)) {
         return REPORT_ACK;
       }
       throw error;

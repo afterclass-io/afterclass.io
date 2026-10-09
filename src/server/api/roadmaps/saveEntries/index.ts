@@ -2,6 +2,10 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 import { protectedProcedure } from "@/server/api/trpc";
+import {
+  isForeignKeyViolation,
+  isUniqueConstraintViolation,
+} from "@/server/db-errors";
 
 export const saveEntries = protectedProcedure
   .input(
@@ -84,20 +88,13 @@ export const saveEntries = protectedProcedure
         return updated.updatedAt;
       });
     } catch (err) {
-      const prismaCode =
-        typeof err === "object" &&
-        err !== null &&
-        "code" in err &&
-        typeof (err as { code?: unknown }).code === "string"
-          ? (err as { code: string }).code
-          : undefined;
-      if (prismaCode === "P2002") {
+      if (isUniqueConstraintViolation(err)) {
         throw new TRPCError({
           code: "CONFLICT",
           message: "Duplicate course detected — refresh and try again.",
         });
       }
-      if (prismaCode === "P2003") {
+      if (isForeignKeyViolation(err)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Unknown course — refresh and try again.",

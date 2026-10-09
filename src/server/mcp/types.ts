@@ -1,6 +1,10 @@
 import { randomUUID } from "crypto";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import {
+  isForeignKeyViolation,
+  isUniqueConstraintViolation,
+} from "@/server/db-errors";
 import type { SessionUser } from "@/server/auth/config";
 import type { createCaller } from "@/server/api/root";
 
@@ -98,11 +102,10 @@ export const errorMessage = (e: unknown): string => {
     // would otherwise leak storage internals to the model surface; map it to
     // a generic retry message. Match on `code` (P2002/P2003) and on message
     // text for drivers that surface the failure without a code.
-    const code = (e as { code?: unknown }).code;
     const msg = e.message;
     if (
-      code === "P2002" ||
-      code === "P2003" ||
+      isUniqueConstraintViolation(e) ||
+      isForeignKeyViolation(e) ||
       /unique constraint|foreign key constraint|violates .*constraint/i.test(
         msg,
       )

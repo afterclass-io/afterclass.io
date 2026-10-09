@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { protectedProcedure } from "@/server/api/trpc";
+import { isUniqueConstraintViolation } from "@/server/db-errors";
 import { autoName } from "./helpers";
 
 export const create = protectedProcedure
@@ -31,12 +32,7 @@ export const create = protectedProcedure
     try {
       return await ctx.db.userTimetable.create({ data });
     } catch (err) {
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        "code" in err &&
-        (err as { code?: string }).code === "P2002"
-      ) {
+      if (isUniqueConstraintViolation(err)) {
         return ctx.db.userTimetable.create({
           data: { ...data, isActive: false },
         });
