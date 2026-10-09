@@ -69,5 +69,7 @@
     "min": 4.5
   },
   { "theme": "dark", "fg": "--muted-foreground", "bg": "--muted", "min": 4.5 },
-  { "theme": "dark", "fg": "--muted-foreground", "bg": "--card", "min": 4.5 }
+  { "theme": "dark", "fg": "--muted-foreground", "bg": "--card", "min": 4.5 },
+  { "theme": "dark", "fg": "--chart-1", "bg": "--card", "min": 3 },
+  { "theme": "light", "fg": "--chart-1", "bg": "--card", "min": 3 }
 ]
