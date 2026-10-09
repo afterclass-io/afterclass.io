@@ -147,17 +147,8 @@ context("Sharing: Share Flow", function () {
     cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as(
       "setSlotT1",
     );
-    cy.get("[data-test^=timetable-section-action-]").first().click();
-    cy.wait(1500);
-    cy.get("body").then(($body) => {
-      const hasConflict = $body.text().includes("Time conflict");
-      if (hasConflict) {
-        cy.get("[data-test^=timetable-section-action-]")
-          .eq(1)
-          .click({ force: true });
-        cy.wait(1500);
-      }
-    });
+    // Accept either addSlot (new course), setSlotSection (already present) or a time-conflict toast
+    cy.pickSectionWithFallback({ primary: 0, fallback: 1 });
     // Verify slot appears (optimistic) — wait for either mutation to settle
     cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
       "exist",
@@ -228,17 +219,8 @@ context("Sharing: Share Flow", function () {
     cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as(
       "setSlotT2",
     );
-    cy.get("[data-test^=timetable-section-action-]").first().click();
-    cy.wait(1500);
-    cy.get("body").then(($body) => {
-      const hasConflict = $body.text().includes("Time conflict");
-      if (hasConflict) {
-        cy.get("[data-test^=timetable-section-action-]")
-          .eq(1)
-          .click({ force: true });
-        cy.wait(1500);
-      }
-    });
+    // Accept either addSlot (new course), setSlotSection (already present) or a time-conflict toast
+    cy.pickSectionWithFallback({ primary: 0, fallback: 1 });
     cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
       "exist",
     );
@@ -320,17 +302,8 @@ context("Sharing: Share Flow", function () {
     cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as(
       "setSlotT3",
     );
-    cy.get("[data-test^=timetable-section-action-]").first().click();
-    cy.wait(1500);
-    cy.get("body").then(($body) => {
-      const hasConflict = $body.text().includes("Time conflict");
-      if (hasConflict) {
-        cy.get("[data-test^=timetable-section-action-]")
-          .eq(1)
-          .click({ force: true });
-        cy.wait(1500);
-      }
-    });
+    // Accept either addSlot (new course), setSlotSection (already present) or a time-conflict toast
+    cy.pickSectionWithFallback({ primary: 0, fallback: 1 });
     cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
       "exist",
     );
