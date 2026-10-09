@@ -61,7 +61,6 @@
     "@radix-ui/react-use-controllable-state": "1.2.6",
     "@radix-ui/react-visually-hidden": "1.2.11",
     "@sentry/nextjs": "^10.71.0",
-    "@stepperize/react": "^7.0.0",
     "@supabase/supabase-js": "2.112.4",
     "@t3-oss/env-nextjs": "0.13.11",
     "@tailwindcss/oxide-win32-x64-msvc": "^4.3.3",
