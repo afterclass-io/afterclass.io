@@ -36,8 +36,14 @@ function catalog(rows: unknown[]) {
   };
 }
 
+type TestFormValues = {
+  type?: string;
+  course?: { value: string };
+  professor?: { value: string };
+};
+
 function Harness({ children }: { children: ReactNode }) {
-  const methods = useForm({
+  const methods = useForm<TestFormValues>({
     defaultValues: {
       type: "professor",
       course: { value: "" },
@@ -45,7 +51,7 @@ function Harness({ children }: { children: ReactNode }) {
     },
   });
   return (
-    <FormProvider {...(methods as never)}>
+    <FormProvider {...methods}>
       <ReviewScopeProvider>{children}</ReviewScopeProvider>
     </FormProvider>
   );
@@ -124,9 +130,11 @@ describe("ReviewFormSection catalog scope (issue 324)", () => {
 
   it("still searches unscoped when rendered outside the scope provider", () => {
     function Bare() {
-      const methods = useForm({ defaultValues: { course: { value: "" } } });
+      const methods = useForm<TestFormValues>({
+        defaultValues: { course: { value: "" } },
+      });
       return (
-        <FormProvider {...(methods as never)}>
+        <FormProvider {...methods}>
           <ReviewFormSection type="course" maxRating={5} reviewLabels={[]} />
         </FormProvider>
       );
