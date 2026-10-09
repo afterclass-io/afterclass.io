@@ -131,6 +131,40 @@ describe("performance invariants", () => {
     });
   });
 
+  describe("avatars (#522)", () => {
+    it("serves avatars through next/image with explicit dimensions", () => {
+      const avatar = read("src/common/components/avatar.tsx");
+      expect(avatar).toContain('from "next/image"');
+      expect(avatar).toContain("width={size}");
+      expect(avatar).toContain("height={size}");
+      expect(avatar).not.toMatch(/<img/);
+    });
+
+    it("keeps no avatar dependency that loads the original image", () => {
+      const manifest = JSON.parse(read("package.json")) as {
+        dependencies: Record<string, string>;
+      };
+      expect(manifest.dependencies).not.toHaveProperty(
+        "@radix-ui/react-avatar",
+      );
+    });
+
+    it("gives every avatar image a size", () => {
+      const tsx = listFiles("src").filter(
+        (file) => file.endsWith(".tsx") && !file.includes(".test."),
+      );
+      const callers = tsx.filter(
+        (file) =>
+          file !== "src/common/components/avatar.tsx" &&
+          read(file).includes("<AvatarImage"),
+      );
+      expect(callers.length, `${tsx.length} files`).toBeGreaterThan(0);
+      for (const file of callers) {
+        expect(read(file), file).toMatch(/<AvatarImage[^>]*size=\{\d+\}/);
+      }
+    });
+  });
+
   describe("field vitals (#504)", () => {
     it("mounts the web vitals reporter in the root layout", () => {
       const layout = read("src/app/layout.tsx");

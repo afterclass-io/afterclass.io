@@ -29,7 +29,7 @@ export const UserProfile = ({ user }: Props) => {
         <div className="text-muted-foreground overflow-hidden text-sm text-ellipsis">
           <Avatar className="h-6 w-6">
             {/* Decorative: the email is rendered as adjacent text below. */}
-            <AvatarImage src={user.photoUrl ?? undefined} alt="" />
+            <AvatarImage src={user.photoUrl} alt="" size={24} />
             <AvatarFallback className="text-center">
               {user.email[0]?.toUpperCase() ?? "U"}
             </AvatarFallback>
