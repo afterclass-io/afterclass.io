@@ -1,21 +1,30 @@
 "use client";
-import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { InView } from "react-intersection-observer";
-import { z } from "zod";
 
 import { api } from "@/common/tools/trpc/react";
 import { AfterclassIcon } from "@/common/components/icons";
 import { ProgressLink } from "@/common/components/progress-link";
 
-import { ReviewsFilterFor, ReviewsSortBy } from "@/common/types/reviews";
-import { ReviewItem, ReviewItemSkeleton } from "../ReviewItem";
+import { ReviewItem } from "../ReviewItem";
+import {
+  courseFeedInput,
+  homeFeedInput,
+  MEMBER_FEED_INPUT,
+  parseReviewFeedParams,
+  professorFeedInput,
+} from "../../functions/reviewFeed";
 import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
 import { Separator } from "@/common/components/separator";
 
 type BaseReviewItemLoaderProps = {
   variant: "home" | "course" | "professor";
+  /**
+   * Whether the server resolved a session for this request. It picks the
+   * procedure, so the query key never changes after hydration and the page the
+   * server prefetched is the page this component reads.
+   */
+  isAuthenticated: boolean;
 };
 
 export type ReviewItemLoaderHomeProps = BaseReviewItemLoaderProps & {
@@ -60,111 +69,66 @@ const NoReviewCtaNote = () => (
   </>
 );
 
+const getNextPageParam = (lastPage: { nextCursor?: string }) =>
+  lastPage.nextCursor;
+
 export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
-  const { data: session, status } = useSession();
+  const { isAuthenticated } = props;
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  // prettier-ignore
-  const filterFor = z.enum(ReviewsFilterFor)
-                    .safeParse(searchParams?.get("filter"))
-                    ?.data 
-                  ?? ReviewsFilterFor.ALL;
-
-  // prettier-ignore
-  const sortBy = z.enum(ReviewsSortBy)
-                  .safeParse(searchParams?.get("sort"))
-                    ?.data
-                ?? ReviewsSortBy.LATEST;
+  // The filter and sort values are part of the query key, so the query library
+  // fetches again on its own when they change.
+  const params = parseReviewFeedParams({
+    filter: searchParams?.get("filter"),
+    sort: searchParams?.get("sort"),
+  });
 
   const getInfiniteQuery = () => {
     switch (props.variant) {
       case "course": {
-        const { code, slugs } = props;
-        const apiFn = session
-          ? api.reviews.getByCourseCodeProtected
-          : api.reviews.getByCourseCode;
-        return apiFn.useSuspenseInfiniteQuery(
-          {
-            code,
-            slugs,
-            filterFor,
-            sortBy,
-            ...(session ? { includeEngagement: true } : {}),
-          },
-          {
-            getNextPageParam: (lastPage: { nextCursor?: string }) =>
-              lastPage.nextCursor,
-          },
-        );
+        const input = courseFeedInput(props, params);
+        return isAuthenticated
+          ? api.reviews.getByCourseCodeProtected.useSuspenseInfiniteQuery(
+              { ...input, ...MEMBER_FEED_INPUT },
+              { getNextPageParam },
+            )
+          : api.reviews.getByCourseCode.useSuspenseInfiniteQuery(input, {
+              getNextPageParam,
+            });
       }
       case "professor": {
-        const { slug, courseCodes } = props;
-        const apiFn = session
-          ? api.reviews.getByProfSlugProtected
-          : api.reviews.getByProfSlug;
-        return apiFn.useSuspenseInfiniteQuery(
-          {
-            slug,
-            courseCodes,
-            filterFor,
-            sortBy,
-            ...(session ? { includeEngagement: true } : {}),
-          },
-          {
-            getNextPageParam: (lastPage: { nextCursor?: string }) =>
-              lastPage.nextCursor,
-          },
-        );
+        const input = professorFeedInput(props, params);
+        return isAuthenticated
+          ? api.reviews.getByProfSlugProtected.useSuspenseInfiniteQuery(
+              { ...input, ...MEMBER_FEED_INPUT },
+              { getNextPageParam },
+            )
+          : api.reviews.getByProfSlug.useSuspenseInfiniteQuery(input, {
+              getNextPageParam,
+            });
       }
       default: {
-        const apiFn = session
-          ? api.reviews.getAllProtected
-          : api.reviews.getAll;
-        return apiFn.useSuspenseInfiniteQuery(
-          {
-            filterFor,
-            sortBy,
-            ...(session ? { includeEngagement: true } : {}),
-          },
-          {
-            getNextPageParam: (lastPage: { nextCursor?: string }) =>
-              lastPage.nextCursor,
-          },
-        );
+        const input = homeFeedInput(params);
+        return isAuthenticated
+          ? api.reviews.getAllProtected.useSuspenseInfiniteQuery(
+              { ...input, ...MEMBER_FEED_INPUT },
+              { getNextPageParam },
+            )
+          : api.reviews.getAll.useSuspenseInfiniteQuery(input, {
+              getNextPageParam,
+            });
       }
     }
   };
 
   const [{ pages }, reviewQuery] = getInfiniteQuery();
-  const { fetchNextPage, hasNextPage, isPending, isRefetching } = reviewQuery;
-  // reviewQuery is a tRPC infinite-query result, recreated on every render;
-  // we only want to refetch when the search params change. refetch is a
-  // stable React Query function, so `reviewQuery` is intentionally excluded.
-  useEffect(() => {
-    void reviewQuery.refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when the search params change; reviewQuery changes every render
-  }, [searchParams]);
+  const { fetchNextPage, hasNextPage } = reviewQuery;
 
   const reviews = pages.flatMap((page) => page.items);
 
   if (reviews.length === 0) {
     return <NoReviewCtaNote />;
-  }
-
-  if (status === "loading" || isPending || isRefetching) {
-    return (
-      <>
-        <Separator />
-
-        {reviews
-          .flatMap((_, index) => [
-            <ReviewItemSkeleton key={index} />,
-            <Separator key={`hr-${index}`} />,
-          ])
-          .slice(0, -1)}
-      </>
-    );
   }
 
   return (
@@ -177,14 +141,14 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
             key={review.id}
             variant={props.variant}
             review={review}
-            isLocked={!session}
+            isLocked={!isAuthenticated}
             seeMore={pathname === "/"}
           />,
           <Separator key={`hr-${review.id}`} />,
         ])
         .slice(0, -1)}
 
-      {status === "authenticated" && hasNextPage && (
+      {isAuthenticated && hasNextPage && (
         <>
           <Separator />
           <InView

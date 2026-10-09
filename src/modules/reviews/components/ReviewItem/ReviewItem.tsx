@@ -1,5 +1,3 @@
-import { useSession } from "next-auth/react";
-
 import { LockedOverlay } from "@/common/components/locked-overlay";
 import { type Review } from "@/common/types/reviews";
 
@@ -13,6 +11,7 @@ import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
 
 export type ReviewItemProps = {
   review: Review;
+  /** Decided by the server-resolved session, so the first paint is final. */
   isLocked?: boolean;
   variant?: "home" | "professor" | "course";
   isMocked?: boolean; // for testing purposes only
@@ -26,8 +25,6 @@ export const ReviewItem = ({
   isMocked = false,
   seeMore,
 }: ReviewItemProps) => {
-  const session = useSession();
-
   const reviewHeader = (
     <div className="flex flex-col content-center gap-3 self-stretch overflow-hidden md:flex-row-reverse md:justify-between">
       <ReviewerGroup review={review} />
@@ -35,7 +32,7 @@ export const ReviewItem = ({
     </div>
   );
 
-  return !(session.status === "authenticated") || isLocked ? (
+  return isLocked ? (
     <div
       className="focus-ring flex h-fit max-w-prose cursor-pointer flex-col items-start gap-2 rounded-md p-4 text-left md:gap-4"
       data-test="review"
