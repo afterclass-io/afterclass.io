@@ -53,15 +53,14 @@ import {
 } from "@/modules/timetable/functions/bid-status";
 import { BidsDashboard } from "./BidsDashboard";
 import { InlineNotesEditor } from "./InlineNotesEditor";
-import { BidDialog } from "./BidDialog";
+import { BidDialog, type UserBidRow } from "./BidDialog";
+import { BidClassInfoPanel } from "./BidClassInfoPanel";
 import { Th, SortableTh, Td } from "@/common/components/table-primitives";
 import { ClassInfoButton } from "./ClassInfoButton";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-type BidRow = RouterOutputs["userBids"]["listMine"][number];
 
 type SortKey = "bidAmount" | "createdAt";
 
@@ -123,7 +122,7 @@ export function BidsTable() {
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   // ---- Class-info modal (BidDialog, class mode) from a row's class cells ----
-  const [classInfoBid, setClassInfoBid] = useState<BidRow | null>(null);
+  const [classInfoBid, setClassInfoBid] = useState<UserBidRow | null>(null);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -220,7 +219,7 @@ export function BidsTable() {
   });
 
   // ---- Full-edit dialog state ----
-  const [editingBid, setEditingBid] = useState<BidRow | null>(null);
+  const [editingBid, setEditingBid] = useState<UserBidRow | null>(null);
 
   // ---- Derived rows ----
   const roundOptions = useMemo(
@@ -515,7 +514,7 @@ function BidTableRow({
   onSetStatus,
   onDelete,
 }: {
-  bid: BidRow;
+  bid: UserBidRow;
   isBusy: boolean;
   pendingAddClassId: string | null;
   hasActiveTimetable: boolean;
@@ -664,34 +663,5 @@ function BidTableRow({
         </div>
       </Td>
     </tr>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Class-info modal + shared form pieces
-// ---------------------------------------------------------------------------
-
-/**
- * Opens the unified BidDialog in class mode for a bid row's class. The dialog
- * resolves the full course details (credit units, timings, professor) itself
- * from the term-scoped course search.
- */
-function BidClassInfoPanel({
-  bid,
-  onClose,
-}: {
-  bid: BidRow;
-  onClose: () => void;
-}) {
-  return (
-    <BidDialog
-      mode="class"
-      classId={bid.classId}
-      courseCode={bid.courseCode}
-      section={bid.section}
-      acadTermId={bid.bidWindow.acadTermId}
-      isOpen
-      onClose={onClose}
-    />
   );
 }
