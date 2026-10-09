@@ -143,7 +143,9 @@ export const HistoryTable: React.FC<{
                     fontFamily: "var(--font-geist-mono, ui-monospace)",
                   }}
                 >
-                  {typeof r.median === "number" ? r.median.toFixed(2) : r.median}
+                  {typeof r.median === "number"
+                    ? r.median.toFixed(2)
+                    : r.median}
                 </td>
               </tr>
             ))}

@@ -57,8 +57,9 @@ export type VariantSwitcherProps = {
  */
 export function VariantSwitcher({ className }: VariantSwitcherProps) {
   const selectedTermId = useAtomValue(selectedTermIdAtom);
-  const [activeTimetableId, setActiveTimetableId] =
-    useAtom(activeTimetableIdAtom);
+  const [activeTimetableId, setActiveTimetableId] = useAtom(
+    activeTimetableIdAtom,
+  );
 
   const utils = api.useUtils();
 
@@ -140,8 +141,7 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
         if (!selectedTermId) return;
         utils.timetable.listMine.setData(
           { acadTermId: selectedTermId },
-          (old) =>
-            old?.map((t) => ({ ...t, isActive: t.id === timetableId })),
+          (old) => old?.map((t) => ({ ...t, isActive: t.id === timetableId })),
         );
       },
       restoreSnapshot: (prev) => {
@@ -153,7 +153,9 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
       },
       invalidate: async () => {
         if (!selectedTermId) return;
-        await utils.timetable.listMine.invalidate({ acadTermId: selectedTermId });
+        await utils.timetable.listMine.invalidate({
+          acadTermId: selectedTermId,
+        });
       },
       onError: () => toast.error("Failed to set active timetable"),
     }),
@@ -173,7 +175,7 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
   // ---- No term selected ----
   if (!selectedTermId) {
     return (
-      <span className={cn("text-sm text-muted-foreground", className)}>
+      <span className={cn("text-muted-foreground text-sm", className)}>
         Select a term first
       </span>
     );
@@ -193,14 +195,22 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
         value={activeTimetableId ?? undefined}
         onValueChange={handleSwitch}
       >
-        <SelectTrigger className="w-44" size="sm" data-test="timetable-variant-switcher">
+        <SelectTrigger
+          className="w-44"
+          size="sm"
+          data-test="timetable-variant-switcher"
+        >
           <SelectValue placeholder="No timetable" />
         </SelectTrigger>
         <SelectContent>
           {timetables.map((t) => (
-            <SelectItem key={t.id} value={t.id} data-test={`timetable-variant-${t.id}`}>
+            <SelectItem
+              key={t.id}
+              value={t.id}
+              data-test={`timetable-variant-${t.id}`}
+            >
               {t.name}
-              <span className="ml-2 text-xs text-muted-foreground">
+              <span className="text-muted-foreground ml-2 text-xs">
                 ({t._count.slots})
               </span>
             </SelectItem>
@@ -217,9 +227,7 @@ export function VariantSwitcher({ className }: VariantSwitcherProps) {
               variant="ghost"
               size="icon"
               aria-label={
-                active.isActive
-                  ? "Active plan"
-                  : "Mark as active plan"
+                active.isActive ? "Active plan" : "Mark as active plan"
               }
               disabled={active.isActive || setActiveMutation.isPending}
               onClick={() =>

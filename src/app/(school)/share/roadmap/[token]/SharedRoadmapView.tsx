@@ -97,7 +97,7 @@ export function SharedRoadmapView({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">
+          <PageTitle className="text-left text-2xl font-bold tracking-tight md:text-2xl!">
             Shared Roadmap: {censorProfanity(roadmapName)}
           </PageTitle>
           <p className="text-muted-foreground text-sm">

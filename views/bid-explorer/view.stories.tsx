@@ -234,7 +234,9 @@ const lowConfidenceProps = {
 };
 
 export const LowConfidence: Story = {
-  decorators: [withMcpView({ status: "ready", toolOutput: lowConfidenceProps })],
+  decorators: [
+    withMcpView({ status: "ready", toolOutput: lowConfidenceProps }),
+  ],
 };
 
 export const NullableBranches: Story = {

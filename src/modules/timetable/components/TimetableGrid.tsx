@@ -123,7 +123,7 @@ export function TimetableGrid({
           docked (≥xl); the wrapper still scrolls internally. */}
       <div
         data-test="timetable-grid"
-        className="border-border bg-card hidden isolate overflow-x-auto rounded-lg border [contain:inline-size] lg:block"
+        className="border-border bg-card isolate hidden overflow-x-auto rounded-lg border [contain:inline-size] lg:block"
       >
         <div className="relative flex h-[70vh] max-h-[720px] min-h-[480px] min-w-[680px]">
           {/* Time axis column (stays visible while scrolling horizontally) */}
@@ -132,7 +132,7 @@ export function TimetableGrid({
                 axis labels in this column stay in sync with the period bands
                 and slot cards in every day column. */}
             <div
-              className="bg-muted/50 border-border shrink-0 border-b px-2 py-1.5 text-xs font-semibold invisible"
+              className="bg-muted/50 border-border invisible shrink-0 border-b px-2 py-1.5 text-xs font-semibold"
               aria-hidden
             >
               Mon

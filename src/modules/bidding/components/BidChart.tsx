@@ -88,9 +88,7 @@ export function formatBidTooltipLabel(
   payload: readonly { payload?: unknown }[] | undefined,
   bidWindowOfIdx: Map<number, string>,
 ) {
-  const dataPoint = payload?.[0]?.payload as
-    | { bidWindow?: string }
-    | undefined;
+  const dataPoint = payload?.[0]?.payload as { bidWindow?: string } | undefined;
   const bidWindow =
     dataPoint?.bidWindow ??
     (typeof value === "string" && value.includes("/")

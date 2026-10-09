@@ -63,19 +63,19 @@ export const BidPredictionCard = ({
   return (
     <Card>
       <CardHeader className="px-4 sm:px-6">
-        <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 text-2xl sm:text-3xl">
+        <CardTitle className="flex flex-col justify-between gap-2 pt-2 text-2xl sm:flex-row sm:items-center sm:text-3xl">
           <span className="text-2xl sm:text-3xl">Bid Prediction</span>
           {recommendedMin !== undefined && recommendedMedian !== undefined && (
             <span className="flex items-center gap-2">
               <span className="flex items-center gap-1 font-bold tracking-tighter">
-                <span className="text-primary font-mono text-2xl sm:text-3xl tabular-nums">
+                <span className="text-primary font-mono text-2xl tabular-nums sm:text-3xl">
                   {formatBidCurrencyCompact(recommendedMin)}
                 </span>
               </span>
               <span className="text-muted-foreground text-xl font-normal">
                 -
               </span>
-              <span className="text-primary font-mono text-2xl sm:text-3xl font-bold tracking-tighter tabular-nums">
+              <span className="text-primary font-mono text-2xl font-bold tracking-tighter tabular-nums sm:text-3xl">
                 {formatBidCurrencyCompact(recommendedMedian)}
               </span>
             </span>
@@ -96,7 +96,7 @@ export const BidPredictionCard = ({
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 px-4 sm:px-6">
-        <div className="grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
+        <div className="grid grid-cols-3 gap-2 text-xs sm:gap-4 sm:text-sm">
           <div>Odds of having other bids</div>
           <div className="flex items-center gap-2">
             <Progress value={hasBidsProbability * 100} />
@@ -150,7 +150,9 @@ export const BidPredictionCard = ({
       <CardFooter className="flex flex-col items-stretch gap-4 px-4 py-2 sm:px-6">
         <div className="text-base font-medium">Formula</div>
         <div className="w-full">
-          <div className="text-muted-foreground mb-1 text-xs font-medium">Min</div>
+          <div className="text-muted-foreground mb-1 text-xs font-medium">
+            Min
+          </div>
           <BidPredictionFormula
             predicted={minPrediction.value}
             multiplier={multiplierAt(
@@ -162,7 +164,9 @@ export const BidPredictionCard = ({
           />
         </div>
         <div className="w-full">
-          <div className="text-muted-foreground mb-1 text-xs font-medium">Median</div>
+          <div className="text-muted-foreground mb-1 text-xs font-medium">
+            Median
+          </div>
           <BidPredictionFormula
             predicted={medianPrediction.value}
             multiplier={multiplierAt(

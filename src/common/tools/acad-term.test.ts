@@ -294,9 +294,7 @@ describe("listAcadTerms", () => {
     const findMany = vi.fn().mockRejectedValue(new Error("db down"));
     const mockDb = { acadTerm: { findMany } };
     await expect(
-      listAcadTerms(
-        mockDb as unknown as Parameters<typeof listAcadTerms>[0],
-      ),
+      listAcadTerms(mockDb as unknown as Parameters<typeof listAcadTerms>[0]),
     ).rejects.toThrow("db down");
   });
 

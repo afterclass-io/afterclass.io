@@ -37,7 +37,7 @@ export function MeetingHeatmapCell({
       data-slot-index={slotIndex}
       data-test={`heatmap-cell-${slotIndex}`}
       className={cn(
-        "relative size-full cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset focus-visible:outline-hidden",
+        "focus-visible:ring-primary relative size-full cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-hidden focus-visible:ring-inset",
         className,
       )}
       style={{ backgroundColor }}

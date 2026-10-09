@@ -3,7 +3,10 @@
 import { X } from "lucide-react";
 
 import { Button } from "@/common/components/button";
-import { formatDateSGT, formatTimeSGT } from "@/common/functions/format-date-sgt";
+import {
+  formatDateSGT,
+  formatTimeSGT,
+} from "@/common/functions/format-date-sgt";
 import { MeetingCalendarExportPopover } from "@/modules/meetings/components/room/MeetingCalendarExportPopover";
 
 export type SelectedRangeBarProps = {

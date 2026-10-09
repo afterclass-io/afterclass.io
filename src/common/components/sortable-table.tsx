@@ -16,12 +16,13 @@ interface SortableTableProps<T> {
 
 // Refine the generic constraint for T.
 // T must be a record with string or number values for the sortable keys.
-export function SortableTable<T extends Record<string, string | number | null | undefined>>({
-  data,
-  columns,
-}: SortableTableProps<T>) {
+export function SortableTable<
+  T extends Record<string, string | number | null | undefined>,
+>({ data, columns }: SortableTableProps<T>) {
   const [sortColumn, setSortColumn] = React.useState<keyof T | null>(null);
-  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("asc");
+  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(
+    "asc",
+  );
 
   const handleSort = (key: keyof T) => {
     if (sortColumn === key) {
@@ -47,7 +48,9 @@ export function SortableTable<T extends Record<string, string | number | null | 
 
       // The key is now guaranteed to have string or number values.
       if (typeof aValue === "string" && typeof bValue === "string") {
-        return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        return sortDirection === "asc"
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
       }
 
       if (typeof aValue === "number" && typeof bValue === "number") {
@@ -67,7 +70,7 @@ export function SortableTable<T extends Record<string, string | number | null | 
         <thead className={cn("[&_tr]:border-b")}>
           <tr
             className={cn(
-              "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+              "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
             )}
           >
             {columns.map((column) => (
@@ -75,14 +78,17 @@ export function SortableTable<T extends Record<string, string | number | null | 
                 key={column.key as string}
                 onClick={() => handleSort(column.key)}
                 className={cn(
-                  "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 cursor-pointer",
+                  "text-muted-foreground h-12 cursor-pointer px-4 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0",
                 )}
               >
                 <div className="flex items-center gap-1">
                   {column.title}
-                  {sortColumn === column.key && (
-                    sortDirection === "asc" ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-                  )}
+                  {sortColumn === column.key &&
+                    (sortDirection === "asc" ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    ))}
                 </div>
               </th>
             ))}
@@ -93,13 +99,15 @@ export function SortableTable<T extends Record<string, string | number | null | 
             <tr
               key={rowIndex}
               className={cn(
-                "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+                "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
               )}
             >
               {columns.map((column) => (
                 <td
                   key={column.key as string}
-                  className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0")}
+                  className={cn(
+                    "p-4 align-middle [&:has([role=checkbox])]:pr-0",
+                  )}
                 >
                   {column.render ? column.render(row) : String(row[column.key])}
                 </td>

@@ -18,10 +18,7 @@ export const DEFAULT_SUGGESTION_LIMIT = 5;
 export const MAX_SUGGESTION_LIMIT = 10;
 
 export type OptionTier =
-  | "everyone-free"
-  | "everyone-attendable"
-  | "partial"
-  | "none";
+  "everyone-free" | "everyone-attendable" | "partial" | "none";
 
 export type SuggestParticipant = {
   name: string;
@@ -253,7 +250,9 @@ export function suggestMeetingTimes(input: {
 
   if (input.query.daysOfWeek !== undefined) {
     const allowedDays = new Set(input.query.daysOfWeek);
-    filteredDays = filteredDays.filter((d) => allowedDays.has(weekdayOf(d.date)));
+    filteredDays = filteredDays.filter((d) =>
+      allowedDays.has(weekdayOf(d.date)),
+    );
   }
 
   if (filteredDays.length === 0) {

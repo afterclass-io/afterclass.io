@@ -151,8 +151,7 @@ function AgendaRow({
               bidChipVariant(bidInfo.status as UserBidStatus),
             )}
           >
-            {formatBidAmount(bidInfo.amount)}{" "}
-            · R{bidInfo.round}
+            {formatBidAmount(bidInfo.amount)} · R{bidInfo.round}
           </span>
         )}
       </button>

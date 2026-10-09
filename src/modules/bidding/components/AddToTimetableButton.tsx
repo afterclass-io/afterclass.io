@@ -58,8 +58,7 @@ export function AddToTimetableButton({
         timetableName = created.name;
         void utils.timetable.listMine.invalidate({ acadTermId });
       } else {
-        const active =
-          timetables.find((t) => t.isActive) ?? timetables[0]!;
+        const active = timetables.find((t) => t.isActive) ?? timetables[0]!;
         timetableId = active.id;
         timetableName = active.name;
       }
@@ -75,7 +74,7 @@ export function AddToTimetableButton({
             Added to{" "}
             <Link
               href="/timetable"
-              className="underline font-medium hover:opacity-80"
+              className="font-medium underline hover:opacity-80"
             >
               {timetableName}
             </Link>
@@ -88,7 +87,7 @@ export function AddToTimetableButton({
             Already in{" "}
             <Link
               href="/timetable"
-              className="underline font-medium hover:opacity-80"
+              className="font-medium underline hover:opacity-80"
             >
               {timetableName}
             </Link>

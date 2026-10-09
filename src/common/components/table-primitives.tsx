@@ -37,7 +37,9 @@ export function SortableTh({
   return (
     <Th
       className={className}
-      aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : undefined}
+      aria-sort={
+        active ? (dir === "asc" ? "ascending" : "descending") : undefined
+      }
     >
       <button
         type="button"

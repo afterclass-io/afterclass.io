@@ -448,9 +448,7 @@ const BidExplorerView: React.FC = () => {
               <div
                 role="progressbar"
                 aria-label="Odds of having other bids"
-                aria-valuenow={Number(
-                  (hasBidsProbability * 100).toFixed(2),
-                )}
+                aria-valuenow={Number((hasBidsProbability * 100).toFixed(2))}
                 aria-valuemin={0}
                 aria-valuemax={100}
                 style={{
@@ -670,9 +668,7 @@ const BidExplorerView: React.FC = () => {
                 const ladderIdx = safetyFactors.findIndex(
                   (f) => f.beatsPercentage === next,
                 );
-                setFactorIdx(
-                  ladderIdx >= 0 ? ladderIdx : defaultIdx(),
-                );
+                setFactorIdx(ladderIdx >= 0 ? ladderIdx : defaultIdx());
               }}
               style={{ width: "100%", accentColor: c.primary }}
             />
@@ -694,9 +690,7 @@ const BidExplorerView: React.FC = () => {
                     const ladderIdx = safetyFactors.findIndex(
                       (f) => f.beatsPercentage === t,
                     );
-                    setFactorIdx(
-                      ladderIdx >= 0 ? ladderIdx : defaultIdx(),
-                    );
+                    setFactorIdx(ladderIdx >= 0 ? ladderIdx : defaultIdx());
                   }}
                   style={{
                     background: "transparent",
@@ -705,8 +699,7 @@ const BidExplorerView: React.FC = () => {
                     padding: 0,
                     fontSize: 11,
                     fontWeight: beatsPercentage === t ? 700 : 400,
-                    color:
-                      beatsPercentage === t ? c.primary : c.mutedFg,
+                    color: beatsPercentage === t ? c.primary : c.mutedFg,
                   }}
                 >
                   {t}%
@@ -762,9 +755,7 @@ const BidExplorerView: React.FC = () => {
                     fontVariantNumeric: "tabular-nums",
                   }}
                 >
-                  {recommendedMin !== null
-                    ? format2dp(recommendedMin)
-                    : "—"}
+                  {recommendedMin !== null ? format2dp(recommendedMin) : "—"}
                 </span>
                 <span
                   style={{
@@ -957,7 +948,8 @@ const BidExplorerView: React.FC = () => {
                   textAlign: "center",
                 }}
               >
-                Floored to BOSS minimum bid of e${format2dp(10)} (raw formula: e$
+                Floored to BOSS minimum bid of e${format2dp(10)} (raw formula:
+                e$
                 {format2dp(rawMedian)})
               </div>
             )}

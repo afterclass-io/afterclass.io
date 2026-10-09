@@ -40,6 +40,8 @@ describe("userBids.getBudget", () => {
       userBidBudget: { findUnique: vi.fn().mockResolvedValue(null) },
     });
 
-    await expect(caller.getBudget({ acadTermId: "term-a" })).resolves.toBeNull();
+    await expect(
+      caller.getBudget({ acadTermId: "term-a" }),
+    ).resolves.toBeNull();
   });
 });

@@ -169,12 +169,10 @@ describe("get-my-timetable-detail read tool", () => {
       { id: "tt1", name: "Old", isActive: false, acadTermId: "t1" },
       { id: "tt2", name: "Current", isActive: true, acadTermId: "t1" },
     ]);
-    const getArr = vi
-      .fn()
-      .mockResolvedValue({
-        timetable: { id: "tt2", name: "Current" },
-        slots: [],
-      });
+    const getArr = vi.fn().mockResolvedValue({
+      timetable: { id: "tt2", name: "Current" },
+      slots: [],
+    });
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({
@@ -199,12 +197,10 @@ describe("get-my-timetable-detail read tool", () => {
       { id: "tt1", name: "Old", isActive: false, acadTermId: "t1" },
       { id: "tt2", name: "Current", isActive: true, acadTermId: "t1" },
     ]);
-    const getArr = vi
-      .fn()
-      .mockResolvedValue({
-        timetable: { id: "tt2", name: "Current" },
-        slots: [],
-      });
+    const getArr = vi.fn().mockResolvedValue({
+      timetable: { id: "tt2", name: "Current" },
+      slots: [],
+    });
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({
@@ -258,12 +254,10 @@ describe("get-my-timetable-detail read tool", () => {
       .mockResolvedValue([
         { id: "tt1", name: "Old", isActive: false, acadTermId: "t1" },
       ]);
-    const getArr = vi
-      .fn()
-      .mockResolvedValue({
-        timetable: { id: "ttX", name: "Unknown" },
-        slots: [],
-      });
+    const getArr = vi.fn().mockResolvedValue({
+      timetable: { id: "ttX", name: "Unknown" },
+      slots: [],
+    });
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({
@@ -336,12 +330,10 @@ describe("get-my-timetable-detail read tool", () => {
       .mockResolvedValue([
         { id: "tt1", name: "Current", isActive: true, acadTermId: "t1" },
       ]);
-    const getArr = vi
-      .fn()
-      .mockResolvedValue({
-        timetable: { id: "tt1", name: "Current" },
-        slots: [],
-      });
+    const getArr = vi.fn().mockResolvedValue({
+      timetable: { id: "tt1", name: "Current" },
+      slots: [],
+    });
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({
@@ -416,16 +408,14 @@ describe("get-my-timetable-detail read tool", () => {
   });
 
   it("returns the real timetable name for the main {slots,bids} shape when both timetableId and acadTermId are given", async () => {
-    const listMine = vi
-      .fn()
-      .mockResolvedValue([
-        {
-          id: "tt1",
-          name: "AY24 T2 - My Plan",
-          isActive: true,
-          acadTermId: "t1",
-        },
-      ]);
+    const listMine = vi.fn().mockResolvedValue([
+      {
+        id: "tt1",
+        name: "AY24 T2 - My Plan",
+        isActive: true,
+        acadTermId: "t1",
+      },
+    ]);
     // Main shape: getArrangement returns { slots, bids } - no timetable object.
     const mainArrangement = { slots: arrangement.slots, bids: [] };
 

@@ -45,7 +45,9 @@ export function CourseBacktrackMenuItem({
   const addSlotMutation = api.timetable.addSlot.useMutation({
     onSuccess: () => {
       setJustAdded(true);
-      toast.success(`Added ${courseCode} (${section}) to your active timetable`);
+      toast.success(
+        `Added ${courseCode} (${section}) to your active timetable`,
+      );
       void utils.timetable.getMyTimetableDetail.invalidate();
       void utils.timetable.getArrangement.invalidate();
       void utils.timetable.listMine.invalidate();
@@ -69,12 +71,16 @@ export function CourseBacktrackMenuItem({
 
   const handleAdd = () => {
     if (!timetableDetail?.timetableId) {
-      toast.error("No active timetable found for this term. Please create one first.");
+      toast.error(
+        "No active timetable found for this term. Please create one first.",
+      );
       return;
     }
     const targetClass = classes?.find((c) => c.section === section);
     if (!targetClass) {
-      toast.error(`Section ${section} of ${courseCode} was not found in this term.`);
+      toast.error(
+        `Section ${section} of ${courseCode} was not found in this term.`,
+      );
       return;
     }
     addSlotMutation.mutate({
@@ -95,10 +101,16 @@ export function CourseBacktrackMenuItem({
   return (
     <DropdownMenuItem
       onSelect={handleAdd}
-      disabled={addSlotMutation.isPending || isTimetableLoading || isClassesLoading}
+      disabled={
+        addSlotMutation.isPending || isTimetableLoading || isClassesLoading
+      }
       data-test="add-to-timetable-button"
     >
-      {addSlotMutation.isPending ? <Loader2 className="animate-spin" /> : <GraduationCap />}
+      {addSlotMutation.isPending ? (
+        <Loader2 className="animate-spin" />
+      ) : (
+        <GraduationCap />
+      )}
       Add {courseCode} to timetable &amp; roadmap
     </DropdownMenuItem>
   );

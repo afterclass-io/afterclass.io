@@ -1,4 +1,8 @@
-import type { PrismaClient, BidWindow, AcadTerm } from "@/generated/prisma/client";
+import type {
+  PrismaClient,
+  BidWindow,
+  AcadTerm,
+} from "@/generated/prisma/client";
 
 export type CurrentWindowResult = (BidWindow & { acadTerm: AcadTerm }) | null;
 
@@ -31,17 +35,12 @@ export async function getCurrentWindowLogic(
   // Level 1: Active window (bidding open or awaiting results)
   const active = allWindows.find(
     (bw) =>
-      bw.opensAt &&
-      bw.resultsAt &&
-      bw.opensAt <= now &&
-      now < bw.resultsAt,
+      bw.opensAt && bw.resultsAt && bw.opensAt <= now && now < bw.resultsAt,
   );
   if (active) return active;
 
   // Level 2: Next upcoming window
-  const upcoming = allWindows.find(
-    (bw) => bw.opensAt && bw.opensAt > now,
-  );
+  const upcoming = allWindows.find((bw) => bw.opensAt && bw.opensAt > now);
   if (upcoming) return upcoming;
 
   // Level 3: Most recent past window

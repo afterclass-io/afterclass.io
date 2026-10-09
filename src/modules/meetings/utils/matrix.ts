@@ -249,4 +249,3 @@ export function formatDateToISO(d: Date | string): string {
   const day = String(norm.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
-

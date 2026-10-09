@@ -14,6 +14,10 @@ export const recordShare = publicProcedure
   .input(z.object({ roadmapId: z.string() }))
   .mutation(async ({ ctx, input }) => {
     return {
-      success: await incrementEngagement(ctx.db, { roadmapId: input.roadmapId, field: "shareCount" }, ctx.headers),
+      success: await incrementEngagement(
+        ctx.db,
+        { roadmapId: input.roadmapId, field: "shareCount" },
+        ctx.headers,
+      ),
     };
   });

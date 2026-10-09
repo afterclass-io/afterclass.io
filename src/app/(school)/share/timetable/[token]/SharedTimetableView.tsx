@@ -28,21 +28,15 @@ export function SharedTimetableView({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">
+          <PageTitle className="text-left text-2xl font-bold tracking-tight md:text-2xl!">
             Shared Timetable: {timetableName}
           </PageTitle>
-          <p className="text-sm text-muted-foreground">
-            by {ownerUsername}
-          </p>
+          <p className="text-muted-foreground text-sm">by {ownerUsername}</p>
         </div>
       </div>
 
       {/* Grid */}
-      <TimetableGrid
-        classes={slots}
-        view="classes"
-        readOnly
-      />
+      <TimetableGrid classes={slots} view="classes" readOnly />
     </div>
   );
 }

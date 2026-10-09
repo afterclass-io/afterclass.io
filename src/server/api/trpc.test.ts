@@ -2,7 +2,11 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import { z } from "zod";
 
 import { makeCaller } from "@/server/api/trpc-test-helpers";
-import { createTRPCRouter, publicProcedure, verifiedProcedure } from "@/server/api/trpc";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  verifiedProcedure,
+} from "@/server/api/trpc";
 
 const router = createTRPCRouter({
   ping: publicProcedure.query(() => "ok"),
@@ -41,7 +45,11 @@ describe("errorFormatter", () => {
   // (verified in @trpc/server's router source), so there is no caller-level
   // seam — call the formatter off the built router's config directly.
   const formatter = (
-    router._def as { _config: { errorFormatter: (o: unknown) => { data: { zodError: unknown } } } }
+    router._def as {
+      _config: {
+        errorFormatter: (o: unknown) => { data: { zodError: unknown } };
+      };
+    }
   )._config.errorFormatter;
 
   const shape = { message: "err", code: -32600, data: { code: "BAD_REQUEST" } };
@@ -70,9 +78,13 @@ describe("verifiedProcedure", () => {
   });
 
   it("rejects signed-in but unverified users as FORBIDDEN", async () => {
-    const caller = makeCaller(verifiedRouter.createCaller, {}, {
-      user: { id: "u1" },
-    });
+    const caller = makeCaller(
+      verifiedRouter.createCaller,
+      {},
+      {
+        user: { id: "u1" },
+      },
+    );
     await expect(caller.ping()).rejects.toMatchObject({
       code: "FORBIDDEN",
       message: "Only verified users can do this",
@@ -80,9 +92,13 @@ describe("verifiedProcedure", () => {
   });
 
   it("lets verified users through", async () => {
-    const caller = makeCaller(verifiedRouter.createCaller, {}, {
-      user: { id: "u1", isVerified: true },
-    });
+    const caller = makeCaller(
+      verifiedRouter.createCaller,
+      {},
+      {
+        user: { id: "u1", isVerified: true },
+      },
+    );
     await expect(caller.ping()).resolves.toBe("ok");
   });
 });

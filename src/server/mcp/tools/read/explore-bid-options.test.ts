@@ -475,9 +475,7 @@ describe("explore-bid-options", () => {
     const caller = makeCaller({
       results: [bidRow("t2", "1", 1, 14, 28, 40)],
       pred: prediction,
-      classes: [
-        { id: "cl1", section: "G1", course: { code: "COR-MGMT1202" } },
-      ],
+      classes: [{ id: "cl1", section: "G1", course: { code: "COR-MGMT1202" } }],
     });
     const ctx: ToolContext = { user: fakeUser, caller };
     const result = await exploreBidOptionsTool.run(ctx, {

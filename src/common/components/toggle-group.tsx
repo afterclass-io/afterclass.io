@@ -13,8 +13,7 @@ import { toggleVariants } from "@/common/components/toggle";
  * The base toggle variants (`default`, `outline`) are untouched.
  */
 type ToggleGroupVariant =
-  | VariantProps<typeof toggleVariants>["variant"]
-  | "segmented";
+  VariantProps<typeof toggleVariants>["variant"] | "segmented";
 
 const ToggleGroupContext = React.createContext<{
   variant?: ToggleGroupVariant;

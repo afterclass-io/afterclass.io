@@ -3,7 +3,8 @@ import type { PropsWithChildren } from "react";
 
 export const metadata: Metadata = {
   title: "Meetings",
-  description: "Group meeting availability coordination for university students.",
+  description:
+    "Group meeting availability coordination for university students.",
   robots: {
     index: false,
     follow: false,

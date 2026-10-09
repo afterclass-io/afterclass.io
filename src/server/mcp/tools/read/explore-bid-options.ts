@@ -281,8 +281,7 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
               medianUncertainty: prediction.medianUncertainty ?? 0,
               minPredicted: prediction.minPredicted ?? null,
               minUncertainty: prediction.minUncertainty ?? null,
-              clfHasBidsProbability:
-                prediction.clfHasBidsProbability ?? null,
+              clfHasBidsProbability: prediction.clfHasBidsProbability ?? null,
               clfConfidenceScore: prediction.clfConfidenceScore ?? null,
               bidWindow: {
                 id: prediction.bidWindow.id,

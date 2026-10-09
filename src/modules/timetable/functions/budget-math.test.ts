@@ -85,9 +85,7 @@ describe("summarizeBidsByRound", () => {
 
   // ---- Balance > total → overshoot 0 ----
   it("reports zero overshoot when balance exceeds grand total", () => {
-    const bids: BidSummary[] = [
-      { amount: 10, round: "1", window: 1 },
-    ];
+    const bids: BidSummary[] = [{ amount: 10, round: "1", window: 1 }];
     const result = summarizeBidsByRound(bids, 500);
 
     expect(result.overshoot).toBe(0);
@@ -149,9 +147,7 @@ describe("summarizeBidsByRound", () => {
 
   // ---- Balance of 0 ----
   it("handles zero balance correctly (everything overshoots)", () => {
-    const bids: BidSummary[] = [
-      { amount: 10, round: "1", window: 1 },
-    ];
+    const bids: BidSummary[] = [{ amount: 10, round: "1", window: 1 }];
     const result = summarizeBidsByRound(bids, 0);
 
     expect(result.overshoot).toBe(10);

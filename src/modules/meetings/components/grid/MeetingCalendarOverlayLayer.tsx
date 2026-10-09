@@ -10,8 +10,7 @@ export type MeetingCalendarOverlay = {
   slotIndices: number[];
 };
 
-const CARD_BASE =
-  "border border-(--mt-event) bg-(--mt-busy) text-(--mt-event)";
+const CARD_BASE = "border border-(--mt-event) bg-(--mt-busy) text-(--mt-event)";
 
 /**
  * Events are bordered cards that sit beneath the painted availability: they are

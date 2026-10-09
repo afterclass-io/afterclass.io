@@ -269,8 +269,18 @@ describe("meetingsRouter", () => {
 
       expect(result.term?.id).toBe("AY202627T1");
       expect(result.classes).toEqual([
-        { courseId: COURSE_ID, code: "IS215", name: "Digital Business", section: "G1" },
-        { courseId: COURSE_ID, code: "IS215", name: "Digital Business", section: "G2" },
+        {
+          courseId: COURSE_ID,
+          code: "IS215",
+          name: "Digital Business",
+          section: "G1",
+        },
+        {
+          courseId: COURSE_ID,
+          code: "IS215",
+          name: "Digital Business",
+          section: "G2",
+        },
       ]);
       expect(findManyMock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -312,7 +322,12 @@ describe("meetingsRouter", () => {
       course: { id: "c-1", code: "IS216", name: "Web App Dev" },
       section: "G1",
       teamIdentifier: "Team 3",
-      acadTerm: { id: "t-1", acadYearStart: 2026, acadYearEnd: 2027, term: "1" },
+      acadTerm: {
+        id: "t-1",
+        acadYearStart: 2026,
+        acadYearEnd: 2027,
+        term: "1",
+      },
       participants: [
         {
           id: "part-uuid-1",
@@ -366,11 +381,20 @@ describe("meetingsRouter", () => {
 
       // Verify in-memory heatmap aggregation
       // Slot 0: p1 available, p2 ifNeeded -> available 1, ifNeeded 1
-      expect(result.heatmap[0]).toEqual({ availableCount: 1, ifNeededCount: 1 });
+      expect(result.heatmap[0]).toEqual({
+        availableCount: 1,
+        ifNeededCount: 1,
+      });
       // Slot 1: p1 available, p2 available, p3 ifNeeded -> available 2, ifNeeded 1
-      expect(result.heatmap[1]).toEqual({ availableCount: 2, ifNeededCount: 1 });
+      expect(result.heatmap[1]).toEqual({
+        availableCount: 2,
+        ifNeededCount: 1,
+      });
       // Slot 2: p1 available, p2 available, p3 available -> available 3, ifNeeded 0
-      expect(result.heatmap[2]).toEqual({ availableCount: 3, ifNeededCount: 0 });
+      expect(result.heatmap[2]).toEqual({
+        availableCount: 3,
+        ifNeededCount: 0,
+      });
     });
 
     it("STRICT PRIVACY INVARIANT: Verifies zero Users.id exposure in responses (neither creator nor peers)", async () => {
@@ -419,7 +443,9 @@ describe("meetingsRouter", () => {
 
       const result = await caller.getPollBySlug({ slug: "abcdefghij" });
 
-      expect(result.participants.every((p) => p.isCurrentUser === false)).toBe(true);
+      expect(result.participants.every((p) => p.isCurrentUser === false)).toBe(
+        true,
+      );
       expect(result.heatmap[2]?.availableCount).toBe(3);
     });
 
@@ -519,7 +545,9 @@ describe("meetingsRouter", () => {
         { user: { id: PARTICIPANT_USER_ID_1 } },
       );
 
-      await expect(caller.joinPoll({ slug: "abcdefghij" })).rejects.toMatchObject({
+      await expect(
+        caller.joinPoll({ slug: "abcdefghij" }),
+      ).rejects.toMatchObject({
         code: "FORBIDDEN",
       });
       expect(upsertMock).not.toHaveBeenCalled();
@@ -556,7 +584,9 @@ describe("meetingsRouter", () => {
         { user: { id: PARTICIPANT_USER_ID_1 } },
       );
 
-      await expect(caller.joinPoll({ slug: "abcdefghij" })).rejects.toMatchObject({
+      await expect(
+        caller.joinPoll({ slug: "abcdefghij" }),
+      ).rejects.toMatchObject({
         code: "NOT_FOUND",
       });
     });
@@ -571,7 +601,10 @@ describe("meetingsRouter", () => {
       const caller = makeCaller(
         meetingsRouter.createCaller,
         {
-          meetingPoll: { findUnique: pollOwnedBy(CREATOR_ID), update: updateMock },
+          meetingPoll: {
+            findUnique: pollOwnedBy(CREATOR_ID),
+            update: updateMock,
+          },
         },
         { user: { id: CREATOR_ID } },
       );
@@ -598,7 +631,10 @@ describe("meetingsRouter", () => {
       const caller = makeCaller(
         meetingsRouter.createCaller,
         {
-          meetingPoll: { findUnique: pollOwnedBy(CREATOR_ID), update: updateMock },
+          meetingPoll: {
+            findUnique: pollOwnedBy(CREATOR_ID),
+            update: updateMock,
+          },
         },
         { user: { id: PARTICIPANT_USER_ID_1 } },
       );
@@ -617,7 +653,10 @@ describe("meetingsRouter", () => {
       );
 
       await expect(
-        caller.updatePoll({ slug: "abcdefghij", links: ["javascript:alert(1)"] }),
+        caller.updatePoll({
+          slug: "abcdefghij",
+          links: ["javascript:alert(1)"],
+        }),
       ).rejects.toThrow();
     });
   });
@@ -737,7 +776,12 @@ describe("meetingsRouter", () => {
           course: { id: "c-1", code: "IS216", name: "Web App Dev" },
           section: "G2",
           teamIdentifier: "Team Bravo",
-          acadTerm: { id: "t-1", acadYearStart: 2026, acadYearEnd: 2027, term: "1" },
+          acadTerm: {
+            id: "t-1",
+            acadYearStart: 2026,
+            acadYearEnd: 2027,
+            term: "1",
+          },
           createdAt: new Date("2026-09-28"),
           updatedAt: new Date("2026-09-28"),
           _count: { participants: 2 },

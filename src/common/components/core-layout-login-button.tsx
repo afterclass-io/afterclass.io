@@ -10,10 +10,7 @@ export const CoreLayoutLoginButton = () => {
     : "/account/auth/login";
 
   return (
-    <ProgressLink
-      href={href}
-      data-test="login"
-    >
+    <ProgressLink href={href} data-test="login">
       Login
     </ProgressLink>
   );

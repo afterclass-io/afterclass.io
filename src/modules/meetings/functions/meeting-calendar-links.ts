@@ -17,7 +17,10 @@ export type MeetingCalendarParams = {
  */
 export function formatIcsDate(d: Date | string): string {
   const date = typeof d === "string" ? new Date(d) : d;
-  return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  return date
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}/, "");
 }
 
 /**
@@ -43,7 +46,10 @@ export function generateGoogleCalendarMeetingUrl(
   const url = new URL("https://calendar.google.com/calendar/render");
   url.searchParams.set("action", "TEMPLATE");
   url.searchParams.set("text", title);
-  url.searchParams.set("dates", `${formatIcsDate(start)}/${formatIcsDate(end)}`);
+  url.searchParams.set(
+    "dates",
+    `${formatIcsDate(start)}/${formatIcsDate(end)}`,
+  );
 
   if (description) {
     url.searchParams.set("details", description);
@@ -90,7 +96,9 @@ export function generateIcsMeetingContent(
     product: "Meeting Coordinator",
     events: [
       {
-        id: uid ? `${uid}@afterclass.io` : `meeting-${Date.now()}@afterclass.io`,
+        id: uid
+          ? `${uid}@afterclass.io`
+          : `meeting-${Date.now()}@afterclass.io`,
         start,
         end,
         summary: title,

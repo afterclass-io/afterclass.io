@@ -98,4 +98,3 @@ describe("computeGroupTickLayout", () => {
     expect(layout.get(2)?.visible).toBe(true);
   });
 });
-

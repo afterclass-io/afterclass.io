@@ -55,7 +55,12 @@ describe("getFeedData", () => {
                 course: { code: "IS111", name: "Python", creditUnits: 1 },
                 professor: { name: "Prof X" },
                 classTimings: [
-                  { dayOfWeek: "MON", startTime: "0800", endTime: "1200", venue: "SR1" },
+                  {
+                    dayOfWeek: "MON",
+                    startTime: "0800",
+                    endTime: "1200",
+                    venue: "SR1",
+                  },
                 ],
                 classExamTimings: [],
               },
@@ -80,7 +85,12 @@ describe("getFeedData", () => {
           professorName: null, // omitProfessorName — no PII in the iCal feed
           creditUnits: 1,
           timings: [
-            { dayOfWeek: "MON", startTime: "0800", endTime: "1200", venue: "SR1" },
+            {
+              dayOfWeek: "MON",
+              startTime: "0800",
+              endTime: "1200",
+              venue: "SR1",
+            },
           ],
           examTimings: [],
         },

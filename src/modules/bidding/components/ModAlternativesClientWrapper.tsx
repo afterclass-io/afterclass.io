@@ -45,8 +45,9 @@ export default async function BiddingHistoryPage({
     section = _class[0]!.section;
   }
 
-
-  const professors = await api.professors.getProfessorsByClassId({ classId: classId! });
+  const professors = await api.professors.getProfessorsByClassId({
+    classId: classId!,
+  });
 
   const [bidResults, bidPrediction, safetyFactor] = await Promise.all([
     api.bidResults.getBy({ courseCode, section, classId }),
@@ -88,12 +89,13 @@ export default async function BiddingHistoryPage({
       size: br.beforeProcessVacancy - br.afterProcessVacancy!,
     }));
 
-
   return (
     <div className="flex w-160 flex-col justify-center gap-6 pt-2">
       <Card>
         <CardHeader>
-          <CardTitle className="pt-2 text-2xl">Historical Bidding Trend</CardTitle>
+          <CardTitle className="pt-2 text-2xl">
+            Historical Bidding Trend
+          </CardTitle>
           <CardDescription className="flex flex-col gap-2">
             <div>
               {courseCode} {section} - historical bids across academic terms and
@@ -161,11 +163,11 @@ export default async function BiddingHistoryPage({
         />
       )}
 
-        <ModAlternativesCard
-          professors={professors}
-          sessions={_class[0]!.classTimings || ''}
-          courseCode={courseCode}
-        />
+      <ModAlternativesCard
+        professors={professors}
+        sessions={_class[0]!.classTimings || ""}
+        courseCode={courseCode}
+      />
     </div>
   );
 }

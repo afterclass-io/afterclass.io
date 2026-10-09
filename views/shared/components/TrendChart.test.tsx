@@ -38,9 +38,9 @@ describe("TrendChart", () => {
     // manyTerms spans 4 terms across 5 points; the shared AY2024/25-T1
     // label renders once at the segment center.
     expect(termLabels).toHaveLength(4);
-    expect(
-      termLabels.filter((t) => t.textContent === "24/25-T1"),
-    ).toHaveLength(1);
+    expect(termLabels.filter((t) => t.textContent === "24/25-T1")).toHaveLength(
+      1,
+    );
   });
 
   it("shortens term labels and keeps all labels inside the viewBox", () => {

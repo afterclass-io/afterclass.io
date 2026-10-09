@@ -65,9 +65,7 @@ export function ClassInfoCard({
             <p className="font-medium">{section}</p>
           </div>
           <div className="flex flex-col gap-0.5">
-            <span className="text-muted-foreground text-xs">
-              Credit Units
-            </span>
+            <span className="text-muted-foreground text-xs">Credit Units</span>
             <p className="font-medium">{creditUnits}</p>
           </div>
         </div>

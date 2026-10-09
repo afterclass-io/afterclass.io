@@ -31,7 +31,12 @@ export const getMyTimetableDetail = protectedProcedure
                   id: true,
                   section: true,
                   course: {
-                    select: { id: true, code: true, name: true, creditUnits: true },
+                    select: {
+                      id: true,
+                      code: true,
+                      name: true,
+                      creditUnits: true,
+                    },
                   },
                   professor: {
                     select: { id: true, name: true },
@@ -76,7 +81,12 @@ export const getMyTimetableDetail = protectedProcedure
                   id: true,
                   section: true,
                   course: {
-                    select: { id: true, code: true, name: true, creditUnits: true },
+                    select: {
+                      id: true,
+                      code: true,
+                      name: true,
+                      creditUnits: true,
+                    },
                   },
                   professor: {
                     select: { id: true, name: true },
@@ -108,50 +118,55 @@ export const getMyTimetableDetail = protectedProcedure
       });
 
       userTimetable ??= await ctx.db.userTimetable.findFirst({
-          where: { userId: ctx.session.user.id, acadTermId },
-          orderBy: { createdAt: "asc" },
-          select: {
-            id: true,
-            name: true,
-            isActive: true,
-            acadTermId: true,
-            slots: {
-              select: {
-                class: {
-                  select: {
-                    id: true,
-                    section: true,
-                    course: {
-                      select: { id: true, code: true, name: true, creditUnits: true },
+        where: { userId: ctx.session.user.id, acadTermId },
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          name: true,
+          isActive: true,
+          acadTermId: true,
+          slots: {
+            select: {
+              class: {
+                select: {
+                  id: true,
+                  section: true,
+                  course: {
+                    select: {
+                      id: true,
+                      code: true,
+                      name: true,
+                      creditUnits: true,
                     },
-                    professor: {
-                      select: { id: true, name: true },
+                  },
+                  professor: {
+                    select: { id: true, name: true },
+                  },
+                  classTimings: {
+                    select: {
+                      id: true,
+                      dayOfWeek: true,
+                      startTime: true,
+                      endTime: true,
+                      venue: true,
                     },
-                    classTimings: {
-                      select: {
-                        id: true,
-                        dayOfWeek: true,
-                        startTime: true,
-                        endTime: true,
-                        venue: true,
-                      },
-                    },
-                    classExamTimings: {
-                      select: {
-                        id: true,
-                        date: true,
-                        dayOfWeek: true,
-                        startTime: true,
-                        endTime: true,
-                        venue: true,
-                      },
+                  },
+                  classExamTimings: {
+                    select: {
+                      id: true,
+                      date: true,
+                      dayOfWeek: true,
+                      startTime: true,
+                      endTime: true,
+                      venue: true,
                     },
                   },
                 },
               },
             },
           },
-        });
+        },
+      });
     } else {
       userTimetable = await ctx.db.userTimetable.findFirst({
         where: { userId: ctx.session.user.id, isActive: true },
@@ -167,7 +182,12 @@ export const getMyTimetableDetail = protectedProcedure
                   id: true,
                   section: true,
                   course: {
-                    select: { id: true, code: true, name: true, creditUnits: true },
+                    select: {
+                      id: true,
+                      code: true,
+                      name: true,
+                      creditUnits: true,
+                    },
                   },
                   professor: {
                     select: { id: true, name: true },

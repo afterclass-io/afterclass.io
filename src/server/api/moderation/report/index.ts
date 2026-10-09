@@ -74,7 +74,10 @@ export const report = verifiedProcedure
     if (count > 0) {
       runAfterResponse(async () => {
         const { runModerationTask } = await import("@/server/moderation/run");
-        await runModerationTask({ surface: input.surface, itemId: item.itemId });
+        await runModerationTask({
+          surface: input.surface,
+          itemId: item.itemId,
+        });
       });
     }
     return REPORT_ACK;

@@ -154,7 +154,7 @@ export function BidPredictionPanel({
                 }
                 wrapperClassName="px-1 pt-1 pb-2"
               />
-              <p className="text-muted-foreground text-xs pt-5">
+              <p className="text-muted-foreground pt-5 text-xs">
                 Recommended = predicted + multiplier × uncertainty; higher
                 confidence widens the safety band.{" "}
                 <Link

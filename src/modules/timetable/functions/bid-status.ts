@@ -1,9 +1,5 @@
 export type UserBidStatus =
-  | "PLANNED"
-  | "SECURED"
-  | "DROPPED"
-  | "CANCELLED"
-  | "PARTICIPATED";
+  "PLANNED" | "SECURED" | "DROPPED" | "CANCELLED" | "PARTICIPATED";
 
 export const BID_STATUS_LABELS: Record<UserBidStatus, string> = {
   PLANNED: "Planned",

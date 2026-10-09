@@ -51,7 +51,9 @@ describe("MODERATION_SURFACES", () => {
       });
       await expect(
         review.readText(asDb({ reviews: { findUnique } }), "rv1"),
-      ).resolves.toBe("Rating: 4 out of 5\nReview:\nBody text\n\nTips:\nTip text");
+      ).resolves.toBe(
+        "Rating: 4 out of 5\nReview:\nBody text\n\nTips:\nTip text",
+      );
       expect(findUnique).toHaveBeenCalledWith({
         where: { id: "rv1" },
         select: { rating: true, body: true, tips: true },

@@ -25,7 +25,9 @@ describe("bidChipVariant", () => {
     expect(bidChipVariant("PLANNED")).toBe("bg-info/15 text-info");
     expect(bidChipVariant("DROPPED")).toBe("bg-error/15 text-error");
     expect(bidChipVariant("CANCELLED")).toBe("bg-error/15 text-error");
-    expect(bidChipVariant("PARTICIPATED")).toBe("bg-muted text-muted-foreground");
+    expect(bidChipVariant("PARTICIPATED")).toBe(
+      "bg-muted text-muted-foreground",
+    );
   });
 
   it("falls back to the muted variant for an unknown status (impossible state)", () => {

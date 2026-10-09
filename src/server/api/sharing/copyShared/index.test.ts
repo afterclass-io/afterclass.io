@@ -13,10 +13,12 @@ const source = {
 };
 
 /** loadCopyableRoadmap uses userRoadmap.findUnique; copyRoadmapToUser uses userRoadmap.create. */
-function makeDb(opts: {
-  findUnique?: ReturnType<typeof vi.fn>;
-  create?: ReturnType<typeof vi.fn>;
-} = {}) {
+function makeDb(
+  opts: {
+    findUnique?: ReturnType<typeof vi.fn>;
+    create?: ReturnType<typeof vi.fn>;
+  } = {},
+) {
   return {
     userRoadmap: {
       findUnique: opts.findUnique ?? vi.fn().mockResolvedValue(source),

@@ -147,7 +147,11 @@ export function useRemoveSlotMutation() {
  * wiring identical to removeSlot — the picked section is mapped through the
  * shared `toArrangedClass` so the optimistic slot matches the server shape.
  */
-export function useAddSlotMutation({ sections = [], courseCode, onDone }: SlotMutationOptions = {}) {
+export function useAddSlotMutation({
+  sections = [],
+  courseCode,
+  onDone,
+}: SlotMutationOptions = {}) {
   const activeTimetableId = useAtomValue(activeTimetableIdAtom);
   const utils = api.useUtils();
 
@@ -200,7 +204,9 @@ export function useAddSlotMutation({ sections = [], courseCode, onDone }: SlotMu
     onSuccess: (data) => {
       if (data.created) {
         toast.success(
-          courseCode ? `Added ${courseCode} to timetable` : "Added class to timetable",
+          courseCode
+            ? `Added ${courseCode} to timetable`
+            : "Added class to timetable",
         );
       } else {
         toast.info(
@@ -218,7 +224,11 @@ export function useAddSlotMutation({ sections = [], courseCode, onDone }: SlotMu
  * Swap a course to another section (course already present). Mirrors the
  * server: delete every slot of the course, then create the picked section.
  */
-export function useSetSlotSectionMutation({ sections = [], courseCode, onDone }: SlotMutationOptions = {}) {
+export function useSetSlotSectionMutation({
+  sections = [],
+  courseCode,
+  onDone,
+}: SlotMutationOptions = {}) {
   const activeTimetableId = useAtomValue(activeTimetableIdAtom);
   const utils = api.useUtils();
 
@@ -247,7 +257,9 @@ export function useSetSlotSectionMutation({ sections = [], courseCode, onDone }:
                 slots: [
                   // The server deletes every slot of the course, then
                   // creates the picked section — mirror that here.
-                  ...old.slots.filter((s) => s.courseCode !== picked.courseCode),
+                  ...old.slots.filter(
+                    (s) => s.courseCode !== picked.courseCode,
+                  ),
                   toArrangedClass(toSlotWithClass(picked)),
                 ],
               }
@@ -266,11 +278,12 @@ export function useSetSlotSectionMutation({ sections = [], courseCode, onDone }:
         utils.timetable.getArrangement.invalidate({
           timetableId: activeTimetableId ?? "",
         }),
-      onError: () =>
-        toast.error("Failed to swap section. Please try again."),
+      onError: () => toast.error("Failed to swap section. Please try again."),
     }),
     onSuccess: () => {
-      toast.success(courseCode ? `Swapped section for ${courseCode}` : "Swapped section");
+      toast.success(
+        courseCode ? `Swapped section for ${courseCode}` : "Swapped section",
+      );
       onDone?.();
     },
   });

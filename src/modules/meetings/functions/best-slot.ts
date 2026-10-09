@@ -22,8 +22,10 @@ export function findTopSlots(
   }
 
   ranked.sort((a, b) => {
-    if (b.availableCount !== a.availableCount) return b.availableCount - a.availableCount;
-    if (b.ifNeededCount !== a.ifNeededCount) return b.ifNeededCount - a.ifNeededCount;
+    if (b.availableCount !== a.availableCount)
+      return b.availableCount - a.availableCount;
+    if (b.ifNeededCount !== a.ifNeededCount)
+      return b.ifNeededCount - a.ifNeededCount;
     return a.slotIndex - b.slotIndex;
   });
 

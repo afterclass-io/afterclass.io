@@ -125,7 +125,11 @@ export function useAvailabilityPainter({
 
   const extendDrag = (slot: number) => {
     const last = lastSlotRef.current;
-    if (!isDraggingRef.current || last === null || touchedRef.current.has(slot)) {
+    if (
+      !isDraggingRef.current ||
+      last === null ||
+      touchedRef.current.has(slot)
+    ) {
       return;
     }
     for (const crossed of slotsBetween(last, slot, slotsPerDay)) paint(crossed);

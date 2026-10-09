@@ -11,9 +11,11 @@ const router = createTRPCRouter({ recordShare });
 function makeDb() {
   return {
     userRoadmap: {
-      findFirst: vi
-        .fn()
-        .mockResolvedValue({ id: "r1", visibility: "PUBLIC", publishedAt: new Date() }),
+      findFirst: vi.fn().mockResolvedValue({
+        id: "r1",
+        visibility: "PUBLIC",
+        publishedAt: new Date(),
+      }),
       updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
   };
@@ -41,9 +43,11 @@ describe("roadmaps.recordShare", () => {
     dbMock.userRoadmap.findFirst.mockResolvedValue(null);
     const caller = makeCaller(router.createCaller, dbMock, null);
 
-    await expect(caller.recordShare({ roadmapId: "r1" })).rejects.toMatchObject({
-      code: "NOT_FOUND",
-    });
+    await expect(caller.recordShare({ roadmapId: "r1" })).rejects.toMatchObject(
+      {
+        code: "NOT_FOUND",
+      },
+    );
     expect(dbMock.userRoadmap.updateMany).not.toHaveBeenCalled();
   });
 });

@@ -29,7 +29,13 @@ vi.mock("recharts", async (importOriginal) => {
     }) => (
       <div style={{ width, height }}>
         {React.isValidElement(children)
-          ? React.cloneElement(children as React.ReactElement<{ width?: number; height?: number }>, { width, height })
+          ? React.cloneElement(
+              children as React.ReactElement<{
+                width?: number;
+                height?: number;
+              }>,
+              { width, height },
+            )
           : children}
       </div>
     ),

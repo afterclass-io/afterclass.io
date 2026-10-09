@@ -16,7 +16,9 @@ import {
 export const copyShared = protectedProcedure
   .input(z.object({ token: z.string() }))
   .mutation(async ({ ctx, input }) => {
-    const source = await loadCopyableRoadmap(ctx.db, { shareToken: input.token });
+    const source = await loadCopyableRoadmap(ctx.db, {
+      shareToken: input.token,
+    });
 
     if (!source) {
       throw new TRPCError({ code: "NOT_FOUND" });
@@ -30,7 +32,8 @@ export const copyShared = protectedProcedure
         if (code === "P2003") {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to copy roadmap — source contains an invalid course",
+            message:
+              "Failed to copy roadmap — source contains an invalid course",
           });
         }
         if (code === "P2002") {

@@ -50,7 +50,9 @@ export function MeetingGroupPanel({
           <Checkbox
             id={hideIfNeededId}
             checked={hideIfNeeded}
-            onCheckedChange={(checked) => onHideIfNeededChange(Boolean(checked))}
+            onCheckedChange={(checked) =>
+              onHideIfNeededChange(Boolean(checked))
+            }
             data-test="heatmap-hide-if-needed-checkbox"
           />
           <label
@@ -63,7 +65,9 @@ export function MeetingGroupPanel({
 
         {topTimes && topTimes.length > 0 ? (
           <div className="space-y-1.5 pt-1">
-            <p className="text-muted-foreground text-xs font-medium">Top timeslots:</p>
+            <p className="text-muted-foreground text-xs font-medium">
+              Top timeslots:
+            </p>
             <div className="space-y-1">
               {topTimes.map((time) => (
                 <Button
@@ -71,14 +75,14 @@ export function MeetingGroupPanel({
                   variant="outline"
                   size="sm"
                   onClick={time.onSelect}
-                  className="h-auto w-full justify-between gap-1.5 py-1.5 text-xs text-left whitespace-normal"
+                  className="h-auto w-full justify-between gap-1.5 py-1.5 text-left text-xs whitespace-normal"
                   data-test={`meeting-top-time-${time.rank}`}
                 >
-                  <span className="flex items-center gap-1.5 min-w-0">
+                  <span className="flex min-w-0 items-center gap-1.5">
                     <Sparkles className="text-primary size-3.5 shrink-0" />
                     <span className="truncate">{time.label}</span>
                   </span>
-                  <span className="text-muted-foreground shrink-0 text-[11px] font-mono">
+                  <span className="text-muted-foreground shrink-0 font-mono text-[11px]">
                     #{time.rank}
                   </span>
                 </Button>

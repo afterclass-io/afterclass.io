@@ -4,15 +4,12 @@ import type { Mock } from "vitest";
 // vi.mock factories are hoisted above top-level const declarations, so the mock
 // fns must be created via vi.hoisted to avoid a TDZ ("Cannot access ... before
 // initialization") error.
-const {
-  txChatUsageFindUnique,
-  txChatUsageUpsert,
-  txChatUsageUpdateMany,
-} = vi.hoisted(() => ({
-  txChatUsageFindUnique: vi.fn() as Mock,
-  txChatUsageUpsert: vi.fn() as Mock,
-  txChatUsageUpdateMany: vi.fn() as Mock,
-}));
+const { txChatUsageFindUnique, txChatUsageUpsert, txChatUsageUpdateMany } =
+  vi.hoisted(() => ({
+    txChatUsageFindUnique: vi.fn() as Mock,
+    txChatUsageUpsert: vi.fn() as Mock,
+    txChatUsageUpdateMany: vi.fn() as Mock,
+  }));
 
 const tx = {
   chatUsage: {

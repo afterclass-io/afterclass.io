@@ -45,8 +45,7 @@ export function unwrapResultData(
   const text = result.content[0]?.text ?? "";
   const viewProps = result.viewProps;
   let data: unknown =
-    (tool?.toViewProps ? tool.toViewProps(result) : undefined) ??
-    viewProps;
+    (tool?.toViewProps ? tool.toViewProps(result) : undefined) ?? viewProps;
   if (data !== undefined) {
     return { ok: true, data, text, viewProps };
   }

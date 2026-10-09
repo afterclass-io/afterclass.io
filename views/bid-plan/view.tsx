@@ -275,7 +275,8 @@ const BidPlanView: React.FC = () => {
           >
             <span>Remaining</span>
             <span>
-              ${typeof remaining === "number" ? remaining.toFixed(2) : remaining}
+              $
+              {typeof remaining === "number" ? remaining.toFixed(2) : remaining}
             </span>
           </div>
         </div>

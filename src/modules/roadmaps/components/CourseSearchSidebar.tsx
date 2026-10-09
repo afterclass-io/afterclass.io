@@ -167,7 +167,7 @@ export function CourseSearchSidebar({
       </div>
 
       {/* Results (scrolls internally — never scrolls the whole page) */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2 [scrollbar-gutter:stable]">
+      <div className="min-h-0 flex-1 [scrollbar-gutter:stable] overflow-y-auto px-3 py-2">
         {isLoading && (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (

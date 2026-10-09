@@ -19,7 +19,9 @@ vi.mock("@/common/tools/trpc/react", () => ({
       getBySlug: { useQuery: () => ({ isSuccess: false, data: undefined }) },
     },
     courses: {
-      getByCourseCode: { useQuery: () => ({ isSuccess: false, data: undefined }) },
+      getByCourseCode: {
+        useQuery: () => ({ isSuccess: false, data: undefined }),
+      },
     },
     roadmaps: { getById: { useQuery: () => ({ data: undefined }) } },
     meetings: {

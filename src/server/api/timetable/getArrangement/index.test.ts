@@ -61,9 +61,11 @@ describe("timetable.getArrangement", () => {
 
   it("returns empty slots and skips the bid query when the timetable has no classes", async () => {
     const db = makeDb({ id: "tt1", slots: [] });
-    const res = await makeCaller(router.createCaller, db, session).getArrangement(
-      { timetableId: "tt1" },
-    );
+    const res = await makeCaller(
+      router.createCaller,
+      db,
+      session,
+    ).getArrangement({ timetableId: "tt1" });
     expect(res).toEqual({ slots: [], bids: [] });
     expect(db.userBid.findMany).not.toHaveBeenCalled();
   });
@@ -83,9 +85,11 @@ describe("timetable.getArrangement", () => {
       [bidRow],
     );
 
-    const res = await makeCaller(router.createCaller, db, session).getArrangement(
-      { timetableId: "tt1" },
-    );
+    const res = await makeCaller(
+      router.createCaller,
+      db,
+      session,
+    ).getArrangement({ timetableId: "tt1" });
 
     expect(db.userBid.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -100,7 +104,12 @@ describe("timetable.getArrangement", () => {
       section: "G1",
       professorName: "Dr X",
       timings: [
-        { dayOfWeek: "Mon", startTime: "12:00", endTime: "14:00", venue: "SR1" },
+        {
+          dayOfWeek: "Mon",
+          startTime: "12:00",
+          endTime: "14:00",
+          venue: "SR1",
+        },
       ],
     });
     expect(res.slots[1]!.professorName).toBeNull();

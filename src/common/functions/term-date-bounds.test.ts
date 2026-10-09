@@ -17,7 +17,10 @@ const TERM = {
 
 describe("termDateWindow", () => {
   it("reduces timestamps to UTC calendar days", () => {
-    expect(termDateWindow(TERM)).toEqual({ start: "2026-08-17", end: "2026-12-06" });
+    expect(termDateWindow(TERM)).toEqual({
+      start: "2026-08-17",
+      end: "2026-12-06",
+    });
   });
 });
 
@@ -34,20 +37,32 @@ describe("addDaysIso / countDaysInclusive", () => {
   });
 
   it("counts both ends of the range", () => {
-    expect(countDaysInclusive({ start: "2026-10-05", end: "2026-10-05" })).toBe(1);
-    expect(countDaysInclusive({ start: "2026-10-05", end: "2026-10-19" })).toBe(15);
+    expect(countDaysInclusive({ start: "2026-10-05", end: "2026-10-05" })).toBe(
+      1,
+    );
+    expect(countDaysInclusive({ start: "2026-10-05", end: "2026-10-19" })).toBe(
+      15,
+    );
   });
 });
 
 describe("isWithinTerm", () => {
   it("accepts ranges inside and on the term edges", () => {
-    expect(isWithinTerm({ start: "2026-08-17", end: "2026-08-20" }, TERM)).toBe(true);
-    expect(isWithinTerm({ start: "2026-12-01", end: "2026-12-06" }, TERM)).toBe(true);
+    expect(isWithinTerm({ start: "2026-08-17", end: "2026-08-20" }, TERM)).toBe(
+      true,
+    );
+    expect(isWithinTerm({ start: "2026-12-01", end: "2026-12-06" }, TERM)).toBe(
+      true,
+    );
   });
 
   it("rejects ranges that start before or end after the term", () => {
-    expect(isWithinTerm({ start: "2026-08-16", end: "2026-08-20" }, TERM)).toBe(false);
-    expect(isWithinTerm({ start: "2026-12-05", end: "2026-12-07" }, TERM)).toBe(false);
+    expect(isWithinTerm({ start: "2026-08-16", end: "2026-08-20" }, TERM)).toBe(
+      false,
+    );
+    expect(isWithinTerm({ start: "2026-12-05", end: "2026-12-07" }, TERM)).toBe(
+      false,
+    );
   });
 });
 
@@ -58,18 +73,24 @@ describe("clampRangeToTerm", () => {
   });
 
   it("trims ranges that overflow either end", () => {
-    expect(clampRangeToTerm({ start: "2026-08-10", end: "2026-08-20" }, TERM)).toEqual({
+    expect(
+      clampRangeToTerm({ start: "2026-08-10", end: "2026-08-20" }, TERM),
+    ).toEqual({
       start: "2026-08-17",
       end: "2026-08-20",
     });
-    expect(clampRangeToTerm({ start: "2026-12-01", end: "2026-12-20" }, TERM)).toEqual({
+    expect(
+      clampRangeToTerm({ start: "2026-12-01", end: "2026-12-20" }, TERM),
+    ).toEqual({
       start: "2026-12-01",
       end: "2026-12-06",
     });
   });
 
   it("collapses ranges entirely outside the term onto its nearest day", () => {
-    expect(clampRangeToTerm({ start: "2027-01-10", end: "2027-01-12" }, TERM)).toEqual({
+    expect(
+      clampRangeToTerm({ start: "2027-01-10", end: "2027-01-12" }, TERM),
+    ).toEqual({
       start: "2026-12-06",
       end: "2026-12-06",
     });

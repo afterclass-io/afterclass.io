@@ -39,16 +39,20 @@ describe("userBids.update", () => {
 
   it("requires an authenticated caller", async () => {
     const caller = makeCaller(router.createCaller, makeDb(), null);
-    await expect(caller.update({ id: "b1", bidAmount: 50 })).rejects.toMatchObject(
-      { code: "UNAUTHORIZED" },
-    );
+    await expect(
+      caller.update({ id: "b1", bidAmount: 50 }),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
 
   it("updates amount and notes without validating the class/window pair", async () => {
     const dbMock = makeDb();
     const caller = makeCaller(router.createCaller, dbMock);
 
-    const result = await caller.update({ id: "b1", bidAmount: 120, notes: "hi" });
+    const result = await caller.update({
+      id: "b1",
+      bidAmount: 120,
+      notes: "hi",
+    });
 
     expect(result).toEqual({ id: "b1" });
     expect(dbMock.bidWindow.findUnique).not.toHaveBeenCalled();
@@ -91,12 +95,14 @@ describe("userBids.update", () => {
   });
 
   it("throws FORBIDDEN when the bid belongs to another user", async () => {
-    const dbMock = makeDb({ bid: { userId: "someone-else", classId: "c1", bidWindowId: 5 } });
+    const dbMock = makeDb({
+      bid: { userId: "someone-else", classId: "c1", bidWindowId: 5 },
+    });
     const caller = makeCaller(router.createCaller, dbMock);
 
-    await expect(caller.update({ id: "b1", bidAmount: 50 })).rejects.toMatchObject(
-      { code: "FORBIDDEN" },
-    );
+    await expect(
+      caller.update({ id: "b1", bidAmount: 50 }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
     expect(dbMock.userBid.update).not.toHaveBeenCalled();
   });
 

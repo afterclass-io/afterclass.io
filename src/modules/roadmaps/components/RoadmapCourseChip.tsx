@@ -67,7 +67,7 @@ function CourseChipInner({
         <button
           type="button"
           aria-label={`Remove ${courseCode} from roadmap`}
-          className="hover:bg-background/80 absolute top-1 right-1 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+          className="hover:bg-background/80 text-muted-foreground hover:text-foreground absolute top-1 right-1 rounded p-0.5 transition-colors"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();

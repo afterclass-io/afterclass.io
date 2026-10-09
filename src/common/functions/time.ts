@@ -50,4 +50,3 @@ export function minutesToTimeString(minutes: number): string {
   const m = minutes % 60;
   return formatTimeParts(h, m);
 }
-

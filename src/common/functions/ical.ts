@@ -23,7 +23,10 @@ export type CreateIcsFeedOptions = {
 export function createIcsFeed(options: CreateIcsFeedOptions): string {
   const cal = ical({
     name: options.name,
-    prodId: { company: "afterclass.io", product: options.product ?? "calendar" },
+    prodId: {
+      company: "afterclass.io",
+      product: options.product ?? "calendar",
+    },
     timezone: "Asia/Singapore",
     method: ICalCalendarMethod.PUBLISH,
   });

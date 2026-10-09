@@ -24,13 +24,7 @@ import {
   StatisticsTableIcon,
   TelegramIcon,
 } from "@/common/components/icons";
-import {
-  BotIcon,
-  FileTextIcon,
-  LockIcon,
-  PlugIcon,
-  Users,
-} from "lucide-react";
+import { BotIcon, FileTextIcon, LockIcon, PlugIcon, Users } from "lucide-react";
 import { env } from "@/env";
 import { toTitleCase } from "@/common/functions";
 import Link from "next/link";

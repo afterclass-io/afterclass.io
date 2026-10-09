@@ -31,7 +31,12 @@ export const getPollBySlug = publicProcedure
         section: true,
         teamIdentifier: true,
         acadTerm: {
-          select: { id: true, acadYearStart: true, acadYearEnd: true, term: true },
+          select: {
+            id: true,
+            acadYearStart: true,
+            acadYearEnd: true,
+            term: true,
+          },
         },
         participants: {
           orderBy: { createdAt: "asc" },

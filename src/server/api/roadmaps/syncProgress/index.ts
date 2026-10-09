@@ -100,9 +100,7 @@ export const syncProgress = protectedProcedure
         slots: { select: { class: { select: { courseId: true } } } },
       },
     });
-    const slotsByTerm = new Map(
-      timetables.map((t) => [t.acadTermId, t.slots]),
-    );
+    const slotsByTerm = new Map(timetables.map((t) => [t.acadTermId, t.slots]));
 
     // ---- For each plan target, pull courses from the active timetable ----
     const toCreate: {

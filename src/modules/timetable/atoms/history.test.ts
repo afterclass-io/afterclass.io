@@ -21,7 +21,8 @@ describe("history atoms", () => {
 
   it("caps the undo stack at HISTORY_LIMIT", () => {
     const store = createStore();
-    for (let i = 0; i < HISTORY_LIMIT + 10; i++) store.set(pushHistoryAtom, add);
+    for (let i = 0; i < HISTORY_LIMIT + 10; i++)
+      store.set(pushHistoryAtom, add);
     expect(store.get(undoStackAtom)).toHaveLength(HISTORY_LIMIT);
   });
 });
@@ -36,7 +37,9 @@ describe("invertAction", () => {
   });
 
   it("inverts removeSlot into addSlot", () => {
-    expect(invertAction({ type: "removeSlot", timetableId: "t1", classId: "c1" })).toEqual({
+    expect(
+      invertAction({ type: "removeSlot", timetableId: "t1", classId: "c1" }),
+    ).toEqual({
       type: "addSlot",
       timetableId: "t1",
       classId: "c1",
@@ -62,7 +65,14 @@ describe("invertAction", () => {
   });
 
   it("inverts a notes edit back to the previous notes", () => {
-    expect(invertAction({ type: "editNotes", bidId: "b1", fromNotes: "old", toNotes: "new" })).toEqual({
+    expect(
+      invertAction({
+        type: "editNotes",
+        bidId: "b1",
+        fromNotes: "old",
+        toNotes: "new",
+      }),
+    ).toEqual({
       type: "editNotes",
       bidId: "b1",
       fromNotes: "new",

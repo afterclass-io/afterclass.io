@@ -19,8 +19,16 @@ vi.mock("@/common/tools/trpc/react", () => ({
       countEvent: { useQuery: () => ({ data: 0, isPending: false }) },
     },
     reviewVotes: {
-      getByUser: { useQuery: () => ({ data: null }), getData: vi.fn(), setData: vi.fn() },
-      count: { useQuery: () => ({ data: 0 }), invalidate: vi.fn(), setData: vi.fn() },
+      getByUser: {
+        useQuery: () => ({ data: null }),
+        getData: vi.fn(),
+        setData: vi.fn(),
+      },
+      count: {
+        useQuery: () => ({ data: 0 }),
+        invalidate: vi.fn(),
+        setData: vi.fn(),
+      },
       voteOrUnvote: { useMutation: () => ({ mutate: vi.fn() }) },
     },
     reviewReactions: {

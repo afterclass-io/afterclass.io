@@ -32,7 +32,9 @@ describe("summarizeRangeAvailability", () => {
   ];
 
   it("counts who is free for every slot and who needs an if-needed slot", () => {
-    expect(summarizeRangeAvailability(participants, { start: 1, end: 3 })).toEqual({
+    expect(
+      summarizeRangeAvailability(participants, { start: 1, end: 3 }),
+    ).toEqual({
       free: 1,
       maybe: 1,
       total: 3,
@@ -40,7 +42,9 @@ describe("summarizeRangeAvailability", () => {
   });
 
   it("treats a single slot as a one-slot range", () => {
-    expect(summarizeRangeAvailability(participants, { start: 1, end: 1 })).toEqual({
+    expect(
+      summarizeRangeAvailability(participants, { start: 1, end: 1 }),
+    ).toEqual({
       free: 3,
       maybe: 0,
       total: 3,

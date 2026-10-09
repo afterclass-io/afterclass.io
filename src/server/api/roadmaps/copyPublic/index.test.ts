@@ -34,9 +34,9 @@ describe("roadmaps.copyPublic", () => {
 
   it("requires an authenticated caller", async () => {
     const caller = makeCaller(router.createCaller, makeDb(), null);
-    await expect(
-      caller.copyPublic({ roadmapId: "r1" }),
-    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    await expect(caller.copyPublic({ roadmapId: "r1" })).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
   });
 
   it("clones a public roadmap into the caller's account", async () => {
@@ -69,9 +69,9 @@ describe("roadmaps.copyPublic", () => {
       router.createCaller,
       makeDb({ findFirst: vi.fn().mockResolvedValue(null) }),
     );
-    await expect(
-      caller.copyPublic({ roadmapId: "r1" }),
-    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(caller.copyPublic({ roadmapId: "r1" })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
   });
 
   it("throws BAD_REQUEST when the caller already owns the source", async () => {
@@ -83,9 +83,9 @@ describe("roadmaps.copyPublic", () => {
         create,
       }),
     );
-    await expect(
-      caller.copyPublic({ roadmapId: "r1" }),
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(caller.copyPublic({ roadmapId: "r1" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
     expect(create).not.toHaveBeenCalled();
   });
 
@@ -94,9 +94,9 @@ describe("roadmaps.copyPublic", () => {
       router.createCaller,
       makeDb({ create: vi.fn().mockRejectedValue({ code: "P2002" }) }),
     );
-    await expect(
-      caller.copyPublic({ roadmapId: "r1" }),
-    ).rejects.toMatchObject({ code: "CONFLICT" });
+    await expect(caller.copyPublic({ roadmapId: "r1" })).rejects.toMatchObject({
+      code: "CONFLICT",
+    });
   });
 
   it("maps a Prisma FK-constraint error (P2003) to INTERNAL_SERVER_ERROR", async () => {
@@ -104,9 +104,7 @@ describe("roadmaps.copyPublic", () => {
       router.createCaller,
       makeDb({ create: vi.fn().mockRejectedValue({ code: "P2003" }) }),
     );
-    await expect(
-      caller.copyPublic({ roadmapId: "r1" }),
-    ).rejects.toMatchObject({
+    await expect(caller.copyPublic({ roadmapId: "r1" })).rejects.toMatchObject({
       code: "INTERNAL_SERVER_ERROR",
       message: "Failed to copy roadmap — source contains an invalid course",
     });
@@ -117,6 +115,8 @@ describe("roadmaps.copyPublic", () => {
       router.createCaller,
       makeDb({ create: vi.fn().mockRejectedValue(new Error("boom")) }),
     );
-    await expect(caller.copyPublic({ roadmapId: "r1" })).rejects.toThrow("boom");
+    await expect(caller.copyPublic({ roadmapId: "r1" })).rejects.toThrow(
+      "boom",
+    );
   });
 });

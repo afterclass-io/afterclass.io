@@ -17,9 +17,7 @@ describe("buildCalendarLinks", () => {
 
   it("swaps http for webcal in local development", () => {
     const links = buildCalendarLinks("http://localhost:3000", "tok");
-    expect(links.subscribeUrl).toBe(
-      "webcal://localhost:3000/api/ical/tok.ics",
-    );
+    expect(links.subscribeUrl).toBe("webcal://localhost:3000/api/ical/tok.ics");
   });
 
   it("builds one-step subscribe URLs for Google, Apple and Outlook", () => {

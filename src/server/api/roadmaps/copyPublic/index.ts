@@ -30,7 +30,8 @@ export const copyPublic = protectedProcedure
         if (code === "P2003") {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to copy roadmap — source contains an invalid course",
+            message:
+              "Failed to copy roadmap — source contains an invalid course",
           });
         }
         if (code === "P2002") {

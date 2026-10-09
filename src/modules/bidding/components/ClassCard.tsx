@@ -51,14 +51,14 @@ export const ClassCard = ({
     >
       <div className="flex w-full flex-col items-start gap-1">
         <div className="flex items-center gap-2">
-          <Heading className="text-primary text-xl tracking-tight ">
+          <Heading className="text-primary text-xl tracking-tight">
             {course.code}
           </Heading>
           <Tag variant="soft" color="primary" size="sm" deletable={false}>
             {section}
           </Tag>
         </div>
-        <Heading className="w-full  font-bold tracking-tight whitespace-normal">
+        <Heading className="w-full font-bold tracking-tight whitespace-normal">
           {course.name}
         </Heading>
 
@@ -77,9 +77,7 @@ export const ClassCard = ({
               <div key={index}>
                 <div className="flex items-center gap-1">
                   <ClockIcon size={16} className="mr-1" />
-                  <span className="max-w-16 text-sm">
-                    {timing.dayOfWeek}
-                  </span>
+                  <span className="max-w-16 text-sm">{timing.dayOfWeek}</span>
                   <span className="text-sm">
                     {timing.startTime}-{timing.endTime}
                   </span>
@@ -95,15 +93,18 @@ export const ClassCard = ({
               </div>
             ))}
             {classTiming.length > 1 && (
-              <span className="text-muted-foreground text-xs pl-6">
-                +{classTiming.length - 1} more session{classTiming.length - 1 > 1 ? "s" : ""}
+              <span className="text-muted-foreground pl-6 text-xs">
+                +{classTiming.length - 1} more session
+                {classTiming.length - 1 > 1 ? "s" : ""}
               </span>
             )}
           </>
         ) : (
           <div className="flex items-center gap-1">
             <ClockIcon size={16} className="mr-1" />
-            <div className="text-muted-foreground text-sm">No class timings</div>
+            <div className="text-muted-foreground text-sm">
+              No class timings
+            </div>
           </div>
         )}
       </div>
@@ -114,13 +115,13 @@ export const ClassCard = ({
             <div key={index}>
               <div className="flex items-center gap-1">
                 <MemoIcon size={16} className="mr-1" />
-                <span className="text-sm ">
+                <span className="text-sm">
                   {timing.date
                     ? formatDateSGT(timing.date, {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })
                     : ""}
                   <br></br>
                   {timing.dayOfWeek}&nbsp;

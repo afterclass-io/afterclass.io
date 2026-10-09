@@ -133,7 +133,7 @@ export function DateRangePicker({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-auto p-0 overflow-hidden shadow-lg border rounded-xl"
+        className="w-auto overflow-hidden rounded-xl border p-0 shadow-lg"
       >
         <Calendar
           mode="range"
@@ -149,9 +149,9 @@ export function DateRangePicker({
         />
 
         {presets.length > 0 && (
-          <div className="border-t border-border/60 bg-muted/20 px-3 py-2.5">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] font-medium text-muted-foreground mr-1 select-none">
+          <div className="border-border/60 bg-muted/20 border-t px-3 py-2.5">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-muted-foreground mr-1 text-[11px] font-medium select-none">
                 Duration:
               </span>
               {presets.map((days) => {
@@ -162,10 +162,10 @@ export function DateRangePicker({
                     type="button"
                     onClick={() => applyPreset(days)}
                     className={cn(
-                      "h-6 px-2.5 rounded-full text-xs font-medium transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                      "focus-visible:ring-ring h-6 cursor-pointer rounded-full px-2.5 text-xs font-medium transition-colors select-none focus-visible:ring-1 focus-visible:outline-none",
                       isActive
                         ? "bg-primary text-primary-foreground font-semibold shadow-xs"
-                        : "bg-background text-muted-foreground border border-border/70 hover:bg-muted hover:text-foreground hover:border-border",
+                        : "bg-background text-muted-foreground border-border/70 hover:bg-muted hover:text-foreground hover:border-border border",
                     )}
                   >
                     {days} days
@@ -176,17 +176,17 @@ export function DateRangePicker({
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-3 border-t border-border/60 bg-muted/10 px-3 py-2">
-          <div className="min-w-0 text-xs text-muted-foreground truncate">
+        <div className="border-border/60 bg-muted/10 flex items-center justify-between gap-3 border-t px-3 py-2">
+          <div className="text-muted-foreground min-w-0 truncate text-xs">
             {draft?.from && draft?.to ? (
-              <span className="font-medium text-foreground">
+              <span className="text-foreground font-medium">
                 {describeRange({
                   start: toIso(draft.from),
                   end: toIso(draft.to),
                 })}
               </span>
             ) : draft?.from ? (
-              <span className="italic text-muted-foreground">
+              <span className="text-muted-foreground italic">
                 Select end date...
               </span>
             ) : (
@@ -196,7 +196,7 @@ export function DateRangePicker({
           <Button
             type="button"
             size="sm"
-            className="h-7 px-3 text-xs font-medium cursor-pointer"
+            className="h-7 cursor-pointer px-3 text-xs font-medium"
             onClick={() => setOpen(false)}
             disabled={Boolean(draft?.from && !draft?.to)}
           >

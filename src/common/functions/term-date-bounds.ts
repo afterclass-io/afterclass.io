@@ -32,7 +32,10 @@ export function addDaysIso(iso: string, days: number): string {
 
 /** Inclusive number of calendar days in the range. */
 export function countDaysInclusive(range: IsoDateRange): number {
-  return Math.round((isoToUtcMs(range.end) - isoToUtcMs(range.start)) / MS_PER_DAY) + 1;
+  return (
+    Math.round((isoToUtcMs(range.end) - isoToUtcMs(range.start)) / MS_PER_DAY) +
+    1
+  );
 }
 
 export function termDateWindow(term: TermWindow): IsoDateRange {

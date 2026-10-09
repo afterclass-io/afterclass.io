@@ -20,9 +20,7 @@ export type MeetingDetailsPanelProps = MeetingDetails & {
 function DetailsView({ agenda, links }: MeetingDetails) {
   return (
     <div className="space-y-2 text-sm">
-      {agenda && (
-        <p className="whitespace-pre-wrap break-words">{agenda}</p>
-      )}
+      {agenda && <p className="break-words whitespace-pre-wrap">{agenda}</p>}
       {links.length > 0 && (
         <ul className="flex flex-wrap gap-1.5">
           {links.map((link) => (

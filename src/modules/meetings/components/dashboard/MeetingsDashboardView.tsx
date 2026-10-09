@@ -79,7 +79,9 @@ export function MeetingsDashboardView() {
           description="Sign in with your university account to coordinate meeting schedules and view polls you've created or joined."
           action={
             <Button asChild>
-              <Link href={`/account/auth/login?callbackUrl=${encodeURIComponent("/meetings")}`}>
+              <Link
+                href={`/account/auth/login?callbackUrl=${encodeURIComponent("/meetings")}`}
+              >
                 Sign In
               </Link>
             </Button>
@@ -101,7 +103,10 @@ export function MeetingsDashboardView() {
       {session && error && (
         <EmptyState
           title="Failed to load meetings"
-          description={error.message || "An unexpected error occurred while loading your meetings."}
+          description={
+            error.message ||
+            "An unexpected error occurred while loading your meetings."
+          }
         />
       )}
 

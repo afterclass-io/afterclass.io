@@ -9,7 +9,8 @@ export const SGT_TIMEZONE = "Asia/Singapore";
 export const SGT_OFFSET_MINUTES = 480;
 
 export type Weekday = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
-export type WeekdayLabel = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
+export type WeekdayLabel =
+  "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
 export const WEEKDAYS: readonly Weekday[] = [
   "mon",
   "tue",
@@ -121,7 +122,9 @@ export function parseHhmm(value: string): number {
     return 1440;
   }
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) {
-    throw new SlotTimeError(`Invalid time "${value}"; use HH:MM (24-hour, SGT).`);
+    throw new SlotTimeError(
+      `Invalid time "${value}"; use HH:MM (24-hour, SGT).`,
+    );
   }
   const [hoursStr, minsStr] = value.split(":");
   return Number(hoursStr) * 60 + Number(minsStr);
@@ -249,7 +252,9 @@ export function availabilityToRanges(
   },
 ): AvailabilityRange[] {
   const availableSet = new Set(slots.availableSlots);
-  const filteredIfNeeded = slots.ifNeededSlots.filter((s) => !availableSet.has(s));
+  const filteredIfNeeded = slots.ifNeededSlots.filter(
+    (s) => !availableSet.has(s),
+  );
 
   const availRanges: AvailabilityRange[] = slotIndicesToRanges(
     grid,

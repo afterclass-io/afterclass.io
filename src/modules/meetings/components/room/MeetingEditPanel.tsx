@@ -1,7 +1,12 @@
 "use client";
 
 import { useId } from "react";
-import { CalendarCheck, CalendarDays, Eraser, GraduationCap } from "lucide-react";
+import {
+  CalendarCheck,
+  CalendarDays,
+  Eraser,
+  GraduationCap,
+} from "lucide-react";
 
 import { Button } from "@/common/components/button";
 import { Checkbox } from "@/common/components/checkbox";
@@ -104,14 +109,24 @@ export function MeetingEditPanel({
           source="timetable"
           checked={visibleSources.timetable}
           disabled={!hasTimetable}
-          note={isTimetableLoading ? "Loading" : hasTimetable ? undefined : "None found"}
-          onCheckedChange={(visible) => onVisibleSourceChange("timetable", visible)}
+          note={
+            isTimetableLoading
+              ? "Loading"
+              : hasTimetable
+                ? undefined
+                : "None found"
+          }
+          onCheckedChange={(visible) =>
+            onVisibleSourceChange("timetable", visible)
+          }
         />
         {isGoogleConnected ? (
           <CalendarRow
             source="google"
             checked={visibleSources.google}
-            onCheckedChange={(visible) => onVisibleSourceChange("google", visible)}
+            onCheckedChange={(visible) =>
+              onVisibleSourceChange("google", visible)
+            }
           />
         ) : (
           <Button

@@ -18,7 +18,12 @@ export const getArrangement = protectedProcedure
                 id: true,
                 section: true,
                 course: {
-                  select: { id: true, code: true, name: true, creditUnits: true },
+                  select: {
+                    id: true,
+                    code: true,
+                    name: true,
+                    creditUnits: true,
+                  },
                 },
                 professor: {
                   select: { id: true, name: true },

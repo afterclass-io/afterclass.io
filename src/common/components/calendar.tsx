@@ -116,7 +116,8 @@ export function Calendar(props: CalendarProps) {
     });
   };
 
-  const range = mode === "range" ? (selected as DateRange | undefined) : undefined;
+  const range =
+    mode === "range" ? (selected as DateRange | undefined) : undefined;
   const single = mode === "single" ? (selected as Date | undefined) : undefined;
 
   const handleDayClick = (d: Date) => {
@@ -145,7 +146,7 @@ export function Calendar(props: CalendarProps) {
     <div
       data-slot="calendar"
       className={cn(
-        "bg-background p-3 rounded-xl border shadow-xs w-fit select-none",
+        "bg-background w-fit rounded-xl border p-3 shadow-xs select-none",
         className,
       )}
     >
@@ -157,13 +158,14 @@ export function Calendar(props: CalendarProps) {
           disabled={!canPrevMonth}
           aria-label="Previous month"
           className={cn(
-            "size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-            !canPrevMonth && "opacity-25 cursor-not-allowed pointer-events-none",
+            "text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-ring flex size-7 cursor-pointer items-center justify-center rounded-lg transition-colors focus-visible:ring-1 focus-visible:outline-none",
+            !canPrevMonth &&
+              "pointer-events-none cursor-not-allowed opacity-25",
           )}
         >
           <ChevronLeft className="size-4" />
         </button>
-        <span className="text-sm font-semibold text-foreground tracking-tight select-none">
+        <span className="text-foreground text-sm font-semibold tracking-tight select-none">
           {format(activeMonth, "MMMM yyyy")}
         </span>
         <button
@@ -172,8 +174,9 @@ export function Calendar(props: CalendarProps) {
           disabled={!canNextMonth}
           aria-label="Next month"
           className={cn(
-            "size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-            !canNextMonth && "opacity-25 cursor-not-allowed pointer-events-none",
+            "text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-ring flex size-7 cursor-pointer items-center justify-center rounded-lg transition-colors focus-visible:ring-1 focus-visible:outline-none",
+            !canNextMonth &&
+              "pointer-events-none cursor-not-allowed opacity-25",
           )}
         >
           <ChevronRight className="size-4" />
@@ -181,11 +184,11 @@ export function Calendar(props: CalendarProps) {
       </div>
 
       {/* Weekday Headers */}
-      <div className="grid grid-cols-7 text-center pb-1">
+      <div className="grid grid-cols-7 pb-1 text-center">
         {weekDayLabels.map((w) => (
           <div
             key={w}
-            className="h-8 flex items-center justify-center text-[11px] font-semibold text-muted-foreground/80 tracking-wide uppercase"
+            className="text-muted-foreground/80 flex h-8 items-center justify-center text-[11px] font-semibold tracking-wide uppercase"
           >
             {w}
           </div>
@@ -193,7 +196,7 @@ export function Calendar(props: CalendarProps) {
       </div>
 
       {/* Days Grid */}
-      <div className="grid grid-cols-7 gap-y-1 gap-x-0">
+      <div className="grid grid-cols-7 gap-x-0 gap-y-1">
         {days.map((d, index) => {
           const colIndex = index % 7;
           const isCurrentMonth = isSameMonth(d, activeMonth);
@@ -231,20 +234,20 @@ export function Calendar(props: CalendarProps) {
           return (
             <div
               key={d.toISOString()}
-              className="relative h-9 w-full flex items-center justify-center p-0"
+              className="relative flex h-9 w-full items-center justify-center p-0"
             >
               {/* Continuous Range Background Ribbon */}
               {isInRange && hasRangeBoth && !isSingleSelectedDay && (
                 <div
                   aria-hidden="true"
                   className={cn(
-                    "absolute inset-y-1 bg-primary/15 pointer-events-none transition-colors",
+                    "bg-primary/15 pointer-events-none absolute inset-y-1 transition-colors",
                     // Start of range: ribbon starts at center and spans to right edge
-                    isRangeStart && "left-1/2 right-0 rounded-l-full",
+                    isRangeStart && "right-0 left-1/2 rounded-l-full",
                     // End of range: ribbon starts at left edge and spans to center
-                    isRangeEnd && "left-0 right-1/2 rounded-r-full",
+                    isRangeEnd && "right-1/2 left-0 rounded-r-full",
                     // Middle of range: spans entire cell
-                    !isRangeStart && !isRangeEnd && "left-0 right-0",
+                    !isRangeStart && !isRangeEnd && "right-0 left-0",
                     // Row wrapping boundary caps: Sunday rounds left, Saturday rounds right
                     colIndex === 0 && !isRangeStart && "rounded-l-full",
                     colIndex === 6 && !isRangeEnd && "rounded-r-full",
@@ -258,18 +261,21 @@ export function Calendar(props: CalendarProps) {
                 disabled={isDisabled}
                 onClick={() => handleDayClick(d)}
                 className={cn(
-                  "relative z-10 size-8 text-xs font-medium flex items-center justify-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                  "focus-visible:ring-ring relative z-10 flex size-8 cursor-pointer items-center justify-center text-xs font-medium transition-all focus-visible:ring-1 focus-visible:outline-none",
                   // Selected endpoint styling (solid purple circle with crisp contrast)
                   isSelected
-                    ? "rounded-full bg-primary text-primary-foreground font-semibold shadow-xs hover:bg-primary"
+                    ? "bg-primary text-primary-foreground hover:bg-primary rounded-full font-semibold shadow-xs"
                     : isInRange
-                    ? "rounded-full text-primary font-semibold hover:bg-primary/25"
-                    : isCurrentMonth
-                    ? "rounded-full text-foreground hover:bg-muted"
-                    : "rounded-full text-muted-foreground/30 hover:bg-muted/40",
+                      ? "text-primary hover:bg-primary/25 rounded-full font-semibold"
+                      : isCurrentMonth
+                        ? "text-foreground hover:bg-muted rounded-full"
+                        : "text-muted-foreground/30 hover:bg-muted/40 rounded-full",
                   // Today marker when not currently selected
-                  isToday && !isSelected && "font-bold text-primary ring-1 ring-primary/40",
-                  isDisabled && "opacity-25 cursor-not-allowed pointer-events-none",
+                  isToday &&
+                    !isSelected &&
+                    "text-primary ring-primary/40 font-bold ring-1",
+                  isDisabled &&
+                    "pointer-events-none cursor-not-allowed opacity-25",
                 )}
               >
                 {d.getDate()}

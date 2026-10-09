@@ -23,7 +23,14 @@ const handler = (req: NextRequest) =>
     router: appRouter,
     createContext: () => createContext(req),
     responseMeta: ({ type, paths, errors, eagerGeneration }) => ({
-      headers: new Headers(getCacheControlForTrpcRequest({ type, paths, errors, eagerGeneration }) as Record<string, string>),
+      headers: new Headers(
+        getCacheControlForTrpcRequest({
+          type,
+          paths,
+          errors,
+          eagerGeneration,
+        }) as Record<string, string>,
+      ),
     }),
     onError:
       env.NODE_ENV === "development"

@@ -137,9 +137,7 @@ export async function requireOwnedPoll(
 ): Promise<
   NonNullable<Awaited<ReturnType<PrismaClient["meetingPoll"]["findUnique"]>>>
 >;
-export async function requireOwnedPoll<
-  Select extends Prisma.MeetingPollSelect,
->(
+export async function requireOwnedPoll<Select extends Prisma.MeetingPollSelect>(
   db: PrismaClient,
   slugOrId: { slug: string } | { id: string },
   userId: string,

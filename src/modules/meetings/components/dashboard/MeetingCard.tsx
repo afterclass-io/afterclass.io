@@ -44,7 +44,7 @@ export function MeetingCard({ meeting }: MeetingCardProps) {
       className="has-[a:focus-visible]:ring-ring/50 relative gap-0 py-4 transition-shadow hover:shadow-md has-[a:focus-visible]:ring-[3px]"
     >
       <CardContent className="flex flex-col gap-1.5 px-4">
-        <div className="min-h-5 flex items-center">
+        <div className="flex min-h-5 items-center">
           <MeetingMetaTags
             course={meeting.course}
             section={meeting.section}

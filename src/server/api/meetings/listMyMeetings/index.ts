@@ -29,7 +29,12 @@ export const listMyMeetings = protectedProcedure
         section: true,
         teamIdentifier: true,
         acadTerm: {
-          select: { id: true, acadYearStart: true, acadYearEnd: true, term: true },
+          select: {
+            id: true,
+            acadYearStart: true,
+            acadYearEnd: true,
+            term: true,
+          },
         },
         createdAt: true,
         updatedAt: true,

@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/common/functions";
-import { GRID_START_MIN, GRID_END_MIN } from "@/modules/timetable/functions/slot-math";
+import {
+  GRID_START_MIN,
+  GRID_END_MIN,
+} from "@/modules/timetable/functions/slot-math";
 
 const GRID_RANGE_MIN = GRID_END_MIN - GRID_START_MIN;
 
@@ -12,8 +15,7 @@ const GRID_RANGE_MIN = GRID_END_MIN - GRID_START_MIN;
 function getSGTMinutes(): number {
   const now = new Date();
   // Convert to SGT by building a UTC timestamp and adding 8 hours
-  const utcMinutes =
-    now.getUTCHours() * 60 + now.getUTCMinutes();
+  const utcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
   return (utcMinutes + 8 * 60) % (24 * 60);
 }
 
@@ -69,17 +71,17 @@ export function CurrentTimeIndicator({
 
   return (
     <div
-      className="pointer-events-none absolute left-0 right-0 z-30 flex items-center"
+      className="pointer-events-none absolute right-0 left-0 z-30 flex items-center"
       style={{ top: `${topPct}%` }}
     >
       {/* Dot on the left side */}
       <div
         className={cn(
-          "absolute -left-1.5 size-3 rounded-full bg-primary shadow-md",
+          "bg-primary absolute -left-1.5 size-3 rounded-full shadow-md",
         )}
       />
       {/* Horizontal line */}
-      <div className="h-px w-full bg-primary" />
+      <div className="bg-primary h-px w-full" />
     </div>
   );
 }
