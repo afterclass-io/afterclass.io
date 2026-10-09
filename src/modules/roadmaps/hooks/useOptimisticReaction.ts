@@ -1,9 +1,9 @@
 import { api, type RouterInputs } from "@/common/tools/trpc/react";
-import type { ReviewReactionType } from "@/generated/prisma/enums";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { useCallback, useMemo, useRef } from "react";
 
 import { debounce } from "@/common/functions/debounce";
+import { updateReactionCounts } from "@/common/functions/reactions";
 
 export function useOptimisticReaction() {
   const utils = api.useUtils();
@@ -61,41 +61,14 @@ export function useOptimisticReaction() {
       utils.roadmapReactions.getByRoadmapId.setData(
         { roadmapId },
         (oldQueryData) => {
-          const counts = oldQueryData?.counts ?? [];
-          const prevViewer = oldQueryData?.viewerReaction ?? null;
-
-          const decrement = (
-            list: { reaction: ReviewReactionType; count: number }[],
-            r: ReviewReactionType | null,
-          ) =>
-            list
-              .map((c) =>
-                c.reaction === r
-                  ? { ...c, count: Math.max(0, c.count - 1) }
-                  : c,
-              )
-              .filter((c) => c.count > 0);
-
-          // when user undoes their reaction
-          if (!reaction) {
-            return {
-              counts: decrement(counts, prevViewer),
-              viewerReaction: null,
-            };
-          }
-
-          // when user reacts (or switches to a new reaction)
-          const afterRemove = prevViewer
-            ? decrement(counts, prevViewer)
-            : counts;
-          const existing = afterRemove.find((c) => c.reaction === reaction);
-          const nextCounts = existing
-            ? afterRemove.map((c) =>
-                c.reaction === reaction ? { ...c, count: c.count + 1 } : c,
-              )
-            : [...afterRemove, { reaction, count: 1 }];
-
-          return { counts: nextCounts, viewerReaction: reaction };
+          return {
+            counts: updateReactionCounts(
+              oldQueryData?.counts ?? [],
+              oldQueryData?.viewerReaction,
+              reaction,
+            ),
+            viewerReaction: reaction ?? null,
+          };
         },
       );
     },
