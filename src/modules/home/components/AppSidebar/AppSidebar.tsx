@@ -199,7 +199,7 @@ export const AppSidebar = () => {
                     <ProgressLink
                       variant="ghost"
                       href={item.href}
-                      className="text-muted-foreground hover:bg-border-elevated hover:text-accent-foreground flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
+                      className="text-muted-foreground hover:bg-sidebar-accent hover:text-accent-foreground flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
                       data-test={`sidebar-${sidebarItemName(item.label)}`}
                     >
                       {item.icon}
@@ -242,7 +242,7 @@ export const AppSidebar = () => {
                               ? (item.target ?? "_blank")
                               : undefined
                           }
-                          className="text-muted-foreground hover:bg-border-elevated hover:text-accent-foreground flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
+                          className="text-muted-foreground hover:bg-sidebar-accent hover:text-accent-foreground flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
                           data-umami-event={`sidebar-${sidebarItemName(item.label)}`}
                           data-test={`sidebar-${sidebarItemName(item.label)}`}
                         >

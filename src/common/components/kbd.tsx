@@ -10,9 +10,9 @@ const kbdVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-[inset_0_-2px_0_0_var(--shadow-color)] shadow-primary-foreground/60",
+          "bg-primary text-primary-foreground shadow-[inset_0_-2px_0_0] shadow-primary-foreground/60",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-[inset_0_-2px_0_0_var(--shadow-color)] shadow-secondary-foreground/60",
+          "bg-secondary text-secondary-foreground shadow-[inset_0_-2px_0_0] shadow-secondary-foreground/60",
         outline: "border text-foreground",
       },
     },
