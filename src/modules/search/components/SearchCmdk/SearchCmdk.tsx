@@ -144,7 +144,6 @@ export const SearchCmdk = ({
                 <ProgressLink
                   href={getSearchDestination()}
                   className="flex size-fit items-center justify-center font-semibold"
-                  aria-label="close"
                   data-test="search-cmdk-submit"
                 >
                   Search

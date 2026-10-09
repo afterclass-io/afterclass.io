@@ -63,6 +63,7 @@ export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
             data-test="review-submit-select-trigger"
             className="h-full"
             size="icon"
+            aria-label="Select submission identity"
           >
             <ChevronDownIcon className="size-5" />
           </Button>
