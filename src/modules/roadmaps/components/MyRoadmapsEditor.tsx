@@ -3,13 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useAtom } from "jotai";
 import { toast } from "sonner";
-import {
-  GitBranch,
-  GraduationCap,
-  LayoutGrid,
-  RefreshCw,
-  Star,
-} from "lucide-react";
+import { GitBranch } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
 import {
@@ -27,40 +21,22 @@ import { useRoadmapPanelResize } from "@/modules/roadmaps/hooks/use-roadmap-pane
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
 import { RoadmapList } from "@/modules/roadmaps/components/RoadmapList";
 import { LazyRoadmapTimeline } from "@/modules/roadmaps/components/LazyRoadmapTimeline";
-import { DescriptionEditor } from "@/modules/roadmaps/components/DescriptionEditor";
+import {
+  RoadmapEditorHeader,
+  type EditorViewMode,
+} from "@/modules/roadmaps/components/RoadmapEditorHeader";
 import { CourseSearchSidebar } from "@/modules/roadmaps/components/CourseSearchSidebar";
 import { TermTimetableLink } from "@/modules/roadmaps/components/TermTimetableLink";
-import { ShareDialog } from "@/modules/sharing/components/ShareDialog";
 import { Button } from "@/common/components/button";
 import { Skeleton } from "@/common/components/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/common/components/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/common/components/tooltip";
-import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
 import { EmptyState } from "@/common/components/empty-state";
-import { TourReplayButton } from "@/common/tour/TourReplayButton";
 import { roadmapsTourSteps } from "@/common/tour/steps";
 import { useAutoStartTour } from "@/common/tour/useAutoStartTour";
-import { cn } from "@/common/functions";
 import { ResizeHandle } from "@/common/components/resize-handle";
-
-type EditorViewMode = "grid" | "timeline";
 
 // =============================================================================
 // Constants
 // =============================================================================
-
-/** Sentinel Select value for the "Clear" matriculation-year item. */
-const CLEAR_MATRIC_VALUE = "__clear__";
 
 // =============================================================================
 // Helpers
@@ -484,215 +460,37 @@ export function MyRoadmapsEditor() {
 
         {/* Editor header: name + active/matric/sync + view toggle + share */}
         {!showEmptyState && selectedRoadmap && (
-          <div className="border-b">
-            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2">
-              <div className="flex min-w-0 items-center gap-2">
-                <h2 className="min-w-0 truncate text-sm font-semibold">
-                  {selectedRoadmap.name}
-                </h2>
-                {/* Active roadmap toggle (one active roadmap per user) */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    {/* Disabled buttons don't fire pointer events, so the
-                        tooltip anchors to this wrapper instead. */}
-                    <span className="inline-flex">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        aria-label={
-                          selectedRoadmap.isActive
-                            ? "Active roadmap"
-                            : "Mark as active roadmap"
-                        }
-                        disabled={
-                          selectedRoadmap.isActive ||
-                          setActiveMutation.isPending
-                        }
-                        onClick={() =>
-                          setActiveMutation.mutate({
-                            roadmapId: selectedRoadmap.id,
-                          })
-                        }
-                        data-test="roadmap-active-toggle"
-                      >
-                        <Star
-                          className={cn(
-                            "size-4",
-                            selectedRoadmap.isActive
-                              ? "fill-primary text-primary"
-                              : "text-muted-foreground",
-                          )}
-                        />
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {selectedRoadmap.isActive
-                      ? "Active roadmap — syncs with your timetables across terms"
-                      : "Mark as active to sync this roadmap with your timetables across terms"}
-                  </TooltipContent>
-                </Tooltip>
-                <span className="text-muted-foreground text-xs whitespace-nowrap">
-                  {selectedRoadmap.isActive
-                    ? "Active — syncs timetable"
-                    : "Set active"}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {selectedRoadmap.isActive && (
-                  <>
-                    {/* Matriculation year (which AY was Y1; starts in T1) */}
-                    <Select
-                      value={selectedMatricAy}
-                      onValueChange={(ay) => {
-                        // The "Clear" item resets the declaration (the server
-                        // procedure accepts null to clear).
-                        if (ay === CLEAR_MATRIC_VALUE) {
-                          setMatricTermMutation.mutate({
-                            roadmapId: selectedRoadmap.id,
-                            matricTermId: null,
-                          });
-                          return;
-                        }
-                        const option = matricYearOptions.find(
-                          (o) => o.ay === ay,
-                        );
-                        if (!option) return;
-                        setMatricTermMutation.mutate({
-                          roadmapId: selectedRoadmap.id,
-                          matricTermId: option.termId,
-                        });
-                      }}
-                      disabled={setMatricTermMutation.isPending}
-                    >
-                      <SelectTrigger
-                        className="w-36"
-                        aria-label="Matriculation year"
-                        data-test="matric-term-select"
-                      >
-                        <SelectValue placeholder="Matriculation year…" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {matricYearOptions.map((o) => (
-                          <SelectItem key={o.ay} value={o.ay}>
-                            {o.ay}
-                          </SelectItem>
-                        ))}
-                        <SelectItem
-                          value={CLEAR_MATRIC_VALUE}
-                          data-test="matric-term-clear"
-                        >
-                          Clear
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    {/* Explicit progress sync */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={
-                        !selectedRoadmap.matricTermId ||
-                        syncProgressMutation.isPending
-                      }
-                      onClick={() =>
-                        syncProgressMutation.mutate({
-                          roadmapId: selectedRoadmap.id,
-                        })
-                      }
-                      data-test="sync-progress-button"
-                    >
-                      <RefreshCw
-                        className={cn(
-                          "size-4",
-                          syncProgressMutation.isPending && "animate-spin",
-                        )}
-                      />
-                      <span className="hidden sm:inline">Sync progress</span>
-                    </Button>
-                  </>
-                )}
-
-                <ToggleGroup
-                  type="single"
-                  variant="segmented"
-                  size="sm"
-                  value={viewMode}
-                  onValueChange={(v) => v && setViewMode(v as EditorViewMode)}
-                  data-test="roadmap-view-toggle"
-                >
-                  <ToggleGroupItem
-                    value="grid"
-                    aria-label="Grid view"
-                    className="justify-center px-3"
-                  >
-                    <LayoutGrid className="size-4 shrink-0" />
-                    <span className="hidden sm:inline">Grid</span>
-                  </ToggleGroupItem>
-                  <ToggleGroupItem
-                    value="timeline"
-                    aria-label="Timeline view"
-                    className="justify-center px-3"
-                  >
-                    <GitBranch className="size-4 shrink-0" />
-                    <span className="hidden sm:inline">Timeline</span>
-                  </ToggleGroupItem>
-                </ToggleGroup>
-                <ShareDialog
-                  entity="roadmap"
-                  entityId={selectedRoadmap.id}
-                  entityName={selectedRoadmap.name}
-                  visibility={selectedRoadmap.visibility ?? "PRIVATE"}
-                  shareToken={selectedRoadmap.shareToken ?? null}
-                />
-                <TourReplayButton steps={roadmapsTourSteps} />
-              </div>
-            </div>
-
-            {/* Secondary row: description + faculty declaration (per-roadmap) */}
-            <div className="flex flex-wrap items-start gap-3 px-4 pb-2">
-              <DescriptionEditor
-                key={selectedRoadmap.id}
-                initialValue={selectedRoadmap.description ?? ""}
-                onSave={handleDescriptionBlur}
-              />
-              <div className="flex items-center gap-2">
-                <GraduationCap className="text-muted-foreground size-4 shrink-0" />
-                <Select
-                  key={selectedRoadmap.id}
-                  value={
-                    selectedRoadmap.facultyId != null
-                      ? String(selectedRoadmap.facultyId)
-                      : undefined
-                  }
-                  onValueChange={(v) => {
-                    const next = Number(v);
-                    setFacultyMutation.mutate({
-                      roadmapId: selectedRoadmap.id,
-                      facultyId: next,
-                    });
-                  }}
-                  disabled={setFacultyMutation.isPending}
-                >
-                  <SelectTrigger
-                    className="w-56"
-                    aria-label="Your faculty"
-                    data-test="faculty-select"
-                  >
-                    <SelectValue placeholder="Declare your faculty…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(facultiesData ?? []).map((f) => (
-                      <SelectItem key={f.id} value={String(f.id)}>
-                        {f.name} ({f.acronym})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
+          <RoadmapEditorHeader
+            selectedRoadmap={selectedRoadmap}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            isSettingActive={setActiveMutation.isPending}
+            onSetActive={() =>
+              setActiveMutation.mutate({ roadmapId: selectedRoadmap.id })
+            }
+            matricYearOptions={matricYearOptions}
+            selectedMatricAy={selectedMatricAy}
+            isMatricTermPending={setMatricTermMutation.isPending}
+            onMatricTermChange={(matricTermId) =>
+              setMatricTermMutation.mutate({
+                roadmapId: selectedRoadmap.id,
+                matricTermId,
+              })
+            }
+            isSyncing={syncProgressMutation.isPending}
+            onSyncProgress={() =>
+              syncProgressMutation.mutate({ roadmapId: selectedRoadmap.id })
+            }
+            onDescriptionSave={handleDescriptionBlur}
+            faculties={facultiesData ?? []}
+            isFacultyPending={setFacultyMutation.isPending}
+            onFacultyChange={(facultyId) =>
+              setFacultyMutation.mutate({
+                roadmapId: selectedRoadmap.id,
+                facultyId,
+              })
+            }
+          />
         )}
 
         {/* Entries loading */}
