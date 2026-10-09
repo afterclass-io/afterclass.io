@@ -1,4 +1,4 @@
-import { db, txDb } from "@/server/db";
+import { db } from "@/server/db";
 import {
   getChatConfigAsync as getCanonicalChatConfig,
   getChatConfig as getCanonicalChatConfigSync,
@@ -78,15 +78,16 @@ export async function checkQuota(
 
 /**
  * Atomic check+reserve of a quota message slot before streaming.
- * Uses two DB statements inside an interactive transaction: first ensure the
+ * Three pooled statements, no interactive transaction. First ensure the
  * period row exists (upsert with no-op update - no read needed), then a
  * conditional `UPDATE ... WHERE messageCount < quota` via `updateMany` whose
  * `count` tells us whether a slot was actually claimed. No `findUnique` read
  * is used for the decision, so concurrent callers cannot both read `used < quota`
  * and then both increment - only one conditional update will match (count 1,
- * the other sees count 0 and is rejected without over-reserving). This avoids
- * the lost-update / double-reserve race of the old read-then-upsert pattern
- * even under Prisma's default READ COMMITTED isolation.
+ * the other sees count 0 and is rejected without over-reserving). The claim is
+ * one statement, so a transaction adds no guarantee under Prisma's default
+ * READ COMMITTED isolation, and the pooled client avoids holding a direct
+ * connection for the turn.
  */
 export async function reserveMessage(
   userId: string,
@@ -94,42 +95,38 @@ export async function reserveMessage(
   const chat = await getQuotaChat();
   const period = currentMonthPeriod();
   const quota = chat.quotaPerMonth;
-  // Interactive transaction → direct (non-pooled) client: pooled 6543
-  // pgbouncer breaks interactive $transaction.
-  return txDb.$transaction(async (tx) => {
-    // Ensure a row exists for this period; the no-op update avoids touching the
-    // row when it already exists (keeps the statement idempotent).
-    await tx.chatUsage.upsert({
-      where: { userId_period: { userId, period } },
-      create: {
-        userId,
-        period,
-        messageCount: 0,
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedInputTokens: 0,
-      },
-      update: {},
-    });
-    // Conditional increment - only succeeds when the row is still under quota.
-    const result = await tx.chatUsage.updateMany({
-      where: { userId, period, messageCount: { lt: quota } },
-      data: { messageCount: { increment: 1 } },
-    });
-    if (result.count === 0) {
-      // Row already at or over quota (including the freshly-created `0` edge
-      // when `quota` is 0): no slot claimed.
-      return { ok: false, remaining: 0, quota };
-    }
-    // One slot claimed. Re-read the fresh count for an accurate `remaining`
-    // (avoids the stale-read trap of deriving remaining from the pre-increment
-    // snapshot when concurrent increments raced).
-    const fresh = await tx.chatUsage.findUnique({
-      where: { userId_period: { userId, period } },
-    });
-    const used = fresh?.messageCount ?? quota;
-    return { ok: true, remaining: Math.max(0, quota - used), quota };
+  // Ensure a row exists for this period; the no-op update avoids touching the
+  // row when it already exists (keeps the statement idempotent).
+  await db.chatUsage.upsert({
+    where: { userId_period: { userId, period } },
+    create: {
+      userId,
+      period,
+      messageCount: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      cachedInputTokens: 0,
+    },
+    update: {},
   });
+  // Conditional increment - only succeeds when the row is still under quota.
+  const result = await db.chatUsage.updateMany({
+    where: { userId, period, messageCount: { lt: quota } },
+    data: { messageCount: { increment: 1 } },
+  });
+  if (result.count === 0) {
+    // Row already at or over quota (including the freshly-created `0` edge
+    // when `quota` is 0): no slot claimed.
+    return { ok: false, remaining: 0, quota };
+  }
+  // One slot claimed. Re-read the fresh count for an accurate `remaining`
+  // (avoids the stale-read trap of deriving remaining from the pre-increment
+  // snapshot when concurrent increments raced).
+  const fresh = await db.chatUsage.findUnique({
+    where: { userId_period: { userId, period } },
+  });
+  const used = fresh?.messageCount ?? quota;
+  return { ok: true, remaining: Math.max(0, quota - used), quota };
 }
 
 /**
@@ -146,24 +143,21 @@ export async function settleUsage(
 ): Promise<void> {
   const period = currentMonthPeriod();
   const cachedInput = tokens.cachedInput ?? 0;
-  // Interactive transaction → direct (non-pooled) client.
-  await txDb.$transaction(async (tx) => {
-    await tx.chatUsage.upsert({
-      where: { userId_period: { userId, period } },
-      create: {
-        userId,
-        period,
-        messageCount: 0,
-        inputTokens: tokens.input,
-        outputTokens: tokens.output,
-        cachedInputTokens: cachedInput,
-      },
-      update: {
-        inputTokens: { increment: tokens.input },
-        outputTokens: { increment: tokens.output },
-        cachedInputTokens: { increment: cachedInput },
-      },
-    });
+  await db.chatUsage.upsert({
+    where: { userId_period: { userId, period } },
+    create: {
+      userId,
+      period,
+      messageCount: 0,
+      inputTokens: tokens.input,
+      outputTokens: tokens.output,
+      cachedInputTokens: cachedInput,
+    },
+    update: {
+      inputTokens: { increment: tokens.input },
+      outputTokens: { increment: tokens.output },
+      cachedInputTokens: { increment: cachedInput },
+    },
   });
 }
 
