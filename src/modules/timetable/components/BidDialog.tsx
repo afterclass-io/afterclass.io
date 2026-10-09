@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
 import { toast } from "sonner";
 import { Loader2, Trash2 } from "lucide-react";
-import Link from "next/link";
 import {
   api,
   type RouterInputs,
@@ -59,6 +58,7 @@ const bidAmountSchema = z
   .positive("Bid must be greater than 0")
   .max(99999, "Bid cannot exceed e$99,999");
 import { ClassInfoCard } from "./ClassInfoCard";
+import { DestinationSelector } from "./DestinationSelector";
 import { CourseSectionPicker, type SearchCourse } from "./CourseSectionPicker";
 import { BidPredictionPanel } from "./BidPredictionPanel";
 import { InlineNotesEditor } from "./InlineNotesEditor";
@@ -100,52 +100,6 @@ function parseBidAmount(raw: string): { value: number } | { error: string } {
   if (!result.success)
     return { error: result.error.issues[0]?.message ?? "Invalid amount" };
   return { value: result.data };
-}
-
-// ---------------------------------------------------------------------------
-// Destination selector (historical data / course reviews / professor reviews)
-// ---------------------------------------------------------------------------
-
-/**
- * Three link-buttons under the class info card pointing at the existing
- * destination pages for the selected class. Each destination is a full page,
- * so the row reads as a selector over the three available views rather than
- * a tab switch. The professor link only renders when the class has a
- * professor slug (TBA classes have none — same rule as ReviewCtaButtons).
- */
-function DestinationSelector({
-  courseCode,
-  section,
-  classId,
-  professorSlug,
-}: {
-  courseCode: string;
-  section: string;
-  classId: string;
-  professorSlug: string | null;
-}) {
-  return (
-    <div
-      className="flex flex-nowrap items-center gap-2 overflow-x-auto"
-      data-test="class-destinations"
-    >
-      <Button variant="outline" size="sm" className="shrink-0" asChild>
-        <Link
-          href={`/bidding/analytics?course=${courseCode}&section=${section}&classId=${classId}`}
-        >
-          Historical Data
-        </Link>
-      </Button>
-      <Button variant="outline" size="sm" className="shrink-0" asChild>
-        <Link href={`/course/${courseCode}`}>Course Reviews</Link>
-      </Button>
-      {professorSlug && (
-        <Button variant="outline" size="sm" className="shrink-0" asChild>
-          <Link href={`/professor/${professorSlug}`}>Professor Reviews</Link>
-        </Button>
-      )}
-    </div>
-  );
 }
 
 // ---------------------------------------------------------------------------
