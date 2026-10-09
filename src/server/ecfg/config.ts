@@ -16,7 +16,13 @@ export const DEFAULT_CHAT_CONFIG = {
   mcpEnabled: true,
 } as const;
 
-export const chatConfigSchema = z
+// Every canonical tunable (src/server/config/chat-config.ts) is declared so
+// zod does not strip a remote override before getChatConfigAsync() reads it.
+// Loosely typed on purpose: range checks live in the canonical strict schema
+// so a bad value fails closed at the call site instead of discarding the
+// whole remote `chat` section here. Do NOT use `.passthrough()`.
+// `chat-config.remote-tunables.test.ts` fails when the two key sets drift.
+export const chatTunablesSchema = z
   .object({
     quotaPerMonth: z.number().int().positive(),
     nudgeAt: z.number().int().min(0),
@@ -28,10 +34,21 @@ export const chatConfigSchema = z
     chatEnabled: z.boolean(),
     widgetEnabled: z.boolean(),
     mcpEnabled: z.boolean(),
-    // Content moderation tunables. Loosely typed on purpose: range checks
-    // live in the canonical strict schema (src/server/config/chat-config.ts)
-    // so a bad value fails closed at the moderation call site instead of
-    // discarding the whole remote config here.
+    writeRateLimitPerMinute: z.number(),
+    rateLimitWindowMinutes: z.number(),
+    settlementSpikeTokens: z.number(),
+    maxToolResultChars: z.number(),
+    minBid: z.number(),
+    maxBidBudget: z.number(),
+    defaultBeatsPct: z.number(),
+    maxBidAmount: z.number(),
+    appTimezone: z.string(),
+    icalThrottlePerMinute: z.number(),
+    inFlightStaleMs: z.number(),
+    rateLimitRetentionWindows: z.number(),
+    llmBaseUrl: z.string(),
+    llmModel: z.string(),
+    chatMaxDurationSec: z.number(),
     moderationReportThreshold: z.number(),
     moderationBackoffMultiplier: z.number(),
     moderationThresholdCap: z.number(),
@@ -41,7 +58,9 @@ export const chatConfigSchema = z
     moderationJudgeTimeoutMs: z.number(),
     moderationLogRetentionDays: z.number(),
   })
-  .partial()
+  .partial();
+
+export const chatConfigSchema = chatTunablesSchema
   .default(DEFAULT_CHAT_CONFIG)
   .transform((cfg) => ({ ...DEFAULT_CHAT_CONFIG, ...cfg }));
 

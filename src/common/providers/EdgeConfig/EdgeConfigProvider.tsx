@@ -8,8 +8,10 @@ export async function EdgeConfigProvider({
 }) {
   const edgeConfig = await getEdgeConfig();
 
+  // `chat` holds server-only tunables (LLM model and base URL, limits). No
+  // client code reads it, so it stays out of the browser payload.
   return (
-    <EdgeConfigContextProvider edgeConfig={edgeConfig}>
+    <EdgeConfigContextProvider edgeConfig={{ ...edgeConfig, chat: undefined }}>
       {children}
     </EdgeConfigContextProvider>
   );
