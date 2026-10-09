@@ -22,13 +22,9 @@ import { getChatConfigAsync } from "@/server/config/chat-config";
  *   rate-limited per IP (`ical:<ip>`, 60/min fixed window via the shared
  *   `checkAndIncrement` store). Over-limit callers get 429; the token lookup
  *   never runs.
- * - Expiry: `icalToken`s are permanent bearer credentials with NO expiry
- *   column today. Revocation exists (`setVisibility` revokes the token when
- *   a timetable flips to PRIVATE, and `getFeedData` refuses PRIVATE feeds
- *   even with a valid token). Rotation: re-mint via
- *   `get-timetable-calendar-link`. A future migration should add
- *   `icalTokenExpiresAt` + document rotation here; until then this comment
- *   is the documented expiry story.
+ * - Expiry: links stop working at the end of the academic term (404,
+ *   the same as an invalid link). Revocation exists via `revokeIcalToken`
+ *   and `setVisibility` (flipping to PRIVATE revokes the token).
  *
  * Headers:
  * - Content-Type: text/calendar; charset=utf-8

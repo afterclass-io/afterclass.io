@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Not a createCaller test: getFeedData is a plain exported function that takes
 // `db` as an argument, so it doesn't use the shared trpc-test-helpers caller.
@@ -9,6 +9,15 @@ vi.mock("@/server/db", () => ({ db: {} }));
 import { getFeedData } from "./index";
 
 describe("getFeedData", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-09T00:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("returns null for a PRIVATE timetable even with a valid token", async () => {
     const db = {
       userTimetable: {
@@ -95,6 +104,52 @@ describe("getFeedData", () => {
           examTimings: [],
         },
       ],
+    });
+  });
+
+  it("returns null when timetable endDt is before now (expired term)", async () => {
+    const db = {
+      userTimetable: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "t1",
+          visibility: "UNLISTED",
+          icalToken: "tok",
+          name: "My Plan",
+          acadTerm: {
+            startDt: new Date("2026-01-10T00:00:00Z"),
+            endDt: new Date("2026-05-01T00:00:00Z"),
+          },
+          slots: [],
+        }),
+      },
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+    const result = await getFeedData("tok", db as any);
+    expect(result).toBeNull();
+  });
+
+  it("returns data when timetable endDt is after now (open term)", async () => {
+    const termStart = new Date("2026-08-10T00:00:00Z");
+    const termEnd = new Date("2026-12-01T00:00:00Z");
+    const db = {
+      userTimetable: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "t1",
+          visibility: "UNLISTED",
+          icalToken: "tok",
+          name: "My Plan",
+          acadTerm: { startDt: termStart, endDt: termEnd },
+          slots: [],
+        }),
+      },
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+    const result = await getFeedData("tok", db as any);
+    expect(result).toEqual({
+      timetableName: "My Plan",
+      termStart,
+      termEnd,
+      classes: [],
     });
   });
 });

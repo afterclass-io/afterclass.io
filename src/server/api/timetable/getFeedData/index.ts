@@ -4,6 +4,7 @@ import { db as defaultDb } from "@/server/db";
 import type { PrismaClient } from "@/generated/prisma/client";
 import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
 import { toArrangedClass } from "@/modules/timetable/functions/arranged-class";
+import { isTermEnded } from "@/server/api/timetable/ical-expiry";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -28,8 +29,8 @@ export type ICalFeedData = {
  * - Resolves the associated AcadTerm for startDt / endDt.
  *
  * Returns `null` when the token is invalid, revoked, the timetable
- * does not exist, or the timetable is PRIVATE (defense-in-depth:
- * `setVisibility` also revokes the token on PRIVATE).
+ * does not exist, the timetable is PRIVATE, or the academic term
+ * has ended (`now > acadTerm.endDt`).
  *
  * Does NOT throw — the route handler maps `null` → 404.
  *
@@ -80,6 +81,8 @@ export async function getFeedData(
   // PRIVATE timetables never serve a calendar feed, even with a valid token
   // (defense-in-depth: setVisibility also revokes the token on PRIVATE).
   if (timetable.visibility === "PRIVATE") return null;
+
+  if (isTermEnded(timetable.acadTerm.endDt)) return null;
 
   const classes = timetable.slots.map((slot) =>
     toArrangedClass(slot, { omitProfessorName: true }),

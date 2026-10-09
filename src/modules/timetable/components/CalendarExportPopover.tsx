@@ -294,7 +294,10 @@ export function CalendarExportPopover({
     onError: (error) => {
       // A PRIVATE timetable refuses to mint a token; surface an inline
       // "turn on link sharing" action instead of a dead-end error toast.
-      if (error.data?.code === "BAD_REQUEST") {
+      if (
+        error.data?.code === "BAD_REQUEST" &&
+        error.message.includes("link-sharing")
+      ) {
         setNeedsLinkSharing(true);
         return;
       }
