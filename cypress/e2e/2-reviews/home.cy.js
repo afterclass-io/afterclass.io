@@ -20,7 +20,10 @@ context("Reviews: Home", function () {
       cy.intercept("GET", "/bidding/analytics*").as("navigateToBiddingPage");
       cy.get("a[data-test=sidebar-bid-analytics]").click();
       cy.wait("@navigateToBiddingPage");
-      cy.url().should("contain", `${Cypress.config("baseUrl")}/bidding/analytics`);
+      cy.url().should(
+        "contain",
+        `${Cypress.config("baseUrl")}/bidding/analytics`,
+      );
     });
 
     it("should be able to navigate to course reviews page", function () {
@@ -86,8 +89,13 @@ context("Reviews: Home", function () {
     it("should be able to like and unlike a review", function () {
       // State may carry over (previous unlike leaves no [data-voted=false]).
       // Do like + unlike in one test so order doesn't interleave.
-      cy.get("button[data-test=upvote-button]").should("have.length.at.least", 1);
-      cy.get("button[data-test=upvote-button]", { timeout: 10000 }).should("exist");
+      cy.get("button[data-test=upvote-button]").should(
+        "have.length.at.least",
+        1,
+      );
+      cy.get("button[data-test=upvote-button]", { timeout: 10000 }).should(
+        "exist",
+      );
       // Pick whichever state exists first, then round-trip it.
       cy.get("button[data-test=upvote-button]").then(($btns) => {
         const hasUnliked = $btns.filter("[data-voted=false]").length > 0;
@@ -95,25 +103,38 @@ context("Reviews: Home", function () {
         const from = hasUnliked ? "false" : "true";
         const to = hasUnliked ? "true" : "false";
         const btn = Cypress.$(`button[data-test=upvote-button]${sel}`).first();
-        const initial = parseInt(btn.parent().attr("data-vote-count") ?? "0", 10);
+        const initial = parseInt(
+          btn.parent().attr("data-vote-count") ?? "0",
+          10,
+        );
         const expected = hasUnliked ? initial + 1 : initial - 1;
-        cy.get(`button[data-test=upvote-button]${sel}`).first()
-          .parent().should("have.attr", "data-voted", from);
-        cy.get(`button[data-test=upvote-button]${sel}`).first().click()
+        cy.get(`button[data-test=upvote-button]${sel}`)
+          .first()
+          .parent()
+          .should("have.attr", "data-voted", from);
+        cy.get(`button[data-test=upvote-button]${sel}`)
+          .first()
+          .click()
           .should("have.attr", "data-voted", to)
-          .parent().should("have.attr", "data-voted", to)
+          .parent()
+          .should("have.attr", "data-voted", to)
           .should("have.attr", "data-vote-count", `${expected}`);
         // Undo to leave clean state for next run.
-        cy.get(`button[data-test=upvote-button][data-voted=${to}]`).first().click()
+        cy.get(`button[data-test=upvote-button][data-voted=${to}]`)
+          .first()
+          .click()
           .should("have.attr", "data-voted", from);
       });
     });
 
-
-
     it("should be able to load more reviews", function () {
-      cy.get('[data-test=review-load-more]', { timeout: 15000 }).click({ force: true });
-      cy.get("[data-test=review]", { timeout: 20000 }).should("have.length.at.least", 11);
+      cy.get("[data-test=review-load-more]", { timeout: 15000 }).click({
+        force: true,
+      });
+      cy.get("[data-test=review]", { timeout: 20000 }).should(
+        "have.length.at.least",
+        11,
+      );
     });
 
     it("should be able to write a review", function () {

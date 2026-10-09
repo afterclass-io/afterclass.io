@@ -62,7 +62,9 @@ context("Sharing: Share Flow", function () {
     cy.url({ timeout: 10000 }).should("include", "view=mine");
 
     // Create the roadmap
-    cy.intercept("POST", "**/api/trpc/*roadmaps.create*").as("pubCreateRoadmap");
+    cy.intercept("POST", "**/api/trpc/*roadmaps.create*").as(
+      "pubCreateRoadmap",
+    );
     cy.get("[aria-label='Create new roadmap']").click({ force: true });
     cy.get("[data-test=roadmap-create-input]").type(`${name}{enter}`);
     cy.get("[data-test=roadmap-create-input]").should("not.exist");
@@ -84,13 +86,25 @@ context("Sharing: Share Flow", function () {
     );
 
     // Open the Share dialog, set PUBLIC, save — intercept BEFORE dialog opens so ?batch=1 batching doesn't race
-    cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as("pubSetVisibility");
-    cy.get("[data-test=share-button]", { timeout: 15000 }).should("be.visible").click();
+    cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as(
+      "pubSetVisibility",
+    );
+    cy.get("[data-test=share-button]", { timeout: 15000 })
+      .should("be.visible")
+      .click();
     cy.contains(`Share ${name}`, { timeout: 10000 }).should("be.visible");
-    cy.get("#share-visibility-PUBLIC", { timeout: 10000 }).should("be.visible").click({ force: true });
-    cy.get("[data-test=share-save]", { timeout: 10000 }).should("be.visible").should("not.be.disabled").click({ force: true });
+    cy.get("#share-visibility-PUBLIC", { timeout: 10000 })
+      .should("be.visible")
+      .click({ force: true });
+    cy.get("[data-test=share-save]", { timeout: 10000 })
+      .should("be.visible")
+      .should("not.be.disabled")
+      .click({ force: true });
     cy.wait("@pubSetVisibility", { timeout: 15000 });
-    cy.get("[data-sonner-toast]", { timeout: 15000 }).should("contain.text", "Sharing settings updated");
+    cy.get("[data-sonner-toast]", { timeout: 15000 }).should(
+      "contain.text",
+      "Sharing settings updated",
+    );
 
     // Go to the public gallery to capture the public page ID
     cy.visit("/roadmaps");
@@ -130,38 +144,62 @@ context("Sharing: Share Flow", function () {
       .click();
     cy.contains("Sections", { timeout: 10000 }).should("be.visible");
     cy.intercept("POST", "**/api/trpc/*timetable.addSlot*").as("addSlotT1");
-    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as("setSlotT1");
+    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as(
+      "setSlotT1",
+    );
     cy.get("[data-test^=timetable-section-action-]").first().click();
     cy.wait(1500);
     cy.get("body").then(($body) => {
       const hasConflict = $body.text().includes("Time conflict");
       if (hasConflict) {
-        cy.get("[data-test^=timetable-section-action-]").eq(1).click({ force: true });
+        cy.get("[data-test^=timetable-section-action-]")
+          .eq(1)
+          .click({ force: true });
         cy.wait(1500);
       }
     });
     // Verify slot appears (optimistic) — wait for either mutation to settle
-    cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should("exist");
+    cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
+      "exist",
+    );
 
     // Open the Share dialog via the real UI button — intercept BEFORE dialog opens (?batch=1)
-    cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as("setVisibilityT1");
-    cy.get("[data-test=share-button]", { timeout: 15000 }).should("be.visible").click();
+    cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as(
+      "setVisibilityT1",
+    );
+    cy.get("[data-test=share-button]", { timeout: 15000 })
+      .should("be.visible")
+      .click();
     cy.contains("Share", { timeout: 10000 }).should("be.visible");
 
     // Set visibility to UNLISTED (timetables don't support PUBLIC)
-    cy.get("#share-visibility-UNLISTED", { timeout: 10000 }).should("be.visible").click({ force: true });
+    cy.get("#share-visibility-UNLISTED", { timeout: 10000 })
+      .should("be.visible")
+      .click({ force: true });
 
     // Save
-    cy.get("[data-test=share-save]", { timeout: 10000 }).should("be.visible").should("not.be.disabled").click({ force: true });
+    cy.get("[data-test=share-save]", { timeout: 10000 })
+      .should("be.visible")
+      .should("not.be.disabled")
+      .click({ force: true });
     cy.wait("@setVisibilityT1", { timeout: 15000 });
-    cy.get("[data-sonner-toast]", { timeout: 15000 }).should("contain.text", "Sharing settings updated");
+    cy.get("[data-sonner-toast]", { timeout: 15000 }).should(
+      "contain.text",
+      "Sharing settings updated",
+    );
 
     // The share link input renders conditionally on shareUrl which comes from mutation response token.
     // Wait for the input to stabilize with a value before asserting its content.
-    cy.get("[data-test=share-link-input]", { timeout: 15000 }).should(($input) => {
-      const val = ($input as unknown as HTMLInputElement[])[0]?.value ?? $input.val();
-      expect(String(val), "share link should contain /share/timetable/").to.contain("/share/timetable/");
-    });
+    cy.get("[data-test=share-link-input]", { timeout: 15000 }).should(
+      ($input) => {
+        const val =
+          ($input as unknown as HTMLInputElement[])[0]?.value ?? $input.val();
+        expect(
+          String(val),
+          "share link should contain /share/timetable/",
+        ).to.contain("/share/timetable/");
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -187,26 +225,44 @@ context("Sharing: Share Flow", function () {
       .click();
     cy.contains("Sections", { timeout: 10000 }).should("be.visible");
     cy.intercept("POST", "**/api/trpc/*timetable.addSlot*").as("addSlotT2");
-    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as("setSlotT2");
+    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as(
+      "setSlotT2",
+    );
     cy.get("[data-test^=timetable-section-action-]").first().click();
     cy.wait(1500);
     cy.get("body").then(($body) => {
       const hasConflict = $body.text().includes("Time conflict");
       if (hasConflict) {
-        cy.get("[data-test^=timetable-section-action-]").eq(1).click({ force: true });
+        cy.get("[data-test^=timetable-section-action-]")
+          .eq(1)
+          .click({ force: true });
         cy.wait(1500);
       }
     });
-    cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should("exist");
+    cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
+      "exist",
+    );
 
     // Open share dialog, set UNLISTED, save — intercept BEFORE dialog opens
-    cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as("setVisibilityT2");
-    cy.get("[data-test=share-button]", { timeout: 15000 }).should("be.visible").click();
+    cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as(
+      "setVisibilityT2",
+    );
+    cy.get("[data-test=share-button]", { timeout: 15000 })
+      .should("be.visible")
+      .click();
     cy.contains("Share", { timeout: 10000 }).should("be.visible");
-    cy.get("#share-visibility-UNLISTED", { timeout: 10000 }).should("be.visible").click({ force: true });
-    cy.get("[data-test=share-save]", { timeout: 10000 }).should("be.visible").should("not.be.disabled").click({ force: true });
+    cy.get("#share-visibility-UNLISTED", { timeout: 10000 })
+      .should("be.visible")
+      .click({ force: true });
+    cy.get("[data-test=share-save]", { timeout: 10000 })
+      .should("be.visible")
+      .should("not.be.disabled")
+      .click({ force: true });
     cy.wait("@setVisibilityT2", { timeout: 15000 });
-    cy.get("[data-sonner-toast]", { timeout: 15000 }).should("contain.text", "Sharing settings updated");
+    cy.get("[data-sonner-toast]", { timeout: 15000 }).should(
+      "contain.text",
+      "Sharing settings updated",
+    );
 
     // Capture the share token from the link input
     cy.get("[data-test=share-link-input]")
@@ -232,7 +288,9 @@ context("Sharing: Share Flow", function () {
         cy.get("[data-test=timetable-variant-switcher]").should("not.exist");
 
         // Verify the grid is present (read-only mode) - SharedTimetableView renders TimetableGrid data-test or agenda fallback
-        cy.get("[data-test=timetable-grid], .grid", { timeout: 10000 }).should("exist");
+        cy.get("[data-test=timetable-grid], .grid", { timeout: 10000 }).should(
+          "exist",
+        );
       });
   });
 
@@ -259,26 +317,44 @@ context("Sharing: Share Flow", function () {
       .click();
     cy.contains("Sections", { timeout: 10000 }).should("be.visible");
     cy.intercept("POST", "**/api/trpc/*timetable.addSlot*").as("addSlotT3");
-    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as("setSlotT3");
+    cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as(
+      "setSlotT3",
+    );
     cy.get("[data-test^=timetable-section-action-]").first().click();
     cy.wait(1500);
     cy.get("body").then(($body) => {
       const hasConflict = $body.text().includes("Time conflict");
       if (hasConflict) {
-        cy.get("[data-test^=timetable-section-action-]").eq(1).click({ force: true });
+        cy.get("[data-test^=timetable-section-action-]")
+          .eq(1)
+          .click({ force: true });
         cy.wait(1500);
       }
     });
-    cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should("exist");
+    cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
+      "exist",
+    );
 
     // Set UNLISTED to get a token — intercept BEFORE dialog opens
-    cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as("setUnlistedT3");
-    cy.get("[data-test=share-button]", { timeout: 15000 }).should("be.visible").click();
+    cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as(
+      "setUnlistedT3",
+    );
+    cy.get("[data-test=share-button]", { timeout: 15000 })
+      .should("be.visible")
+      .click();
     cy.contains("Share", { timeout: 10000 }).should("be.visible");
-    cy.get("#share-visibility-UNLISTED", { timeout: 10000 }).should("be.visible").click({ force: true });
-    cy.get("[data-test=share-save]", { timeout: 10000 }).should("be.visible").should("not.be.disabled").click({ force: true });
+    cy.get("#share-visibility-UNLISTED", { timeout: 10000 })
+      .should("be.visible")
+      .click({ force: true });
+    cy.get("[data-test=share-save]", { timeout: 10000 })
+      .should("be.visible")
+      .should("not.be.disabled")
+      .click({ force: true });
     cy.wait("@setUnlistedT3", { timeout: 15000 });
-    cy.get("[data-sonner-toast]", { timeout: 15000 }).should("contain.text", "Sharing settings updated");
+    cy.get("[data-sonner-toast]", { timeout: 15000 }).should(
+      "contain.text",
+      "Sharing settings updated",
+    );
 
     // Capture the token
     cy.get("[data-test=share-link-input]")
@@ -288,10 +364,15 @@ context("Sharing: Share Flow", function () {
 
         // ---- Change back to PRIVATE ----
         cy.get("#share-visibility-PRIVATE").click({ force: true });
-        cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as("setPrivateT3");
+        cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as(
+          "setPrivateT3",
+        );
         cy.get("[data-test=share-save]").click();
         cy.wait("@setPrivateT3", { timeout: 15000 });
-        cy.get("[data-sonner-toast]", { timeout: 15000 }).should("contain.text", "Sharing settings updated");
+        cy.get("[data-sonner-toast]", { timeout: 15000 }).should(
+          "contain.text",
+          "Sharing settings updated",
+        );
 
         // ---- Visit old share URL → should show not-found ----
         cy.clearCookies();
@@ -357,7 +438,9 @@ context("Sharing: Share Flow", function () {
         cy.get("body", { timeout: 15000 }).should("contain.text", "by ");
 
         // Should have "Copy this roadmap" button — public route uses PublicRoadmapView with header
-        cy.contains("Copy this roadmap", { timeout: 10000 }).should("be.visible");
+        cy.contains("Copy this roadmap", { timeout: 10000 }).should(
+          "be.visible",
+        );
 
         // Default view should be Grid (ToggleGroup renders Grid/Timeline labels)
         cy.contains("Grid", { timeout: 10000 }).should("be.visible");
@@ -392,7 +475,10 @@ context("Sharing: Share Flow", function () {
       cy.contains("Copy this roadmap").click({ force: true });
 
       // An error toast should appear (self-copy is blocked per P2T5/P2T8) — sonner portal with animation, don't require visible
-      cy.get("[data-sonner-toast]", { timeout: 15000 }).should("contain.text", "own roadmap");
+      cy.get("[data-sonner-toast]", { timeout: 15000 }).should(
+        "contain.text",
+        "own roadmap",
+      );
 
       // We should still be on the same page (no redirect)
       cy.url({ timeout: 5000 }).should("include", `/roadmaps/${id}`);
@@ -431,13 +517,25 @@ context("Sharing: Share Flow", function () {
     );
 
     // Open share dialog, set UNLISTED, save — intercept BEFORE dialog opens
-    cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as("setVisibilityT8");
-    cy.get("[data-test=share-button]", { timeout: 15000 }).should("be.visible").click();
+    cy.intercept("POST", "**/api/trpc/*sharing.setVisibility*").as(
+      "setVisibilityT8",
+    );
+    cy.get("[data-test=share-button]", { timeout: 15000 })
+      .should("be.visible")
+      .click();
     cy.contains(`Share ${name}`, { timeout: 10000 }).should("be.visible");
-    cy.get("#share-visibility-UNLISTED", { timeout: 10000 }).should("be.visible").click({ force: true });
-    cy.get("[data-test=share-save]", { timeout: 10000 }).should("be.visible").should("not.be.disabled").click({ force: true });
+    cy.get("#share-visibility-UNLISTED", { timeout: 10000 })
+      .should("be.visible")
+      .click({ force: true });
+    cy.get("[data-test=share-save]", { timeout: 10000 })
+      .should("be.visible")
+      .should("not.be.disabled")
+      .click({ force: true });
     cy.wait("@setVisibilityT8", { timeout: 15000 });
-    cy.get("[data-sonner-toast]", { timeout: 15000 }).should("contain.text", "Sharing settings updated");
+    cy.get("[data-sonner-toast]", { timeout: 15000 }).should(
+      "contain.text",
+      "Sharing settings updated",
+    );
 
     // Capture the share token from the link input
     cy.get("[data-test=share-link-input]")
@@ -480,7 +578,9 @@ context("Sharing: Share Flow", function () {
       const text = $body.text();
       const prefixes = ["Share Test ", "Shared Token Test "];
       for (const prefix of prefixes) {
-        const re = new RegExp(`${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\d+`);
+        const re = new RegExp(
+          `${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\d+`,
+        );
         const match = text.match(re);
         if (match) {
           const found = match[0];

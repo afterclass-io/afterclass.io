@@ -26,9 +26,9 @@ context("ResetPwd", function () {
         "eq",
         `${Cypress.config("baseUrl")}/account/auth/signup?email=${TEST_EMAIL_V1_VALID}`,
       );
-      cy.get("div[data-test=v1-signup-alert-dialog]", { timeout: 10000 }).should(
-        "be.visible",
-      );
+      cy.get("div[data-test=v1-signup-alert-dialog]", {
+        timeout: 10000,
+      }).should("be.visible");
     });
 
     it("should be able to submit password reset request for v2 email", function () {

@@ -47,7 +47,10 @@ context("Reviews: Submit", function () {
       cy.intercept("GET", "/bidding/analytics*").as("navigateToBiddingPage");
       cy.get("a[data-test=sidebar-bid-analytics]").click();
       cy.wait("@navigateToBiddingPage");
-      cy.url().should("contain", `${Cypress.config("baseUrl")}/bidding/analytics`);
+      cy.url().should(
+        "contain",
+        `${Cypress.config("baseUrl")}/bidding/analytics`,
+      );
     });
 
     it("should be able to navigate to reviews page", function () {
