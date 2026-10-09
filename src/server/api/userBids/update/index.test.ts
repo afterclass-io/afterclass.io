@@ -203,6 +203,32 @@ describe("userBids.update", () => {
     });
   });
 
+  it("bases the budget check on the in-transaction read, not the stale pre-read", async () => {
+    const stale = {
+      userId: "u1",
+      classId: "c1",
+      bidWindowId: 5,
+      bidAmount: 40,
+      status: "SECURED",
+    };
+    const dbMock = makeDb({
+      bid: stale,
+      budget: { balance: 100 },
+      aggregate: { _sum: { bidAmount: 80 } },
+    });
+    // The pre-read sees SECURED; by the time the transaction reads, the bid
+    // was moved to PLANNED, so no budget check applies.
+    dbMock.userBid.findUnique
+      .mockResolvedValueOnce(stale)
+      .mockResolvedValueOnce({ ...stale, status: "PLANNED" });
+    const caller = makeCaller(router.createCaller, dbMock);
+
+    await caller.update({ id: "b1", bidAmount: 70 });
+
+    expect(dbMock.userBidBudget.findUnique).not.toHaveBeenCalled();
+    expect(dbMock.userBid.update).toHaveBeenCalled();
+  });
+
   it("does not call $transaction when a non-secured bid amount is updated", async () => {
     const dbMock = makeDb({
       bid: {

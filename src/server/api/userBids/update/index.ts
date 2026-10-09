@@ -87,8 +87,22 @@ export const update = protectedProcedure
       return withConflictRetry(() =>
         ctx.db.$transaction(
           async (tx) => {
+            // The pre-read above can be stale. Decide the budget check from
+            // a read inside this Serializable transaction.
+            const current = await tx.userBid.findUnique({
+              where: { id: input.id },
+              select: {
+                userId: true,
+                classId: true,
+                bidAmount: true,
+                status: true,
+              },
+            });
+            if (current?.userId !== ctx.session.user.id) {
+              throw new TRPCError({ code: "FORBIDDEN" });
+            }
             const cls = await tx.classes.findUnique({
-              where: { id: nextClassId },
+              where: { id: input.classId ?? current.classId },
               select: { acadTermId: true },
             });
             if (!cls) {
@@ -97,14 +111,15 @@ export const update = protectedProcedure
                 message: "Class not found",
               });
             }
-            const nextAmount = input.bidAmount ?? bid.bidAmount;
-            await assertSecuredWithinBudget(
-              tx,
-              ctx.session.user.id,
-              cls.acadTermId,
-              nextAmount,
-              input.id,
-            );
+            if (current.status === "SECURED") {
+              await assertSecuredWithinBudget(
+                tx,
+                ctx.session.user.id,
+                cls.acadTermId,
+                input.bidAmount ?? current.bidAmount,
+                input.id,
+              );
+            }
             return tx.userBid.update({
               where: { id: input.id, userId: ctx.session.user.id },
               data,
