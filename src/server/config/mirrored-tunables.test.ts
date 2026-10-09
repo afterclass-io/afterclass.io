@@ -43,7 +43,7 @@ describe("mirrored tunables", () => {
 
   it("keeps the bid dialog limit equal to maxBidAmount", () => {
     const literal = readLiteral(
-      "src/modules/timetable/components/BidDialog.tsx",
+      "src/modules/timetable/components/BidDialogForm.tsx",
       /\.max\((\d+),/,
     );
     expect(Number(literal)).toBe(DEFAULT_CHAT_CONFIG_VALUES.maxBidAmount);
