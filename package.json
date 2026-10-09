@@ -108,7 +108,6 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@mcp-use/cli": "4.1.8",
     "@storybook/addon-themes": "10.5.10",
     "@storybook/nextjs": "10.5.10",
     "@tailwindcss/postcss": "^4.1.4",
