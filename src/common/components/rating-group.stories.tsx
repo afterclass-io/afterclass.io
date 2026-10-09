@@ -30,6 +30,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
+export const Filled: Story = { args: { value: 3, readOnly: true } };
+
+export const FilledDark: Story = {
+  args: { value: 3, readOnly: true },
+  parameters: { themes: { themeOverride: "dark" } },
+};
+
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 
 const formSchema = z.object({

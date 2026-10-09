@@ -30,11 +30,11 @@ import {
 const chartConfig = {
   median: {
     label: "Median Bid",
-    color: "#2563eb",
+    color: "var(--chart-1)",
   },
   min: {
     label: "Min Bid",
-    color: "#d97706",
+    color: "var(--chart-2)",
   },
 } satisfies ChartConfig;
 
@@ -289,12 +289,12 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
           <ReferenceArea
             x1={nowBand.x1}
             x2={nowBand.x2}
-            fill="#2563eb"
+            fill="var(--chart-1)"
             fillOpacity={0.06}
           />
         )}
 
-        {/* Median line — blue solid */}
+        {/* Median line — solid */}
         <Line
           dataKey="median"
           type="monotone"
@@ -305,7 +305,7 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
               ? false
               : {
                   r: 4,
-                  fill: "white",
+                  fill: "var(--card)",
                   stroke: "var(--color-median)",
                   strokeWidth: 2,
                 }
@@ -313,12 +313,12 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
           activeDot={{
             r: 6,
             fill: "var(--color-median)",
-            stroke: "white",
+            stroke: "var(--card)",
             strokeWidth: 2,
           }}
         />
 
-        {/* Min line — amber dashed */}
+        {/* Min line — dashed */}
         <Line
           dataKey="min"
           type="monotone"
@@ -330,7 +330,7 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
               ? false
               : {
                   r: 3,
-                  fill: "white",
+                  fill: "var(--card)",
                   stroke: "var(--color-min)",
                   strokeWidth: 2,
                 }
@@ -338,7 +338,7 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
           activeDot={{
             r: 5,
             fill: "var(--color-min)",
-            stroke: "white",
+            stroke: "var(--card)",
             strokeWidth: 2,
           }}
         />

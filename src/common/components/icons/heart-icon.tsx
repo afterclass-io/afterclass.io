@@ -29,7 +29,11 @@ export const HeartIcon = ({
       <path d={HEART_PATH} fill="currentColor" />
 
       {/* Filled heart with clip path */}
-      <path d={HEART_PATH} fill="#C1694F" clipPath={`url(#${clipPathId})`} />
+      <path
+        d={HEART_PATH}
+        fill="var(--primary)"
+        clipPath={`url(#${clipPathId})`}
+      />
     </CustomIcon>
   );
 };

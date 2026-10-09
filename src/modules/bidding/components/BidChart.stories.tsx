@@ -113,6 +113,16 @@ export const SingleTerm: Story = {
   },
 };
 
+export const DarkTheme: Story = {
+  args: {
+    chartData: multiYearData,
+    currentAcadTermId: "AY202627T1",
+  },
+  parameters: {
+    themes: { themeOverride: "dark" },
+  },
+};
+
 export const ManyPoints: Story = {
   args: {
     chartData: denseData,
