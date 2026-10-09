@@ -4,7 +4,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/common/components/avatar";
-import { ExitIcon } from "@radix-ui/react-icons";
+import { LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
 import type { SessionUser } from "@/server/auth/config";
 import {
@@ -44,7 +44,7 @@ export const UserProfile = ({ user }: Props) => {
           onClick={() => handleLogout()}
         >
           <p>Logout</p>
-          <ExitIcon />
+          <LogOut />
         </Button>
       </PopoverContent>
     </Popover>
