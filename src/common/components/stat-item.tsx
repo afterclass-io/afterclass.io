@@ -68,7 +68,7 @@ const StatItemSkeleton = ({
           layout === "horizontal" && "text-base",
         )}
       >
-        <span>{label ?? <Skeleton className="h-5 w-20 md:h-6" />}</span>
+        <span>{label ?? <Skeleton>Rating label</Skeleton>}</span>
       </div>
       <div
         className={cn(
@@ -76,11 +76,7 @@ const StatItemSkeleton = ({
           layout === "horizontal" ? "text-3xl" : "text-2xl",
         )}
       >
-        {layout === "horizontal" ? (
-          <Skeleton className="h-7 w-14" />
-        ) : (
-          <Skeleton className="h-7 w-12" />
-        )}
+        <Skeleton>00%</Skeleton>
       </div>
     </div>
   );
