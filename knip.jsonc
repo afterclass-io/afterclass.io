@@ -8,15 +8,15 @@
   "ignoreDependencies": [
     "@prisma/client",
     "@tailwindcss/oxide-win32-x64-msvc",
+    // Imported only by next.config.js and prisma.config.ts. The `--production`
+    // pass does not trace root tool config and reports both unused. The default
+    // pass sees them and prints a "Remove from ignoreDependencies" hint, which
+    // does not fail the run (checked on Linux with knip 6.41.0).
     "dotenv",
     "jiti",
     "pg",
     // Run by git hooks (`prepare` script, lefthook.yml), not imported.
     "lefthook",
-    // Imported by .storybook config. Both arrive through @storybook/nextjs
-    // and next.
-    "@storybook/react",
-    "@next/env",
   ],
   "ignoreIssues": {
     // Run by hand: `bun run scripts/perf/<name>.ts` (docs/perf/README.md).
@@ -31,7 +31,8 @@
     // Storybook mocks copy the shape of the library they replace.
     ".storybook/mocks/*.ts": ["exports", "types"],
 
-    // Component kits export every part so callers can compose them later.
+    // shadcn/ui convention: each component file keeps every part the upstream
+    // kit exports, so a screen can compose a part without editing the kit.
     "src/common/components/{alert-dialog,breadcrumb,card,chart,dialog,dropdown-menu,form,popover,select,sheet,sidebar,toggle}.tsx": [
       "exports",
     ],
