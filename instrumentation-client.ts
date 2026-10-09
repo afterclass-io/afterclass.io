@@ -4,6 +4,8 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+import { EXPECTED_SUPABASE_AUTH_ERRORS } from "@/common/tools/supabase/expected-auth-errors";
+
 const isDev = process.env.NODE_ENV === "development";
 const isProd = !isDev;
 
@@ -16,6 +18,8 @@ Sentry.init({
     Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),
     ...(!isProd ? [Sentry.browserProfilingIntegration()] : []),
   ],
+
+  ignoreErrors: EXPECTED_SUPABASE_AUTH_ERRORS,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,

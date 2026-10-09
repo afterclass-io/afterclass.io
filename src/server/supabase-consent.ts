@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 import { env } from "@/env";
 import { serverSupabaseAuthOptions } from "@/server/supabase";
+import { instrumentSupabase } from "@/common/tools/supabase/instrument";
 import { getAuthSecret } from "@/server/auth/auth-secret";
 
 /**
@@ -21,13 +22,15 @@ import { getAuthSecret } from "@/server/auth/auth-secret";
  * (e.g. the consent route returns 400); recommend the user re-login.
  */
 async function userClient(accessToken: string, refreshToken?: string | null) {
-  const client = createClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      ...serverSupabaseAuthOptions,
-      global: { headers: { Authorization: `Bearer ${accessToken}` } },
-    },
+  const client = instrumentSupabase(
+    createClient(
+      env.NEXT_PUBLIC_SUPABASE_URL,
+      env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        ...serverSupabaseAuthOptions,
+        global: { headers: { Authorization: `Bearer ${accessToken}` } },
+      },
+    ),
   );
   // The supabase-js OAuth methods (getAuthorizationDetails / approve /
   // deny / listGrants / revokeGrant) read the active session from the

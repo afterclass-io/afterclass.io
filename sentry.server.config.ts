@@ -4,6 +4,8 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+import { EXPECTED_SUPABASE_AUTH_ERRORS } from "@/common/tools/supabase/expected-auth-errors";
+
 Sentry.init({
   dsn: "https://81c51704b5a973abc295473c5b430131@o4508338523537408.ingest.us.sentry.io/4508338554208256",
 
@@ -15,5 +17,9 @@ Sentry.init({
   debug: false,
 
   integrations: [Sentry.prismaIntegration()],
-  ignoreErrors: [/^UNAUTHORIZED$/, /AbortError/i],
+  ignoreErrors: [
+    /^UNAUTHORIZED$/,
+    /AbortError/i,
+    ...EXPECTED_SUPABASE_AUTH_ERRORS,
+  ],
 });
