@@ -3,6 +3,7 @@ import { Visibility } from "@/generated/prisma/enums";
 import { protectedProcedure } from "@/server/api/trpc";
 import { getCurrentWindowLogic } from "@/server/api/bidWindows/getCurrentWindow/helpers";
 import { getCurrentAcadTerm } from "@/common/tools/acad-term";
+import { censorProfanity } from "@/server/profanity";
 import {
   buildProgressSyncPlan,
   type SyncTermRow,
@@ -108,8 +109,8 @@ export const planSemester = protectedProcedure
 
     const seniors: PlanSenior[] = seniorRoadmaps.map((r) => ({
       id: r.id,
-      name: r.name,
-      ownerUsername: r.user.username,
+      name: censorProfanity(r.name),
+      ownerUsername: censorProfanity(r.user.username),
       matricTermId: r.matricTermId,
       facultyId: r.facultyId,
       voteCount: r._count.votes,
@@ -180,8 +181,8 @@ export const planSemester = protectedProcedure
           courseCode: e.course.code,
           courseName: e.course.name,
           creditUnits: e.course.creditUnits,
-          roadmapName: e.roadmap.name,
-          ownerUsername: e.roadmap.user.username,
+          roadmapName: censorProfanity(e.roadmap.name),
+          ownerUsername: censorProfanity(e.roadmap.user.username),
         })),
         targetByRoadmap,
         seniorVotes,
