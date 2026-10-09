@@ -25,6 +25,8 @@ import { getChatConfigAsync } from "@/server/config/chat-config";
  * - Expiry: links stop working at the end of the academic term (404,
  *   the same as an invalid link). Revocation exists via `revokeIcalToken`
  *   and `setVisibility` (flipping to PRIVATE revokes the token).
+ *   Rotation: owners can rotate the link with `timetable.rotateIcalToken`;
+ *   the old link then returns 404.
  *
  * Headers:
  * - Content-Type: text/calendar; charset=utf-8

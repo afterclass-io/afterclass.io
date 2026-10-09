@@ -22,8 +22,10 @@ const meta = {
     needsLinkSharing: false,
     isTurningOnLinkSharing: false,
     isRevoking: false,
+    isRotating: false,
     onTurnOnLinkSharing: () => undefined,
     onRevoke: () => undefined,
+    onRotate: () => undefined,
   },
 } satisfies Meta<typeof CalendarExportPopoverView>;
 
