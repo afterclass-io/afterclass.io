@@ -14,7 +14,9 @@ type SkeletonProps = React.ComponentProps<"div"> & {
  * Without children it is a box that the caller sizes with classes. With
  * children it wraps the real content: while `loading` is true the content stays
  * in the layout but is hidden, so the shimmer takes the size of the content it
- * replaces and follows later changes to that content.
+ * replaces and follows later changes to that content. The root is also
+ * `aria-hidden`: `*:invisible` does not hide bare text nodes, so assistive
+ * technology would otherwise read placeholder text as real content.
  */
 function Skeleton({
   className,
@@ -30,6 +32,7 @@ function Skeleton({
     <div
       data-slot="skeleton"
       aria-busy="true"
+      aria-hidden="true"
       className={cn(
         "bg-accent animate-pulse rounded-md text-transparent select-none *:invisible",
         className,

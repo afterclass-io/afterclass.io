@@ -35,3 +35,19 @@ describe("Skeleton", () => {
     expect(getByText("Real content")).toBeDefined();
   });
 });
+
+describe("Skeleton accessibility", () => {
+  it("hides bare placeholder text from assistive technology while loading", () => {
+    const { container, queryByText } = render(<Skeleton>00%</Skeleton>);
+    const root = container.firstElementChild as HTMLElement;
+    expect(root.getAttribute("aria-hidden")).toBe("true");
+    expect(root.textContent).toBe("00%");
+    expect(queryByText("00%", { ignore: "[aria-hidden='true']" })).toBeNull();
+  });
+
+  it("does not hide the children once loading is false", () => {
+    const { container } = render(<Skeleton loading={false}>00%</Skeleton>);
+    expect(container.querySelector("[aria-hidden='true']")).toBeNull();
+    expect(container.textContent).toBe("00%");
+  });
+});
