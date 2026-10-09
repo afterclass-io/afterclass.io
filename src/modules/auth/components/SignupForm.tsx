@@ -28,7 +28,8 @@ import {
   FormMessage,
 } from "@/common/components/form";
 import { LockIcon, EnvelopeIcon } from "@/common/components/icons";
-import { signUpWithEmail } from "@/server/supabase";
+import { supabaseBrowser } from "@/common/tools/supabase/client";
+import { env } from "@/env";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import { useProgress } from "@/common/providers/ProgressProvider";
 import { ProgressLink } from "@/common/components/progress-link";
@@ -69,7 +70,13 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
 
   const onSubmit: SubmitHandler<SignupFormInputs> = async (data) => {
     try {
-      const res = await signUpWithEmail(data.email, data.password);
+      const res = await supabaseBrowser.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          emailRedirectTo: `${env.NEXT_PUBLIC_SITE_URL}/account/auth/login`,
+        },
+      });
       if (res.error) throw new Error(res.error.message);
       if (!res.data.user?.user_metadata?.email_verified) {
         progress.start();

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { supabase } from "@/server/supabase";
+import { supabaseBrowser } from "@/common/tools/supabase/client";
 
 import {
   InputRoot,
@@ -66,7 +66,7 @@ export const ForgotPwdForm = () => {
       return;
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabaseBrowser.auth.resetPasswordForEmail(email, {
       redirectTo: `${env.NEXT_PUBLIC_SITE_URL}/account/auth/reset-password`,
     });
     if (error) {

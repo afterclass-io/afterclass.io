@@ -3,14 +3,15 @@ import { createHash, createHmac, timingSafeEqual } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
 import { env } from "@/env";
+import { serverSupabaseAuthOptions } from "@/server/supabase";
 
 /**
  * Per-call Supabase client authenticated as the user via their access token.
  *
- * The app's shared `supabase` client (`@/server/supabase`) is an anonymous,
- * browser-scoped client. The Supabase OAuth-server methods must run as the
- * signed-in user, so we build a fresh client per call with the user's access
- * token (carried in the NextAuth session, see `src/server/auth/config.ts`).
+ * Each Supabase call builds its own client. The Supabase OAuth-server methods
+ * must run as the signed-in user, so we build a fresh client per call with
+ * the user's access token (carried in the NextAuth session, see
+ * `src/server/auth/config.ts`).
  *
  * NOTE: the Supabase access token in the NextAuth JWT is captured at
  * sign-in and expires after ~1h. The JWT refresh token (Google sign-ins,
@@ -23,6 +24,7 @@ async function userClient(accessToken: string, refreshToken?: string | null) {
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
+      ...serverSupabaseAuthOptions,
       global: { headers: { Authorization: `Bearer ${accessToken}` } },
     },
   );

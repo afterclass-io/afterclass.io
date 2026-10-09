@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
+import { serverSupabaseAuthOptions } from "@/server/supabase";
+
 export type SupabaseLink = {
   accessToken: string;
   refreshToken: string;
@@ -29,7 +31,8 @@ export async function exchangeGoogleIdToken(
   injected?: InjectedAuth,
 ): Promise<SupabaseLink> {
   const auth: InjectedAuth =
-    injected ?? createClient(supabaseUrl, anonKey).auth;
+    injected ??
+    createClient(supabaseUrl, anonKey, serverSupabaseAuthOptions).auth;
   const { data, error } = await auth.signInWithIdToken({
     provider: "google",
     token: idToken,

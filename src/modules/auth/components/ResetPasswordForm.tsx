@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { supabase } from "@/server/supabase";
+import { supabaseBrowser } from "@/common/tools/supabase/client";
 
 import { Button } from "@/common/components/button";
 import {
@@ -45,7 +45,7 @@ export const ResetPasswordForm = () => {
     },
   });
   const onSubmit: SubmitHandler<ResetPwdFormInputs> = async ({ password }) => {
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await supabaseBrowser.auth.updateUser({ password });
     if (error) {
       alert(error.message);
       form.reset();
