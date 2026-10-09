@@ -16,7 +16,8 @@ function parseFallbackConfig(): EdgeConfig {
  * the production choices held in the other keys.
  */
 function mergeStoreWithFallback(raw: Record<string, unknown>): EdgeConfig {
-  const fallback = parseFallbackConfig();
+  // Parsed on the first bad key only: a fully valid store never pays for it.
+  let fallback: EdgeConfig | undefined;
   const merged: Record<string, unknown> = {};
 
   for (const key of edgeConfigKeys) {
@@ -29,6 +30,7 @@ function mergeStoreWithFallback(raw: Record<string, unknown>): EdgeConfig {
       `Edge config key "${key}" is missing or invalid; using the config.json value:\n`,
       result.error.message,
     );
+    fallback ??= parseFallbackConfig();
     merged[key] = fallback[key];
   }
 
