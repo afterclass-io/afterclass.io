@@ -23,7 +23,7 @@ vi.mock("bcrypt", () => ({
   },
 }));
 
-vi.mock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+vi.mock("@/server/ecfg/edge-config", () => ({
   getEdgeConfig: getEdgeConfigMock,
 }));
 

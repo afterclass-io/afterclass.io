@@ -132,7 +132,7 @@ describe("getChatConfigAsync moderation layer", () => {
 
   it("reads moderation tunables from the remote chat section", async () => {
     vi.resetModules();
-    vi.doMock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+    vi.doMock("@/server/ecfg/edge-config", () => ({
       getEdgeConfig: async () => ({
         chat: { moderationReportThreshold: 7 },
       }),

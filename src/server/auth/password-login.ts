@@ -1,4 +1,4 @@
-import { getEdgeConfig } from "@/common/providers/EdgeConfig/EdgeConfigProvider";
+import { getEdgeConfig } from "@/server/ecfg/edge-config";
 
 /**
  * The single answer to "is password login on?". Reads process.env at call time.

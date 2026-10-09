@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { isForeignKeyViolation } from "@/server/db-errors";
 
-import { getEdgeConfig } from "@/common/providers/EdgeConfig/EdgeConfigProvider";
+import { getEdgeConfig } from "@/server/ecfg/edge-config";
 import { runAfterResponse } from "@/server/after-response";
 import { verifiedProcedure } from "@/server/api/trpc";
 import { checkAndIncrement } from "@/server/assistant/ratelimit";

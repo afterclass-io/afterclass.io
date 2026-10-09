@@ -56,7 +56,7 @@
  */
 import { z } from "zod";
 
-import { getEdgeConfig } from "@/common/providers/EdgeConfig/EdgeConfigProvider";
+import { getEdgeConfig } from "@/server/ecfg/edge-config";
 import fallbackJson from "@/server/ecfg/config.json";
 
 const positiveInt = (field: string) =>

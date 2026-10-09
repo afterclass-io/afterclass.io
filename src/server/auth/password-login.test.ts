@@ -5,7 +5,7 @@ const { getEdgeConfigMock } = vi.hoisted(() => ({
   getEdgeConfigMock: vi.fn() as Mock,
 }));
 
-vi.mock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+vi.mock("@/server/ecfg/edge-config", () => ({
   getEdgeConfig: getEdgeConfigMock,
 }));
 

@@ -17,6 +17,14 @@ Edge Config updates follow a **seed-only** model:
 - **Existing store values are never overwritten**: live store values take precedence over `config.json`. To modify live values, edit them directly in the Vercel dashboard.
 - Store-only keys are never deleted by the script.
 
+## Read Path
+
+`getEdgeConfig()` (`src/server/ecfg/edge-config.ts`) reads the store and validates each top-level key on its own:
+
+- A valid store key wins.
+- A missing or invalid key takes its `config.json` value. The app logs one warning that names the key.
+- A fetch error returns `config.json` for all keys.
+
 ## Usage
 
 ### Adding New Configs

@@ -121,7 +121,7 @@ describe("getChatConfig env overrides", () => {
 
   it("overrides rateLimitPerMinute from CHAT_RATE_LIMIT_PER_MINUTE", async () => {
     process.env.CHAT_RATE_LIMIT_PER_MINUTE = "99";
-    vi.doMock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+    vi.doMock("@/server/ecfg/edge-config", () => ({
       getEdgeConfig: async () => ({
         enableAnnouncementBanner: false,
         enableCmdkTooltip: true,
@@ -139,7 +139,7 @@ describe("getChatConfig env overrides", () => {
 
   it("overrides mcpRateLimitPerMinute from CHAT_MCP_RATE_LIMIT_PER_MINUTE", async () => {
     process.env.CHAT_MCP_RATE_LIMIT_PER_MINUTE = "123";
-    vi.doMock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+    vi.doMock("@/server/ecfg/edge-config", () => ({
       getEdgeConfig: async () => ({
         enableAnnouncementBanner: false,
         enableCmdkTooltip: true,
@@ -158,7 +158,7 @@ describe("getChatConfig env overrides", () => {
   it("overrides maxInputTokens from CHAT_MAX_INPUT_TOKENS", async () => {
     const overrideTokens = "32000";
     process.env.CHAT_MAX_INPUT_TOKENS = overrideTokens;
-    vi.doMock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+    vi.doMock("@/server/ecfg/edge-config", () => ({
       getEdgeConfig: async () => ({
         enableAnnouncementBanner: false,
         enableCmdkTooltip: true,
@@ -208,7 +208,7 @@ describe("getChatConfig env overrides", () => {
 
   // The legacy-shape shim passes the kill-switch flags through.
   it("passes kill-switch flags through the legacy-shape return", async () => {
-    vi.doMock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+    vi.doMock("@/server/ecfg/edge-config", () => ({
       getEdgeConfig: async () => ({
         enableAnnouncementBanner: false,
         enableCmdkTooltip: true,

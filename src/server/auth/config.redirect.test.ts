@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+vi.mock("@/server/ecfg/edge-config", () => ({
   getEdgeConfig: vi.fn(),
 }));
 
