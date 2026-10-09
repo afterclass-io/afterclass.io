@@ -125,6 +125,9 @@ const config = withSentryConfig(
       ];
     },
     async headers() {
+      // The JS self-profiler runs only in development (see
+      // `instrumentation-client.ts`), so only development needs the policy.
+      if (process.env.NODE_ENV !== "development") return [];
       return [
         {
           source: "/:path*",
