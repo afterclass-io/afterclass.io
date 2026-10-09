@@ -3,12 +3,13 @@ import { TRPCError } from "@trpc/server";
 
 import { protectedProcedure } from "@/server/api/trpc";
 import { spentForTerm } from "@/server/api/userBids/assert-budget";
+import { getBidLimits } from "@/server/config/chat-config";
 
 export const upsertBudget = protectedProcedure
   .input(
     z.object({
       acadTermId: z.string(),
-      balance: z.number().min(0),
+      balance: z.number().min(0).max(getBidLimits().maxBidBudget),
     }),
   )
   .mutation(async ({ ctx, input }) => {
