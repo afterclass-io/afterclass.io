@@ -91,4 +91,22 @@ describe("sharing.getSharedTimetable", () => {
       caller.getSharedTimetable({ token: "nope" }),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
+
+  it("masks profanity in the timetable name and owner username", async () => {
+    const findUnique = vi.fn().mockResolvedValue({
+      ...timetableFixture,
+      name: "Shit timetable",
+      user: { username: "bastard" },
+    });
+    const caller = makeCaller(router.createCaller, {
+      userTimetable: { findUnique },
+    });
+
+    const result = await caller.getSharedTimetable({ token: "tok_valid" });
+
+    expect(result.timetable).toEqual({
+      name: "**** timetable",
+      ownerUsername: "*******",
+    });
+  });
 });

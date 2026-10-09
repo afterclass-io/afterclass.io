@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 import { publicProcedure } from "@/server/api/trpc";
+import { censorProfanity } from "@/server/profanity";
 import { toArrangedClass } from "@/modules/timetable/functions/arranged-class";
 import { checkBudget } from "@/server/assistant/budget";
 import { clientKey } from "@/server/api/engagement-limit";
@@ -49,8 +50,8 @@ export const getSharedTimetable = publicProcedure
 
     return {
       timetable: {
-        name: timetable.name,
-        ownerUsername: timetable.user.username,
+        name: censorProfanity(timetable.name),
+        ownerUsername: censorProfanity(timetable.user.username),
       },
       slots,
     };
