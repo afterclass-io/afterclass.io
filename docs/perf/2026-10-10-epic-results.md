@@ -30,8 +30,9 @@ First-load JavaScript per route and emitted client assets, from
 | `.next/static` CSS              | 163.9 KiB           | 158.4 KiB          |
 | Fonts and media                 | 543.6 KiB           | 12.6 KiB           |
 
-First-load JavaScript grew by about 19 to 23 KiB per route. The growth comes
-from the `next/image` client code (#522) and the field vitals reporter (#504).
+First-load JavaScript grew by about 19 to 23 KiB per route. The growth is
+likely the `next/image` client code (#522) and the field vitals reporter
+(#504). No build isolated each change.
 `removeConsole` keeps `log`, because the assistant usage line and the MCP
 write-audit line are operational records, so it saves little. Fonts and media
 fell by 531 KiB (#506). `optimizePackageImports` did not change the route
