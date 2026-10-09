@@ -11,31 +11,18 @@ const pauseBeforeRetry = (attempt: number) =>
     setTimeout(resolve, 50 * attempt + Math.floor(Math.random() * 30)),
   );
 
+// Prisma maps most serialization failures to P2034. The pg driver adapter can
+// also throw its own error whose cause kind is "TransactionWriteConflict" from
+// a raw query inside the transaction, before Prisma maps it.
 const isRetryableConflict = (err: unknown) => {
-  if (
-    err instanceof Prisma.PrismaClientKnownRequestError &&
-    (err.code === "P2002" || err.code === "P2034")
-  ) {
-    return true;
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    return err.code === "P2002" || err.code === "P2034";
   }
-  if (typeof err === "object" && err !== null) {
-    const error = err as {
-      code?: string;
-      cause?: { originalCode?: string; kind?: string };
-    };
-    if (error.code === "P2002" || error.code === "P2034") {
-      return true;
-    }
-    if (
-      error.cause?.originalCode === "40001" ||
-      error.cause?.kind === "TransactionWriteConflict"
-    ) {
-      return true;
-    }
-  }
-  return false;
+  const kind = (err as { cause?: { kind?: unknown } } | null)?.cause?.kind;
+  return kind === "TransactionWriteConflict";
 };
 
+/** Run a transaction attempt again when it loses a write conflict. */
 export async function withConflictRetry<T>(run: () => Promise<T>): Promise<T> {
   for (let attempt = 1; ; attempt++) {
     try {
