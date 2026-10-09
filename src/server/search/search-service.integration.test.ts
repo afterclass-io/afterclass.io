@@ -11,6 +11,7 @@ import {
   searchProfessors,
 } from "./search-service";
 import catalog from "./fixtures/catalog.json";
+import rankingCases from "./fixtures/ranking.cases.json";
 
 describe("search-service integration", () => {
   const smuUniversityId = inject("universityId");
@@ -379,4 +380,16 @@ describe("search-service integration", () => {
     const acctHit = acctRes.rows[0]!;
     expect(acctHit.reviewCount).toBe(1);
   });
+
+  it.each(rankingCases.cases)(
+    "ranks the fixed catalog as the golden order: $name",
+    async ({ query, expectedCodes }) => {
+      const catalogCodes = new Set(catalog.courses.map((c) => c.code));
+      const res = await searchCourses(db, { query, limit: 50 });
+      const codes = res.rows
+        .map((r) => r.code)
+        .filter((c) => catalogCodes.has(c));
+      expect(codes).toEqual(expectedCodes);
+    },
+  );
 });
