@@ -29,7 +29,7 @@ export default function GlobalError({
             <div className="text-center">
               <p className="text-primary text-base font-semibold">500</p>
               <h1 className="text-accent-foreground mt-4 text-5xl font-semibold tracking-tight text-balance sm:text-7xl">
-                Opps!
+                Oops!
               </h1>
               <p className="text-muted-foreground mt-6 text-lg font-medium text-pretty sm:text-xl/8">
                 Sorry, an unexpected error has occurred.
