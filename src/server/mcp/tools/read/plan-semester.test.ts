@@ -30,13 +30,13 @@ const fakeUser: SessionUser = {
 
 // The tool calls `caller.roadmaps.planSemester`, so the mock lives under the
 // `roadmaps` sub-router namespace with a distinct key (repo convention).
-// The goal fallback also uses `caller.timetable.searchCourses` and
+// The goal fallback also uses `caller.timetable.searchCoursesByTerms` and
 // `caller.acadTerms.list` for term fan-out.
 function makeCaller(procs: Record<string, unknown>) {
   return {
     faculties: { list: procs.facultiesList ?? (async () => FACULTY_ROWS) },
     roadmaps: { planSemester: procs.roadmapsPlanSemester },
-    timetable: { searchCourses: procs.searchCourses },
+    timetable: { searchCoursesByTerms: procs.searchCourses },
     acadTerms: { list: procs.acadTermsList },
   } as unknown as ToolContext["caller"];
 }
@@ -147,11 +147,14 @@ describe("plan-semester", () => {
   it("falls back to catalog search with reason when candidates are empty and goal is present", async () => {
     const empty = { ...plan, candidates: [] };
     const fn = vi.fn().mockResolvedValue(empty);
-    const search = vi
-      .fn()
-      .mockResolvedValue([
-        { id: "c9", code: "IS424", name: "Data Engineering", creditUnits: 1 },
-      ]);
+    const search = vi.fn().mockResolvedValue([
+      {
+        acadTermId: "2025-T3A",
+        courses: [
+          { id: "c9", code: "IS424", name: "Data Engineering", creditUnits: 1 },
+        ],
+      },
+    ]);
     const ctx: ToolContext = {
       user: fakeUser,
       caller: makeCaller({ roadmapsPlanSemester: fn, searchCourses: search }),
@@ -166,7 +169,7 @@ describe("plan-semester", () => {
     expect(search).toHaveBeenCalledWith(
       expect.objectContaining({
         query: "data engineering",
-        acadTermId: "2025-T3A",
+        acadTermIds: ["2025-T3A"],
       }),
     );
     const parsed = JSON.parse(res.content[0]!.text) as {
@@ -205,13 +208,18 @@ describe("plan-semester", () => {
   it("fans out to upcoming terms when the target term is thin, merging offeredIn", async () => {
     const empty = { ...plan, candidates: [] };
     const fn = vi.fn().mockResolvedValue(empty);
-    const search = vi
-      .fn()
-      .mockResolvedValueOnce([]) // target term: nothing
-      .mockResolvedValueOnce([
-        { id: "c9", code: "IS424", name: "Data Engineering", creditUnits: 1 },
-      ]) // next term: one hit (still thin vs limit 10, so fan-out continues)
-      .mockResolvedValueOnce([]); // second upcoming term: nothing
+    // One batched call: target term nothing, next term one hit (still thin
+    // vs limit 10, so the merge continues), second upcoming term nothing.
+    const search = vi.fn().mockResolvedValue([
+      { acadTermId: "2025-T3A", courses: [] },
+      {
+        acadTermId: "2025-T3B",
+        courses: [
+          { id: "c9", code: "IS424", name: "Data Engineering", creditUnits: 1 },
+        ],
+      },
+      { acadTermId: "2026-T1", courses: [] },
+    ]);
     const terms = [
       { id: "2025-T3A", startDt: new Date("2026-01-01") },
       { id: "2025-T3B", startDt: new Date("2026-03-01") },
@@ -232,9 +240,9 @@ describe("plan-semester", () => {
     });
 
     expect(res.isError).toBeFalsy();
-    expect(search).toHaveBeenCalledTimes(3);
+    expect(search).toHaveBeenCalledTimes(1);
     expect(
-      search.mock.calls.map((c) => (c[0] as { acadTermId: string }).acadTermId),
+      (search.mock.calls[0]![0] as { acadTermIds: string[] }).acadTermIds,
     ).toEqual(["2025-T3A", "2025-T3B", "2026-T1"]);
     const parsed = JSON.parse(res.content[0]!.text) as {
       reason: string;

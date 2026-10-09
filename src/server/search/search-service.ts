@@ -42,6 +42,19 @@ export type CourseSearchInput = {
   withCounts?: boolean;
 };
 
+export type CourseTermsSearchInput = {
+  query: string;
+  /** Top-N kept for each term, as one single-term search would keep. */
+  limitPerTerm: number;
+  acadTermIds: string[];
+  facultyId?: number;
+};
+
+export type CourseTermsSearchResult = {
+  acadTermId: string;
+  rows: CourseHit[];
+};
+
 export type ProfessorSearchInput = {
   query: string;
   limit: number;
@@ -59,6 +72,15 @@ type CourseRow = {
   count: bigint | number;
   profCount?: bigint | number;
   reviewCount?: bigint | number;
+};
+
+type CourseTermRow = {
+  id: string;
+  code: string;
+  name: string;
+  creditUnits: number;
+  uniAbbrv: UniversityAbbreviation;
+  acadTermId: string;
 };
 
 type ProfessorRow = {
@@ -199,6 +221,116 @@ export async function searchCourses(
   }
 
   return { rows: mappedRows, total };
+}
+
+/**
+ * Searches the courses offered in each of `acadTermIds` with one query.
+ *
+ * Each term keeps its own top `limitPerTerm` rows, ranked as `searchCourses`
+ * ranks them, so the rows of term T equal those of `searchCourses` with
+ * `acadTermId: T`. A single `LIMIT` over all terms would return a different
+ * set, so the window is `ROW_NUMBER() OVER (PARTITION BY term ...)`. The
+ * result keeps the order of `acadTermIds`; a term without hits has empty rows.
+ */
+export async function searchCoursesByTerms(
+  db: PrismaClient,
+  input: CourseTermsSearchInput,
+): Promise<CourseTermsSearchResult[]> {
+  const q = normalizeSearchQuery(input.query);
+  const codeKey = toCodeKey(q);
+  const tsQuery = buildTsQuery(q);
+  const hasQuery = q.length >= MIN_QUERY_LEN && tsQuery !== null;
+
+  const emptyResult = input.acadTermIds.map((acadTermId) => ({
+    acadTermId,
+    rows: [],
+  }));
+  if (!hasQuery || input.acadTermIds.length === 0) return emptyResult;
+
+  const qLike = escapeLike(q);
+  const codeKeyLike = escapeLike(codeKey);
+  const facultyId = input.facultyId ?? null;
+  const limitPerTerm = input.limitPerTerm;
+
+  const rows = await db.$queryRaw<CourseTermRow[]>`
+    WITH terms AS (
+      SELECT DISTINCT unnest(${input.acadTermIds}::text[]) AS term_id
+    ),
+    hits AS (
+      SELECT
+        c.id,
+        c.code,
+        c.name,
+        c.credit_units AS "creditUnits",
+        u.abbrv AS "uniAbbrv",
+        t.term_id AS "acadTermId",
+        ROW_NUMBER() OVER (
+          PARTITION BY t.term_id
+          ORDER BY
+            (c.code = UPPER(${q}) OR REPLACE(c.code, '-', '') = ${codeKey})::int DESC,
+            (c.code ILIKE (${qLike} || '%')
+              OR REPLACE(c.code, '-', '') LIKE (${codeKeyLike} || '%'))::int DESC,
+            similarity(c.name, ${q}) DESC,
+            c.code
+        ) AS ord
+      FROM courses c
+      JOIN universities u ON u.id = c.belong_to_university
+      CROSS JOIN terms t
+      WHERE (${facultyId}::int IS NULL OR c.belong_to_faculty = ${facultyId}::int)
+        AND EXISTS (
+          SELECT 1 FROM classes cl
+          WHERE cl.course_id = c.id AND cl.acad_term_id = t.term_id
+        )
+        AND (
+          c.code ILIKE ('%' || ${qLike} || '%')
+          OR REPLACE(c.code, '-', '') LIKE ('%' || ${codeKeyLike} || '%')
+          OR to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description,'') || ' ' || COALESCE(c.course_area,''))
+             @@ to_tsquery('simple', ${tsQuery}::text)
+          OR word_similarity(c.name, ${q}) > 0.3
+          OR word_similarity(COALESCE(c.description,''), ${q}) > 0.3
+          OR word_similarity(COALESCE(c.course_area,''), ${q}) > 0.3
+          OR similarity(c.code, ${q}) > 0.3
+          OR EXISTS (
+            SELECT 1 FROM classes clp
+            JOIN professors p ON p.id = clp.professor_id
+            WHERE clp.course_id = c.id
+              AND clp.acad_term_id = t.term_id
+              AND (
+                p.name ILIKE ('%' || ${qLike} || '%')
+                OR word_similarity(p.name, ${q}) > 0.3
+              )
+          )
+        )
+    )
+    SELECT h.id, h.code, h.name, h."creditUnits", h."uniAbbrv", h."acadTermId"
+    FROM hits h
+    WHERE h.ord <= ${limitPerTerm}
+    ORDER BY h."acadTermId", h.ord;
+  `;
+
+  const rowsByTerm = new Map<string, CourseHit[]>();
+  for (const r of rows) {
+    const list = rowsByTerm.get(r.acadTermId) ?? [];
+    list.push({
+      id: r.id,
+      code: r.code,
+      name: r.name,
+      creditUnits: r.creditUnits,
+      uniAbbrv: r.uniAbbrv,
+      profCount: 0,
+      reviewCount: 0,
+    });
+    rowsByTerm.set(r.acadTermId, list);
+  }
+
+  return input.acadTermIds.map((acadTermId) => {
+    const termRows = rowsByTerm.get(acadTermId) ?? [];
+    // Same exact-code shortcut as `searchCourses`, applied to each term.
+    const exact = codeKey
+      ? termRows.filter((r) => toCodeKey(r.code) === codeKey)
+      : [];
+    return { acadTermId, rows: exact.length > 0 ? exact : termRows };
+  });
 }
 
 export async function searchProfessors(

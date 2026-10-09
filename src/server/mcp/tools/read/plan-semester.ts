@@ -108,14 +108,15 @@ export const planSemesterTool: McpTool<typeof planSemesterSchema> = {
         ...(await upcomingTermIds(caller, targetTermId, FALLBACK_FANOUT_TERMS)),
       ];
       const byCourse = new Map<string, CatalogHit & { offeredIn: string[] }>();
-      for (const acadTermId of termIds) {
-        const hits = (await caller.timetable.searchCourses({
-          acadTermId,
-          query: trimmedGoal,
-          facultyId,
-          // searchCourses caps at 20 rows; the tool limit applies below.
-        })) as CatalogHit[];
-        for (const h of hits) {
+      // One batched call; each term keeps its own top-N, as one search per
+      // term would. Merge in term order and stop once the limit is met.
+      const perTerm = await caller.timetable.searchCoursesByTerms({
+        acadTermIds: termIds,
+        query: trimmedGoal,
+        facultyId,
+      });
+      for (const { acadTermId, courses } of perTerm) {
+        for (const h of courses) {
           const agg = byCourse.get(h.id);
           if (agg) {
             agg.offeredIn.push(acadTermId);

@@ -3,6 +3,7 @@ import { createTRPCRouter } from "@/server/api/trpc";
 import { getArrangement } from "./getArrangement";
 import { getBidWindows } from "./getBidWindows";
 import { searchCourses } from "./searchCourses";
+import { searchCoursesByTerms } from "./searchCoursesByTerms";
 import { listMine } from "./listMine";
 import { create } from "./create";
 import { rename } from "./rename";
@@ -20,6 +21,7 @@ export const timetableRouter = createTRPCRouter({
   getArrangement,
   getBidWindows,
   searchCourses,
+  searchCoursesByTerms,
   listMine,
   create,
   rename,
