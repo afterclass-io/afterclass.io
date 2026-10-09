@@ -5,6 +5,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { supabaseBrowser } from "@/common/tools/supabase/client";
+import { toast } from "sonner";
 
 import {
   InputRoot,
@@ -60,7 +61,7 @@ export const ForgotPwdForm = () => {
       progress.start();
 
       startTransition(() => {
-        router.push(`/account/auth/signup?email=${email}`);
+        router.push(`/account/auth/signup?${new URLSearchParams({ email })}`);
         progress.done();
       });
       return;
@@ -70,7 +71,7 @@ export const ForgotPwdForm = () => {
       redirectTo: `${env.NEXT_PUBLIC_SITE_URL}/account/auth/reset-password`,
     });
     if (error) {
-      alert(error.message);
+      toast.error(error.message);
       form.reset();
       return;
     }
@@ -78,7 +79,7 @@ export const ForgotPwdForm = () => {
     progress.start();
 
     startTransition(() => {
-      router.push(`/account/auth/verify?email=${email}`);
+      router.push(`/account/auth/verify?${new URLSearchParams({ email })}`);
       progress.done();
     });
   };

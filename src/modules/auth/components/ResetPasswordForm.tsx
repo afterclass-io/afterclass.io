@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { supabaseBrowser } from "@/common/tools/supabase/client";
+import { toast } from "sonner";
 
 import { Button } from "@/common/components/button";
 import {
@@ -47,7 +48,7 @@ export const ResetPasswordForm = () => {
   const onSubmit: SubmitHandler<ResetPwdFormInputs> = async ({ password }) => {
     const { error } = await supabaseBrowser.auth.updateUser({ password });
     if (error) {
-      alert(error.message);
+      toast.error(error.message);
       form.reset();
       return;
     }

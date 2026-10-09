@@ -29,6 +29,7 @@ import {
 } from "@/common/components/form";
 import { LockIcon, EnvelopeIcon } from "@/common/components/icons";
 import { supabaseBrowser } from "@/common/tools/supabase/client";
+import { toast } from "sonner";
 import { env } from "@/env";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import { useProgress } from "@/common/providers/ProgressProvider";
@@ -79,9 +80,12 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
       });
       if (res.error) throw new Error(res.error.message);
       if (!res.data.user?.user_metadata?.email_verified) {
+        const verifyEmail = res.data.user?.email ?? data.email;
         progress.start();
         startTransition(() => {
-          router.push(`/account/auth/verify?email=${res.data.user?.email}`);
+          router.push(
+            `/account/auth/verify?${new URLSearchParams({ email: verifyEmail })}`,
+          );
           progress.done();
         });
       } else {
@@ -91,7 +95,11 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
       }
       form.reset();
     } catch (err) {
-      alert(err);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Sign up failed. Please try again.",
+      );
     }
   };
 
