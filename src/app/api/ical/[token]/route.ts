@@ -35,7 +35,8 @@ import { getChatConfigAsync } from "@/server/config/chat-config";
  *
  * Responses:
  * - 200 → iCal feed
- * - 404 → token invalid, revoked, or timetable missing
+ * - 404 → token invalid, revoked, or timetable missing; the term ended;
+ *   or the timetable is PRIVATE
  * - 429 → throttled (slow down token-guessing spray)
  */
 export async function GET(
