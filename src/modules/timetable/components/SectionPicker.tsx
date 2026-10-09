@@ -21,7 +21,7 @@ import {
   hasTimeConflict,
   toTimingLikes,
 } from "@/modules/timetable/functions/slot-math";
-import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import type { ArrangedClass } from "@/common/types/timetable";
 
 /** Re-exported so callers can keep importing `SectionOption` from here. */
 export type { SectionOption } from "@/modules/timetable/hooks/use-slot-mutations";

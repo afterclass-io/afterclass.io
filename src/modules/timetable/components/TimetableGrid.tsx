@@ -8,7 +8,7 @@ import {
   SMU_PERIODS,
   periodBandStyle,
 } from "@/modules/timetable/functions/slot-math";
-import type { ClassTimingLike } from "@/modules/timetable/functions/slot-math";
+import type { ArrangedClass } from "@/common/types/timetable";
 import { TimetableDayColumn } from "./TimetableDayColumn";
 import type { DaySlot } from "./TimetableDayColumn";
 import type { BidInfo } from "./TimetableSlotCard";
@@ -18,25 +18,6 @@ import { TimetableAgenda } from "./TimetableAgenda";
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-export type ArrangedClass = {
-  classId: string;
-  courseCode: string;
-  courseName: string;
-  section: string;
-  professorName?: string | null;
-  creditUnits: number;
-  timings: ClassTimingLike[];
-  examTimings: ClassExamTiming[];
-};
-
-export type ClassExamTiming = {
-  date: Date | string;
-  dayOfWeek?: string | null;
-  startTime: string;
-  endTime: string;
-  venue?: string | null;
-};
 
 export type TimetableGridProps = {
   classes: ArrangedClass[];

@@ -9,7 +9,7 @@ import {
   toArrangedClass,
   type SlotWithClass,
 } from "@/modules/timetable/functions/arranged-class";
-import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import type { ArrangedClass } from "@/common/types/timetable";
 
 /** Timing shape returned per section from `searchCourses`. */
 export type SectionTiming = {

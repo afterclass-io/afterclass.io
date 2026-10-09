@@ -2,7 +2,7 @@ import "server-only";
 
 import { db as defaultDb } from "@/server/db";
 import type { PrismaClient } from "@/generated/prisma/client";
-import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import type { ArrangedClass } from "@/common/types/timetable";
 import { toArrangedClass } from "@/modules/timetable/functions/arranged-class";
 import { isTermEnded } from "@/server/api/timetable/ical-expiry";
 

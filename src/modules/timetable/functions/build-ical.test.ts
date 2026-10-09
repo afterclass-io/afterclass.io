@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildIcal } from "./build-ical";
-import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import type { ArrangedClass } from "@/common/types/timetable";
 
 // ---------------------------------------------------------------------------
 // Helpers

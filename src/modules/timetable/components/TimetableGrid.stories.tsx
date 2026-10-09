@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { TimetableGrid } from "./TimetableGrid";
-import type { ArrangedClass } from "./TimetableGrid";
+import type { ArrangedClass } from "@/common/types/timetable";
 
 // ---------------------------------------------------------------------------
 // Mock data helpers

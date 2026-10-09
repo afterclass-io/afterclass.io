@@ -22,7 +22,8 @@ import { QuotaAlertBar } from "./quota-alert-bar";
 import { usePersistSession } from "./use-persist-session";
 import { useChatScroll } from "./use-chat-scroll";
 import { useChatStore } from "./chat-store";
-import { usePageContext, type PageContext } from "./use-page-context";
+import type { PageContext } from "@/common/types/assistant";
+import { usePageContext } from "./use-page-context";
 
 export type ChatPanelProps = {
   quota: number;

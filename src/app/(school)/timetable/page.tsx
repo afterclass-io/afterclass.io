@@ -50,7 +50,7 @@ import {
 import { useTimetableHistory } from "@/modules/timetable/hooks/use-timetable-history";
 import { useRemoveSlotMutation } from "@/modules/timetable/hooks/use-slot-mutations";
 import { TimetableGrid } from "@/modules/timetable/components/TimetableGrid";
-import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import type { ArrangedClass } from "@/common/types/timetable";
 import type { BidInfo } from "@/modules/timetable/components/TimetableSlotCard";
 import { TermPicker } from "@/modules/timetable/components/TermPicker";
 import { VariantSwitcher } from "@/modules/timetable/components/VariantSwitcher";

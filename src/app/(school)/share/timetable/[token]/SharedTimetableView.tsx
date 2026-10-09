@@ -1,7 +1,7 @@
 "use client";
 
 import { TimetableGrid } from "@/modules/timetable/components/TimetableGrid";
-import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import type { ArrangedClass } from "@/common/types/timetable";
 import { PageTitle } from "@/common/components/page-title";
 
 // ---------------------------------------------------------------------------

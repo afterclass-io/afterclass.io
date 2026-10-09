@@ -8,7 +8,7 @@ import {
 } from "@/common/components/card";
 import { formatDateSGT } from "@/common/functions/format-date-sgt";
 import type { ClassTimingLike } from "@/modules/timetable/functions/slot-math";
-import type { ClassExamTiming } from "./TimetableGrid";
+import type { ClassExamTiming } from "@/common/types/timetable";
 
 // ---------------------------------------------------------------------------
 // Types

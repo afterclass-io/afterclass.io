@@ -1,4 +1,4 @@
-import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import type { ArrangedClass } from "@/common/types/timetable";
 
 export type SlotWithClass = {
   class: {

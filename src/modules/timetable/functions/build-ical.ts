@@ -1,5 +1,5 @@
 import ical, { ICalCalendarMethod, ICalWeekday } from "ical-generator";
-import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import type { ArrangedClass } from "@/common/types/timetable";
 import { dayOfWeekToIcalCode } from "@/common/functions/day-of-week";
 
 // ---------------------------------------------------------------------------

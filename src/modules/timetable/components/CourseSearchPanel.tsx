@@ -10,7 +10,7 @@ import { Skeleton } from "@/common/components/skeleton";
 import { cn } from "@/common/functions";
 import { useDebouncedValue } from "@/common/hooks/useDebouncedValue";
 import { SectionPicker, type SectionOption } from "./SectionPicker";
-import type { ArrangedClass } from "./TimetableGrid";
+import type { ArrangedClass } from "@/common/types/timetable";
 
 export type CourseSearchPanelProps = {
   /** Set of course codes currently in the active timetable (for swap detection). */
