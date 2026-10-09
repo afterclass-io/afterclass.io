@@ -44,7 +44,7 @@ context("ResetPwd", function () {
         .should("have.text", "Confirming your email...");
       // by this time this should have requsted once
       cy.get("@mockPasswordReset.all").should("have.length", 1);
-      cy.wait(10_000);
+      cy.wait("@mockPasswordReset");
       cy.url({ timeout: 15000 }).should(
         "eq",
         `${Cypress.config("baseUrl")}/account/auth/verify?email=${TEST_EMAIL_V2_VALID}`,

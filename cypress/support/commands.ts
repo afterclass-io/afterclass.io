@@ -28,8 +28,13 @@ Cypress.Commands.add(
       .click();
     // Wait for successful login: the URL must not be the login page anymore
     cy.url({ timeout: 15000 }).should("not.include", "/account/auth/login");
-    // Give NextAuth a moment to finalize the session cookie
-    cy.wait(800);
+    // NextAuth finalizes the session cookie after the redirect; wait for it
+    cy.getCookies().should((cookies) => {
+      expect(
+        cookies.some((cookie) => cookie.name.endsWith("session-token")),
+        "session cookie is set",
+      ).to.eq(true);
+    });
   },
 );
 
