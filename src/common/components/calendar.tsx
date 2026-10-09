@@ -188,7 +188,7 @@ export function Calendar(props: CalendarProps) {
         {weekDayLabels.map((w) => (
           <div
             key={w}
-            className="text-muted-foreground/80 flex h-8 items-center justify-center text-[11px] font-semibold tracking-wide uppercase"
+            className="text-muted-foreground/80 flex h-8 items-center justify-center text-xs font-semibold tracking-wide uppercase"
           >
             {w}
           </div>

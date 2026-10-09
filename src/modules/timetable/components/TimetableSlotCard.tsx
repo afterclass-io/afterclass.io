@@ -139,7 +139,7 @@ export function TimetableSlotCard({
         {showChip && (
           <span
             className={cn(
-              "mt-0.5 inline-block rounded-sm px-1 py-px text-[10px] leading-none font-medium",
+              "text-2xs mt-0.5 inline-block rounded-sm px-1 py-px leading-none font-medium",
               bidChipVariant(bidInfo.status as UserBidStatus),
             )}
           >

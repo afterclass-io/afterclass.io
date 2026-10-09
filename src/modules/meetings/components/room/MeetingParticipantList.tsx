@@ -51,7 +51,7 @@ export function MeetingParticipantList({
                 <TooltipTrigger asChild>
                   <span className="bg-card inline-flex max-w-full items-center gap-1.5 rounded-full border py-0.5 pr-2.5 pl-0.5 text-xs">
                     <Avatar className="size-5">
-                      <AvatarFallback className="text-[9px] font-medium">
+                      <AvatarFallback className="text-2xs font-medium">
                         {getNameInitials(p.name)}
                       </AvatarFallback>
                     </Avatar>

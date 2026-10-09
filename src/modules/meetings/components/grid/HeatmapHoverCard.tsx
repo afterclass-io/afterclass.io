@@ -130,7 +130,7 @@ export function HeatmapHoverCard({
           })}{" "}
           • {timeStr}
         </p>
-        <p className="text-muted-foreground text-[11px]">
+        <p className="text-muted-foreground text-xs">
           {available.length} of {participants.length} available
           {ifNeeded.length > 0 && ` (${ifNeeded.length} if needed)`}
         </p>

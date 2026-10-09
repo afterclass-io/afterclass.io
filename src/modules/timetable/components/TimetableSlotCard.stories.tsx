@@ -179,7 +179,7 @@ export const AllBidStatuses: Story = {
             slot={{ ...baseSlot, topPct: 0, heightPct: 100 }}
             bidInfo={{ amount: 50, round: "1", status }}
           />
-          <span className="bg-background/80 absolute top-1 right-1 rounded px-1 font-mono text-[10px]">
+          <span className="bg-background/80 text-2xs absolute top-1 right-1 rounded px-1 font-mono">
             {status}
           </span>
         </div>

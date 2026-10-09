@@ -99,7 +99,7 @@ export function RoadmapTermCell({
             </span>
           )}
           {entries.length > 0 && (
-            <span className="text-muted-foreground text-[10px] tabular-nums">
+            <span className="text-muted-foreground text-2xs tabular-nums">
               {entries.length} course{entries.length !== 1 ? "s" : ""}
             </span>
           )}

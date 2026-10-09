@@ -35,7 +35,7 @@ export function TermTimetableLink({
     <Link
       href={`/timetable?acadTermId=${encodeURIComponent(matched.id)}`}
       className={cn(
-        "border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors",
+        "border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition-colors",
         className,
       )}
       data-test="term-timetable-link"

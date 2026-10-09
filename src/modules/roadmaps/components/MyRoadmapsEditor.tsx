@@ -955,7 +955,7 @@ function DescriptionEditor({
         aria-label="Roadmap description"
         data-test="roadmap-description"
       />
-      <span className="text-muted-foreground pointer-events-none absolute right-2 bottom-1.5 text-[10px] tabular-nums">
+      <span className="text-muted-foreground pointer-events-none absolute right-2 bottom-1.5 text-xs tabular-nums">
         {value.length}/{DESCRIPTION_MAX_LENGTH}
       </span>
     </div>

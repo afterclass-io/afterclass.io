@@ -36,15 +36,12 @@ export function QuotaMeter({
       data-test="assistant-quota-meter"
     >
       <div className="flex items-center justify-between gap-2">
-        <p
-          className={cn("text-xs font-semibold", compact && "text-[11px]")}
-          aria-live="polite"
-        >
+        <p className="text-xs font-semibold" aria-live="polite">
           {remaining} of {quota} free website messages left this month
         </p>
         <span
           className={cn(
-            "rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase",
+            "rounded-full px-2 py-0.5 text-xs font-bold tracking-wide uppercase",
             level === "ok" &&
               "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
             level === "low" &&
@@ -73,7 +70,7 @@ export function QuotaMeter({
         />
       </div>
       {hasConnectedAgent ? (
-        <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+        <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
           Website chats use this quota; connected-agent chats use your own
           credits.
         </p>
@@ -81,7 +78,7 @@ export function QuotaMeter({
         <a
           href="/mcp"
           data-umami-event="assistant-quota-connect-click"
-          className="text-primary text-[11px] font-semibold hover:underline"
+          className="text-primary text-xs font-semibold hover:underline"
         >
           Get unlimited - connect your own agent / the AfterClass MCP App
         </a>

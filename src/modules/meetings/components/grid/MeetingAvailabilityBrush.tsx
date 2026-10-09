@@ -125,7 +125,7 @@ export function MeetingAvailabilityBrush({
               </span>
               <Kbd
                 variant="outline"
-                className="text-muted-foreground/70 text-[10px]"
+                className="text-muted-foreground/70 text-xs"
               >
                 {index + 1}
               </Kbd>

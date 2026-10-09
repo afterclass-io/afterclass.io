@@ -211,7 +211,7 @@ export const WithTimetableFooters: Story = {
   args: {
     entries: SAMPLE_ENTRIES,
     termFooter: (yearNumber, term) => (
-      <span className="text-muted-foreground text-[11px] font-medium">
+      <span className="text-muted-foreground text-xs font-medium">
         {term} timetable
       </span>
     ),

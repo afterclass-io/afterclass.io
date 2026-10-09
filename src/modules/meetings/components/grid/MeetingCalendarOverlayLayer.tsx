@@ -76,7 +76,7 @@ export function MeetingCalendarOverlayLayer({
           >
             <div
               className={cn(
-                "size-full overflow-hidden rounded-sm px-1 pt-px text-[10px] leading-tight font-medium break-words",
+                "size-full overflow-hidden rounded-sm px-1 pt-px text-xs leading-tight font-medium break-words",
                 OVERLAY_SOURCE_STYLES[overlay.source].block,
               )}
             >

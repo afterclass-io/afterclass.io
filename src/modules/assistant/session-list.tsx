@@ -160,7 +160,7 @@ export function SessionList({
           </div>
         ))}
       </div>
-      <p className="text-muted-foreground border-t pt-2 text-[11px]">
+      <p className="text-muted-foreground border-t pt-2 text-xs">
         Chat history is saved on this device only.
       </p>
 

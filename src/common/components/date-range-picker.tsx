@@ -151,7 +151,7 @@ export function DateRangePicker({
         {presets.length > 0 && (
           <div className="border-border/60 bg-muted/20 border-t px-3 py-2.5">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-muted-foreground mr-1 text-[11px] font-medium select-none">
+              <span className="text-muted-foreground mr-1 text-xs font-medium select-none">
                 Duration:
               </span>
               {presets.map((days) => {

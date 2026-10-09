@@ -63,12 +63,12 @@ export function ToolCallCard({
       }
     >
       {running && typeof input === "object" && input !== null && (
-        <pre className="text-muted-foreground max-h-40 overflow-auto text-[11px] whitespace-pre-wrap">
+        <pre className="text-muted-foreground max-h-40 overflow-auto text-xs whitespace-pre-wrap">
           {formatInput(input)}
         </pre>
       )}
       {!running && "output" in part && part.output !== undefined && (
-        <pre className="max-h-40 overflow-auto text-[11px] whitespace-pre-wrap">
+        <pre className="max-h-40 overflow-auto text-xs whitespace-pre-wrap">
           {formatInput(part.output)}
         </pre>
       )}

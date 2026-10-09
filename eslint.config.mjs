@@ -101,6 +101,16 @@ const config = [
           message:
             "Use the shared SGT helpers in @/common/functions/format-date-sgt.",
         },
+        {
+          selector: "Literal[value=/text-\\[\\d+px\\]/]",
+          message:
+            "Use a type-scale class (text-xs, or text-2xs for dense cells) instead of an arbitrary pixel size.",
+        },
+        {
+          selector: "TemplateElement[value.raw=/text-\\[\\d+px\\]/]",
+          message:
+            "Use a type-scale class (text-xs, or text-2xs for dense cells) instead of an arbitrary pixel size.",
+        },
       ],
     },
   },

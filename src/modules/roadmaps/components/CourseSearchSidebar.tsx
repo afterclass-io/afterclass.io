@@ -88,7 +88,7 @@ function DraggableSearchChip({
         <div className="flex items-start justify-between gap-1.5">
           <span className="font-semibold break-words">{course.code}</span>
           {course.creditUnits > 0 && (
-            <span className="bg-background/60 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-bold">
+            <span className="bg-background/60 shrink-0 rounded-full px-1.5 py-0.5 text-xs leading-none font-bold">
               {course.creditUnits} CU
             </span>
           )}

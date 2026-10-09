@@ -56,7 +56,7 @@ export function RoadmapConflictBadge({
             <TooltipTrigger asChild>
               <span
                 className={cn(
-                  "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] leading-none font-semibold",
+                  "text-2xs inline-flex items-center rounded px-1.5 py-0.5 leading-none font-semibold",
                   sev.className,
                 )}
               >

@@ -82,7 +82,7 @@ export function MeetingGroupPanel({
                     <Sparkles className="text-primary size-3.5 shrink-0" />
                     <span className="truncate">{time.label}</span>
                   </span>
-                  <span className="text-muted-foreground shrink-0 font-mono text-[11px]">
+                  <span className="text-muted-foreground shrink-0 font-mono text-xs">
                     #{time.rank}
                   </span>
                 </Button>

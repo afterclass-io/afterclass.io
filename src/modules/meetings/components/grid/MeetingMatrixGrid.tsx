@@ -154,7 +154,7 @@ export function MeetingMatrixGrid({
           gridTemplateColumns: `56px repeat(${dates.length}, minmax(80px, 1fr))`,
         }}
       >
-        <div className="bg-muted text-muted-foreground sticky left-0 z-30 flex h-12 items-center justify-center border-r border-b text-[11px] font-medium">
+        <div className="bg-muted text-muted-foreground text-2xs sticky left-0 z-30 flex h-12 items-center justify-center border-r border-b font-medium">
           SGT
         </div>
 
@@ -168,7 +168,7 @@ export function MeetingMatrixGrid({
                 isToday && "bg-primary/5",
               )}
             >
-              <span className="text-muted-foreground text-[11px] font-semibold uppercase">
+              <span className="text-muted-foreground text-2xs font-semibold uppercase">
                 {formatDateSGT(date, { weekday: "short" })}
               </span>
               <span className="text-foreground text-xs font-bold">
@@ -186,7 +186,7 @@ export function MeetingMatrixGrid({
                 key={time}
                 className={cn(
                   SLOT_ROW_CLASS,
-                  "text-muted-foreground flex items-start justify-end border-t pr-2 text-[10px]",
+                  "text-muted-foreground text-2xs flex items-start justify-end border-t pr-2",
                   isHour
                     ? "border-border font-medium"
                     : "border-transparent text-transparent",
