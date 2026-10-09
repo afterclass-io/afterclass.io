@@ -7,6 +7,7 @@ import {
 } from "ai";
 
 import { runAfterResponse } from "@/server/after-response";
+import { BodyTooLargeError, readTextCapped } from "@/server/read-capped-body";
 import { auth } from "@/server/auth";
 import { createCallerForUser } from "@/server/mcp/caller";
 import { buildAssistantTools } from "@/server/assistant/tools";
@@ -218,10 +219,10 @@ export async function POST(req: Request) {
   let messages: UIMessage[];
   let contextSuffix = "";
   try {
-    const rawLen = Number(req.headers.get("content-length") ?? "0");
-    if (rawLen > MAX_CHAT_BODY_BYTES)
-      return new Response("Request too large", { status: 413 });
-    const body = (await req.json()) as {
+    // The cap counts the bytes that arrive: content-length can be missing
+    // (chunked upload), unparseable or understated.
+    const rawBody = await readTextCapped(req, MAX_CHAT_BODY_BYTES);
+    const body = JSON.parse(rawBody) as {
       messages?: unknown;
       pageContext?: unknown;
     };
@@ -240,7 +241,9 @@ export async function POST(req: Request) {
       const parsed = pageContextSchema.safeParse(body.pageContext);
       if (parsed.success) contextSuffix = buildPageContextSuffix(parsed.data);
     }
-  } catch {
+  } catch (e) {
+    if (e instanceof BodyTooLargeError)
+      return new Response("Request too large", { status: 413 });
     return new Response("Invalid request body", { status: 400 });
   }
 
