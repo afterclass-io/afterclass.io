@@ -904,4 +904,119 @@ describe("meetingsRouter", () => {
       });
     });
   });
+
+  describe("profanity masking", () => {
+    const pollRow = {
+      id: "poll-uuid-1",
+      slug: "abcdefghij",
+      title: "Shit sprint",
+      description: "fuck this",
+      agenda: "Avoid the bastard",
+      links: [],
+      creatorId: CREATOR_ID,
+      startDate: new Date("2026-10-10T00:00:00.000Z"),
+      endDate: new Date("2026-10-15T00:00:00.000Z"),
+      startHour: 9,
+      endHour: 18,
+      slotDurationMinutes: 15,
+      course: null,
+      section: null,
+      teamIdentifier: null,
+      acadTerm: null,
+      participants: [
+        {
+          id: "part-1",
+          userId: PARTICIPANT_USER_ID_1,
+          user: { firstName: "Bastard", lastName: "Smith" },
+          availableSlots: [1],
+          ifNeededSlots: [],
+        },
+        {
+          id: "part-2",
+          userId: PARTICIPANT_USER_ID_2,
+          user: { firstName: "Shit", lastName: "Mine" },
+          availableSlots: [2],
+          ifNeededSlots: [],
+        },
+      ],
+    };
+
+    it("getPollBySlug masks title, description, agenda and other participants for a non-creator", async () => {
+      const caller = makeCaller(
+        meetingsRouter.createCaller,
+        { meetingPoll: { findUnique: vi.fn().mockResolvedValue(pollRow) } },
+        { user: { id: PARTICIPANT_USER_ID_2 } },
+      );
+
+      const result = await caller.getPollBySlug({ slug: "abcdefghij" });
+      const serialized = JSON.stringify(result);
+
+      expect(result.poll.title).toBe("**** sprint");
+      expect(result.poll.description).toBe("**** this");
+      expect(result.poll.agenda).toBe("Avoid the *******");
+      expect(result.participants[0]?.name).toBe("******* Smith");
+      // The caller own name stays raw so the page shows what they typed.
+      expect(result.participants[1]?.name).toBe("Shit Mine");
+      expect(serialized).not.toContain("Bastard");
+      expect(serialized).not.toContain("bastard");
+    });
+
+    it("getPollBySlug keeps the creator raw text so editing never saves asterisks", async () => {
+      const caller = makeCaller(
+        meetingsRouter.createCaller,
+        { meetingPoll: { findUnique: vi.fn().mockResolvedValue(pollRow) } },
+        { user: { id: CREATOR_ID } },
+      );
+
+      const result = await caller.getPollBySlug({ slug: "abcdefghij" });
+
+      expect(result.poll.title).toBe("Shit sprint");
+      expect(result.poll.description).toBe("fuck this");
+      expect(result.poll.agenda).toBe("Avoid the bastard");
+    });
+
+    it("listMyMeetings masks polls created by others and keeps the caller own polls raw", async () => {
+      const row = (over: Record<string, unknown>) => ({
+        id: "p",
+        slug: "pollslug01",
+        title: "Shit sprint",
+        description: "fuck this",
+        startDate: new Date("2026-10-10"),
+        endDate: new Date("2026-10-15"),
+        startHour: 9,
+        endHour: 18,
+        slotDurationMinutes: 15,
+        creatorId: CREATOR_ID,
+        course: null,
+        section: null,
+        teamIdentifier: null,
+        acadTerm: null,
+        createdAt: new Date("2026-10-01"),
+        updatedAt: new Date("2026-10-01"),
+        _count: { participants: 1 },
+        participants: [],
+        ...over,
+      });
+      const caller = makeCaller(
+        meetingsRouter.createCaller,
+        {
+          meetingPoll: {
+            findMany: vi
+              .fn()
+              .mockResolvedValue([
+                row({}),
+                row({ creatorId: PARTICIPANT_USER_ID_1 }),
+              ]),
+          },
+        },
+        { user: { id: CREATOR_ID } },
+      );
+
+      const result = await caller.listMyMeetings();
+
+      expect(result[0]?.title).toBe("Shit sprint");
+      expect(result[1]?.title).toBe("**** sprint");
+      expect(result[1]?.description).toBe("**** this");
+    });
+  });
 });

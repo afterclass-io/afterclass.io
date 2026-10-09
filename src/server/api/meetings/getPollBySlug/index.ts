@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure } from "@/server/api/trpc";
 import { formatUserDisplayName } from "@/common/functions/format-user-display-name";
+import { censorProfanity, censorProfanityOrNull } from "@/server/profanity";
 
 export const getPollBySlug = publicProcedure
   .input(
@@ -77,17 +78,24 @@ export const getPollBySlug = publicProcedure
     }
 
     const currentUserId = ctx.session?.user?.id;
+    const isCreator = Boolean(
+      currentUserId && poll.creatorId === currentUserId,
+    );
 
     // Strict serialization: zero Users.id exposure
     return {
       poll: {
         id: poll.id,
         slug: poll.slug,
-        title: poll.title,
-        description: poll.description,
-        agenda: poll.agenda,
+        // Other users and the assistant tools get masked text. The creator
+        // sees the raw text so editing the poll never saves asterisks.
+        title: isCreator ? poll.title : censorProfanity(poll.title),
+        description: isCreator
+          ? poll.description
+          : censorProfanityOrNull(poll.description),
+        agenda: isCreator ? poll.agenda : censorProfanityOrNull(poll.agenda),
         links: poll.links,
-        isCreator: Boolean(currentUserId && poll.creatorId === currentUserId),
+        isCreator,
         startDate: poll.startDate,
         endDate: poll.endDate,
         startHour: poll.startHour,
@@ -98,13 +106,19 @@ export const getPollBySlug = publicProcedure
         teamIdentifier: poll.teamIdentifier,
         acadTerm: poll.acadTerm,
       },
-      participants: poll.participants.map((p) => ({
-        participantId: p.id,
-        name: formatUserDisplayName(p.user),
-        availableSlots: p.availableSlots,
-        ifNeededSlots: p.ifNeededSlots,
-        isCurrentUser: Boolean(currentUserId && p.userId === currentUserId),
-      })),
+      participants: poll.participants.map((p) => {
+        const isCurrentUser = Boolean(
+          currentUserId && p.userId === currentUserId,
+        );
+        const name = formatUserDisplayName(p.user);
+        return {
+          participantId: p.id,
+          name: isCurrentUser ? name : censorProfanity(name),
+          availableSlots: p.availableSlots,
+          ifNeededSlots: p.ifNeededSlots,
+          isCurrentUser,
+        };
+      }),
       heatmap,
     };
   });
