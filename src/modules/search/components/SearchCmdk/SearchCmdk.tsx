@@ -116,7 +116,8 @@ export const SearchCmdk = ({
       <DialogContent
         data-test="search-cmdk-modal"
         showCloseButton={false}
-        className="bg-accent text-muted-foreground mt-[10%] h-fit max-w-[720px] flex-row items-center gap-2 overflow-hidden rounded-[20px] border-none px-4 py-0 sm:py-0 md:mt-[10%]"
+        overlayClassName="bg-background/60"
+        className="bg-accent text-muted-foreground mt-[10%] h-fit max-h-fit max-w-[720px] flex-row items-center gap-2 overflow-hidden rounded-[20px] border-none px-4 py-0 sm:py-0 md:mx-0 md:mt-[10%]"
       >
         <VisuallyHidden asChild>
           <DialogTitle>Search for Professors or Courses</DialogTitle>

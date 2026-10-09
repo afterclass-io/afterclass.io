@@ -34,3 +34,19 @@ describe("DialogContent close button", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+describe("DialogContent overlay", () => {
+  it("applies overlayClassName to the backdrop", () => {
+    render(
+      <Dialog open>
+        <DialogContent overlayClassName="bg-background/60">
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Body</DialogDescription>
+        </DialogContent>
+      </Dialog>,
+    );
+    const overlay = document.querySelector("[data-slot='dialog-overlay']");
+    expect(overlay).toHaveClass("bg-background/60");
+    expect(overlay).not.toHaveClass("bg-background/50");
+  });
+});
