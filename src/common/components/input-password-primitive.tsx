@@ -3,7 +3,7 @@ import { composeEventHandlers } from "@radix-ui/primitive";
 import { Primitive } from "@radix-ui/react-primitive";
 import { useControllableState } from "@radix-ui/react-use-controllable-state";
 
-export type PasswordInputContextProps = Required<
+type PasswordInputContextProps = Required<
   Pick<PasswordInputProps, "visible" | "onVisibleChange">
 >;
 
@@ -13,10 +13,9 @@ const PasswordInputContext = React.createContext<PasswordInputContextProps>({
   onVisibleChange: () => {},
 });
 
-export const usePasswordInputContext = () =>
-  React.useContext(PasswordInputContext);
+const usePasswordInputContext = () => React.useContext(PasswordInputContext);
 
-export interface PasswordInputProps {
+interface PasswordInputProps {
   visible?: boolean;
   defaultVisible?: boolean;
   onVisibleChange?: (visible: boolean) => void;
@@ -102,6 +101,5 @@ PasswordInputIndicator.displayName = "PasswordInputIndicator";
 const Root = PasswordInput;
 const Input = PasswordInputInput;
 const Toggle = PasswordInputToggle;
-const Indicator = PasswordInputIndicator;
 
-export { Root, Input, Toggle, Indicator };
+export { Root, Input, Toggle };

@@ -1,7 +1,5 @@
 import { type Prisma } from "@/generated/prisma/client";
 
-export const DEFAULT_PAGE_SIZE = 10;
-
 export const PUBLIC_CLASS_FIELDS = {
   id: true,
   section: true,

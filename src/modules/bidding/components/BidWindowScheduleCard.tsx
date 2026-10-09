@@ -156,8 +156,6 @@ const TimelineWithIcon = ({
   );
 };
 
-export const revalidate = 3600;
-
 export const BidWindowScheduleCard = async () => {
   // "Now" in Singapore time — read once per render.
   // eslint-disable-next-line react-hooks/purity -- server component: time read is the point, not render impurity

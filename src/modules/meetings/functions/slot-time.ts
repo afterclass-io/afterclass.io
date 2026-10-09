@@ -6,21 +6,11 @@ import {
 import { groupSlotsIntoRuns } from "@/modules/meetings/functions/slot-runs";
 
 export const SGT_TIMEZONE = "Asia/Singapore";
-export const SGT_OFFSET_MINUTES = 480;
+const SGT_OFFSET_MINUTES = 480;
 
 export type Weekday = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 export type WeekdayLabel =
   "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
-export const WEEKDAYS: readonly Weekday[] = [
-  "mon",
-  "tue",
-  "wed",
-  "thu",
-  "fri",
-  "sat",
-  "sun",
-] as const;
-
 const WEEKDAYS_ORDER: readonly Weekday[] = [
   "sun",
   "mon",
@@ -51,7 +41,7 @@ export type PollGrid = {
 };
 export type PollDay = { date: string; weekday: WeekdayLabel };
 export type SlotTime = { date: string; start: string; end: string }; // HH:MM SGT
-export type AvailabilityStatus = "available" | "ifNeeded";
+type AvailabilityStatus = "available" | "ifNeeded";
 export type AvailabilityRange = SlotTime & { status: AvailabilityStatus };
 
 export class SlotTimeError extends Error {

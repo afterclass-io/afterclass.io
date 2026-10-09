@@ -25,12 +25,6 @@ export const TOKENS = {
   },
 } as const;
 
-/** Shared @keyframes pulse injector for view shells (each view keeps its own
- * `<style>` usage; this just centralizes the keyframe text). */
-export const PulseStyle: React.FC = () => (
-  <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
-);
-
 /** Shared card-shell styling for pending/error states: same card chrome the
  * views already render inline. Provided for new views; existing views keep
  * their own inline shells (not migrated in this pass). */
@@ -42,19 +36,6 @@ export const viewShellStyle = (c: ThemeColors): React.CSSProperties => ({
   borderRadius: c.radius,
   padding: 16,
 });
-
-export const ViewShell: React.FC<{
-  dark: boolean;
-  role?: "alert" | "status";
-  children: React.ReactNode;
-}> = ({ dark, role, children }) => {
-  const c = dark ? TOKENS.dark : TOKENS.light;
-  return (
-    <div role={role} style={viewShellStyle(c)}>
-      {children}
-    </div>
-  );
-};
 
 export const Skeleton: React.FC<{ dark: boolean }> = ({ dark }) => {
   const c = dark ? TOKENS.dark : TOKENS.light;

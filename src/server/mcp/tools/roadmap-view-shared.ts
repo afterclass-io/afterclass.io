@@ -7,7 +7,7 @@ import {
   type SyncTermRow,
 } from "@/modules/roadmaps/functions/progress-sync";
 
-export interface RoadmapEntryView {
+interface RoadmapEntryView {
   yearNumber: number;
   term: string;
   courseCode: string;
@@ -220,14 +220,4 @@ export function roadmapViewToViewProps(
       position,
     ) as unknown as Record<string, unknown>;
   };
-}
-
-export function toRoadmapViewProps(
-  data: Record<string, unknown>,
-  isPublic: boolean,
-): Record<string, unknown> {
-  return toRoadmapViewPropsShared(data, isPublic) as unknown as Record<
-    string,
-    unknown
-  >;
 }
