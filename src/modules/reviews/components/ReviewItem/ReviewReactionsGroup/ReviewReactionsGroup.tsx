@@ -2,7 +2,7 @@
 import { useSession } from "next-auth/react";
 import { type ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/enums";
 
-import { ReviewReactionType, type Review } from "@/modules/reviews/types";
+import { ReviewReactionType, type Review } from "@/common/types/reviews";
 import { useOptimisticReaction } from "@/modules/reviews/hooks";
 import { Button } from "@/common/components/button";
 

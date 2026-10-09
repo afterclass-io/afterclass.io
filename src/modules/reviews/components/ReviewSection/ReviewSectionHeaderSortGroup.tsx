@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/common/components/select";
 import { cn, toTitleCase } from "@/common/functions";
-import { ReviewsSortBy } from "@/modules/reviews/types";
+import { ReviewsSortBy } from "@/common/types/reviews";
 import { useEdgeConfigs } from "@/common/hooks";
 
 const formatSortByLabel = (sortBy: ReviewsSortBy) =>

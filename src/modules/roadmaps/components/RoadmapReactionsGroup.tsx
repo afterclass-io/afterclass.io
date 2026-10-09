@@ -2,7 +2,7 @@
 import { type ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/enums";
 
 import { api } from "@/common/tools/trpc/react";
-import { ReviewReactionType } from "@/modules/reviews/types";
+import { ReviewReactionType } from "@/common/types/reviews";
 import { useOptimisticReaction } from "@/modules/roadmaps/hooks/useOptimisticReaction";
 import { Button } from "@/common/components/button";
 

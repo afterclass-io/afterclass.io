@@ -8,7 +8,7 @@ import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimis
 import { useEdgeConfigs } from "@/common/hooks";
 import { VoteGroup } from "@/common/components/vote-group";
 import { debounce } from "@/common/functions/debounce";
-import { type Review } from "@/modules/reviews/types";
+import { type Review } from "@/common/types/reviews";
 import {
   cancelReviewCaches,
   getReviewCachesSnapshot,

@@ -5,7 +5,7 @@ import {
   type Review,
   ReviewsFilterFor,
   ReviewsSortBy,
-} from "@/modules/reviews/types";
+} from "@/common/types/reviews";
 import { z } from "zod";
 import {
   DEFAULT_PAGE_SIZE,

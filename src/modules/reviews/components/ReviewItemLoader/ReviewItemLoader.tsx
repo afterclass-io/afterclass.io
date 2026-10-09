@@ -9,7 +9,7 @@ import { api } from "@/common/tools/trpc/react";
 import { AfterclassIcon } from "@/common/components/icons";
 import { ProgressLink } from "@/common/components/progress-link";
 
-import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
+import { ReviewsFilterFor, ReviewsSortBy } from "@/common/types/reviews";
 import { ReviewItem, ReviewItemSkeleton } from "../ReviewItem";
 import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
 import { Separator } from "@/common/components/separator";

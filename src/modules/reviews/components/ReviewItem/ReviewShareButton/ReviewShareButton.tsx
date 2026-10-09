@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/common/components/button";
 import { ShareIcon } from "@/common/components/icons";
 import { useEdgeConfigs } from "@/common/hooks";
-import { type Review } from "@/modules/reviews/types";
+import { type Review } from "@/common/types/reviews";
 import { patchReviewInCaches } from "@/modules/reviews/hooks/patch-review-caches";
 import { withShare } from "@/modules/reviews/functions/engagement";
 

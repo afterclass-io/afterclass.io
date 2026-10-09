@@ -14,7 +14,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/common/components/hover-card";
-import { ReviewReactionType } from "@/modules/reviews/types";
+import { ReviewReactionType } from "@/common/types/reviews";
 import { useOptimisticReaction } from "@/modules/roadmaps/hooks/useOptimisticReaction";
 
 export const RoadmapReactionButton = ({ roadmapId }: { roadmapId: string }) => {

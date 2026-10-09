@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { RadioGroup, RadioGroupItem } from "@/common/components/radio-group";
 import { Label } from "@/common/components/label";
-import { ReviewsFilterFor } from "@/modules/reviews/types";
+import { ReviewsFilterFor } from "@/common/types/reviews";
 import { useEdgeConfigs } from "@/common/hooks";
 import { buttonVariants } from "@/common/components/button";
 import { cn } from "@/common/functions";

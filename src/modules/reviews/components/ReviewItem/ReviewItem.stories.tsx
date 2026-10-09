@@ -6,7 +6,7 @@ import {
   ReviewType,
   UniversityAbbreviation,
 } from "@/generated/prisma/enums";
-import { type Review } from "@/modules/reviews/types";
+import { type Review } from "@/common/types/reviews";
 
 const review = {
   id: "1",

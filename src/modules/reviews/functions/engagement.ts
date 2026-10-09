@@ -1,6 +1,6 @@
 import { type ReviewReactionType } from "@/generated/prisma/enums";
-import type { Review } from "@/modules/reviews/types";
-import type { ReviewEngagement } from "@/modules/reviews/types/engagement";
+import type { Review } from "@/common/types/reviews";
+import type { ReviewEngagement } from "@/common/types/reviews/engagement";
 
 export const EMPTY_ENGAGEMENT: ReviewEngagement = {
   viewerVote: 0,

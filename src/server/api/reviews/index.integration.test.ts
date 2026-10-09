@@ -10,7 +10,7 @@ import {
 } from "@/server/api/integration-test-helpers";
 import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
-import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
+import { ReviewsFilterFor, ReviewsSortBy } from "@/common/types/reviews";
 
 import { getAll } from "./getAll";
 import { getAllProtected } from "./getAllProtected";

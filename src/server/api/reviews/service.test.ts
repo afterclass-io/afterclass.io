@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { type PrismaClient } from "@/generated/prisma/client";
 import { ReviewType } from "@/generated/prisma/enums";
-import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
+import { ReviewsFilterFor, ReviewsSortBy } from "@/common/types/reviews";
 import { TRPCError } from "@trpc/server";
 import { PUBLIC_REVIEW_FIELDS } from "./constants";
 import {

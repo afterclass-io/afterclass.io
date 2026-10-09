@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { ReviewEventType, ReviewReactionType } from "@/generated/prisma/enums";
-import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
+import { ReviewsFilterFor, ReviewsSortBy } from "@/common/types/reviews";
 import {
   countQueries,
   idb as db,

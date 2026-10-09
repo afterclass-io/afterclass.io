@@ -1,4 +1,4 @@
-import { type Review } from "@/modules/reviews/types";
+import { type Review } from "@/common/types/reviews";
 import { type Labels } from "@/generated/prisma/client";
 import { formatPercentage } from "@/common/functions";
 

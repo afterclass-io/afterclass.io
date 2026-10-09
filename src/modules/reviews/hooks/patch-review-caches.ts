@@ -1,7 +1,7 @@
 import type { QueryClient, QueryKey } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { api, getQueryClient } from "@/common/tools/trpc/react";
-import type { Review } from "@/modules/reviews/types";
+import type { Review } from "@/common/types/reviews";
 
 export type Snapshot = Array<[QueryKey, unknown]>;
 

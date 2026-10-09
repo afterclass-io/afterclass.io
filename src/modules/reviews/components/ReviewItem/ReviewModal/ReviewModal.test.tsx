@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ReviewType, UniversityAbbreviation } from "@/generated/prisma/enums";
-import type { Review } from "@/modules/reviews/types";
+import type { Review } from "@/common/types/reviews";
 
 vi.mock("@/common/tools/trpc/react", () => ({
   api: {

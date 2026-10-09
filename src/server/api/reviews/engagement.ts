@@ -1,6 +1,6 @@
 import { type PrismaClient } from "@/generated/prisma/client";
 import { ReviewEventType, ReviewReactionType } from "@/generated/prisma/enums";
-import { type ReviewEngagement } from "@/modules/reviews/types";
+import { type ReviewEngagement } from "@/common/types/reviews";
 import { z } from "zod";
 
 export const reviewEngagementSchema = z

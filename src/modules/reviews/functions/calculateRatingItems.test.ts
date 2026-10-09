@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Labels } from "@/generated/prisma/client";
-import type { Review } from "@/modules/reviews/types";
+import type { Review } from "@/common/types/reviews";
 import calculateRatingItems from "./calculateRatingItems";
 
 /** A review carrying only the label names this function reads. */

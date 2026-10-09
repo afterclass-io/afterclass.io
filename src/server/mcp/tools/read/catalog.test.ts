@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
+import { ReviewsFilterFor, ReviewsSortBy } from "@/common/types/reviews";
 
 import type { ToolContext } from "../../types";
 import type { SessionUser } from "@/server/auth/config";
