@@ -219,10 +219,19 @@ export const authConfig = {
   },
   callbacks: {
     redirect({ url, baseUrl }) {
-      // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url;
+      if (
+        url.startsWith("/") &&
+        !url.startsWith("//") &&
+        !url.startsWith("/\\")
+      ) {
+        return `${baseUrl}${url}`;
+      }
+      try {
+        const parsed = new URL(url);
+        if (parsed.origin === baseUrl) return url;
+      } catch {
+        return baseUrl;
+      }
       return baseUrl;
     },
     async jwt({ token, user, account, profile, trigger }) {

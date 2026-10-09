@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export default async function SubmitReviewPage() {
   const session = await auth();
   if (!session) {
-    return signIn();
+    return signIn(undefined, { redirectTo: "/submit" });
   }
 
   // TODO: get school from user field, to be populated automatically on successful signup based on user's email domain
