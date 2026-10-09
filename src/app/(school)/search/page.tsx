@@ -29,43 +29,41 @@ export default async function Search(props: {
 
   let searchedCourse: SearchCourseResult[] = [];
   let searchedProf: SearchProfResult[] = [];
+  // No try/catch: a failed search must reach the (school) error boundary and
+  // Sentry's onRequestError hook, not render as "No results found".
   if (query) {
-    try {
-      const session = await auth();
-      const withCounts = Boolean(session);
-      const [coursesResult, profsResult] = await Promise.all([
-        searchCourses(db, {
-          query,
-          limit: 5,
-          withCounts,
-          universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
-        }),
-        searchProfessors(db, {
-          query,
-          limit: 5,
-          withCounts,
-          universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
-        }),
-      ]);
+    const session = await auth();
+    const withCounts = Boolean(session);
+    const [coursesResult, profsResult] = await Promise.all([
+      searchCourses(db, {
+        query,
+        limit: 5,
+        withCounts,
+        universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
+      }),
+      searchProfessors(db, {
+        query,
+        limit: 5,
+        withCounts,
+        universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
+      }),
+    ]);
 
-      searchedCourse = coursesResult.rows.map((row) => ({
-        uniAbbrv: row.uniAbbrv,
-        courseCode: row.code,
-        courseName: row.name,
-        profCount: row.profCount,
-        reviewCount: row.reviewCount,
-      }));
+    searchedCourse = coursesResult.rows.map((row) => ({
+      uniAbbrv: row.uniAbbrv,
+      courseCode: row.code,
+      courseName: row.name,
+      profCount: row.profCount,
+      reviewCount: row.reviewCount,
+    }));
 
-      searchedProf = profsResult.rows.map((row) => ({
-        uniAbbrv: row.uniAbbrv,
-        profName: row.name,
-        profSlug: row.slug,
-        courseCount: row.courseCount,
-        reviewCount: row.reviewCount,
-      }));
-    } catch (e) {
-      console.error(e);
-    }
+    searchedProf = profsResult.rows.map((row) => ({
+      uniAbbrv: row.uniAbbrv,
+      profName: row.name,
+      profSlug: row.slug,
+      courseCount: row.courseCount,
+      reviewCount: row.reviewCount,
+    }));
   }
 
   return (
