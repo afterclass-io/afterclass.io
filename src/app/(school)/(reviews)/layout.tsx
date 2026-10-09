@@ -1,10 +1,11 @@
-import { type ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import { ConstrainedContainer } from "@/common/components/constrained-container";
 import { CtaButton } from "@/common/components/cta-button";
 import { EditIcon, GithubIcon, PlusIcon } from "@/common/components/icons";
 import { env } from "@/env";
 import { BidWindowScheduleCard } from "@/modules/bidding/components/BidWindowScheduleCard";
+import { BidWindowScheduleCardSkeleton } from "@/modules/bidding/components/BidWindowScheduleCardSkeleton";
 
 export default function ReviewLayout({
   header,
@@ -47,7 +48,10 @@ export default function ReviewLayout({
             data-test="cta-contribute-oss"
             data-umami-event="cta-btn-contribute-oss"
           />
-          <BidWindowScheduleCard />
+          {/* Async card: without a boundary it holds back the whole layout. */}
+          <Suspense fallback={<BidWindowScheduleCardSkeleton />}>
+            <BidWindowScheduleCard />
+          </Suspense>
         </div>
       </div>
     </ConstrainedContainer>

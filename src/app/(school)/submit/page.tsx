@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// No `loading.tsx` on this route, on purpose (#523). The only waits are the
+// session read and one labels query, and both finish in a few milliseconds.
+// A boundary above the sign-in gate would start the response first, so the
+// anonymous redirect would turn from an HTTP redirect into a client redirect.
 export default async function SubmitReviewPage() {
   const session = await auth();
   if (!session) {

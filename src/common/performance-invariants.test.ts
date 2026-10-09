@@ -200,6 +200,38 @@ describe("performance invariants", () => {
     });
   });
 
+  describe("loading boundaries (#523)", () => {
+    const hasBoundary = (route: string) =>
+      listFiles(`src/app/(school)/${route}`).includes(
+        `src/app/(school)/${route}/loading.tsx`,
+      );
+
+    it("streams a shell on the routes that wait on data", () => {
+      for (const route of ["bidding", "bidding/analytics", "search"]) {
+        expect(hasBoundary(route), route).toBe(true);
+      }
+    });
+
+    it("keeps the gated routes free of a boundary above their gate", () => {
+      // A `loading.tsx` starts the response before the gate runs, so
+      // `redirect()` and `signIn()` would stop sending an HTTP redirect.
+      for (const route of ["submit", "roadmaps"]) {
+        expect(hasBoundary(route), route).toBe(false);
+      }
+    });
+
+    it("wraps the async bid window card, so it cannot hold back a layout", () => {
+      for (const layout of [
+        "src/app/(school)/bidding/layout.tsx",
+        "src/app/(school)/(reviews)/layout.tsx",
+      ]) {
+        expect(read(layout), layout).toMatch(
+          /<Suspense fallback=\{<BidWindowScheduleCardSkeleton \/>\}>\s*<BidWindowScheduleCard \/>\s*<\/Suspense>/,
+        );
+      }
+    });
+  });
+
   describe("field vitals (#504)", () => {
     it("mounts the web vitals reporter in the root layout", () => {
       const layout = read("src/app/layout.tsx");
