@@ -2,7 +2,10 @@ import type { RouterCaller, RouterOutputs } from "../types";
 import { parseViewJson } from "../types";
 import { stripSecretsFromValue } from "@/mcp/output-policy";
 import { TERM_ORDER } from "./feasibility-check";
-import { buildProgressSyncPlan } from "@/modules/roadmaps/functions/progress-sync";
+import {
+  buildProgressSyncPlan,
+  type SyncTermRow,
+} from "@/modules/roadmaps/functions/progress-sync";
 
 export interface RoadmapEntryView {
   yearNumber: number;
@@ -37,13 +40,6 @@ function compareTermSlot(
   );
 }
 
-type TermRow = {
-  id: string;
-  acadYearStart: number;
-  term: string;
-  startDt: Date;
-};
-
 /**
  * Resolve the user's current (yearNumber, term) position on a roadmap from
  * its matriculation term + the current acad term, via the same sync-plan
@@ -51,7 +47,7 @@ type TermRow = {
  * terms) — callers then omit per-entry status rather than guessing.
  */
 function resolveCurrentPosition(
-  terms: TermRow[],
+  terms: SyncTermRow[],
   matricTermId: string,
   currentTermId: string,
 ): { yearNumber: number; term: string } | null {
@@ -175,15 +171,10 @@ async function resolveRoadmapPosition(
     const matricTermId =
       typeof roadmap.matricTermId === "string" ? roadmap.matricTermId : null;
     if (!matricTermId) return null;
-    const acad = (
-      caller as unknown as {
-        acadTerms: {
-          list: () => Promise<TermRow[]>;
-          current: () => Promise<{ id: string } | null>;
-        };
-      }
-    ).acadTerms;
-    const [terms, current] = await Promise.all([acad.list(), acad.current()]);
+    const [terms, current] = await Promise.all([
+      caller.acadTerms.list(),
+      caller.acadTerms.current(),
+    ]);
     if (!current) return null;
     return resolveCurrentPosition(
       terms.map((t) => ({ ...t, startDt: new Date(t.startDt) })),
