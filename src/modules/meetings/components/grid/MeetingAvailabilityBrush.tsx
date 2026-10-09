@@ -123,10 +123,7 @@ export function MeetingAvailabilityBrush({
                   {option.hint}
                 </span>
               </span>
-              <Kbd
-                variant="outline"
-                className="text-muted-foreground/70 text-xs"
-              >
+              <Kbd variant="outline" className="text-muted-foreground text-xs">
                 {index + 1}
               </Kbd>
             </button>

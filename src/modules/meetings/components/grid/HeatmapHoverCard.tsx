@@ -48,7 +48,7 @@ function NameList({
           {names.join(", ")}
         </p>
       ) : (
-        <p className="text-muted-foreground/60 mt-0.5 pl-3.5 italic">None</p>
+        <p className="text-muted-foreground mt-0.5 pl-3.5 italic">None</p>
       )}
     </div>
   );

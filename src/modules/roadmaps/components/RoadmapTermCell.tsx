@@ -132,7 +132,7 @@ export function RoadmapTermCell({
       {/* Empty state */}
       {!compact && entries.length === 0 && (
         <div className="flex flex-1 items-center justify-center">
-          <span className="text-muted-foreground/50 text-xs italic">
+          <span className="text-muted-foreground text-xs italic">
             {isOver ? "Drop here" : "Drag courses here"}
           </span>
         </div>
