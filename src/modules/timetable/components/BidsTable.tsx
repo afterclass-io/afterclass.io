@@ -55,6 +55,7 @@ import { BidsDashboard } from "./BidsDashboard";
 import { InlineNotesEditor } from "./InlineNotesEditor";
 import { BidDialog } from "./BidDialog";
 import { Th, SortableTh, Td } from "@/common/components/table-primitives";
+import { ClassInfoButton } from "./ClassInfoButton";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -536,8 +537,8 @@ function BidTableRow({
           {bid.courseCode}
         </ClassInfoButton>
       </Td>
-      <Td className="max-w-44 break-words whitespace-normal">
-        <ClassInfoButton onClick={onShowClassInfo}>
+      <Td className="max-w-44">
+        <ClassInfoButton onClick={onShowClassInfo} title={bid.courseName}>
           {bid.courseName}
         </ClassInfoButton>
       </Td>
@@ -548,7 +549,7 @@ function BidTableRow({
       </Td>
       <Td className="max-w-36 truncate" title={bid.professorName ?? undefined}>
         {bid.professorName ? (
-          <ClassInfoButton onClick={onShowClassInfo}>
+          <ClassInfoButton onClick={onShowClassInfo} title={bid.professorName}>
             {bid.professorName}
           </ClassInfoButton>
         ) : (
@@ -692,24 +693,5 @@ function BidClassInfoPanel({
       isOpen
       onClose={onClose}
     />
-  );
-}
-
-/** Clickable class cell: opens the class-info modal for the row's class. */
-function ClassInfoButton({
-  onClick,
-  children,
-}: {
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="hover:text-primary cursor-pointer text-left break-words hover:underline"
-    >
-      {children}
-    </button>
   );
 }
