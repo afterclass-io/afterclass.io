@@ -9,92 +9,68 @@ const router = createTRPCRouter({ create });
 describe("timetable.create", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("retries with isActive:false when first create hits P2002 (concurrent race)", async () => {
+  it("returns winning active plan when first create hits P2002 (concurrent race)", async () => {
     const count = vi.fn().mockResolvedValue(0);
-    const fallbackRow = {
-      id: "t2",
+    const winningRow = {
+      id: "t1",
       userId: "u1",
       acadTermId: "term-a",
       name: "Plan A",
-      isActive: false,
+      isActive: true,
     };
     const createMock = vi
       .fn()
-      .mockRejectedValueOnce(
-        Object.assign(new Error("Unique"), { code: "P2002" }),
-      )
-      .mockResolvedValueOnce(fallbackRow);
+      .mockRejectedValue(Object.assign(new Error("Unique"), { code: "P2002" }));
+    const findFirstMock = vi.fn().mockResolvedValue(winningRow);
     const dbMock = {
-      userTimetable: { count, create: createMock },
+      userTimetable: { count, create: createMock, findFirst: findFirstMock },
     };
     const caller = makeCaller(router.createCaller, dbMock);
 
     const result = await caller.create({ acadTermId: "term-a" });
 
-    expect(result).toEqual(fallbackRow);
-    expect(count).toHaveBeenCalledWith({
-      where: { userId: "u1", acadTermId: "term-a" },
-    });
-    expect(createMock).toHaveBeenCalledTimes(2);
-    expect(createMock).toHaveBeenNthCalledWith(1, {
-      data: {
-        userId: "u1",
-        acadTermId: "term-a",
-        name: "Plan A",
-        isActive: true,
-      },
-    });
-    expect(createMock).toHaveBeenNthCalledWith(2, {
-      data: {
-        userId: "u1",
-        acadTermId: "term-a",
-        name: "Plan A",
-        isActive: false,
-      },
+    expect(result).toEqual(winningRow);
+    expect(createMock).toHaveBeenCalledTimes(1);
+    expect(findFirstMock).toHaveBeenCalledWith({
+      where: { userId: "u1", acadTermId: "term-a", isActive: true },
     });
   });
 
-  it("preserves explicit name on P2002 fallback", async () => {
+  it("propagates P2002 when not first create and does not call findFirst", async () => {
     const count = vi.fn().mockResolvedValue(1);
-    const fallbackRow = {
-      id: "t3",
-      userId: "u1",
-      acadTermId: "term-a",
-      name: "My Plan",
-      isActive: false,
-    };
     const createMock = vi
       .fn()
-      .mockRejectedValueOnce(
-        Object.assign(new Error("Unique"), { code: "P2002" }),
-      )
-      .mockResolvedValueOnce(fallbackRow);
+      .mockRejectedValue(Object.assign(new Error("Unique"), { code: "P2002" }));
+    const findFirstMock = vi.fn();
     const dbMock = {
-      userTimetable: { count, create: createMock },
+      userTimetable: { count, create: createMock, findFirst: findFirstMock },
     };
     const caller = makeCaller(router.createCaller, dbMock);
 
-    const result = await caller.create({
-      acadTermId: "term-a",
-      name: "My Plan",
-    });
+    await expect(caller.create({ acadTermId: "term-a" })).rejects.toThrow(
+      "Unique",
+    );
+    expect(createMock).toHaveBeenCalledTimes(1);
+    expect(findFirstMock).not.toHaveBeenCalled();
+  });
 
-    expect(result).toEqual(fallbackRow);
-    expect(createMock).toHaveBeenNthCalledWith(1, {
-      data: {
-        userId: "u1",
-        acadTermId: "term-a",
-        name: "My Plan",
-        isActive: false,
-      },
-    });
-    expect(createMock).toHaveBeenNthCalledWith(2, {
-      data: {
-        userId: "u1",
-        acadTermId: "term-a",
-        name: "My Plan",
-        isActive: false,
-      },
+  it("propagates original error when first create hits P2002 but findFirst returns null", async () => {
+    const count = vi.fn().mockResolvedValue(0);
+    const createMock = vi
+      .fn()
+      .mockRejectedValue(Object.assign(new Error("Unique"), { code: "P2002" }));
+    const findFirstMock = vi.fn().mockResolvedValue(null);
+    const dbMock = {
+      userTimetable: { count, create: createMock, findFirst: findFirstMock },
+    };
+    const caller = makeCaller(router.createCaller, dbMock);
+
+    await expect(caller.create({ acadTermId: "term-a" })).rejects.toThrow(
+      "Unique",
+    );
+    expect(createMock).toHaveBeenCalledTimes(1);
+    expect(findFirstMock).toHaveBeenCalledWith({
+      where: { userId: "u1", acadTermId: "term-a", isActive: true },
     });
   });
 

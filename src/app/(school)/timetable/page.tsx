@@ -294,12 +294,17 @@ export default function TimetablePage() {
   );
 
   // ---- On mount / term change: ensure a default timetable exists ----
+  const autoCreatedTermIdRef = useRef<string | null>(null);
+
   const createMutation = api.timetable.create.useMutation({
     onSuccess: (created) => {
       void utils.timetable.listMine.invalidate({
         acadTermId: selectedTermId!,
       });
       setActiveTimetableId(created.id);
+    },
+    onError: () => {
+      autoCreatedTermIdRef.current = null;
     },
   });
 
@@ -317,6 +322,13 @@ export default function TimetablePage() {
       !timetablesLoading &&
       timetables?.length === 0
     ) {
+      if (
+        createMutation.isPending ||
+        autoCreatedTermIdRef.current === selectedTermId
+      ) {
+        return;
+      }
+      autoCreatedTermIdRef.current = selectedTermId;
       createMutation.mutate({ acadTermId: selectedTermId });
     }
     // Only run when term changes or list resolves

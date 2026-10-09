@@ -32,10 +32,17 @@ export const create = protectedProcedure
     try {
       return await ctx.db.userTimetable.create({ data });
     } catch (err) {
-      if (isUniqueConstraintViolation(err)) {
-        return ctx.db.userTimetable.create({
-          data: { ...data, isActive: false },
+      if (isUniqueConstraintViolation(err) && isFirst) {
+        const winner = await ctx.db.userTimetable.findFirst({
+          where: {
+            userId: ctx.session.user.id,
+            acadTermId: input.acadTermId,
+            isActive: true,
+          },
         });
+        if (winner) {
+          return winner;
+        }
       }
       throw err;
     }
