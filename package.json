@@ -7,7 +7,7 @@
     "build": "next build",
     "dev": "next dev",
     "postinstall": "prisma generate",
-    "prepare": "node -e \"if(require('node:fs').existsSync('.git'))require('node:child_process').execSync('lefthook install',{stdio:'inherit'})\"",
+    "prepare": "node -e \"const fs=require('node:fs');if(fs.existsSync('.git')&&fs.existsSync('node_modules/lefthook'))require('node:child_process').execSync('lefthook install',{stdio:'inherit'})\"",
     "lint": "eslint src scripts views prisma/seed.ts eslint.config.mjs prettier.config.js",
     "typecheck": "tsc --noEmit",
     "format:check": "prettier --check src views scripts prisma/seed.ts",
