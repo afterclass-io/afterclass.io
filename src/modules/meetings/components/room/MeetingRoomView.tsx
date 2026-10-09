@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Button } from "@/common/components/button";
 import { EmptyState } from "@/common/components/empty-state";
 import { formatDateSGT } from "@/common/functions/format-date-sgt";
+import { useCopyToClipboard } from "@/common/hooks/use-copy-to-clipboard";
 import { api, type RouterOutputs } from "@/common/tools/trpc/react";
 import { meetingsRoomTourSteps } from "@/common/tour/steps";
 import { useAutoStartTour } from "@/common/tour/useAutoStartTour";
@@ -60,6 +61,7 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
   const [selectedRange, setSelectedRange] = useState<SlotRange | null>(null);
 
   const utils = api.useUtils();
+  const { copy: copyToClipboard } = useCopyToClipboard();
   const isSignedIn = Boolean(session?.user);
 
   const [hasSeenTour, setHasSeenTour] = useAtom(hasSeenMeetingsTourAtom);
@@ -176,13 +178,11 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
     };
   }, [heatmap, totalSlots, poll, participants.length]);
 
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast.success("Meeting link copied");
-    } catch {
-      toast.error("Failed to copy link");
-    }
+  const handleCopyLink = () => {
+    void copyToClipboard(window.location.href, {
+      successMessage: "Meeting link copied",
+      errorMessage: "Failed to copy link",
+    });
   };
 
   const handleAutofillTimetable = () => {

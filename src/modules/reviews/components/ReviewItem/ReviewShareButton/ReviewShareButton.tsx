@@ -4,10 +4,10 @@ import { ReviewEventType } from "@/generated/prisma/enums";
 
 import { env } from "@/env";
 import { api } from "@/common/tools/trpc/react";
-import { toast } from "sonner";
 import { Button } from "@/common/components/button";
 import { ShareIcon } from "@/common/components/icons";
 import { useEdgeConfigs } from "@/common/hooks";
+import { useCopyToClipboard } from "@/common/hooks/use-copy-to-clipboard";
 import { type Review } from "@/common/types/reviews";
 import { patchReviewInCaches } from "@/modules/reviews/hooks/patch-review-caches";
 import { withShare } from "@/modules/reviews/functions/engagement";
@@ -23,6 +23,7 @@ export const ReviewShareButton = ({
   const pathname = usePathname();
   const ecfg = useEdgeConfigs();
   const utils = api.useUtils();
+  const { copy } = useCopyToClipboard();
 
   const { mutate: track } = api.reviewEvents.track.useMutation({
     onSuccess: () => {
@@ -41,9 +42,12 @@ export const ReviewShareButton = ({
         e.preventDefault();
         e.stopPropagation();
         const shareUrl = `${env.NEXT_PUBLIC_SITE_URL}${pathname}?review_id=${review.id}`;
-        await navigator.clipboard.writeText(shareUrl);
-        toast.success("Link copied to clipboard", { id: review.id });
-        if (ecfg.enableReviewEventsTracking) {
+        const ok = await copy(shareUrl, {
+          successMessage: "Link copied to clipboard",
+          errorMessage: "Failed to copy link",
+          toastId: review.id,
+        });
+        if (ok && ecfg.enableReviewEventsTracking) {
           track({
             reviewId: review.id,
             eventType: ReviewEventType.SHARE,

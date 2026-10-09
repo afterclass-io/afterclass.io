@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { CheckIcon } from "lucide-react";
+
+import { useCopyToClipboard } from "@/common/hooks/use-copy-to-clipboard";
 
 /**
  * Labelled, full-width, mono-spaced MCP server URL with a copy button.
@@ -14,26 +15,9 @@ export function MCPUrlBox({
   mcpUrl: string;
   label?: string;
 }) {
-  const [copied, setCopied] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(mcpUrl);
-      setCopied(true);
-      timeoutRef.current = setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // clipboard unavailable (non-secure context) - non-fatal
-    }
-  };
+  // Silent on both outcomes: the check icon is the only feedback, and an
+  // unavailable clipboard (non-secure context) is non-fatal.
+  const { copy, copied } = useCopyToClipboard();
 
   return (
     <div className="mt-3 max-w-full min-w-0">
@@ -47,7 +31,9 @@ export function MCPUrlBox({
         </code>
         <button
           type="button"
-          onClick={() => void copy()}
+          onClick={() =>
+            void copy(mcpUrl, { successMessage: null, errorMessage: null })
+          }
           className="hover:bg-muted shrink-0 rounded-full border px-3 py-1.5 text-xs"
         >
           {copied ? <CheckIcon className="size-3.5" /> : "Copy"}

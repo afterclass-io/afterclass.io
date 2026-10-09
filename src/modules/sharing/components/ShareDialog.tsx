@@ -5,6 +5,7 @@ import { Copy, Globe, Link2, Loader2, Lock, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { api } from "@/common/tools/trpc/react";
+import { useCopyToClipboard } from "@/common/hooks/use-copy-to-clipboard";
 import { Button } from "@/common/components/button";
 import {
   Dialog,
@@ -112,16 +113,15 @@ export function ShareDialog({
 
   // Engagement: count roadmap share-link copies (fire-and-forget).
   const recordShareMutation = api.roadmaps.recordShare.useMutation();
+  const { copy } = useCopyToClipboard();
 
   const copyLink = async (url: string) => {
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success("Link copied");
-      if (entity === "roadmap") {
-        recordShareMutation.mutate({ roadmapId: entityId });
-      }
-    } catch {
-      toast.error("Failed to copy link");
+    const ok = await copy(url, {
+      successMessage: "Link copied",
+      errorMessage: "Failed to copy link",
+    });
+    if (ok && entity === "roadmap") {
+      recordShareMutation.mutate({ roadmapId: entityId });
     }
   };
 

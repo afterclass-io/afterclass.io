@@ -18,6 +18,7 @@ import {
   User,
 } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
+import { useCopyToClipboard } from "@/common/hooks/use-copy-to-clipboard";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
 import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
 import { RoadmapVoteGroup } from "@/modules/roadmaps/components/RoadmapVoteGroup";
@@ -99,6 +100,7 @@ export function PublicRoadmapView({
   }, [roadmapId]);
 
   const recordShareMutation = api.roadmaps.recordShare.useMutation();
+  const { copy: copyToClipboard } = useCopyToClipboard();
 
   const copyMutation = api.roadmaps.copyPublic.useMutation({
     onSuccess: async (_newRoadmap) => {
@@ -122,14 +124,12 @@ export function PublicRoadmapView({
   }, [roadmapId, copyMutation]);
 
   const handleCopyLink = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard");
-      recordShareMutation.mutate({ roadmapId });
-    } catch {
-      toast.error("Failed to copy link");
-    }
-  }, [roadmapId, recordShareMutation]);
+    const ok = await copyToClipboard(window.location.href, {
+      successMessage: "Link copied to clipboard",
+      errorMessage: "Failed to copy link",
+    });
+    if (ok) recordShareMutation.mutate({ roadmapId });
+  }, [roadmapId, recordShareMutation, copyToClipboard]);
 
   const formattedDate = publishedAt ? formatDateSGT(publishedAt) : null;
 

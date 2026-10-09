@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 
 import { api } from "@/common/tools/trpc/react";
+import { useCopyToClipboard } from "@/common/hooks/use-copy-to-clipboard";
 import { Button } from "@/common/components/button";
 import { Input } from "@/common/components/input";
 import {
@@ -96,6 +97,7 @@ export function CalendarExportPopoverView({
   onRevoke,
   onRotate,
 }: CalendarExportPopoverViewProps) {
+  const { copy } = useCopyToClipboard();
   const [isConfirmingRotate, setIsConfirmingRotate] = useState(false);
   const [prevToken, setPrevToken] = useState(token);
   const [prevOpen, setPrevOpen] = useState(open);
@@ -119,14 +121,11 @@ export function CalendarExportPopoverView({
 
   const handleCopyFeedUrl = async () => {
     if (!links) return;
-    try {
-      await navigator.clipboard.writeText(links.feedUrl);
-      toast.success(
+    await copy(links.feedUrl, {
+      successMessage:
         'Feed URL copied — paste it into your calendar\'s "Add from URL"',
-      );
-    } catch {
-      toast.error("Failed to copy link");
-    }
+      errorMessage: "Failed to copy link",
+    });
   };
 
   const handleOpenChange = (next: boolean) => {
