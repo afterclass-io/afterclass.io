@@ -1,8 +1,8 @@
 import { api, type RouterInputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useRef } from "react";
 
-import { debounce } from "@/common/functions/debounce";
+import { useDebouncedOptimisticMutate } from "@/common/hooks/use-debounced-optimistic-mutate";
 import { updateReactionCounts } from "@/common/functions/reactions";
 
 export function useOptimisticReaction() {
@@ -57,6 +57,7 @@ export function useOptimisticReaction() {
   const applyOptimisticUpdate = useCallback(
     (variables: Parameters<typeof mutate>[0]) => {
       const { roadmapId, reaction } = variables;
+      lastInputRef.current = { roadmapId };
 
       utils.roadmapReactions.getByRoadmapId.setData(
         { roadmapId },
@@ -75,21 +76,9 @@ export function useOptimisticReaction() {
     [utils.roadmapReactions.getByRoadmapId],
   );
 
-  const debouncedMutate = useMemo(
-    () =>
-      debounce((variables: Parameters<typeof mutate>[0]) => {
-        mutate(variables);
-      }, 300),
-    [mutate],
-  );
-
-  const mutateWithDebounce = useCallback(
-    (variables: Parameters<typeof mutate>[0]) => {
-      lastInputRef.current = { roadmapId: variables.roadmapId };
-      applyOptimisticUpdate(variables); // immediate UI update
-      debouncedMutate(variables); // debounced server mutation
-    },
-    [applyOptimisticUpdate, debouncedMutate],
+  const mutateWithDebounce = useDebouncedOptimisticMutate(
+    mutate,
+    applyOptimisticUpdate,
   );
 
   return {

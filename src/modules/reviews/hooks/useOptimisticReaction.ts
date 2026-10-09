@@ -2,9 +2,9 @@ import { useEdgeConfigs } from "@/common/hooks";
 import { api, type RouterInputs } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { ReviewEventType } from "@/generated/prisma/enums";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useRef } from "react";
 
-import { debounce } from "@/common/functions/debounce";
+import { useDebouncedOptimisticMutate } from "@/common/hooks/use-debounced-optimistic-mutate";
 import {
   cancelReviewCaches,
   patchReviewInCaches,
@@ -77,6 +77,7 @@ export function useOptimisticReaction() {
   const applyOptimisticUpdate = useCallback(
     (variables: Parameters<typeof mutate>[0]) => {
       const { reviewId, reaction } = variables;
+      lastInputRef.current = { reviewId };
       snapshotRef.current = patchReviewInCaches(utils, reviewId, (r) =>
         withReaction(r, reaction),
       );
@@ -84,21 +85,9 @@ export function useOptimisticReaction() {
     [utils],
   );
 
-  const debouncedMutate = useMemo(
-    () =>
-      debounce((variables: Parameters<typeof mutate>[0]) => {
-        mutate(variables);
-      }, 300),
-    [mutate],
-  );
-
-  const mutateWithDebounce = useCallback(
-    (variables: Parameters<typeof mutate>[0]) => {
-      lastInputRef.current = { reviewId: variables.reviewId };
-      applyOptimisticUpdate(variables); // immediate UI update
-      debouncedMutate(variables); // debounced server mutation
-    },
-    [applyOptimisticUpdate, debouncedMutate],
+  const mutateWithDebounce = useDebouncedOptimisticMutate(
+    mutate,
+    applyOptimisticUpdate,
   );
 
   return {
