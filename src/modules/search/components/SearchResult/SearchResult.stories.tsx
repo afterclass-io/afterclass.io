@@ -205,3 +205,22 @@ export const JustCourseSearchResultItem: Story = {
     );
   },
 };
+
+export const LongCourseTitleItem: Story = {
+  render: () => {
+    return (
+      <div className="w-80">
+        <SearchResult.Item
+          school={searchedCourse[0]!.uniAbbrv}
+          href={`/course/${searchedCourse[0]!.courseCode}`}
+          title="An extremely long course title that would otherwise push the chevron out of the card"
+          subtitle={searchedCourse[0]!.courseCode}
+          filterStats={[
+            { icon: <PencilIcon />, stat: 12 },
+            { icon: <GraduationCapIcon />, stat: 32 },
+          ]}
+        />
+      </div>
+    );
+  },
+};
