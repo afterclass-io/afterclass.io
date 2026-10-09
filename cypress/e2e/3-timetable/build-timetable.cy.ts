@@ -120,19 +120,8 @@ context("Timetable: Build", function () {
     cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as(
       "setSlotT4",
     );
-    cy.get("[data-test^=timetable-section-action-]").first().click();
-    // Accept either addSlot (new course) or setSlotSection (already present) or time-conflict toast
-    cy.wait(1500);
-    cy.get("body").then(($body) => {
-      const hasTimeConflict = $body.text().includes("Time conflict");
-      if (hasTimeConflict) {
-        // Retry with second section
-        cy.get("[data-test^=timetable-section-action-]")
-          .eq(1)
-          .click({ force: true });
-        cy.wait(2000);
-      }
-    });
+    // Accept either addSlot (new course), setSlotSection (already present) or a time-conflict toast
+    cy.pickSectionWithFallback({ primary: 0, fallback: 1 });
     cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
       "exist",
     );
@@ -162,17 +151,8 @@ context("Timetable: Build", function () {
     cy.intercept("POST", "**/api/trpc/*timetable.setSlotSection*").as(
       "setSlotT5",
     );
-    cy.get("[data-test^=timetable-section-action-]").first().click();
-    cy.wait(1500);
-    cy.get("body").then(($body) => {
-      const hasTimeConflict = $body.text().includes("Time conflict");
-      if (hasTimeConflict) {
-        cy.get("[data-test^=timetable-section-action-]")
-          .eq(1)
-          .click({ force: true });
-        cy.wait(2000);
-      }
-    });
+    // Accept either addSlot (new course), setSlotSection (already present) or a time-conflict toast
+    cy.pickSectionWithFallback({ primary: 0, fallback: 1 });
     cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
       "exist",
     );
@@ -224,17 +204,8 @@ context("Timetable: Build", function () {
       .click();
 
     cy.contains("Sections", { timeout: 10000 }).should("be.visible");
-    cy.get("[data-test^=timetable-section-action-]").first().click();
-    cy.wait(1500);
-    cy.get("body").then(($body) => {
-      const hasTimeConflict = $body.text().includes("Time conflict");
-      if (hasTimeConflict) {
-        cy.get("[data-test^=timetable-section-action-]")
-          .eq(1)
-          .click({ force: true });
-        cy.wait(1500);
-      }
-    });
+    // Accept either addSlot (new course), setSlotSection (already present) or a time-conflict toast
+    cy.pickSectionWithFallback({ primary: 0, fallback: 1 });
 
     // Wait for slot card to appear
     cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
@@ -453,18 +424,8 @@ context("Timetable: Build", function () {
       "setSlotRemove",
     );
     // ACCT102 G1 has no class timings so card never renders — pick G2
-    cy.get("[data-test^=timetable-section-action-]").eq(1).click();
-    cy.wait(1500);
-    cy.get("body").then(($body) => {
-      const hasTimeConflict = $body.text().includes("Time conflict");
-      if (hasTimeConflict) {
-        // Time conflict with COR-* slot; try the other ACCT section
-        cy.get("[data-test^=timetable-section-action-]")
-          .first()
-          .click({ force: true });
-        cy.wait(1500);
-      }
-    });
+    // Accept either addSlot (new course), setSlotSection (already present) or a time-conflict toast
+    cy.pickSectionWithFallback({ primary: 1, fallback: 0 });
 
     // The slot card appears on the grid — count how many (may include COR- from prior specs)
     cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
