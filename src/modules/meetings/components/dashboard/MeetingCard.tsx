@@ -14,7 +14,7 @@ import {
   type MeetingSummaryInput,
 } from "@/modules/meetings/functions/format-meeting";
 
-export type MeetingCardItem = MeetingSummaryInput & {
+type MeetingCardItem = MeetingSummaryInput & {
   slug: string;
   title: string;
   description?: string | null;

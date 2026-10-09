@@ -25,7 +25,7 @@ export type SpineTerm = {
   label: string;
 };
 
-export type TimelineLayoutNode = {
+type TimelineLayoutNode = {
   id: string;
   kind: "term" | "course";
   position: { x: number; y: number };
@@ -35,7 +35,7 @@ export type TimelineLayoutNode = {
   entry?: Entry;
 };
 
-export type TimelineLayoutEdge = {
+type TimelineLayoutEdge = {
   id: string;
   source: string;
   target: string;
@@ -55,7 +55,7 @@ export type TimelineLayout = {
 // ---------------------------------------------------------------------------
 
 /** Term order within a year, matching the roadmap grid */
-export const TIMELINE_TERMS = ["T1", "T2", "T3A", "T3B"] as const;
+const TIMELINE_TERMS = ["T1", "T2", "T3A", "T3B"] as const;
 
 /** Horizontal distance between consecutive spine (term) nodes */
 export const SPINE_GAP_X = 220;

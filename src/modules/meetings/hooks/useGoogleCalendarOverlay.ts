@@ -23,7 +23,7 @@ export interface GoogleCalendarEventItem {
 }
 
 /** Read-only access to the viewer's calendar events; nothing is stored server-side. */
-export const GOOGLE_CALENDAR_SCOPE =
+const GOOGLE_CALENDAR_SCOPE =
   "https://www.googleapis.com/auth/calendar.events.readonly";
 
 const CALENDAR_EVENTS_URL =

@@ -1,4 +1,4 @@
-export const MAX_TSQUERY_TOKENS = 8;
+const MAX_TSQUERY_TOKENS = 8;
 
 /** Returns a to_tsquery string such as "cor:* & stat1202:*", or null if no token remains. */
 export function buildTsQuery(q: string): string | null {

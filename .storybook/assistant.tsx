@@ -9,7 +9,7 @@ import type { AssistantStatus } from "@/server/assistant/status";
 
 const NO_SESSIONS: StoredSession[] = [];
 
-export const seedAssistantStore = (
+const seedAssistantStore = (
   sessions: StoredSession[] = [],
   activeSessionId: string | null = null,
 ) => {
@@ -22,7 +22,7 @@ type AssistantParameters = {
   status?: AssistantStatus | null;
 };
 
-export const mockAssistantStatus = (status: AssistantStatus | null) => {
+const mockAssistantStatus = (status: AssistantStatus | null) => {
   // Snapshot the live fetch: a forwarding closure would self-recurse after
   // cleanup restores it (closure -> window.fetch -> closure ...).
   const originalFetch = window.fetch.bind(window);

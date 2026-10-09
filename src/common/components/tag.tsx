@@ -200,7 +200,7 @@ const deletableVariants = cva(
   },
 );
 
-export interface TagProps
+interface TagProps
   extends
     Omit<React.HTMLAttributes<HTMLDivElement>, "color">,
     VariantProps<typeof tagVariants> {

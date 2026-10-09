@@ -4,8 +4,6 @@ import { MIN_QUERY_LEN } from "@/common/constants/search";
 import { normalizeSearchQuery } from "@/common/tools/query-normalize";
 import { buildTsQuery, escapeLike, toCodeKey } from "./query";
 
-export { MIN_QUERY_LEN };
-
 /** SMU is the only live university. Callers use this value; none hard-codes it. */
 export const DEFAULT_UNIVERSITY_ABBRV: UniversityAbbreviation =
   UniversityAbbreviation.SMU;

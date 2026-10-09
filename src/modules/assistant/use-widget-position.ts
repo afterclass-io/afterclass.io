@@ -54,7 +54,7 @@ function loadStored(): StoredV3 | null {
   }
 }
 
-export type PointerHandlers = {
+type PointerHandlers = {
   onPointerDown: (e: React.PointerEvent) => void;
   onPointerMove: (e: React.PointerEvent) => void;
   onPointerUp: () => void;

@@ -10,7 +10,7 @@ import {
   type ParticipantItem,
 } from "@/modules/meetings/components/room/MeetingParticipantList";
 
-export type TopTimeItem = {
+type TopTimeItem = {
   rank: number;
   slotIndex: number;
   label: string;

@@ -22,7 +22,7 @@ const kbdVariants = cva(
   },
 );
 
-export interface KbdProps
+interface KbdProps
   extends
     React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof kbdVariants> {}
@@ -31,4 +31,4 @@ function Kbd({ className, variant, ...props }: KbdProps) {
   return <kbd className={cn(kbdVariants({ variant }), className)} {...props} />;
 }
 
-export { Kbd, kbdVariants };
+export { Kbd };

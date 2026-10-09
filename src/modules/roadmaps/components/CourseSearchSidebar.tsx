@@ -15,7 +15,7 @@ import { GripVertical } from "lucide-react";
 // Types
 // ---------------------------------------------------------------------------
 
-export type SearchCourseResult = {
+type SearchCourseResult = {
   id: string;
   code: string;
   name: string;

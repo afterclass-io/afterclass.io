@@ -25,7 +25,7 @@ import { cn } from "@/common/functions";
 // Types
 // ---------------------------------------------------------------------------
 
-export type ShareEntity = "timetable" | "roadmap";
+type ShareEntity = "timetable" | "roadmap";
 export type ShareVisibility = "PRIVATE" | "UNLISTED" | "PUBLIC";
 
 export type ShareDialogProps = {

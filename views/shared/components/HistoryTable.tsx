@@ -4,8 +4,8 @@ import type { ThemeColors } from "../tokens";
 import { compareRounds } from "../utils/round-order";
 import { computeTermGroups, type ChartPoint } from "../utils/chart-points";
 
-export type SortColumn = "term" | "round" | "window" | "min" | "median";
-export type SortDirection = "asc" | "desc";
+type SortColumn = "term" | "round" | "window" | "min" | "median";
+type SortDirection = "asc" | "desc";
 
 const DEFAULT_VISIBLE_ROWS = 10;
 

@@ -7,7 +7,7 @@ import { PageTitle } from "@/common/components/page-title";
 import { AgentRowIcon, RevokeAgentForm } from "./revoke-agent-form";
 
 /** Minimal grant shape rendered by this view (see UserGrant in @/server/supabase-consent). */
-export interface AgentGrant {
+interface AgentGrant {
   id: string;
   client_id: string;
   client_name?: string;

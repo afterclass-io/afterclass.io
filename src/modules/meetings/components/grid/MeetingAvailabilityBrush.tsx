@@ -22,7 +22,7 @@ interface BrushOption {
 }
 
 /** The legend doubles as the brush picker, so the colours explain themselves. */
-export const BRUSH_OPTIONS: BrushOption[] = [
+const BRUSH_OPTIONS: BrushOption[] = [
   {
     mode: "AVAILABLE",
     label: "Available",

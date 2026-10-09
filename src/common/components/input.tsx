@@ -10,7 +10,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@/common/functions";
 import { Button } from "@/common/components/button";
 
-export type InputContextProps = Pick<InputProps, "autoFocus" | "disabled"> & {
+type InputContextProps = Pick<InputProps, "autoFocus" | "disabled"> & {
   controlRef: React.RefObject<HTMLElement | null>;
   onFocusedChange: (focused: boolean) => void;
 };
@@ -25,7 +25,7 @@ const InputContext = React.createContext<InputContextProps>({
 
 const useInputContext = () => React.useContext(InputContext);
 
-export interface InputProps extends React.ComponentPropsWithoutRef<
+interface InputProps extends React.ComponentPropsWithoutRef<
   typeof Primitive.div
 > {
   autoFocus?: boolean;
@@ -104,7 +104,7 @@ const InputControl = React.forwardRef<
 });
 InputControl.displayName = "InputControl";
 
-export interface InputAdornmentProps extends React.ComponentPropsWithoutRef<"div"> {
+interface InputAdornmentProps extends React.ComponentPropsWithoutRef<"div"> {
   asChild?: boolean;
   disablePointerEvents?: boolean;
 }
@@ -181,11 +181,4 @@ const Input = React.forwardRef<
 ));
 Input.displayName = "Input";
 
-export {
-  Input,
-  InputRoot,
-  InputFlexWrapper,
-  InputControl,
-  InputAdornment,
-  InputAdornmentButton,
-};
+export { Input, InputRoot, InputControl, InputAdornment, InputAdornmentButton };

@@ -39,7 +39,7 @@ export type SuggestQuery = {
   limit?: number;
 };
 
-export type TimeOption = {
+type TimeOption = {
   date: string;
   weekday: WeekdayLabel;
   start: string;
@@ -55,7 +55,7 @@ export type TimeOption = {
   summary: string;
 };
 
-export type SuggestEmptyReason = "all-past";
+type SuggestEmptyReason = "all-past";
 
 export type SuggestTimesResult = {
   participants: { total: number; noResponse: string[] };

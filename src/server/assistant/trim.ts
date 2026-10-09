@@ -1,7 +1,7 @@
 import { convertToModelMessages, pruneMessages } from "ai";
 import type { ModelMessage, UIMessage } from "ai";
 
-export const TOKEN_ESTIMATE_CHARS_PER_TOKEN = 4;
+const TOKEN_ESTIMATE_CHARS_PER_TOKEN = 4;
 // NOTE: heuristic (JSON chars / 4). ~right for English; JSON-heavy tool payloads skew it.
 // Verifying against the provider's real tokenizer is a tracked follow-up — do NOT add a
 // tokenizer dependency in this change.
@@ -58,7 +58,7 @@ export function applyTokenBudget(
 // every remaining turn. "Keep everything" only wins when a result survives
 // >10 subsequent turns and grows context without bound.
 
-export const PAGE_CONTEXT_BLOCK_RE = /<page_context>[\s\S]*?<\/page_context>/g;
+const PAGE_CONTEXT_BLOCK_RE = /<page_context>[\s\S]*?<\/page_context>/g;
 
 const hasPageContextBlock = (text: string): boolean => {
   // Fresh non-global scan each call: module-global /g regexes carry lastIndex

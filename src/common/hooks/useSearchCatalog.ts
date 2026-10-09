@@ -6,14 +6,12 @@ import { MIN_QUERY_LEN, SEARCH_DEBOUNCE_MS } from "@/common/constants/search";
 import { useDebouncedValue } from "@/common/hooks/useDebouncedValue";
 import { api, type RouterOutputs } from "@/common/tools/trpc/react";
 
-export { SEARCH_DEBOUNCE_MS };
-
 export type CourseCatalogRow =
   RouterOutputs["search"]["courses"]["rows"][number];
 export type ProfessorCatalogRow =
   RouterOutputs["search"]["professors"]["rows"][number];
 
-export type Scope =
+type Scope =
   | { entity: "course"; scope?: { professorSlug: string } }
   | { entity: "professor"; scope?: { courseCode: string } };
 

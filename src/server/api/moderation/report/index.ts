@@ -19,7 +19,7 @@ import {
  */
 export const REPORT_ACK = { received: true } as const;
 
-export const reportInput = z.object({
+const reportInput = z.object({
   surface: z.enum(REPORT_SURFACES),
   /** Review id or roadmap id (see surfaces.ts). */
   ref: z.string().trim().min(1).max(64),

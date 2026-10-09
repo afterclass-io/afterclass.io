@@ -1,13 +1,13 @@
 import type { UIMessage } from "ai";
 
-export const MAX_SESSION_MESSAGES = 200;
-export const MAX_SESSIONS = 50;
+const MAX_SESSION_MESSAGES = 200;
+const MAX_SESSIONS = 50;
 
 // Matches the ephemeral <page_context> suffix the chat route appends per
 // turn. Persisted history must be a clean transcript: snapshots go stale on
 // navigation, so blocks are stripped before IndexedDB persist (never mixed
 // into the visible message text client-side — this is belt-and-braces).
-export const PAGE_CONTEXT_BLOCK_RE = /<page_context>[\s\S]*?<\/page_context>/g;
+const PAGE_CONTEXT_BLOCK_RE = /<page_context>[\s\S]*?<\/page_context>/g;
 
 function partsOf(m: UIMessage): UIMessage["parts"] {
   return Array.isArray(m.parts) ? m.parts : [];

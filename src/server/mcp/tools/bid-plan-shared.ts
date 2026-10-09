@@ -1,7 +1,7 @@
 import type { RouterCaller } from "../types";
 import { parseViewJson } from "../types";
 
-export interface BidPlanEntry {
+interface BidPlanEntry {
   id: string;
   bidAmount: number;
   status: string;

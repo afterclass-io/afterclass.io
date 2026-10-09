@@ -92,7 +92,7 @@ const sharedFields = (row: PublicReviewRow) => ({
   university: row.reviewedUniversity.abbrv,
 });
 
-export const toPublicReview = (row: PublicReviewRow): Review =>
+const toPublicReview = (row: PublicReviewRow): Review =>
   ({
     id: row.id,
     rating: 0,

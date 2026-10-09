@@ -47,7 +47,7 @@ export const courseSearchOutput = z.object({
   ),
 });
 
-export const bidPlanEntry = z.object({
+const bidPlanEntry = z.object({
   id: z.string(),
   bidAmount: z.number(),
   status: z.string(),

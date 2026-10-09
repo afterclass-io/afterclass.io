@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-export const GLOBAL_CONFIG_API = "https://api.vercel.com/v1/global-config";
+const GLOBAL_CONFIG_API = "https://api.vercel.com/v1/global-config";
 
 /** Key rule from the Vercel docs: alphanumeric, "_" and "-", up to 256 chars. */
 export const EDGE_CONFIG_KEY_PATTERN = /^[A-Za-z0-9_-]{1,256}$/;
 
-export const remoteItemSchema = z.object({
+const remoteItemSchema = z.object({
   key: z.string(),
   value: z.unknown(),
 });

@@ -27,17 +27,17 @@ type BaseReviewItemLoaderProps = {
   isAuthenticated: boolean;
 };
 
-export type ReviewItemLoaderHomeProps = BaseReviewItemLoaderProps & {
+type ReviewItemLoaderHomeProps = BaseReviewItemLoaderProps & {
   variant: "home";
 };
 
-export type ReviewItemLoaderCourseProps = BaseReviewItemLoaderProps & {
+type ReviewItemLoaderCourseProps = BaseReviewItemLoaderProps & {
   variant: "course";
   code: string;
   slugs?: string[];
 };
 
-export type ReviewItemLoaderProfessorProps = BaseReviewItemLoaderProps & {
+type ReviewItemLoaderProfessorProps = BaseReviewItemLoaderProps & {
   variant: "professor";
   slug: string;
   courseCodes?: string[];

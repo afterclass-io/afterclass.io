@@ -1,6 +1,6 @@
 import { criticalFloorFor } from "./quota-meter/logic";
 
-export type QuotaAlertLevel = "warn" | "critical";
+type QuotaAlertLevel = "warn" | "critical";
 
 export type QuotaAlert = {
   level: QuotaAlertLevel;

@@ -11,7 +11,7 @@ export type RoadmapPanelWidths = {
   sidebar: number;
 };
 
-export const ROADMAP_PANEL_DEFAULTS: RoadmapPanelWidths = {
+const ROADMAP_PANEL_DEFAULTS: RoadmapPanelWidths = {
   list: 208, // matches the previous lg:w-52
   sidebar: 256, // matches the previous lg:w-64
 };

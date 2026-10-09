@@ -22,7 +22,7 @@ export type BidSummary = {
   window: number;
 };
 
-export type RoundTotal = {
+type RoundTotal = {
   round: string;
   total: number;
   windows: { window: number; amount: number }[];

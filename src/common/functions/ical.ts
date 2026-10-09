@@ -1,6 +1,6 @@
 import ical, { ICalCalendarMethod } from "ical-generator";
 
-export type GenericCalendarEvent = {
+type GenericCalendarEvent = {
   id?: string;
   start: Date | string;
   end: Date | string;

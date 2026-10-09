@@ -6,8 +6,8 @@ import {
   type Size,
 } from "../widget-geometry";
 
-export const BUBBLE_GAP = 12;
-export const BUBBLE_MAX_WIDTH = 288; // max-w-72
+const BUBBLE_GAP = 12;
+const BUBBLE_MAX_WIDTH = 288; // max-w-72
 const BUBBLE_EST_HEIGHT = 120; // upper bound incl. padding; decides above vs below
 
 export function bubbleStyle(launcher: Point, viewport: Size): CSSProperties {

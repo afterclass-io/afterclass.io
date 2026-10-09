@@ -1,6 +1,6 @@
 import { Skeleton } from "@/common/components/skeleton";
 
-export const FilterToggleSectionItemSkeleton = () => {
+const FilterToggleSectionItemSkeleton = () => {
   return (
     <div className="group flex cursor-pointer items-center gap-2 self-stretch rounded-lg py-2 pr-2 pl-1 md:w-64 md:gap-4 md:border md:p-3">
       <div className="flex flex-[1_0_0] items-center justify-between gap-2 md:flex-auto md:flex-col md:items-start md:justify-center">
