@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useAtom } from "jotai";
 import { toast } from "sonner";
 import {
@@ -23,8 +23,8 @@ import {
   extractAcadTermCode,
   findAcadTermForRoadmapTerm,
 } from "@/modules/roadmaps/functions/term-mapping";
-import { roadmapPanelWidthsAtom } from "@/modules/roadmaps/atoms/roadmap";
 import { hasSeenRoadmapsTourAtom } from "@/modules/roadmaps/atoms/roadmap";
+import { useRoadmapPanelResize } from "@/modules/roadmaps/hooks/use-roadmap-panel-resize";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
 import { RoadmapList } from "@/modules/roadmaps/components/RoadmapList";
 import { LazyRoadmapTimeline } from "@/modules/roadmaps/components/LazyRoadmapTimeline";
@@ -60,24 +60,12 @@ type EditorViewMode = "grid" | "timeline";
 // Constants
 // =============================================================================
 
-/** Panel resize clamps (px). lg+ only; mobile keeps the stacked layout. */
-const LIST_MIN_WIDTH = 160;
-const LIST_MAX_WIDTH = 320;
-const SIDEBAR_MIN_WIDTH = 200;
-const SIDEBAR_MAX_WIDTH = 400;
-/** Keep at least this much width for the grid/timeline area when resizing. */
-const MAIN_MIN_WIDTH = 480;
-
 /** Sentinel Select value for the "Clear" matriculation-year item. */
 const CLEAR_MATRIC_VALUE = "__clear__";
 
 // =============================================================================
 // Helpers
 // =============================================================================
-
-function clampWidth(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), Math.max(min, max));
-}
 
 /**
  * Academic-year part of an AcadTerm label. Labels are "AY2026/2027 1"
@@ -139,40 +127,8 @@ export function MyRoadmapsEditor() {
   const [viewMode, setViewMode] = useState<EditorViewMode>("grid");
 
   // ---- Resizable panel widths (persisted, lg+ only) ----
-  const [panelWidths, setPanelWidths] = useAtom(roadmapPanelWidthsAtom);
-  const layoutRef = useRef<HTMLDivElement | null>(null);
-
-  const handleListResize = useCallback(
-    (deltaX: number) => {
-      setPanelWidths((w) => {
-        const containerW = layoutRef.current?.clientWidth ?? Infinity;
-        const max = Math.min(
-          LIST_MAX_WIDTH,
-          containerW - w.sidebar - MAIN_MIN_WIDTH,
-        );
-        return { ...w, list: clampWidth(w.list + deltaX, LIST_MIN_WIDTH, max) };
-      });
-    },
-    [setPanelWidths],
-  );
-
-  const handleSidebarResize = useCallback(
-    (deltaX: number) => {
-      setPanelWidths((w) => {
-        const containerW = layoutRef.current?.clientWidth ?? Infinity;
-        const max = Math.min(
-          SIDEBAR_MAX_WIDTH,
-          containerW - w.list - MAIN_MIN_WIDTH,
-        );
-        // The handle sits left of the sidebar: dragging left widens it.
-        return {
-          ...w,
-          sidebar: clampWidth(w.sidebar - deltaX, SIDEBAR_MIN_WIDTH, max),
-        };
-      });
-    },
-    [setPanelWidths],
-  );
+  const { panelWidths, layoutRef, handleListResize, handleSidebarResize } =
+    useRoadmapPanelResize();
 
   // ---- Product tour: auto-start once per browser (replay via help icon) ----
   const [hasSeenTour, setHasSeenTour] = useAtom(hasSeenRoadmapsTourAtom);
