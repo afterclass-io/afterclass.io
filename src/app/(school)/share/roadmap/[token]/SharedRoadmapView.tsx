@@ -62,7 +62,7 @@ export function SharedRoadmapView({
     onSuccess: async () => {
       await utils.roadmaps.listMine.invalidate();
       toast.success("Roadmap copied to your account!");
-      router.push("/roadmaps/mine");
+      router.push("/roadmaps?view=mine");
       setCopying(false);
     },
     onError: () => {

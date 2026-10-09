@@ -106,11 +106,7 @@ export function PublicRoadmapView({
     onSuccess: async (_newRoadmap) => {
       await utils.roadmaps.listMine.invalidate();
       toast.success("Roadmap copied to your account!");
-      router.push(`/roadmaps/mine`);
-      // Select the newly copied roadmap by navigating
-      setTimeout(() => {
-        router.push(`/roadmaps/mine`);
-      }, 500);
+      router.push("/roadmaps?view=mine");
     },
     onError: (error) => {
       toast.error(error.message || "Failed to copy roadmap");
