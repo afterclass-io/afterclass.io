@@ -41,9 +41,9 @@ export const dynamic = "force-dynamic";
 // `chatMaxDurationSec` (300, Vercel Pro ceiling without Fluid — the Hobby-60
 // cap does NOT apply to our Pro plan). Next.js requires a LITERAL
 // here (it extracts maxDuration by static analysis, so
-// `getChatConfig().chatMaxDurationSec` would silently deploy as undefined);
-// keep this in sync with `src/server/config/chat-config.ts` (there is a
-// source comment there pointing back here).
+// `getChatConfig().chatMaxDurationSec` would silently deploy as undefined).
+// `src/server/config/mirrored-tunables.test.ts` fails if it drifts from the
+// default in `src/server/config/chat-config.ts`.
 export const maxDuration = 300;
 
 // Input caps: a pasted/attack payload is refused BEFORE quota,
