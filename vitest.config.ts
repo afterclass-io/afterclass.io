@@ -30,6 +30,7 @@ const oxc = {
 // runtime, not from `@/env`.
 const dummyEnv = {
   DATABASE_URL: "postgresql://user:pass@localhost:5432/db",
+  NEXTAUTH_SECRET: "test-nextauth-secret",
   GOOGLE_CLIENT_ID: "test-client-id",
   GOOGLE_CLIENT_SECRET: "test-client-secret",
   NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-anon-key",
