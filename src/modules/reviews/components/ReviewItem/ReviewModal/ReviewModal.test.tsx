@@ -70,7 +70,7 @@ import { ReviewModal } from "./ReviewModal";
 
 const mockReview: Review = {
   id: "rv-modal-1",
-  body: "This professor is shit at teaching",
+  body: "This professor is **** at teaching",
   tips: "Avoid this class",
   rating: 1,
   courseCode: "IS111",

@@ -1,15 +1,18 @@
 /**
- * Display-time profanity filter for public-facing text, backed by the
+ * Server-side profanity filter for public-facing text, backed by the
  * `obscenity` library's English dataset.
  *
  * afterclass has no real censorship mechanism; this masks profanity with
- * asterisks when rendering user-generated content (roadmap names,
- * descriptions, usernames) to the public. It is intentionally simple — a
- * stopgap, not a substitute for a proper moderation pipeline.
+ * asterisks at the response boundary (review bodies, roadmap names,
+ * descriptions, usernames) so raw text never reaches a client. It is
+ * intentionally simple — a stopgap, not a substitute for a proper
+ * moderation pipeline. The word list stays out of the browser bundle.
  *
  * Pure function — no side effects; matcher and censor are compiled once at
  * module load.
  */
+
+import "server-only";
 
 import {
   RegExpMatcher,

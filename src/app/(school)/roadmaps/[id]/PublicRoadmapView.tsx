@@ -33,7 +33,6 @@ import {
   TooltipTrigger,
 } from "@/common/components/tooltip";
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
-import { censorProfanity, censorProfanityOrNull } from "@/common/functions";
 import { formatDateSGT } from "@/common/functions/format-date-sgt";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
 
@@ -134,10 +133,6 @@ export function PublicRoadmapView({
 
   const formattedDate = publishedAt ? formatDateSGT(publishedAt) : null;
 
-  const safeName = censorProfanity(roadmapName);
-  const safeUsername = censorProfanity(ownerUsername);
-  const safeDescription = censorProfanityOrNull(description);
-
   return (
     <div className="flex flex-col gap-6">
       {/* Back to gallery */}
@@ -154,14 +149,14 @@ export function PublicRoadmapView({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <PageTitle className="text-left text-2xl font-bold tracking-tight md:text-2xl!">
-            {safeName}
+            {roadmapName}
           </PageTitle>
           {/* Author line: who made this roadmap, their faculty, and when it
               was published */}
           <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
             <span className="inline-flex items-center gap-1">
               <User className="size-3" />
-              {safeUsername}
+              {ownerUsername}
             </span>
             {ownerFaculty && (
               <span className="inline-flex items-center gap-1">
@@ -191,9 +186,9 @@ export function PublicRoadmapView({
               {shareCount} {shareCount === 1 ? "share" : "shares"}
             </span>
           </p>
-          {safeDescription && (
+          {description && (
             <p className="text-muted-foreground mt-2 line-clamp-10 max-w-2xl text-sm whitespace-pre-line">
-              {safeDescription}
+              {description}
             </p>
           )}
         </div>

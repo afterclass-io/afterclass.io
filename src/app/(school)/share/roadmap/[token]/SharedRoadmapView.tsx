@@ -20,7 +20,6 @@ import { ReportButton } from "@/modules/moderation/components/ReportButton";
 import { Button } from "@/common/components/button";
 import { PageTitle } from "@/common/components/page-title";
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
-import { censorProfanity } from "@/common/functions";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
 
 // ---------------------------------------------------------------------------
@@ -98,11 +97,9 @@ export function SharedRoadmapView({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <PageTitle className="text-left text-2xl font-bold tracking-tight md:text-2xl!">
-            Shared Roadmap: {censorProfanity(roadmapName)}
+            Shared Roadmap: {roadmapName}
           </PageTitle>
-          <p className="text-muted-foreground text-sm">
-            by {censorProfanity(ownerUsername)}
-          </p>
+          <p className="text-muted-foreground text-sm">by {ownerUsername}</p>
         </div>
 
         <div className="flex items-center gap-3">

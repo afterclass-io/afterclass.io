@@ -10,6 +10,12 @@ const resolve = {
       import.meta.dirname,
       "node_modules/next/server.js",
     ),
+    // `server-only` throws outside a React Server Component bundle; tests
+    // that import @/server/* run in plain Node.
+    "server-only": path.resolve(
+      import.meta.dirname,
+      "vitest.server-only.stub.ts",
+    ),
   },
 };
 

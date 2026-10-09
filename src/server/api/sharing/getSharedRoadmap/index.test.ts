@@ -71,4 +71,20 @@ describe("sharing.getSharedRoadmap", () => {
       caller.getSharedRoadmap({ token: "nope" }),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
+
+  it("masks profanity in the roadmap name and owner username", async () => {
+    const findUnique = vi.fn().mockResolvedValue({
+      ...roadmapFixture,
+      name: "Shit plan",
+      user: { username: "bastard" },
+    });
+    const caller = makeCaller(router.createCaller, {
+      userRoadmap: { findUnique },
+    });
+
+    const result = await caller.getSharedRoadmap({ token: "tok_valid" });
+
+    expect(result.roadmap.name).toBe("**** plan");
+    expect(result.ownerUsername).toBe("*******");
+  });
 });

@@ -2,6 +2,7 @@ import { type Prisma } from "@/generated/prisma/client";
 import { Visibility } from "@/generated/prisma/enums";
 
 import { publicProcedure } from "@/server/api/trpc";
+import { censorProfanity, censorProfanityOrNull } from "@/server/profanity";
 
 import { listPublicInput } from "./input";
 
@@ -85,8 +86,12 @@ export const listPublic = publicProcedure
     const facultyById = new Map(faculties.map((f) => [f.id, f]));
 
     const items = roadmaps.map((r) => ({
-      roadmap: r,
-      ownerUsername: r.user.username,
+      roadmap: {
+        ...r,
+        name: censorProfanity(r.name),
+        description: censorProfanityOrNull(r.description),
+      },
+      ownerUsername: censorProfanity(r.user.username),
       entryCount: r._count.entries,
       voteCount: r._count.votes,
       faculty:

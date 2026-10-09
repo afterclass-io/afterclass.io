@@ -14,6 +14,7 @@ import {
   REVIEW_PAGE_MAX,
   REVIEW_SKIP_MAX,
 } from "./constants";
+import { censorProfanity } from "@/server/profanity";
 import { loadReviewEngagement } from "./engagement";
 import { getOrderBy } from "./functions";
 
@@ -104,7 +105,8 @@ export const toPublicReview = (row: PublicReviewRow): Review =>
 export const toMemberReview = (row: PrivateReviewRow): Review =>
   ({
     ...row,
-    tips: row.tips ?? "",
+    body: censorProfanity(row.body),
+    tips: censorProfanity(row.tips ?? ""),
     ...sharedFields(row),
   }) satisfies Review;
 

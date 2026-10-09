@@ -339,6 +339,20 @@ describe("review service (service.ts)", () => {
       expect(mapped.reviewFor).toBe(ReviewType.PROFESSOR);
       expect(mapped.tips).toBe(row.tips);
     });
+
+    it("masks profanity in the body and the tips", () => {
+      const row = {
+        ...memberReviewRow,
+        createdAt: new Date(memberReviewRow.createdAt),
+        body: "This professor is shit at teaching",
+        tips: "Avoid this bastard",
+      };
+      const mapped = toMemberReview(
+        row as unknown as Parameters<typeof toMemberReview>[0],
+      );
+      expect(mapped.body).toBe("This professor is **** at teaching");
+      expect(mapped.tips).toBe("Avoid this *******");
+    });
   });
 
   describe("reviewPageInput schema caps and defaults", () => {

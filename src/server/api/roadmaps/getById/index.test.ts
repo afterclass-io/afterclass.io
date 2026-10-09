@@ -159,4 +159,20 @@ describe("roadmaps.getById", () => {
     });
     expect(res.ownerFaculty).toBeNull();
   });
+
+  it("masks profanity in the roadmap name, description and owner username", async () => {
+    const db = makeDb(
+      makeRoadmapRow({
+        name: "This plan is shit",
+        description: "A fuck of a plan",
+        user: { username: "bastard" },
+      }),
+    );
+    const res = await makeCaller(router.createCaller, db, anon).getById({
+      id: "rm1",
+    });
+    expect(res.roadmap.name).toBe("This plan is ****");
+    expect(res.roadmap.description).toBe("A **** of a plan");
+    expect(res.ownerUsername).toBe("*******");
+  });
 });

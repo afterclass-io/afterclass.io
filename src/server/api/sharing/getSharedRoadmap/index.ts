@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 import { publicProcedure } from "@/server/api/trpc";
+import { censorProfanity } from "@/server/profanity";
 import { checkBudget } from "@/server/assistant/budget";
 import { clientKey } from "@/server/api/engagement-limit";
 
@@ -45,8 +46,8 @@ export const getSharedRoadmap = publicProcedure
     }
 
     return {
-      roadmap,
+      roadmap: { ...roadmap, name: censorProfanity(roadmap.name) },
       entries: roadmap.entries,
-      ownerUsername: roadmap.user.username,
+      ownerUsername: censorProfanity(roadmap.user.username),
     };
   });
