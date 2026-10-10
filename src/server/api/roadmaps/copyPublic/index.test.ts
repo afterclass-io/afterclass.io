@@ -99,14 +99,14 @@ describe("roadmaps.copyPublic", () => {
     });
   });
 
-  it("maps a Prisma FK-constraint error (P2003) to INTERNAL_SERVER_ERROR", async () => {
+  it("maps a Prisma FK-constraint error (P2003) to BAD_REQUEST", async () => {
     const caller = makeCaller(
       router.createCaller,
       makeDb({ create: vi.fn().mockRejectedValue({ code: "P2003" }) }),
     );
     await expect(caller.copyPublic({ roadmapId: "r1" })).rejects.toMatchObject({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to copy roadmap — source contains an invalid course",
+      code: "BAD_REQUEST",
+      message: "Cannot copy this roadmap — it contains an unknown course.",
     });
   });
 

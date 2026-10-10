@@ -31,8 +31,8 @@ export const copyPublic = protectedProcedure
     } catch (err) {
       if (isForeignKeyViolation(err)) {
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to copy roadmap — source contains an invalid course",
+          code: "BAD_REQUEST",
+          message: "Cannot copy this roadmap — it contains an unknown course.",
         });
       }
       if (isUniqueConstraintViolation(err)) {
