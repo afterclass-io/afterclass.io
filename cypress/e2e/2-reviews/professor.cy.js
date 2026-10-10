@@ -6,6 +6,7 @@ const TEST_PROF_PATH = `/professor/${TEST_PROF_SLUG}`;
 context("Reviews: Professor", function () {
   beforeEach(function () {
     cy.visit(TEST_PROF_PATH);
+    cy.waitForHydration();
   });
 
   describe("Basic Navigations", function () {
@@ -102,6 +103,7 @@ context("Reviews: Professor", function () {
     beforeEach(function () {
       cy.login();
       cy.visit(TEST_PROF_PATH);
+      cy.waitForHydration();
     });
 
     it("should not be able to see login overlays", function () {
@@ -232,6 +234,7 @@ context("Reviews: Professor", function () {
     beforeEach(function () {
       cy.login();
       cy.visit(TEST_PROF_PATH);
+      cy.waitForHydration();
       cy.fixture("prisma/5_professors.json").then((professors) => {
         this.professorsJson = professors;
         this.professor = professors.find((c) => c.slug === TEST_PROF_SLUG);

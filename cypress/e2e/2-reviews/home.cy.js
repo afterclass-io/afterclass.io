@@ -3,6 +3,7 @@
 context("Reviews: Home", function () {
   beforeEach(function () {
     cy.visit("/");
+    cy.waitForHydration();
   });
 
   describe("Basic Navigations", function () {
@@ -77,6 +78,7 @@ context("Reviews: Home", function () {
   describe("Authenticated User", function () {
     beforeEach(function () {
       cy.login();
+      cy.waitForHydration();
     });
 
     it("should not be able to see login overlay on review item", function () {

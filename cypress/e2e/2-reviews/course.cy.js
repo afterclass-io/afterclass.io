@@ -6,6 +6,7 @@ const TEST_COURSE_PATH = `/course/${TEST_COURSE_CODE}`;
 context("Reviews: Course", function () {
   beforeEach(function () {
     cy.visit(TEST_COURSE_PATH);
+    cy.waitForHydration();
   });
 
   describe("Basic Navigations", function () {
@@ -106,6 +107,7 @@ context("Reviews: Course", function () {
     beforeEach(function () {
       cy.login();
       cy.visit(TEST_COURSE_PATH);
+      cy.waitForHydration();
     });
 
     it("should not be able to see login overlays", function () {
@@ -241,6 +243,7 @@ context("Reviews: Course", function () {
     beforeEach(function () {
       cy.login();
       cy.visit(TEST_COURSE_PATH);
+      cy.waitForHydration();
       cy.fixture("prisma/3_courses.json").then((courses) => {
         this.courseJson = courses;
         this.course = courses.find((c) => c.code === TEST_COURSE_CODE);

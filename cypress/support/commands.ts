@@ -154,6 +154,29 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * Waits until React has hydrated every `[data-test]` element on the page.
+ * The server renders review lists, buttons and links into the HTML, so
+ * Cypress can click them before their handlers exist, and the click does
+ * nothing. React tags each DOM node it manages with a `__reactFiber$` key
+ * when it hydrates the node, so a node without the key has no handlers yet.
+ * Call it after `cy.visit()` or any login that lands on a page you then use.
+ */
+Cypress.Commands.add("waitForHydration", () => {
+  cy.get("[data-test]", { timeout: 20000 }).should(($elements) => {
+    const unhydrated = $elements
+      .toArray()
+      .filter(
+        (element) =>
+          !Object.keys(element).some((key) => key.startsWith("__reactFiber$")),
+      )
+      .map((element) => element.getAttribute("data-test"));
+    expect(unhydrated, "data-test elements React has not hydrated").to.deep.eq(
+      [],
+    );
+  });
+});
+
 Cypress.Commands.add("checkOgImage", () => {
   // Assert against the raw response, not the hydrated DOM: with per-route
   // generateMetadata the image tag is streamed and moved into <head> after
@@ -201,6 +224,7 @@ declare global {
         fallback: number;
       }): Chainable<void>;
       checkOgImage(): Chainable<void>;
+      waitForHydration(): Chainable<void>;
     }
   }
 }
