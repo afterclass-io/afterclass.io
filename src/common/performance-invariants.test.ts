@@ -206,9 +206,15 @@ describe("performance invariants", () => {
         `src/app/(school)/${route}/loading.tsx`,
       );
 
-    it("streams a shell on the routes that wait on data", () => {
-      for (const route of ["bidding", "bidding/analytics", "search"]) {
-        expect(hasBoundary(route), route).toBe(true);
+    it("streams a shell on the search route", () => {
+      expect(hasBoundary("search")).toBe(true);
+    });
+
+    it("keeps the bidding routes free of a boundary", () => {
+      // With 100 to 150 ms of database latency, a boundary here raised the
+      // mobile-simulated LCP by about 1.1 s. See docs/perf/2026-10-10-epic-results.md.
+      for (const route of ["bidding", "bidding/analytics"]) {
+        expect(hasBoundary(route), route).toBe(false);
       }
     });
 
