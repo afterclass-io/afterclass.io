@@ -23,7 +23,7 @@ type EventName = string;
 type EventData = Record<string, string | number>;
 // Opaque id only: names, emails and handles are student data and must never
 // reach the analytics server.
-type SessionData = { userId: string | number };
+type SessionData = { userId: string };
 
 interface Umami {
   pageView: (data?: Partial<PageView>) => void;

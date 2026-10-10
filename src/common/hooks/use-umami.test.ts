@@ -30,7 +30,7 @@ describe("useUmami", () => {
     void act(() => {
       result.current.pageView();
       result.current.event("click");
-      result.current.identify({ userId: 1 });
+      result.current.identify({ userId: "1" });
     });
 
     expect(console.warn).toHaveBeenCalledWith("UmamiProvider not found");
@@ -66,8 +66,8 @@ describe("useUmami", () => {
     w.umami = umamiSpy();
     const { result } = renderHook(() => useUmami());
 
-    void act(() => result.current.identify({ userId: 42 }));
+    void act(() => result.current.identify({ userId: "42" }));
 
-    expect(w.umami.identify).toHaveBeenCalledWith({ userId: 42 });
+    expect(w.umami.identify).toHaveBeenCalledWith({ userId: "42" });
   });
 });

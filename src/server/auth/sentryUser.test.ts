@@ -8,7 +8,7 @@ import { setSentryUser } from "./sentryUser";
 vi.mock("@sentry/nextjs", () => ({ setUser: vi.fn() }));
 
 describe("setSentryUser", () => {
-  it("sends only id/email/username, dropping the rest of the user row", () => {
+  it("sends only the id, dropping the rest of the user row", () => {
     setSentryUser({
       user: {
         id: "u1",
@@ -19,11 +19,7 @@ describe("setSentryUser", () => {
       },
     } as never);
 
-    expect(Sentry.setUser).toHaveBeenCalledWith({
-      id: "u1",
-      email: "amy@smu.edu.sg",
-      username: "amy",
-    });
+    expect(Sentry.setUser).toHaveBeenCalledWith({ id: "u1" });
   });
 
   it("clears the user when there is no session", () => {
