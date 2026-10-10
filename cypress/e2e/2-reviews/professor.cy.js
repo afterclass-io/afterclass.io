@@ -138,7 +138,7 @@ context("Reviews: Professor", function () {
       cy.get("[data-test=review]", { timeout: 15000 }).then(($before) => {
         const initial = $before.length;
         // A filter change is a server navigation that renders the filtered
-        // feed, so the browser makes no request for it. Wait for the filter
+        // feed, so the browser makes no request for it. Wait for the course filter
         // to reach the URL, then retry the assertion on the rendered list.
         cy.get("[data-test=filter-toggle-section] [data-test=filter-item]", {
           timeout: 15000,
@@ -146,7 +146,7 @@ context("Reviews: Professor", function () {
           .should("be.visible")
           .last()
           .click();
-        cy.location("search", { timeout: 15000 }).should("include", "filter=");
+        cy.location("search", { timeout: 15000 }).should("include", "course=");
         cy.get("body").should(($body) => {
           const count = $body.find("[data-test=review]").length;
           const empty = $body.find(":contains('Oh no!')").length > 0;
