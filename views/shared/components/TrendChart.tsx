@@ -137,7 +137,7 @@ export const TrendChart: React.FC<{
           y={PAD.top}
           width={nowBand.x2 - nowBand.x1}
           height={H - PAD.top - PAD.bottom}
-          fill="#2563eb"
+          fill={c.chartBand}
           opacity={0.06}
         />
       )}
@@ -177,7 +177,7 @@ export const TrendChart: React.FC<{
         d={line((p) => p.min)}
         data-series="min"
         fill="none"
-        stroke="#d97706"
+        stroke={c.chartMin}
         strokeWidth={2}
         strokeDasharray="5 3"
       />

@@ -11,6 +11,9 @@ export const TOKENS = {
     border: "oklch(0.92 0.004 286.32)",
     primary: "oklch(0.48 0.2229 280.55)",
     primaryFg: "oklch(0.969 0.016 293.756)",
+    // TrendChart: current-term band (blue) and minimum-bid line (amber).
+    chartBand: "oklch(0.546 0.245 262.881)",
+    chartMin: "oklch(0.666 0.179 58.318)",
     radius: "0.75rem",
   },
   dark: {
@@ -21,6 +24,8 @@ export const TOKENS = {
     border: "oklch(1 0 0 / 10%)",
     primary: "oklch(0.65 0.1718 272.63)",
     primaryFg: "oklch(0.969 0.016 293.756)",
+    chartBand: "oklch(0.623 0.214 259.815)",
+    chartMin: "oklch(0.769 0.188 70.08)",
     radius: "0.75rem",
   },
 } as const;

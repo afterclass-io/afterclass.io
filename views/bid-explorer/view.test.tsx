@@ -19,6 +19,7 @@ vi.mock("mcp-use/react", () => ({
 }));
 
 import BidExplorerView, { viewConfig, shortTermLabel } from "./view";
+import { TOKENS } from "../shared/tokens";
 import {
   useDynamicTool,
   useHostContext,
@@ -869,7 +870,7 @@ describe("BidExplorerView (v2)", () => {
       expect(texts.find((t) => t.textContent === "now")).toBeUndefined();
       // Current term highlight rect renders when the term is visible.
       const highlights = Array.from(chart.querySelectorAll("rect")).filter(
-        (r) => r.getAttribute("fill") === "#2563eb",
+        (r) => r.getAttribute("fill") === TOKENS.light.chartBand,
       );
       expect(highlights).toHaveLength(1);
     });

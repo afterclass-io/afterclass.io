@@ -117,7 +117,7 @@ describe("TrendChart", () => {
     ).toBeUndefined();
     expect(
       Array.from(chart.querySelectorAll("rect")).filter(
-        (r) => r.getAttribute("fill") === "#2563eb",
+        (r) => r.getAttribute("fill") === TOKENS.light.chartBand,
       ),
     ).toHaveLength(1);
 
@@ -141,9 +141,30 @@ describe("TrendChart", () => {
     ).toBeUndefined();
     expect(
       Array.from(chart.querySelectorAll("rect")).filter(
-        (r) => r.getAttribute("fill") === "#2563eb",
+        (r) => r.getAttribute("fill") === TOKENS.light.chartBand,
       ),
     ).toHaveLength(0);
+  });
+
+  it("draws the min line and the term band from the theme tokens", () => {
+    render(
+      <TrendChart
+        points={manyTerms}
+        currentKey={null}
+        currentAcadTermId="AY2026/27-T1"
+        c={TOKENS.dark}
+      />,
+    );
+    const chart = screen.getByRole("img", { name: /bid trend/i });
+    expect(chart.querySelector('[data-series="min"]')).toHaveAttribute(
+      "stroke",
+      TOKENS.dark.chartMin,
+    );
+    expect(
+      Array.from(chart.querySelectorAll("rect")).filter(
+        (r) => r.getAttribute("fill") === TOKENS.dark.chartBand,
+      ),
+    ).toHaveLength(1);
   });
 
   it("renders no now text or dashed now line even with a legacy currentKey", () => {
