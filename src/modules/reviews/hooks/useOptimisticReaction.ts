@@ -29,7 +29,7 @@ export function useOptimisticReaction() {
       // eslint-disable-next-line react-hooks/refs -- callbacks run in the mutation lifecycle (cancel/snapshot/restore), never during render; the ref carries the debounced input
       {
         cancel: async () => {
-          await cancelReviewCaches(utils);
+          await cancelReviewCaches();
         },
         getSnapshot: () => snapshotRef.current,
         // Pattern A: the caller (mutateWithDebounce) already applied the optimistic
@@ -38,7 +38,7 @@ export function useOptimisticReaction() {
           /* Pattern A: caller (mutateWithDebounce) already applied */
         },
         restoreSnapshot: (prev) => {
-          restoreReviewCaches(utils, prev);
+          restoreReviewCaches(prev);
         },
         invalidate: async () => {
           if (lastInputRef.current) {
@@ -50,7 +50,7 @@ export function useOptimisticReaction() {
                 });
                 const engagement = res[reviewId];
                 if (engagement) {
-                  patchReviewInCaches(utils, reviewId, (r) => ({
+                  patchReviewInCaches(reviewId, (r) => ({
                     ...r,
                     engagement,
                   }));
@@ -78,11 +78,11 @@ export function useOptimisticReaction() {
     (variables: Parameters<typeof mutate>[0]) => {
       const { reviewId, reaction } = variables;
       lastInputRef.current = { reviewId };
-      snapshotRef.current = patchReviewInCaches(utils, reviewId, (r) =>
+      snapshotRef.current = patchReviewInCaches(reviewId, (r) =>
         withReaction(r, reaction),
       );
     },
-    [utils],
+    [],
   );
 
   const mutateWithDebounce = useDebouncedOptimisticMutate(

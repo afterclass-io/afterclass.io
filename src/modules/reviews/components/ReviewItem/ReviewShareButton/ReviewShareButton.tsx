@@ -22,12 +22,11 @@ export const ReviewShareButton = ({
 }: ReviewShareButtonProps) => {
   const pathname = usePathname();
   const ecfg = useEdgeConfigs();
-  const utils = api.useUtils();
   const { copy } = useCopyToClipboard();
 
   const { mutate: track } = api.reviewEvents.track.useMutation({
     onSuccess: () => {
-      patchReviewInCaches(utils, review.id, withShare);
+      patchReviewInCaches(review.id, withShare);
     },
   });
 

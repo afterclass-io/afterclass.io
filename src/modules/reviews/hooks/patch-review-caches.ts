@@ -5,32 +5,22 @@ import type { Review } from "@/common/types/reviews";
 
 export type Snapshot = Array<[QueryKey, unknown]>;
 
-type UtilsWithQueryClient = ReturnType<typeof api.useUtils> & {
-  queryClient?: QueryClient;
-};
-
 type InfiniteReviewPages = {
   pages?: Array<{ items?: Review[]; nextCursor?: string }>;
   pageParams?: unknown[];
 };
 
-function resolveQueryClient(
-  utils: ReturnType<typeof api.useUtils>,
-): QueryClient | undefined {
-  const qc = (utils as UtilsWithQueryClient).queryClient;
-  if (qc && typeof qc.setQueriesData === "function") {
-    return qc;
-  }
-  if (typeof window !== "undefined") {
-    return getQueryClient();
-  }
-  return undefined;
+/**
+ * The tRPC utils proxy has no `queryClient` member: reading one returns a
+ * callable proxy, never the client. These helpers run only in event handlers
+ * and mutation callbacks, so they read the browser singleton the provider uses.
+ */
+function resolveQueryClient(): QueryClient | undefined {
+  return typeof window !== "undefined" ? getQueryClient() : undefined;
 }
 
-export function getReviewCachesSnapshot(
-  utils: ReturnType<typeof api.useUtils>,
-): Snapshot {
-  const queryClient = resolveQueryClient(utils);
+export function getReviewCachesSnapshot(): Snapshot {
+  const queryClient = resolveQueryClient();
   if (!queryClient || !api.reviews) return [];
 
   const infiniteKeys = [
@@ -48,21 +38,16 @@ export function getReviewCachesSnapshot(
   return snapshot;
 }
 
-export function restoreReviewCaches(
-  utils: ReturnType<typeof api.useUtils>,
-  snapshot?: Snapshot,
-): void {
-  const queryClient = resolveQueryClient(utils);
+export function restoreReviewCaches(snapshot?: Snapshot): void {
+  const queryClient = resolveQueryClient();
   if (!snapshot || !queryClient) return;
   for (const [queryKey, data] of snapshot) {
     queryClient.setQueryData(queryKey, data);
   }
 }
 
-export async function cancelReviewCaches(
-  utils: ReturnType<typeof api.useUtils>,
-): Promise<void> {
-  const queryClient = resolveQueryClient(utils);
+export async function cancelReviewCaches(): Promise<void> {
+  const queryClient = resolveQueryClient();
   if (!queryClient || !api.reviews) return;
   const procs = [
     api.reviews.getAllProtected,
@@ -78,14 +63,13 @@ export async function cancelReviewCaches(
 }
 
 export function patchReviewInCaches(
-  utils: ReturnType<typeof api.useUtils>,
   reviewId: string,
   update: (r: Review) => Review,
 ): Snapshot {
-  const queryClient = resolveQueryClient(utils);
+  const queryClient = resolveQueryClient();
   if (!queryClient || !api.reviews) return [];
 
-  const snapshot = getReviewCachesSnapshot(utils);
+  const snapshot = getReviewCachesSnapshot();
 
   const infiniteKeys = [
     getQueryKey(api.reviews.getAllProtected),

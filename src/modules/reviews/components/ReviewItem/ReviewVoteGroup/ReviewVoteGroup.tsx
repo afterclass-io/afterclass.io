@@ -34,15 +34,14 @@ export const ReviewVoteGroup = ({ review }: { review: Review }) => {
       // eslint-disable-next-line react-hooks/refs -- callbacks run in the mutation lifecycle (cancel/snapshot/restore), never during render; the ref carries the debounced input
       {
         cancel: async () => {
-          await cancelReviewCaches(utils);
+          await cancelReviewCaches();
         },
-        getSnapshot: () =>
-          snapshotRef.current ?? getReviewCachesSnapshot(utils),
+        getSnapshot: () => snapshotRef.current ?? getReviewCachesSnapshot(),
         applyOptimistic: ({ weight }) => {
-          patchReviewInCaches(utils, review.id, (r) => withVote(r, weight));
+          patchReviewInCaches(review.id, (r) => withVote(r, weight));
         },
         restoreSnapshot: (prev) => {
-          restoreReviewCaches(utils, prev);
+          restoreReviewCaches(prev);
         },
         invalidate: async () => {
           try {
@@ -52,7 +51,7 @@ export const ReviewVoteGroup = ({ review }: { review: Review }) => {
               });
               const engagement = res[review.id];
               if (engagement) {
-                patchReviewInCaches(utils, review.id, (r) => ({
+                patchReviewInCaches(review.id, (r) => ({
                   ...r,
                   engagement,
                 }));
@@ -94,7 +93,7 @@ export const ReviewVoteGroup = ({ review }: { review: Review }) => {
       onVoteChange={({ upvoted, downvoted }) => {
         if (!session) return;
         const weight: -1 | 0 | 1 = upvoted ? 1 : downvoted ? -1 : 0;
-        snapshotRef.current = patchReviewInCaches(utils, review.id, (r) =>
+        snapshotRef.current = patchReviewInCaches(review.id, (r) =>
           withVote(r, weight),
         );
         debouncedLikeOrUnlike({
