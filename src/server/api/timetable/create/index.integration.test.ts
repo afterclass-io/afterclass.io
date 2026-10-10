@@ -37,16 +37,20 @@ describe("timetable.create (integration)", () => {
     const user = await seedUser(db);
     const term = await seedAcadTerm(db);
 
-    // Barrier holds both count queries until both callers arrive.
-    // This guarantees both read count 0 and race on create.
+    // Each caller runs its count, then waits at the barrier for the other
+    // caller's count. Neither caller can reach create before both counts have
+    // finished, so both read 0 and race on create. A barrier placed before the
+    // count only held the calls back: under load one count could still run
+    // after the other caller's create and read 1.
     const barrier = createBarrier(2);
     const wrappedDb = {
       ...db,
       userTimetable: {
         ...db.userTimetable,
         count: async (...args: Parameters<typeof db.userTimetable.count>) => {
+          const result = await db.userTimetable.count(...args);
           await barrier();
-          return db.userTimetable.count(...args);
+          return result;
         },
       },
     };
