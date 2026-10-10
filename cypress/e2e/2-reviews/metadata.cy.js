@@ -394,7 +394,9 @@ context("Reviews: Canonicals and Open Graph", function () {
       name: "Home",
       titleIncludes: null,
       descriptionIncludes: [],
-      ogPath: "/",
+      // Next.js resolves the root path against metadataBase to the bare origin,
+      // with no trailing slash (resolveAbsoluteUrlWithPathname).
+      ogPath: "",
       image: false,
     },
   ];
