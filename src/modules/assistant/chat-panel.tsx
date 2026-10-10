@@ -21,7 +21,8 @@ import { parseGateError, type ChatGate } from "./gate";
 import { QuotaAlertBar } from "./quota-alert-bar";
 import { usePersistSession } from "./use-persist-session";
 import { useChatScroll } from "./use-chat-scroll";
-import { useChatStore } from "./chat-store";
+import { useSetAtom } from "jotai";
+import { hydrateAtom } from "./chat-store";
 import type { PageContext } from "@/common/types/assistant";
 import { usePageContext } from "./use-page-context";
 
@@ -103,7 +104,7 @@ function ChatPanelInner({
     [],
   );
 
-  const hydrate = useChatStore((s) => s.hydrate);
+  const hydrate = useSetAtom(hydrateAtom);
 
   useEffect(() => {
     void hydrate();

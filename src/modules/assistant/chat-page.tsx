@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { ChevronDownIcon } from "lucide-react";
+import { useAtomValue, useSetAtom, useStore } from "jotai";
 
 import type { AssistantStatus } from "@/server/assistant/status";
 import { MessageList } from "@/modules/assistant/message-list";
@@ -21,7 +22,12 @@ import {
 import { ConnectGate } from "@/modules/assistant/connect-gate";
 import { usePersistSession } from "@/modules/assistant/use-persist-session";
 import { useRefreshAfterTools } from "@/modules/assistant/use-refresh-after-tools";
-import { useChatStore } from "@/modules/assistant/chat-store";
+import {
+  activeSessionIdAtom,
+  hydrateAtom,
+  hydratedAtom,
+  sessionsAtom,
+} from "@/modules/assistant/chat-store";
 import { useChatScroll } from "@/modules/assistant/use-chat-scroll";
 import { SessionList } from "@/modules/assistant/session-list";
 import { QuotaMeter } from "@/modules/assistant/quota-meter/quota-meter";
@@ -49,9 +55,11 @@ export function ChatPage({
   // Skip the mount "ready": only sync after a send transitions through a
   // non-ready chat status (submitted/streaming) back to ready.
   const seenRunningRef = useRef(false);
-  const activeSessionId = useChatStore((s) => s.activeSessionId);
-  const hydrated = useChatStore((s) => s.hydrated);
-  const hydrate = useChatStore((s) => s.hydrate);
+  const store = useStore();
+  const activeSessionId = useAtomValue(activeSessionIdAtom);
+  const setActiveSessionId = useSetAtom(activeSessionIdAtom);
+  const hydrated = useAtomValue(hydratedAtom);
+  const hydrate = useSetAtom(hydrateAtom);
 
   useEffect(() => {
     void hydrate();
@@ -138,10 +146,12 @@ export function ChatPage({
   // while the thread is still empty - never clobber a fresh thread.
   useEffect(() => {
     if (!hydrated) return;
-    const { activeSessionId, sessions } = useChatStore.getState();
+    const activeSessionId = store.get(activeSessionIdAtom);
     if (!activeSessionId) return;
     if (!Array.isArray(chat.messages)) return;
-    const session = sessions.find((s) => s.id === activeSessionId);
+    const session = store
+      .get(sessionsAtom)
+      .find((s) => s.id === activeSessionId);
     if (
       session &&
       Array.isArray(session.messages) &&
@@ -155,20 +165,20 @@ export function ChatPage({
 
   const openSession = useCallback(
     async (id: string) => {
-      const session = useChatStore.getState().sessions.find((s) => s.id === id);
+      const session = store.get(sessionsAtom).find((s) => s.id === id);
       if (!session) return;
-      useChatStore.getState().setActive(id);
+      setActiveSessionId(id);
       chat.setMessages(session.messages);
       setGate(null);
     },
-    [chat],
+    [chat, store, setActiveSessionId],
   );
 
   const newChat = useCallback(() => {
-    useChatStore.getState().setActive(null);
+    setActiveSessionId(null);
     chat.setMessages([]);
     setGate(null);
-  }, [chat]);
+  }, [chat, setActiveSessionId]);
 
   const hasMessages = Array.isArray(chat.messages) && chat.messages.length > 0;
   const isRunning = chat.status === "streaming" || chat.status === "submitted";

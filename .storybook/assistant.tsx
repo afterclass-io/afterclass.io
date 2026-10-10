@@ -1,7 +1,10 @@
 import React, { useEffect } from "react";
 import type { Decorator } from "@storybook/react";
+import { getDefaultStore } from "jotai";
 import {
-  useChatStore,
+  activeSessionIdAtom,
+  hydratedAtom,
+  sessionsAtom,
   type StoredSession,
 } from "@/modules/assistant/chat-store";
 import { __setChatState, type ChatStateParam } from "./mocks/ai-sdk-react";
@@ -13,7 +16,10 @@ const seedAssistantStore = (
   sessions: StoredSession[] = [],
   activeSessionId: string | null = null,
 ) => {
-  useChatStore.setState({ hydrated: true, sessions, activeSessionId });
+  const store = getDefaultStore();
+  store.set(hydratedAtom, true);
+  store.set(sessionsAtom, sessions);
+  store.set(activeSessionIdAtom, activeSessionId);
 };
 
 type AssistantParameters = {

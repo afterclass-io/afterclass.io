@@ -8,7 +8,14 @@ import {
   TrashIcon,
 } from "lucide-react";
 
-import { useChatStore } from "./chat-store";
+import { useAtomValue, useSetAtom } from "jotai";
+
+import {
+  deleteSessionAtom,
+  hydratedAtom,
+  renameSessionAtom,
+  sessionsAtom,
+} from "./chat-store";
 import { cn } from "@/common/functions/index";
 import { Button } from "@/common/components/button";
 import {
@@ -31,10 +38,10 @@ export function SessionList({
   onSelect: (id: string) => void;
   onNew: () => void;
 }) {
-  const sessions = useChatStore((s) => s.sessions);
-  const hydrated = useChatStore((s) => s.hydrated);
-  const rename = useChatStore((s) => s.renameSession);
-  const remove = useChatStore((s) => s.deleteSession);
+  const sessions = useAtomValue(sessionsAtom);
+  const hydrated = useAtomValue(hydratedAtom);
+  const rename = useSetAtom(renameSessionAtom);
+  const remove = useSetAtom(deleteSessionAtom);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   // True when the current edit was cancelled with Escape. The input's onBlur

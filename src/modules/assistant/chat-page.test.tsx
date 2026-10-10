@@ -7,6 +7,8 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createStore, Provider } from "jotai";
+import type { ReactElement, ReactNode } from "react";
 import type { Mock } from "vitest";
 import type { AssistantStatus } from "@/server/assistant/status";
 
@@ -20,25 +22,11 @@ vi.mock("./use-persist-session", () => ({ usePersistSession: vi.fn() }));
 vi.mock("./use-refresh-after-tools", () => ({
   useRefreshAfterTools: vi.fn(),
 }));
-vi.mock("./chat-store", () => {
-  const state = {
-    activeSessionId: null,
-    hydrated: true,
-    sessions: [],
-    hydrate: vi.fn(),
-    setActive: vi.fn(),
-  };
-  const hook: ((sel: (s: typeof state) => unknown) => unknown) & {
-    getState: () => unknown;
-  } = Object.assign((sel: (s: typeof state) => unknown) => sel(state), {
-    getState: () => ({ ...state, setActive: vi.fn() }),
-  });
-  return { useChatStore: hook };
-});
 vi.mock("@/common/tools/trpc/react", () => ({
   api: { useUtils: () => ({ invalidate: vi.fn() }) },
 }));
 
+import { hydratedAtom } from "./chat-store";
 import { ChatPage } from "./chat-page";
 
 const status = (overrides: Partial<AssistantStatus> = {}): AssistantStatus => ({
@@ -55,7 +43,18 @@ const status = (overrides: Partial<AssistantStatus> = {}): AssistantStatus => ({
   ...overrides,
 });
 
+// Hydrated store: hydrate() returns early, so no test touches IndexedDB.
+let store: ReturnType<typeof createStore>;
+
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <Provider store={store}>{children}</Provider>
+);
+
+const renderWithStore = (ui: ReactElement) => render(ui, { wrapper });
+
 beforeEach(() => {
+  store = createStore();
+  store.set(hydratedAtom, true);
   mockUseChat.mockReset();
   mockSendMessage.mockReset();
   vi.unstubAllGlobals();
@@ -71,13 +70,15 @@ beforeEach(() => {
 
 describe("ChatPage consent gating", () => {
   it("renders the notice and no composer when unconsented (sidebar stays)", () => {
-    render(<ChatPage initialStatus={status({ aiConsented: false })} />);
+    renderWithStore(
+      <ChatPage initialStatus={status({ aiConsented: false })} />,
+    );
     expect(screen.getByText("Before you chat with AI")).toBeTruthy();
     expect(screen.queryByLabelText("Message input")).toBeNull();
   });
 
   it("renders the composer and no notice when consented", () => {
-    render(<ChatPage initialStatus={status({ aiConsented: true })} />);
+    renderWithStore(<ChatPage initialStatus={status({ aiConsented: true })} />);
     expect(screen.getByLabelText("Message input")).toBeTruthy();
     expect(screen.queryByText("Before you chat with AI")).toBeNull();
   });
@@ -85,7 +86,9 @@ describe("ChatPage consent gating", () => {
   it("Agree flips local state: notice → composer with no status refetch", async () => {
     const fetchMock = vi.fn(async () => new Response("{}", { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
-    render(<ChatPage initialStatus={status({ aiConsented: false })} />);
+    renderWithStore(
+      <ChatPage initialStatus={status({ aiConsented: false })} />,
+    );
     fireEvent.click(screen.getByText("Agree and continue"));
     await waitFor(() =>
       expect(screen.getByLabelText("Message input")).toBeTruthy(),
@@ -113,7 +116,7 @@ describe("ChatPage consent gating", () => {
         };
       },
     );
-    render(<ChatPage initialStatus={status({ aiConsented: true })} />);
+    renderWithStore(<ChatPage initialStatus={status({ aiConsented: true })} />);
     expect(screen.getByLabelText("Message input")).toBeTruthy();
     act(() => {
       captured!(new Error('[POST /api/chat] 403: {"gate":"consent"}'));
@@ -126,7 +129,7 @@ describe("ChatPage consent gating", () => {
 describe("ChatPage optimistic quota", () => {
   it("optimistically decrements QuotaMeter remaining immediately when sending via Composer", () => {
     mockSendMessage.mockResolvedValue(undefined);
-    render(<ChatPage initialStatus={status()} />);
+    renderWithStore(<ChatPage initialStatus={status()} />);
     expect(
       screen.getByText("43 of 50 free website messages left this month"),
     ).toBeTruthy();
@@ -142,7 +145,7 @@ describe("ChatPage optimistic quota", () => {
 
   it("optimistically decrements QuotaMeter remaining immediately when picking a suggestion", () => {
     mockSendMessage.mockResolvedValue(undefined);
-    render(<ChatPage initialStatus={status()} />);
+    renderWithStore(<ChatPage initialStatus={status()} />);
     expect(
       screen.getByText("43 of 50 free website messages left this month"),
     ).toBeTruthy();
@@ -155,7 +158,7 @@ describe("ChatPage optimistic quota", () => {
 
   it("shows the website scope note when an agent is connected", () => {
     mockSendMessage.mockResolvedValue(undefined);
-    render(
+    renderWithStore(
       <ChatPage
         initialStatus={status({
           hasConnectedAgent: true,

@@ -1,6 +1,6 @@
 "use client";
 
-import { create } from "zustand";
+import { atom } from "jotai";
 import { nanoid } from "nanoid";
 import type { UIMessage } from "ai";
 import {
@@ -17,58 +17,50 @@ export type StoredSession = {
   messages: UIMessage[];
 };
 
-type ChatStore = {
-  hydrated: boolean;
-  sessions: StoredSession[];
-  activeSessionId: string | null;
-  hydrate: () => Promise<void>;
-  createSession: () => Promise<string>;
-  saveSession: (id: string, messages: UIMessage[]) => Promise<void>;
-  renameSession: (id: string, title: string) => Promise<void>;
-  deleteSession: (id: string) => Promise<void>;
-  setActive: (id: string | null) => void;
-};
+export const sessionsAtom = atom<StoredSession[]>([]);
+export const hydratedAtom = atom(false);
+export const activeSessionIdAtom = atom<string | null>(null);
 
-// In-flight hydrate guard (module scope): concurrent hydrate()
-// calls share one promise instead of racing two idbGetAll reads.
-let hydrating: Promise<void> | null = null;
+// In-flight hydrate guard: concurrent hydrate calls share one promise
+// instead of racing two idbGetAll reads.
+const hydratingAtom = atom<Promise<void> | null>(null);
 
-export const useChatStore = create<ChatStore>((set, get) => ({
-  hydrated: false,
-  sessions: [],
-  activeSessionId: null,
-
-  hydrate: async () => {
-    if (get().hydrated) return;
-    hydrating ??= (async () => {
+export const hydrateAtom = atom(null, async (get, set) => {
+  if (get(hydratedAtom)) return;
+  let pending = get(hydratingAtom);
+  if (!pending) {
+    pending = (async () => {
       const sessions = await idbGetAll<StoredSession>();
       sessions.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
-      set({ sessions, hydrated: true });
+      set(sessionsAtom, sessions);
+      set(hydratedAtom, true);
     })().finally(() => {
-      hydrating = null;
+      set(hydratingAtom, null);
     });
-    await hydrating;
-  },
+    set(hydratingAtom, pending);
+  }
+  await pending;
+});
 
-  createSession: async () => {
-    const id = nanoid();
-    const session: StoredSession = {
-      id,
-      title: "New chat",
-      updatedAt: new Date().toISOString(),
-      messages: [],
-    };
-    await idbPut(session);
-    set((s) => ({
-      sessions: pruneSessions([...s.sessions, session]),
-      activeSessionId: id,
-    }));
-    return id;
-  },
+export const createSessionAtom = atom(null, async (_get, set) => {
+  const id = nanoid();
+  const session: StoredSession = {
+    id,
+    title: "New chat",
+    updatedAt: new Date().toISOString(),
+    messages: [],
+  };
+  await idbPut(session);
+  set(sessionsAtom, (sessions) => pruneSessions([...sessions, session]));
+  set(activeSessionIdAtom, id);
+  return id;
+});
 
-  saveSession: async (id, messages) => {
+export const saveSessionAtom = atom(
+  null,
+  async (get, set, id: string, messages: UIMessage[]) => {
     const capped = capMessages(messages);
-    const existing = get().sessions.find((x) => x.id === id);
+    const existing = get(sessionsAtom).find((x) => x.id === id);
     const title =
       existing && existing.title !== "New chat"
         ? existing.title
@@ -80,17 +72,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       messages: capped,
     };
     await idbPut(session);
-    set((s) => ({
-      sessions: pruneSessions(
-        s.sessions.map((x) => (x.id === id ? session : x)),
-      ),
-    }));
+    set(sessionsAtom, (sessions) =>
+      pruneSessions(sessions.map((x) => (x.id === id ? session : x))),
+    );
   },
+);
 
-  renameSession: async (id, title) => {
+export const renameSessionAtom = atom(
+  null,
+  async (get, set, id: string, title: string) => {
     const clean = title.trim().slice(0, 100);
     if (!clean) return;
-    const existing = get().sessions.find((x) => x.id === id);
+    const existing = get(sessionsAtom).find((x) => x.id === id);
     if (!existing) return;
     const session: StoredSession = {
       ...existing,
@@ -98,18 +91,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       updatedAt: new Date().toISOString(),
     };
     await idbPut(session);
-    set((s) => ({
-      sessions: s.sessions.map((x) => (x.id === id ? session : x)),
-    }));
+    set(sessionsAtom, (sessions) =>
+      sessions.map((x) => (x.id === id ? session : x)),
+    );
   },
+);
 
-  deleteSession: async (id) => {
-    await idbDelete(id);
-    set((s) => ({
-      sessions: s.sessions.filter((x) => x.id !== id),
-      activeSessionId: s.activeSessionId === id ? null : s.activeSessionId,
-    }));
-  },
-
-  setActive: (id) => set({ activeSessionId: id }),
-}));
+export const deleteSessionAtom = atom(null, async (_get, set, id: string) => {
+  await idbDelete(id);
+  set(sessionsAtom, (sessions) => sessions.filter((x) => x.id !== id));
+  set(activeSessionIdAtom, (active) => (active === id ? null : active));
+});
