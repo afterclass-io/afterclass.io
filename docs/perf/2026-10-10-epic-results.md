@@ -87,7 +87,7 @@ before, then after adding `loading.tsx`.
 
 In the mobile profile the same change raised LCP from 5605 to 7114 ms on
 `/bidding` and from 5805 to 6861 ms on `/bidding/analytics` (see the lab
-vitals table). That is 1.1 to 1.5 s.
+vitals table). That is 1.0 to 1.5 s.
 
 ### With database latency injected
 
@@ -132,7 +132,7 @@ Other readings from the same runs:
 ### Outcome
 
 - `/bidding` and `/bidding/analytics`: the boundary is removed, together with
-  the two skeleton components that only it used. Mobile-simulated LCP was 1.1
+  the two skeleton components that only it used. Mobile-simulated LCP was 1.0
   to 1.5 s worse with the boundary, with a local database and with injected
   latency. The benefit of the shell on LCP is unproven. Its TTFB gain is real
   but does not reach a paint metric.
