@@ -160,11 +160,14 @@ context("Timetable: Build", function () {
     // ---- Reload ----
     cy.reload();
 
-    // After reload, wait for the term picker to restore (auto-selects a term)
-    cy.get("[data-test=timetable-term-picker]", { timeout: 15000 }).should(
-      "be.visible",
-    );
-    cy.get("[data-test=timetable-term-picker]").should("not.have.text", "");
+    // The selected term is client state, so a reload resets it to the term of
+    // the current bid window, which depends on today's date. Select the seeded
+    // term again, as the other specs do, so the check does not depend on it.
+    cy.get("[data-test=timetable-term-picker]", { timeout: 15000 })
+      .should("be.visible")
+      .should("not.have.text", "")
+      .click();
+    cy.get("[data-test=timetable-term-AY202425T2]").click();
 
     // The grid should appear with the previously added course
     cy.get("[data-test=timetable-slot-card]", { timeout: 15000 }).should(
