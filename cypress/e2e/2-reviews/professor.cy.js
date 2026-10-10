@@ -140,8 +140,9 @@ context("Reviews: Professor", function () {
       cy.get("[data-test=review]", { timeout: 15000 }).then(($before) => {
         const initial = $before.length;
         // A filter change is a server navigation that renders the filtered
-        // feed, so the browser makes no request for it. Wait for the course filter
-        // to reach the URL, then retry the assertion on the rendered list.
+        // feed, so the browser makes no request for it. Wait for the course
+        // filter to reach the URL, then retry the assertion on the rendered
+        // list.
         cy.get("[data-test=filter-toggle-section] [data-test=filter-item]", {
           timeout: 15000,
         })
@@ -152,8 +153,9 @@ context("Reviews: Professor", function () {
         cy.get("body").should(($body) => {
           const count = $body.find("[data-test=review]").length;
           const empty = $body.find(":contains('Oh no!')").length > 0;
-          // Either still some reviews (filtered subset) or empty state; both valid, just assert filter did something
-          // (may be same count if only one course, so allow <= initial)
+          // Either still some reviews (filtered subset) or the empty state.
+          // Both are valid. The count may stay the same with only one course,
+          // so allow <= initial.
           expect(count <= initial || empty).to.eq(true);
         });
       });
