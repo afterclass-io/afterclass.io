@@ -338,4 +338,42 @@ describe("google jwt reconcile (legacy id self-heal)", () => {
       errSpy.mockRestore();
     }
   });
+
+  it("marks an unverified row verified when Google signs it in", async () => {
+    linkMock.mockResolvedValue({
+      accessToken: "supa-access",
+      refreshToken: "supa-refresh",
+      expiresAt: 9999999999,
+      supabaseUserId: "random-uuid",
+    });
+    const unverified = { ...legacyRow, isVerified: false };
+    usersFindUnique.mockResolvedValueOnce(unverified);
+    usersUpdate.mockResolvedValueOnce({ ...unverified, isVerified: true });
+
+    const token = await jwt(googleParams());
+
+    expect(usersUpdate).toHaveBeenCalledTimes(1);
+    expect(usersUpdate).toHaveBeenCalledWith({
+      where: { id: "random-uuid" },
+      data: { isVerified: true },
+    });
+    expect(token?.user).toMatchObject({ isVerified: true });
+  });
+
+  it("does not write isVerified for a row that is already verified", async () => {
+    linkMock.mockResolvedValue({
+      accessToken: "supa-access",
+      refreshToken: "supa-refresh",
+      expiresAt: 9999999999,
+      supabaseUserId: "random-uuid",
+    });
+    usersFindUnique.mockResolvedValueOnce({
+      ...legacyRow,
+      supabaseUserId: "random-uuid",
+    });
+
+    await jwt(googleParams());
+
+    expect(usersUpdate).not.toHaveBeenCalled();
+  });
 });

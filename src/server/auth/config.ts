@@ -363,6 +363,16 @@ export const authConfig = {
             if (!dbUser) throw e;
           }
         }
+        // Google proved the address: signIn() rejects a profile whose
+        // email_verified is false. A row left unverified by an older email
+        // sign-up becomes verified here, as the Supabase credentials path
+        // does when the address is confirmed.
+        if (!dbUser.isVerified) {
+          dbUser = await db.users.update({
+            where: { id: dbUser.id },
+            data: { isVerified: true },
+          });
+        }
         // Names Google knows that the row lacks (accounts created before
         // Google names were stored). Never overwrites a stored name. Applied
         // in the same write as the id reconcile below when both are needed.
