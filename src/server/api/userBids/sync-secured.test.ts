@@ -31,8 +31,18 @@ function makeSetStatusDb() {
   const timetableFindFirst = vi.fn();
   const timetableCount = vi.fn().mockResolvedValue(0);
   const timetableCreate = vi.fn();
-  // The duplicate-section and budget checks run inside the transaction, so
-  // the transaction client shares these mocks with the db client.
+  // The bid and class reads, the duplicate-section check and the budget check
+  // run inside the transaction, so the transaction client shares these mocks
+  // with the db client (the db client only proves ownership).
+  const userBidFindUnique = vi.fn().mockResolvedValue({
+    id: "b1",
+    userId: "u1",
+    classId: "c1",
+    bidAmount: 50,
+  });
+  const classFindUnique = vi
+    .fn()
+    .mockResolvedValue({ acadTermId: "term-a", courseId: "course-1" });
   const userBidFindFirst = vi.fn().mockResolvedValue(null);
   const userBidAggregate = vi
     .fn()
@@ -41,19 +51,9 @@ function makeSetStatusDb() {
 
   const dbMock = {
     userBid: {
-      findUnique: vi.fn().mockResolvedValue({
-        id: "b1",
-        userId: "u1",
-        classId: "c1",
-        bidAmount: 50,
-      }),
+      findUnique: userBidFindUnique,
       findFirst: userBidFindFirst,
       aggregate: userBidAggregate,
-    },
-    classes: {
-      findUnique: vi
-        .fn()
-        .mockResolvedValue({ acadTermId: "term-a", courseId: "course-1" }),
     },
     userBidBudget: { findUnique: budgetFindUnique },
     userTimetable: {
@@ -64,7 +64,9 @@ function makeSetStatusDb() {
     userTimetableSlot: { createMany: slotCreateMany },
     $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
       fn({
+        classes: { findUnique: classFindUnique },
         userBid: {
+          findUnique: userBidFindUnique,
           update: userBidUpdate,
           updateMany: userBidUpdateMany,
           findFirst: userBidFindFirst,
