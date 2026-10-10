@@ -1,7 +1,6 @@
 import type { ChatConfig as LegacyChatConfig } from "./config";
 import {
   getChatConfigAsync as getCanonicalChatConfig,
-  getChatWriteRateLimit as getCanonicalChatWriteRateLimit,
   getRateLimitWindowMinutes as getCanonicalRateLimitWindowMinutes,
 } from "@/server/config/chat-config";
 
@@ -17,9 +16,9 @@ import {
  * `maxInputTokens`, `maxOutputTokens`, `maxToolRounds`) is a SUBSET of the
  * canonical config: quota/rate/token fields map 1:1, and the canonical extra
  * fields (bid floors, spike tokens, retention windows, llm, timezone,
- * duration) ride along harmlessly. `getChatWriteRateLimit(chat)` keeps its
- * env-override-then-fallback precedence — see the budget matrix in
- * `src/mcp/rate-limit.ts`, which still describes the three buckets.
+ * duration) ride along harmlessly. The write-tool limit
+ * (`getChatWriteRateLimit`) lives only in the canonical module — see the
+ * budget matrix in `src/mcp/rate-limit.ts`, which describes the three buckets.
  */
 export async function getChatConfig(): Promise<LegacyChatConfig> {
   const canonical = await getCanonicalChatConfig();
@@ -37,16 +36,6 @@ export async function getChatConfig(): Promise<LegacyChatConfig> {
     widgetEnabled: canonical.widgetEnabled,
     mcpEnabled: canonical.mcpEnabled,
   };
-}
-
-/** Effective per-minute limit for chat write-tool executions (chat-write: budget).
- * Accepts the canonical write limit when the caller resolved it (Edge/file
- * honored); otherwise falls back to the env read inside the canonical helper. */
-export function getChatWriteRateLimit(chat: {
-  rateLimitPerMinute: number;
-  writeRateLimitPerMinute?: number;
-}): number {
-  return getCanonicalChatWriteRateLimit(chat);
 }
 
 /** Effective fixed-window size in minutes for rate limiting.

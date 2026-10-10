@@ -37,10 +37,6 @@
       "exports",
     ],
 
-    // chat.test.ts loads it with a dynamic import, which knip cannot follow.
-    // Removal waits for the owner (spec 23.3).
-    "src/server/ecfg/chat.ts": ["exports"],
-
     // Kept on purpose: `resendEmail` still takes the email-change type.
     "src/server/supabase.ts": ["enumMembers"],
   },

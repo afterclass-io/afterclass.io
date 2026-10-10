@@ -28,7 +28,8 @@ vi.mock("@/server/db", () => ({
     },
     $transaction: (fn: (tx: Record<string, unknown>) => unknown) => fn(tx),
   },
-  // reserveMessage/settleUsage run interactive $transactions on txDb.
+  // reserveMessage/settleUsage run single atomic statements on the pooled
+  // `db` client; quota.ts does not read `txDb`.
   txDb: {
     $transaction: (fn: (tx: Record<string, unknown>) => unknown) => fn(tx),
   },
