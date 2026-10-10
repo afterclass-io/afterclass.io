@@ -6,15 +6,15 @@ procedure as `README.md`, production build, `next start -p 3000`.
 
 ## Conditions
 
-| Item         | Value                                                                                   |
-| ------------ | --------------------------------------------------------------------------------------- |
-| Baseline SHA | `c30572d9` (see `2026-10-09-baseline.md`)                                               |
-| "Before" SHA | `435755d8`: baseline plus #504, #506, #514, #517, #518, #519 and #522                   |
-| "After" SHA  | `12378fd3`: before plus #521, #516 and #523                                             |
-| Tool         | Lighthouse 12.8.2, performance category, median of 3 runs                               |
-| Profile      | Mobile preset (412 px, 4x CPU slowdown, 150 ms RTT, 1.6 Mbit/s) unless stated           |
-| Data         | Local Postgres with the seed data. Queries answer in a few milliseconds.                |
-| Limit        | No signed-in session was available, so every browser number is for a signed-out viewer. |
+| Item         | Value                                                                                                            |
+| ------------ | ---------------------------------------------------------------------------------------------------------------- |
+| Baseline SHA | `c30572d9` (see `2026-10-09-baseline.md`)                                                                        |
+| "Before" SHA | `435755d8`: baseline plus #504, #506, #514, #517, #518, #519 and #522                                            |
+| "After" SHA  | `12378fd3`: before plus #521, #516 and #523                                                                      |
+| Tool         | Lighthouse 12.8.2, performance category, median of 3 runs                                                        |
+| Profile      | Mobile preset (412 px, 4x CPU slowdown, 150 ms RTT, 1.6 Mbit/s) unless stated                                    |
+| Data         | Local Postgres with the seed data. Queries answer in a few milliseconds.                                         |
+| Limit        | Browser numbers are for a signed-out viewer. The signed-in request count for #516 is in the Review feed section. |
 
 ## Bundle size (#514)
 
@@ -199,9 +199,24 @@ outside the configured patterns returns 400.
 - Served HTML of `/` holds 10 review cards and the dehydrated `nextCursor`.
 - A signed-out page load makes 0 `/api/trpc` requests after hydration. The
   loader fetched once after hydration before the change.
-- A signed-in check needs a real session, which was not available for this
-  run. `ReviewItemLoader.test.tsx` pins the signed-in path: one procedure, one
-  input, no `refetch`, before and after the client session resolves.
+- Signed-in check, production build on a local server with the seeded
+  test user (`cypress_test@smu.edu.sg` from `prisma/seed.ts`), signed in
+  through the real login form with `ENABLE_PASSWORD_LOGIN=true`. Requests to
+  `/api/trpc` after a full page load, counted from the browser resource
+  timings after 6 s:
+
+  | Page                     | `/api/trpc` requests | Which                     |
+  | ------------------------ | -------------------- | ------------------------- |
+  | `/`                      | 0                    | none                      |
+  | `/course/ACCT102`        | 1                    | `courses.getByCourseCode` |
+  | `/professor/fang-bingxu` | 1                    | `professors.getBySlug`    |
+
+  Each page shows its reviews and the user email in the header. The one
+  request on the course and professor pages is the breadcrumb lookup
+  (`Breadcrumb.tsx`), which does not depend on the session. No `reviews.*`
+  procedure ran in the browser, so the signed-in feed is fetched once, on the
+  server. `ReviewItemLoader.test.tsx` still pins the signed-in procedure and
+  input.
 
 ### Database load of the signed-out feed (#516)
 
