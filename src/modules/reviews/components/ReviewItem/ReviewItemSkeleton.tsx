@@ -14,7 +14,7 @@ export const ReviewItemSkeleton = () => {
         <Skeleton className="h-6 w-[200px]" />
       </div>
 
-      <Skeleton aria-hidden tabIndex={-1} className="h-16 w-full" />
+      <Skeleton className="h-16 w-full" />
     </div>
   );
 };
