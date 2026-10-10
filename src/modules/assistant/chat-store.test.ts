@@ -47,6 +47,21 @@ describe("chat store atoms", () => {
     expect(store.get(sessionsAtom).map((s) => s.id)).toEqual(["new", "old"]);
   });
 
+  it("retries hydrate after a failed read", async () => {
+    idbGetAll.mockRejectedValueOnce(new Error("idb unavailable"));
+    idbGetAll.mockResolvedValueOnce([session("a", "2026-01-01T00:00:00.000Z")]);
+    const store = createStore();
+
+    await expect(store.set(hydrateAtom)).rejects.toThrow("idb unavailable");
+    expect(store.get(hydratedAtom)).toBe(false);
+
+    await store.set(hydrateAtom);
+
+    expect(idbGetAll).toHaveBeenCalledTimes(2);
+    expect(store.get(hydratedAtom)).toBe(true);
+    expect(store.get(sessionsAtom).map((s) => s.id)).toEqual(["a"]);
+  });
+
   it("returns early once hydrated", async () => {
     idbGetAll.mockResolvedValue([]);
     const store = createStore();

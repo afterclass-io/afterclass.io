@@ -48,8 +48,6 @@ vi.mock("@/server/assistant/ratelimit", () => ({
 }));
 vi.mock("@/server/ecfg/chat", () => ({
   getChatConfig: mockGetChatConfig,
-  getChatWriteRateLimit: (c: { rateLimitPerMinute: number }) =>
-    c.rateLimitPerMinute,
   getRateLimitWindowMinutes: () => 1,
 }));
 // route.ts reads the canonical chat-config directly.

@@ -27,7 +27,8 @@ export const setStatus = protectedProcedure
   .mutation(async ({ ctx, input }) => {
     // Early ownership gate: a caller who does not own the bid never opens a
     // transaction. The bid amount and class are read again inside the
-    // transaction, so the checks below and the write see one snapshot.
+    // transaction. For SECURED the transaction is Serializable, so the checks
+    // and the write see one snapshot.
     await requireOwnedBid(ctx.db, input.id, ctx.session.user.id, { id: true });
 
     const runTx = () =>
