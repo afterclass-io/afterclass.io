@@ -54,11 +54,10 @@ context("Reviews: Home", function () {
     });
 
     it("should not be able to load more reviews", function () {
-      cy.intercept("GET", "**/api/trpc/*reviews.getAll*").as("getReviews");
-      cy.wait("@getReviews");
-
-      // The first page must be rendered before the absence check, or the
-      // sentinel assertion passes vacuously on an empty list.
+      // The server renders the first page, so the browser makes no request
+      // for it. Assert on the rendered list: the first page must be there
+      // before the absence check, or the sentinel assertion passes vacuously
+      // on an empty list.
       cy.get("[data-test=review]").should("have.length", 10);
 
       cy.scrollTo("bottom");

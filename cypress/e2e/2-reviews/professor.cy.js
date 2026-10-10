@@ -78,13 +78,10 @@ context("Reviews: Professor", function () {
     });
 
     it("should not be able to load more reviews", function () {
-      cy.intercept("GET", "**/api/trpc/*reviews.getByProfSlug*").as(
-        "getReviews",
-      );
-      cy.wait("@getReviews");
-
-      // The first page must be rendered before the absence check, or the
-      // sentinel assertion passes vacuously on an empty list.
+      // The server renders the first page, so the browser makes no request
+      // for it. Assert on the rendered list: the first page must be there
+      // before the absence check, or the sentinel assertion passes vacuously
+      // on an empty list.
       cy.get("[data-test=review]").should("have.length", 10);
 
       cy.scrollTo("bottom");
@@ -140,18 +137,17 @@ context("Reviews: Professor", function () {
       // Remember initial count
       cy.get("[data-test=review]", { timeout: 15000 }).then(($before) => {
         const initial = $before.length;
-        // Changing the filter refetches the reviews; wait for that response
-        cy.intercept("GET", "**/api/trpc/*reviews.getByProfSlug*").as(
-          "getFilteredReviews",
-        );
+        // A filter change is a server navigation that renders the filtered
+        // feed, so the browser makes no request for it. Wait for the filter
+        // to reach the URL, then retry the assertion on the rendered list.
         cy.get("[data-test=filter-toggle-section] [data-test=filter-item]", {
           timeout: 15000,
         })
           .should("be.visible")
           .last()
           .click();
-        cy.wait("@getFilteredReviews");
-        cy.get("body").then(($body) => {
+        cy.location("search", { timeout: 15000 }).should("include", "filter=");
+        cy.get("body").should(($body) => {
           const count = $body.find("[data-test=review]").length;
           const empty = $body.find(":contains('Oh no!')").length > 0;
           // Either still some reviews (filtered subset) or empty state; both valid, just assert filter did something
