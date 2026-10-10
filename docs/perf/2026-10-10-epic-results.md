@@ -56,9 +56,11 @@ Each cell reads before, then after.
 Notes:
 
 - `/` showed CLS 0.183 at the "before" SHA, against 0.000 in the baseline.
-  The cause is the skeleton swap after hydration. #516 removes that phase: the
-  server now renders the first page of reviews. The same run holds LCP down by
-  1.9 s.
+  This regression appeared mid-epic. Its cause was not isolated, because no
+  build between the baseline and the "before" SHA was measured on its own.
+  The "after" SHA reads 0.000. #516 removes the skeleton swap after hydration,
+  which is the likely reason, but this run does not prove it. The same run
+  holds LCP down by 1.9 s.
 - The `/bidding` and `/bidding/analytics` "after" cells include `loading.tsx`. The
   streaming section below removes it again.
 - The mobile preset simulates throttling, so TBT and LCP move by 100 to 300 ms
@@ -143,6 +145,30 @@ Other readings from the same runs:
   production database. Field LCP from the vitals reporter (#504) is the
   check that remains.
 
+## Layout shift at 1024 px (af60bcfe)
+
+The desktop shell used to show from 768 px (Tailwind `md`), while the script
+breakpoint is 1250 px. A laptop viewport painted the shell on the server and
+swapped it for the sheet after hydration. The shell now follows one shared
+1250 px breakpoint in CSS. Lighthouse at 1024 px, CLS before, then
+after:
+
+| Route                | CLS          |
+| -------------------- | ------------ |
+| `/`                  | 0.228, 0.000 |
+| `/course/IS215`      | 0.290, 0.003 |
+| `/bidding/analytics` | 0.228, 0.000 |
+
+## Static routes (b2e492b0, #518)
+
+The Edge Config read is now cached with a tag, so a render no longer costs one
+Edge Config request. With a reachable store the build prerenders 16 routes as
+static. This is a route-mode change, reported here as the #518 acceptance
+item. The commit does not record the count before the change. A build without
+a valid Edge Config token (the local build used for the latency run) fails the
+read and prerenders fewer routes, so compare this figure only between builds
+that reach the store.
+
 ## Query counts (#521)
 
 Counted from the Prisma query log of `next dev`, per request.
@@ -176,3 +202,22 @@ outside the configured patterns returns 400.
 - A signed-in check needs a real session, which was not available for this
   run. `ReviewItemLoader.test.tsx` pins the signed-in path: one procedure, one
   input, no `refetch`, before and after the client session resolves.
+
+### Database load of the signed-out feed (#516)
+
+Before #516 the signed-out feed came from a client fetch of `reviews.getAll`.
+The public `reviews.*` procedures answer with `s-maxage=1800` (see
+`src/app/api/trpc/[trpc]/caching.ts`), so the CDN served most of those
+requests. After #516 the first page of reviews is part of the dynamic page
+render. That render is not CDN-cached, so database load per page view rises.
+The pooled client holds at most 2 connections (`max: 2` in
+`src/server/db.ts`), so concurrent page views queue on that pool.
+
+Measured through the latency proxy (150 ms per round trip), one signed-out
+render of `/` sent about 9 statements in 5 to 6 sequential waves and took
+0.86 s. `/bidding`, which has no feed, sends the same count, so most of
+those statements come from the shared layout. The share of the feed alone
+was not isolated. Back-to-back requests inside about a second showed only 2
+statements; the cause was not traced. No "before" count exists, because the
+client fetch left the page render with fewer statements and the CDN hit rate
+in production is unknown. Watch pool wait time and database CPU after deploy.
