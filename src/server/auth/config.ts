@@ -503,7 +503,7 @@ export const authConfig = {
             type: "error",
             category: "auth",
             message:
-              `Unexpected email domain '${googleProfile.email}'.\n` +
+              `Unexpected email domain '${googleProfile.email.split("@").pop()}'.\n` +
               "\tUser has signed up with this email but the domain is not associated with any university. " +
               "\tPlease check the database for the domain and add it to the universities table if necessary",
             level: "error",
