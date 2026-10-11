@@ -24,7 +24,6 @@ import {
 import { Tag } from "@/common/components/tag";
 import { Skeleton } from "@/common/components/skeleton";
 import { EmptyState } from "@/common/components/empty-state";
-import { ReportButton } from "@/modules/moderation/components/ReportButton";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -165,7 +164,7 @@ export function PublicRoadmapsGallery() {
       {items.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {items.map((item) => (
-            <div key={item.roadmap.id} className="relative">
+            <div key={item.roadmap.id}>
               <Link
                 href={`/roadmaps/${item.roadmap.id}`}
                 className="group block h-full"
@@ -198,7 +197,7 @@ export function PublicRoadmapsGallery() {
                         by {item.ownerUsername}
                       </p>
 
-                      <div className="text-muted-foreground flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 pr-10 text-xs">
+                      <div className="text-muted-foreground flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-xs">
                         <span className="inline-flex items-center gap-1">
                           <BookOpen className="size-3" />
                           {item.entryCount}{" "}
@@ -226,13 +225,6 @@ export function PublicRoadmapsGallery() {
                   </CardContent>
                 </Card>
               </Link>
-              <div className="absolute right-3 bottom-3">
-                <ReportButton
-                  surface="roadmap"
-                  refId={item.roadmap.id}
-                  ownerUsername={item.ownerUsername}
-                />
-              </div>
             </div>
           ))}
         </div>
