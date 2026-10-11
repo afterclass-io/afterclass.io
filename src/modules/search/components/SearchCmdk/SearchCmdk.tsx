@@ -21,6 +21,8 @@ import {
 } from "@/common/components/dialog";
 import { SearchIcon } from "@/common/components/icons";
 import { useEdgeConfigs } from "@/common/hooks";
+import { MIN_QUERY_LEN } from "@/common/constants/search";
+import { cn } from "@/common/functions";
 import { SearchCmdkModalTrigger } from "./SearchCmdkModalTrigger";
 import { useProgress } from "@/common/providers/ProgressProvider";
 import { ProgressLink } from "@/common/components/progress-link";
@@ -48,6 +50,7 @@ export const SearchCmdk = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [hasSubmittedShort, setHasSubmittedShort] = useState(false);
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
   const [hasShownTooltip, setHasShownTooltip] = useAtom(
     hasShownCmdkTooltipAtom,
@@ -82,17 +85,24 @@ export const SearchCmdk = ({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [asChild]);
 
+  const trimmedTerm = searchTerm.trim();
+  const isShort = trimmedTerm.length < MIN_QUERY_LEN;
+
   const getSearchDestination = () => {
     const params = new URLSearchParams();
-    params.set("q", searchTerm);
+    params.set("q", trimmedTerm);
     return `/search?${params.toString()}`;
   };
 
   const onSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setOpen(false);
 
-    if (searchTerm.length === 0) return;
+    if (isShort) {
+      setHasSubmittedShort(true);
+      return;
+    }
+
+    setOpen(false);
 
     progress.start();
     startTransition(() => {
@@ -132,7 +142,10 @@ export const SearchCmdk = ({
                 placeholder="Search for Professors or Courses..."
                 type="text"
                 className="text-accent-foreground"
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setHasSubmittedShort(false);
+                }}
                 data-test="search-cmdk-input"
               />
             </InputControl>
@@ -148,6 +161,15 @@ export const SearchCmdk = ({
               </DialogClose>
             </InputAdornmentButton>
           </InputRoot>
+          <p
+            role="status"
+            className={cn(
+              "px-9 pb-3 text-sm",
+              hasSubmittedShort && "text-error",
+            )}
+          >
+            {isShort && `Type ${MIN_QUERY_LEN} or more characters.`}
+          </p>
         </form>
       </DialogContent>
     </Dialog>

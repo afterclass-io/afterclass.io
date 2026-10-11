@@ -71,6 +71,7 @@ export default async function Search(props: {
       <SearchResult>
         <SearchResult.Title searchTerm={query} />
         <SearchResult.Content
+          query={query}
           searchedCourse={searchedCourse}
           searchedProf={searchedProf}
         />

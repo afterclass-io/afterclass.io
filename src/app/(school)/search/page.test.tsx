@@ -1,3 +1,4 @@
+import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({
@@ -108,5 +109,17 @@ describe("Search page", () => {
         universityAbbrv: "SMU",
       }),
     );
+  });
+
+  it("renders the short-query state, not no results, for a one-character query", async () => {
+    m.auth.mockResolvedValue(null);
+    m.searchCourses.mockResolvedValue({ rows: [], total: 0 });
+    m.searchProfessors.mockResolvedValue({ rows: [], total: 0 });
+
+    const jsx = await Search({ searchParams: Promise.resolve({ q: "i" }) });
+    const html = renderToStaticMarkup(jsx);
+
+    expect(html).toContain("Type 2 or more characters.");
+    expect(html).not.toContain("No results");
   });
 });

@@ -95,6 +95,7 @@ export const Default: Story = {
         <SearchResult>
           <SearchResult.Title searchTerm="test" />
           <SearchResult.Content
+            query="test"
             searchedCourse={searchedCourse}
             searchedProf={searchedProf}
           />
@@ -113,6 +114,8 @@ export const WithoutFilter: Story = {
           <SearchResult.List>
             <SearchResult.Empty
               show={searchedCourse.length + searchedProf.length === 0}
+              reason="none"
+              query="test"
             />
             {searchedCourse.map((c) => (
               <SearchResult.Item

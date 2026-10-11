@@ -16,6 +16,7 @@ import { SearchResultFilter } from "../SearchResultFilter";
 import { SearchResultEmpty } from "../SearchResultEmpty";
 import { type UniversityAbbreviation } from "@/generated/prisma/enums";
 import { Separator } from "@/common/components/separator";
+import { MIN_QUERY_LEN } from "@/common/constants/search";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- the schema is used only for its inferred type
 const filterOptions = z.object({
@@ -25,9 +26,11 @@ const filterOptions = z.object({
 type FilterOptions = z.infer<typeof filterOptions>;
 
 export const SearchResultContent = ({
+  query,
   searchedCourse,
   searchedProf,
 }: {
+  query: string;
   searchedCourse: SearchCourseResult[];
   searchedProf: SearchProfResult[];
 }) => {
@@ -66,7 +69,11 @@ export const SearchResultContent = ({
   return (
     <div className="flex h-full gap-12">
       <SearchResultList>
-        <SearchResultEmpty show={isEmpty()} />
+        <SearchResultEmpty
+          show={isEmpty()}
+          reason={query.trim().length < MIN_QUERY_LEN ? "short" : "none"}
+          query={query}
+        />
         {(filter.type === "all" || filter.type === "course") &&
           schoolFilteredCourse.map((c) => (
             <SearchResultItem

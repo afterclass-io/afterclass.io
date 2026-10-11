@@ -1,7 +1,16 @@
 import { Separator } from "@/common/components/separator";
+import { MIN_QUERY_LEN } from "@/common/constants/search";
 import { cn } from "@/common/functions";
 
-export const SearchResultEmpty = ({ show = false }: { show: boolean }) => {
+export const SearchResultEmpty = ({
+  show = false,
+  reason,
+  query,
+}: {
+  show: boolean;
+  reason: "short" | "none";
+  query?: string;
+}) => {
   return (
     <div
       className={cn(
@@ -10,7 +19,11 @@ export const SearchResultEmpty = ({ show = false }: { show: boolean }) => {
       )}
       data-test="search-empty"
     >
-      <div className="text-xl">No results found.</div>
+      <div className="text-xl">
+        {reason === "short"
+          ? `Type ${MIN_QUERY_LEN} or more characters.`
+          : `No results for “${query}”.`}
+      </div>
       <Separator />
       <div className="text-muted-foreground w-full">
         <strong className="text-muted-foreground">💡 Tip!</strong> You can
