@@ -36,6 +36,12 @@ export function CourseSearchPanel({
 }: CourseSearchPanelProps) {
   const selectedTermId = useAtomValue(selectedTermIdAtom);
 
+  // TermPicker already loads this list, so React Query serves it from cache.
+  const termsQuery = api.acadTerms.list.useQuery();
+  const selectedTermLabel = termsQuery.data?.find(
+    (t) => t.id === selectedTermId,
+  )?.label;
+
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 300);
   const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null);
@@ -102,7 +108,11 @@ export function CourseSearchPanel({
           data-test="timetable-search-input"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search code, name or professor…"
+          placeholder={
+            selectedTermLabel
+              ? `Search courses offered in ${selectedTermLabel}`
+              : "Search code, name or professor…"
+          }
           className="pl-9"
           disabled={!selectedTermId}
         />
