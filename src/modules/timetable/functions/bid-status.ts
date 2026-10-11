@@ -17,26 +17,34 @@ export const BID_STATUS_OPTIONS: { value: UserBidStatus; label: string }[] = [
   { value: "CANCELLED", label: "Cancelled" },
 ];
 
-const STATUS_STYLES: Record<UserBidStatus, { chip: string; card: string }> = {
+const STATUS_STYLES: Record<
+  UserBidStatus,
+  { chip: string; card: string; now: string }
+> = {
   PLANNED: {
     chip: "bg-info/15 text-info",
     card: "bg-info/10 border-info/30 text-foreground",
+    now: "ring-info",
   },
   SECURED: {
     chip: "bg-success/15 text-success",
     card: "bg-success/15 border-success/30 text-foreground",
+    now: "ring-success",
   },
   PARTICIPATED: {
     chip: "bg-muted text-muted-foreground",
     card: "bg-muted border-border text-muted-foreground",
+    now: "ring-foreground/40",
   },
   DROPPED: {
     chip: "bg-error/15 text-error",
     card: "bg-error/15 border-error/30 text-foreground",
+    now: "ring-error",
   },
   CANCELLED: {
     chip: "bg-error/15 text-error",
     card: "bg-error/15 border-error/30 text-foreground",
+    now: "ring-error",
   },
 };
 
@@ -47,7 +55,8 @@ export function bidChipVariant(status: UserBidStatus | undefined): string {
 
 export function slotCardVariant(
   status: UserBidStatus | undefined,
-): string | null {
+): { className: string; nowClassName: string } | null {
   if (!status) return null;
-  return STATUS_STYLES[status]?.card ?? null;
+  const style = STATUS_STYLES[status];
+  return style ? { className: style.card, nowClassName: style.now } : null;
 }

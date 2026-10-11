@@ -20,6 +20,11 @@ export type CourseColor = {
    * Tailwind scanner picks them up.
    */
   className: string;
+  /**
+   * Ring color in the card's own hue, applied with `ring-2` while the slot
+   * is the current time slot.
+   */
+  nowClassName: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -38,19 +43,55 @@ function djb2(str: string): number {
 // Palette — 12 token-based class sets, readable in light & dark themes
 // ---------------------------------------------------------------------------
 
-const PALETTE: readonly string[] = [
-  "bg-primary/10 text-foreground border-primary/30",
-  "bg-info/10 text-foreground border-info/30",
-  "bg-success/10 text-foreground border-success/30",
-  "bg-warning/10 text-foreground border-warning/30",
-  "bg-error/10 text-foreground border-error/30",
-  "bg-chart-1/10 text-foreground border-chart-1/30",
-  "bg-chart-2/10 text-foreground border-chart-2/30",
-  "bg-chart-3/10 text-foreground border-chart-3/30",
-  "bg-chart-4/10 text-foreground border-chart-4/30",
-  "bg-chart-5/10 text-foreground border-chart-5/30",
-  "bg-secondary text-secondary-foreground border-border",
-  "bg-accent text-accent-foreground border-border",
+const PALETTE: readonly CourseColor[] = [
+  {
+    className: "bg-primary/10 text-foreground border-primary/30",
+    nowClassName: "ring-primary",
+  },
+  {
+    className: "bg-info/10 text-foreground border-info/30",
+    nowClassName: "ring-info",
+  },
+  {
+    className: "bg-success/10 text-foreground border-success/30",
+    nowClassName: "ring-success",
+  },
+  {
+    className: "bg-warning/10 text-foreground border-warning/30",
+    nowClassName: "ring-warning",
+  },
+  {
+    className: "bg-error/10 text-foreground border-error/30",
+    nowClassName: "ring-error",
+  },
+  {
+    className: "bg-chart-1/10 text-foreground border-chart-1/30",
+    nowClassName: "ring-chart-1",
+  },
+  {
+    className: "bg-chart-2/10 text-foreground border-chart-2/30",
+    nowClassName: "ring-chart-2",
+  },
+  {
+    className: "bg-chart-3/10 text-foreground border-chart-3/30",
+    nowClassName: "ring-chart-3",
+  },
+  {
+    className: "bg-chart-4/10 text-foreground border-chart-4/30",
+    nowClassName: "ring-chart-4",
+  },
+  {
+    className: "bg-chart-5/10 text-foreground border-chart-5/30",
+    nowClassName: "ring-chart-5",
+  },
+  {
+    className: "bg-secondary text-secondary-foreground border-border",
+    nowClassName: "ring-foreground/60",
+  },
+  {
+    className: "bg-accent text-accent-foreground border-border",
+    nowClassName: "ring-foreground/60",
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -66,5 +107,5 @@ const PALETTE: readonly string[] = [
  */
 export function courseColor(courseCode: string): CourseColor {
   const idx = djb2(courseCode) % PALETTE.length;
-  return { className: PALETTE[idx]! };
+  return PALETTE[idx]!;
 }

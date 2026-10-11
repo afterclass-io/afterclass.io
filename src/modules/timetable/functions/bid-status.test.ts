@@ -44,8 +44,14 @@ describe("slotCardVariant", () => {
 
   it("returns a non-null card variant for every known status", () => {
     for (const s of ALL) expect(slotCardVariant(s)).not.toBeNull();
-    expect(slotCardVariant("DROPPED")).toBe(
+    expect(slotCardVariant("DROPPED")?.className).toBe(
       "bg-error/15 border-error/30 text-foreground",
+    );
+    expect(slotCardVariant("DROPPED")?.nowClassName).toBe("ring-error");
+    expect(slotCardVariant("SECURED")?.nowClassName).toBe("ring-success");
+    expect(slotCardVariant("PLANNED")?.nowClassName).toBe("ring-info");
+    expect(slotCardVariant("PARTICIPATED")?.nowClassName).toBe(
+      "ring-foreground/40",
     );
   });
 

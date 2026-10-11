@@ -70,12 +70,18 @@ export function TimetableSlotCard({
   bidInfo,
   isExam = false,
 }: TimetableSlotCardProps) {
-  const { className: colorClasses } = courseColor(courseCode);
+  const { className: colorClasses, nowClassName: colorNow } =
+    courseColor(courseCode);
   const { topPct, heightPct, colIndex, colCount } = slot;
 
   const bidStatus = bidInfo?.status as UserBidStatus | undefined;
   const cardVariant = slotCardVariant(bidStatus);
-  const cardClasses = bidInfo ? (cardVariant ?? colorClasses) : colorClasses;
+  const cardClasses = bidInfo
+    ? (cardVariant?.className ?? colorClasses)
+    : colorClasses;
+  const nowClasses = bidInfo
+    ? (cardVariant?.nowClassName ?? colorNow)
+    : colorNow;
   const isSecured = bidStatus === "SECURED";
 
   // An extra gap between columns so cards don't touch
@@ -112,7 +118,7 @@ export function TimetableSlotCard({
           readOnly
             ? "cursor-default"
             : "focus-visible:ring-ring cursor-pointer hover:shadow-md focus-visible:ring-1",
-          highlightNow && "ring-primary ring-2",
+          highlightNow && ["ring-2", nowClasses],
         )}
       >
         <span className="block truncate font-semibold">

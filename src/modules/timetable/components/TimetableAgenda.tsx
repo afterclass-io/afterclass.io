@@ -106,7 +106,9 @@ function AgendaRow({
   const { className: colorClasses } = courseColor(slot.courseCode);
   const bidStatus = bidInfo?.status as UserBidStatus | undefined;
   const cardVariant = slotCardVariant(bidStatus);
-  const cardClasses = bidInfo ? (cardVariant ?? colorClasses) : colorClasses;
+  const cardClasses = bidInfo
+    ? (cardVariant?.className ?? colorClasses)
+    : colorClasses;
   const rawVenue = slot.venue ?? slot.timing.venue ?? null;
   const venue = rawVenue ? abbreviateVenue(rawVenue) : null;
 
