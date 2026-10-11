@@ -30,11 +30,11 @@ import {
 const chartConfig = {
   median: {
     label: "Median Bid",
-    color: "var(--chart-1)",
+    color: "#2563eb",
   },
   min: {
     label: "Min Bid",
-    color: "var(--chart-2)",
+    color: "#d97706",
   },
 } satisfies ChartConfig;
 
@@ -256,7 +256,7 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
           <ReferenceArea
             x1={nowBand.x1}
             x2={nowBand.x2}
-            fill="var(--chart-1)"
+            fill="#2563eb"
             fillOpacity={0.06}
           />
         )}
