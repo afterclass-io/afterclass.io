@@ -61,7 +61,7 @@ export function CourseProfessorFilter({
   }));
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       <Combobox
         options={courseOptions}
         total={courseCatalog.total}

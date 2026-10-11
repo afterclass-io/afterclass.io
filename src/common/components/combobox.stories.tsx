@@ -10,6 +10,8 @@ const sampleOptions: ComboboxOption[] = [
   { value: "COR-STAT1202", label: "COR-STAT1202 Statistical Analysis" },
 ];
 
+const LONG_LABEL = "IS999 Advanced Topics in Extremely Long Course Names Here";
+
 function InteractiveCombobox(props: React.ComponentProps<typeof Combobox>) {
   const [val, setVal] = useState<ComboboxOption | null>(props.value ?? null);
   const [q, setQ] = useState(props.query ?? "");
@@ -85,4 +87,19 @@ export const TruncatedTotal: Story = {
   args: {
     total: 42,
   },
+};
+
+export const LongLabelEqualWidth: Story = {
+  render: (args) => (
+    <div className="grid w-160 grid-cols-2 gap-4">
+      <InteractiveCombobox
+        {...args}
+        value={{ value: "LONG1", label: LONG_LABEL }}
+      />
+      <InteractiveCombobox
+        {...args}
+        value={{ value: "LONG2", label: LONG_LABEL }}
+      />
+    </div>
+  ),
 };

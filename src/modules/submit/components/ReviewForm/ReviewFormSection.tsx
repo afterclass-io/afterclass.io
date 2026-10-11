@@ -138,6 +138,7 @@ export const ReviewFormSection = ({
                   hintText={texts.COMBOBOX.HINT[type]}
                   placeholder={texts.COMBOBOX.PLACEHOLDER[type]}
                   triggerLabel={texts.COMBOBOX.TRIGGER_LABEL[type]}
+                  className="max-w-80"
                 />
               </FormControl>
               <FormMessage />

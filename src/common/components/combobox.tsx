@@ -81,12 +81,12 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(
             aria-describedby={ariaDescribedby}
             aria-expanded={open}
             className={cn(
-              "bg-card min-h-12 w-full max-w-80 flex-1 items-center justify-between self-stretch rounded-lg p-2 text-left font-normal",
+              "bg-card min-h-12 w-full min-w-0 items-center justify-between rounded-lg p-2 text-left font-normal",
               className,
             )}
             data-test="combobox-trigger"
           >
-            <span className="truncate">
+            <span className="min-w-0 truncate">
               {value ? value.label : triggerLabel}
             </span>
             <ChevronDownIcon className="size-4 shrink-0 opacity-50" />
