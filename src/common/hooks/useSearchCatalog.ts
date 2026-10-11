@@ -33,6 +33,7 @@ export function useSearchCatalog(args: {
   debouncedQuery: string;
   isFetching: boolean;
   isStale: boolean;
+  isIdle: boolean;
 };
 export function useSearchCatalog(args: {
   entity: "professor";
@@ -46,6 +47,7 @@ export function useSearchCatalog(args: {
   debouncedQuery: string;
   isFetching: boolean;
   isStale: boolean;
+  isIdle: boolean;
 };
 export function useSearchCatalog(args: UseSearchCatalogArgs): {
   rows: (CourseCatalogRow | ProfessorCatalogRow)[];
@@ -53,6 +55,7 @@ export function useSearchCatalog(args: UseSearchCatalogArgs): {
   debouncedQuery: string;
   isFetching: boolean;
   isStale: boolean;
+  isIdle: boolean;
 };
 export function useSearchCatalog(args: UseSearchCatalogArgs) {
   const { query, limit = 10, enabled = true } = args;
@@ -104,10 +107,11 @@ export function useSearchCatalog(args: UseSearchCatalogArgs) {
     trimmedQuery !== debouncedQuery || Boolean(activeQuery.isPlaceholderData);
 
   return {
-    rows: activeQuery.data?.rows ?? [],
+    rows: shouldQuery ? (activeQuery.data?.rows ?? []) : [],
     total: activeQuery.data?.total ?? 0,
     debouncedQuery,
     isFetching: activeQuery.isFetching,
     isStale,
+    isIdle: !shouldQuery,
   };
 }

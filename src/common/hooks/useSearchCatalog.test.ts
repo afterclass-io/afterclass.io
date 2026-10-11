@@ -211,4 +211,59 @@ describe("useSearchCatalog", () => {
       expect.objectContaining({ enabled: false }),
     );
   });
+
+  it("isIdle is true for 0 and 1 characters and false with a scope", () => {
+    const { result, rerender } = renderHook(
+      ({ query, scoped }: { query: string; scoped: boolean }) =>
+        useSearchCatalog({
+          entity: "course",
+          query,
+          scope: scoped ? { professorSlug: "prof-slug" } : undefined,
+        }),
+      { initialProps: { query: "", scoped: false } },
+    );
+
+    void act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(result.current.isIdle).toBe(true);
+
+    rerender({ query: "a", scoped: false });
+    void act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(result.current.isIdle).toBe(true);
+
+    rerender({ query: "", scoped: true });
+    void act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(result.current.isIdle).toBe(false);
+  });
+
+  it("returns no rows once the query shrinks from 3 characters to 1", () => {
+    const rows = [{ id: "c1", code: "IS216", name: "Software Eng" }];
+    coursesUseQueryMock.mockImplementation(() => ({
+      data: { rows, total: 1 },
+      isFetching: false,
+      isPlaceholderData: true,
+    }));
+
+    const { result, rerender } = renderHook(
+      ({ query }: { query: string }) =>
+        useSearchCatalog({ entity: "course", query }),
+      { initialProps: { query: "abc" } },
+    );
+    void act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(result.current.rows).toEqual(rows);
+
+    rerender({ query: "a" });
+    void act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(result.current.isIdle).toBe(true);
+    expect(result.current.rows).toEqual([]);
+  });
 });

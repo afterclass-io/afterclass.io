@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { configure, render, screen } from "@testing-library/react";
+import { configure, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -344,5 +344,51 @@ describe("Combobox", () => {
     expect(trigger).toHaveAttribute("id", "custom-combobox-id");
     expect(trigger).toHaveAttribute("aria-invalid", "true");
     expect(trigger).toHaveAttribute("aria-describedby", "custom-error-desc");
+  });
+
+  it("renders the hint, and never 'Nothing found.', when idle", async () => {
+    const user = userEvent.setup();
+    render(
+      <Combobox
+        options={[]}
+        value={null}
+        onValueChange={vi.fn()}
+        query="a"
+        onQueryChange={vi.fn()}
+        placeholder="Filter..."
+        triggerLabel="Select Course"
+        idle={true}
+        hintText="Type 2 or more characters to find a course."
+      />,
+    );
+
+    await user.click(screen.getByTestId("combobox-trigger"));
+
+    expect(
+      within(screen.getByRole("listbox")).getByText(
+        "Type 2 or more characters to find a course.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Nothing found.")).not.toBeInTheDocument();
+  });
+
+  it("renders 'Nothing found.' for settled zero rows when not idle", async () => {
+    const user = userEvent.setup();
+    render(
+      <Combobox
+        options={[]}
+        value={null}
+        onValueChange={vi.fn()}
+        query="zzz"
+        onQueryChange={vi.fn()}
+        placeholder="Filter..."
+        triggerLabel="Select Course"
+        hintText="Type 2 or more characters to find a course."
+      />,
+    );
+
+    await user.click(screen.getByTestId("combobox-trigger"));
+
+    expect(screen.getByText("Nothing found.")).toBeInTheDocument();
   });
 });

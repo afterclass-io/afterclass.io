@@ -73,6 +73,8 @@ export function CourseProfessorFilter({
         onQueryChange={setCourseQuery}
         isFetching={courseCatalog.isFetching}
         isStale={courseCatalog.isStale}
+        idle={courseCatalog.isIdle}
+        hintText={texts.COMBOBOX.HINT.course}
         placeholder={texts.COMBOBOX.PLACEHOLDER.course}
         triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.course}
       />
@@ -85,6 +87,8 @@ export function CourseProfessorFilter({
         onQueryChange={setProfQuery}
         isFetching={profCatalog.isFetching}
         isStale={profCatalog.isStale}
+        idle={profCatalog.isIdle}
+        hintText={texts.COMBOBOX.HINT.professor}
         placeholder={texts.COMBOBOX.PLACEHOLDER.professor}
         triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.professor}
       />

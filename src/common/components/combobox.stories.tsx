@@ -73,6 +73,14 @@ export const Empty: Story = {
   },
 };
 
+export const Idle: Story = {
+  args: {
+    options: [],
+    idle: true,
+    hintText: "Type 2 or more characters to find a course.",
+  },
+};
+
 export const TruncatedTotal: Story = {
   args: {
     total: 42,

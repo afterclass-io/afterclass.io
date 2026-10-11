@@ -33,6 +33,8 @@ export type ComboboxProps = {
   placeholder: string;
   triggerLabel: string;
   emptyText?: string; // default "Nothing found."
+  idle?: boolean; // query is below the minimum length, nothing was searched
+  hintText?: string; // shown while idle
   disabled?: boolean;
   id?: string; // forwarded by FormControl
   "aria-invalid"?: boolean;
@@ -54,6 +56,8 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(
       placeholder,
       triggerLabel,
       emptyText = "Nothing found.",
+      idle = false,
+      hintText,
       disabled = false,
       id,
       "aria-invalid": ariaInvalid,
@@ -106,7 +110,11 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(
               }}
             />
             <CommandList aria-busy={Boolean(isStale)} aria-label={triggerLabel}>
-              {options.length === 0 && !isFetching ? (
+              {idle ? (
+                <div className="text-muted-foreground py-6 text-center text-sm">
+                  {hintText}
+                </div>
+              ) : options.length === 0 && !isFetching ? (
                 <CommandEmpty>{emptyText}</CommandEmpty>
               ) : null}
               <CommandGroup>
@@ -142,7 +150,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(
             </CommandList>
             {!isStale && (
               <span className="sr-only" role="status" aria-live="polite">
-                {`${options.length} results`}
+                {idle ? hintText : `${options.length} results`}
               </span>
             )}
             {typeof total === "number" && total > options.length ? (

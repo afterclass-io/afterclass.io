@@ -134,6 +134,8 @@ export const ReviewFormSection = ({
                   onQueryChange={setQuery}
                   isFetching={catalog.isFetching}
                   isStale={catalog.isStale}
+                  idle={catalog.isIdle}
+                  hintText={texts.COMBOBOX.HINT[type]}
                   placeholder={texts.COMBOBOX.PLACEHOLDER[type]}
                   triggerLabel={texts.COMBOBOX.TRIGGER_LABEL[type]}
                 />

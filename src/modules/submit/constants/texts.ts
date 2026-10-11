@@ -1,3 +1,4 @@
+import { MIN_QUERY_LEN } from "@/common/constants/search";
 import { ReviewableEnum } from "@/common/types/reviews";
 
 export const texts = {
@@ -9,6 +10,10 @@ export const texts = {
     PLACEHOLDER: {
       [ReviewableEnum.COURSE]: "Search for a Course...",
       [ReviewableEnum.PROFESSOR]: "Search for a Prof...",
+    },
+    HINT: {
+      [ReviewableEnum.COURSE]: `Type ${MIN_QUERY_LEN} or more characters to find a course.`,
+      [ReviewableEnum.PROFESSOR]: `Type ${MIN_QUERY_LEN} or more characters to find a professor.`,
     },
     TRIGGER_LABEL: {
       [ReviewableEnum.COURSE]: "Select a Course",
