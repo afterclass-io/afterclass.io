@@ -3,8 +3,6 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { UniversityAbbreviation } from "@/generated/prisma/enums";
-
 vi.mock("next-auth/react", () => ({
   useSession: () => ({ status: "unauthenticated", data: null }),
 }));
@@ -24,7 +22,6 @@ describe("SearchResultItem", () => {
     render(
       <SearchResultItem
         href="/course/IS215"
-        school={UniversityAbbreviation.SMU}
         title="Digital Business Technology"
         subtitle="IS215"
         filterStats={[]}
@@ -42,7 +39,6 @@ describe("SearchResultItem", () => {
     render(
       <SearchResultItem
         href="/course/IS215"
-        school={UniversityAbbreviation.SMU}
         title="Digital Business Technology"
         subtitle="IS215"
         filterStats={[]}
@@ -56,7 +52,6 @@ describe("SearchResultItem", () => {
     render(
       <SearchResultItem
         href="/course/IS215"
-        school={UniversityAbbreviation.SMU}
         title="An extremely long course title that would otherwise push the chevron out of the card"
         subtitle="IS215"
         filterStats={[]}

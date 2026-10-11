@@ -120,7 +120,6 @@ export const WithoutFilter: Story = {
             {searchedCourse.map((c) => (
               <SearchResult.Item
                 key={c.courseCode}
-                school={c.uniAbbrv}
                 href={`/course/${c.courseCode}`}
                 title={c.courseName}
                 subtitle={c.courseCode}
@@ -133,7 +132,6 @@ export const WithoutFilter: Story = {
             {searchedProf.map((p) => (
               <SearchResult.Item
                 key={p.profSlug}
-                school={p.uniAbbrv}
                 href={`/professor/${p.profSlug}`}
                 title={p.profName}
                 filterStats={[
@@ -156,12 +154,6 @@ export const JustSearchResultFilter: Story = {
         <SearchResult.Filter
           onValueChange={(value) => console.log(value)}
           filters={{
-            school: [
-              { label: "All", value: "all", isDefault: true },
-              { label: "SMU", value: "SMU" },
-              { label: "NUS", value: "NUS" },
-              { label: "NTU", value: "NTU" },
-            ],
             type: [
               { label: "All", value: "all", isDefault: true },
               { label: "Professor", value: "professor" },
@@ -179,7 +171,6 @@ export const JustProfSearchResultItem: Story = {
     return (
       <SearchResult.Item
         key={searchedProf[0]!.profSlug}
-        school={searchedProf[0]!.uniAbbrv}
         href={`/professor/${searchedProf[0]!.profSlug}`}
         title={searchedProf[0]!.profName}
         filterStats={[
@@ -196,7 +187,6 @@ export const JustCourseSearchResultItem: Story = {
     return (
       <SearchResult.Item
         key={searchedCourse[0]!.courseCode}
-        school={searchedCourse[0]!.uniAbbrv}
         href={`/course/${searchedCourse[0]!.courseCode}`}
         title={searchedCourse[0]!.courseName}
         subtitle={searchedCourse[0]!.courseCode}
@@ -214,7 +204,6 @@ export const LongCourseTitleItem: Story = {
     return (
       <div className="w-80">
         <SearchResult.Item
-          school={searchedCourse[0]!.uniAbbrv}
           href={`/course/${searchedCourse[0]!.courseCode}`}
           title="An extremely long course title that would otherwise push the chevron out of the card"
           subtitle={searchedCourse[0]!.courseCode}

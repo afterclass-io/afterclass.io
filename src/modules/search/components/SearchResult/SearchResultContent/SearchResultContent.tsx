@@ -14,13 +14,11 @@ import { SearchResultList } from "../SearchResultList";
 import { SearchResultItem } from "../SearchResultItem";
 import { SearchResultFilter } from "../SearchResultFilter";
 import { SearchResultEmpty } from "../SearchResultEmpty";
-import { type UniversityAbbreviation } from "@/generated/prisma/enums";
 import { Separator } from "@/common/components/separator";
 import { MIN_QUERY_LEN } from "@/common/constants/search";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- the schema is used only for its inferred type
 const filterOptions = z.object({
-  school: z.enum(["all", "SMU", "NUS", "NTU"]),
   type: z.enum(["all", "professor", "course"]),
 });
 type FilterOptions = z.infer<typeof filterOptions>;
@@ -35,36 +33,19 @@ export const SearchResultContent = ({
   searchedProf: SearchProfResult[];
 }) => {
   const [filter, setFilter] = useState<FilterOptions>({
-    school: "all",
     type: "all",
   });
-
-  const isSchoolSelected = (uniAbbrv: UniversityAbbreviation) => {
-    switch (filter.school) {
-      case "all":
-        return true;
-      default:
-        return uniAbbrv === filter.school;
-    }
-  };
 
   const isEmpty = () => {
     switch (filter.type) {
       case "all":
-        return schoolFilteredCourse.length + schoolFilteredProf.length === 0;
+        return searchedCourse.length + searchedProf.length === 0;
       case "course":
-        return schoolFilteredCourse.length === 0;
+        return searchedCourse.length === 0;
       case "professor":
-        return schoolFilteredProf.length === 0;
+        return searchedProf.length === 0;
     }
   };
-
-  const schoolFilteredCourse = searchedCourse.filter((c) =>
-    isSchoolSelected(c.uniAbbrv),
-  );
-  const schoolFilteredProf = searchedProf.filter((p) =>
-    isSchoolSelected(p.uniAbbrv),
-  );
 
   return (
     <div className="flex h-full gap-12">
@@ -75,10 +56,9 @@ export const SearchResultContent = ({
           query={query}
         />
         {(filter.type === "all" || filter.type === "course") &&
-          schoolFilteredCourse.map((c) => (
+          searchedCourse.map((c) => (
             <SearchResultItem
               key={c.courseCode}
-              school={c.uniAbbrv}
               href={`/course/${c.courseCode}`}
               title={c.courseName}
               subtitle={c.courseCode}
@@ -89,10 +69,9 @@ export const SearchResultContent = ({
             />
           ))}
         {(filter.type === "all" || filter.type === "professor") &&
-          schoolFilteredProf.map((p) => (
+          searchedProf.map((p) => (
             <SearchResultItem
               key={p.profSlug}
-              school={p.uniAbbrv}
               href={`/professor/${p.profSlug}`}
               title={p.profName}
               filterStats={[
@@ -108,12 +87,6 @@ export const SearchResultContent = ({
           setFilter((prev) => ({ ...prev, [key]: value }));
         }}
         filters={{
-          school: [
-            { label: "All", value: "all", isDefault: true },
-            { label: "SMU", value: "SMU" },
-            { label: "NUS", value: "NUS" },
-            { label: "NTU", value: "NTU" },
-          ],
           type: [
             { label: "All", value: "all", isDefault: true },
             { label: "Professor", value: "professor" },

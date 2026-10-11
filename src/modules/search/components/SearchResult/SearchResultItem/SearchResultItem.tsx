@@ -1,8 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { type UniversityAbbreviation } from "@/generated/prisma/enums";
 
-import { ChevronRightIcon, SchoolIcon } from "@/common/components/icons";
+import { ChevronRightIcon } from "@/common/components/icons";
 import {
   type FilterStat,
   FilterItemStats,
@@ -13,13 +12,11 @@ import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
 
 export const SearchResultItem = ({
   href,
-  school,
   title,
   subtitle,
   filterStats,
 }: {
   href: string;
-  school: UniversityAbbreviation;
   title: string;
   subtitle?: string;
   filterStats: FilterStat[];
@@ -35,10 +32,6 @@ export const SearchResultItem = ({
       <div className="flex min-w-0 flex-[1_0_0%] flex-col items-start justify-center space-y-2 md:space-y-4">
         <FullWidthEnforcer className="mb-0" />
         <div className="flex items-center gap-4 self-stretch">
-          <SchoolIcon
-            className="mt-[2px] size-4 flex-none md:size-6"
-            school={school}
-          />
           <Heading
             as="h3"
             className="text-accent-foreground min-w-0 flex-1 truncate text-left tracking-tight md:text-lg"
