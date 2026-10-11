@@ -26,8 +26,7 @@ export type RoadmapYearRowProps = {
 // ---------------------------------------------------------------------------
 
 /** Year label, T1, T2, merged T3 column. */
-export const YEAR_ROW_COLS =
-  "grid-cols-[2.5rem_minmax(0,2fr)_minmax(0,2fr)_minmax(5.5rem,1fr)]";
+export const YEAR_ROW_COLS = "grid-cols-[2.5rem_repeat(3,minmax(5.5rem,1fr))]";
 
 /** Header text and the stored terms each grid column holds. */
 export const TERM_COLUMNS = [
