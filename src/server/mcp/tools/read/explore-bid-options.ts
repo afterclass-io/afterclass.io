@@ -3,7 +3,7 @@ import { z } from "zod";
 import { resolveClassIdByCodeSection } from "../../current";
 import {
   errText,
-  errorMessage,
+  guardedRun,
   jsonText,
   parseViewJson,
   type McpTool,
@@ -159,8 +159,8 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
     const parsed = parseViewJson(result);
     return "data" in parsed ? parsed.data : { raw: parsed.raw };
   },
-  run: async ({ caller }, { classId, courseCode, professorSlug, section }) => {
-    try {
+  run: guardedRun(
+    async ({ caller }, { classId, courseCode, professorSlug, section }) => {
       let results;
       let resolvedClassId: string | null = classId ?? null;
       if (resolvedClassId) {
@@ -304,8 +304,6 @@ export const exploreBidOptionsTool: McpTool<typeof exploreBidOptionsSchema> = {
         safetyFactors,
         minSafetyFactors,
       });
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+    },
+  ),
 };

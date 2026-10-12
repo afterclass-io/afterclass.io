@@ -9,7 +9,7 @@ import {
 } from "../../current";
 import {
   errText,
-  errorMessage,
+  guardedRun,
   jsonText,
   type CourseRow,
   type McpTool,
@@ -55,16 +55,16 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
     "Estimate bid prices for a course's sections for the upcoming bidding window. Provide a course code (e.g. COR-IS1702); optionally filter to a single section (e.g. G1). Returns per-section median and minimum clearing prices from the latest bid predictions, a suggested bid amount (predicted + multiplier x uncertainty for 70% confidence when available, never below e$10), and the current vacancy for the resolved window. Window resolution: explicit bidWindow > open window > latest window (estimates then use prior-window results — immediate-next-window only). If the course or its sections are not found, explains what was tried. Self-contained: one call is the answer. For anything related to bid predictions, prefer explore-bid-options (interactive bid-explorer chart/table/slider; it accepts courseCode+section); use this tool for text answers or multi-section comparison, and always surface its bid-explorer link(s) so the user can open the interactive view.",
   inputSchema: bidEstimateSchema,
   readOnly: true,
-  run: async (
-    { caller },
-    {
-      courseCode,
-      section,
-      acadTermId: acadTermInput,
-      bidWindow: bidWindowInput,
-    },
-  ) => {
-    try {
+  run: guardedRun(
+    async (
+      { caller },
+      {
+        courseCode,
+        section,
+        acadTermId: acadTermInput,
+        bidWindow: bidWindowInput,
+      },
+    ) => {
       const trimmedCode = courseCode.trim();
       if (!trimmedCode) return errText("courseCode must not be empty");
 
@@ -315,10 +315,8 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
         estimates,
         summary: `${summary}${exploreBlock}`,
       });
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+    },
+  ),
 };
 
 type WindowDetails = {
