@@ -2,7 +2,6 @@
 import { useSession } from "next-auth/react";
 
 import { SidebarTrigger } from "@/common/components/sidebar";
-import { Separator } from "@/common/components/separator";
 import { ThemeToggle } from "@/common/components/theme-toggle";
 import { AfterclassIcon, SearchIcon } from "@/common/components/icons";
 
@@ -19,10 +18,6 @@ export const CoreLayoutHeader = () => {
   return (
     <header className="border-border bg-background sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b px-4">
       <SidebarTrigger className="-ml-1" />
-      <Separator
-        orientation="vertical"
-        className="bg-border mr-2 hidden h-4 md:block"
-      />
       <div className="flex w-full items-center justify-between">
         <HomeBreadcrumb className="hidden md:block" />
         <ProgressLink
