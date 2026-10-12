@@ -6,13 +6,28 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 configure({ testIdAttribute: "data-test" });
 
-import { Combobox, type ComboboxOption } from "./combobox";
+import { Combobox, type ComboboxOption, type ComboboxProps } from "./combobox";
 
 const sampleOptions: ComboboxOption[] = [
   { value: "IS111", label: "IS111 Intro to Programming" },
   { value: "IS216", label: "IS216 Software Engineering" },
   { value: "CS101", label: "CS101 Computer Science" },
 ];
+
+function renderCombobox(overrides: Partial<ComboboxProps> = {}) {
+  return render(
+    <Combobox
+      options={sampleOptions}
+      value={null}
+      onValueChange={vi.fn()}
+      query=""
+      onQueryChange={vi.fn()}
+      placeholder="Filter..."
+      triggerLabel="Select Course"
+      {...overrides}
+    />,
+  );
+}
 
 beforeEach(() => {
   if (typeof window !== "undefined") {
@@ -28,17 +43,7 @@ beforeEach(() => {
 describe("Combobox", () => {
   it("the trigger has aria-haspopup='dialog' and aria-expanded='false', and after a click aria-expanded is 'true'", async () => {
     const user = userEvent.setup();
-    render(
-      <Combobox
-        options={sampleOptions}
-        value={null}
-        onValueChange={vi.fn()}
-        query=""
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-      />,
-    );
+    renderCombobox();
 
     const trigger = screen.getByTestId("combobox-trigger");
     expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
@@ -50,17 +55,7 @@ describe("Combobox", () => {
 
   it("the input has role='combobox', aria-autocomplete='list', and aria-controls equal to the listbox id", async () => {
     const user = userEvent.setup();
-    render(
-      <Combobox
-        options={sampleOptions}
-        value={null}
-        onValueChange={vi.fn()}
-        query=""
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-      />,
-    );
+    renderCombobox();
 
     await user.click(screen.getByTestId("combobox-trigger"));
 
@@ -76,17 +71,7 @@ describe("Combobox", () => {
 
   it("the list has role='listbox' and each item has role='option'", async () => {
     const user = userEvent.setup();
-    render(
-      <Combobox
-        options={sampleOptions}
-        value={null}
-        onValueChange={vi.fn()}
-        query=""
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-      />,
-    );
+    renderCombobox();
 
     await user.click(screen.getByTestId("combobox-trigger"));
 
@@ -99,17 +84,7 @@ describe("Combobox", () => {
 
   it("ArrowDown sets aria-activedescendant to the second option id and ArrowUp returns it to the first", async () => {
     const user = userEvent.setup();
-    render(
-      <Combobox
-        options={sampleOptions}
-        value={null}
-        onValueChange={vi.fn()}
-        query=""
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-      />,
-    );
+    renderCombobox();
 
     await user.click(screen.getByTestId("combobox-trigger"));
 
@@ -129,17 +104,7 @@ describe("Combobox", () => {
 
   it("Home and End highlight the first and last option", async () => {
     const user = userEvent.setup();
-    render(
-      <Combobox
-        options={sampleOptions}
-        value={null}
-        onValueChange={vi.fn()}
-        query=""
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-      />,
-    );
+    renderCombobox();
 
     await user.click(screen.getByTestId("combobox-trigger"));
 
@@ -161,17 +126,7 @@ describe("Combobox", () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
 
-    render(
-      <Combobox
-        options={sampleOptions}
-        value={null}
-        onValueChange={onValueChange}
-        query=""
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-      />,
-    );
+    renderCombobox({ onValueChange });
 
     await user.click(screen.getByTestId("combobox-trigger"));
 
@@ -185,18 +140,11 @@ describe("Combobox", () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
 
-    render(
-      <Combobox
-        options={sampleOptions}
-        value={null}
-        onValueChange={onValueChange}
-        query="stat"
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-        isStale={true}
-      />,
-    );
+    renderCombobox({
+      onValueChange,
+      query: "stat",
+      isStale: true,
+    });
 
     await user.click(screen.getByTestId("combobox-trigger"));
 
@@ -207,17 +155,7 @@ describe("Combobox", () => {
 
   it("Escape closes the popover and focus returns to the trigger", async () => {
     const user = userEvent.setup();
-    render(
-      <Combobox
-        options={sampleOptions}
-        value={null}
-        onValueChange={vi.fn()}
-        query=""
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-      />,
-    );
+    renderCombobox();
 
     const trigger = screen.getByTestId("combobox-trigger");
     await user.click(trigger);
@@ -232,17 +170,10 @@ describe("Combobox", () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
 
-    render(
-      <Combobox
-        options={sampleOptions}
-        value={sampleOptions[0]!}
-        onValueChange={onValueChange}
-        query=""
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-      />,
-    );
+    renderCombobox({
+      value: sampleOptions[0]!,
+      onValueChange,
+    });
 
     await user.click(screen.getByTestId("combobox-trigger"));
 
@@ -259,18 +190,10 @@ describe("Combobox", () => {
       label: `Option ${i}`,
     }));
 
-    render(
-      <Combobox
-        options={tenOptions}
-        total={40}
-        value={null}
-        onValueChange={vi.fn()}
-        query=""
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-      />,
-    );
+    renderCombobox({
+      options: tenOptions,
+      total: 40,
+    });
 
     await user.click(screen.getByTestId("combobox-trigger"));
 
@@ -279,18 +202,7 @@ describe("Combobox", () => {
 
   it("the list has aria-busy='true' when isStale is true", async () => {
     const user = userEvent.setup();
-    render(
-      <Combobox
-        options={sampleOptions}
-        value={null}
-        onValueChange={vi.fn()}
-        query=""
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-        isStale={true}
-      />,
-    );
+    renderCombobox({ isStale: true });
 
     await user.click(screen.getByTestId("combobox-trigger"));
 
@@ -300,17 +212,7 @@ describe("Combobox", () => {
 
   it("the data-test hooks combobox-trigger, combobox-input and combobox-item-<value> exist", async () => {
     const user = userEvent.setup();
-    render(
-      <Combobox
-        options={sampleOptions}
-        value={null}
-        onValueChange={vi.fn()}
-        query=""
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-      />,
-    );
+    renderCombobox();
 
     expect(screen.getByTestId("combobox-trigger")).toBeInTheDocument();
 
@@ -325,20 +227,11 @@ describe("Combobox", () => {
   });
 
   it("the component forwards id, aria-invalid and aria-describedby to the trigger", () => {
-    render(
-      <Combobox
-        options={sampleOptions}
-        value={null}
-        onValueChange={vi.fn()}
-        query=""
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-        id="custom-combobox-id"
-        aria-invalid={true}
-        aria-describedby="custom-error-desc"
-      />,
-    );
+    renderCombobox({
+      id: "custom-combobox-id",
+      "aria-invalid": true,
+      "aria-describedby": "custom-error-desc",
+    });
 
     const trigger = screen.getByTestId("combobox-trigger");
     expect(trigger).toHaveAttribute("id", "custom-combobox-id");
@@ -348,19 +241,12 @@ describe("Combobox", () => {
 
   it("renders the hint, and never 'Nothing found.', when idle", async () => {
     const user = userEvent.setup();
-    render(
-      <Combobox
-        options={[]}
-        value={null}
-        onValueChange={vi.fn()}
-        query="a"
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-        idle={true}
-        hintText="Type 2 or more characters to find a course."
-      />,
-    );
+    renderCombobox({
+      options: [],
+      query: "a",
+      idle: true,
+      hintText: "Type 2 or more characters to find a course.",
+    });
 
     await user.click(screen.getByTestId("combobox-trigger"));
 
@@ -374,18 +260,11 @@ describe("Combobox", () => {
 
   it("renders 'Nothing found.' for settled zero rows when not idle", async () => {
     const user = userEvent.setup();
-    render(
-      <Combobox
-        options={[]}
-        value={null}
-        onValueChange={vi.fn()}
-        query="zzz"
-        onQueryChange={vi.fn()}
-        placeholder="Filter..."
-        triggerLabel="Select Course"
-        hintText="Type 2 or more characters to find a course."
-      />,
-    );
+    renderCombobox({
+      options: [],
+      query: "zzz",
+      hintText: "Type 2 or more characters to find a course.",
+    });
 
     await user.click(screen.getByTestId("combobox-trigger"));
 

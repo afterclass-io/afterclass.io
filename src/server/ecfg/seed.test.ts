@@ -4,11 +4,27 @@ import remoteItemsFixture from "./fixtures/remote-items.json";
 import { EdgeConfigApiError, type RemoteItem } from "./remote";
 import { planSeed, seedEdgeConfig } from "./seed";
 
+type SeedOptions = Parameters<typeof seedEdgeConfig>[0];
+
+function seedOptions(
+  fetchImpl: typeof fetch,
+  overrides: Partial<SeedOptions> & Pick<SeedOptions, "apply">,
+): SeedOptions {
+  return {
+    local: localConfig,
+    target: { token: "test-token", edgeConfigId: "ecfg_test" },
+    fetchImpl,
+    ...overrides,
+  };
+}
+
+function itemsMissing(key: string) {
+  return remoteItemsFixture.filter((item) => item.key !== key);
+}
+
 describe("planSeed", () => {
   it("given config.json and a store missing enableContentModeration, plan.create equals [{ operation: 'create', key: 'enableContentModeration', value: true }]", () => {
-    const remote = remoteItemsFixture.filter(
-      (item) => item.key !== "enableContentModeration",
-    );
+    const remote = itemsMissing("enableContentModeration");
     const plan = planSeed(localConfig, remote);
     expect(plan.create).toEqual([
       { operation: "create", key: "enableContentModeration", value: true },
@@ -66,12 +82,7 @@ describe("planSeed", () => {
     const plans = [
       planSeed(localConfig, []),
       planSeed(localConfig, remoteItemsFixture),
-      planSeed(
-        localConfig,
-        remoteItemsFixture.filter(
-          (item) => item.key !== "enableContentModeration",
-        ),
-      ),
+      planSeed(localConfig, itemsMissing("enableContentModeration")),
     ];
     for (const plan of plans) {
       expect(plan.create.every((op) => op.operation === "create")).toBe(true);
@@ -158,19 +169,12 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
   }
 
   it("dry run: the fake receives exactly 1 call, a GET, and result mode is 'dry-run'", async () => {
-    const missingItems = remoteItemsFixture.filter(
-      (item) => item.key !== "enableContentModeration",
-    );
+    const missingItems = itemsMissing("enableContentModeration");
     const { fake, calls } = createFakeFetch({
       getItems: () => ({ status: 200, body: missingItems }),
     });
 
-    const result = await seedEdgeConfig({
-      local: localConfig,
-      target: { token: "test-token", edgeConfigId: "ecfg_test" },
-      apply: false,
-      fetchImpl: fake,
-    });
+    const result = await seedEdgeConfig(seedOptions(fake, { apply: false }));
 
     expect(calls).toHaveLength(1);
     expect(calls[0]?.method).toBe("GET");
@@ -178,16 +182,9 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
   });
 
   it("up to date with apply: true: exactly 1 call, a GET, and result mode is 'up-to-date'", async () => {
-    const { fake, calls } = createFakeFetch({
-      getItems: () => ({ status: 200, body: remoteItemsFixture }),
-    });
+    const { fake, calls } = createFakeFetch({});
 
-    const result = await seedEdgeConfig({
-      local: localConfig,
-      target: { token: "test-token", edgeConfigId: "ecfg_test" },
-      apply: true,
-      fetchImpl: fake,
-    });
+    const result = await seedEdgeConfig(seedOptions(fake, { apply: true }));
 
     expect(calls).toHaveLength(1);
     expect(calls[0]?.method).toBe("GET");
@@ -195,9 +192,7 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
   });
 
   it("apply with one missing key: exactly 3 calls in order GET, PATCH, GET, and result mode is 'applied'", async () => {
-    const missingItems = remoteItemsFixture.filter(
-      (item) => item.key !== "enableContentModeration",
-    );
+    const missingItems = itemsMissing("enableContentModeration");
     const { fake, calls } = createFakeFetch({
       getItems: (count) => ({
         status: 200,
@@ -205,12 +200,7 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
       }),
     });
 
-    const result = await seedEdgeConfig({
-      local: localConfig,
-      target: { token: "test-token", edgeConfigId: "ecfg_test" },
-      apply: true,
-      fetchImpl: fake,
-    });
+    const result = await seedEdgeConfig(seedOptions(fake, { apply: true }));
 
     expect(calls).toHaveLength(3);
     expect(calls.map((c) => c.method)).toEqual(["GET", "PATCH", "GET"]);
@@ -218,9 +208,7 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
   });
 
   it("the PATCH URL equals https://api.vercel.com/v1/global-config/ecfg_test/items. The method is PATCH. The Authorization header equals Bearer test-token. The body parses to { items: [{ operation: 'create', key, value }] }", async () => {
-    const missingItems = remoteItemsFixture.filter(
-      (item) => item.key !== "enableContentModeration",
-    );
+    const missingItems = itemsMissing("enableContentModeration");
     const { fake, calls } = createFakeFetch({
       getItems: (count) => ({
         status: 200,
@@ -228,12 +216,7 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
       }),
     });
 
-    await seedEdgeConfig({
-      local: localConfig,
-      target: { token: "test-token", edgeConfigId: "ecfg_test" },
-      apply: true,
-      fetchImpl: fake,
-    });
+    await seedEdgeConfig(seedOptions(fake, { apply: true }));
 
     const patchCall = calls[1];
     expect(patchCall).toBeDefined();
@@ -258,9 +241,7 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
   });
 
   it("the PATCH body string contains none of 'update', 'upsert', 'delete'", async () => {
-    const missingItems = remoteItemsFixture.filter(
-      (item) => item.key !== "enableContentModeration",
-    );
+    const missingItems = itemsMissing("enableContentModeration");
     const { fake, calls } = createFakeFetch({
       getItems: (count) => ({
         status: 200,
@@ -268,12 +249,7 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
       }),
     });
 
-    await seedEdgeConfig({
-      local: localConfig,
-      target: { token: "test-token", edgeConfigId: "ecfg_test" },
-      apply: true,
-      fetchImpl: fake,
-    });
+    await seedEdgeConfig(seedOptions(fake, { apply: true }));
 
     const patchBody = calls[1]?.body ?? "";
     expect(patchBody).not.toContain("update");
@@ -282,9 +258,7 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
   });
 
   it("with teamId: 'team_1', both the GET and PATCH URLs end with ?teamId=team_1", async () => {
-    const missingItems = remoteItemsFixture.filter(
-      (item) => item.key !== "enableContentModeration",
-    );
+    const missingItems = itemsMissing("enableContentModeration");
     const { fake, calls } = createFakeFetch({
       getItems: (count) => ({
         status: 200,
@@ -292,16 +266,16 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
       }),
     });
 
-    await seedEdgeConfig({
-      local: localConfig,
-      target: {
-        token: "test-token",
-        edgeConfigId: "ecfg_test",
-        teamId: "team_1",
-      },
-      apply: true,
-      fetchImpl: fake,
-    });
+    await seedEdgeConfig(
+      seedOptions(fake, {
+        target: {
+          token: "test-token",
+          edgeConfigId: "ecfg_test",
+          teamId: "team_1",
+        },
+        apply: true,
+      }),
+    );
 
     expect(calls).toHaveLength(3);
     for (const call of calls) {
@@ -310,9 +284,7 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
   });
 
   it("PATCH returns 409: the promise rejects with EdgeConfigApiError and status === 409. The fake saw no further PATCH", async () => {
-    const missingItems = remoteItemsFixture.filter(
-      (item) => item.key !== "enableContentModeration",
-    );
+    const missingItems = itemsMissing("enableContentModeration");
     const { fake, getPatchCallCount } = createFakeFetch({
       getItems: () => ({ status: 200, body: missingItems }),
       patchItems: () => ({ status: 409, body: { error: "Conflict" } }),
@@ -320,12 +292,7 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
 
     let thrownError: unknown;
     try {
-      await seedEdgeConfig({
-        local: localConfig,
-        target: { token: "test-token", edgeConfigId: "ecfg_test" },
-        apply: true,
-        fetchImpl: fake,
-      });
+      await seedEdgeConfig(seedOptions(fake, { apply: true }));
     } catch (err) {
       thrownError = err;
     }
@@ -341,12 +308,7 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
     });
 
     await expect(
-      seedEdgeConfig({
-        local: localConfig,
-        target: { token: "test-token", edgeConfigId: "ecfg_test" },
-        apply: true,
-        fetchImpl: fake,
-      }),
+      seedEdgeConfig(seedOptions(fake, { apply: true })),
     ).rejects.toThrow();
 
     expect(getPatchCallCount()).toBe(0);
@@ -358,12 +320,7 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
     });
 
     await expect(
-      seedEdgeConfig({
-        local: localConfig,
-        target: { token: "test-token", edgeConfigId: "ecfg_test" },
-        apply: true,
-        fetchImpl: fake,
-      }),
+      seedEdgeConfig(seedOptions(fake, { apply: true })),
     ).rejects.toThrow();
 
     expect(getPatchCallCount()).toBe(0);
@@ -374,33 +331,21 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
     const badLocal = { ...localConfig, "bad key": true };
 
     await expect(
-      seedEdgeConfig({
-        local: badLocal,
-        target: { token: "test-token", edgeConfigId: "ecfg_test" },
-        apply: true,
-        fetchImpl: fake,
-      }),
+      seedEdgeConfig(seedOptions(fake, { local: badLocal, apply: true })),
     ).rejects.toThrow();
 
     expect(calls).toHaveLength(0);
   });
 
   it("the post-write GET lacks a created key: the promise rejects", async () => {
-    const missingItems = remoteItemsFixture.filter(
-      (item) => item.key !== "enableContentModeration",
-    );
+    const missingItems = itemsMissing("enableContentModeration");
     const { fake } = createFakeFetch({
       // 1st GET missing, 2nd GET still missing
       getItems: () => ({ status: 200, body: missingItems }),
     });
 
     await expect(
-      seedEdgeConfig({
-        local: localConfig,
-        target: { token: "test-token", edgeConfigId: "ecfg_test" },
-        apply: true,
-        fetchImpl: fake,
-      }),
+      seedEdgeConfig(seedOptions(fake, { apply: true })),
     ).rejects.toThrow(/Post-write verification failed/);
   });
 
@@ -418,9 +363,7 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
         createFakeFetch({
           getItems: () => ({
             status: 200,
-            body: remoteItemsFixture.filter(
-              (item) => item.key !== "enableContentModeration",
-            ),
+            body: itemsMissing("enableContentModeration"),
           }),
           patchItems: () => ({ status: 409, body: { error: "Conflict" } }),
         }),
@@ -429,12 +372,7 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
     for (const makeFake of errorScenarios) {
       const { fake } = makeFake();
       try {
-        await seedEdgeConfig({
-          local: localConfig,
-          target: { token: "test-token", edgeConfigId: "ecfg_test" },
-          apply: true,
-          fetchImpl: fake,
-        });
+        await seedEdgeConfig(seedOptions(fake, { apply: true }));
         expect.unreachable("Should have rejected");
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
