@@ -5,6 +5,7 @@ import {
   DndContext,
   type DragEndEvent,
   type DragStartEvent,
+  type Over,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -62,6 +63,26 @@ const DEBOUNCE_MS = 800;
 /** Stable sortable ID — courseId is unique (duplicate adds are blocked). */
 function entrySortableId(entry: Entry): string {
   return entry.courseId;
+}
+
+/**
+ * Term cell a drop lands in: a term-cell droppable, or the cell of the entry
+ * dropped on. Null when the dropped-on entry is not in the grid.
+ */
+function resolveDropCell(
+  over: Over,
+  entryIndexById: Map<string, number>,
+  localEntries: Entry[],
+): { yearNumber: number; term: string } | null {
+  const targetData = over.data.current as
+    { yearNumber: number; term: string; type: string } | undefined;
+  if (targetData?.type === "term-cell") {
+    return { yearNumber: targetData.yearNumber, term: targetData.term };
+  }
+  const targetIdx = entryIndexById.get(String(over.id));
+  if (targetIdx === undefined) return null;
+  const targetEntry = localEntries[targetIdx]!;
+  return { yearNumber: targetEntry.yearNumber, term: targetEntry.term };
 }
 
 /** Categorize conflicts by term for inline badge display. */
@@ -240,7 +261,6 @@ export function RoadmapGrid({
         return;
 
       const activeIdStr = String(active.id);
-      const overIdStr = String(over.id);
 
       // Determine if this is a sidebar drag (new course) or grid drag (move)
       const isSidebarDrag = active.data.current?.type === "sidebar-course";
@@ -260,24 +280,9 @@ export function RoadmapGrid({
           return;
         }
 
-        // Parse the droppable target
-        const targetData = over.data.current as
-          { yearNumber: number; term: string; type: string } | undefined;
-
-        let yearNumber: number;
-        let term: string;
-
-        if (targetData?.type === "term-cell") {
-          yearNumber = targetData.yearNumber;
-          term = targetData.term;
-        } else {
-          // Dropped on a sortable item — find its cell
-          const entryIdx = entryIndexById.get(overIdStr);
-          if (entryIdx === undefined) return;
-          const targetEntry = localEntries[entryIdx]!;
-          yearNumber = targetEntry.yearNumber;
-          term = targetEntry.term;
-        }
+        const cell = resolveDropCell(over, entryIndexById, localEntries);
+        if (!cell) return;
+        const { yearNumber, term } = cell;
 
         const newEntry: Entry = {
           courseId: course.id,
@@ -299,23 +304,9 @@ export function RoadmapGrid({
       const entryIdx = entryIndexById.get(activeIdStr);
       if (entryIdx === undefined) return;
 
-      const targetData = over.data.current as
-        { yearNumber: number; term: string; type: string } | undefined;
-
-      let yearNumber: number;
-      let term: string;
-
-      if (targetData?.type === "term-cell") {
-        yearNumber = targetData.yearNumber;
-        term = targetData.term;
-      } else {
-        // Dropped on another sortable item
-        const targetIdx = entryIndexById.get(overIdStr);
-        if (targetIdx === undefined) return;
-        const targetEntry = localEntries[targetIdx]!;
-        yearNumber = targetEntry.yearNumber;
-        term = targetEntry.term;
-      }
+      const cell = resolveDropCell(over, entryIndexById, localEntries);
+      if (!cell) return;
+      const { yearNumber, term } = cell;
 
       const updated = localEntries.map((e, i) => {
         if (i === entryIdx) {
