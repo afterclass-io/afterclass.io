@@ -31,6 +31,17 @@ function printUsage(): void {
   console.error("  VERCEL_TEAM_ID: Vercel team ID");
 }
 
+function printKeyList(label: string, keys: string[]): void {
+  console.log(label);
+  if (keys.length === 0) {
+    console.log("  (none)");
+  } else {
+    for (const key of keys) {
+      console.log(`  ${key}`);
+    }
+  }
+}
+
 function printPlan(plan: SeedPlan): void {
   console.log("create:");
   if (plan.create.length === 0) {
@@ -41,32 +52,12 @@ function printPlan(plan: SeedPlan): void {
     }
   }
 
-  console.log("keep (store wins):");
-  if (plan.keepExisting.length === 0) {
-    console.log("  (none)");
-  } else {
-    for (const key of plan.keepExisting) {
-      console.log(`  ${key}`);
-    }
-  }
-
-  console.log("drift (store differs from config.json, left untouched):");
-  if (plan.drifted.length === 0) {
-    console.log("  (none)");
-  } else {
-    for (const key of plan.drifted) {
-      console.log(`  ${key}`);
-    }
-  }
-
-  console.log("remote-only (left untouched):");
-  if (plan.remoteOnly.length === 0) {
-    console.log("  (none)");
-  } else {
-    for (const key of plan.remoteOnly) {
-      console.log(`  ${key}`);
-    }
-  }
+  printKeyList("keep (store wins):", plan.keepExisting);
+  printKeyList(
+    "drift (store differs from config.json, left untouched):",
+    plan.drifted,
+  );
+  printKeyList("remote-only (left untouched):", plan.remoteOnly);
 }
 
 async function main(): Promise<void> {
