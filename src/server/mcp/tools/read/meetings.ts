@@ -13,6 +13,7 @@ import {
   suggestMeetingTimes,
 } from "@/modules/meetings/functions/suggest-times";
 import { guardedRun, jsonText, type McpTool } from "../../types";
+import { hhmm, isoDate, meetingPollSlug } from "../meeting-schemas";
 import { absoluteUrl, meetingPage, PAGE_LINK_NOTE } from "../page-links";
 
 const getMyMeetingsSchema = z.object({
@@ -57,11 +58,7 @@ export const getMyMeetingsTool: McpTool<typeof getMyMeetingsSchema> = {
 };
 
 const getMeetingPollDetailSchema = z.object({
-  slug: z
-    .string()
-    .min(6)
-    .max(20)
-    .describe("The meeting poll slug (from /meetings/[slug])"),
+  slug: meetingPollSlug,
 });
 
 export const getMeetingPollDetailTool: McpTool<
@@ -113,15 +110,8 @@ export const getMeetingPollDetailTool: McpTool<
   }),
 };
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
-const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$|^24:00$/);
-
 const suggestMeetingTimesSchema = z.object({
-  slug: z
-    .string()
-    .min(6)
-    .max(20)
-    .describe("The meeting poll slug (from /meetings/[slug])"),
+  slug: meetingPollSlug,
   durationMinutes: z
     .number()
     .int()

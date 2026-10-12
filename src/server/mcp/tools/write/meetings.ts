@@ -9,6 +9,7 @@ import {
 } from "@/modules/meetings/functions/slot-time";
 import { db } from "@/server/db";
 import { errText, guardedRun, jsonText, type McpTool } from "../../types";
+import { hhmm, isoDate, meetingPollSlug } from "../meeting-schemas";
 import { absoluteUrl, meetingPage, PAGE_LINK_NOTE } from "../page-links";
 
 const createMeetingPollSchema = z.object({
@@ -17,18 +18,12 @@ const createMeetingPollSchema = z.object({
     .min(1)
     .max(120)
     .describe("Meeting title (e.g. 'CS101 Sprint 1 Sync')"),
-  startDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .describe(
-      "Start date of the poll window in YYYY-MM-DD format (must fall within the current academic term)",
-    ),
-  endDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .describe(
-      "End date of the poll window in YYYY-MM-DD format (at most 14 days after the start date)",
-    ),
+  startDate: isoDate.describe(
+    "Start date of the poll window in YYYY-MM-DD format (must fall within the current academic term)",
+  ),
+  endDate: isoDate.describe(
+    "End date of the poll window in YYYY-MM-DD format (at most 14 days after the start date)",
+  ),
   startHour: z
     .number()
     .int()
@@ -108,15 +103,8 @@ export const createMeetingPollTool: McpTool<typeof createMeetingPollSchema> = {
   }),
 };
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
-const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$|^24:00$/);
-
 const submitMeetingAvailabilitySchema = z.object({
-  slug: z
-    .string()
-    .min(6)
-    .max(20)
-    .describe("The meeting poll slug (from /meetings/[slug])"),
+  slug: meetingPollSlug,
   availability: z
     .array(
       z.object({
