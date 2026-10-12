@@ -91,6 +91,43 @@ function toSlotWithClass(sec: SectionOption): SlotWithClass {
   };
 }
 
+type Utils = ReturnType<typeof api.useUtils>;
+
+/**
+ * The arrangement cache steps every slot mutation shares: cancel the
+ * in-flight fetch, snapshot the slots, restore them on error, and refetch on
+ * settle. Each caller adds its own optimistic write and toast copy.
+ */
+function arrangementCacheCallbacks(
+  utils: Utils,
+  activeTimetableId: string | null,
+) {
+  return {
+    cancel: () =>
+      utils.timetable.getArrangement.cancel({
+        timetableId: activeTimetableId ?? "",
+      }),
+    getSnapshot: () =>
+      activeTimetableId
+        ? utils.timetable.getArrangement.getData({
+            timetableId: activeTimetableId,
+          })?.slots
+        : undefined,
+    restoreSnapshot: (slots: ArrangedClass[] | undefined) => {
+      if (slots && activeTimetableId) {
+        utils.timetable.getArrangement.setData(
+          { timetableId: activeTimetableId },
+          (old) => (old ? { ...old, slots } : old),
+        );
+      }
+    },
+    invalidate: () =>
+      utils.timetable.getArrangement.invalidate({
+        timetableId: activeTimetableId ?? "",
+      }),
+  };
+}
+
 /**
  * Remove a class from the active timetable (grid X affordance).
  *
@@ -108,34 +145,13 @@ export function useRemoveSlotMutation() {
       { timetableId: string; classId: string },
       ArrangedClass[] | undefined
     >({
-      cancel: () =>
-        utils.timetable.getArrangement.cancel({
-          timetableId: activeTimetableId ?? "",
-        }),
-      getSnapshot: () =>
-        activeTimetableId
-          ? utils.timetable.getArrangement.getData({
-              timetableId: activeTimetableId,
-            })?.slots
-          : undefined,
+      ...arrangementCacheCallbacks(utils, activeTimetableId),
       applyOptimistic: ({ timetableId, classId }) =>
         utils.timetable.getArrangement.setData({ timetableId }, (old) =>
           old
             ? { ...old, slots: old.slots.filter((s) => s.classId !== classId) }
             : old,
         ),
-      restoreSnapshot: (slots) => {
-        if (slots && activeTimetableId) {
-          utils.timetable.getArrangement.setData(
-            { timetableId: activeTimetableId },
-            (old) => (old ? { ...old, slots } : old),
-          );
-        }
-      },
-      invalidate: () =>
-        utils.timetable.getArrangement.invalidate({
-          timetableId: activeTimetableId ?? "",
-        }),
       onError: (message) => toast.error(`Failed to remove class: ${message}`),
     }),
     onSuccess: () => toast.success("Removed class from timetable"),
@@ -160,16 +176,7 @@ export function useAddSlotMutation({
       { timetableId: string; classId: string },
       ArrangedClass[] | undefined
     >({
-      cancel: () =>
-        utils.timetable.getArrangement.cancel({
-          timetableId: activeTimetableId ?? "",
-        }),
-      getSnapshot: () =>
-        activeTimetableId
-          ? utils.timetable.getArrangement.getData({
-              timetableId: activeTimetableId,
-            })?.slots
-          : undefined,
+      ...arrangementCacheCallbacks(utils, activeTimetableId),
       applyOptimistic: ({ timetableId, classId }) => {
         const picked = sections.find((s) => s.classId === classId);
         if (!picked) return;
@@ -182,18 +189,6 @@ export function useAddSlotMutation({
             : old,
         );
       },
-      restoreSnapshot: (slots) => {
-        if (slots && activeTimetableId) {
-          utils.timetable.getArrangement.setData(
-            { timetableId: activeTimetableId },
-            (old) => (old ? { ...old, slots } : old),
-          );
-        }
-      },
-      invalidate: () =>
-        utils.timetable.getArrangement.invalidate({
-          timetableId: activeTimetableId ?? "",
-        }),
       onError: () =>
         toast.error(
           courseCode
@@ -237,16 +232,7 @@ export function useSetSlotSectionMutation({
       { timetableId: string; courseId: string; classId: string },
       ArrangedClass[] | undefined
     >({
-      cancel: () =>
-        utils.timetable.getArrangement.cancel({
-          timetableId: activeTimetableId ?? "",
-        }),
-      getSnapshot: () =>
-        activeTimetableId
-          ? utils.timetable.getArrangement.getData({
-              timetableId: activeTimetableId,
-            })?.slots
-          : undefined,
+      ...arrangementCacheCallbacks(utils, activeTimetableId),
       applyOptimistic: ({ timetableId, classId }) => {
         const picked = sections.find((s) => s.classId === classId);
         if (!picked) return;
@@ -266,18 +252,6 @@ export function useSetSlotSectionMutation({
             : old,
         );
       },
-      restoreSnapshot: (slots) => {
-        if (slots && activeTimetableId) {
-          utils.timetable.getArrangement.setData(
-            { timetableId: activeTimetableId },
-            (old) => (old ? { ...old, slots } : old),
-          );
-        }
-      },
-      invalidate: () =>
-        utils.timetable.getArrangement.invalidate({
-          timetableId: activeTimetableId ?? "",
-        }),
       onError: () => toast.error("Failed to swap section. Please try again."),
     }),
     onSuccess: () => {

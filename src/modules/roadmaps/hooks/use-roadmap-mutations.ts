@@ -5,6 +5,30 @@ import { api } from "@/common/tools/trpc/react";
 import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import { createSaveEntriesCallbacks } from "@/modules/roadmaps/functions/save-callbacks";
 
+type Utils = ReturnType<typeof api.useUtils>;
+type ListMineData = NonNullable<
+  ReturnType<Utils["roadmaps"]["listMine"]["getData"]>
+>;
+
+/**
+ * Cache steps for the inputless `listMine` list shared by the per-roadmap
+ * field mutations. Each caller adds its own optimistic write and toast.
+ */
+function listMineCacheCallbacks(utils: Utils) {
+  return {
+    // listMine is an inputless query — thread no input through every utils
+    // call so cancel/snapshot/setData/invalidate hit the same cache key.
+    cancel: () => utils.roadmaps.listMine.cancel(),
+    getSnapshot: () => utils.roadmaps.listMine.getData(),
+    restoreSnapshot: (prev: ListMineData | undefined) =>
+      utils.roadmaps.listMine.setData(undefined, prev),
+    invalidate: async () => {
+      await utils.roadmaps.listMine.invalidate();
+      await utils.roadmaps.getMine.invalidate();
+    },
+  };
+}
+
 /**
  * The editor's roadmap mutations: create, rename, delete, save entries,
  * set active, matriculation year, progress sync and faculty. `setMutating`
@@ -84,22 +108,13 @@ export function useRoadmapMutations({
   const setMatricTermMutation = api.roadmaps.setMatricTerm.useMutation({
     ...createOptimisticMutationCallbacks<
       { roadmapId: string; matricTermId: string | null },
-      NonNullable<ReturnType<typeof utils.roadmaps.listMine.getData>>
+      ListMineData
     >({
-      // listMine is an inputless query — thread no input through every utils
-      // call so cancel/snapshot/setData/invalidate hit the same cache key.
-      cancel: () => utils.roadmaps.listMine.cancel(),
-      getSnapshot: () => utils.roadmaps.listMine.getData(),
+      ...listMineCacheCallbacks(utils),
       applyOptimistic: ({ roadmapId, matricTermId }) =>
         utils.roadmaps.listMine.setData(undefined, (old) =>
           old?.map((r) => (r.id === roadmapId ? { ...r, matricTermId } : r)),
         ),
-      restoreSnapshot: (prev) =>
-        utils.roadmaps.listMine.setData(undefined, prev),
-      invalidate: async () => {
-        await utils.roadmaps.listMine.invalidate();
-        await utils.roadmaps.getMine.invalidate();
-      },
       onError: (message) =>
         toast.error(`Failed to save matriculation year: ${message}`),
     }),
@@ -131,20 +146,13 @@ export function useRoadmapMutations({
   const setFacultyMutation = api.roadmaps.setFaculty.useMutation({
     ...createOptimisticMutationCallbacks<
       { roadmapId: string; facultyId: number | null },
-      NonNullable<ReturnType<typeof utils.roadmaps.listMine.getData>>
+      ListMineData
     >({
-      cancel: () => utils.roadmaps.listMine.cancel(),
-      getSnapshot: () => utils.roadmaps.listMine.getData(),
+      ...listMineCacheCallbacks(utils),
       applyOptimistic: ({ roadmapId, facultyId }) =>
         utils.roadmaps.listMine.setData(undefined, (old) =>
           old?.map((r) => (r.id === roadmapId ? { ...r, facultyId } : r)),
         ),
-      restoreSnapshot: (prev) =>
-        utils.roadmaps.listMine.setData(undefined, prev),
-      invalidate: async () => {
-        await utils.roadmaps.listMine.invalidate();
-        await utils.roadmaps.getMine.invalidate();
-      },
       onError: (message) => toast.error(`Failed to save faculty: ${message}`),
     }),
     onSuccess: () => toast.success("Faculty saved for this roadmap"),
