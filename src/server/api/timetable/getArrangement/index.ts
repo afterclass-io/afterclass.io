@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 
 import { protectedProcedure } from "@/server/api/trpc";
 import { toArrangedClass } from "@/modules/timetable/functions/arranged-class";
+import { arrangedClassSelect } from "@/server/api/timetable/arrangement-select";
 
 export const getArrangement = protectedProcedure
   .input(z.object({ timetableId: z.string() }))
@@ -14,40 +15,7 @@ export const getArrangement = protectedProcedure
         slots: {
           select: {
             class: {
-              select: {
-                id: true,
-                section: true,
-                course: {
-                  select: {
-                    id: true,
-                    code: true,
-                    name: true,
-                    creditUnits: true,
-                  },
-                },
-                professor: {
-                  select: { id: true, name: true },
-                },
-                classTimings: {
-                  select: {
-                    id: true,
-                    dayOfWeek: true,
-                    startTime: true,
-                    endTime: true,
-                    venue: true,
-                  },
-                },
-                classExamTimings: {
-                  select: {
-                    id: true,
-                    date: true,
-                    dayOfWeek: true,
-                    startTime: true,
-                    endTime: true,
-                    venue: true,
-                  },
-                },
-              },
+              select: arrangedClassSelect,
             },
           },
         },
