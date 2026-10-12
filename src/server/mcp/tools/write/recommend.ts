@@ -3,7 +3,7 @@ import { z } from "zod";
 import {
   parseViewJson,
   errText,
-  errorMessage,
+  guardedRun,
   jsonText,
   type McpTool,
 } from "../../types";
@@ -37,49 +37,45 @@ export const recommendBidAmountTool: McpTool<typeof recommendBidAmountSchema> =
       const parsed = parseViewJson(result);
       return "data" in parsed ? parsed.data : { raw: parsed.raw };
     },
-    run: async ({ caller }, { classId, beatsPercentage }) => {
-      try {
-        const prediction = await caller.bidPredictions.getBy({ classId });
-        if (!prediction?.bidWindow) {
-          return errText(`No prediction available for class ${classId} yet.`);
-        }
-        const factors = await caller.safetyFactors.getAll();
-        const factor = findSafetyFactor(
-          factors,
-          prediction.bidWindow.acadTermId,
-          beatsPercentage,
-        );
-        const base = prediction.medianPredicted;
-        const uncertainty = prediction.medianUncertainty ?? 0;
-        const multiplier = factor?.multiplier ?? null;
-        const suggestedBidAmount = suggestBidAmount(
-          base,
-          multiplier,
-          uncertainty,
-        );
-        return jsonText({
-          classId,
-          acadTermId: prediction.bidWindow.acadTermId,
-          bidWindow: {
-            id: prediction.bidWindow.id,
-            round: prediction.bidWindow.round,
-            window: prediction.bidWindow.window,
-          },
-          predictedMedian: base,
-          suggestedBidAmount,
-          multiplierUsed: factor ? { beatsPercentage, multiplier } : null,
-          rationale: factor
-            ? rationaleFor(
-                base,
-                factor.multiplier,
-                beatsPercentage,
-                undefined,
-                uncertainty,
-              )
-            : rationaleFor(base, null, beatsPercentage),
-        });
-      } catch (e) {
-        return errText(errorMessage(e));
+    run: guardedRun(async ({ caller }, { classId, beatsPercentage }) => {
+      const prediction = await caller.bidPredictions.getBy({ classId });
+      if (!prediction?.bidWindow) {
+        return errText(`No prediction available for class ${classId} yet.`);
       }
-    },
+      const factors = await caller.safetyFactors.getAll();
+      const factor = findSafetyFactor(
+        factors,
+        prediction.bidWindow.acadTermId,
+        beatsPercentage,
+      );
+      const base = prediction.medianPredicted;
+      const uncertainty = prediction.medianUncertainty ?? 0;
+      const multiplier = factor?.multiplier ?? null;
+      const suggestedBidAmount = suggestBidAmount(
+        base,
+        multiplier,
+        uncertainty,
+      );
+      return jsonText({
+        classId,
+        acadTermId: prediction.bidWindow.acadTermId,
+        bidWindow: {
+          id: prediction.bidWindow.id,
+          round: prediction.bidWindow.round,
+          window: prediction.bidWindow.window,
+        },
+        predictedMedian: base,
+        suggestedBidAmount,
+        multiplierUsed: factor ? { beatsPercentage, multiplier } : null,
+        rationale: factor
+          ? rationaleFor(
+              base,
+              factor.multiplier,
+              beatsPercentage,
+              undefined,
+              uncertainty,
+            )
+          : rationaleFor(base, null, beatsPercentage),
+      });
+    }),
   };

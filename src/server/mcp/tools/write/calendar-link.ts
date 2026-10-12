@@ -10,6 +10,7 @@ import {
   confirmField,
   errText,
   errorMessage,
+  guardedRun,
   okText,
   type McpTool,
 } from "../../types";
@@ -33,8 +34,8 @@ export const getTimetableCalendarLinkTool: McpTool<
     "Get calendar subscribe links (Google / Apple / Outlook + ICS feed) for one of the user's timetables, so their calendar stays in sync automatically. If the timetable is private, the user must first agree to link-sharing (enableLinkSharing=true). Links render in a View; never ask the user for tokens.",
   inputSchema: getTimetableCalendarLinkSchema,
   readOnly: false,
-  run: async ({ caller }, { timetableId, enableLinkSharing, confirm }) => {
-    try {
+  run: guardedRun(
+    async ({ caller }, { timetableId, enableLinkSharing, confirm }) => {
       let madeLinkShareable = false;
       try {
         await caller.timetable.getOrCreateIcalToken({ timetableId });
@@ -74,8 +75,6 @@ export const getTimetableCalendarLinkTool: McpTool<
         ),
         viewProps: { timetableId, madeLinkShareable, ...links },
       };
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+    },
+  ),
 };
