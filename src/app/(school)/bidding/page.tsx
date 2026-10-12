@@ -1,10 +1,7 @@
 import { type Metadata } from "next";
-import { Suspense } from "react";
 
-import { Separator } from "@/common/components/separator";
 import { api } from "@/common/tools/trpc/server";
-import { BiddingClassList } from "@/modules/bidding/components/BiddingClassList";
-import { CourseProfessorFilter } from "@/modules/bidding/components/CourseProfessorFilter";
+import { BiddingEntryView } from "@/modules/bidding/components/BiddingEntryView";
 import type { ComboboxOption } from "@/common/components/combobox";
 
 // `course` and `prof` filter a view of this page, so they are dropped.
@@ -47,24 +44,17 @@ export default async function BiddingHistoryPage({
     : null;
 
   return (
-    <div className="flex flex-col gap-6 pt-2">
-      <Suspense>
-        <CourseProfessorFilter
-          selectedCourse={selectedCourse}
-          selectedProfessor={selectedProfessor}
-        />
-      </Suspense>
-      <Separator />
-      <BiddingClassList
-        initialClasses={classes.map((c) => ({
-          id: c.id,
-          section: c.section,
-          course: c.course,
-          classTimings: c.classTimings,
-          classExamTimings: c.classExamTimings,
-          professor: c.professor,
-        }))}
-      />
-    </div>
+    <BiddingEntryView
+      initialClasses={classes.map((c) => ({
+        id: c.id,
+        section: c.section,
+        course: c.course,
+        classTimings: c.classTimings,
+        classExamTimings: c.classExamTimings,
+        professor: c.professor,
+      }))}
+      selectedCourse={selectedCourse}
+      selectedProfessor={selectedProfessor}
+    />
   );
 }

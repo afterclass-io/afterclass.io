@@ -1,6 +1,4 @@
 import { type Metadata } from "next";
-import { Suspense } from "react";
-
 import { api } from "@/common/tools/trpc/server";
 import {
   Card,
@@ -9,14 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/common/components/card";
-import { Separator } from "@/common/components/separator";
 import { BidPredictionCard } from "@/modules/bidding/components/BidPredictionCard";
 import { PredictionType } from "@/generated/prisma/enums";
 import { ModAlternativesCard } from "@/modules/bidding/components/ModAlternativesCard";
 import { BidAnalyticsClient } from "@/modules/bidding/components/BidAnalyticsClient";
 import { AddToTimetableButton } from "@/modules/bidding/components/AddToTimetableButton";
-import { BiddingClassList } from "@/modules/bidding/components/BiddingClassList";
-import { CourseProfessorFilter } from "@/modules/bidding/components/CourseProfessorFilter";
+import { BiddingEntryView } from "@/modules/bidding/components/BiddingEntryView";
 import type { ComboboxOption } from "@/common/components/combobox";
 import { EmptyState } from "@/common/components/empty-state";
 import { selectOneClassPerTerm } from "@/modules/bidding/utils/selectOneClassPerTerm";
@@ -76,25 +72,18 @@ export default async function BiddingHistoryPage({
       : null;
 
     return (
-      <div className="flex flex-col gap-6 pt-2">
-        <Suspense>
-          <CourseProfessorFilter
-            selectedCourse={selectedCourse}
-            selectedProfessor={selectedProfessor}
-          />
-        </Suspense>
-        <Separator />
-        <BiddingClassList
-          initialClasses={classes.map((c) => ({
-            id: c.id,
-            section: c.section,
-            course: c.course,
-            classTimings: c.classTimings,
-            classExamTimings: c.classExamTimings,
-            professor: c.professor,
-          }))}
-        />
-      </div>
+      <BiddingEntryView
+        initialClasses={classes.map((c) => ({
+          id: c.id,
+          section: c.section,
+          course: c.course,
+          classTimings: c.classTimings,
+          classExamTimings: c.classExamTimings,
+          professor: c.professor,
+        }))}
+        selectedCourse={selectedCourse}
+        selectedProfessor={selectedProfessor}
+      />
     );
   }
 

@@ -11,7 +11,10 @@ import {
 } from "@/common/components/card";
 import { Skeleton } from "@/common/components/skeleton";
 import { sortChartData } from "@/modules/bidding/utils/sort-chart-data";
-import { BidTable } from "@/modules/bidding/components/BidTable";
+import {
+  BidTable,
+  type BidResultRow as BidTableResultRow,
+} from "@/modules/bidding/components/BidTable";
 import { TagToggleGroup } from "@/common/components/tag-toggle-group";
 import { DisclosureDisclaimer } from "@/modules/bidding/components/DisclosureDisclaimer";
 import { compareRounds } from "@/modules/bidding/utils/round-order";
@@ -22,20 +25,7 @@ const BidChart = dynamic(
   { ssr: false, loading: () => <Skeleton className="aspect-video w-full" /> },
 );
 
-interface BidResultRow {
-  bidWindow: {
-    acadTermId: string;
-    round: string;
-    window: number;
-  };
-  class: {
-    section?: string;
-    professor: { name: string } | null;
-  };
-  beforeProcessVacancy: number;
-  afterProcessVacancy: number | null;
-  median: number | null;
-  min: number | null;
+interface BidResultRow extends BidTableResultRow {
   classId: string;
   bidWindowId: number;
 }

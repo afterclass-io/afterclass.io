@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
 } from "@/common/components/tooltip";
 
-interface BidResultRow {
+export interface BidResultRow {
   bidWindow: {
     acadTermId: string;
     round: string;
