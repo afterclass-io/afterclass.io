@@ -77,6 +77,7 @@ export function CourseProfessorFilter({
         hintText={texts.COMBOBOX.HINT.course}
         placeholder={texts.COMBOBOX.PLACEHOLDER.course}
         triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.course}
+        className="w-64 max-w-full"
       />
       <Combobox
         options={profOptions}
@@ -91,6 +92,7 @@ export function CourseProfessorFilter({
         hintText={texts.COMBOBOX.HINT.professor}
         placeholder={texts.COMBOBOX.PLACEHOLDER.professor}
         triggerLabel={texts.COMBOBOX.TRIGGER_LABEL.professor}
+        className="w-64 max-w-full"
       />
     </div>
   );
