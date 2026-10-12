@@ -1,38 +1,19 @@
 import { z } from "zod";
 
-import { TRPCError } from "@trpc/server";
-import type { PrismaClient } from "@/generated/prisma/client";
-
 import { protectedProcedure } from "@/server/api/trpc";
-import { getBidLimits } from "@/server/config/chat-config";
-import { assertClassInTerm } from "@/server/api/classes/assertClassInTerm";
-
-/**
- * A bid's class and bid window must exist and belong to the SAME academic
- * term (a bid for term A cannot point at a class from term B).
- */
-async function validateClassWindowPair(
-  db: PrismaClient,
-  classId: string,
-  bidWindowId: number,
-): Promise<void> {
-  const window = await db.bidWindow.findUnique({
-    where: { id: bidWindowId },
-    select: { acadTermId: true },
-  });
-  if (!window) {
-    throw new TRPCError({ code: "BAD_REQUEST", message: "Unknown bid window" });
-  }
-  await assertClassInTerm(db, classId, window.acadTermId);
-}
+import {
+  bidAmountSchema,
+  bidNotesSchema,
+} from "@/server/api/userBids/bid-input";
+import { validateClassWindowPair } from "@/server/api/userBids/validate-class-window";
 
 export const upsert = protectedProcedure
   .input(
     z.object({
       classId: z.string(),
       bidWindowId: z.number().int().positive(),
-      bidAmount: z.number().positive().max(getBidLimits().maxBidAmount),
-      notes: z.string().max(500).optional(),
+      bidAmount: bidAmountSchema,
+      notes: bidNotesSchema.optional(),
     }),
   )
   .mutation(async ({ ctx, input }) => {

@@ -1,7 +1,10 @@
 import { z } from "zod";
 import type { UserBid } from "@/generated/prisma/client";
 import { protectedProcedure } from "@/server/api/trpc";
-import { getBidLimits } from "@/server/config/chat-config";
+import {
+  bidAmountSchema,
+  bidNotesSchema,
+} from "@/server/api/userBids/bid-input";
 
 /**
  * Saves up to 20 bids. Validation failures are reported per entry. The valid
@@ -21,8 +24,8 @@ export const upsertMany = protectedProcedure
           z.object({
             classId: z.string(),
             bidWindowId: z.number().int().positive(),
-            bidAmount: z.number().positive().max(getBidLimits().maxBidAmount),
-            notes: z.string().max(500).optional(),
+            bidAmount: bidAmountSchema,
+            notes: bidNotesSchema.optional(),
           }),
         )
         .min(1)
