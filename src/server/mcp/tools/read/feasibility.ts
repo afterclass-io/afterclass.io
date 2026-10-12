@@ -5,11 +5,14 @@ import { errText, guardedRun, jsonText, type McpTool } from "../../types";
 import {
   checkExamClashes,
   checkPrereqs,
-  checkTermDuplicates,
-  createIssueCollector,
-  dateKey,
   extractPrereqCodes,
 } from "../feasibility-check";
+import {
+  NO_ROADMAPS_MESSAGE,
+  collectExamSlots,
+  resolveRoadmapId,
+  scanRoadmapEntries,
+} from "../roadmap-view-shared";
 
 // Re-export the pure helpers for the existing feasibility unit tests
 // (proof the extraction is behavior-preserving: same fns, new home).
@@ -44,17 +47,8 @@ export const checkRoadmapFeasibilityTool: McpTool<
   readOnly: true,
   run: guardedRun(async ({ caller }, { roadmapId, termId }) => {
     // ---- 1. Resolve the roadmap (explicit, else the active one) ----
-    let id = roadmapId;
-    if (!id) {
-      const mine = await caller.roadmaps.listMine();
-      const active = pickActiveOrFirst(mine);
-      if (!active) {
-        return errText(
-          "You don't have any roadmaps yet. Create one first, then ask again.",
-        );
-      }
-      id = active.id;
-    }
+    const id = await resolveRoadmapId(caller, roadmapId ?? "");
+    if (id === null) return errText(NO_ROADMAPS_MESSAGE);
     const { entries } = await caller.roadmaps.getMine({ roadmapId: id });
 
     // Dedup: PREREQ_MISSING keys on (type, courseCode) so a course planned in
@@ -63,17 +57,12 @@ export const checkRoadmapFeasibilityTool: McpTool<
     // course duplicated in two different terms yields two issues (one per
     // term). EXAM_CLASH uses its own pair key (each distinct overlap is a
     // separate issue). See createIssueCollector.
-    const { issues, flagCourse } = createIssueCollector();
-
     // ---- 2. TERM_DUPLICATE: same course twice in one (yearNumber, term) ----
-    checkTermDuplicates(entries, flagCourse);
+    const { issues, flagCourse, codes } = scanRoadmapEntries(entries);
 
     // ---- 3. PREREQ_MISSING: prerequisite not in an earlier term ----
     // "Taken" = course codes planned in strictly earlier (year, term) slots.
     // A lookup failure rejects the whole tool (surfaced as errText below).
-    const codes = Array.from(
-      new Set(entries.map((e) => e.course.code).filter(Boolean)),
-    );
     const reqMap = new Map<string, string | null>();
     if (codes.length > 0) {
       const rows = await caller.courses.getEnrolmentRequirementsByCodes({
@@ -104,25 +93,9 @@ export const checkRoadmapFeasibilityTool: McpTool<
         const arrangement = await caller.timetable.getArrangement({
           timetableId: timetable.id,
         });
-        const exams: Array<{
-          courseCode: string;
-          courseName: string;
-          date: string;
-          startTime: string;
-          endTime: string;
-        }> = [];
-        for (const slot of arrangement.slots) {
-          for (const ex of slot.examTimings ?? []) {
-            exams.push({
-              courseCode: slot.courseCode,
-              courseName: slot.courseName,
-              date: dateKey(ex.date),
-              startTime: ex.startTime,
-              endTime: ex.endTime,
-            });
-          }
-        }
-        checkExamClashes(exams, (issue) => issues.push(issue));
+        checkExamClashes(collectExamSlots(arrangement.slots), (issue) =>
+          issues.push(issue),
+        );
       }
       // No timetable for the term -> no exam data -> EXAM_CLASH cannot be
       // evaluated for that term; roadmap-only checks still run.

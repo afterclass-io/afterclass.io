@@ -1,7 +1,15 @@
 import type { RouterCaller, RouterOutputs } from "../types";
 import { parseViewJson } from "../types";
 import { stripSecretsFromValue } from "@/mcp/output-policy";
-import { TERM_ORDER } from "./feasibility-check";
+import { pickActiveOrFirst } from "../current";
+import {
+  TERM_ORDER,
+  checkTermDuplicates,
+  createIssueCollector,
+  dateKey,
+  type ExamSlot,
+  type FeasibilityEntry,
+} from "./feasibility-check";
 import {
   buildProgressSyncPlan,
   type SyncTermRow,
@@ -184,6 +192,61 @@ async function resolveRoadmapPosition(
   } catch {
     return null;
   }
+}
+
+export const NO_ROADMAPS_MESSAGE =
+  "You don't have any roadmaps yet. Create one first, then ask again.";
+
+/**
+ * Resolve the roadmap a tool acts on: the given id, else the user's active
+ * (or first) roadmap. Null when the user has no roadmaps. Callers pass the
+ * id already trimmed when they trim.
+ */
+export async function resolveRoadmapId(
+  caller: RouterCaller,
+  roadmapId: string,
+): Promise<string | null> {
+  if (roadmapId) return roadmapId;
+  const mine: RouterOutputs["roadmaps"]["listMine"] =
+    await caller.roadmaps.listMine();
+  const active = pickActiveOrFirst(mine);
+  return active ? active.id : null;
+}
+
+/**
+ * Start a feasibility scan over roadmap entries: runs the TERM_DUPLICATE
+ * check and returns the distinct course codes for the PREREQ_MISSING lookup.
+ */
+export function scanRoadmapEntries(entries: FeasibilityEntry[]) {
+  const { issues, flagCourse } = createIssueCollector();
+  checkTermDuplicates(entries, flagCourse);
+  const codes = Array.from(
+    new Set(entries.map((e) => e.course.code).filter(Boolean)),
+  );
+  return { issues, flagCourse, codes };
+}
+
+/** Flatten a timetable arrangement's exam timings into one row per exam. */
+export function collectExamSlots(
+  slots: Array<{
+    courseCode: string;
+    courseName: string;
+    examTimings?: Array<{ date: unknown; startTime: string; endTime: string }>;
+  }>,
+): ExamSlot[] {
+  const exams: ExamSlot[] = [];
+  for (const slot of slots) {
+    for (const ex of slot.examTimings ?? []) {
+      exams.push({
+        courseCode: slot.courseCode,
+        courseName: slot.courseName,
+        date: dateKey(ex.date),
+        startTime: ex.startTime,
+        endTime: ex.endTime,
+      });
+    }
+  }
+  return exams;
 }
 
 /** Shared toViewProps for any tool whose JSON text is a roadmap view. */

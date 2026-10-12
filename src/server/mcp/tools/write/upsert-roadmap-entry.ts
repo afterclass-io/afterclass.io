@@ -5,16 +5,17 @@ import {
   TERM_ORDER,
   checkExamClashes,
   checkPrereqs,
-  checkTermDuplicates,
-  createIssueCollector,
-  dateKey,
   roadmapTermSchema,
   type FeasibilityEntry,
   type FeasibilityIssue,
 } from "../feasibility-check";
 import {
+  NO_ROADMAPS_MESSAGE,
   buildRoadmapView,
+  collectExamSlots,
+  resolveRoadmapId,
   roadmapViewToViewProps,
+  scanRoadmapEntries,
 } from "../roadmap-view-shared";
 import {
   errText,
@@ -68,18 +69,11 @@ export const upsertRoadmapEntryTool: McpTool<typeof upsertRoadmapEntrySchema> =
         if (!trimmedCode) return errText("courseCode must not be empty");
 
         // Resolve roadmap id: explicit, else active.
-        let resolvedId = roadmapId?.trim() ?? "";
-        if (!resolvedId) {
-          const mine: RouterOutputs["roadmaps"]["listMine"] =
-            await caller.roadmaps.listMine();
-          const active = pickActiveOrFirst(mine);
-          if (!active) {
-            return errText(
-              "You don't have any roadmaps yet. Create one first, then ask again.",
-            );
-          }
-          resolvedId = active.id;
-        }
+        const resolvedId = await resolveRoadmapId(
+          caller,
+          roadmapId?.trim() ?? "",
+        );
+        if (resolvedId === null) return errText(NO_ROADMAPS_MESSAGE);
 
         // Resolve courseId from courseCode via existing procedure (thin wrapper).
         const course: CourseRow = await caller.courses.getByCourseCode({
@@ -194,15 +188,10 @@ async function runFeasibility(
     entries: FeasibilityEntry[];
   };
 
-  const { issues, flagCourse } = createIssueCollector();
-
-  // TERM_DUPLICATE
-  checkTermDuplicates(entries, flagCourse);
+  // TERM_DUPLICATE, plus the distinct codes for PREREQ_MISSING
+  const { issues, flagCourse, codes } = scanRoadmapEntries(entries);
 
   // PREREQ_MISSING (best-effort: batch lookup failure -> no requirements)
-  const codes = Array.from(
-    new Set(entries.map((e) => e.course.code).filter(Boolean)),
-  );
   const courseDetail = new Map<string, string | null>();
   if (codes.length > 0) {
     try {
@@ -253,25 +242,9 @@ async function runFeasibility(
             }>;
           }>;
         };
-        const exams: Array<{
-          courseCode: string;
-          courseName: string;
-          date: string;
-          startTime: string;
-          endTime: string;
-        }> = [];
-        for (const slot of arrangement.slots ?? []) {
-          for (const ex of slot.examTimings ?? []) {
-            exams.push({
-              courseCode: slot.courseCode,
-              courseName: slot.courseName,
-              date: dateKey(ex.date),
-              startTime: ex.startTime,
-              endTime: ex.endTime,
-            });
-          }
-        }
-        checkExamClashes(exams, (issue) => issues.push(issue));
+        checkExamClashes(collectExamSlots(arrangement.slots ?? []), (issue) =>
+          issues.push(issue),
+        );
       }
     } catch {
       // best-effort; skip
