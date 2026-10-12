@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 
 import { protectedProcedure } from "@/server/api/trpc";
+import { findOwnedTimetableOr404 } from "@/server/api/ownership";
 
 export const removeSlot = protectedProcedure
   .input(
@@ -11,13 +11,11 @@ export const removeSlot = protectedProcedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const timetable = await ctx.db.userTimetable.findUnique({
-      where: { id: input.timetableId, userId: ctx.session.user.id },
-    });
-
-    if (!timetable) {
-      throw new TRPCError({ code: "NOT_FOUND" });
-    }
+    await findOwnedTimetableOr404(
+      ctx.db,
+      input.timetableId,
+      ctx.session.user.id,
+    );
 
     // Idempotent: a missing slot (e.g. double-clicked remove racing the
     // first delete) is already in the desired end state — treat as success.

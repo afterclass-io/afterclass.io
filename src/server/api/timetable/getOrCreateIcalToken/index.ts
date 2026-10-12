@@ -1,8 +1,9 @@
 import { z } from "zod";
 
 import { protectedProcedure } from "@/server/api/trpc";
-import { mintToken, requireOwnedTimetable } from "@/server/api/ownership";
+import { requireOwnedTimetable } from "@/server/api/ownership";
 import { assertCalendarLinkAllowed } from "@/server/api/timetable/ical-expiry";
+import { mintAndStoreIcalToken } from "@/server/api/timetable/mint-ical-token";
 
 /**
  * Return the timetable's iCal feed token, generating one on first use.
@@ -32,13 +33,10 @@ export const getOrCreateIcalToken = protectedProcedure
       return { icalToken: timetable.icalToken };
     }
 
-    const icalToken = mintToken();
-    // TOCTOU hardening: requireOwnedTimetable checked ownership above; the
-    // token write is also scoped to the caller's row.
-    await ctx.db.userTimetable.update({
-      where: { id: input.timetableId, userId: ctx.session.user.id },
-      data: { icalToken },
-    });
-
+    const icalToken = await mintAndStoreIcalToken(
+      ctx.db,
+      input.timetableId,
+      ctx.session.user.id,
+    );
     return { icalToken };
   });

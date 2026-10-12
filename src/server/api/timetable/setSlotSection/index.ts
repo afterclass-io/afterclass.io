@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 
 import { protectedProcedure } from "@/server/api/trpc";
+import { findOwnedTimetableOr404 } from "@/server/api/ownership";
 import { assertClassInTerm } from "@/server/api/classes/assertClassInTerm";
 
 export const setSlotSection = protectedProcedure
@@ -13,14 +13,11 @@ export const setSlotSection = protectedProcedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const timetable = await ctx.db.userTimetable.findUnique({
-      where: { id: input.timetableId, userId: ctx.session.user.id },
-      select: { id: true, acadTermId: true },
-    });
-
-    if (!timetable) {
-      throw new TRPCError({ code: "NOT_FOUND" });
-    }
+    const timetable = await findOwnedTimetableOr404(
+      ctx.db,
+      input.timetableId,
+      ctx.session.user.id,
+    );
 
     // Class must belong to the timetable's term.
     await assertClassInTerm(ctx.db, input.classId, timetable.acadTermId);
