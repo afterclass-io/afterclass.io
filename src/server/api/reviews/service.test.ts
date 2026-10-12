@@ -36,6 +36,18 @@ function makeRow(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function makePage(
+  overrides: Partial<Parameters<typeof listReviews>[1]["page"]> = {},
+) {
+  return {
+    filterFor: ReviewsFilterFor.ALL,
+    sortBy: ReviewsSortBy.LATEST,
+    limit: 10,
+    skip: 0,
+    ...overrides,
+  };
+}
+
 describe("review service (service.ts)", () => {
   describe("buildReviewWhere", () => {
     it("returns the exact key set for 'all' scope", () => {
@@ -150,12 +162,7 @@ describe("review service (service.ts)", () => {
 
       const res = await listReviews(db, {
         scope: { kind: "all" },
-        page: {
-          filterFor: ReviewsFilterFor.ALL,
-          sortBy: ReviewsSortBy.LATEST,
-          limit: 10,
-          skip: 0,
-        },
+        page: makePage(),
         viewer: { kind: "public" },
       });
 
@@ -178,12 +185,7 @@ describe("review service (service.ts)", () => {
 
       const res = await listReviews(db, {
         scope: { kind: "all" },
-        page: {
-          filterFor: ReviewsFilterFor.ALL,
-          sortBy: ReviewsSortBy.LATEST,
-          limit: 10,
-          skip: 0,
-        },
+        page: makePage(),
         viewer: { kind: "member", userId: "u1", includeEngagement: false },
       });
 
@@ -222,12 +224,7 @@ describe("review service (service.ts)", () => {
 
       const res = await listReviews(db, {
         scope: { kind: "all" },
-        page: {
-          filterFor: ReviewsFilterFor.ALL,
-          sortBy: ReviewsSortBy.LATEST,
-          limit: 10,
-          skip: 0,
-        },
+        page: makePage(),
         viewer: { kind: "member", userId: "u1", includeEngagement: true },
       });
 
@@ -268,12 +265,7 @@ describe("review service (service.ts)", () => {
 
       const res = await listReviews(db, {
         scope: { kind: "all" },
-        page: {
-          filterFor: ReviewsFilterFor.ALL,
-          sortBy: ReviewsSortBy.LATEST,
-          limit: 10,
-          skip: 0,
-        },
+        page: makePage(),
         viewer: { kind: "public" },
       });
 
@@ -293,12 +285,7 @@ describe("review service (service.ts)", () => {
 
       const resFull = await listReviews(dbWithExtra, {
         scope: { kind: "all" },
-        page: {
-          filterFor: ReviewsFilterFor.ALL,
-          sortBy: ReviewsSortBy.LATEST,
-          limit: 2,
-          skip: 0,
-        },
+        page: makePage({ limit: 2 }),
         viewer: { kind: "public" },
       });
 
@@ -311,12 +298,7 @@ describe("review service (service.ts)", () => {
 
       const resNotFull = await listReviews(dbWithoutExtra, {
         scope: { kind: "all" },
-        page: {
-          filterFor: ReviewsFilterFor.ALL,
-          sortBy: ReviewsSortBy.LATEST,
-          limit: 2,
-          skip: 0,
-        },
+        page: makePage({ limit: 2 }),
         viewer: { kind: "public" },
       });
 

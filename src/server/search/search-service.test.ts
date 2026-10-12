@@ -9,6 +9,40 @@ const mockDb = {
   $queryRaw: queryRawMock,
 } as unknown as PrismaClient;
 
+const courseRowDefaults = {
+  id: "c1",
+  code: "IS216",
+  name: "Web App",
+  creditUnits: 1,
+  uniAbbrv: UniversityAbbreviation.SMU,
+  count: 1n,
+};
+
+function makeCourseRow(
+  overrides: Partial<typeof courseRowDefaults> & {
+    profCount?: number;
+    reviewCount?: number;
+  } = {},
+) {
+  return { ...courseRowDefaults, ...overrides };
+}
+
+const professorRowDefaults = {
+  id: "p1",
+  slug: "goh-jing-rong",
+  name: "Goh, Jing Rong",
+  uniAbbrv: UniversityAbbreviation.SMU,
+  count: 1n,
+  courseCount: 2,
+  reviewCount: 3,
+};
+
+function makeProfessorRow(
+  overrides: Partial<typeof professorRowDefaults> = {},
+) {
+  return { ...professorRowDefaults, ...overrides };
+}
+
 describe("search-service", () => {
   beforeEach(() => {
     queryRawMock.mockReset();
@@ -29,16 +63,11 @@ describe("search-service", () => {
 
     it("calls $queryRaw exactly once for a normal search, including when withCounts is true", async () => {
       queryRawMock.mockResolvedValue([
-        {
-          id: "c1",
-          code: "IS216",
+        makeCourseRow({
           name: "Web Application Development II",
-          creditUnits: 1,
-          uniAbbrv: UniversityAbbreviation.SMU,
-          count: 1n,
           profCount: 2,
           reviewCount: 5,
-        },
+        }),
       ]);
 
       const result = await searchCourses(mockDb, {
@@ -119,16 +148,10 @@ describe("search-service", () => {
 
     it("returns profCount: 0 and reviewCount: 0 when withCounts is false", async () => {
       queryRawMock.mockResolvedValue([
-        {
-          id: "c1",
-          code: "IS216",
-          name: "Web App",
-          creditUnits: 1,
-          uniAbbrv: UniversityAbbreviation.SMU,
-          count: 1n,
+        makeCourseRow({
           profCount: 4,
           reviewCount: 9,
-        },
+        }),
       ]);
 
       const result = await searchCourses(mockDb, {
@@ -143,16 +166,10 @@ describe("search-service", () => {
 
     it("returns mapped profCount and reviewCount when withCounts is true", async () => {
       queryRawMock.mockResolvedValue([
-        {
-          id: "c1",
-          code: "IS216",
-          name: "Web App",
-          creditUnits: 1,
-          uniAbbrv: UniversityAbbreviation.SMU,
-          count: 1n,
+        makeCourseRow({
           profCount: 4,
           reviewCount: 9,
-        },
+        }),
       ]);
 
       const result = await searchCourses(mockDb, {
@@ -167,14 +184,11 @@ describe("search-service", () => {
 
     it("maps total correctly from bigint count of 37n", async () => {
       queryRawMock.mockResolvedValue([
-        {
-          id: "c1",
+        makeCourseRow({
           code: "STAT101",
           name: "Stats",
-          creditUnits: 1,
-          uniAbbrv: UniversityAbbreviation.SMU,
           count: 37n,
-        },
+        }),
       ]);
 
       const result = await searchCourses(mockDb, {
@@ -187,30 +201,22 @@ describe("search-service", () => {
 
     it("applies exact-code short circuit: rows IS216, IS211, IS214 for query IS216 return only IS216 with total 1", async () => {
       queryRawMock.mockResolvedValue([
-        {
-          id: "c1",
-          code: "IS216",
+        makeCourseRow({
           name: "Web Development",
-          creditUnits: 1,
-          uniAbbrv: UniversityAbbreviation.SMU,
           count: 3n,
-        },
-        {
+        }),
+        makeCourseRow({
           id: "c2",
           code: "IS211",
           name: "Algorithms",
-          creditUnits: 1,
-          uniAbbrv: UniversityAbbreviation.SMU,
           count: 3n,
-        },
-        {
+        }),
+        makeCourseRow({
           id: "c3",
           code: "IS214",
           name: "Database Systems",
-          creditUnits: 1,
-          uniAbbrv: UniversityAbbreviation.SMU,
           count: 3n,
-        },
+        }),
       ]);
 
       const result = await searchCourses(mockDb, {
@@ -224,22 +230,17 @@ describe("search-service", () => {
 
     it("applies exact-code dash match: rows COR-STAT1202, COR-STAT1203 for query COR STAT1202 return only COR-STAT1202", async () => {
       queryRawMock.mockResolvedValue([
-        {
-          id: "c1",
+        makeCourseRow({
           code: "COR-STAT1202",
           name: "Stats 1",
-          creditUnits: 1,
-          uniAbbrv: UniversityAbbreviation.SMU,
           count: 2n,
-        },
-        {
+        }),
+        makeCourseRow({
           id: "c2",
           code: "COR-STAT1203",
           name: "Stats 2",
-          creditUnits: 1,
-          uniAbbrv: UniversityAbbreviation.SMU,
           count: 2n,
-        },
+        }),
       ]);
 
       const result = await searchCourses(mockDb, {
@@ -285,17 +286,7 @@ describe("search-service", () => {
     });
 
     it("calls $queryRaw exactly once for a normal search and includes professor SQL fragments", async () => {
-      queryRawMock.mockResolvedValue([
-        {
-          id: "p1",
-          slug: "goh-jing-rong",
-          name: "Goh, Jing Rong",
-          uniAbbrv: UniversityAbbreviation.SMU,
-          count: 1n,
-          courseCount: 2,
-          reviewCount: 3,
-        },
-      ]);
+      queryRawMock.mockResolvedValue([makeProfessorRow()]);
 
       const result = await searchProfessors(mockDb, {
         query: "goh",
@@ -321,15 +312,10 @@ describe("search-service", () => {
 
     it("returns courseCount: 0 and reviewCount: 0 when withCounts is false", async () => {
       queryRawMock.mockResolvedValue([
-        {
-          id: "p1",
-          slug: "goh-jing-rong",
-          name: "Goh, Jing Rong",
-          uniAbbrv: UniversityAbbreviation.SMU,
-          count: 1n,
+        makeProfessorRow({
           courseCount: 4,
           reviewCount: 7,
-        },
+        }),
       ]);
 
       const result = await searchProfessors(mockDb, {
