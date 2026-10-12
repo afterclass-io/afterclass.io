@@ -132,25 +132,14 @@ export const CoursePageLongProfessorName: Story = {
   },
 };
 
-const wrapper320: Story["decorators"] = [
+// A phone screen minus the page padding (375 px wide).
+const phoneWidth: Story["decorators"] = [
   (Story) => (
-    <div className="w-[320px]" style={{ width: 320 }}>
+    <div style={{ width: 343 }}>
       <Story />
     </div>
   ),
 ];
-
-const longCourseCodeReview: Review = {
-  ...review,
-  courseCode: "IS415-GEOSPATIAL-ANALYTICS-AND-APPLICATIONS",
-  courseName: "Geospatial Analytics and Applications",
-};
-
-const unbrokenCourseCodeReview: Review = {
-  ...review,
-  courseCode: "VERYLONGSINGLECOURSECODEWITHOUTSPACESORHYPHENS",
-  courseName: "Very Long Single Course Code Without Spaces",
-};
 
 const longNameAndCodeReview: Review = {
   ...review,
@@ -160,202 +149,17 @@ const longNameAndCodeReview: Review = {
   courseName: "Geospatial Analytics and Applications",
 };
 
-const longUsernameReview: Review = {
-  ...review,
-  username: "A Very Long Username That Tests Header Wrapping",
-};
-
-// Home variant stories (320px wrapper)
-export const HomeLongCourseCode: Story = {
-  args: {
-    ...DefaultHomePage.args,
-    review: longCourseCodeReview,
-  },
-  decorators: wrapper320,
-};
-
-export const HomeLongCourseCodeLocked: Story = {
-  ...HomeLongCourseCode,
-  args: {
-    ...HomeLongCourseCode.args,
-    isLocked: true,
-  },
-};
-
-export const HomeUnbrokenCourseCode: Story = {
-  args: {
-    ...DefaultHomePage.args,
-    review: unbrokenCourseCodeReview,
-  },
-  decorators: wrapper320,
-};
-
-export const HomeUnbrokenCourseCodeLocked: Story = {
-  ...HomeUnbrokenCourseCode,
-  args: {
-    ...HomeUnbrokenCourseCode.args,
-    isLocked: true,
-  },
-};
-
 export const HomeLongNameAndCode: Story = {
-  args: {
-    ...DefaultHomePage.args,
-    review: longNameAndCodeReview,
-  },
-  decorators: wrapper320,
-};
-
-export const HomeLongNameAndCodeLocked: Story = {
-  ...HomeLongNameAndCode,
-  args: {
-    ...HomeLongNameAndCode.args,
-    isLocked: true,
-  },
-};
-
-export const HomeLongUsername: Story = {
-  args: {
-    ...DefaultHomePage.args,
-    review: longUsernameReview,
-  },
-  decorators: wrapper320,
-};
-
-export const HomeLongUsernameLocked: Story = {
-  ...HomeLongUsername,
-  args: {
-    ...HomeLongUsername.args,
-    isLocked: true,
-  },
-};
-
-// Professor variant stories (320px wrapper)
-export const ProfessorLongCourseCode: Story = {
-  args: {
-    ...DefaultProfessorPage.args,
-    review: longCourseCodeReview,
-  },
-  decorators: wrapper320,
-};
-
-export const ProfessorLongCourseCodeLocked: Story = {
-  ...ProfessorLongCourseCode,
-  args: {
-    ...ProfessorLongCourseCode.args,
-    isLocked: true,
-  },
-};
-
-export const ProfessorUnbrokenCourseCode: Story = {
-  args: {
-    ...DefaultProfessorPage.args,
-    review: unbrokenCourseCodeReview,
-  },
-  decorators: wrapper320,
-};
-
-export const ProfessorUnbrokenCourseCodeLocked: Story = {
-  ...ProfessorUnbrokenCourseCode,
-  args: {
-    ...ProfessorUnbrokenCourseCode.args,
-    isLocked: true,
-  },
+  args: { ...DefaultHomePage.args, review: longNameAndCodeReview },
+  decorators: phoneWidth,
 };
 
 export const ProfessorLongNameAndCode: Story = {
-  args: {
-    ...DefaultProfessorPage.args,
-    review: longNameAndCodeReview,
-  },
-  decorators: wrapper320,
-};
-
-export const ProfessorLongNameAndCodeLocked: Story = {
-  ...ProfessorLongNameAndCode,
-  args: {
-    ...ProfessorLongNameAndCode.args,
-    isLocked: true,
-  },
-};
-
-export const ProfessorLongUsername: Story = {
-  args: {
-    ...DefaultProfessorPage.args,
-    review: longUsernameReview,
-  },
-  decorators: wrapper320,
-};
-
-export const ProfessorLongUsernameLocked: Story = {
-  ...ProfessorLongUsername,
-  args: {
-    ...ProfessorLongUsername.args,
-    isLocked: true,
-  },
-};
-
-// Course variant stories (320px wrapper)
-export const CourseLongCourseCode: Story = {
-  args: {
-    ...DefaultCoursePage.args,
-    review: longCourseCodeReview,
-  },
-  decorators: wrapper320,
-};
-
-export const CourseLongCourseCodeLocked: Story = {
-  ...CourseLongCourseCode,
-  args: {
-    ...CourseLongCourseCode.args,
-    isLocked: true,
-  },
-};
-
-export const CourseUnbrokenCourseCode: Story = {
-  args: {
-    ...DefaultCoursePage.args,
-    review: unbrokenCourseCodeReview,
-  },
-  decorators: wrapper320,
-};
-
-export const CourseUnbrokenCourseCodeLocked: Story = {
-  ...CourseUnbrokenCourseCode,
-  args: {
-    ...CourseUnbrokenCourseCode.args,
-    isLocked: true,
-  },
+  args: { ...DefaultProfessorPage.args, review: longNameAndCodeReview },
+  decorators: phoneWidth,
 };
 
 export const CourseLongNameAndCode: Story = {
-  args: {
-    ...DefaultCoursePage.args,
-    review: longNameAndCodeReview,
-  },
-  decorators: wrapper320,
-};
-
-export const CourseLongNameAndCodeLocked: Story = {
-  ...CourseLongNameAndCode,
-  args: {
-    ...CourseLongNameAndCode.args,
-    isLocked: true,
-  },
-};
-
-export const CourseLongUsername: Story = {
-  args: {
-    ...DefaultCoursePage.args,
-    review: longUsernameReview,
-  },
-  decorators: wrapper320,
-};
-
-export const CourseLongUsernameLocked: Story = {
-  ...CourseLongUsername,
-  args: {
-    ...CourseLongUsername.args,
-    isLocked: true,
-  },
+  args: { ...DefaultCoursePage.args, review: longNameAndCodeReview },
+  decorators: phoneWidth,
 };
