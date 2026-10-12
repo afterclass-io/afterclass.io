@@ -1,5 +1,6 @@
 import {
   assertIsoDate,
+  compareDateStart,
   formatHhmm,
   parseHhmm,
   type PollGrid,
@@ -153,13 +154,7 @@ function compareOptions(a: TimeOption, b: TimeOption): number {
   if (b.free.length !== a.free.length) {
     return b.free.length - a.free.length;
   }
-  if (a.date !== b.date) {
-    return a.date < b.date ? -1 : 1;
-  }
-  if (a.start !== b.start) {
-    return a.start < b.start ? -1 : 1;
-  }
-  return 0;
+  return compareDateStart(a, b);
 }
 
 export function suggestMeetingTimes(input: {

@@ -234,6 +234,20 @@ export function slotIndicesToRanges(
   });
 }
 
+/** Orders rows by date, then by start time. Both fields sort as plain strings. */
+export function compareDateStart(
+  a: { date: string; start: string },
+  b: { date: string; start: string },
+): number {
+  if (a.date !== b.date) {
+    return a.date < b.date ? -1 : 1;
+  }
+  if (a.start !== b.start) {
+    return a.start < b.start ? -1 : 1;
+  }
+  return 0;
+}
+
 export function availabilityToRanges(
   grid: PollGrid,
   slots: {
@@ -257,15 +271,7 @@ export function availabilityToRanges(
   ).map((r) => ({ ...r, status: "ifNeeded" as const }));
 
   const combined = [...availRanges, ...ifNeededRanges];
-  combined.sort((a, b) => {
-    if (a.date !== b.date) {
-      return a.date < b.date ? -1 : 1;
-    }
-    if (a.start !== b.start) {
-      return a.start < b.start ? -1 : 1;
-    }
-    return 0;
-  });
+  combined.sort(compareDateStart);
   return combined;
 }
 

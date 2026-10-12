@@ -7,15 +7,21 @@ import {
   type SlotRange,
 } from "@/modules/meetings/functions/slot-runs";
 import {
-  slotIndexAtPoint,
-  useReleaseListener,
-} from "@/modules/meetings/hooks/slot-pointer";
+  handleTouchDragMove,
+  type SlotDragHandlers,
+  slotDragHandlers,
+} from "@/modules/meetings/hooks/slot-drag-handlers";
+import { useReleaseListener } from "@/modules/meetings/hooks/slot-pointer";
 
 export type UseRangeSelectionOptions = {
   slotsPerDay: number;
   selectedRange: SlotRange | null;
   enabled: boolean;
   onSelectRange?: (range: SlotRange | null) => void;
+};
+
+type RangeSlotHandlers = SlotDragHandlers & {
+  onKeyDown?: (e: React.KeyboardEvent) => void;
 };
 
 const isSingleSlot = (range: SlotRange | null, slot: number) =>
@@ -68,16 +74,10 @@ export function useRangeSelection({
   return {
     previewRange: dragRange ?? selectedRange,
     isDragging: dragRange !== null,
-    slotHandlers: (slot: number) =>
+    slotHandlers: (slot: number): RangeSlotHandlers =>
       enabled
         ? {
-            onPointerDown: (e: React.PointerEvent) => {
-              if (e.button === 0 && e.pointerType !== "touch") startDrag(slot);
-            },
-            onPointerEnter: () => extendDrag(slot),
-            onTouchStart: (e: React.TouchEvent) => {
-              if (e.touches.length === 1) startDrag(slot);
-            },
+            ...slotDragHandlers(slot, startDrag, extendDrag),
             onKeyDown: (e: React.KeyboardEvent) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
@@ -90,11 +90,6 @@ export function useRangeSelection({
             },
           }
         : {},
-    onTouchMove: (e: React.TouchEvent) => {
-      if (e.cancelable) e.preventDefault();
-      const touch = e.touches[0];
-      const slot = touch && slotIndexAtPoint(touch.clientX, touch.clientY);
-      if (slot !== null && slot !== undefined) extendDrag(slot);
-    },
+    onTouchMove: (e: React.TouchEvent) => handleTouchDragMove(e, extendDrag),
   };
 }
