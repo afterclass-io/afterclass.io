@@ -14,6 +14,13 @@ import { nanoid } from "nanoid";
  * compatible).
  */
 
+/** A missing row passes `undefined` as its owner, so it fails the check too. */
+function assertOwner(ownerId: string | undefined, userId: string): void {
+  if (ownerId !== userId) {
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
+}
+
 // -- requireOwnedRoadmap ---------------------------------------------------
 
 export async function requireOwnedRoadmap(
@@ -50,9 +57,7 @@ export async function requireOwnedRoadmap(
     : await db.userRoadmap.findUnique({
         where: { id: roadmapId },
       });
-  if (row?.userId !== userId) {
-    throw new TRPCError({ code: "FORBIDDEN" });
-  }
+  assertOwner(row?.userId, userId);
   return row;
 }
 
@@ -87,8 +92,25 @@ export async function requireOwnedTimetable(
     : await db.userTimetable.findUnique({
         where: { id: timetableId },
       });
-  if (row?.userId !== userId) {
-    throw new TRPCError({ code: "FORBIDDEN" });
+  assertOwner(row?.userId, userId);
+  return row;
+}
+
+/**
+ * Owner-scoped lookup that hides existence: another user's row reads as
+ * missing and surfaces as NOT_FOUND. Unlike requireOwnedTimetable, which
+ * reports FORBIDDEN for a row it can see but does not own.
+ */
+export async function findOwnedTimetableOr404(
+  db: PrismaClient,
+  timetableId: string,
+  userId: string,
+) {
+  const row = await db.userTimetable.findUnique({
+    where: { id: timetableId, userId },
+  });
+  if (!row) {
+    throw new TRPCError({ code: "NOT_FOUND" });
   }
   return row;
 }
@@ -122,9 +144,7 @@ export async function requireOwnedBid(
     : await db.userBid.findUnique({
         where: { id: bidId },
       });
-  if (row?.userId !== userId) {
-    throw new TRPCError({ code: "FORBIDDEN" });
-  }
+  assertOwner(row?.userId, userId);
   return row;
 }
 
@@ -157,9 +177,7 @@ export async function requireOwnedPoll(
     : await db.meetingPoll.findUnique({
         where: slugOrId,
       });
-  if (row?.creatorId !== userId) {
-    throw new TRPCError({ code: "FORBIDDEN" });
-  }
+  assertOwner(row?.creatorId, userId);
   return row;
 }
 

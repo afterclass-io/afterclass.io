@@ -1,19 +1,17 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 
+import { findOwnedTimetableOr404 } from "@/server/api/ownership";
 import { protectedProcedure } from "@/server/api/trpc";
 import { createSlotsSkipDuplicates } from "@/server/api/timetable/addSlot/helpers";
 
 export const setActive = protectedProcedure
   .input(z.object({ timetableId: z.string() }))
   .mutation(async ({ ctx, input }) => {
-    const timetable = await ctx.db.userTimetable.findUnique({
-      where: { id: input.timetableId, userId: ctx.session.user.id },
-    });
-
-    if (!timetable) {
-      throw new TRPCError({ code: "NOT_FOUND" });
-    }
+    const timetable = await findOwnedTimetableOr404(
+      ctx.db,
+      input.timetableId,
+      ctx.session.user.id,
+    );
 
     await ctx.db.$transaction(async (tx) => {
       await tx.userTimetable.updateMany({
