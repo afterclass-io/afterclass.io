@@ -5,21 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import {
-  ArrowLeft,
-  Copy,
-  LayoutGrid,
-  GitBranch,
-  Loader2,
-  LogIn,
-} from "lucide-react";
+import { Copy, Loader2, LogIn } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
-import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
-import { LazyRoadmapTimeline } from "@/modules/roadmaps/components/LazyRoadmapTimeline";
+import {
+  ReadOnlyRoadmapBody,
+  RoadmapViewModeToggle,
+  RoadmapsBackLink,
+  type RoadmapViewMode,
+} from "@/modules/roadmaps/components/ReadOnlyRoadmapBody";
 import { ReportButton } from "@/modules/moderation/components/ReportButton";
 import { Button } from "@/common/components/button";
 import { PageTitle } from "@/common/components/page-title";
-import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
 
 // ---------------------------------------------------------------------------
@@ -35,8 +31,6 @@ export type SharedRoadmapViewProps = {
   token: string;
 };
 
-type ViewMode = "grid" | "timeline";
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -48,10 +42,7 @@ export function SharedRoadmapView({
   entries,
   token,
 }: SharedRoadmapViewProps) {
-  const noop = useCallback(() => {
-    /* read-only — no-op */
-  }, []);
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [viewMode, setViewMode] = useState<RoadmapViewMode>("grid");
 
   const router = useRouter();
   const utils = api.useUtils();
@@ -83,15 +74,7 @@ export function SharedRoadmapView({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Back to gallery */}
-      <div>
-        <Button variant="ghost" size="sm" asChild className="-ml-2 w-fit">
-          <Link href="/roadmaps">
-            <ArrowLeft className="size-4" />
-            All roadmaps
-          </Link>
-        </Button>
-      </div>
+      <RoadmapsBackLink />
 
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -129,22 +112,7 @@ export function SharedRoadmapView({
           )}
 
           {/* View mode toggle */}
-          <ToggleGroup
-            type="single"
-            value={viewMode}
-            onValueChange={(v) => v && setViewMode(v as ViewMode)}
-            variant="segmented"
-            size="sm"
-          >
-            <ToggleGroupItem value="grid" aria-label="Grid View">
-              <LayoutGrid className="size-4 shrink-0" />
-              <span className="hidden sm:inline">Grid</span>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="timeline" aria-label="Timeline View">
-              <GitBranch className="size-4 shrink-0" />
-              <span className="hidden sm:inline">Timeline</span>
-            </ToggleGroupItem>
-          </ToggleGroup>
+          <RoadmapViewModeToggle value={viewMode} onValueChange={setViewMode} />
 
           <ReportButton
             surface="roadmap"
@@ -155,16 +123,11 @@ export function SharedRoadmapView({
       </div>
 
       {/* View */}
-      {viewMode === "grid" ? (
-        <RoadmapGrid
-          roadmapId={roadmapId}
-          entries={entries}
-          readOnly
-          onEntriesChange={noop}
-        />
-      ) : (
-        <LazyRoadmapTimeline entries={entries} readOnly />
-      )}
+      <ReadOnlyRoadmapBody
+        roadmapId={roadmapId}
+        entries={entries}
+        viewMode={viewMode}
+      />
     </div>
   );
 }

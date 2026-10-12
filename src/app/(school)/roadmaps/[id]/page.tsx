@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { TRPCError } from "@trpc/server";
 import { type Metadata } from "next";
 import { PublicRoadmapView } from "./PublicRoadmapView";
-import type { Entry } from "@/modules/roadmaps/functions/conflicts";
+import { toRoadmapEntries } from "@/modules/roadmaps/components/ReadOnlyRoadmapBody";
 
 // ---------------------------------------------------------------------------
 // Metadata
@@ -53,16 +53,6 @@ export default async function PublicRoadmapPage(props: {
     throw e;
   }
 
-  const entries: Entry[] = data.entries.map((e) => ({
-    courseId: e.courseId,
-    courseCode: e.course.code,
-    courseName: e.course.name,
-    creditUnits: e.course.creditUnits,
-    description: e.course.description,
-    yearNumber: e.yearNumber,
-    term: e.term,
-  }));
-
   return (
     <PublicRoadmapView
       roadmapId={data.roadmap.id}
@@ -75,7 +65,7 @@ export default async function PublicRoadmapPage(props: {
       shareCount={data.roadmap.shareCount}
       voteCount={data.voteCount}
       viewerHasVoted={data.viewerHasVoted}
-      entries={entries}
+      entries={toRoadmapEntries(data.entries)}
     />
   );
 }
