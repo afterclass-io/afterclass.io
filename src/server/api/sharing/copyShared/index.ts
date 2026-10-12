@@ -2,14 +2,8 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 import { protectedProcedure } from "@/server/api/trpc";
-import {
-  isForeignKeyViolation,
-  isUniqueConstraintViolation,
-} from "@/server/db-errors";
-import {
-  copyRoadmapToUser,
-  loadCopyableRoadmap,
-} from "@/server/api/roadmaps/copyRoadmap";
+import { loadCopyableRoadmap } from "@/server/api/roadmaps/copyRoadmap";
+import { copyRoadmapMappingErrors } from "@/server/api/roadmaps/copy-errors";
 
 /**
  * Copy a roadmap that was shared with the caller (via its share token) into
@@ -28,21 +22,5 @@ export const copyShared = protectedProcedure
       throw new TRPCError({ code: "NOT_FOUND" });
     }
 
-    try {
-      return await copyRoadmapToUser(ctx.db, source, ctx.session.user.id);
-    } catch (err) {
-      if (isForeignKeyViolation(err)) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Cannot copy this roadmap — it contains an unknown course.",
-        });
-      }
-      if (isUniqueConstraintViolation(err)) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Duplicate course detected — refresh and try again.",
-        });
-      }
-      throw err;
-    }
+    return copyRoadmapMappingErrors(ctx.db, source, ctx.session.user.id);
   });
