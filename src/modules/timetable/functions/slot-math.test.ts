@@ -47,7 +47,7 @@ describe("timeToMinutes", () => {
 // layoutDay — basic positioning
 // ---------------------------------------------------------------------------
 describe("layoutDay — basic positioning", () => {
-  const gridRange = GRID_END_MIN - GRID_START_MIN; // 855 min
+  const gridRange = GRID_END_MIN - GRID_START_MIN; // 870 min
 
   it("single slot: full-width (colCount=1), correct top/height percentages", () => {
     const timings: ClassTimingLike[] = [
@@ -118,9 +118,9 @@ describe("layoutDay — basic positioning", () => {
     expect(cols.has(2)).toBe(true);
   });
 
-  it("boundary slot exactly at 08:00-22:15", () => {
+  it("boundary slot exactly at 08:00-22:30", () => {
     const timings: ClassTimingLike[] = [
-      { startTime: "08:00", endTime: "22:15" },
+      { startTime: "08:00", endTime: "22:30" },
     ];
     const result = layoutDay(timings);
 
@@ -141,7 +141,7 @@ describe("layoutDay — basic positioning", () => {
     // Should clamp: topPct should be 0 (starts at grid start),
     // height should be from 08:00 to 10:00 = 120 min
     expect(slot.topPct).toBe(0);
-    expect(slot.heightPct).toBeCloseTo(((600 - 480) / 855) * 100, 5);
+    expect(slot.heightPct).toBeCloseTo(((600 - 480) / 870) * 100, 5);
   });
 
   it("clamps slot ending after GRID_END_MIN", () => {
@@ -152,10 +152,10 @@ describe("layoutDay — basic positioning", () => {
 
     expect(result).toHaveLength(1);
     const slot = result[0]!;
-    // Height should be from 20:00 to 22:15 = 135 min (clamped to grid end)
-    expect(slot.heightPct).toBeCloseTo(((1335 - 1200) / 855) * 100, 5);
+    // Height should be from 20:00 to 22:30 = 150 min (clamped to grid end)
+    expect(slot.heightPct).toBeCloseTo(((1350 - 1200) / 870) * 100, 5);
     // top should be from 20:00
-    expect(slot.topPct).toBeCloseTo(((1200 - 480) / 855) * 100, 5);
+    expect(slot.topPct).toBeCloseTo(((1200 - 480) / 870) * 100, 5);
   });
 
   it("filters out slots entirely outside grid range", () => {
@@ -316,8 +316,8 @@ describe("constants", () => {
     expect(GRID_START_MIN).toBe(480);
   });
 
-  it("GRID_END_MIN is 1335 (22:15)", () => {
-    expect(GRID_END_MIN).toBe(1335);
+  it("GRID_END_MIN is 1350 (22:30)", () => {
+    expect(GRID_END_MIN).toBe(1350);
   });
 });
 

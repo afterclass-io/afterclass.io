@@ -66,8 +66,8 @@ describe("CurrentTimeIndicator", () => {
     });
 
     const line = container.firstElementChild as HTMLElement | null;
-    // 12:00 SGT = 720 min; (720 - 480) / 855 of the grid.
-    expect(line?.style.top).toBe(`${((720 - 480) / 855) * 100}%`);
+    // 12:00 SGT = 720 min; (720 - 480) / 870 of the grid.
+    expect(line?.style.top).toBe(`${((720 - 480) / 870) * 100}%`);
   });
 
   it("moves the line when a minute passes", async () => {

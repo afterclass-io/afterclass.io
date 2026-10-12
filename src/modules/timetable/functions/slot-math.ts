@@ -17,11 +17,14 @@ import type { ClassTimingLike } from "@/common/types/timetable";
 /** Earliest visible time (08:00) in minutes since midnight. */
 export const GRID_START_MIN = 480;
 
-/** Latest visible time (22:15) in minutes since midnight. */
-export const GRID_END_MIN = 1335;
+/**
+ * Latest visible time (22:30) in minutes since midnight. The last period ends
+ * at 22:15, leaving the same 15 min gap that the top has before 08:15.
+ */
+export const GRID_END_MIN = 1350;
 
 /** Total visible range in minutes. */
-const GRID_RANGE_MIN = GRID_END_MIN - GRID_START_MIN; // 855
+const GRID_RANGE_MIN = GRID_END_MIN - GRID_START_MIN; // 870
 
 /**
  * The four standard SMU class periods (roughly aligned with the real SMU

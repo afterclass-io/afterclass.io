@@ -28,7 +28,7 @@ function isWithinGrid(minutes: number): boolean {
 
 /**
  * Calculates the vertical position as a percentage (0–100) of the grid's
- * visible range (08:00–22:15).
+ * visible range (08:00–22:30).
  */
 function minutesToPositionPct(minutes: number): number {
   const clamped = Math.max(GRID_START_MIN, Math.min(GRID_END_MIN, minutes));
@@ -58,7 +58,7 @@ function getNoMinutes(): null {
  * A horizontal line displaying the current SGT time on the timetable grid.
  *
  * Updates every 60 seconds.  Only renders when `highlightNow` is true and
- * the current SGT time is within 08:00–22:15.
+ * the current SGT time is within 08:00–22:30.
  *
  * The server snapshot is `null`, so server HTML and the first client render
  * agree (no line). The line appears after hydration, at the client's time.
