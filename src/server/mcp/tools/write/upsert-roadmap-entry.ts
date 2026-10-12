@@ -18,7 +18,7 @@ import {
 } from "../roadmap-view-shared";
 import {
   errText,
-  errorMessage,
+  guardedRun,
   jsonText,
   type CourseRow,
   type McpTool,
@@ -59,11 +59,11 @@ export const upsertRoadmapEntryTool: McpTool<typeof upsertRoadmapEntrySchema> =
       "Add a course to a study roadmap (additive: does NOT wipe other entries). Provide the roadmap id (omit for your active roadmap), a course code (e.g. ACCT102), and the desired placement year + term (e.g. year 3, T1). Returns the full updated roadmap (via roadmap-view) PLUS feasibility info { issues, isFeasible } (PREREQ_MISSING / TERM_DUPLICATE / EXAM_CLASH - same as check-roadmap-feasibility). Replaces save-roadmap-entries for single-course edits. If the course is already in the roadmap, its placement is updated (moved) rather than duplicated. Self-contained: one call is the answer. Additive merge is done on existing roadmap entries (thin wrapper over existing tRPC procedures, no new Prisma queries).",
     inputSchema: upsertRoadmapEntrySchema,
     toViewProps: roadmapViewToViewProps(false),
-    run: async (
-      { caller },
-      { roadmapId, courseCode, yearNumber, term, sortOrder },
-    ) => {
-      try {
+    run: guardedRun(
+      async (
+        { caller },
+        { roadmapId, courseCode, yearNumber, term, sortOrder },
+      ) => {
         const trimmedCode = courseCode.trim();
         if (!trimmedCode) return errText("courseCode must not be empty");
 
@@ -164,10 +164,8 @@ export const upsertRoadmapEntryTool: McpTool<typeof upsertRoadmapEntrySchema> =
         }
 
         return jsonText(stripSecretsFromValue({ roadmapView, feasibility }));
-      } catch (e) {
-        return errText(errorMessage(e));
-      }
-    },
+      },
+    ),
   };
 
 // Feasibility derivation reusing the shared pure engine
