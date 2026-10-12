@@ -82,6 +82,23 @@ export async function checkAndIncrement(
     : { ok: false, retryAfterSeconds: retryAfter };
 }
 
+/**
+ * Gives back one unit taken by `checkAndIncrement` in the current window.
+ * A caller uses it to undo a claim it cannot act on. It never drops the
+ * count below zero and it creates no row.
+ */
+export async function releaseRateLimit(
+  key: string,
+  windowMinutes: number,
+): Promise<void> {
+  const { rowKey } = windowFor(key, windowMinutes);
+  await db.$executeRaw`
+    UPDATE "rate_limit"
+    SET "count" = GREATEST("count" - 1, 0),
+        "updated_at" = (now() AT TIME ZONE 'UTC')
+    WHERE "key" = ${rowKey}::text`;
+}
+
 const PRUNE_BATCH_SIZE = 1000;
 const PRUNE_TIME_BUDGET_MS = 8_000; // vercel.json caps src/app/api/** at 10 s
 

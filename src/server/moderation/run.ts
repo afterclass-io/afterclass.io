@@ -1,7 +1,11 @@
 import * as Sentry from "@sentry/nextjs";
 
 import { ModerationVerdict } from "@/generated/prisma/enums";
-import { checkAndIncrement, peekRateLimit } from "@/server/assistant/ratelimit";
+import {
+  checkAndIncrement,
+  peekRateLimit,
+  releaseRateLimit,
+} from "@/server/assistant/ratelimit";
 import { getModel } from "@/server/assistant/providers";
 import {
   getChatConfigAsync,
@@ -64,7 +68,8 @@ const JUDGE_CEILING_KEY = "moderation:judge-hourly";
  *  3. take the claim (limit 1 per item + clearance count + claim window), so
  *     concurrent crossings judge once; a fixed-window boundary can rarely
  *     admit two (one wasted judgement, accepted);
- *  4. spend the hourly ceiling;
+ *  4. spend the hourly ceiling; if it filled since the peek, release the
+ *     claim so the item is not locked without a judgement;
  *  5. judge the LIVE text — never client-supplied text.
  */
 export async function runModeration(
@@ -98,8 +103,9 @@ export async function runModeration(
   );
   if (!peek.ok) return "ceiling_reached";
 
+  const claimKey = `moderation:claim:${surface}:${itemId}:${clearances}`;
   const claim = await checkAndIncrement(
-    `moderation:claim:${surface}:${itemId}:${clearances}`,
+    claimKey,
     1,
     cfg.moderationClaimWindowMinutes,
   );
@@ -109,7 +115,12 @@ export async function runModeration(
     cfg.moderationJudgementsPerHour,
     60,
   );
-  if (!ceiling.ok) return "ceiling_reached";
+  if (!ceiling.ok) {
+    // The ceiling filled after the peek. Give the claim back so the item is
+    // not locked for the claim window with no judgement.
+    await releaseRateLimit(claimKey, cfg.moderationClaimWindowMinutes);
+    return "ceiling_reached";
+  }
 
   const text = await adapter.readText(db, itemId);
   if (text === null) return "item_gone";

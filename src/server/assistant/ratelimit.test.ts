@@ -36,7 +36,12 @@ vi.mock("@/server/db", () => ({
 }));
 
 import testCases from "./ratelimit.cases.json";
-import { checkAndIncrement, peekRateLimit, pruneRateLimits } from "./ratelimit";
+import {
+  checkAndIncrement,
+  peekRateLimit,
+  pruneRateLimits,
+  releaseRateLimit,
+} from "./ratelimit";
 
 describe("checkAndIncrement", () => {
   beforeEach(() => {
@@ -171,6 +176,23 @@ describe("peekRateLimit", () => {
     txRateLimitWindowFindUnique.mockResolvedValue({ count: 9 });
     const r = await peekRateLimit("k", 10, 1);
     expect(r).toEqual({ ok: true, retryAfterSeconds: 0 });
+  });
+});
+
+describe("releaseRateLimit", () => {
+  beforeEach(() => mockExecuteRaw.mockReset());
+
+  it("sends one parameterized update for the current window row", async () => {
+    mockExecuteRaw.mockResolvedValue(1);
+    await releaseRateLimit("k", 5);
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(1);
+    const [strings, ...values] = mockExecuteRaw.mock.calls[0] as [
+      string[],
+      ...unknown[],
+    ];
+    expect(strings.join("?")).toContain('GREATEST("count" - 1, 0)');
+    expect(values).toHaveLength(1);
+    expect(values[0]).toEqual(expect.stringMatching(/^k:\d+$/));
   });
 });
 

@@ -9,6 +9,7 @@ const m = vi.hoisted(() => ({
   txLogCreate: vi.fn(),
   checkAndIncrement: vi.fn(),
   peekRateLimit: vi.fn(),
+  releaseRateLimit: vi.fn(),
   getModel: vi.fn(),
   getChatConfigAsync: vi.fn(),
 }));
@@ -32,6 +33,7 @@ vi.mock("@/server/db", () => {
 vi.mock("@/server/assistant/ratelimit", () => ({
   checkAndIncrement: m.checkAndIncrement,
   peekRateLimit: m.peekRateLimit,
+  releaseRateLimit: m.releaseRateLimit,
 }));
 vi.mock("@/server/assistant/providers", () => ({ getModel: m.getModel }));
 vi.mock("@/server/config/chat-config", () => ({
@@ -169,6 +171,10 @@ describe("runModeration", () => {
       "moderation:judge-hourly",
       20,
       60,
+    );
+    expect(m.releaseRateLimit).toHaveBeenCalledWith(
+      "moderation:claim:REVIEW:rv1:0",
+      5,
     );
     expect(judge).not.toHaveBeenCalled();
   });
