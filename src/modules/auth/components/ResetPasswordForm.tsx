@@ -1,8 +1,7 @@
 "use client";
 
-import { startTransition, useState } from "react";
+import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
@@ -25,7 +24,7 @@ import {
   FormMessage,
 } from "@/common/components/form";
 import { LockIcon } from "@/common/components/icons";
-import { useProgress } from "@/common/providers/ProgressProvider";
+import { useNavigateWithProgress } from "../hooks/useNavigateWithProgress";
 
 const resetPwdFormInputsSchema = z.object({
   password: z
@@ -35,8 +34,7 @@ const resetPwdFormInputsSchema = z.object({
 type ResetPwdFormInputs = z.infer<typeof resetPwdFormInputsSchema>;
 
 export const ResetPasswordForm = () => {
-  const router = useRouter();
-  const progress = useProgress();
+  const navigateWithProgress = useNavigateWithProgress();
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState(false);
   const form = useForm<ResetPwdFormInputs>({
     resolver: zodResolver(resetPwdFormInputsSchema),
@@ -54,11 +52,7 @@ export const ResetPasswordForm = () => {
     }
     setIsSubmitSuccessful(true);
 
-    progress.start();
-    startTransition(() => {
-      router.push("/account/auth/login");
-      progress.done();
-    });
+    navigateWithProgress("/account/auth/login");
   };
 
   return (

@@ -1,7 +1,7 @@
 "use client";
-import { startTransition, useEffect, Fragment } from "react";
+import { useEffect, Fragment } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,10 +29,10 @@ import {
   Input,
 } from "@/common/components/input";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
-import { useProgress } from "@/common/providers/ProgressProvider";
 import { ProgressLink } from "@/common/components/progress-link";
 import { toast } from "sonner";
 import { GoogleSignInButton } from "./GoogleSignInButton";
+import { useNavigateWithProgress } from "../hooks/useNavigateWithProgress";
 import { env } from "@/env";
 
 const loginFormInputsSchema = z.object({
@@ -49,8 +49,7 @@ export const LoginForm = ({
   enablePasswordLogin?: boolean;
 }) => {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const progress = useProgress();
+  const navigateWithProgress = useNavigateWithProgress();
 
   const form = useForm<LoginFormInputs>({
     resolver: zodResolver(loginFormInputsSchema),
@@ -135,12 +134,7 @@ export const LoginForm = ({
       return;
     }
 
-    progress.start();
-    startTransition(() => {
-      router.push(signinResp.url ?? callbackUrl);
-      router.refresh();
-      progress.done();
-    });
+    navigateWithProgress(signinResp.url ?? callbackUrl, { refresh: true });
   };
 
   return (
@@ -255,12 +249,7 @@ export const LoginForm = ({
                 return;
               }
 
-              progress.start();
-              startTransition(() => {
-                router.push(resp?.url ?? "/");
-                router.refresh();
-                progress.done();
-              });
+              navigateWithProgress(resp?.url ?? "/", { refresh: true });
             }}
           >
             Sign in with Google

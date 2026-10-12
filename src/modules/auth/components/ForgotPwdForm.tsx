@@ -1,6 +1,4 @@
 "use client";
-import { startTransition } from "react";
-import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -24,9 +22,9 @@ import {
 } from "@/common/components/form";
 import { env } from "@/env";
 import { EnvelopeIcon } from "@/common/components/icons";
-import { useProgress } from "@/common/providers/ProgressProvider";
 
 import { getUserPlatform } from "../functions";
+import { useNavigateWithProgress } from "../hooks/useNavigateWithProgress";
 import {
   ForgotPwdFormActionReturnType,
   type ForgotPwdFormInputs,
@@ -35,8 +33,7 @@ import {
 import { ProgressLink } from "@/common/components/progress-link";
 
 export const ForgotPwdForm = () => {
-  const router = useRouter();
-  const progress = useProgress();
+  const navigateWithProgress = useNavigateWithProgress();
 
   const form = useForm<ForgotPwdFormInputs>({
     resolver: zodResolver(forgotPwdFormInputsSchema),
@@ -58,12 +55,9 @@ export const ForgotPwdForm = () => {
     }
 
     if (result === ForgotPwdFormActionReturnType.USER_ON_V1) {
-      progress.start();
-
-      startTransition(() => {
-        router.push(`/account/auth/signup?${new URLSearchParams({ email })}`);
-        progress.done();
-      });
+      navigateWithProgress(
+        `/account/auth/signup?${new URLSearchParams({ email })}`,
+      );
       return;
     }
 
@@ -76,12 +70,9 @@ export const ForgotPwdForm = () => {
       return;
     }
 
-    progress.start();
-
-    startTransition(() => {
-      router.push(`/account/auth/verify?${new URLSearchParams({ email })}`);
-      progress.done();
-    });
+    navigateWithProgress(
+      `/account/auth/verify?${new URLSearchParams({ email })}`,
+    );
   };
 
   return (

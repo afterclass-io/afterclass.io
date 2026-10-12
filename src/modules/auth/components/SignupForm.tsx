@@ -1,7 +1,5 @@
 "use client";
 
-import { startTransition } from "react";
-import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -32,8 +30,8 @@ import { supabaseBrowser } from "@/common/tools/supabase/client";
 import { toast } from "sonner";
 import { env } from "@/env";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
-import { useProgress } from "@/common/providers/ProgressProvider";
 import { ProgressLink } from "@/common/components/progress-link";
+import { useNavigateWithProgress } from "../hooks/useNavigateWithProgress";
 
 const signupFormInputsSchema = z
   .object({
@@ -56,8 +54,7 @@ const signupFormInputsSchema = z
 type SignupFormInputs = z.infer<typeof signupFormInputsSchema>;
 
 export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
-  const router = useRouter();
-  const progress = useProgress();
+  const navigateWithProgress = useNavigateWithProgress();
 
   const form = useForm<SignupFormInputs>({
     resolver: zodResolver(signupFormInputsSchema),
@@ -81,13 +78,9 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
       if (res.error) throw new Error(res.error.message);
       if (!res.data.user?.user_metadata?.email_verified) {
         const verifyEmail = res.data.user?.email ?? data.email;
-        progress.start();
-        startTransition(() => {
-          router.push(
-            `/account/auth/verify?${new URLSearchParams({ email: verifyEmail })}`,
-          );
-          progress.done();
-        });
+        navigateWithProgress(
+          `/account/auth/verify?${new URLSearchParams({ email: verifyEmail })}`,
+        );
       } else {
         throw new Error(
           "trying to create user that already has email verified",
