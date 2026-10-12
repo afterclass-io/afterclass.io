@@ -282,10 +282,23 @@ describe("mcp batching procedures (integration)", () => {
         const single = await caller.courses.getByCourseCode({ code: sc.code });
         const batchItem = batchResult.find((b) => b.code === sc.code);
         expect(batchItem).toBeDefined();
+        expect(batchItem).toEqual(sc);
         expect(batchItem!.enrolmentRequirements).toBe(
           single?.enrolmentRequirements ?? null,
         );
       }
+    });
+
+    it.each([
+      { label: "empty", codes: [] },
+      {
+        label: "oversized",
+        codes: Array.from({ length: 101 }, (_, i) => "CODE" + i),
+      },
+    ])("rejects $label batches", async ({ codes }) => {
+      await expect(
+        caller.courses.getEnrolmentRequirementsByCodes({ codes }),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     });
   });
 

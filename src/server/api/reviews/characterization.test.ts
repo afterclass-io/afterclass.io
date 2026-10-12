@@ -21,34 +21,6 @@ const router = createTRPCRouter({
 });
 
 describe("reviews characterization (baseline 6ea5ba90 contracts)", () => {
-  it("characterizes member review DTO keys from member-review-row fixture", () => {
-    // Current mapping contract at 6ea5ba90
-    const row = {
-      ...memberReviewRow,
-      createdAt: new Date(memberReviewRow.createdAt),
-    };
-
-    const mapped = {
-      ...row,
-      tips: row.tips ?? "",
-      createdAt: row.createdAt.getTime(),
-      courseCode: row.reviewedCourse.code,
-      courseName: row.reviewedCourse.name,
-      username: row.reviewer.username ?? "Anonymous",
-      reviewLabels: row.reviewLabels.map((rl) => ({ name: rl.label.name })),
-      likeCount: row.countVotes,
-      reviewFor:
-        row.reviewedCourseId && row.reviewedProfessorId
-          ? ReviewType.PROFESSOR
-          : ReviewType.COURSE,
-      professorName: row.reviewedProfessor?.name,
-      professorSlug: row.reviewedProfessor?.slug,
-      university: row.reviewedUniversity.abbrv,
-    };
-
-    expect(Object.keys(mapped).sort()).toEqual(expectedKeys);
-  });
-
   it("characterizes getAllProtected procedure output key set", async () => {
     const row = {
       ...memberReviewRow,
