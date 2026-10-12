@@ -46,10 +46,6 @@ vi.mock("@/server/assistant/quota", () => ({
 vi.mock("@/server/assistant/ratelimit", () => ({
   checkAndIncrement: mockCheckAndIncrement,
 }));
-vi.mock("@/server/ecfg/chat", () => ({
-  getChatConfig: mockGetChatConfig,
-  getRateLimitWindowMinutes: () => 1,
-}));
 // route.ts reads the canonical chat-config directly.
 vi.mock("@/server/config/chat-config", () => ({
   getChatConfigAsync: mockGetChatConfig,
