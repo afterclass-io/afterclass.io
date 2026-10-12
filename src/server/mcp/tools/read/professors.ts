@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { guardedRun, jsonText, type McpTool } from "../../types";
 
 const searchProfessorsSchema = z.object({
   query: z
@@ -22,14 +22,10 @@ export const searchProfessorsTool: McpTool<typeof searchProfessorsSchema> = {
     "Search professors by name, boss alias, or slug. Fuzzy/typo-tolerant (best-word trigram match on name). Returns matching professors as { id, slug, name } plus a total count.",
   inputSchema: searchProfessorsSchema,
   readOnly: true,
-  run: async ({ caller }, { query, limit }) => {
-    try {
-      const result = await caller.professors.search({ query, limit });
-      // No matches -> empty array, not an error.
-      if (result.rows.length === 0) return jsonText([]);
-      return jsonText({ rows: result.rows, count: result.count });
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { query, limit }) => {
+    const result = await caller.professors.search({ query, limit });
+    // No matches -> empty array, not an error.
+    if (result.rows.length === 0) return jsonText([]);
+    return jsonText({ rows: result.rows, count: result.count });
+  }),
 };
