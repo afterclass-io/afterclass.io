@@ -7,30 +7,12 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/common/components/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/common/components/form";
-import { LockIcon, EnvelopeIcon } from "@/common/components/icons";
-import {
-  PasswordInputRoot,
-  PasswordInputAdornment,
-  PasswordInputAdornmentToggle,
-  PasswordInput,
-} from "@/common/components/input-password";
-import {
-  InputRoot,
-  InputAdornment,
-  InputControl,
-  Input,
-} from "@/common/components/input";
+import { Form } from "@/common/components/form";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import { ProgressLink } from "@/common/components/progress-link";
 import { toast } from "sonner";
+import { EmailField } from "./fields/EmailField";
+import { PasswordField } from "./fields/PasswordField";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 import { useNavigateWithProgress } from "../hooks/useNavigateWithProgress";
 import { env } from "@/env";
@@ -145,69 +127,37 @@ export const LoginForm = ({
       >
         {enablePasswordLogin && (
           <>
-            <FormField
+            <EmailField
               control={form.control}
               name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>School Email Address</FormLabel>
-                  <FormControl>
-                    <InputRoot>
-                      <InputAdornment>
-                        <EnvelopeIcon />
-                      </InputAdornment>
-                      <InputControl>
-                        <Input
-                          {...field}
-                          disabled={form.formState.isSubmitting}
-                          placeholder="john.doe.2023@smu.edu.sg"
-                          autoComplete="on"
-                          tabIndex={1}
-                          data-test="email"
-                        />
-                      </InputControl>
-                    </InputRoot>
-                  </FormControl>
-                  <FormMessage data-test="email-helper-text" />
-                </FormItem>
-              )}
+              label="School Email Address"
+              placeholder="john.doe.2023@smu.edu.sg"
+              tabIndex={1}
+              dataTest="email"
+              disabled={form.formState.isSubmitting}
             />
-            <FormField
+            <PasswordField
               control={form.control}
               name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center justify-between">
-                    <span>Password</span>
-                    <ProgressLink
-                      href="/account/auth/forgot"
-                      variant="link"
-                      className="md:text-sm"
-                      tabIndex={5}
-                      data-test="forget"
-                    >
-                      Forgot password?
-                    </ProgressLink>
-                  </FormLabel>
-                  <FormControl>
-                    <PasswordInputRoot>
-                      <PasswordInputAdornment>
-                        <LockIcon />
-                      </PasswordInputAdornment>
-                      <PasswordInput
-                        {...field}
-                        disabled={form.formState.isSubmitting}
-                        placeholder="Enter password"
-                        autoComplete="on"
-                        tabIndex={2}
-                        data-test="password"
-                      />
-                      <PasswordInputAdornmentToggle />
-                    </PasswordInputRoot>
-                  </FormControl>
-                  <FormMessage data-test="password-helper-text" />
-                </FormItem>
-              )}
+              label={
+                <>
+                  <span>Password</span>
+                  <ProgressLink
+                    href="/account/auth/forgot"
+                    variant="link"
+                    className="md:text-sm"
+                    tabIndex={5}
+                    data-test="forget"
+                  >
+                    Forgot password?
+                  </ProgressLink>
+                </>
+              }
+              labelClassName="flex items-center justify-between"
+              placeholder="Enter password"
+              tabIndex={2}
+              dataTest="password"
+              disabled={form.formState.isSubmitting}
             />
           </>
         )}

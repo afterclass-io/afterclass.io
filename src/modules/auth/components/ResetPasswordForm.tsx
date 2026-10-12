@@ -9,22 +9,9 @@ import { supabaseBrowser } from "@/common/tools/supabase/client";
 import { toast } from "sonner";
 
 import { Button } from "@/common/components/button";
-import {
-  PasswordInputRoot,
-  PasswordInputAdornment,
-  PasswordInputAdornmentToggle,
-  PasswordInput,
-} from "@/common/components/input-password";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/common/components/form";
-import { LockIcon } from "@/common/components/icons";
+import { Form } from "@/common/components/form";
 import { useNavigateWithProgress } from "../hooks/useNavigateWithProgress";
+import { PasswordField } from "./fields/PasswordField";
 
 const resetPwdFormInputsSchema = z.object({
   password: z
@@ -61,30 +48,13 @@ export const ResetPasswordForm = () => {
         className="flex w-full flex-col gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <FormField
+        <PasswordField
           control={form.control}
           name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>New Password</FormLabel>
-              <FormControl>
-                <PasswordInputRoot>
-                  <PasswordInputAdornment>
-                    <LockIcon />
-                  </PasswordInputAdornment>
-                  <PasswordInput
-                    {...field}
-                    disabled={form.formState.isSubmitting}
-                    placeholder="Enter password"
-                    autoComplete="on"
-                    tabIndex={1}
-                  />
-                  <PasswordInputAdornmentToggle />
-                </PasswordInputRoot>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="New Password"
+          placeholder="Enter password"
+          tabIndex={1}
+          disabled={form.formState.isSubmitting}
         />
         <Button
           type="submit"

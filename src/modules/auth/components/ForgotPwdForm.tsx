@@ -5,23 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { supabaseBrowser } from "@/common/tools/supabase/client";
 import { toast } from "sonner";
 
-import {
-  InputRoot,
-  InputAdornment,
-  InputControl,
-  Input,
-} from "@/common/components/input";
 import { Button } from "@/common/components/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/common/components/form";
+import { Form } from "@/common/components/form";
 import { env } from "@/env";
-import { EnvelopeIcon } from "@/common/components/icons";
 
 import { getUserPlatform } from "../functions";
 import { useNavigateWithProgress } from "../hooks/useNavigateWithProgress";
@@ -31,6 +17,7 @@ import {
   forgotPwdFormInputsSchema,
 } from "../types";
 import { ProgressLink } from "@/common/components/progress-link";
+import { EmailField } from "./fields/EmailField";
 
 export const ForgotPwdForm = () => {
   const navigateWithProgress = useNavigateWithProgress();
@@ -81,32 +68,14 @@ export const ForgotPwdForm = () => {
         className="flex w-full flex-col gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <FormField
+        <EmailField
           control={form.control}
           name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>School Email Address</FormLabel>
-              <FormControl>
-                <InputRoot>
-                  <InputAdornment>
-                    <EnvelopeIcon />
-                  </InputAdornment>
-                  <InputControl>
-                    <Input
-                      {...field}
-                      disabled={form.formState.isSubmitting}
-                      placeholder="john.doe.2023@smu.edu.sg"
-                      autoComplete="on"
-                      tabIndex={1}
-                      data-test="email"
-                    />
-                  </InputControl>
-                </InputRoot>
-              </FormControl>
-              <FormMessage data-test="email-helper-text" />
-            </FormItem>
-          )}
+          label="School Email Address"
+          placeholder="john.doe.2023@smu.edu.sg"
+          tabIndex={1}
+          dataTest="email"
+          disabled={form.formState.isSubmitting}
         />
         <Button
           type="submit"

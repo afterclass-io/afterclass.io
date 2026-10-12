@@ -5,33 +5,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { Button } from "@/common/components/button";
-import {
-  PasswordInputRoot,
-  PasswordInputAdornment,
-  PasswordInputAdornmentToggle,
-  PasswordInput,
-} from "@/common/components/input-password";
-import {
-  InputRoot,
-  InputAdornment,
-  InputControl,
-  Input,
-} from "@/common/components/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/common/components/form";
-import { LockIcon, EnvelopeIcon } from "@/common/components/icons";
+import { Form } from "@/common/components/form";
 import { supabaseBrowser } from "@/common/tools/supabase/client";
 import { toast } from "sonner";
 import { env } from "@/env";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
 import { ProgressLink } from "@/common/components/progress-link";
 import { useNavigateWithProgress } from "../hooks/useNavigateWithProgress";
+import { EmailField } from "./fields/EmailField";
+import { PasswordField } from "./fields/PasswordField";
 
 const signupFormInputsSchema = z
   .object({
@@ -102,84 +84,32 @@ export const SignupForm = ({ defaultEmail }: { defaultEmail?: string }) => {
         className="flex w-full flex-col gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <FormField
+        <EmailField
           control={form.control}
           name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>School Email Address</FormLabel>
-              <FormControl>
-                <InputRoot>
-                  <InputAdornment>
-                    <EnvelopeIcon />
-                  </InputAdornment>
-                  <InputControl>
-                    <Input
-                      {...field}
-                      disabled={form.formState.isSubmitting}
-                      placeholder="john.doe.2023@smu.edu.sg"
-                      autoComplete="on"
-                      tabIndex={1}
-                      data-test="email"
-                    />
-                  </InputControl>
-                </InputRoot>
-              </FormControl>
-              <FormMessage data-test="email-helper-text" />
-            </FormItem>
-          )}
+          label="School Email Address"
+          placeholder="john.doe.2023@smu.edu.sg"
+          tabIndex={1}
+          dataTest="email"
+          disabled={form.formState.isSubmitting}
         />
-        <FormField
+        <PasswordField
           control={form.control}
           name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>New Password</FormLabel>
-              <FormControl>
-                <PasswordInputRoot>
-                  <PasswordInputAdornment>
-                    <LockIcon />
-                  </PasswordInputAdornment>
-                  <PasswordInput
-                    {...field}
-                    disabled={form.formState.isSubmitting}
-                    placeholder="Enter password"
-                    autoComplete="on"
-                    tabIndex={2}
-                    data-test="password"
-                  />
-                  <PasswordInputAdornmentToggle />
-                </PasswordInputRoot>
-              </FormControl>
-              <FormMessage data-test="password-helper-text" />
-            </FormItem>
-          )}
+          label="New Password"
+          placeholder="Enter password"
+          tabIndex={2}
+          dataTest="password"
+          disabled={form.formState.isSubmitting}
         />
-        <FormField
+        <PasswordField
           control={form.control}
           name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
-              <FormControl>
-                <PasswordInputRoot>
-                  <PasswordInputAdornment>
-                    <LockIcon />
-                  </PasswordInputAdornment>
-                  <PasswordInput
-                    {...field}
-                    disabled={form.formState.isSubmitting}
-                    placeholder="Confirm password"
-                    autoComplete="on"
-                    tabIndex={3}
-                    data-test="confirm-password"
-                  />
-                  <PasswordInputAdornmentToggle />
-                </PasswordInputRoot>
-              </FormControl>
-              <FormMessage data-test="confirm-password-helper-text" />
-            </FormItem>
-          )}
+          label="Confirm Password"
+          placeholder="Confirm password"
+          tabIndex={3}
+          dataTest="confirm-password"
+          disabled={form.formState.isSubmitting}
         />
         <Button
           type="submit"
