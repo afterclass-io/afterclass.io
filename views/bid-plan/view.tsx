@@ -3,6 +3,7 @@ import type { ViewConfig } from "mcp-use/react";
 import { useToolContext, useViewTheme } from "mcp-use/react";
 import type { BidPlan } from "../../src/mcp/view-tools/schemas";
 import { TOKENS } from "../shared/tokens";
+import { ViewCard } from "../shared/components/ViewCard";
 import { viewStatusFallback } from "../shared/view-shell";
 
 /**
@@ -71,21 +72,7 @@ const BidPlanView: React.FC = () => {
   const remaining = budget ? budget.balance - spent : null;
 
   return (
-    <div
-      style={{
-        fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
-        color: c.cardFg,
-        background: c.card,
-        border: `1px solid ${c.border}`,
-        borderRadius: c.radius,
-        padding: 16,
-        boxSizing: "border-box",
-        width: "100%",
-        maxWidth: "100%",
-      }}
-    >
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
-
+    <ViewCard c={c}>
       {/* Header */}
       <div
         style={{
@@ -266,7 +253,7 @@ const BidPlanView: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </ViewCard>
   );
 };
 

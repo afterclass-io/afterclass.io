@@ -9,6 +9,7 @@ import {
 import type { RoadmapViewData } from "../../src/mcp/view-tools/schemas";
 import { useCtaFeedback } from "../shared/use-cta-feedback";
 import { TOKENS } from "../shared/tokens";
+import { ViewCard } from "../shared/components/ViewCard";
 import { viewStatusFallback } from "../shared/view-shell";
 
 /**
@@ -78,20 +79,7 @@ const RoadmapView: React.FC = () => {
   );
 
   return (
-    <div
-      style={{
-        fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
-        color: c.cardFg,
-        background: c.card,
-        border: `1px solid ${c.border}`,
-        borderRadius: c.radius,
-        padding: 16,
-        boxSizing: "border-box",
-        width: "100%",
-        maxWidth: "100%",
-      }}
-    >
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
+    <ViewCard c={c}>
       {/* Header: roadmap name + owner/votes subline for public roadmaps */}
       <div style={{ fontSize: 14, fontWeight: 600 }}>{name}</div>
       {isPublic && owner && (
@@ -253,7 +241,7 @@ const RoadmapView: React.FC = () => {
               : "Copy this roadmap"}
         </button>
       )}
-    </div>
+    </ViewCard>
   );
 };
 
