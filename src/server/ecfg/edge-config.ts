@@ -1,6 +1,10 @@
 import { getAll } from "@vercel/edge-config";
 import { unstable_cache } from "next/cache";
-import { edgeConfigSchema, type EdgeConfig } from "@/server/ecfg/config";
+import {
+  chatTunablesSchema,
+  edgeConfigSchema,
+  type EdgeConfig,
+} from "@/server/ecfg/config";
 import fallbackConfig from "@/server/ecfg/config.json";
 
 type EdgeConfigKey = keyof EdgeConfig;
@@ -53,6 +57,36 @@ function mergeStoreWithFallback(raw: Record<string, unknown>): EdgeConfig {
   const merged: Record<string, unknown> = {};
 
   for (const key of edgeConfigKeys) {
+    const value = raw[key];
+    if (
+      key === "chat" &&
+      typeof value === "object" &&
+      value !== null &&
+      !Array.isArray(value)
+    ) {
+      const chat: Record<string, unknown> = {};
+      const chatKeys = Object.keys(
+        chatTunablesSchema.shape,
+      ) as (keyof typeof chatTunablesSchema.shape)[];
+      for (const chatKey of chatKeys) {
+        const result = chatTunablesSchema.shape[chatKey].safeParse(
+          (value as Record<string, unknown>)[chatKey],
+        );
+        if (result.success) {
+          if (result.data !== undefined) chat[chatKey] = result.data;
+        } else {
+          console.warn(
+            `Edge config key "chat.${chatKey}" is invalid; using the config.json value:\n`,
+            result.error.message,
+          );
+          fallback ??= parseFallbackConfig();
+          const fallbackValue = fallback.chat?.[chatKey];
+          if (fallbackValue !== undefined) chat[chatKey] = fallbackValue;
+        }
+      }
+      merged.chat = edgeConfigSchema.shape.chat.parse(chat);
+      continue;
+    }
     const result = edgeConfigSchema.shape[key].safeParse(raw[key]);
     if (result.success) {
       merged[key] = result.data;

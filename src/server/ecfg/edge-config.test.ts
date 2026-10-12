@@ -94,6 +94,43 @@ describe("getEdgeConfig", () => {
     expect(warnSpy).toHaveBeenCalledTimes(2);
   });
 
+  it.each([
+    { field: "maxBidAmount", value: "7777" },
+    { field: "appTimezone", value: 123 },
+    { field: "widgetEnabled", value: "yes" },
+  ])(
+    "preserves disabled controls when chat.$field is malformed",
+    async ({ field, value }) => {
+      getAllMock.mockResolvedValue({
+        ...validStore,
+        chat: {
+          chatEnabled: false,
+          mcpEnabled: false,
+          quotaPerMonth: 55,
+          [field]: value,
+        },
+      });
+
+      const config = await getEdgeConfig();
+
+      expect(config.chat).toMatchObject({
+        chatEnabled: false,
+        mcpEnabled: false,
+        quotaPerMonth: 55,
+      });
+      const fallbackValue = (fallbackConfig.chat as Record<string, unknown>)[
+        field
+      ];
+      expect((config.chat as Record<string, unknown>)[field]).toEqual(
+        fallbackValue,
+      );
+      if (fallbackValue === undefined)
+        expect(config.chat).not.toHaveProperty(field);
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(String(warnSpy.mock.calls[0]?.[0])).toContain(`chat.${field}`);
+    },
+  );
+
   it("returns the config.json values for an empty store", async () => {
     getAllMock.mockResolvedValue({});
 

@@ -45,4 +45,20 @@ describe("remote chat tunables", () => {
       Object.keys(DEFAULT_CHAT_CONFIG_VALUES).sort(),
     );
   });
+
+  it("uses canonical defaults for a malformed tunable without enabling disabled controls", async () => {
+    getAllMock.mockResolvedValue({
+      ...fallbackConfig,
+      chat: { chatEnabled: false, mcpEnabled: false, maxBidAmount: "7777" },
+    });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    try {
+      const c = await getChatConfigAsync();
+      expect(c.chatEnabled).toBe(false);
+      expect(c.mcpEnabled).toBe(false);
+      expect(c.maxBidAmount).toBe(DEFAULT_CHAT_CONFIG_VALUES.maxBidAmount);
+    } finally {
+      warn.mockRestore();
+    }
+  });
 });
