@@ -36,7 +36,8 @@ export const ReviewVoteGroup = ({ review }: { review: Review }) => {
         cancel: async () => {
           await cancelReviewCaches();
         },
-        getSnapshot: () => snapshotRef.current ?? getReviewCachesSnapshot(),
+        getSnapshot: () =>
+          snapshotRef.current ?? getReviewCachesSnapshot(review.id),
         applyOptimistic: ({ weight }) => {
           patchReviewInCaches(review.id, (r) => withVote(r, weight));
         },

@@ -3,7 +3,7 @@ import { getQueryKey } from "@trpc/react-query";
 import { api, getQueryClient } from "@/common/tools/trpc/react";
 import type { Review } from "@/common/types/reviews";
 
-export type Snapshot = Array<[QueryKey, unknown]>;
+export type Snapshot = Array<[QueryKey, Review[]]>;
 
 type InfiniteReviewPages = {
   pages?: Array<{ items?: Review[]; nextCursor?: string }>;
@@ -19,7 +19,7 @@ function resolveQueryClient(): QueryClient | undefined {
   return typeof window !== "undefined" ? getQueryClient() : undefined;
 }
 
-export function getReviewCachesSnapshot(): Snapshot {
+export function getReviewCachesSnapshot(reviewId?: string): Snapshot {
   const queryClient = resolveQueryClient();
   if (!queryClient || !api.reviews) return [];
 
@@ -31,18 +31,46 @@ export function getReviewCachesSnapshot(): Snapshot {
   const byIdKey = getQueryKey(api.reviews.getById);
 
   const snapshot: Snapshot = [];
-  for (const queryKey of infiniteKeys) {
-    snapshot.push(...queryClient.getQueriesData({ queryKey }));
+  for (const queryKey of [...infiniteKeys, byIdKey]) {
+    for (const [key, data] of queryClient.getQueriesData<
+      InfiniteReviewPages | Review
+    >({ queryKey })) {
+      if (!data) continue;
+      const reviews =
+        "id" in data
+          ? [data]
+          : (data.pages?.flatMap((page) => page.items ?? []) ?? []);
+      const affected = reviewId
+        ? reviews.filter((review) => review.id === reviewId)
+        : reviews;
+      if (affected.length > 0) snapshot.push([key, affected]);
+    }
   }
-  snapshot.push(...queryClient.getQueriesData({ queryKey: byIdKey }));
   return snapshot;
 }
 
 export function restoreReviewCaches(snapshot?: Snapshot): void {
   const queryClient = resolveQueryClient();
   if (!snapshot || !queryClient) return;
-  for (const [queryKey, data] of snapshot) {
-    queryClient.setQueryData(queryKey, data);
+  for (const [queryKey, reviews] of snapshot) {
+    const previous = new Map(reviews.map((review) => [review.id, review]));
+    queryClient.setQueryData<InfiniteReviewPages | Review>(
+      queryKey,
+      (current) => {
+        if (!current) return current;
+        if ("id" in current) return previous.get(current.id) ?? current;
+        if (!Array.isArray(current.pages)) return current;
+        return {
+          ...current,
+          pages: current.pages.map((page) => ({
+            ...page,
+            items: page.items?.map(
+              (review) => previous.get(review.id) ?? review,
+            ),
+          })),
+        };
+      },
+    );
   }
 }
 
@@ -69,7 +97,7 @@ export function patchReviewInCaches(
   const queryClient = resolveQueryClient();
   if (!queryClient || !api.reviews) return [];
 
-  const snapshot = getReviewCachesSnapshot();
+  const snapshot = getReviewCachesSnapshot(reviewId);
 
   const infiniteKeys = [
     getQueryKey(api.reviews.getAllProtected),

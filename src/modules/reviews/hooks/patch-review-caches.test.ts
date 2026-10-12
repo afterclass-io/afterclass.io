@@ -58,4 +58,40 @@ describe("patch-review-caches with the real tRPC proxy", () => {
   it("reads every protected feed cache into a snapshot", () => {
     expect(getReviewCachesSnapshot()).toHaveLength(1);
   });
+
+  it("does not roll back another review's successful vote", () => {
+    getQueryClient().setQueryData(feedKey(), {
+      pages: [{ items: [review("r1", 3), review("r2", 7)] }],
+      pageParams: [undefined],
+    });
+    const snapshot = patchReviewInCaches("r1", (r) => withVote(r, 1));
+    patchReviewInCaches("r2", (r) => withVote(r, 1));
+
+    restoreReviewCaches(snapshot);
+
+    const data = getQueryClient().getQueryData<{
+      pages: Array<{ items: Review[] }>;
+    }>(feedKey());
+    expect(data?.pages[0]?.items.map((r) => r.likeCount)).toEqual([3, 8]);
+    expect(data?.pages[0]?.items[1]?.engagement?.viewerVote).toBe(1);
+  });
+
+  it("preserves pages loaded while a review mutation is pending", () => {
+    const snapshot = patchReviewInCaches("r1", (r) => withVote(r, 1));
+    getQueryClient().setQueryData(feedKey(), {
+      pages: [{ items: [review("r1", 4)] }, { items: [review("r2", 7)] }],
+      pageParams: [undefined, "next"],
+    });
+
+    restoreReviewCaches(snapshot);
+
+    const data = getQueryClient().getQueryData<{
+      pages: Array<{ items: Review[] }>;
+      pageParams: unknown[];
+    }>(feedKey());
+    expect(
+      data?.pages.map((page) => page.items.map((r) => r.likeCount)),
+    ).toEqual([[3], [7]]);
+    expect(data?.pageParams).toEqual([undefined, "next"]);
+  });
 });
