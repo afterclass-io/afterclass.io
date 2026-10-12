@@ -9,6 +9,26 @@ export type ResolveResult<T> =
   { ok: true; value: T } | { ok: false; errText: string };
 
 /**
+ * Run a resolver lookup, turning a thrown error into an `ok: false` result
+ * ("Could not resolve <what>: <reason>") so the tool gets a message, not a throw.
+ */
+async function resolveViaCaller<T>(
+  what: string,
+  lookup: () => Promise<ResolveResult<T>>,
+): Promise<ResolveResult<T>> {
+  try {
+    return await lookup();
+  } catch (e) {
+    return {
+      ok: false,
+      errText: `Could not resolve ${what}: ${
+        e instanceof Error ? e.message : String(e)
+      }`,
+    };
+  }
+}
+
+/**
  * Resolve the current academic term's id via the existing cached tRPC
  * procedure `caller.acadTerms.current()` (getCurrentAcadTerm, cached 24h,
  * tag "acad-terms").
@@ -17,10 +37,10 @@ export type ResolveResult<T> =
  * to ask the user which term when no current term exists (or the procedure
  * fails). Never returns a bare `[]`.
  */
-export async function resolveTermIdOrError(
+export function resolveTermIdOrError(
   caller: RouterCaller,
 ): Promise<ResolveResult<string>> {
-  try {
+  return resolveViaCaller<string>("the current academic term", async () => {
     const term = await caller.acadTerms.current();
     if (!term) {
       return {
@@ -30,14 +50,7 @@ export async function resolveTermIdOrError(
       };
     }
     return { ok: true, value: term.id };
-  } catch (e) {
-    return {
-      ok: false,
-      errText: `Could not resolve the current academic term: ${
-        e instanceof Error ? e.message : String(e)
-      }`,
-    };
-  }
+  });
 }
 
 /**
@@ -84,11 +97,11 @@ export async function resolveTermId(
  * error instructing the model to ask the user for the round + window (or call
  * get-bid-windows and let the user pick).
  */
-export async function resolveOpenWindowIdOrError(
+export function resolveOpenWindowIdOrError(
   caller: RouterCaller,
   now: Date = new Date(),
 ): Promise<ResolveResult<number>> {
-  try {
+  return resolveViaCaller<number>("the current open bid window", async () => {
     const window = await caller.bidWindows.getCurrentWindow();
     const isOpen =
       !!window &&
@@ -104,14 +117,7 @@ export async function resolveOpenWindowIdOrError(
       };
     }
     return { ok: true, value: window.id };
-  } catch (e) {
-    return {
-      ok: false,
-      errText: `Could not resolve the current open bid window: ${
-        e instanceof Error ? e.message : String(e)
-      }`,
-    };
-  }
+  });
 }
 
 /** The current context for tools that need both term and window. */
@@ -150,11 +156,11 @@ export function parseBidWindowAlias(input: string): BidWindowAlias | null {
  * only — never use it to place bids. Returns a friendly error when the term
  * has no windows yet (e.g. a future term) or the lookup fails.
  */
-export async function resolveLatestWindowIdOrError(
+export function resolveLatestWindowIdOrError(
   caller: RouterCaller,
   acadTermId?: string,
 ): Promise<ResolveResult<number>> {
-  try {
+  return resolveViaCaller<number>("the latest bid window", async () => {
     const trimmed = normalizeAcadTermId(acadTermId ?? "");
     if (trimmed) {
       const windows = await caller.bidWindows.getByAcadTerm({
@@ -179,14 +185,7 @@ export async function resolveLatestWindowIdOrError(
       };
     }
     return { ok: true, value: window.id };
-  } catch (e) {
-    return {
-      ok: false,
-      errText: `Could not resolve the latest bid window: ${
-        e instanceof Error ? e.message : String(e)
-      }`,
-    };
-  }
+  });
 }
 /**
  * Resolve both the current academic term and the current open bid window for
