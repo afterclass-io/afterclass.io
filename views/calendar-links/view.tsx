@@ -3,7 +3,8 @@ import type React from "react";
 import type { ViewConfig } from "mcp-use/react";
 import { useToolContext, useViewTheme } from "mcp-use/react";
 import type { CalendarLinksMeta } from "../../src/mcp/view-tools/schemas";
-import { Skeleton, TOKENS } from "../shared/tokens";
+import { TOKENS } from "../shared/tokens";
+import { viewStatusFallback } from "../shared/view-shell";
 
 /**
  * MCP App View (mcp-use v2) for the `get-timetable-calendar-link` tool. Must
@@ -78,24 +79,8 @@ const CalendarLinksView: React.FC = () => {
   const isApple =
     typeof navigator !== "undefined" &&
     /Mac|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (status === "pending") return <Skeleton dark={dark} />;
-  if (status === "error") {
-    return (
-      <div
-        role="alert"
-        style={{
-          fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
-          color: c.cardFg,
-          background: c.card,
-          border: `1px solid ${c.border}`,
-          borderRadius: c.radius,
-          padding: 16,
-        }}
-      >
-        {error.message}
-      </div>
-    );
-  }
+  const fallback = viewStatusFallback({ status, dark, error });
+  if (fallback) return fallback;
   // URLs come from the View-only `_meta` channel, never from toolOutput
   // (structuredContent is what the model sees and holds no secrets).
   const urls = meta as Partial<CalendarLinksMeta> | undefined;

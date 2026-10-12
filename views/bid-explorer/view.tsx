@@ -9,7 +9,8 @@ import {
 } from "mcp-use/react";
 import type { BidExplorerData } from "../../src/mcp/view-tools/schemas";
 import { useCtaFeedback } from "../shared/use-cta-feedback";
-import { TOKENS, Skeleton } from "../shared/tokens";
+import { TOKENS } from "../shared/tokens";
+import { viewStatusFallback } from "../shared/view-shell";
 import { format2dp } from "../shared/format";
 import { compareRounds } from "../shared/utils/round-order";
 import { buildChartPoints } from "../shared/utils/chart-points";
@@ -305,24 +306,8 @@ const BidExplorerView: React.FC = () => {
   // State returns AFTER every hook above: pending/error/empty must not
   // return before the useMemo block, or hook order changes when toolOutput
   // arrives after mount (pending -> ready without remount).
-  if (status === "pending") return <Skeleton dark={dark} />;
-  if (status === "error") {
-    return (
-      <div
-        role="alert"
-        style={{
-          fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
-          color: c.cardFg,
-          background: c.card,
-          border: `1px solid ${c.border}`,
-          borderRadius: c.radius,
-          padding: 16,
-        }}
-      >
-        {error.message}
-      </div>
-    );
-  }
+  const fallback = viewStatusFallback({ status, dark, error });
+  if (fallback) return fallback;
   if (isEmpty) {
     return (
       <div

@@ -2,7 +2,8 @@ import type React from "react";
 import type { ViewConfig } from "mcp-use/react";
 import { useToolContext, useViewTheme } from "mcp-use/react";
 import type { BidPlan } from "../../src/mcp/view-tools/schemas";
-import { Skeleton, TOKENS } from "../shared/tokens";
+import { TOKENS } from "../shared/tokens";
+import { viewStatusFallback } from "../shared/view-shell";
 
 /**
  * MCP App View (mcp-use v2) for the `my-bid-plan` tool. Must stay
@@ -56,24 +57,8 @@ const BidPlanView: React.FC = () => {
   const theme = useViewTheme();
   const dark = theme === "dark";
   const c = dark ? TOKENS.dark : TOKENS.light;
-  if (status === "pending") return <Skeleton dark={dark} />;
-  if (status === "error") {
-    return (
-      <div
-        role="alert"
-        style={{
-          fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
-          color: c.cardFg,
-          background: c.card,
-          border: `1px solid ${c.border}`,
-          borderRadius: c.radius,
-          padding: 16,
-        }}
-      >
-        {error.message}
-      </div>
-    );
-  }
+  const fallback = viewStatusFallback({ status, dark, error });
+  if (fallback) return fallback;
   // `toolOutput` is the unwrapped BidPlan from the tool's outputSchema.
   // The tool adapter passes its schemas `as never`, so read defensively
   // (every field optional with a skeleton fallback).

@@ -8,7 +8,8 @@ import {
 } from "mcp-use/react";
 import type { RoadmapViewData } from "../../src/mcp/view-tools/schemas";
 import { useCtaFeedback } from "../shared/use-cta-feedback";
-import { TOKENS, Skeleton } from "../shared/tokens";
+import { TOKENS } from "../shared/tokens";
+import { viewStatusFallback } from "../shared/view-shell";
 
 /**
  * MCP App View (mcp-use v2) for the `get-my-roadmap` tool. Must stay
@@ -46,24 +47,8 @@ const RoadmapView: React.FC = () => {
   );
   const { isAvailable } = useHostContext();
 
-  if (status === "pending") return <Skeleton dark={dark} />;
-  if (status === "error") {
-    return (
-      <div
-        role="alert"
-        style={{
-          fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
-          color: c.cardFg,
-          background: c.card,
-          border: `1px solid ${c.border}`,
-          borderRadius: c.radius,
-          padding: 16,
-        }}
-      >
-        {error.message}
-      </div>
-    );
-  }
+  const fallback = viewStatusFallback({ status, dark, error });
+  if (fallback) return fallback;
   // `toolOutput` is the normalized RoadmapView from the tool's
   // outputSchema. The tool adapter passes its schemas `as never`, so read
   // defensively (every field optional with a skeleton fallback).

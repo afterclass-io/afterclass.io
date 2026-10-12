@@ -2,7 +2,8 @@ import type React from "react";
 import type { ViewConfig } from "mcp-use/react";
 import { useToolContext, useViewTheme } from "mcp-use/react";
 import type { TimetableViewData } from "../../src/mcp/view-tools/schemas";
-import { TOKENS, Skeleton } from "../shared/tokens";
+import { TOKENS } from "../shared/tokens";
+import { viewStatusFallback } from "../shared/view-shell";
 import { DAY_ORDER, normalizeDay } from "../shared/day";
 import { formatExamDate } from "../shared/format";
 
@@ -204,24 +205,8 @@ const TimetableView: React.FC = () => {
   const dark = theme === "dark";
   const c = dark ? TOKENS.dark : TOKENS.light;
 
-  if (status === "pending") return <Skeleton dark={dark} />;
-  if (status === "error") {
-    return (
-      <div
-        role="alert"
-        style={{
-          fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
-          color: c.cardFg,
-          background: c.card,
-          border: `1px solid ${c.border}`,
-          borderRadius: c.radius,
-          padding: 16,
-        }}
-      >
-        {error.message}
-      </div>
-    );
-  }
+  const fallback = viewStatusFallback({ status, dark, error });
+  if (fallback) return fallback;
   // `toolOutput` is the normalized timetable detail from the tool's
   // outputSchema. Read defensively exactly like the sibling Views read theirs.
   const props = toolOutput as TimetableViewData | undefined;
