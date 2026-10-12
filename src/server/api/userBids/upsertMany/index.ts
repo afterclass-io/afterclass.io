@@ -3,6 +3,13 @@ import type { UserBid } from "@/generated/prisma/client";
 import { protectedProcedure } from "@/server/api/trpc";
 import { getBidLimits } from "@/server/config/chat-config";
 
+/**
+ * Saves up to 20 bids. Validation failures are reported per entry. The valid
+ * entries are written in ONE transaction, so a database error fails all of
+ * them with the same message and none is saved. This is deliberate: a batch
+ * is either saved whole or not at all, in one round trip. `UpsertManyResult`
+ * is the per-entry shape that MCP `save-bids` returns.
+ */
 export type UpsertManyResult =
   { ok: true; bid: UserBid } | { ok: false; message: string };
 
