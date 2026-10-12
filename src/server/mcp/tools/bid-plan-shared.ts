@@ -1,5 +1,6 @@
-import type { RouterCaller } from "../types";
-import { parseViewJson } from "../types";
+import type { RouterCaller, ToolResult } from "../types";
+import { jsonText, parseViewJson } from "../types";
+import { stripBidNotes } from "./bid-shared";
 
 interface BidPlanEntry {
   id: string;
@@ -51,6 +52,21 @@ export async function buildBidPlan(
     budget: budget ?? null,
     bids: plan,
   };
+}
+
+/**
+ * Result of a bid write tool: `{ updated, plan }`, with `notes` stripped from
+ * `updated`. `plan` is null when the affected term is unknown.
+ */
+export async function bidWriteResult<T extends object>(
+  caller: RouterCaller,
+  updated: T,
+  acadTermId: string | null,
+): Promise<ToolResult> {
+  if (!acadTermId)
+    return jsonText({ updated: stripBidNotes(updated), plan: null });
+  const plan = await buildBidPlan(caller, acadTermId);
+  return jsonText({ updated: stripBidNotes(updated), plan });
 }
 
 /**

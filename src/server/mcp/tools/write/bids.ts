@@ -1,9 +1,12 @@
 import { z } from "zod";
 
 import { resolveOpenWindowIdOrError, resolveTermId } from "../../current";
-import { bidPlanToViewProps, buildBidPlan } from "../bid-plan-shared";
+import {
+  bidPlanToViewProps,
+  bidWriteResult,
+  buildBidPlan,
+} from "../bid-plan-shared";
 import { buildTermMap } from "../bid-write-helpers";
-import { stripBidNotes } from "../bid-shared";
 import {
   confirmField,
   errText,
@@ -57,10 +60,7 @@ export const upsertBidTool: McpTool<typeof upsertBidSchema> = {
     } catch {
       // Non-fatal — plan enrichment failed; return updated alone below.
     }
-    if (!acadTermId)
-      return jsonText({ updated: stripBidNotes(updated), plan: null });
-    const plan = await buildBidPlan(caller, acadTermId);
-    return jsonText({ updated: stripBidNotes(updated), plan });
+    return bidWriteResult(caller, updated, acadTermId);
   }),
 };
 
@@ -86,9 +86,7 @@ export const removeBidTool: McpTool<typeof removeBidSchema> = {
     if (!acadTermId && raw && typeof raw.acadTermId === "string")
       acadTermId = raw.acadTermId;
     const updated = { success: raw?.success ?? true };
-    if (!acadTermId) return jsonText({ updated, plan: null });
-    const plan = await buildBidPlan(caller, acadTermId);
-    return jsonText({ updated, plan });
+    return bidWriteResult(caller, updated, acadTermId);
   }),
 };
 

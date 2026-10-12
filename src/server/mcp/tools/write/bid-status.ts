@@ -1,11 +1,9 @@
 import { z } from "zod";
 
-import { bidPlanToViewProps, buildBidPlan } from "../bid-plan-shared";
-import { stripBidNotes } from "../bid-shared";
+import { bidPlanToViewProps, bidWriteResult } from "../bid-plan-shared";
 import {
   confirmField,
   guardedRun,
-  jsonText,
   type McpTool,
   type RouterOutputs,
 } from "../../types";
@@ -64,9 +62,6 @@ export const setBidStatusTool: McpTool<typeof setBidStatusSchema> = {
       const m2 = rows?.find((b) => b.id === id);
       acadTermId = m2?.bidWindow?.acadTermId ?? null;
     }
-    if (!acadTermId)
-      return jsonText({ updated: stripBidNotes(updated), plan: null });
-    const plan = await buildBidPlan(caller, acadTermId);
-    return jsonText({ updated: stripBidNotes(updated), plan });
+    return bidWriteResult(caller, updated, acadTermId);
   }),
 };

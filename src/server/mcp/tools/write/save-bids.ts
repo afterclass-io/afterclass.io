@@ -40,6 +40,43 @@ const saveBidsSchema = z.object({
   ...confirmField,
 });
 
+type PerEntry =
+  | {
+      ok: true;
+      index: number;
+      courseCode: string;
+      section: string;
+      result: unknown;
+    }
+  | {
+      ok: false;
+      index: number;
+      courseCode: string;
+      section: string;
+      error: string;
+    };
+
+/** Marks every entry of a batch as failed with the same error (whole-batch failure). */
+function failBatch(
+  updated: PerEntry[],
+  entries: ReadonlyArray<{
+    index: number;
+    courseCode: string;
+    section: string;
+  }>,
+  error: string,
+): void {
+  for (const entry of entries) {
+    updated[entry.index] = {
+      ok: false,
+      index: entry.index,
+      courseCode: entry.courseCode,
+      section: entry.section,
+      error,
+    };
+  }
+}
+
 export const saveBidsTool: McpTool<typeof saveBidsSchema> = {
   name: "save-bids",
   description:
@@ -75,22 +112,6 @@ export const saveBidsTool: McpTool<typeof saveBidsSchema> = {
         defaultWindowErr =
           "No bid window is currently open for bidding. Ask the user which bid round and window to use, or call get-bid-windows and let the user pick.";
     }
-
-    type PerEntry =
-      | {
-          ok: true;
-          index: number;
-          courseCode: string;
-          section: string;
-          result: unknown;
-        }
-      | {
-          ok: false;
-          index: number;
-          courseCode: string;
-          section: string;
-          error: string;
-        };
 
     const updated: PerEntry[] = new Array<PerEntry>(bids.length);
     const succeededAcadTermIds = new Set<string>();
@@ -175,16 +196,7 @@ export const saveBidsTool: McpTool<typeof saveBidsSchema> = {
           acadTermId: termId,
         });
       } catch (e) {
-        const errMsg = errorMessage(e);
-        for (const entry of validWindowEntries) {
-          updated[entry.index] = {
-            ok: false,
-            index: entry.index,
-            courseCode: entry.courseCode,
-            section: entry.section,
-            error: errMsg,
-          };
-        }
+        failBatch(updated, validWindowEntries, errorMessage(e));
       }
 
       if (resolvedItems.length > 0) {
@@ -253,16 +265,7 @@ export const saveBidsTool: McpTool<typeof saveBidsSchema> = {
           }
         }
       } catch (e) {
-        const errMsg = errorMessage(e);
-        for (const entry of validResolvedEntries) {
-          updated[entry.index] = {
-            ok: false,
-            index: entry.index,
-            courseCode: entry.courseCode,
-            section: entry.section,
-            error: errMsg,
-          };
-        }
+        failBatch(updated, validResolvedEntries, errorMessage(e));
       }
     }
 

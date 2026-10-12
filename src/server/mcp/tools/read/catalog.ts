@@ -126,6 +126,12 @@ const reviewCardsToViewProps = (
   return reviewCardsProps(text);
 };
 
+/** Agent-facing reviews payload: a bare list becomes `items`; a paged envelope is spread after `context`. */
+const reviewsPayload = (context: string, data: unknown) =>
+  Array.isArray(data)
+    ? { context, items: data }
+    : { context, ...(data as Record<string, unknown>) };
+
 const getCourseReviewsSchema = z
   .object({
     code: z.string().optional().describe("Exact course code"),
@@ -174,10 +180,7 @@ export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
       filterFor: ReviewsFilterFor.ALL,
       sortBy: ReviewsSortBy.LATEST,
     });
-    const payload = Array.isArray(data)
-      ? { context: resolvedCode, items: data }
-      : { context: resolvedCode, ...(data as Record<string, unknown>) };
-    return jsonText(payload);
+    return jsonText(reviewsPayload(resolvedCode, data));
   }),
 };
 
@@ -205,10 +208,7 @@ export const getProfessorReviewsTool: McpTool<
       filterFor: ReviewsFilterFor.ALL,
       sortBy: ReviewsSortBy.LATEST,
     });
-    const payload = Array.isArray(data)
-      ? { context: slug, items: data }
-      : { context: slug, ...(data as Record<string, unknown>) };
-    return jsonText(payload);
+    return jsonText(reviewsPayload(slug, data));
   }),
 };
 
