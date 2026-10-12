@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import {
   errText,
-  errorMessage,
+  guardedRun,
   jsonText,
   type McpTool,
   type ToolContext,
@@ -70,75 +70,71 @@ export const planSemesterTool: McpTool<typeof planSemesterSchema> = {
     "Plan the user's next semester: given their progression (active roadmap + matriculation term), returns the target academic term, the user's position (year/term), and ranked course candidates that seniors in the same faculty took at that point in their roadmap (frequency + upvotes). When seniors have nothing (candidates empty) and a goal is given, falls back to catalog search on the goal across the target + upcoming terms (reason 'fallback-catalog', per-course offeredIn). Use this for 'what should I take next term' / 'plan inspired by seniors' questions instead of chaining many lookups.",
   inputSchema: planSemesterSchema,
   readOnly: true,
-  run: async ({ caller }, input) => {
-    try {
-      // Students say "SCIS", not numeric ids: resolve acronyms via the
-      // faculties list procedure (numbers pass through untouched).
-      // resolveFacultyId handles both shapes, so every input goes through it
-      // (aligns with search-courses, which resolves unconditionally).
-      let facultyId = input.facultyId;
-      if (facultyId !== undefined) {
-        const resolved = await resolveFacultyId(caller, facultyId);
-        if (!resolved.ok) return errText(resolved.errText);
-        facultyId = resolved.value;
-      }
-      // `goal` is a tool-layer param: the procedure knows nothing about it.
-      const { goal, ...procInput } = input;
-      const result = (await caller.roadmaps.planSemester({
-        ...procInput,
-        facultyId,
-      })) as {
-        targetTerm: { id: string } | null;
-        userPosition: unknown;
-        candidates: Array<{ courseId: string }>;
-        totalSeniors: number;
-      };
-      // Senior path intact: non-empty candidates, or no goal to fall back on.
-      const trimmedGoal = goal?.trim() ?? "";
-      if (result.candidates.length > 0 || !trimmedGoal || !result.targetTerm) {
-        return jsonText(result);
-      }
-      // Fallback: target term first (defaulted by the procedure, never
-      // guessed), then fan out to the nearest upcoming terms if thin.
-      // searchCourses only returns courses with class rows for the queried
-      // term, so per-course `offeredIn` is the honest availability signal.
-      const targetTermId = result.targetTerm.id;
-      const termIds = [
-        targetTermId,
-        ...(await upcomingTermIds(caller, targetTermId, FALLBACK_FANOUT_TERMS)),
-      ];
-      const byCourse = new Map<string, CatalogHit & { offeredIn: string[] }>();
-      // One batched call; each term keeps its own top-N, as one search per
-      // term would. Merge in term order and stop once the limit is met.
-      const perTerm = await caller.timetable.searchCoursesByTerms({
-        acadTermIds: termIds,
-        query: trimmedGoal,
-        facultyId,
-      });
-      for (const { acadTermId, courses } of perTerm) {
-        for (const h of courses) {
-          const agg = byCourse.get(h.id);
-          if (agg) {
-            agg.offeredIn.push(acadTermId);
-          } else {
-            byCourse.set(h.id, { ...h, offeredIn: [acadTermId] });
-          }
-        }
-        if (byCourse.size >= input.limit) break;
-      }
-      return jsonText({
-        ...result,
-        reason: "fallback-catalog",
-        candidates: [...byCourse.values()].slice(0, input.limit).map((c) => ({
-          courseId: c.id,
-          code: c.code,
-          name: c.name,
-          creditUnits: c.creditUnits,
-          offeredIn: c.offeredIn,
-        })),
-      });
-    } catch (e) {
-      return errText(errorMessage(e));
+  run: guardedRun(async ({ caller }, input) => {
+    // Students say "SCIS", not numeric ids: resolve acronyms via the
+    // faculties list procedure (numbers pass through untouched).
+    // resolveFacultyId handles both shapes, so every input goes through it
+    // (aligns with search-courses, which resolves unconditionally).
+    let facultyId = input.facultyId;
+    if (facultyId !== undefined) {
+      const resolved = await resolveFacultyId(caller, facultyId);
+      if (!resolved.ok) return errText(resolved.errText);
+      facultyId = resolved.value;
     }
-  },
+    // `goal` is a tool-layer param: the procedure knows nothing about it.
+    const { goal, ...procInput } = input;
+    const result = (await caller.roadmaps.planSemester({
+      ...procInput,
+      facultyId,
+    })) as {
+      targetTerm: { id: string } | null;
+      userPosition: unknown;
+      candidates: Array<{ courseId: string }>;
+      totalSeniors: number;
+    };
+    // Senior path intact: non-empty candidates, or no goal to fall back on.
+    const trimmedGoal = goal?.trim() ?? "";
+    if (result.candidates.length > 0 || !trimmedGoal || !result.targetTerm) {
+      return jsonText(result);
+    }
+    // Fallback: target term first (defaulted by the procedure, never
+    // guessed), then fan out to the nearest upcoming terms if thin.
+    // searchCourses only returns courses with class rows for the queried
+    // term, so per-course `offeredIn` is the honest availability signal.
+    const targetTermId = result.targetTerm.id;
+    const termIds = [
+      targetTermId,
+      ...(await upcomingTermIds(caller, targetTermId, FALLBACK_FANOUT_TERMS)),
+    ];
+    const byCourse = new Map<string, CatalogHit & { offeredIn: string[] }>();
+    // One batched call; each term keeps its own top-N, as one search per
+    // term would. Merge in term order and stop once the limit is met.
+    const perTerm = await caller.timetable.searchCoursesByTerms({
+      acadTermIds: termIds,
+      query: trimmedGoal,
+      facultyId,
+    });
+    for (const { acadTermId, courses } of perTerm) {
+      for (const h of courses) {
+        const agg = byCourse.get(h.id);
+        if (agg) {
+          agg.offeredIn.push(acadTermId);
+        } else {
+          byCourse.set(h.id, { ...h, offeredIn: [acadTermId] });
+        }
+      }
+      if (byCourse.size >= input.limit) break;
+    }
+    return jsonText({
+      ...result,
+      reason: "fallback-catalog",
+      candidates: [...byCourse.values()].slice(0, input.limit).map((c) => ({
+        courseId: c.id,
+        code: c.code,
+        name: c.name,
+        creditUnits: c.creditUnits,
+        offeredIn: c.offeredIn,
+      })),
+    });
+  }),
 };

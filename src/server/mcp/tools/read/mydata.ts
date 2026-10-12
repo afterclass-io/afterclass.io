@@ -6,7 +6,13 @@ import {
   stripSecretsFromValue,
 } from "@/mcp/output-policy";
 import { resolveTermId } from "../../current";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import {
+  errText,
+  errorMessage,
+  guardedRun,
+  jsonText,
+  type McpTool,
+} from "../../types";
 import { stripBidNotes } from "../bid-shared";
 
 const myTimetablesSchema = z.object({ acadTermId: z.string().optional() });
@@ -120,18 +126,14 @@ export const myRoadmapsTool: McpTool<typeof myRoadmapsSchema> = {
   description: "List the user's own study roadmaps.",
   inputSchema: myRoadmapsSchema,
   readOnly: true,
-  run: async ({ caller }) => {
-    try {
-      const roadmaps = (await caller.roadmaps.listMine()) as Array<
-        Record<string, unknown>
-      >;
-      // Bearer tokens must not reach the LLM (canonical deep-strip).
-      const scrubbed = roadmaps.map((r) => stripSecretsFromValue(r));
-      return jsonText(scrubbed);
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }) => {
+    const roadmaps = (await caller.roadmaps.listMine()) as Array<
+      Record<string, unknown>
+    >;
+    // Bearer tokens must not reach the LLM (canonical deep-strip).
+    const scrubbed = roadmaps.map((r) => stripSecretsFromValue(r));
+    return jsonText(scrubbed);
+  }),
 };
 
 const browsePublicRoadmapsSchema = z.object({
@@ -148,13 +150,9 @@ export const browsePublicRoadmapsTool: McpTool<
     "Browse roadmaps other users have published publicly (metadata: name, description, entry count, upvotes, faculty). Use get-public-roadmap with the returned id to see the actual course entries.",
   inputSchema: browsePublicRoadmapsSchema,
   readOnly: true,
-  run: async ({ caller }, input) => {
-    try {
-      return jsonText(await caller.roadmaps.listPublic(input));
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, input) => {
+    return jsonText(await caller.roadmaps.listPublic(input));
+  }),
 };
 
 const getSharedTimetableSchema = z.object({
@@ -167,11 +165,7 @@ export const getSharedTimetableTool: McpTool<typeof getSharedTimetableSchema> =
     description: "View a timetable that was shared via a share-link token.",
     inputSchema: getSharedTimetableSchema,
     readOnly: true,
-    run: async ({ caller }, { token }) => {
-      try {
-        return jsonText(await caller.sharing.getSharedTimetable({ token }));
-      } catch (e) {
-        return errText(errorMessage(e));
-      }
-    },
+    run: guardedRun(async ({ caller }, { token }) => {
+      return jsonText(await caller.sharing.getSharedTimetable({ token }));
+    }),
   };
