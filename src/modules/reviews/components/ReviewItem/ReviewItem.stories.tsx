@@ -132,10 +132,10 @@ export const CoursePageLongProfessorName: Story = {
   },
 };
 
-// A phone screen minus the page padding (375 px wide).
+// A typical phone screen (390 px wide, e.g. iPhone 14).
 const phoneWidth: Story["decorators"] = [
   (Story) => (
-    <div style={{ width: 343 }}>
+    <div style={{ width: 390 }}>
       <Story />
     </div>
   ),
