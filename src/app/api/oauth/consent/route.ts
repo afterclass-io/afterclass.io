@@ -50,7 +50,9 @@ function sameOriginGuard(req: Request): Response | null {
   return null;
 }
 
-export async function GET(req: Request) {
+// Runs the same-origin guard, then reads the Supabase access token. Returns
+// the error Response to send when either check fails, otherwise the token.
+async function requireConsentSession(req: Request): Promise<string | Response> {
   const blocked = sameOriginGuard(req);
   if (blocked) return blocked;
   const token = await getSupabaseAccessToken();
@@ -65,6 +67,13 @@ export async function GET(req: Request) {
     }
     return Response.json({ error: "no supabase session" }, { status: 401 });
   }
+  return token;
+}
+
+export async function GET(req: Request) {
+  const tokenOrResponse = await requireConsentSession(req);
+  if (tokenOrResponse instanceof Response) return tokenOrResponse;
+  const token = tokenOrResponse;
   const authorizationId = new URL(req.url).searchParams.get("authorization_id");
   if (!authorizationId)
     return Response.json(
@@ -99,18 +108,9 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const blocked = sameOriginGuard(req);
-  if (blocked) return blocked;
-
-  const token = await getSupabaseAccessToken();
-  if (!token) {
-    const session = await auth();
-    if (session?.user && session.googleLinkFailed) {
-      console.error("[oauth/consent] link failed for signed-in user");
-      return Response.json({ error: "link_failed" }, { status: 401 });
-    }
-    return Response.json({ error: "no supabase session" }, { status: 401 });
-  }
+  const tokenOrResponse = await requireConsentSession(req);
+  if (tokenOrResponse instanceof Response) return tokenOrResponse;
+  const token = tokenOrResponse;
   // Malformed JSON and any body that is not the expected object are a 400,
   // never a 500 (unhandled req.json() throw, or a `null` literal).
   let raw: unknown;
