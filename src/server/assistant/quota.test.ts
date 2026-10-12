@@ -218,6 +218,31 @@ describe("quota", () => {
   });
 
   // ---- refundMessage ----
+  it("keeps a confirmed reservation when its remaining-count read fails", async () => {
+    txChatUsageUpsert.mockResolvedValue(undefined);
+    txChatUsageUpdateMany.mockResolvedValue({ count: 1 });
+    txChatUsageFindUnique.mockRejectedValue(new Error("read connection lost"));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    try {
+      await expect(reserveMessage("u1")).resolves.toEqual({
+        ok: true,
+        remaining: 0,
+        quota: 50,
+      });
+      expect(txChatUsageUpdateMany).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("propagates an increment failure instead of claiming a reservation", async () => {
+    txChatUsageUpsert.mockResolvedValue(undefined);
+    txChatUsageUpdateMany.mockRejectedValue(new Error("write connection lost"));
+    await expect(reserveMessage("u1")).rejects.toThrow("write connection lost");
+    expect(txChatUsageFindUnique).not.toHaveBeenCalled();
+  });
+
   it("refundMessage decrements the reserved count (atomic, never below 0)", async () => {
     txChatUsageUpdateMany.mockResolvedValue({ count: 1 });
     await refundMessage("u1");

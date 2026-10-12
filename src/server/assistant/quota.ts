@@ -99,10 +99,20 @@ export async function reserveMessage(
   // One slot claimed. Re-read the fresh count for an accurate `remaining`
   // (avoids the stale-read trap of deriving remaining from the pre-increment
   // snapshot when concurrent increments raced).
-  const fresh = await db.chatUsage.findUnique({
-    where: { userId_period: { userId, period } },
-  });
-  const used = fresh?.messageCount ?? quota;
+  let used = quota;
+  try {
+    const fresh = await db.chatUsage.findUnique({
+      where: { userId_period: { userId, period } },
+    });
+    used = fresh?.messageCount ?? quota;
+  } catch {
+    // Admission already committed. Keep the confirmed reservation so the
+    // route starts the turn or refunds it if a later step fails. Remaining
+    // is display metadata; conservatively report zero when it is unavailable.
+    console.warn(
+      "[assistant] quota slot reserved; remaining count unavailable",
+    );
+  }
   return { ok: true, remaining: Math.max(0, quota - used), quota };
 }
 
