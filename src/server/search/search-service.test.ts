@@ -99,16 +99,6 @@ describe("search-service", () => {
       expect(sql).not.toContain("plainto_tsquery");
     });
 
-    it("binds 'statistics:*' for query 'statistics'", async () => {
-      queryRawMock.mockResolvedValue([]);
-
-      await searchCourses(mockDb, { query: "statistics", limit: 10 });
-
-      const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
-      const params = rawCall.slice(1);
-      expect(params).toContain("statistics:*");
-    });
-
     it("binds 'intro:* & to:* & computing:*' and caller-supplied limit (e.g. 5, 20)", async () => {
       queryRawMock.mockResolvedValue([]);
 

@@ -18,7 +18,6 @@ describe("buildTsQuery", () => {
     ["René Müller", "René:* & Müller:*"],
     ["日本語", "日本語:*"],
     ["; SELECT * FROM courses;--", "SELECT:* & FROM:* & courses:*"],
-    ["&&& (( ::", null],
     ["a b c d e f g h i j", "a:* & b:* & c:* & d:* & e:* & f:* & g:* & h:*"],
     ["  computing  ", "computing:*"],
     ["a  b", "a:* & b:*"],
@@ -35,13 +34,6 @@ describe("buildTsQuery", () => {
     expect(buildTsQuery("")).toBeNull();
     expect(buildTsQuery("   ")).toBeNull();
     expect(buildTsQuery("&&& (( ::")).toBeNull();
-  });
-
-  it("caps tokens at MAX_TSQUERY_TOKENS (8 tokens)", () => {
-    const res = buildTsQuery("a b c d e f g h i j");
-    expect(res).not.toBeNull();
-    const tokens = res!.split(" & ");
-    expect(tokens).toHaveLength(8);
   });
 });
 

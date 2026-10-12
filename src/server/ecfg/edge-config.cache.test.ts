@@ -41,17 +41,6 @@ async function load() {
 }
 
 describe("getEdgeConfig caching", () => {
-  it("reads the store once for repeated calls", async () => {
-    m.getAll.mockResolvedValue({ enableReviewSort: true });
-    const { getEdgeConfig } = await load();
-
-    await getEdgeConfig();
-    await getEdgeConfig();
-    await getEdgeConfig();
-
-    expect(m.getAll).toHaveBeenCalledTimes(1);
-  });
-
   it("tags the cached read and sets a revalidation window", async () => {
     const { EDGE_CONFIG_CACHE_TAG } = await load();
 

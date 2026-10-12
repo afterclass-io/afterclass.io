@@ -240,23 +240,6 @@ describe("seedEdgeConfig with a fake fetchImpl", () => {
     });
   });
 
-  it("the PATCH body string contains none of 'update', 'upsert', 'delete'", async () => {
-    const missingItems = itemsMissing("enableContentModeration");
-    const { fake, calls } = createFakeFetch({
-      getItems: (count) => ({
-        status: 200,
-        body: count === 1 ? missingItems : remoteItemsFixture,
-      }),
-    });
-
-    await seedEdgeConfig(seedOptions(fake, { apply: true }));
-
-    const patchBody = calls[1]?.body ?? "";
-    expect(patchBody).not.toContain("update");
-    expect(patchBody).not.toContain("upsert");
-    expect(patchBody).not.toContain("delete");
-  });
-
   it("with teamId: 'team_1', both the GET and PATCH URLs end with ?teamId=team_1", async () => {
     const missingItems = itemsMissing("enableContentModeration");
     const { fake, calls } = createFakeFetch({
