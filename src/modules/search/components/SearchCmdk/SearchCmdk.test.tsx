@@ -66,4 +66,32 @@ describe("SearchCmdk", () => {
 
     expect(push).toHaveBeenCalledWith("/search?q=is");
   });
+
+  it("keeps the dialog open when the Search link is clicked on a short query", () => {
+    render(
+      <SearchCmdk asChild>
+        <button type="button">Open search</button>
+      </SearchCmdk>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Open search" }));
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "i" } });
+    fireEvent.click(screen.getByRole("link", { name: "Search" }));
+
+    expect(screen.getByRole("textbox")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveClass("text-error");
+  });
+
+  it("tells the user to press Enter once the query is long enough", () => {
+    render(
+      <SearchCmdk asChild>
+        <button type="button">Open search</button>
+      </SearchCmdk>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Open search" }));
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "is" } });
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Press Enter to search.",
+    );
+  });
 });

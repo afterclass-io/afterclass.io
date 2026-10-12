@@ -21,7 +21,7 @@ import {
 } from "@/common/components/dialog";
 import { SearchIcon } from "@/common/components/icons";
 import { useEdgeConfigs } from "@/common/hooks";
-import { MIN_QUERY_LEN } from "@/common/constants/search";
+import { isShortQuery, SHORT_QUERY_HINT } from "@/common/constants/search";
 import { cn } from "@/common/functions";
 import { SearchCmdkModalTrigger } from "./SearchCmdkModalTrigger";
 import { useProgress } from "@/common/providers/ProgressProvider";
@@ -86,7 +86,7 @@ export const SearchCmdk = ({
   }, [asChild]);
 
   const trimmedTerm = searchTerm.trim();
-  const isShort = trimmedTerm.length < MIN_QUERY_LEN;
+  const isShort = isShortQuery(trimmedTerm);
 
   const getSearchDestination = () => {
     const params = new URLSearchParams();
@@ -150,7 +150,15 @@ export const SearchCmdk = ({
               />
             </InputControl>
             <InputAdornmentButton variant="default" asChild>
-              <DialogClose asChild>
+              <DialogClose
+                asChild
+                onClick={(e) => {
+                  // A too-short query keeps the palette open and shows the hint.
+                  if (!isShort) return;
+                  e.preventDefault();
+                  setHasSubmittedShort(true);
+                }}
+              >
                 <ProgressLink
                   href={getSearchDestination()}
                   className="flex size-fit items-center justify-center font-semibold"
@@ -161,15 +169,17 @@ export const SearchCmdk = ({
               </DialogClose>
             </InputAdornmentButton>
           </InputRoot>
-          <p
-            role="status"
-            className={cn(
-              "px-9 pb-3 text-sm",
-              hasSubmittedShort && "text-error",
-            )}
-          >
-            {isShort && `Type ${MIN_QUERY_LEN} or more characters.`}
-          </p>
+          {trimmedTerm !== "" && (
+            <p
+              role="status"
+              className={cn(
+                "px-9 pb-3 text-sm",
+                hasSubmittedShort && "text-error",
+              )}
+            >
+              {isShort ? SHORT_QUERY_HINT : "Press Enter to search."}
+            </p>
+          )}
         </form>
       </DialogContent>
     </Dialog>
