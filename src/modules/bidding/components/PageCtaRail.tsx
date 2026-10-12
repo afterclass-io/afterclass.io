@@ -1,14 +1,13 @@
-import { Suspense, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { CtaButton } from "@/common/components/cta-button";
 import { EditIcon, GithubIcon, PlusIcon } from "@/common/components/icons";
 import { env } from "@/env";
-import { BidWindowScheduleCard } from "@/modules/bidding/components/BidWindowScheduleCard";
-import { BidWindowScheduleCardSkeleton } from "@/modules/bidding/components/BidWindowScheduleCardSkeleton";
 
 /**
  * The sticky right-hand CTA rail shared by the reviews and bidding layouts.
- * `children` render between the two CTA buttons and the schedule card.
+ * `children` render after the two CTA buttons. Each layout supplies its own
+ * schedule card inside a Suspense boundary (see the performance invariants).
  */
 export function PageCtaRail({ children }: { children?: ReactNode }) {
   return (
@@ -33,10 +32,6 @@ export function PageCtaRail({ children }: { children?: ReactNode }) {
         data-umami-event="cta-btn-contribute-oss"
       />
       {children}
-      {/* Async card: without a boundary it holds back the whole layout. */}
-      <Suspense fallback={<BidWindowScheduleCardSkeleton />}>
-        <BidWindowScheduleCard />
-      </Suspense>
     </div>
   );
 }

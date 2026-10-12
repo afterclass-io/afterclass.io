@@ -2,10 +2,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/modules/bidding/components/BidWindowScheduleCard", () => ({
-  BidWindowScheduleCard: () => <div data-test="schedule-card" />,
-}));
-
 vi.mock("next/navigation", () => ({
   usePathname: () => null,
   useRouter: () => ({ push: vi.fn() }),
@@ -24,12 +20,11 @@ const dataTests = (root: HTMLElement) =>
   );
 
 describe("PageCtaRail", () => {
-  it("renders the two CTA buttons then the schedule card", () => {
+  it("renders the two CTA buttons", () => {
     const { container } = render(<PageCtaRail />);
     expect(dataTests(container)).toEqual([
       "cta-write-review",
       "cta-contribute-oss",
-      "schedule-card",
     ]);
     expect(
       screen
@@ -39,7 +34,7 @@ describe("PageCtaRail", () => {
     ).toBe("_blank");
   });
 
-  it("places children between the buttons and the schedule card", () => {
+  it("places children after the buttons", () => {
     const { container } = render(
       <PageCtaRail>
         <div data-test="extra" />
@@ -49,7 +44,6 @@ describe("PageCtaRail", () => {
       "cta-write-review",
       "cta-contribute-oss",
       "extra",
-      "schedule-card",
     ]);
   });
 });

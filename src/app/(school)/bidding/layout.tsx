@@ -1,5 +1,7 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
+import { BidWindowScheduleCard } from "@/modules/bidding/components/BidWindowScheduleCard";
+import { BidWindowScheduleCardSkeleton } from "@/modules/bidding/components/BidWindowScheduleCardSkeleton";
 import { PageCtaRail } from "@/modules/bidding/components/PageCtaRail";
 import { ReviewCtaButtons } from "@/modules/bidding/components/ReviewCtaButtons";
 
@@ -14,6 +16,9 @@ export default function BidLayout({ children }: { children: ReactNode }) {
       {children}
       <PageCtaRail>
         <ReviewCtaButtons />
+        <Suspense fallback={<BidWindowScheduleCardSkeleton />}>
+          <BidWindowScheduleCard />
+        </Suspense>
       </PageCtaRail>
     </div>
   );
