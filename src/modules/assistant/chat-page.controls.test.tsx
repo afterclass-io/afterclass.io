@@ -153,7 +153,7 @@ describe("ChatPage status sync", () => {
       ).toBeTruthy(),
     );
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0]?.[0]).toBe("/api/assistant/status");
+    expect(fetchMock).toHaveBeenCalledWith("/api/assistant/status");
 
     // No further status change: no further fetch.
     rerender(<ChatPage initialStatus={status()} />);
