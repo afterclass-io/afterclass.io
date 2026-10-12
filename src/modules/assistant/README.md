@@ -169,7 +169,7 @@ When the quota gate trips, `AssistantProvider` renders `ConnectGate`, which show
 - **`CHAT_RATE_LIMIT_WINDOW_MINUTES`** - (optional) fixed-window size in minutes (default 1).
 - **`SKIP_ENV_VALIDATION=1`** - set this when running `bun run lint` to bypass `src/env.ts` validation (`next lint` forces `NODE_ENV=production`, which makes the real production-required vars - `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` - required; run lint with `SKIP_ENV_VALIDATION=true` and unset it afterwards).
 
-The LLM provider is a single generic OpenAI-compatible backend (defaults route through OpenRouter `@preset/afterclass`), configured from `LLM_API_KEY` plus `LLM_BASE_URL`/`LLM_MODEL` (see `src/server/assistant/providers.ts`). Rate limits can be overridden via `CHAT_*` env vars (see `src/server/ecfg/chat.ts`).
+The LLM provider is a single generic OpenAI-compatible backend (defaults route through OpenRouter `@preset/afterclass`), configured from `LLM_API_KEY` plus `LLM_BASE_URL`/`LLM_MODEL` (see `src/server/assistant/providers.ts`). Rate limits can be overridden via `CHAT_*` env vars (see `src/server/config/chat-config.ts`).
 
 ## Smoke Testing (Local Dev)
 
