@@ -104,10 +104,12 @@ export async function runModeration(
   if (!peek.ok) return "ceiling_reached";
 
   const claimKey = `moderation:claim:${surface}:${itemId}:${clearances}`;
+  const acquiredAt = Date.now();
   const claim = await checkAndIncrement(
     claimKey,
     1,
     cfg.moderationClaimWindowMinutes,
+    acquiredAt,
   );
   if (!claim.ok) return "claim_lost";
   const ceiling = await checkAndIncrement(
@@ -118,7 +120,11 @@ export async function runModeration(
   if (!ceiling.ok) {
     // The ceiling filled after the peek. Give the claim back so the item is
     // not locked for the claim window with no judgement.
-    await releaseRateLimit(claimKey, cfg.moderationClaimWindowMinutes);
+    await releaseRateLimit(
+      claimKey,
+      cfg.moderationClaimWindowMinutes,
+      acquiredAt,
+    );
     return "ceiling_reached";
   }
 

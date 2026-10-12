@@ -182,9 +182,26 @@ describe("peekRateLimit", () => {
 describe("releaseRateLimit", () => {
   beforeEach(() => mockExecuteRaw.mockReset());
 
-  it("sends one parameterized update for the current window row", async () => {
+  it("releases the acquired bucket after the clock crosses an hour", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(3_599_999);
+      const acquiredAt = Date.now();
+      mockQueryRaw.mockResolvedValue([{ count: 1 }]);
+      await checkAndIncrement("k", 1, 5);
+      const acquiredKey: unknown = mockQueryRaw.mock.calls.at(-1)?.[1];
+      vi.setSystemTime(3_600_001);
+      await releaseRateLimit("k", 5, acquiredAt);
+      expect(mockExecuteRaw.mock.calls[0]?.[1]).toBe(acquiredKey);
+      expect(acquiredKey).toBe("k:3300000");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("sends one parameterized update for the acquired window row", async () => {
     mockExecuteRaw.mockResolvedValue(1);
-    await releaseRateLimit("k", 5);
+    await releaseRateLimit("k", 5, Date.now());
     expect(mockExecuteRaw).toHaveBeenCalledTimes(1);
     const [strings, ...values] = mockExecuteRaw.mock.calls[0] as [
       string[],

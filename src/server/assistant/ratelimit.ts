@@ -26,13 +26,14 @@ import { db } from "@/server/db";
 function windowFor(
   key: string,
   windowMinutes: number,
+  atMs = Date.now(),
 ): {
   windowMs: number;
   windowStart: number;
   rowKey: string;
 } {
   const windowMs = windowMinutes * 60_000;
-  const windowStart = Math.floor(Date.now() / windowMs) * windowMs;
+  const windowStart = Math.floor(atMs / windowMs) * windowMs;
   const rowKey = `${key}:${windowStart}`;
   return { windowMs, windowStart, rowKey };
 }
@@ -63,8 +64,9 @@ export async function checkAndIncrement(
   key: string,
   limit: number,
   windowMinutes: number,
+  atMs = Date.now(),
 ): Promise<{ ok: boolean; retryAfterSeconds: number }> {
-  const { windowMs, windowStart, rowKey } = windowFor(key, windowMinutes);
+  const { windowMs, windowStart, rowKey } = windowFor(key, windowMinutes, atMs);
   const retryAfter = retryAfterSeconds(windowStart, windowMs);
   // A limit below 1 admits nobody. This keeps the old contract and skips the DB.
   if (limit < 1) return { ok: false, retryAfterSeconds: retryAfter };
@@ -83,15 +85,16 @@ export async function checkAndIncrement(
 }
 
 /**
- * Gives back one unit taken by `checkAndIncrement` in the current window.
+ * Gives back one unit in the window acquired at `acquiredAt`.
  * A caller uses it to undo a claim it cannot act on. It never drops the
  * count below zero and it creates no row.
  */
 export async function releaseRateLimit(
   key: string,
   windowMinutes: number,
+  acquiredAt: number,
 ): Promise<void> {
-  const { rowKey } = windowFor(key, windowMinutes);
+  const { rowKey } = windowFor(key, windowMinutes, acquiredAt);
   await db.$executeRaw`
     UPDATE "rate_limit"
     SET "count" = GREATEST("count" - 1, 0),

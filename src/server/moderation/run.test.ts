@@ -155,6 +155,7 @@ describe("runModeration", () => {
       "moderation:claim:REVIEW:rv1:0",
       1,
       5,
+      expect.any(Number),
     );
     expect(judge).not.toHaveBeenCalled();
   });
@@ -175,6 +176,7 @@ describe("runModeration", () => {
     expect(m.releaseRateLimit).toHaveBeenCalledWith(
       "moderation:claim:REVIEW:rv1:0",
       5,
+      m.checkAndIncrement.mock.calls[0]?.[3],
     );
     expect(judge).not.toHaveBeenCalled();
   });
@@ -185,6 +187,37 @@ describe("runModeration", () => {
     await expect(runModeration(target, cfg, judge)).resolves.toBe("item_gone");
     expect(judge).not.toHaveBeenCalled();
     expect(m.logCreate).not.toHaveBeenCalled();
+  });
+
+  it("keeps the acquisition timestamp when ceiling cleanup crosses an hour", async () => {
+    const clock = vi.spyOn(Date, "now").mockReturnValue(3_599_999);
+    m.checkAndIncrement
+      .mockResolvedValueOnce({ ok: true, retryAfterSeconds: 0 })
+      .mockImplementationOnce(() => {
+        clock.mockReturnValue(3_600_001);
+        return Promise.resolve({ ok: false, retryAfterSeconds: 60 });
+      });
+    const judge = vi.fn<Judge>();
+    try {
+      await expect(runModeration(target, cfg, judge)).resolves.toBe(
+        "ceiling_reached",
+      );
+      expect(m.checkAndIncrement).toHaveBeenNthCalledWith(
+        1,
+        "moderation:claim:REVIEW:rv1:0",
+        1,
+        5,
+        3_599_999,
+      );
+      expect(m.releaseRateLimit).toHaveBeenCalledWith(
+        "moderation:claim:REVIEW:rv1:0",
+        5,
+        3_599_999,
+      );
+      expect(judge).not.toHaveBeenCalled();
+    } finally {
+      clock.mockRestore();
+    }
   });
 
   it("judges the live text with the surface label only", async () => {

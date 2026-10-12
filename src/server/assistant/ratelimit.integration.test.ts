@@ -7,7 +7,11 @@ vi.mock("@/server/db", async () => {
 });
 
 import { idb as db } from "@/server/api/integration-test-helpers";
-import { checkAndIncrement, pruneRateLimits } from "./ratelimit";
+import {
+  checkAndIncrement,
+  pruneRateLimits,
+  releaseRateLimit,
+} from "./ratelimit";
 import pruneRowsFixture from "./ratelimit.prune-rows.json";
 
 describe("checkAndIncrement integration", () => {
@@ -62,6 +66,19 @@ describe("checkAndIncrement integration", () => {
     );
     const okCount = results.filter((r) => r.ok).length;
     expect(okCount).toBe(1);
+  });
+
+  it("releasing an earlier claim leaves the next bucket's winner intact", async () => {
+    const key = `test:release:${Date.now()}`;
+    const acquiredAt = Date.now();
+    const nextBucketAt = acquiredAt + 5 * 60_000;
+    expect((await checkAndIncrement(key, 1, 5, acquiredAt)).ok).toBe(true);
+    expect((await checkAndIncrement(key, 1, 5, nextBucketAt)).ok).toBe(true);
+
+    await releaseRateLimit(key, 5, acquiredAt);
+
+    expect((await checkAndIncrement(key, 1, 5, nextBucketAt)).ok).toBe(false);
+    expect((await checkAndIncrement(key, 1, 5, acquiredAt)).ok).toBe(true);
   });
 
   it("blocked call does not change the count", async () => {
