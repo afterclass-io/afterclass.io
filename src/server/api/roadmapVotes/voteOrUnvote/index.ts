@@ -1,12 +1,13 @@
 import { z } from "zod";
 
 import { protectedProcedure } from "@/server/api/trpc";
+import { voteWeightSchema } from "@/server/api/vote-weight";
 
 export const voteOrUnvote = protectedProcedure
   .input(
     z.object({
       roadmapId: z.string(),
-      weight: z.union([z.literal(-1), z.literal(0), z.literal(1)]),
+      weight: voteWeightSchema,
     }),
   )
   .mutation(
