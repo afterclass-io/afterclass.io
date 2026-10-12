@@ -47,12 +47,6 @@ const config: StorybookConfig = {
         : {}),
     };
   },
-  staticDirs: [
-    {
-      from: "../public",
-      to: "public",
-    },
-  ],
   webpackFinal: async (config) => {
     // `obscenity`'s ESM entry (dist/index.mjs) is a gen-esm-wrapper shim that
     // re-exports its CJS build via a default import. In the Storybook preview
