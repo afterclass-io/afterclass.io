@@ -13,10 +13,9 @@
  *    `"COR IS1702"` -> `"CORIS1702"`. Everything else (professor names,
  *    phrases) keeps single-space separation.
  *
- * Note: this collapses spaces in codes but does NOT re-insert dashes, so a
- * dashed canonical code like `COR-STAT1202` won't match the collapsed
- * `CORSTAT1202` via the code ILIKE branch; the trigram
- * `similarity(c.code, q)` and FTS branches still catch it.
+ * Note: this collapses spaces in codes but does NOT re-insert dashes. The
+ * search service matches a dashed canonical code like `COR-STAT1202` against
+ * the collapsed `CORSTAT1202` through `toCodeKey`.
  *
  * Length cap: input is sliced to `MAX_QUERY_LEN` (200) BEFORE any other
  * normalization, so an absurd 5000-char paste can never reach the SQL
