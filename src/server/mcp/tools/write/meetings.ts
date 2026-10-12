@@ -8,7 +8,7 @@ import {
   toPollGrid,
 } from "@/modules/meetings/functions/slot-time";
 import { db } from "@/server/db";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { errText, guardedRun, jsonText, type McpTool } from "../../types";
 import { absoluteUrl, meetingPage, PAGE_LINK_NOTE } from "../page-links";
 
 const createMeetingPollSchema = z.object({
@@ -72,44 +72,40 @@ export const createMeetingPollTool: McpTool<typeof createMeetingPollSchema> = {
   name: "create-meeting-poll",
   description: `Create a new meeting poll in the current academic term to coordinate availability with classmates. ${PAGE_LINK_NOTE}`,
   inputSchema: createMeetingPollSchema,
-  run: async ({ caller }, input) => {
-    try {
-      let courseId: string | undefined;
-      if (input.courseCode?.trim()) {
-        const course = await db.courses.findFirst({
-          where: {
-            code: { equals: input.courseCode.trim(), mode: "insensitive" },
-          },
-          select: { id: true },
-        });
-        if (!course) {
-          return errText(`Course ${input.courseCode.trim()} was not found.`);
-        }
-        courseId = course.id;
+  run: guardedRun(async ({ caller }, input) => {
+    let courseId: string | undefined;
+    if (input.courseCode?.trim()) {
+      const course = await db.courses.findFirst({
+        where: {
+          code: { equals: input.courseCode.trim(), mode: "insensitive" },
+        },
+        select: { id: true },
+      });
+      if (!course) {
+        return errText(`Course ${input.courseCode.trim()} was not found.`);
       }
-
-      const res = await caller.meetings.createPoll({
-        title: input.title,
-        startDate: input.startDate,
-        endDate: input.endDate,
-        startHour: input.startHour ?? 8,
-        endHour: input.endHour ?? 22,
-        description: input.description,
-        courseId,
-        section: input.section,
-        teamIdentifier: input.teamIdentifier,
-      });
-
-      return jsonText({
-        id: res.id,
-        slug: res.slug,
-        url: absoluteUrl(meetingPage(res.slug)),
-        message: `Meeting poll "${input.title}" created successfully. Share the link ${absoluteUrl(meetingPage(res.slug))} with participants to collect availability.`,
-      });
-    } catch (e) {
-      return errText(errorMessage(e));
+      courseId = course.id;
     }
-  },
+
+    const res = await caller.meetings.createPoll({
+      title: input.title,
+      startDate: input.startDate,
+      endDate: input.endDate,
+      startHour: input.startHour ?? 8,
+      endHour: input.endHour ?? 22,
+      description: input.description,
+      courseId,
+      section: input.section,
+      teamIdentifier: input.teamIdentifier,
+    });
+
+    return jsonText({
+      id: res.id,
+      slug: res.slug,
+      url: absoluteUrl(meetingPage(res.slug)),
+      message: `Meeting poll "${input.title}" created successfully. Share the link ${absoluteUrl(meetingPage(res.slug))} with participants to collect availability.`,
+    });
+  }),
 };
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -157,94 +153,90 @@ export const submitMeetingAvailabilityTool: McpTool<
   name: "submit-meeting-availability",
   description: `Submit the signed-in user's availability for a meeting poll as Singapore-time date/time ranges on the poll's slot grid. mode "replace" (default) overwrites all of the user's availability; "merge" adds these ranges to what the user already has, and the new status wins where ranges overlap; in merge mode a range with status "unavailable" removes those times. Read the poll window with get-meeting-poll-detail first. ${PAGE_LINK_NOTE}`,
   inputSchema: submitMeetingAvailabilitySchema,
-  run: async ({ caller }, input) => {
-    try {
-      const detail = await caller.meetings.getPollBySlug({ slug: input.slug });
-      const grid = toPollGrid(detail.poll);
-      const mode = input.mode ?? "replace";
+  run: guardedRun(async ({ caller }, input) => {
+    const detail = await caller.meetings.getPollBySlug({ slug: input.slug });
+    const grid = toPollGrid(detail.poll);
+    const mode = input.mode ?? "replace";
 
-      if (
-        mode === "replace" &&
-        input.availability.some((r) => r.status === "unavailable")
-      ) {
-        throw new Error(
-          'status "unavailable" only applies with mode "merge"; in replace mode leave those times out.',
-        );
-      }
-
-      const newSlots = new Map<
-        number,
-        "available" | "ifNeeded" | "unavailable"
-      >();
-      for (const range of input.availability) {
-        const status = range.status ?? "available";
-        const indices = rangeToSlotIndices(grid, range);
-        for (const idx of indices) {
-          const existing = newSlots.get(idx);
-          if (existing !== undefined && existing !== status) {
-            const { date, start } = slotIndexToTime(grid, idx);
-            throw new SlotTimeError(
-              `${date} ${start} is given conflicting statuses.`,
-            );
-          }
-          newSlots.set(idx, status);
-        }
-      }
-
-      const slotMap = new Map<number, "available" | "ifNeeded">();
-      if (mode === "merge") {
-        const currentUser = detail.participants.find((p) => p.isCurrentUser);
-        if (currentUser) {
-          for (const s of currentUser.ifNeededSlots) {
-            slotMap.set(s, "ifNeeded");
-          }
-          for (const s of currentUser.availableSlots) {
-            slotMap.set(s, "available");
-          }
-        }
-      }
-
-      for (const [slot, status] of newSlots) {
-        if (status === "unavailable") {
-          slotMap.delete(slot);
-        } else {
-          slotMap.set(slot, status);
-        }
-      }
-
-      const availableSlots: number[] = [];
-      const ifNeededSlots: number[] = [];
-      for (const [slot, status] of slotMap) {
-        if (status === "available") {
-          availableSlots.push(slot);
-        } else if (status === "ifNeeded") {
-          ifNeededSlots.push(slot);
-        }
-      }
-      availableSlots.sort((a, b) => a - b);
-      ifNeededSlots.sort((a, b) => a - b);
-
-      const res = await caller.meetings.submitAvailability({
-        slug: input.slug,
-        availableSlots,
-        ifNeededSlots,
-      });
-
-      const ranges = availabilityToRanges(grid, {
-        availableSlots,
-        ifNeededSlots,
-      });
-
-      return jsonText({
-        success: res.success,
-        slug: input.slug,
-        mode,
-        availability: ranges,
-        url: absoluteUrl(meetingPage(input.slug)),
-        message: `Availability saved for ${absoluteUrl(meetingPage(input.slug))} (${mode}, ${ranges.length} ranges).`,
-      });
-    } catch (e) {
-      return errText(errorMessage(e));
+    if (
+      mode === "replace" &&
+      input.availability.some((r) => r.status === "unavailable")
+    ) {
+      throw new Error(
+        'status "unavailable" only applies with mode "merge"; in replace mode leave those times out.',
+      );
     }
-  },
+
+    const newSlots = new Map<
+      number,
+      "available" | "ifNeeded" | "unavailable"
+    >();
+    for (const range of input.availability) {
+      const status = range.status ?? "available";
+      const indices = rangeToSlotIndices(grid, range);
+      for (const idx of indices) {
+        const existing = newSlots.get(idx);
+        if (existing !== undefined && existing !== status) {
+          const { date, start } = slotIndexToTime(grid, idx);
+          throw new SlotTimeError(
+            `${date} ${start} is given conflicting statuses.`,
+          );
+        }
+        newSlots.set(idx, status);
+      }
+    }
+
+    const slotMap = new Map<number, "available" | "ifNeeded">();
+    if (mode === "merge") {
+      const currentUser = detail.participants.find((p) => p.isCurrentUser);
+      if (currentUser) {
+        for (const s of currentUser.ifNeededSlots) {
+          slotMap.set(s, "ifNeeded");
+        }
+        for (const s of currentUser.availableSlots) {
+          slotMap.set(s, "available");
+        }
+      }
+    }
+
+    for (const [slot, status] of newSlots) {
+      if (status === "unavailable") {
+        slotMap.delete(slot);
+      } else {
+        slotMap.set(slot, status);
+      }
+    }
+
+    const availableSlots: number[] = [];
+    const ifNeededSlots: number[] = [];
+    for (const [slot, status] of slotMap) {
+      if (status === "available") {
+        availableSlots.push(slot);
+      } else if (status === "ifNeeded") {
+        ifNeededSlots.push(slot);
+      }
+    }
+    availableSlots.sort((a, b) => a - b);
+    ifNeededSlots.sort((a, b) => a - b);
+
+    const res = await caller.meetings.submitAvailability({
+      slug: input.slug,
+      availableSlots,
+      ifNeededSlots,
+    });
+
+    const ranges = availabilityToRanges(grid, {
+      availableSlots,
+      ifNeededSlots,
+    });
+
+    return jsonText({
+      success: res.success,
+      slug: input.slug,
+      mode,
+      availability: ranges,
+      url: absoluteUrl(meetingPage(input.slug)),
+      message: `Availability saved for ${absoluteUrl(meetingPage(input.slug))} (${mode}, ${ranges.length} ranges).`,
+    });
+  }),
 };

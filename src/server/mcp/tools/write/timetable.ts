@@ -5,7 +5,7 @@ import { pickActiveOrFirst, resolveTermId } from "../../current";
 import {
   confirmField,
   errText,
-  errorMessage,
+  guardedRun,
   jsonText,
   type McpTool,
   type RouterOutputs,
@@ -25,20 +25,16 @@ export const createTimetableTool: McpTool<typeof createTimetableSchema> = {
   description:
     "Create a new timetable for the user in an academic term. The first timetable in a term becomes active.",
   inputSchema: createTimetableSchema,
-  run: async ({ caller }, input) => {
-    try {
-      const term = await resolveTermId(caller, input.acadTermId);
-      if (!term.ok) return errText(term.errText);
-      // Canonical output policy: bearer tokens must not reach the LLM.
-      return jsonText(
-        stripSecretsFromValue(
-          await caller.timetable.create({ ...input, acadTermId: term.value }),
-        ),
-      );
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, input) => {
+    const term = await resolveTermId(caller, input.acadTermId);
+    if (!term.ok) return errText(term.errText);
+    // Canonical output policy: bearer tokens must not reach the LLM.
+    return jsonText(
+      stripSecretsFromValue(
+        await caller.timetable.create({ ...input, acadTermId: term.value }),
+      ),
+    );
+  }),
 };
 
 const renameTimetableSchema = z.object({
@@ -50,16 +46,12 @@ export const renameTimetableTool: McpTool<typeof renameTimetableSchema> = {
   name: "rename-timetable",
   description: "Rename one of the user's timetables.",
   inputSchema: renameTimetableSchema,
-  run: async ({ caller }, input) => {
-    try {
-      // Canonical output policy: bearer tokens must not reach the LLM.
-      return jsonText(
-        stripSecretsFromValue(await caller.timetable.rename(input)),
-      );
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, input) => {
+    // Canonical output policy: bearer tokens must not reach the LLM.
+    return jsonText(
+      stripSecretsFromValue(await caller.timetable.rename(input)),
+    );
+  }),
 };
 
 const removeTimetableSchema = z.object({
@@ -71,13 +63,9 @@ export const removeTimetableTool: McpTool<typeof removeTimetableSchema> = {
   name: "remove-timetable",
   description: "Delete one of the user's timetables.",
   inputSchema: removeTimetableSchema,
-  run: async ({ caller }, { timetableId }) => {
-    try {
-      return jsonText(await caller.timetable.remove({ timetableId }));
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { timetableId }) => {
+    return jsonText(await caller.timetable.remove({ timetableId }));
+  }),
 };
 
 const addClassToTimetableSchema = z.object({
@@ -97,65 +85,61 @@ export const addClassToTimetableTool: McpTool<
   description:
     "Add a class section to one of the user's timetables. Omit timetableId to add to the active timetable for the class's academic term (created automatically when none exists).",
   inputSchema: addClassToTimetableSchema,
-  run: async ({ caller }, input) => {
-    try {
-      if (input.timetableId?.trim()) {
-        // Canonical output policy: bearer tokens must not reach the LLM.
-        return jsonText(
-          stripSecretsFromValue(
-            await caller.timetable.addSlot({
-              timetableId: input.timetableId.trim(),
-              classId: input.classId,
-            }),
-          ),
-        );
-      }
-      // Resolve the class's term, then the user's active timetable for it.
-      let acadTermId: string | undefined;
-      try {
-        const classes: RouterOutputs["classes"]["getAll"] =
-          await caller.classes.getAll({
-            id: input.classId,
-            limit: 1,
-          });
-        acadTermId = classes?.[0]?.acadTermId;
-      } catch {
-        acadTermId = undefined;
-      }
-      if (!acadTermId) {
-        return errText(
-          `Could not find class ${input.classId}. Ask the user to pick one of their timetables (from my-timetables) and try again with an explicit timetableId.`,
-        );
-      }
-      const mine = (await caller.timetable.listMine({ acadTermId })) as Array<{
-        id: string;
-        isActive: boolean;
-      }>;
-      const active = pickActiveOrFirst(mine);
-      let timetableId = active?.id;
-      if (!timetableId) {
-        const created = (await caller.timetable.create({ acadTermId })) as {
-          id: string;
-        };
-        timetableId = created.id;
-      }
-      if (!timetableId) {
-        return errText(
-          `Could not resolve a timetable for academic term ${acadTermId}. Ask the user to pick one of their timetables (from my-timetables) and try again with an explicit timetableId.`,
-        );
-      }
+  run: guardedRun(async ({ caller }, input) => {
+    if (input.timetableId?.trim()) {
+      // Canonical output policy: bearer tokens must not reach the LLM.
       return jsonText(
         stripSecretsFromValue(
           await caller.timetable.addSlot({
-            timetableId,
+            timetableId: input.timetableId.trim(),
             classId: input.classId,
           }),
         ),
       );
-    } catch (e) {
-      return errText(errorMessage(e));
     }
-  },
+    // Resolve the class's term, then the user's active timetable for it.
+    let acadTermId: string | undefined;
+    try {
+      const classes: RouterOutputs["classes"]["getAll"] =
+        await caller.classes.getAll({
+          id: input.classId,
+          limit: 1,
+        });
+      acadTermId = classes?.[0]?.acadTermId;
+    } catch {
+      acadTermId = undefined;
+    }
+    if (!acadTermId) {
+      return errText(
+        `Could not find class ${input.classId}. Ask the user to pick one of their timetables (from my-timetables) and try again with an explicit timetableId.`,
+      );
+    }
+    const mine = (await caller.timetable.listMine({ acadTermId })) as Array<{
+      id: string;
+      isActive: boolean;
+    }>;
+    const active = pickActiveOrFirst(mine);
+    let timetableId = active?.id;
+    if (!timetableId) {
+      const created = (await caller.timetable.create({ acadTermId })) as {
+        id: string;
+      };
+      timetableId = created.id;
+    }
+    if (!timetableId) {
+      return errText(
+        `Could not resolve a timetable for academic term ${acadTermId}. Ask the user to pick one of their timetables (from my-timetables) and try again with an explicit timetableId.`,
+      );
+    }
+    return jsonText(
+      stripSecretsFromValue(
+        await caller.timetable.addSlot({
+          timetableId,
+          classId: input.classId,
+        }),
+      ),
+    );
+  }),
 };
 
 const removeClassFromTimetableSchema = z.object({
@@ -170,13 +154,9 @@ export const removeClassFromTimetableTool: McpTool<
   name: "remove-class-from-timetable",
   description: "Remove a class section from one of the user's timetables.",
   inputSchema: removeClassFromTimetableSchema,
-  run: async ({ caller }, input) => {
-    try {
-      return jsonText(await caller.timetable.removeSlot(input));
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, input) => {
+    return jsonText(await caller.timetable.removeSlot(input));
+  }),
 };
 
 const setTimetableVisibilitySchema = z.object({
@@ -192,20 +172,16 @@ export const setTimetableVisibilityTool: McpTool<
   description:
     "Set a timetable's visibility: PRIVATE (only you), UNLISTED (shareable via link), or PUBLIC.",
   inputSchema: setTimetableVisibilitySchema,
-  run: async ({ caller }, { timetableId, visibility }) => {
-    try {
-      const res = (await caller.sharing.setVisibility({
-        entity: "timetable",
-        id: timetableId,
-        visibility,
-      })) as Record<string, unknown>;
-      // Canonical output policy: bearer tokens must not reach the LLM.
-      // `stripSecretsFromValue` covers shareToken + icalToken (setVisibility
-      // can return both for timetables); the legacy per-row strip inner call
-      // is dropped — the canonical strip subsumes it.
-      return jsonText(stripSecretsFromValue(res));
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { timetableId, visibility }) => {
+    const res = (await caller.sharing.setVisibility({
+      entity: "timetable",
+      id: timetableId,
+      visibility,
+    })) as Record<string, unknown>;
+    // Canonical output policy: bearer tokens must not reach the LLM.
+    // `stripSecretsFromValue` covers shareToken + icalToken (setVisibility
+    // can return both for timetables); the legacy per-row strip inner call
+    // is dropped — the canonical strip subsumes it.
+    return jsonText(stripSecretsFromValue(res));
+  }),
 };
