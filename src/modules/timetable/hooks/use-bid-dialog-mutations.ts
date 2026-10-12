@@ -36,29 +36,32 @@ export function useBidDialogMutations({
     }
   }, [utils, activeTimetableId]);
 
+  const bidWriteCache = {
+    cancel: () =>
+      utils.userBids.getByClassIds.cancel({
+        classIds: [selectedClassId ?? ""],
+      }),
+    getSnapshot: () =>
+      utils.userBids.getByClassIds.getData({
+        classIds: [selectedClassId ?? ""],
+      }),
+    // New and updated rows appear via the invalidate refetch.
+    applyOptimistic: () => undefined,
+    restoreSnapshot: (prev: unknown) => {
+      utils.userBids.getByClassIds.setData(
+        { classIds: [selectedClassId ?? ""] },
+        prev as never,
+      );
+    },
+    invalidate: invalidateBidQueries,
+  };
+
   const upsertMutation = api.userBids.upsert.useMutation({
     ...createOptimisticMutationCallbacks<
       RouterInputs["userBids"]["upsert"],
       unknown
     >({
-      cancel: () =>
-        utils.userBids.getByClassIds.cancel({
-          classIds: [selectedClassId ?? ""],
-        }),
-      getSnapshot: () =>
-        utils.userBids.getByClassIds.getData({
-          classIds: [selectedClassId ?? ""],
-        }),
-      // Pattern B: the caller does NOT apply optimistically — new rows appear
-      // via the invalidate refetch.
-      applyOptimistic: () => undefined,
-      restoreSnapshot: (prev) => {
-        utils.userBids.getByClassIds.setData(
-          { classIds: [selectedClassId ?? ""] },
-          prev as never,
-        );
-      },
-      invalidate: invalidateBidQueries,
+      ...bidWriteCache,
       onError: (message) => toast.error(`Failed to save bid: ${message}`),
     }),
     onSuccess: () => {
@@ -72,24 +75,7 @@ export function useBidDialogMutations({
       RouterInputs["userBids"]["update"],
       unknown
     >({
-      cancel: () =>
-        utils.userBids.getByClassIds.cancel({
-          classIds: [selectedClassId ?? ""],
-        }),
-      getSnapshot: () =>
-        utils.userBids.getByClassIds.getData({
-          classIds: [selectedClassId ?? ""],
-        }),
-      // Pattern B: the caller does NOT apply optimistically — updated rows
-      // appear via the invalidate refetch.
-      applyOptimistic: () => undefined,
-      restoreSnapshot: (prev) => {
-        utils.userBids.getByClassIds.setData(
-          { classIds: [selectedClassId ?? ""] },
-          prev as never,
-        );
-      },
-      invalidate: invalidateBidQueries,
+      ...bidWriteCache,
       onError: (message) => toast.error(`Failed to update bid: ${message}`),
     }),
     onSuccess: () => {
@@ -123,14 +109,7 @@ export function useBidDialogMutations({
       RouterInputs["userBids"]["setStatus"],
       unknown
     >({
-      cancel: () =>
-        utils.userBids.getByClassIds.cancel({
-          classIds: [selectedClassId ?? ""],
-        }),
-      getSnapshot: () =>
-        utils.userBids.getByClassIds.getData({
-          classIds: [selectedClassId ?? ""],
-        }),
+      ...bidWriteCache,
       // Optimistically mirror the server's demoteSiblingBids rule:
       // set the chosen bid to `status`, and any sibling on the same class
       // to PARTICIPATED. The invalidation below reconciles races.
@@ -144,12 +123,6 @@ export function useBidDialogMutations({
                 return { ...bid, status: "PARTICIPATED" };
               return bid;
             }),
-        );
-      },
-      restoreSnapshot: (prev) => {
-        utils.userBids.getByClassIds.setData(
-          { classIds: [selectedClassId ?? ""] },
-          prev as never,
         );
       },
       invalidate: async () => {
