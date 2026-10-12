@@ -1,5 +1,5 @@
 import { Separator } from "@/common/components/separator";
-import { MIN_QUERY_LEN } from "@/common/constants/search";
+import { SHORT_QUERY_HINT } from "@/common/constants/search";
 import { cn } from "@/common/functions";
 
 export const SearchResultEmpty = ({
@@ -20,9 +20,7 @@ export const SearchResultEmpty = ({
       data-test="search-empty"
     >
       <div className="text-xl">
-        {reason === "short"
-          ? `Type ${MIN_QUERY_LEN} or more characters.`
-          : `No results for “${query}”.`}
+        {reason === "short" ? SHORT_QUERY_HINT : `No results for “${query}”.`}
       </div>
       <Separator />
       <div className="text-muted-foreground w-full">

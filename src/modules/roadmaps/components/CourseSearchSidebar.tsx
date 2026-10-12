@@ -9,6 +9,7 @@ import { Skeleton } from "@/common/components/skeleton";
 import { courseColor } from "@/modules/timetable/functions/course-color";
 import { cn } from "@/common/functions";
 import { useDebouncedValue } from "@/common/hooks/useDebouncedValue";
+import { isShortQuery, SHORT_QUERY_HINT } from "@/common/constants/search";
 import { GripVertical } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -116,14 +117,14 @@ export function CourseSearchSidebar({
   const searchQuery = api.roadmaps.searchCourses.useQuery(
     { query: debouncedQuery },
     {
-      enabled: debouncedQuery.length >= 1,
+      enabled: !isShortQuery(debouncedQuery),
       staleTime: 30_000,
     },
   );
 
   const results = useMemo(() => searchQuery.data ?? [], [searchQuery.data]);
 
-  const isLoading = searchQuery.isFetching && debouncedQuery.length >= 1;
+  const isLoading = searchQuery.isFetching && !isShortQuery(debouncedQuery);
 
   // Droppable "cancel" zone — dropping a sidebar-originated drag back here
   // is a no-op (cancels the add). This gives the search panel affordance
@@ -176,11 +177,13 @@ export function CourseSearchSidebar({
           </div>
         )}
 
-        {!isLoading && debouncedQuery.length >= 1 && results.length === 0 && (
-          <p className="text-muted-foreground py-4 text-center text-sm">
-            No courses found for &quot;{debouncedQuery}&quot;
-          </p>
-        )}
+        {!isLoading &&
+          !isShortQuery(debouncedQuery) &&
+          results.length === 0 && (
+            <p className="text-muted-foreground py-4 text-center text-sm">
+              No courses found for &quot;{debouncedQuery}&quot;
+            </p>
+          )}
 
         {!isLoading && results.length > 0 && (
           <div className="space-y-1.5">
@@ -197,6 +200,12 @@ export function CourseSearchSidebar({
         {debouncedQuery.length === 0 && (
           <p className="text-muted-foreground py-4 text-center text-xs">
             Search for a course to get started
+          </p>
+        )}
+
+        {query.trim() !== "" && isShortQuery(query) && (
+          <p className="text-muted-foreground py-4 text-center text-xs">
+            {SHORT_QUERY_HINT}
           </p>
         )}
       </div>

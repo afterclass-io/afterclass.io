@@ -9,6 +9,7 @@ import { Input } from "@/common/components/input";
 import { Skeleton } from "@/common/components/skeleton";
 import { cn } from "@/common/functions";
 import { useDebouncedValue } from "@/common/hooks/useDebouncedValue";
+import { isShortQuery, SHORT_QUERY_HINT } from "@/common/constants/search";
 import { SectionPicker, type SectionOption } from "./SectionPicker";
 import type { ArrangedClass } from "@/common/types/timetable";
 
@@ -36,12 +37,6 @@ export function CourseSearchPanel({
 }: CourseSearchPanelProps) {
   const selectedTermId = useAtomValue(selectedTermIdAtom);
 
-  // TermPicker already loads this list, so React Query serves it from cache.
-  const termsQuery = api.acadTerms.list.useQuery();
-  const selectedTermLabel = termsQuery.data?.find(
-    (t) => t.id === selectedTermId,
-  )?.label;
-
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 300);
   const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null);
@@ -61,7 +56,7 @@ export function CourseSearchPanel({
       query: debouncedQuery,
     },
     {
-      enabled: !!selectedTermId && debouncedQuery.length >= 1,
+      enabled: !!selectedTermId && !isShortQuery(debouncedQuery),
       staleTime: 30_000,
     },
   );
@@ -72,7 +67,7 @@ export function CourseSearchPanel({
   // nothing typed yet — reports `isPending: true` while `isFetching` stays
   // false, so `isPending` alone paints the loading skeletons under the
   // get-started hint. Same guard as the roadmaps CourseSearchSidebar.
-  const isSearching = searchQuery.isFetching && debouncedQuery.length >= 1;
+  const isSearching = searchQuery.isFetching && !isShortQuery(debouncedQuery);
 
   const handleExpand = useCallback((courseId: string) => {
     setExpandedCourseId((prev) => (prev === courseId ? null : courseId));
@@ -108,11 +103,7 @@ export function CourseSearchPanel({
           data-test="timetable-search-input"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={
-            selectedTermLabel
-              ? `Search courses offered in ${selectedTermLabel}`
-              : "Search code, name or professor…"
-          }
+          placeholder="Search code, name or professor…"
           className="pl-9"
           disabled={!selectedTermId}
         />
@@ -137,6 +128,12 @@ export function CourseSearchPanel({
         {selectedTermId && !debouncedQuery && (
           <p className="text-muted-foreground py-8 text-center text-sm">
             Type a course code, name or professor to get started.
+          </p>
+        )}
+
+        {selectedTermId && query.trim() !== "" && isShortQuery(query) && (
+          <p className="text-muted-foreground py-8 text-center text-sm">
+            {SHORT_QUERY_HINT}
           </p>
         )}
 
@@ -200,11 +197,13 @@ export function CourseSearchPanel({
         )}
 
         {/* No results */}
-        {debouncedQuery && !isSearching && results.length === 0 && (
-          <p className="text-muted-foreground py-8 text-center text-sm">
-            No courses found for &quot;{debouncedQuery}&quot;.
-          </p>
-        )}
+        {!isShortQuery(debouncedQuery) &&
+          !isSearching &&
+          results.length === 0 && (
+            <p className="text-muted-foreground py-8 text-center text-sm">
+              No courses found for &quot;{debouncedQuery}&quot;.
+            </p>
+          )}
       </div>
     </div>
   );
