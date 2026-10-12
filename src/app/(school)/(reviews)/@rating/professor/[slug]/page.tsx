@@ -1,9 +1,11 @@
 import { ReviewType } from "@/generated/prisma/enums";
 
 import { auth } from "@/server/auth";
-import { RatingSection } from "@/modules/reviews/components/RatingSection";
+import {
+  LockedRatingMetadataSection,
+  RatingMetadataSection,
+} from "@/modules/reviews/components/RatingMetadataSection";
 import { api } from "@/common/tools/trpc/server";
-import { toTitleCase, formatPercentage } from "@/common/functions";
 
 export default async function ProfessorRating(props: {
   params: Promise<{ slug: string }>;
@@ -20,19 +22,7 @@ export default async function ProfessorRating(props: {
   });
 
   if (!session) {
-    return (
-      <RatingSection
-        headingRatingItem={{
-          label: "Average Rating",
-          rating: "-",
-        }}
-        ratingItems={validProfessorReviewLabels.map((label) => ({
-          label: toTitleCase(label.name.replaceAll("_", " ")),
-          rating: "-",
-        }))}
-        isLocked={!session}
-      />
-    );
+    return <LockedRatingMetadataSection labels={validProfessorReviewLabels} />;
   }
 
   const courseCodes = searchParams?.course
@@ -41,34 +31,10 @@ export default async function ProfessorRating(props: {
       : [searchParams?.course]
     : [];
 
-  const { averageRating, reviewCount, reviewLabels } =
-    await api.reviews.getMetadataForProf({
-      slug: params.slug,
-      withCourseCodes: courseCodes.length > 0 ? courseCodes : undefined,
-    });
+  const metadata = await api.reviews.getMetadataForProf({
+    slug: params.slug,
+    withCourseCodes: courseCodes.length > 0 ? courseCodes : undefined,
+  });
 
-  if (reviewCount === 0) {
-    return (
-      <RatingSection
-        headingRatingItem={{
-          label: "Average Rating",
-          rating: "-",
-        }}
-        ratingItems={[]}
-      />
-    );
-  }
-
-  return (
-    <RatingSection
-      headingRatingItem={{
-        label: "Average Rating",
-        rating: averageRating.toFixed(2),
-      }}
-      ratingItems={reviewLabels.map((label) => ({
-        label: toTitleCase(label.name),
-        rating: formatPercentage(label.count && label.count / reviewCount),
-      }))}
-    />
-  );
+  return <RatingMetadataSection metadata={metadata} />;
 }

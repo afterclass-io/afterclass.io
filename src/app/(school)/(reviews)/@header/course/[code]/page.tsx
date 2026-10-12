@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
-import { PageTitle } from "@/common/components/page-title";
 import { BooksIcon } from "@/common/components/icons";
-import { SchoolTag } from "@/common/components/tag-school";
+import { ReviewHeaderTitle } from "@/modules/reviews/components/ReviewHeaderTitle";
 import { getCourseByCode } from "@/modules/reviews/functions/getCourseByCode";
 
 export default async function CourseHeader(props: {
@@ -13,13 +12,11 @@ export default async function CourseHeader(props: {
     return notFound();
   }
   return (
-    <div className="w-full">
-      <PageTitle
-        contentLeft={<BooksIcon className="text-muted-foreground h-9 w-9" />}
-        contentRight={<SchoolTag school={course.belongToUniversity.abbrv} />}
-      >
-        {course.name}
-      </PageTitle>
-    </div>
+    <ReviewHeaderTitle
+      icon={<BooksIcon className="text-muted-foreground h-9 w-9" />}
+      school={course.belongToUniversity.abbrv}
+    >
+      {course.name}
+    </ReviewHeaderTitle>
   );
 }
