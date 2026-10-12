@@ -91,6 +91,23 @@ export const errText = (text: string): ToolResult => ({
   isError: true,
 });
 
+/**
+ * Wrap a tool `run` body so a thrown error becomes the model-facing
+ * `errText(errorMessage(e))` result instead of reaching the dispatcher, which
+ * would replace the friendly text with a generic internal error.
+ */
+export function guardedRun<TInput>(
+  fn: (ctx: ToolContext, input: TInput) => Promise<ToolResult>,
+): (ctx: ToolContext, input: TInput) => Promise<ToolResult> {
+  return async (ctx, input) => {
+    try {
+      return await fn(ctx, input);
+    } catch (e) {
+      return errText(errorMessage(e));
+    }
+  };
+}
+
 export const errorMessage = (e: unknown): string => {
   // tRPC errors carry a machine-stable `code` (e.g. NOT_FOUND, FORBIDDEN,
   // CONFLICT) the tools already surface as friendly model text — pass them
