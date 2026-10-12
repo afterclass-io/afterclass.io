@@ -64,8 +64,6 @@ export const chatConfigSchema = chatTunablesSchema
   .default(DEFAULT_CHAT_CONFIG)
   .transform((cfg) => ({ ...DEFAULT_CHAT_CONFIG, ...cfg }));
 
-export type ChatConfig = z.infer<typeof chatConfigSchema>;
-
 export const edgeConfigSchema = z.object({
   enableCmdkTooltip: z.boolean(),
   enableReviewEventsTracking: z.boolean(),
