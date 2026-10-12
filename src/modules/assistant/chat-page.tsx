@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { ChevronDownIcon } from "lucide-react";
@@ -9,10 +9,7 @@ import { useAtomValue, useSetAtom, useStore } from "jotai";
 import type { AssistantStatus } from "@/server/assistant/status";
 import { MessageList } from "@/modules/assistant/message-list";
 import { TypingIndicator } from "@/modules/assistant/typing-indicator";
-import {
-  AssistantErrorMessage,
-  shouldShowChatError,
-} from "@/modules/assistant/error-message";
+import { AssistantErrorMessage } from "@/modules/assistant/error-message";
 import { Composer } from "@/modules/assistant/composer";
 import { ConsentNotice } from "@/modules/assistant/consent-notice";
 import {
@@ -29,6 +26,7 @@ import {
   sessionsAtom,
 } from "@/modules/assistant/chat-store";
 import { useChatScroll } from "@/modules/assistant/use-chat-scroll";
+import { useChatControls } from "@/modules/assistant/use-chat-controls";
 import { SessionList } from "@/modules/assistant/session-list";
 import { QuotaMeter } from "@/modules/assistant/quota-meter/quota-meter";
 import { QuotaAlertBar } from "@/modules/assistant/quota-alert-bar";
@@ -46,15 +44,6 @@ export function ChatPage({
   // onConsented / onConsentRevoked. No status refetch (bare minimum — the
   // next navigation refetches server-side anyway).
   const [consented, setConsented] = useState(initialStatus.aiConsented);
-  // Optimistic quota: decrement instantly on send, reconcile with the server
-  // DB count when the turn completes. Seed from props; the background sync
-  // below keeps the displayed value honest.
-  const [optimisticRemaining, setOptimisticRemaining] = useState(
-    initialStatus.remaining,
-  );
-  // Skip the mount "ready": only sync after a send transitions through a
-  // non-ready chat status (submitted/streaming) back to ready.
-  const seenRunningRef = useRef(false);
   const store = useStore();
   const activeSessionId = useAtomValue(activeSessionIdAtom);
   const setActiveSessionId = useSetAtom(activeSessionIdAtom);
@@ -88,56 +77,23 @@ export function ChatPage({
   usePersistSession({ status: chat.status, messages: chat.messages });
   useRefreshAfterTools(chat.status, chat.messages);
 
-  // Wrap sendMessage: decrement instantly so quota feedback never waits on
-  // the stream; refund when the send itself rejects (e.g. immediate 403).
   // Stick-to-bottom: a fresh user message pins the thread back to the
   // latest turn so the outgoing message + incoming stream stay in view.
   const { containerRef, isAtBottom, scrollToBottom, handleScroll } =
     useChatScroll({ dependencies: [chat.messages, chat.status] });
 
-  const handleSendMessage = useCallback(
-    async (params: Parameters<typeof chat.sendMessage>[0]) => {
-      scrollToBottom("smooth");
-      setOptimisticRemaining((prev) => Math.max(0, prev - 1));
-      try {
-        return await chat.sendMessage(params);
-      } catch (e) {
-        setOptimisticRemaining((prev) => prev + 1);
-        throw e;
-      }
-    },
-    [chat, scrollToBottom],
-  );
-
-  // Background sync: when a turn completes (running → ready), refetch the
-  // authoritative DB count. The mount "ready" is skipped via seenRunningRef
-  // so the initial render never fires a status request.
-  useEffect(() => {
-    if (chat.status === "streaming" || chat.status === "submitted") {
-      seenRunningRef.current = true;
-      return;
-    }
-    if (
-      (chat.status !== "ready" && chat.status !== "error") ||
-      !seenRunningRef.current
-    )
-      return;
-    seenRunningRef.current = false;
-    let cancelled = false;
-    void fetch("/api/assistant/status")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((fresh: AssistantStatus | null) => {
-        if (cancelled || fresh == null || typeof fresh !== "object") return;
-        if (typeof fresh.remaining === "number") {
-          setOptimisticRemaining(fresh.remaining);
-        }
-        setStatus((prev) => ({ ...prev, ...fresh }));
-      })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, [chat.status]);
+  const {
+    optimisticRemaining,
+    handleSendMessage,
+    retry,
+    isRunning,
+    showError,
+  } = useChatControls({
+    chat,
+    initialRemaining: initialStatus.remaining,
+    scrollToBottom,
+    onStatusSynced: (fresh) => setStatus((prev) => ({ ...prev, ...fresh })),
+  });
 
   // Resume the highlighted active session once, right after hydrate. Without
   // this, /assistant mounts an EMPTY thread while the sidebar highlights the
@@ -181,27 +137,6 @@ export function ChatPage({
   }, [chat, setActiveSessionId]);
 
   const hasMessages = Array.isArray(chat.messages) && chat.messages.length > 0;
-  const isRunning = chat.status === "streaming" || chat.status === "submitted";
-
-  // chat.error is a single global state that only reflects the LAST request;
-  // a new send clears it, so the bubble naturally maps to the current failed
-  // turn. Gate errors (quota/consent) render the ConnectGate surface instead.
-  const showError = shouldShowChatError(chat.error);
-
-  const retry = useCallback(() => {
-    if (!Array.isArray(chat.messages)) return;
-    const lastUser = [...chat.messages]
-      .reverse()
-      .find((m) => m.role === "user");
-    if (!lastUser) return;
-    const text = (Array.isArray(lastUser.parts) ? lastUser.parts : [])
-      .filter((p) => p.type === "text")
-      .map((p) => ("text" in p ? p.text : ""))
-      .join("");
-    if (!text) return;
-    // Re-send the failed message in place (messageId replaces it) - no duplicate.
-    void chat.sendMessage({ text, messageId: lastUser.id });
-  }, [chat]);
 
   return (
     // Vertical chrome above the chat (see CoreLayoutHeader h-16 + (school)/layout
