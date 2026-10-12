@@ -91,14 +91,30 @@ type ProfessorRow = {
   reviewCount?: bigint | number;
 };
 
+function prepareQuery(raw: string) {
+  const q = normalizeSearchQuery(raw);
+  const tsQuery = buildTsQuery(q);
+  const hasQuery = q.length >= MIN_QUERY_LEN && tsQuery !== null;
+  return { q, tsQuery, hasQuery };
+}
+
+function countIfRequested(
+  requested: boolean,
+  count: bigint | number | undefined,
+) {
+  return requested ? Number(count ?? 0) : 0;
+}
+
+function exactCodeMatches(rows: CourseHit[], codeKey: string) {
+  return rows.filter((r) => toCodeKey(r.code) === codeKey);
+}
+
 export async function searchCourses(
   db: PrismaClient,
   input: CourseSearchInput,
 ): Promise<SearchResult<CourseHit>> {
-  const q = normalizeSearchQuery(input.query);
+  const { q, tsQuery, hasQuery } = prepareQuery(input.query);
   const codeKey = toCodeKey(q);
-  const tsQuery = buildTsQuery(q);
-  const hasQuery = q.length >= MIN_QUERY_LEN && tsQuery !== null;
 
   if (!hasQuery && !input.scope) {
     return { rows: [], total: 0 };
@@ -207,12 +223,12 @@ export async function searchCourses(
     name: r.name,
     creditUnits: r.creditUnits,
     uniAbbrv: r.uniAbbrv,
-    profCount: withCounts ? Number(r.profCount ?? 0) : 0,
-    reviewCount: withCounts ? Number(r.reviewCount ?? 0) : 0,
+    profCount: countIfRequested(withCounts, r.profCount),
+    reviewCount: countIfRequested(withCounts, r.reviewCount),
   }));
 
   if (hasQuery && codeKey) {
-    const exact = mappedRows.filter((r) => toCodeKey(r.code) === codeKey);
+    const exact = exactCodeMatches(mappedRows, codeKey);
     if (exact.length > 0) {
       return { rows: exact, total: exact.length };
     }
@@ -234,10 +250,8 @@ export async function searchCoursesByTerms(
   db: PrismaClient,
   input: CourseTermsSearchInput,
 ): Promise<CourseTermsSearchResult[]> {
-  const q = normalizeSearchQuery(input.query);
+  const { q, tsQuery, hasQuery } = prepareQuery(input.query);
   const codeKey = toCodeKey(q);
-  const tsQuery = buildTsQuery(q);
-  const hasQuery = q.length >= MIN_QUERY_LEN && tsQuery !== null;
 
   const emptyResult = input.acadTermIds.map((acadTermId) => ({
     acadTermId,
@@ -324,9 +338,7 @@ export async function searchCoursesByTerms(
   return input.acadTermIds.map((acadTermId) => {
     const termRows = rowsByTerm.get(acadTermId) ?? [];
     // Same exact-code shortcut as `searchCourses`, applied to each term.
-    const exact = codeKey
-      ? termRows.filter((r) => toCodeKey(r.code) === codeKey)
-      : [];
+    const exact = codeKey ? exactCodeMatches(termRows, codeKey) : [];
     return { acadTermId, rows: exact.length > 0 ? exact : termRows };
   });
 }
@@ -335,9 +347,7 @@ export async function searchProfessors(
   db: PrismaClient,
   input: ProfessorSearchInput,
 ): Promise<SearchResult<ProfessorHit>> {
-  const q = normalizeSearchQuery(input.query);
-  const tsQuery = buildTsQuery(q);
-  const hasQuery = q.length >= MIN_QUERY_LEN && tsQuery !== null;
+  const { q, tsQuery, hasQuery } = prepareQuery(input.query);
 
   if (!hasQuery && !input.scope) {
     return { rows: [], total: 0 };
@@ -406,8 +416,8 @@ export async function searchProfessors(
     slug: r.slug,
     name: r.name,
     uniAbbrv: r.uniAbbrv,
-    courseCount: withCounts ? Number(r.courseCount ?? 0) : 0,
-    reviewCount: withCounts ? Number(r.reviewCount ?? 0) : 0,
+    courseCount: countIfRequested(withCounts, r.courseCount),
+    reviewCount: countIfRequested(withCounts, r.reviewCount),
   }));
 
   return { rows: mappedRows, total };
