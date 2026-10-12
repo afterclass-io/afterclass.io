@@ -43,6 +43,15 @@ export type TimetableGridProps = {
 
 /** Mon–Fri only: weekend slots (rare, e.g. some exams) are not rendered. */
 const ALL_DAYS = [1, 2, 3, 4, 5] as const;
+
+/** Placeholder geometry for a slot until `layoutDay` positions it. */
+const UNPOSITIONED = {
+  topPct: 0,
+  heightPct: 0,
+  colIndex: 0,
+  colCount: 1,
+  rawIndex: 0,
+};
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -208,41 +217,13 @@ function buildClassDays(classes: ArrangedClass[]): Record<number, DaySlot[]> {
         venue: timing.venue ?? null,
         // These fields will be overwritten by layoutDay
         timing,
-        topPct: 0,
-        heightPct: 0,
-        colIndex: 0,
-        colCount: 1,
-        rawIndex: 0,
+        ...UNPOSITIONED,
       });
     }
   }
 
   // Run layoutDay on each day's timings
-  for (const dayNum of ALL_DAYS) {
-    const raw = days[dayNum] ?? [];
-    if (raw.length === 0) continue;
-
-    const positioned = layoutDay(raw.map((s) => s.timing));
-    const positionedByRawIndex = new Map(
-      positioned.map((p) => [p.rawIndex, p]),
-    );
-    days[dayNum] = raw
-      .map((slot, idx) => {
-        const pos = positionedByRawIndex.get(idx);
-        if (!pos) {
-          // Slot was filtered out (fully outside the visible grid) — skip it.
-          return null;
-        }
-        return {
-          ...slot,
-          topPct: pos.topPct,
-          heightPct: pos.heightPct,
-          colIndex: pos.colIndex,
-          colCount: pos.colCount,
-        };
-      })
-      .filter((s): s is DaySlot => s !== null);
-  }
+  layoutDayColumns(days);
 
   return days;
 }
@@ -275,16 +256,22 @@ function buildExamDays(classes: ArrangedClass[]): Record<number, DaySlot[]> {
           endTime: timing.endTime,
           venue: timing.venue,
         },
-        topPct: 0,
-        heightPct: 0,
-        colIndex: 0,
-        colCount: 1,
-        rawIndex: 0,
+        ...UNPOSITIONED,
       });
     }
   }
 
   // Run layoutDay on each day's exam timings
+  layoutDayColumns(days);
+
+  return days;
+}
+
+/**
+ * Positions each day's slots with `layoutDay` and drops the slots it filters
+ * out. Mutates `days` in place.
+ */
+function layoutDayColumns(days: Record<number, DaySlot[]>) {
   for (const dayNum of ALL_DAYS) {
     const raw = days[dayNum] ?? [];
     if (raw.length === 0) continue;
@@ -310,6 +297,4 @@ function buildExamDays(classes: ArrangedClass[]): Record<number, DaySlot[]> {
       })
       .filter((s): s is DaySlot => s !== null);
   }
-
-  return days;
 }
