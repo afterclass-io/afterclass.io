@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { decode } from "next-auth/jwt";
+import { decode, type JWT } from "next-auth/jwt";
 
 import { getAuthSecret } from "./auth-secret";
 
@@ -10,6 +10,46 @@ import { getAuthSecret } from "./auth-secret";
  * counts as expired (refresh early so consent calls never race expiry).
  */
 const EXPIRY_SKEW_SECONDS = 60;
+
+/**
+ * Reads and decodes the Auth.js session JWT from the request cookies.
+ *
+ * Returns `null` when no usable cookie exists, no secret is configured, or
+ * the cookie does not decode. Never throws.
+ */
+async function readSessionToken(): Promise<JWT | null> {
+  const store = await cookies();
+  const secure = store.get("__Secure-authjs.session-token")?.value;
+  const plain = store.get("authjs.session-token")?.value;
+  // In production, refuse the non-__Secure- cookie. Allowlisted raw read
+  // (request-security branch, not config — the ban covers config reads
+  // outside env.ts/env-gate.ts/chat-config.ts).
+  if (
+    process.env.NODE_ENV !== "development" &&
+    process.env.NODE_ENV !== "test" &&
+    !secure
+  )
+    return null;
+  const raw = secure ?? plain;
+  if (!raw) return null;
+  const salt = secure
+    ? "__Secure-authjs.session-token"
+    : "authjs.session-token";
+  // Mirror Auth.js's secret resolution (NEXTAUTH_SECRET is optional outside
+  // production in the env schema; Auth.js falls back to AUTH_SECRET).
+  const secret = getAuthSecret();
+  if (!secret) return null;
+  // Malformed/tampered cookies decode-throw — map to null (401), not 500.
+  try {
+    return await decode({
+      token: raw,
+      secret,
+      salt,
+    });
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Server-only accessor for the Supabase access token.
@@ -41,52 +81,22 @@ const EXPIRY_SKEW_SECONDS = 60;
  * failures map to `null`.
  */
 export async function getSupabaseAccessToken(): Promise<string | null> {
-  const store = await cookies();
-  const secure = store.get("__Secure-authjs.session-token")?.value;
-  const plain = store.get("authjs.session-token")?.value;
-  // In production, refuse the non-__Secure- cookie. Allowlisted raw read
-  // (request-security branch, not config — the ban covers config reads
-  // outside env.ts/env-gate.ts/chat-config.ts).
-  if (
-    process.env.NODE_ENV !== "development" &&
-    process.env.NODE_ENV !== "test" &&
-    !secure
-  )
-    return null;
-  const raw = secure ?? plain;
-  if (!raw) return null;
-  const salt = secure
-    ? "__Secure-authjs.session-token"
-    : "authjs.session-token";
-  // Mirror Auth.js's secret resolution (NEXTAUTH_SECRET is optional outside
-  // production in the env schema; Auth.js falls back to AUTH_SECRET).
-  const secret = getAuthSecret();
-  if (!secret) return null;
-  // Malformed/tampered cookies decode-throw — map to null (401), not 500.
-  try {
-    const token = await decode({
-      token: raw,
-      secret,
-      salt,
-    });
-    const accessToken = token?.supabaseAccessToken ?? null;
-    if (!accessToken) return null;
-    // Expiry-aware: tokens captured at sign-in expire after ~1h. When past
-    // the skew window, fail closed (null → 401 → re-login) instead of
-    // handing out a stale bearer. An in-memory refresh without cookie
-    // persistence is deliberately not attempted: it desynchronizes rotated
-    // refresh tokens and breaks CSRF binding in consent routes, so failing
-    // closed safely routes callers to re-login. Never throw — map all
-    // failures to null.
-    const expiresAt = token?.supabaseExpiresAt ?? null;
-    const expired =
-      typeof expiresAt === "number" &&
-      Date.now() / 1000 > expiresAt - EXPIRY_SKEW_SECONDS;
-    if (expired) return null;
-    return accessToken;
-  } catch {
-    return null;
-  }
+  const token = await readSessionToken();
+  const accessToken = token?.supabaseAccessToken ?? null;
+  if (!accessToken) return null;
+  // Expiry-aware: tokens captured at sign-in expire after ~1h. When past
+  // the skew window, fail closed (null → 401 → re-login) instead of
+  // handing out a stale bearer. An in-memory refresh without cookie
+  // persistence is deliberately not attempted: it desynchronizes rotated
+  // refresh tokens and breaks CSRF binding in consent routes, so failing
+  // closed safely routes callers to re-login. Never throw — map all
+  // failures to null.
+  const expiresAt = token?.supabaseExpiresAt ?? null;
+  const expired =
+    typeof expiresAt === "number" &&
+    Date.now() / 1000 > expiresAt - EXPIRY_SKEW_SECONDS;
+  if (expired) return null;
+  return accessToken;
 }
 
 /**
@@ -102,31 +112,6 @@ export async function getSupabaseAccessToken(): Promise<string | null> {
  * to `null`.
  */
 export async function getSupabaseRefreshToken(): Promise<string | null> {
-  const store = await cookies();
-  const secure = store.get("__Secure-authjs.session-token")?.value;
-  const plain = store.get("authjs.session-token")?.value;
-  // Same production rule as the access-token accessor above.
-  if (
-    process.env.NODE_ENV !== "development" &&
-    process.env.NODE_ENV !== "test" &&
-    !secure
-  )
-    return null;
-  const raw = secure ?? plain;
-  if (!raw) return null;
-  const salt = secure
-    ? "__Secure-authjs.session-token"
-    : "authjs.session-token";
-  const secret = getAuthSecret();
-  if (!secret) return null;
-  try {
-    const token = await decode({
-      token: raw,
-      secret,
-      salt,
-    });
-    return token?.supabaseRefreshToken ?? null;
-  } catch {
-    return null;
-  }
+  const token = await readSessionToken();
+  return token?.supabaseRefreshToken ?? null;
 }
