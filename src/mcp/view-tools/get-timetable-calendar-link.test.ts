@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type * as ChatConfigModule from "@/server/config/chat-config";
 import type { Mock } from "vitest";
 
 // Confirm-gate determinism: the adapter's destructive confirm gate is
@@ -49,8 +50,9 @@ vi.mock("@/server/assistant/ratelimit", () => ({ checkAndIncrement }));
 const { getChatConfigMock } = vi.hoisted(() => ({
   getChatConfigMock: vi.fn() as Mock,
 }));
-vi.mock("@/server/ecfg/chat", () => ({
-  getChatConfig: getChatConfigMock,
+vi.mock("@/server/config/chat-config", async (importOriginal) => ({
+  ...(await importOriginal<typeof ChatConfigModule>()),
+  getChatConfigAsync: getChatConfigMock,
   getRateLimitWindowMinutes: () => 1,
 }));
 

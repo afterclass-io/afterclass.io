@@ -38,9 +38,6 @@ vi.mock("@/server/db", () => ({
     chatUsage: { findUnique: chatUsageFindUnique },
   },
 }));
-vi.mock("@/server/ecfg/chat", () => ({
-  getChatConfig,
-}));
 
 const MOCK_CHAT_CONFIG = {
   quotaPerMonth: 50,

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type * as ChatConfigModule from "@/server/config/chat-config";
 import type { Mock } from "vitest";
 
 /**
@@ -21,8 +22,9 @@ vi.mock("../user", () => ({ buildToolContext }));
 const { getChatConfigMock } = vi.hoisted(() => ({
   getChatConfigMock: vi.fn() as Mock,
 }));
-vi.mock("@/server/ecfg/chat", () => ({
-  getChatConfig: getChatConfigMock,
+vi.mock("@/server/config/chat-config", async (importOriginal) => ({
+  ...(await importOriginal<typeof ChatConfigModule>()),
+  getChatConfigAsync: getChatConfigMock,
   getRateLimitWindowMinutes: () => 1,
 }));
 vi.mock("@/server/mcp/tools", () => ({

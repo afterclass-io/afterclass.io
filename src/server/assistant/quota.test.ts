@@ -50,17 +50,6 @@ vi.mock("@/server/config/chat-config", () => ({
     settlementSpikeTokens: 30000,
   }),
 }));
-vi.mock("@/server/ecfg/chat", () => ({
-  getChatConfig: async () => ({
-    quotaPerMonth: 50,
-    nudgeAt: 40,
-    rateLimitPerMinute: 10,
-    mcpRateLimitPerMinute: 60,
-    maxInputTokens: 64000,
-    maxOutputTokens: 4096,
-    maxToolRounds: 12,
-  }),
-}));
 
 import {
   beginTurn,

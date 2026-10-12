@@ -3,31 +3,8 @@ import {
   getChatConfigAsync as getCanonicalChatConfig,
   getChatConfig as getCanonicalChatConfigSync,
 } from "@/server/config/chat-config";
-import type { ChatConfig } from "@/server/ecfg/config";
 import { criticalFloorFor } from "@/modules/assistant/quota-meter/logic";
 import { currentMonthPeriod } from "./month";
-
-/**
- * Legacy-shape adapter: quota.ts keeps consuming the ecfg `ChatConfig` field
- * names (`quotaPerMonth`, rate limits) while the VALUES now come from the
- * canonical chat-config (env > EdgeConfig > config.json > defaults).
- */
-async function getQuotaChat(): Promise<ChatConfig> {
-  const c = await getCanonicalChatConfig();
-  return {
-    quotaPerMonth: c.quotaPerMonth,
-    nudgeAt: c.nudgeAt,
-    rateLimitPerMinute: c.rateLimitPerMinute,
-    mcpRateLimitPerMinute: c.mcpRateLimitPerMinute,
-    maxInputTokens: c.maxInputTokens,
-    maxOutputTokens: c.maxOutputTokens,
-    maxToolRounds: c.maxToolRounds,
-    // Kill-switches ride the legacy shape (same pattern as chat.ts).
-    chatEnabled: c.chatEnabled,
-    widgetEnabled: c.widgetEnabled,
-    mcpEnabled: c.mcpEnabled,
-  };
-}
 
 /**
  * Read-only quota state for a user in the current period ("YYYY-MM").
@@ -44,7 +21,7 @@ export async function getQuotaState(userId: string): Promise<{
   inputTokens: number;
   cachedInputTokens: number;
 }> {
-  const chat = await getQuotaChat();
+  const chat = await getCanonicalChatConfig();
   const period = currentMonthPeriod();
   const row = await db.chatUsage.findUnique({
     where: { userId_period: { userId, period } },
@@ -92,7 +69,7 @@ export async function checkQuota(
 export async function reserveMessage(
   userId: string,
 ): Promise<{ ok: boolean; remaining: number; quota: number }> {
-  const chat = await getQuotaChat();
+  const chat = await getCanonicalChatConfig();
   const period = currentMonthPeriod();
   const quota = chat.quotaPerMonth;
   // Ensure a row exists for this period; the no-op update avoids touching the

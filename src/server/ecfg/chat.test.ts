@@ -4,10 +4,9 @@ import {
   DEFAULT_CHAT_CONFIG,
   edgeConfigSchema,
 } from "./config";
-// ecfg/chat.ts is a delegation shim over the canonical chat-config.
-// The env-override behaviors below now execute in the canonical module with
-// fail-closed semantics; these tests pin the shim end-to-end (env > Edge >
-// file > defaults) plus the preserved env-override-then-fallback write-limit precedence.
+// The env-override behaviors below run in the canonical chat-config module
+// with fail-closed semantics. These tests pin it end-to-end (env > Edge >
+// file > defaults) plus the env-override-then-fallback write-limit precedence.
 
 describe("chat config schema", () => {
   it("applies defaults when the chat object is missing", () => {
@@ -132,7 +131,8 @@ describe("getChatConfig env overrides", () => {
         chat: { ...DEFAULT_CHAT_CONFIG },
       }),
     }));
-    const { getChatConfig } = await import("./chat");
+    const { getChatConfigAsync: getChatConfig } =
+      await import("@/server/config/chat-config");
     const cfg = await getChatConfig();
     expect(cfg.rateLimitPerMinute).toBe(99);
   });
@@ -150,7 +150,8 @@ describe("getChatConfig env overrides", () => {
         chat: { ...DEFAULT_CHAT_CONFIG },
       }),
     }));
-    const { getChatConfig } = await import("./chat");
+    const { getChatConfigAsync: getChatConfig } =
+      await import("@/server/config/chat-config");
     const cfg = await getChatConfig();
     expect(cfg.mcpRateLimitPerMinute).toBe(123);
   });
@@ -169,7 +170,8 @@ describe("getChatConfig env overrides", () => {
         chat: { ...DEFAULT_CHAT_CONFIG },
       }),
     }));
-    const { getChatConfig } = await import("./chat");
+    const { getChatConfigAsync: getChatConfig } =
+      await import("@/server/config/chat-config");
     const cfg = await getChatConfig();
     expect(cfg.maxInputTokens).toBe(Number(overrideTokens));
   });
@@ -206,8 +208,7 @@ describe("getChatConfig env overrides", () => {
     expect(() => get1()).toThrow(/window/i);
   });
 
-  // The legacy-shape shim passes the kill-switch flags through.
-  it("passes kill-switch flags through the legacy-shape return", async () => {
+  it("returns the kill-switch flags from the Edge Config", async () => {
     vi.doMock("@/server/ecfg/edge-config", () => ({
       getEdgeConfig: async () => ({
         enableAnnouncementBanner: false,
@@ -224,7 +225,8 @@ describe("getChatConfig env overrides", () => {
         },
       }),
     }));
-    const { getChatConfig } = await import("./chat");
+    const { getChatConfigAsync: getChatConfig } =
+      await import("@/server/config/chat-config");
     const cfg = await getChatConfig();
     expect(cfg.chatEnabled).toBe(false);
     expect(cfg.widgetEnabled).toBe(false);

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type * as ChatConfigModule from "@/server/config/chat-config";
 import type { Mock } from "vitest";
 
 /**
@@ -23,8 +24,9 @@ vi.mock("server-only", () => ({}));
 vi.mock("../server", () => ({ server: { tool: serverTool } }));
 vi.mock("../user", () => ({ buildToolContext }));
 vi.mock("@/server/assistant/ratelimit", () => ({ checkAndIncrement }));
-vi.mock("@/server/ecfg/chat", () => ({
-  getChatConfig: vi.fn().mockResolvedValue({ mcpRateLimitPerMinute: 60 }),
+vi.mock("@/server/config/chat-config", async (importOriginal) => ({
+  ...(await importOriginal<typeof ChatConfigModule>()),
+  getChatConfigAsync: vi.fn().mockResolvedValue({ mcpRateLimitPerMinute: 60 }),
   getRateLimitWindowMinutes: () => 1,
 }));
 vi.mock("@/server/mcp/tools", () => ({

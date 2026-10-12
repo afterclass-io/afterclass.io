@@ -2,7 +2,7 @@ import type { ToolResult } from "@/server/mcp/types";
 import type { ZodType } from "zod";
 import { errorResult } from "../envelopes";
 import { dispatchToolCall, isDispatchCatalogError } from "../dispatch";
-import { getChatConfig } from "@/server/ecfg/chat";
+import { getChatConfigAsync } from "@/server/config/chat-config";
 
 export { errorResult };
 
@@ -17,7 +17,7 @@ export const MCP_DISABLED_TEXT = "MCP access is currently disabled.";
  * directly and must keep running with the flag off.
  */
 export async function checkMcpEnabled(): Promise<string | null> {
-  const cfg = await getChatConfig();
+  const cfg = await getChatConfigAsync();
   return cfg.mcpEnabled === false ? MCP_DISABLED_TEXT : null;
 }
 

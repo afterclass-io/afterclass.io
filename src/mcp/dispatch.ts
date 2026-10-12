@@ -5,7 +5,10 @@ import { errorResult, textResult } from "./envelopes";
 import { isDevBypass } from "./env-gate";
 import { stripSecrets, truncate, wrapToolOutput } from "./output-policy";
 import { appendAuditLog } from "@/server/mcp/audit-log";
-import { getChatConfig, getRateLimitWindowMinutes } from "@/server/ecfg/chat";
+import {
+  getChatConfigAsync,
+  getRateLimitWindowMinutes,
+} from "@/server/config/chat-config";
 import { buildToolContext } from "./user";
 import { checkDestructiveConfirm } from "./rate-limit";
 
@@ -39,7 +42,7 @@ export interface DispatchPolicy {
   budgetPrefix?: string;
   /**
    * Custom per-call limit for the budget bucket. Defaults to the transport
-   * ceiling (`mcp-write:`/`mcp-read:` limit from `getChatConfig`) — the chat
+   * ceiling (`mcp-write:`/`mcp-read:` limit from `getChatConfigAsync`) — the chat
    * transport passes its own effective write limit here (same value it
    * reports in its friendly over-budget message).
    */
@@ -179,10 +182,10 @@ export async function dispatchToolCall(opts: {
     // ceiling when the policy carries them (the chat transport passes its
     // effective write limit; MCP viewless/view-bound paths omit them and
     // get the canonical `mcp-write:`/`mcp-read:` limit from
-    // `getChatConfig`). Confirm runs BEFORE the charge, so rejected calls
+    // `getChatConfigAsync`). Confirm runs BEFORE the charge, so rejected calls
     // are never charged. `onBudgetExceeded` lets the caller supply its own
     // friendly over-budget text (chat); otherwise the MCP wording applies.
-    const chat = await getChatConfig();
+    const chat = await getChatConfigAsync();
     const limit = policy.limit ?? chat.mcpRateLimitPerMinute;
     const windowMs = policy.windowMs ?? getRateLimitWindowMinutes() * 60_000;
     const { ok, retryAfterSeconds } = await checkBudget(toolCtx, {
