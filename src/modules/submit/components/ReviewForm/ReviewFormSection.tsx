@@ -101,6 +101,31 @@ export const ReviewFormSection = ({
           label: prof.name,
         }));
 
+  const renderTextareaField = (
+    field: "body" | "tips",
+    label: string,
+    placeholder: string,
+  ) => (
+    <FormField
+      control={control}
+      name={`${type}.${field}`}
+      render={({ field: formField }) => (
+        <FormItem>
+          <FormLabel>{label}</FormLabel>
+          <FormControl>
+            <Textarea
+              className="w-full"
+              placeholder={placeholder}
+              {...formField}
+              data-test={`review-form-${type}-${field}`}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+
   return (
     <div
       className="bg-card flex w-full flex-col items-start gap-6 rounded-2xl px-4 py-6 sm:px-6 sm:py-8 md:w-160"
@@ -220,43 +245,17 @@ export const ReviewFormSection = ({
               )}
             />
 
-            <FormField
-              control={control}
-              name={`${type}.body`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{texts.BODY.FIELD_LABEL[type]}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      className="w-full"
-                      placeholder={texts.BODY.PLACEHOLDER[type]}
-                      {...field}
-                      data-test={`review-form-${type}-body`}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {renderTextareaField(
+              "body",
+              texts.BODY.FIELD_LABEL[type],
+              texts.BODY.PLACEHOLDER[type],
+            )}
 
-            <FormField
-              control={control}
-              name={`${type}.tips`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{texts.TIPS.FIELD_LABEL[type]}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      className="w-full"
-                      placeholder={texts.TIPS.PLACEHOLDER[type]}
-                      {...field}
-                      data-test={`review-form-${type}-tips`}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {renderTextareaField(
+              "tips",
+              texts.TIPS.FIELD_LABEL[type],
+              texts.TIPS.PLACEHOLDER[type],
+            )}
           </div>
         </>
       )}

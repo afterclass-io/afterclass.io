@@ -76,6 +76,29 @@ export function ConnectFlow({ mcpUrl }: { mcpUrl: string }) {
   );
 }
 
+function StepList({ steps, className }: { steps: Step[]; className: string }) {
+  return (
+    <ol className={className}>
+      {steps.map((s) => (
+        <li key={s.label}>
+          {s.href ? (
+            <a
+              href={s.href}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-foreground underline underline-offset-2"
+            >
+              {s.label}
+            </a>
+          ) : (
+            s.label
+          )}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 function ProviderButtons({ mcpUrl }: { mcpUrl: string }) {
   const [selected, setSelected] = useState<ProviderId | null>(null);
 
@@ -124,47 +147,17 @@ function ProviderButtons({ mcpUrl }: { mcpUrl: string }) {
                 <summary className="text-muted-foreground cursor-pointer underline-offset-2 hover:underline">
                   or follow manual steps
                 </summary>
-                <ol className="text-muted-foreground mt-2 list-decimal space-y-1 pl-5">
-                  {PROVIDERS[selected].steps.map((s) => (
-                    <li key={s.label}>
-                      {s.href ? (
-                        <a
-                          href={s.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="hover:text-foreground underline underline-offset-2"
-                        >
-                          {s.label}
-                        </a>
-                      ) : (
-                        s.label
-                      )}
-                    </li>
-                  ))}
-                </ol>
+                <StepList
+                  steps={PROVIDERS[selected].steps}
+                  className="text-muted-foreground mt-2 list-decimal space-y-1 pl-5"
+                />
               </details>
             </>
           ) : (
-            <>
-              <ol className="text-muted-foreground list-decimal space-y-1 pl-5 text-sm">
-                {PROVIDERS[selected].steps.map((s) => (
-                  <li key={s.label}>
-                    {s.href ? (
-                      <a
-                        href={s.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="hover:text-foreground underline underline-offset-2"
-                      >
-                        {s.label}
-                      </a>
-                    ) : (
-                      s.label
-                    )}
-                  </li>
-                ))}
-              </ol>
-            </>
+            <StepList
+              steps={PROVIDERS[selected].steps}
+              className="text-muted-foreground list-decimal space-y-1 pl-5 text-sm"
+            />
           )}
         </div>
       )}

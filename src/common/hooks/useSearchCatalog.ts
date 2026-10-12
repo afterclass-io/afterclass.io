@@ -21,42 +21,32 @@ export type UseSearchCatalogArgs = Scope & {
   enabled?: boolean;
 };
 
+type SearchCatalogResult<Row> = {
+  rows: Row[];
+  total: number;
+  debouncedQuery: string;
+  isFetching: boolean;
+  isStale: boolean;
+  isIdle: boolean;
+};
+
 export function useSearchCatalog(args: {
   entity: "course";
   scope?: { professorSlug: string };
   query: string;
   limit?: number;
   enabled?: boolean;
-}): {
-  rows: CourseCatalogRow[];
-  total: number;
-  debouncedQuery: string;
-  isFetching: boolean;
-  isStale: boolean;
-  isIdle: boolean;
-};
+}): SearchCatalogResult<CourseCatalogRow>;
 export function useSearchCatalog(args: {
   entity: "professor";
   scope?: { courseCode: string };
   query: string;
   limit?: number;
   enabled?: boolean;
-}): {
-  rows: ProfessorCatalogRow[];
-  total: number;
-  debouncedQuery: string;
-  isFetching: boolean;
-  isStale: boolean;
-  isIdle: boolean;
-};
-export function useSearchCatalog(args: UseSearchCatalogArgs): {
-  rows: (CourseCatalogRow | ProfessorCatalogRow)[];
-  total: number;
-  debouncedQuery: string;
-  isFetching: boolean;
-  isStale: boolean;
-  isIdle: boolean;
-};
+}): SearchCatalogResult<ProfessorCatalogRow>;
+export function useSearchCatalog(
+  args: UseSearchCatalogArgs,
+): SearchCatalogResult<CourseCatalogRow | ProfessorCatalogRow>;
 export function useSearchCatalog(args: UseSearchCatalogArgs) {
   const { query, limit = 10, enabled = true } = args;
   const trimmedQuery = query.trim();

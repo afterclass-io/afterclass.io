@@ -16,6 +16,18 @@ import { Heading } from "@/common/components/heading";
 import { formatDateSGT } from "@/common/functions/format-date-sgt";
 import { ProgressLink } from "@/common/components/progress-link";
 
+function VenueRow({ venue }: { venue?: string | null }) {
+  if (!venue || venue === "TBA") {
+    return null;
+  }
+  return (
+    <div className="flex items-center gap-1">
+      <PinIcon size={16} className="mr-1" />
+      <span className="text-muted-foreground text-xs">{venue}</span>
+    </div>
+  );
+}
+
 export const ClassCard = ({
   course,
   section,
@@ -82,14 +94,7 @@ export const ClassCard = ({
                     {timing.startTime}-{timing.endTime}
                   </span>
                 </div>
-                {timing.venue && timing.venue !== "TBA" && (
-                  <div className="flex items-center gap-1">
-                    <PinIcon size={16} className="mr-1" />
-                    <span className="text-muted-foreground text-xs">
-                      {timing.venue}
-                    </span>
-                  </div>
-                )}
+                <VenueRow venue={timing.venue} />
               </div>
             ))}
             {classTiming.length > 1 && (
@@ -128,14 +133,7 @@ export const ClassCard = ({
                   {timing.startTime}-{timing.endTime}
                 </span>
               </div>
-              {timing.venue && timing.venue !== "TBA" && (
-                <div className="flex items-center gap-1">
-                  <PinIcon size={16} className="mr-1" />
-                  <span className="text-muted-foreground text-xs">
-                    {timing.venue}
-                  </span>
-                </div>
-              )}
+              <VenueRow venue={timing.venue} />
             </div>
           ))
         ) : (
