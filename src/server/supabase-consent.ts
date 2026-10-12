@@ -1,8 +1,9 @@
-import { createHash, createHmac, timingSafeEqual } from "crypto";
+import { createHash, createHmac } from "crypto";
 
 import { createClient } from "@supabase/supabase-js";
 
 import { env } from "@/env";
+import { verifyExpiringHmac } from "@/server/hmac-verify";
 import { serverSupabaseAuthOptions } from "@/server/supabase";
 import { instrumentSupabase } from "@/common/tools/supabase/instrument";
 import { getAuthSecret } from "@/server/auth/auth-secret";
@@ -165,16 +166,12 @@ export function verifyConsentCsrf(
     const expS = parts.pop();
     const bound = parts.join(".");
     if (bound !== binding) return false;
-    if (sig === undefined || expS === undefined) return false;
-    if (!/^\d+$/.test(expS)) return false;
-    if (Date.now() > Number(expS)) return false;
-    const expect = createHmac("sha256", secret)
-      .update(`${bound}.${expS}`)
-      .digest("hex");
-    const sigBuf = Buffer.from(sig);
-    const expectBuf = Buffer.from(expect);
-    if (sigBuf.length !== expectBuf.length) return false;
-    return timingSafeEqual(sigBuf, expectBuf);
+    return verifyExpiringHmac({
+      signedPrefix: bound,
+      expiry: expS,
+      signature: sig,
+      secret,
+    });
   } catch {
     return false;
   }

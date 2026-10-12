@@ -1,4 +1,6 @@
-import { createHash, createHmac, timingSafeEqual } from "crypto";
+import { createHash, createHmac } from "crypto";
+
+import { verifyExpiringHmac } from "@/server/hmac-verify";
 
 export type ConfirmTokenParts = {
   userId: string;
@@ -50,16 +52,12 @@ export async function verifyConfirmToken(
     const [userId, tool, argHash, expS, sig] = raw.split(".");
     if (userId !== a.userId || tool !== a.tool || argHash !== a.argHash)
       return false;
-    if (sig === undefined || expS === undefined) return false;
-    if (!/^\d+$/.test(expS)) return false;
-    if (Date.now() > Number(expS)) return false;
-    const expect = createHmac("sha256", a.secret)
-      .update(`${userId}.${tool}.${argHash}.${expS}`)
-      .digest("hex");
-    const sigBuf = Buffer.from(sig);
-    const expectBuf = Buffer.from(expect);
-    if (sigBuf.length !== expectBuf.length) return false;
-    return timingSafeEqual(sigBuf, expectBuf);
+    return verifyExpiringHmac({
+      signedPrefix: `${userId}.${tool}.${argHash}`,
+      expiry: expS,
+      signature: sig,
+      secret: a.secret,
+    });
   } catch {
     return false;
   }
