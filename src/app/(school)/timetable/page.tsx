@@ -557,10 +557,14 @@ export default function TimetablePage() {
         </div>
       </div>
 
-      {/* Main content: left (grid) + right (search) */}
-      <div className="flex flex-col gap-6 lg:flex-row">
+      {/* Main content. Mobile order: grid, search, bids. On lg: grid and bids
+          stack in the left column, search spans both rows on the right. */}
+      <div
+        className="grid gap-x-6 lg:grid-cols-[minmax(0,1fr)_var(--panel-width)]"
+        style={searchPanel.style}
+      >
         {/* Left: timetable grid */}
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 lg:col-start-1 lg:row-start-1">
           {/* Timetable section header — plan-scoped content */}
           <div className="mb-3">
             <h2 className="text-lg font-semibold">Class timetable</h2>
@@ -645,33 +649,11 @@ export default function TimetablePage() {
                 bids={bidsMap}
               />
             )}
-
-          {/* Bidding section — term-scoped, separated from the plan above */}
-          {selectedTermId && isLoggedIn && (
-            <section className="border-border mt-8 flex flex-col gap-3 border-t pt-6">
-              <div>
-                <h2 className="text-lg font-semibold">Your bids</h2>
-                <p className="text-muted-foreground text-sm">
-                  Bids are tracked per academic term, not per plan — they apply
-                  to every timetable variant in this term.
-                </p>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  {activePlan
-                    ? `Bids synced to active plan: ${activePlan.name}`
-                    : "No active plan — star a plan to mark it active for this term."}
-                </p>
-              </div>
-              <BidsTable />
-            </section>
-          )}
         </div>
 
         {/* Right: search panel — user-resizable on lg+, scrolls internally */}
         {selectedTermId && (
-          <div
-            className="relative w-full shrink-0 lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100vh-7rem)] lg:w-[var(--panel-width)] lg:flex-col"
-            style={searchPanel.style}
-          >
+          <div className="relative mt-8 w-full lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0 lg:flex lg:max-h-[calc(100vh-7rem)] lg:flex-col">
             {/* Drag handle on the panel's left edge (lg+ only) */}
             <ResizeHandle
               label="Drag to resize search panel"
@@ -684,6 +666,25 @@ export default function TimetablePage() {
               className="min-h-0 flex-1"
             />
           </div>
+        )}
+
+        {/* Bidding section — term-scoped, separated from the plan above */}
+        {selectedTermId && isLoggedIn && (
+          <section className="border-border mt-8 flex min-w-0 flex-col gap-3 border-t pt-6 lg:col-start-1 lg:row-start-2">
+            <div>
+              <h2 className="text-lg font-semibold">Your bids</h2>
+              <p className="text-muted-foreground text-sm">
+                Bids are tracked per academic term, not per plan — they apply to
+                every timetable variant in this term.
+              </p>
+              <p className="text-muted-foreground mt-1 text-xs">
+                {activePlan
+                  ? `Bids synced to active plan: ${activePlan.name}`
+                  : "No active plan — star a plan to mark it active for this term."}
+              </p>
+            </div>
+            <BidsTable />
+          </section>
         )}
       </div>
 
