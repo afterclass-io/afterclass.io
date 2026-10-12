@@ -19,6 +19,11 @@ export const RoadmapReactionsGroup = ({ roadmapId }: { roadmapId: string }) => {
 
   const { counts, viewerReaction } = roadmapReactionsQuery.data;
 
+  // An empty row would still take a flex gap in the page layout.
+  if (counts.length === 0) {
+    return null;
+  }
+
   const handleReactionChange = (newReaction: DbReviewReactionType) => {
     if (viewerReaction === newReaction) {
       upsertReaction({
