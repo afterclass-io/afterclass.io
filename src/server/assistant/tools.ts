@@ -4,6 +4,7 @@ import { dispatchToolCall } from "@/mcp/dispatch";
 import { allTools } from "@/server/mcp/tools";
 import type { ToolContext } from "@/server/mcp/types";
 import { getToolOutputBudget } from "@/server/config/chat-config";
+import { getAuthSecret } from "@/server/auth/auth-secret";
 
 /** ~6k tokens at the chars/4 heuristic. Caps the per-call miss region AND the
  * within-loop amplification (a result is re-sent at miss in every remaining
@@ -73,8 +74,7 @@ export function buildAssistantTools(
               // issued out-of-band (Approve card follow-up); the gate binds it
               // to user + tool + args. Secret mirrors supabase-access-token.ts
               // (NEXTAUTH_SECRET, falling back to AUTH_SECRET).
-              confirmSecret:
-                process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
+              confirmSecret: getAuthSecret(),
               onBudgetExceeded: ({ limit, retry }) =>
                 `You're making changes too quickly - at most ${limit} write actions per minute are allowed. Please wait ~${retry}s and ask me to try again.`,
             },

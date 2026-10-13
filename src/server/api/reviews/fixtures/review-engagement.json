@@ -1,0 +1,168 @@
+{
+  "reviews": [
+    {
+      "id": "rev-eng-01",
+      "rating": 5,
+      "body": "Exceptional course with rich interactive sessions.",
+      "tips": "Revise lab notes weekly.",
+      "shareCount": 2,
+      "votes": [
+        { "voter": "viewer", "weight": 1 },
+        { "voter": "user-2", "weight": 1 },
+        { "voter": "user-3", "weight": 1 }
+      ],
+      "reactions": [
+        { "user": "viewer", "reaction": "LIKE" },
+        { "user": "user-2", "reaction": "LIKE" },
+        { "user": "user-3", "reaction": "THANKFUL" }
+      ]
+    },
+    {
+      "id": "rev-eng-02",
+      "rating": 2,
+      "body": "Pacing was too fast and assignments were tough.",
+      "tips": "Form study groups early.",
+      "shareCount": 0,
+      "votes": [
+        { "voter": "viewer", "weight": -1 },
+        { "voter": "user-2", "weight": -1 }
+      ],
+      "reactions": [
+        { "user": "viewer", "reaction": "THANKFUL" },
+        { "user": "user-2", "reaction": "CRYING" }
+      ]
+    },
+    {
+      "id": "rev-eng-03",
+      "rating": 4,
+      "body": "Practical real-world case studies throughout.",
+      "tips": "Participate actively in discussions.",
+      "shareCount": 3,
+      "votes": [
+        { "voter": "user-2", "weight": 1 },
+        { "voter": "user-3", "weight": 1 }
+      ],
+      "reactions": [
+        { "user": "user-2", "reaction": "SLAY" },
+        { "user": "user-3", "reaction": "FUNNY" }
+      ]
+    },
+    {
+      "id": "rev-eng-04",
+      "rating": 3,
+      "body": "Standard foundational curriculum, fair exams.",
+      "tips": "Practice past papers.",
+      "shareCount": 1,
+      "votes": [
+        { "voter": "viewer", "weight": 1 },
+        { "voter": "user-2", "weight": -1 }
+      ],
+      "reactions": [
+        { "user": "viewer", "reaction": "SLAY" },
+        { "user": "user-2", "reaction": "SHOCKED" }
+      ]
+    },
+    {
+      "id": "rev-eng-05",
+      "rating": 4,
+      "body": "Great guest lectures from industry professionals.",
+      "tips": "Network during office hours.",
+      "shareCount": 4,
+      "votes": [
+        { "voter": "viewer", "weight": -1 },
+        { "voter": "user-3", "weight": 1 }
+      ],
+      "reactions": [
+        { "user": "viewer", "reaction": "FUNNY" },
+        { "user": "user-2", "reaction": "LIKE" },
+        { "user": "user-3", "reaction": "LIKE" }
+      ]
+    },
+    {
+      "id": "rev-eng-06",
+      "rating": 5,
+      "body": "Hands-on projects helped reinforce complex concepts.",
+      "tips": "Start final project before recess week.",
+      "shareCount": 0,
+      "votes": [{ "voter": "user-2", "weight": 1 }],
+      "reactions": [
+        { "user": "viewer", "reaction": "CRYING" },
+        { "user": "user-3", "reaction": "THANKFUL" }
+      ]
+    },
+    {
+      "id": "rev-eng-07",
+      "rating": 3,
+      "body": "Balanced workload with clear grading rubrics.",
+      "tips": "Follow report formatting guidelines.",
+      "shareCount": 2,
+      "votes": [
+        { "voter": "viewer", "weight": 1 },
+        { "voter": "user-2", "weight": 1 }
+      ],
+      "reactions": [
+        { "user": "viewer", "reaction": "SHOCKED" },
+        { "user": "user-3", "reaction": "SLAY" }
+      ]
+    },
+    {
+      "id": "rev-eng-08",
+      "rating": 4,
+      "body": "Challenging problem sets but very rewarding.",
+      "tips": "Attend recitation classes.",
+      "shareCount": 1,
+      "votes": [{ "voter": "viewer", "weight": -1 }],
+      "reactions": [{ "user": "user-2", "reaction": "FUNNY" }]
+    },
+    {
+      "id": "rev-eng-09",
+      "rating": 4,
+      "body": "Well-structured course materials and slides.",
+      "tips": "Download readings before lectures.",
+      "shareCount": 0,
+      "votes": [],
+      "reactions": []
+    },
+    {
+      "id": "rev-eng-10",
+      "rating": 5,
+      "body": "Inspirational professor and thought-provoking debates.",
+      "tips": "Read supplementary textbook chapters.",
+      "shareCount": 3,
+      "votes": [
+        { "voter": "viewer", "weight": 1 },
+        { "voter": "user-3", "weight": 1 }
+      ],
+      "reactions": [
+        { "user": "viewer", "reaction": "LIKE" },
+        { "user": "user-2", "reaction": "SLAY" },
+        { "user": "user-3", "reaction": "THANKFUL" }
+      ]
+    },
+    {
+      "id": "rev-eng-11",
+      "rating": 2,
+      "body": "Heavy textbook reading requirement each week.",
+      "tips": "Skim executive summaries.",
+      "shareCount": 2,
+      "votes": [
+        { "voter": "viewer", "weight": -1 },
+        { "voter": "user-2", "weight": -1 },
+        { "voter": "user-3", "weight": -1 }
+      ],
+      "reactions": [
+        { "user": "viewer", "reaction": "THANKFUL" },
+        { "user": "user-2", "reaction": "CRYING" }
+      ]
+    },
+    {
+      "id": "rev-eng-12",
+      "rating": 4,
+      "body": "Good elective module with practical takeaways.",
+      "tips": "Choose team members with complementary skills.",
+      "shareCount": 0,
+      "votes": [{ "voter": "user-2", "weight": 1 }],
+      "reactions": [{ "user": "user-3", "reaction": "LIKE" }]
+    }
+  ]
+}

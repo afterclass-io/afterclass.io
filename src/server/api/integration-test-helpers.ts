@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaClient, type Prisma } from "@/generated/prisma/client";
 import { afterAll, inject } from "vitest";
 
 // One Prisma client per integration test file, pointed at the Testcontainers
@@ -8,6 +8,7 @@ import { afterAll, inject } from "vitest";
 // per file, so this module (and the afterAll below) evaluates once per file.
 export const idb = new PrismaClient({
   adapter: new PrismaPg({ connectionString: inject("dbUrl") }),
+  log: [{ emit: "event", level: "query" }],
 });
 afterAll(() => idb.$disconnect());
 
@@ -118,4 +119,57 @@ export function seedAcadTerm(
       endDt: over.endDt ?? new Date(`${acadYearStart}-12-01`),
     },
   });
+}
+
+/**
+ * Executes `fn`, counting Prisma query events emitted by `db`.
+ * Resolves with `{ result, statements, queries, events }`.
+ */
+export async function countQueries<T>(
+  db: PrismaClient,
+  fn: () => Promise<T>,
+): Promise<{
+  result: T;
+  statements: number;
+  queries: string[];
+  events: Prisma.QueryEvent[];
+}> {
+  const events: Prisma.QueryEvent[] = [];
+  const queries: string[] = [];
+  const listener = (event: Prisma.QueryEvent) => {
+    events.push(event);
+    queries.push(event.query);
+  };
+  (
+    db as unknown as {
+      $on(
+        eventType: "query",
+        callback: (event: Prisma.QueryEvent) => void,
+      ): void;
+    }
+  ).$on("query", listener);
+  try {
+    const result = await fn();
+    return {
+      result,
+      statements: events.length,
+      queries,
+      events,
+    };
+  } finally {
+    const clientWithEngine = db as unknown as {
+      _engine?: {
+        logEmitter?: {
+          removeListener?: (
+            event: "query",
+            listener: (event: Prisma.QueryEvent) => void,
+          ) => void;
+        };
+      };
+    };
+    const logEmitter = clientWithEngine._engine?.logEmitter;
+    if (logEmitter && typeof logEmitter.removeListener === "function") {
+      logEmitter.removeListener("query", listener);
+    }
+  }
 }

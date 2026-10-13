@@ -5,6 +5,7 @@ import {
   DndContext,
   type DragEndEvent,
   type DragStartEvent,
+  type Over,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -14,7 +15,7 @@ import {
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import type { Entry, Conflict } from "../functions/conflicts";
 import { detectConflicts, findEntryByCourse } from "../functions/conflicts";
-import { RoadmapYearRow, YEAR_LABEL_COL } from "./RoadmapYearRow";
+import { RoadmapYearRow, YEAR_ROW_COLS, TERM_COLUMNS } from "./RoadmapYearRow";
 import { RoadmapConflictBadge } from "./RoadmapConflictBadge";
 import {
   RoadmapCourseDialog,
@@ -42,7 +43,7 @@ export type RoadmapGridProps = {
   onSave?: (entries: Entry[]) => Promise<void> | void;
   /** Optional sidebar rendered inside the DndContext (e.g. course search). */
   sidebar?: React.ReactNode;
-  /** Optional footer renderer below each term cell (e.g. timetable links). */
+  /** Optional footer renderer below each term cell (e.g. timetable links). Merged columns pass "T3". */
   termFooter?: (yearNumber: number, term: string) => React.ReactNode;
   className?: string;
 };
@@ -51,7 +52,6 @@ export type RoadmapGridProps = {
 // Constants
 // ---------------------------------------------------------------------------
 
-const TERMS = ["T1", "T2", "T3A", "T3B"] as const;
 /** SMU's maximum candidature for standard degrees is 5 academic years. */
 const MAX_YEARS = 5;
 const DEBOUNCE_MS = 800;
@@ -63,6 +63,26 @@ const DEBOUNCE_MS = 800;
 /** Stable sortable ID — courseId is unique (duplicate adds are blocked). */
 function entrySortableId(entry: Entry): string {
   return entry.courseId;
+}
+
+/**
+ * Term cell a drop lands in: a term-cell droppable, or the cell of the entry
+ * dropped on. Null when the dropped-on entry is not in the grid.
+ */
+function resolveDropCell(
+  over: Over,
+  entryIndexById: Map<string, number>,
+  localEntries: Entry[],
+): { yearNumber: number; term: string } | null {
+  const targetData = over.data.current as
+    { yearNumber: number; term: string; type: string } | undefined;
+  if (targetData?.type === "term-cell") {
+    return { yearNumber: targetData.yearNumber, term: targetData.term };
+  }
+  const targetIdx = entryIndexById.get(String(over.id));
+  if (targetIdx === undefined) return null;
+  const targetEntry = localEntries[targetIdx]!;
+  return { yearNumber: targetEntry.yearNumber, term: targetEntry.term };
 }
 
 /** Categorize conflicts by term for inline badge display. */
@@ -149,6 +169,19 @@ export function RoadmapGrid({
     };
   }, [localEntries, dirty, onSave, saving]);
 
+  // Closing or reloading the tab does not unmount React, so the flush below
+  // never runs for it. While an edit is unsaved (or its save is in flight or
+  // failing), ask the browser to confirm before the page goes away.
+  const hasUnsavedEdits = (dirty || saving) && !!onSave;
+  useEffect(() => {
+    if (!hasUnsavedEdits) return;
+    const confirmLeave = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    window.addEventListener("beforeunload", confirmLeave);
+    return () => window.removeEventListener("beforeunload", confirmLeave);
+  }, [hasUnsavedEdits]);
+
   useEffect(() => {
     return () => {
       if (debounceRef.current) {
@@ -228,7 +261,6 @@ export function RoadmapGrid({
         return;
 
       const activeIdStr = String(active.id);
-      const overIdStr = String(over.id);
 
       // Determine if this is a sidebar drag (new course) or grid drag (move)
       const isSidebarDrag = active.data.current?.type === "sidebar-course";
@@ -248,24 +280,9 @@ export function RoadmapGrid({
           return;
         }
 
-        // Parse the droppable target
-        const targetData = over.data.current as
-          { yearNumber: number; term: string; type: string } | undefined;
-
-        let yearNumber: number;
-        let term: string;
-
-        if (targetData?.type === "term-cell") {
-          yearNumber = targetData.yearNumber;
-          term = targetData.term;
-        } else {
-          // Dropped on a sortable item — find its cell
-          const entryIdx = entryIndexById.get(overIdStr);
-          if (entryIdx === undefined) return;
-          const targetEntry = localEntries[entryIdx]!;
-          yearNumber = targetEntry.yearNumber;
-          term = targetEntry.term;
-        }
+        const cell = resolveDropCell(over, entryIndexById, localEntries);
+        if (!cell) return;
+        const { yearNumber, term } = cell;
 
         const newEntry: Entry = {
           courseId: course.id,
@@ -287,23 +304,9 @@ export function RoadmapGrid({
       const entryIdx = entryIndexById.get(activeIdStr);
       if (entryIdx === undefined) return;
 
-      const targetData = over.data.current as
-        { yearNumber: number; term: string; type: string } | undefined;
-
-      let yearNumber: number;
-      let term: string;
-
-      if (targetData?.type === "term-cell") {
-        yearNumber = targetData.yearNumber;
-        term = targetData.term;
-      } else {
-        // Dropped on another sortable item
-        const targetIdx = entryIndexById.get(overIdStr);
-        if (targetIdx === undefined) return;
-        const targetEntry = localEntries[targetIdx]!;
-        yearNumber = targetEntry.yearNumber;
-        term = targetEntry.term;
-      }
+      const cell = resolveDropCell(over, entryIndexById, localEntries);
+      if (!cell) return;
+      const { yearNumber, term } = cell;
 
       const updated = localEntries.map((e, i) => {
         if (i === entryIdx) {
@@ -384,12 +387,12 @@ export function RoadmapGrid({
           <div className="min-w-0 flex-1 overflow-x-auto lg:pr-[calc(var(--roadmap-sidebar-width)_+_12px)]">
             <div className="min-w-[540px] pr-1">
               {/* Grid header */}
-              <div className={cn("grid gap-2", YEAR_LABEL_COL)}>
+              <div className={cn("grid gap-2", YEAR_ROW_COLS)}>
                 <div />
-                {TERMS.map((term) => (
-                  <div key={term} className="text-center">
+                {TERM_COLUMNS.map((col) => (
+                  <div key={col.header} className="text-center">
                     <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                      {term}
+                      {col.header}
                     </span>
                   </div>
                 ))}
@@ -397,42 +400,68 @@ export function RoadmapGrid({
 
               {/* Year rows */}
               <div className="space-y-3">
-                {yearNumbers.map((yearNumber) => (
-                  <div key={yearNumber}>
-                    <RoadmapYearRow
-                      yearNumber={yearNumber}
-                      entries={localEntries}
-                      sortableIds={sortableIdMap}
-                      readOnly={readOnly}
-                      onCourseClick={handleCourseClick}
-                      onRemove={readOnly ? undefined : handleRemoveEntry}
-                    />
+                {yearNumbers.map((yearNumber) => {
+                  const yearHasConflicts = TERM_COLUMNS.some((col) =>
+                    col.terms.some(
+                      (t) =>
+                        (conflictsByTerm.get(`${yearNumber}-${t}`)?.length ??
+                          0) > 0,
+                    ),
+                  );
 
-                    {/* Conflict badges per term */}
-                    <div className={cn("grid gap-2 px-1", YEAR_LABEL_COL)}>
-                      <div />
-                      {TERMS.map((term) => {
-                        const key = `${yearNumber}-${term}`;
-                        const termConflicts = conflictsByTerm.get(key) ?? [];
-                        return (
-                          <div key={term}>
-                            <RoadmapConflictBadge conflicts={termConflicts} />
-                          </div>
-                        );
-                      })}
+                  const footerCells = termFooter
+                    ? TERM_COLUMNS.map((col) => ({
+                        header: col.header,
+                        node: termFooter(yearNumber, col.header),
+                      }))
+                    : null;
+                  const hasNonNullFooter = footerCells?.some(
+                    (cell) => cell.node != null,
+                  );
+
+                  return (
+                    <div key={yearNumber}>
+                      <RoadmapYearRow
+                        yearNumber={yearNumber}
+                        entries={localEntries}
+                        sortableIds={sortableIdMap}
+                        readOnly={readOnly}
+                        onCourseClick={handleCourseClick}
+                        onRemove={readOnly ? undefined : handleRemoveEntry}
+                      />
+
+                      {/* Conflict badges per column */}
+                      {yearHasConflicts && (
+                        <div className={cn("grid gap-2 px-1", YEAR_ROW_COLS)}>
+                          <div />
+                          {TERM_COLUMNS.map((col) => {
+                            const colConflicts = col.terms.flatMap(
+                              (t) =>
+                                conflictsByTerm.get(`${yearNumber}-${t}`) ?? [],
+                            );
+                            return (
+                              <div key={col.header}>
+                                <RoadmapConflictBadge
+                                  conflicts={colConflicts}
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Term footer (e.g. timetable links) */}
+                      {hasNonNullFooter && (
+                        <div className={cn("grid gap-2 px-1", YEAR_ROW_COLS)}>
+                          <div />
+                          {footerCells?.map((cell) => (
+                            <div key={cell.header}>{cell.node}</div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-
-                    {/* Term footer (e.g. timetable links) */}
-                    {termFooter && (
-                      <div className={cn("grid gap-2 px-1", YEAR_LABEL_COL)}>
-                        <div />
-                        {TERMS.map((term) => (
-                          <div key={term}>{termFooter(yearNumber, term)}</div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Add year button — disabled (with reason) at the 5-year

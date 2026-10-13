@@ -1,16 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   Copy,
   Eye,
   Loader2,
-  LayoutGrid,
-  GitBranch,
   CalendarDays,
   GraduationCap,
   Heart,
@@ -18,11 +14,16 @@ import {
   User,
 } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
-import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
-import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
+import { useCopyToClipboard } from "@/common/hooks/use-copy-to-clipboard";
 import { RoadmapVoteGroup } from "@/modules/roadmaps/components/RoadmapVoteGroup";
 import { RoadmapReactionButton } from "@/modules/roadmaps/components/RoadmapReactionButton";
 import { RoadmapReactionsGroup } from "@/modules/roadmaps/components/RoadmapReactionsGroup";
+import {
+  ReadOnlyRoadmapBody,
+  RoadmapViewModeToggle,
+  RoadmapsBackLink,
+  type RoadmapViewMode,
+} from "@/modules/roadmaps/components/ReadOnlyRoadmapBody";
 import { ReportButton } from "@/modules/moderation/components/ReportButton";
 import { Button } from "@/common/components/button";
 import { PageTitle } from "@/common/components/page-title";
@@ -32,8 +33,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/common/components/tooltip";
-import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
-import { censorProfanity, censorProfanityOrNull } from "@/common/functions";
+import { formatDateSGT } from "@/common/functions/format-date-sgt";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
 
 // ---------------------------------------------------------------------------
@@ -56,8 +56,6 @@ export type PublicRoadmapViewProps = {
   entries: Entry[];
 };
 
-type ViewMode = "grid" | "timeline";
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -78,11 +76,7 @@ export function PublicRoadmapView({
   const router = useRouter();
   const utils = api.useUtils();
   const [copying, setCopying] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
-
-  const noop = useCallback(() => {
-    /* read-only — no-op */
-  }, []);
+  const [viewMode, setViewMode] = useState<RoadmapViewMode>("grid");
 
   // ---- Engagement: record one view per browser session ----
   const recordViewMutation = api.roadmaps.recordView.useMutation();
@@ -95,20 +89,17 @@ export function PublicRoadmapView({
       // sessionStorage unavailable (privacy mode) — record anyway
     }
     recordViewMutation.mutate({ roadmapId });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- record one view per roadmapId; the mutation object changes every render
   }, [roadmapId]);
 
   const recordShareMutation = api.roadmaps.recordShare.useMutation();
+  const { copy: copyToClipboard } = useCopyToClipboard();
 
   const copyMutation = api.roadmaps.copyPublic.useMutation({
     onSuccess: async (_newRoadmap) => {
       await utils.roadmaps.listMine.invalidate();
       toast.success("Roadmap copied to your account!");
-      router.push(`/roadmaps/mine`);
-      // Select the newly copied roadmap by navigating
-      setTimeout(() => {
-        router.push(`/roadmaps/mine`);
-      }, 500);
+      router.push("/roadmaps?view=mine");
     },
     onError: (error) => {
       toast.error(error.message || "Failed to copy roadmap");
@@ -122,49 +113,31 @@ export function PublicRoadmapView({
   }, [roadmapId, copyMutation]);
 
   const handleCopyLink = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard");
-      recordShareMutation.mutate({ roadmapId });
-    } catch {
-      toast.error("Failed to copy link");
-    }
-  }, [roadmapId, recordShareMutation]);
+    const ok = await copyToClipboard(window.location.href, {
+      successMessage: "Link copied to clipboard",
+      errorMessage: "Failed to copy link",
+    });
+    if (ok) recordShareMutation.mutate({ roadmapId });
+  }, [roadmapId, recordShareMutation, copyToClipboard]);
 
-  const formattedDate = publishedAt
-    ? new Date(publishedAt).toLocaleDateString("en-SG", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
-    : null;
-
-  const safeName = censorProfanity(roadmapName);
-  const safeUsername = censorProfanity(ownerUsername);
-  const safeDescription = censorProfanityOrNull(description);
+  const formattedDate = publishedAt ? formatDateSGT(publishedAt) : null;
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Back to gallery */}
-      <div>
-        <Button variant="ghost" size="sm" asChild className="-ml-2 w-fit">
-          <Link href="/roadmaps">
-            <ArrowLeft className="size-4" />
-            All roadmaps
-          </Link>
-        </Button>
-      </div>
+      <RoadmapsBackLink />
 
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <PageTitle className="text-left text-2xl md:text-2xl! font-bold tracking-tight">{safeName}</PageTitle>
+          <PageTitle className="text-left text-2xl font-bold tracking-tight md:text-2xl!">
+            {roadmapName}
+          </PageTitle>
           {/* Author line: who made this roadmap, their faculty, and when it
               was published */}
           <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
             <span className="inline-flex items-center gap-1">
               <User className="size-3" />
-              {safeUsername}
+              {ownerUsername}
             </span>
             {ownerFaculty && (
               <span className="inline-flex items-center gap-1">
@@ -194,9 +167,9 @@ export function PublicRoadmapView({
               {shareCount} {shareCount === 1 ? "share" : "shares"}
             </span>
           </p>
-          {safeDescription && (
+          {description && (
             <p className="text-muted-foreground mt-2 line-clamp-10 max-w-2xl text-sm whitespace-pre-line">
-              {safeDescription}
+              {description}
             </p>
           )}
         </div>
@@ -235,22 +208,7 @@ export function PublicRoadmapView({
           />
 
           {/* View mode toggle */}
-          <ToggleGroup
-            type="single"
-            value={viewMode}
-            onValueChange={(v) => v && setViewMode(v as ViewMode)}
-            variant="segmented"
-            size="sm"
-          >
-            <ToggleGroupItem value="grid" aria-label="Grid View">
-              <LayoutGrid className="size-4 shrink-0" />
-              <span className="hidden sm:inline">Grid</span>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="timeline" aria-label="Timeline View">
-              <GitBranch className="size-4 shrink-0" />
-              <span className="hidden sm:inline">Timeline</span>
-            </ToggleGroupItem>
-          </ToggleGroup>
+          <RoadmapViewModeToggle value={viewMode} onValueChange={setViewMode} />
 
           <Button
             variant="outline"
@@ -272,16 +230,11 @@ export function PublicRoadmapView({
       <RoadmapReactionsGroup roadmapId={roadmapId} />
 
       {/* View */}
-      {viewMode === "grid" ? (
-        <RoadmapGrid
-          roadmapId={roadmapId}
-          entries={entries}
-          readOnly
-          onEntriesChange={noop}
-        />
-      ) : (
-        <RoadmapTimeline entries={entries} readOnly />
-      )}
+      <ReadOnlyRoadmapBody
+        roadmapId={roadmapId}
+        entries={entries}
+        viewMode={viewMode}
+      />
     </div>
   );
 }

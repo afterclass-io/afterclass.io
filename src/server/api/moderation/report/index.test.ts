@@ -12,7 +12,7 @@ const m = vi.hoisted(() => ({
   runModerationTask: vi.fn(),
 }));
 
-vi.mock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+vi.mock("@/server/ecfg/edge-config", () => ({
   getEdgeConfig: m.getEdgeConfig,
 }));
 vi.mock("@/server/assistant/ratelimit", () => ({

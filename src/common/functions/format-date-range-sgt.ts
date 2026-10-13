@@ -1,6 +1,9 @@
 import { formatDateSGT } from "@/common/functions/format-date-sgt";
 
-const DAY_MONTH: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
+const DAY_MONTH: Intl.DateTimeFormatOptions = {
+  day: "numeric",
+  month: "short",
+};
 const DAY_MONTH_YEAR: Intl.DateTimeFormatOptions = {
   ...DAY_MONTH,
   year: "numeric",

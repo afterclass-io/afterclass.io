@@ -114,7 +114,12 @@ export function MeetingRoomHeader({
 
         {isEditing ? (
           <>
-            <Button variant="ghost" size="sm" onClick={onCancel} disabled={isSaving}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCancel}
+              disabled={isSaving}
+            >
               Cancel
             </Button>
             <Button

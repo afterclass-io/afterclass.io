@@ -43,7 +43,7 @@ function SuggestionButton({
     <button
       type="button"
       onClick={() => onPick(suggestion.prompt)}
-      className="hover:bg-muted max-w-full rounded-full border px-3 py-1 text-[13px] transition-colors sm:px-3.5 sm:py-1.5 sm:text-sm"
+      className="hover:bg-muted max-w-full rounded-full border px-3 py-1 text-xs transition-colors sm:px-3.5 sm:py-1.5 sm:text-sm"
     >
       {suggestion.label}
     </button>

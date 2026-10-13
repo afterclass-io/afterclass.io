@@ -5,7 +5,7 @@ import {
   roadmapViewToViewProps,
 } from "../roadmap-view-shared";
 import { stripSecretsFromValue } from "@/mcp/output-policy";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { guardedRun, jsonText, type McpTool } from "../../types";
 
 // No schema in this file carries confirmField: constructive writes are never
 // confirm-gated — only the Tier-1 destructive set (see src/mcp/rate-limit.ts) is.
@@ -24,18 +24,14 @@ export const setMatricTermTool: McpTool<typeof setMatricTermSchema> = {
   description:
     "Set the matriculation term (the academic term of the user's Y1T1) on a roadmap. Required for accurate plan-semester seniority and for sync-roadmap-progress to work. Pass matricTermId: null to clear it.",
   inputSchema: setMatricTermSchema,
-  run: async ({ caller }, { roadmapId, matricTermId }) => {
-    try {
-      // Canonical output policy: bearer tokens must not reach the LLM.
-      return jsonText(
-        stripSecretsFromValue(
-          await caller.roadmaps.setMatricTerm({ roadmapId, matricTermId }),
-        ),
-      );
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { roadmapId, matricTermId }) => {
+    // Canonical output policy: bearer tokens must not reach the LLM.
+    return jsonText(
+      stripSecretsFromValue(
+        await caller.roadmaps.setMatricTerm({ roadmapId, matricTermId }),
+      ),
+    );
+  }),
 };
 
 const setActiveRoadmapSchema = z.object({
@@ -47,16 +43,12 @@ export const setActiveRoadmapTool: McpTool<typeof setActiveRoadmapSchema> = {
   description:
     "Mark a roadmap as the user's single active roadmap (clears isActive on all the user's other roadmaps). Use before sync-roadmap-progress and plan-semester so those tools operate on the intended roadmap.",
   inputSchema: setActiveRoadmapSchema,
-  run: async ({ caller }, { roadmapId }) => {
-    try {
-      // Canonical output policy: bearer tokens must not reach the LLM.
-      return jsonText(
-        stripSecretsFromValue(await caller.roadmaps.setActive({ roadmapId })),
-      );
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { roadmapId }) => {
+    // Canonical output policy: bearer tokens must not reach the LLM.
+    return jsonText(
+      stripSecretsFromValue(await caller.roadmaps.setActive({ roadmapId })),
+    );
+  }),
 };
 
 const syncRoadmapProgressSchema = z.object({
@@ -70,18 +62,12 @@ export const syncRoadmapProgressTool: McpTool<
   description:
     "Sync the user's course history into a roadmap: for every academic term from the roadmap's matriculation term up to the current term, courses from the user's active timetable for that term are added to the matching roadmap year/term. Add-only - never deletes or duplicates courses. Requires the roadmap to be active and to have a matriculation term (see set-matric-term). Returns { synced, courseIds }.",
   inputSchema: syncRoadmapProgressSchema,
-  run: async ({ caller }, { roadmapId }) => {
-    try {
-      // Canonical output policy: bearer tokens must not reach the LLM.
-      return jsonText(
-        stripSecretsFromValue(
-          await caller.roadmaps.syncProgress({ roadmapId }),
-        ),
-      );
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { roadmapId }) => {
+    // Canonical output policy: bearer tokens must not reach the LLM.
+    return jsonText(
+      stripSecretsFromValue(await caller.roadmaps.syncProgress({ roadmapId })),
+    );
+  }),
 };
 
 const copyPublicRoadmapSchema = z.object({
@@ -94,14 +80,10 @@ export const copyPublicRoadmapTool: McpTool<typeof copyPublicRoadmapSchema> = {
     "Copy a public roadmap (from browse-public-roadmaps or get-public-roadmap) into the user's own account as '<name> (copy)'. Use when a student wants to adopt a senior's plan as a starting point. Returns the updated roadmap.",
   inputSchema: copyPublicRoadmapSchema,
   toViewProps: roadmapViewToViewProps(false),
-  run: async ({ caller }, { roadmapId }) => {
-    try {
-      const created = await caller.roadmaps.copyPublic({ roadmapId });
-      const view = await buildRoadmapView(caller, created.id);
-      // Canonical output policy: bearer tokens must not reach the LLM.
-      return jsonText(stripSecretsFromValue(view));
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { roadmapId }) => {
+    const created = await caller.roadmaps.copyPublic({ roadmapId });
+    const view = await buildRoadmapView(caller, created.id);
+    // Canonical output policy: bearer tokens must not reach the LLM.
+    return jsonText(stripSecretsFromValue(view));
+  }),
 };

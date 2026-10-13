@@ -1,5 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
+import { serverSupabaseAuthOptions } from "@/server/supabase";
+import { instrumentSupabase } from "@/common/tools/supabase/instrument";
+
 export type SupabaseLink = {
   accessToken: string;
   refreshToken: string;
@@ -21,15 +24,20 @@ type InjectedAuth = Pick<
 
 /**
  * Exchange a Google ID token for a Supabase session (first Google sign-in
- * only). Keeps `@/env` out of this helper so tests inject a fake client and
- * the call site (`src/server/auth/config.ts`) owns env reads.
+ * only). This helper never reads env values itself: the call site
+ * (`src/server/auth/config.ts`) passes the URL and anon key, and tests inject
+ * a fake `auth` client. The `@/server/supabase` import still loads `@/env`
+ * at module load, for the shared auth options.
  */
 export async function exchangeGoogleIdToken(
   { idToken, accessToken, supabaseUrl, anonKey }: ExchangeGoogleIdTokenOptions,
   injected?: InjectedAuth,
 ): Promise<SupabaseLink> {
   const auth: InjectedAuth =
-    injected ?? createClient(supabaseUrl, anonKey).auth;
+    injected ??
+    instrumentSupabase(
+      createClient(supabaseUrl, anonKey, serverSupabaseAuthOptions),
+    ).auth;
   const { data, error } = await auth.signInWithIdToken({
     provider: "google",
     token: idToken,

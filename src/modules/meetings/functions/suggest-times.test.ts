@@ -563,7 +563,11 @@ describe("suggestMeetingTimes", () => {
     const result = suggestMeetingTimes({
       grid: grid("2026-10-12", "2026-10-12", 18, 22),
       participants: [p("A", range(0, 15))],
-      query: { earliestStart: "18:10", latestEnd: "21:50", durationMinutes: 60 },
+      query: {
+        earliestStart: "18:10",
+        latestEnd: "21:50",
+        durationMinutes: 60,
+      },
       now: EARLY,
     });
 
@@ -613,14 +617,8 @@ describe("suggestMeetingTimes", () => {
         { earliestStart: "12:00", latestEnd: "11:00" },
         "earliestStart must be before latestEnd.",
       ],
-      [
-        { durationMinutes: 600 },
-        "durationMinutes must be at most 480.",
-      ],
-      [
-        { limit: 11 },
-        "limit must be between 1 and 10.",
-      ],
+      [{ durationMinutes: 600 }, "durationMinutes must be at most 480."],
+      [{ limit: 11 }, "limit must be between 1 and 10."],
     ])(
       "rejects invalid query %j with error %s",
       (query: SuggestQuery, expectedError: string) => {

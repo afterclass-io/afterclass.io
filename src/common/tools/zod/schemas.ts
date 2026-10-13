@@ -4,7 +4,8 @@
 import { env } from "@/env";
 import { z } from "zod";
 
-import { ReviewableEnum, ReviewerEnum } from "@/modules/submit/types";
+import { emailMatchesDomain } from "@/common/functions/email-domain";
+import { ReviewableEnum, ReviewerEnum } from "@/common/types/reviews";
 
 /**
  * Schema for the authentication form inputs
@@ -18,7 +19,7 @@ export const emailValidationSchema = z
   .refine(
     (email) =>
       env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.some((domain) =>
-        email.endsWith(domain),
+        emailMatchesDomain(email, domain),
       ),
     `Unsupported email domain, please choose from: ${env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.join(", ")}`,
   );
@@ -26,42 +27,52 @@ export const emailValidationSchema = z
 /**
  * Schema for the review submission form inputs
  */
-const courseReviewFormSchema = z.object({
-  value: z.string().min(1, "This field is required"),
-  // NOTE: was z.coerce.number(); switched to z.number() for zod v4 - zodResolver's input/output types diverge with coerce (input: unknown, output: number); producers (RatingGroup/ReviewForm) already emit number; if a string source is added, reintroduce coercion via .pipe(z.coerce.number()).
-  rating: z
-    .number()
-    .min(1, "Please select your rating for this course")
-    .max(5, "Rating must be between 1 and 5"),
-  labels: z.string().array().optional(),
-  body: z.string().superRefine((val, ctx) => {
-    if (val.length < 200) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Help other students by writing a longer review. ${200 - val.length} more characters to go.`,
-      });
-    }
-  }),
-  tips: z.string(),
+const reviewLabelSchema = z
+  .string()
+  .regex(/^[1-9]\d*$/, "Label ID must be a positive integer")
+  .refine((val) => {
+    const num = Number(val);
+    return Number.isSafeInteger(num) && num <= 2147483647;
+  }, "Label ID must not exceed 2147483647");
+
+function createReviewItemSchema({
+  valueMessage,
+  ratingMessage,
+}: {
+  valueMessage: string;
+  ratingMessage: string;
+}) {
+  return z.object({
+    value: z.string().min(1, valueMessage).max(100),
+    // NOTE: was z.coerce.number(); switched to z.number() for zod v4 - zodResolver's input/output types diverge with coerce (input: unknown, output: number); producers (RatingGroup/ReviewForm) already emit number; if a string source is added, reintroduce coercion via .pipe(z.coerce.number()).
+    rating: z
+      .number()
+      .min(1, ratingMessage)
+      .max(5, "Rating must be between 1 and 5"),
+    labels: reviewLabelSchema.array().max(20).optional(),
+    body: z
+      .string()
+      .max(5000)
+      .superRefine((val, ctx) => {
+        if (val.length < 200) {
+          ctx.addIssue({
+            code: "custom",
+            message: `Help other students by writing a longer review. ${200 - val.length} more characters to go.`,
+          });
+        }
+      }),
+    tips: z.string().max(2000),
+  });
+}
+
+const courseReviewFormSchema = createReviewItemSchema({
+  valueMessage: "This field is required",
+  ratingMessage: "Please select your rating for this course",
 });
 
-const professorReviewFormSchema = z.object({
-  value: z.string().min(1, "Please select a professor"),
-  // NOTE: was z.coerce.number(); same reason as courseReviewFormSchema - zod v4 resolver type incompatibility; re-add via .pipe(z.coerce.number()) if a string source appears.
-  rating: z
-    .number()
-    .min(1, "Please select your rating for this professor")
-    .max(5, "Rating must be between 1 and 5"),
-  labels: z.string().array().optional(),
-  body: z.string().superRefine((val, ctx) => {
-    if (val.length < 200) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Help other students by writing a longer review. ${200 - val.length} more characters to go.`,
-      });
-    }
-  }),
-  tips: z.string(),
+const professorReviewFormSchema = createReviewItemSchema({
+  valueMessage: "Please select a professor",
+  ratingMessage: "Please select your rating for this professor",
 });
 
 export const reviewFormSchema = z.discriminatedUnion("type", [

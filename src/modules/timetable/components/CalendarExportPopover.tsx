@@ -9,10 +9,12 @@ import {
   Download,
   Loader2,
   Mail,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { api } from "@/common/tools/trpc/react";
+import { useCopyToClipboard } from "@/common/hooks/use-copy-to-clipboard";
 import { Button } from "@/common/components/button";
 import { Input } from "@/common/components/input";
 import {
@@ -25,7 +27,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/common/components/tooltip";
-import { buildCalendarLinks } from "@/modules/timetable/functions/calendar-links";
+import {
+  buildCalendarLinks,
+  LINK_SHARING_REQUIRED_MESSAGE,
+} from "@/modules/timetable/functions/calendar-links";
 
 export type CalendarExportPopoverProps = {
   timetableId: string;
@@ -49,10 +54,14 @@ export type CalendarExportPopoverViewProps = {
   isTurningOnLinkSharing: boolean;
   /** True while the calendar link is being revoked. */
   isRevoking: boolean;
+  /** True while the calendar link is being rotated. */
+  isRotating: boolean;
   /** Called when the user opts into link-sharing (UNLISTED visibility). */
   onTurnOnLinkSharing: () => void;
   /** Called when the user revokes the calendar feed token. */
   onRevoke: () => void;
+  /** Called when the user rotates the calendar feed token. */
+  onRotate: () => void;
 };
 
 /**
@@ -86,9 +95,28 @@ export function CalendarExportPopoverView({
   needsLinkSharing,
   isTurningOnLinkSharing,
   isRevoking,
+  isRotating,
   onTurnOnLinkSharing,
   onRevoke,
+  onRotate,
 }: CalendarExportPopoverViewProps) {
+  const { copy } = useCopyToClipboard();
+  const [isConfirmingRotate, setIsConfirmingRotate] = useState(false);
+  const [prevToken, setPrevToken] = useState(token);
+  const [prevOpen, setPrevOpen] = useState(open);
+
+  if (token !== prevToken) {
+    setPrevToken(token);
+    setIsConfirmingRotate(false);
+  }
+
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (!open) {
+      setIsConfirmingRotate(false);
+    }
+  }
+
   const links = token ? buildCalendarLinks(origin, token) : null;
 
   const isLocalhost =
@@ -96,18 +124,22 @@ export function CalendarExportPopoverView({
 
   const handleCopyFeedUrl = async () => {
     if (!links) return;
-    try {
-      await navigator.clipboard.writeText(links.feedUrl);
-      toast.success(
+    await copy(links.feedUrl, {
+      successMessage:
         'Feed URL copied — paste it into your calendar\'s "Add from URL"',
-      );
-    } catch {
-      toast.error("Failed to copy link");
+      errorMessage: "Failed to copy link",
+    });
+  };
+
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
+      setIsConfirmingRotate(false);
     }
+    onOpenChange(next);
   };
 
   return (
-    <Popover open={open} onOpenChange={onOpenChange}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <Tooltip>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
@@ -242,16 +274,63 @@ export function CalendarExportPopoverView({
               )}
 
               <div className="border-border border-t pt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive w-full"
-                  onClick={onRevoke}
-                  disabled={isRevoking}
-                  data-test="calendar-revoke-button"
-                >
-                  Revoke link
-                </Button>
+                {isConfirmingRotate ? (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-muted-foreground text-xs">
+                      Your current link stops working. Anyone subscribed must
+                      add the new link.
+                    </p>
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsConfirmingRotate(false)}
+                        disabled={isRotating}
+                        data-test="calendar-rotate-cancel"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={onRotate}
+                        disabled={isRotating}
+                        data-test="calendar-rotate-confirm"
+                      >
+                        {isRotating && (
+                          <Loader2 className="size-3.5 animate-spin" />
+                        )}
+                        Confirm
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setIsConfirmingRotate(true)}
+                      disabled={isRotating || isRevoking}
+                      aria-label="Rotate calendar link"
+                      data-test="calendar-rotate-button"
+                    >
+                      <RefreshCw
+                        className={`size-4 ${isRotating ? "animate-spin" : ""}`}
+                      />
+                      Rotate link
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive flex-1"
+                      onClick={onRevoke}
+                      disabled={isRevoking || isRotating}
+                      data-test="calendar-revoke-button"
+                    >
+                      Revoke link
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -294,7 +373,10 @@ export function CalendarExportPopover({
     onError: (error) => {
       // A PRIVATE timetable refuses to mint a token; surface an inline
       // "turn on link sharing" action instead of a dead-end error toast.
-      if (error.data?.code === "BAD_REQUEST") {
+      if (
+        error.data?.code === "BAD_REQUEST" &&
+        error.message === LINK_SHARING_REQUIRED_MESSAGE
+      ) {
         setNeedsLinkSharing(true);
         return;
       }
@@ -308,6 +390,14 @@ export function CalendarExportPopover({
       toast.success("Calendar link revoked");
     },
     onError: (error) => toast.error(`Failed to revoke: ${error.message}`),
+  });
+
+  const rotateMutation = api.timetable.rotateIcalToken.useMutation({
+    onSuccess: (data) => {
+      setToken(data.icalToken);
+      toast.success("Calendar link rotated");
+    },
+    onError: (error) => toast.error(`Failed to rotate: ${error.message}`),
   });
 
   const setVisibilityMutation = api.sharing.setVisibility.useMutation({
@@ -328,7 +418,7 @@ export function CalendarExportPopover({
     if (open && !token && !tokenMutation.isPending) {
       tokenMutation.mutate({ timetableId });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mint the token when the popover opens; tokenMutation changes every render
   }, [open, timetableId]);
 
   const handleOpenChange = (next: boolean) => {
@@ -349,6 +439,7 @@ export function CalendarExportPopover({
       needsLinkSharing={needsLinkSharing}
       isTurningOnLinkSharing={setVisibilityMutation.isPending}
       isRevoking={revokeMutation.isPending}
+      isRotating={rotateMutation.isPending}
       onTurnOnLinkSharing={() =>
         setVisibilityMutation.mutate({
           entity: "timetable",
@@ -357,6 +448,7 @@ export function CalendarExportPopover({
         })
       }
       onRevoke={() => revokeMutation.mutate({ timetableId })}
+      onRotate={() => rotateMutation.mutate({ timetableId })}
     />
   );
 }

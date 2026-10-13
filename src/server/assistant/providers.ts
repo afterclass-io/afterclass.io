@@ -1,10 +1,7 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
 import { env } from "@/env";
-import {
-  getChatConfigAsync,
-  type ChatConfig,
-} from "@/server/config/chat-config";
+import { getChatConfigAsync } from "@/server/config/chat-config";
 
 export const DEFAULT_LLM_BASE_URL = "https://openrouter.ai/api/v1";
 
@@ -34,31 +31,18 @@ export function resolveLlmEnv(e: LlmEnvLike): {
   };
 }
 
-/** What a model call is for. Each purpose may run on its own model. */
-export type LlmPurpose = "assistant" | "moderation";
-
-/**
- * The single place that decides the model id. The assistant uses
- * `llmModel` (LLM_MODEL env > config.json > default). Moderation uses the
- * remote-only `moderationModel` override, else the assistant's model.
- */
-export function resolveModelId(
-  purpose: LlmPurpose,
-  cfg: Pick<ChatConfig, "llmModel" | "moderationModel">,
-): string {
-  return purpose === "moderation"
-    ? (cfg.moderationModel ?? cfg.llmModel)
-    : cfg.llmModel;
-}
-
 // Reasoning (low): deferred pending live verification that providerOptions
 // `thinkingLevel`/`reasoning_effort` round-trips through
 // `@ai-sdk/openai-compatible@^3.0.41` on the live endpoint. Do NOT add
 // providerOptions reasoning here until that probe passes.
-/** Single OpenAI-compatible provider; the model id is chosen by purpose. */
-export async function getModel(purpose: LlmPurpose) {
+/**
+ * Single OpenAI-compatible provider. The chat assistant and the moderation
+ * judge both call this, so one `llmModel` (LLM_MODEL env > config.json >
+ * default) and one `LLM_BASE_URL` serve both. No second knob exists.
+ */
+export async function getModel() {
   const { apiKey, baseURL } = resolveLlmEnv(env);
-  const modelId = resolveModelId(purpose, await getChatConfigAsync());
+  const { llmModel: modelId } = await getChatConfigAsync();
   return createOpenAICompatible({
     name: "llm",
     apiKey,

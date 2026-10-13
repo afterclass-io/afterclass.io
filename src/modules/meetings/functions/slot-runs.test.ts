@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { dragSelectionRange, groupSlotsIntoRuns, slotsBetween } from "./slot-runs";
+import {
+  dragSelectionRange,
+  groupSlotsIntoRuns,
+  slotsBetween,
+} from "./slot-runs";
 
 describe("groupSlotsIntoRuns", () => {
   it("merges consecutive slots into one run", () => {

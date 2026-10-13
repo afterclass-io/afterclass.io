@@ -49,7 +49,7 @@ export const BidPredictionFormula = ({
           <div className="text-base font-bold sm:text-2xl md:text-3xl">
             {formattedRecommended}
           </div>
-          <span className="text-muted-foreground block text-[10px] tracking-tight sm:text-xs">
+          <span className="text-muted-foreground block text-xs tracking-tight">
             recommended
           </span>
         </div>
@@ -63,7 +63,7 @@ export const BidPredictionFormula = ({
           <div className="text-base font-bold sm:text-2xl md:text-3xl">
             {formattedPredicted}
           </div>
-          <span className="text-muted-foreground block text-[10px] tracking-tight sm:text-xs">
+          <span className="text-muted-foreground block text-xs tracking-tight">
             predicted
           </span>
         </div>
@@ -83,7 +83,7 @@ export const BidPredictionFormula = ({
           <div className="text-base font-bold sm:text-2xl md:text-3xl">
             {formattedMultiplier}
           </div>
-          <span className="text-muted-foreground block text-[10px] tracking-tight sm:text-xs">
+          <span className="text-muted-foreground block text-xs tracking-tight">
             multiplier
           </span>
         </div>
@@ -97,7 +97,7 @@ export const BidPredictionFormula = ({
           <div className="text-base font-bold sm:text-2xl md:text-3xl">
             {formattedUncertainty}
           </div>
-          <span className="text-muted-foreground block text-[10px] tracking-tight sm:text-xs">
+          <span className="text-muted-foreground block text-xs tracking-tight">
             uncertainty
           </span>
         </div>

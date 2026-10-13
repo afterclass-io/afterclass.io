@@ -8,6 +8,8 @@
  * All functions are pure — no side effects, no dependencies beyond stdlib.
  */
 
+import type { ClassTimingLike } from "@/common/types/timetable";
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -15,11 +17,14 @@
 /** Earliest visible time (08:00) in minutes since midnight. */
 export const GRID_START_MIN = 480;
 
-/** Latest visible time (22:15) in minutes since midnight. */
-export const GRID_END_MIN = 1335;
+/**
+ * Latest visible time (22:30) in minutes since midnight. The last period ends
+ * at 22:15, leaving the same 15 min gap that the top has before 08:15.
+ */
+export const GRID_END_MIN = 1350;
 
 /** Total visible range in minutes. */
-const GRID_RANGE_MIN = GRID_END_MIN - GRID_START_MIN; // 855
+const GRID_RANGE_MIN = GRID_END_MIN - GRID_START_MIN; // 870
 
 /**
  * The four standard SMU class periods (roughly aligned with the real SMU
@@ -39,13 +44,6 @@ export const SMU_PERIODS: {
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-export type ClassTimingLike = {
-  dayOfWeek?: string | null;
-  startTime: string;
-  endTime: string;
-  venue?: string | null;
-};
 
 export type PositionedSlot = {
   timing: ClassTimingLike;
@@ -124,7 +122,8 @@ export function toTimingLikes(
     const start = parseTimePartsSafe(t.startTime);
     const end = parseTimePartsSafe(t.endTime);
     if (dayOfWeek == null || !start || !end) {
-      if (process.env.NODE_ENV !== "production") console.warn("[slot-math] dropped timing", t);
+      if (process.env.NODE_ENV !== "production")
+        console.warn("[slot-math] dropped timing", t);
       continue;
     }
     out.push({
@@ -262,8 +261,7 @@ export function layoutDay(timings: ClassTimingLike[]): PositionedSlot[] {
         timing: slot.timing,
         rawIndex: slot.rawIndex,
         topPct: minutesToPct(clampedStart),
-        heightPct:
-          ((clampedEnd - clampedStart) / GRID_RANGE_MIN) * 100,
+        heightPct: ((clampedEnd - clampedStart) / GRID_RANGE_MIN) * 100,
         colIndex: laneAssignment[i]!,
         colCount,
       });

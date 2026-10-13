@@ -21,7 +21,9 @@ interface PageView {
 
 type EventName = string;
 type EventData = Record<string, string | number>;
-type SessionData = Record<string, unknown>;
+// Opaque id only: names, emails and handles are student data and must never
+// reach the analytics server.
+type SessionData = { userId: string };
 
 interface Umami {
   pageView: (data?: Partial<PageView>) => void;
@@ -41,7 +43,7 @@ export default function useUmami(): Umami {
   const isUmamiAvailable = useCallback(() => {
     return (
       typeof window !== "undefined" &&
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access -- window.umami is injected by the Umami script and has no type declaration
       typeof (window as any).umami !== "undefined"
     );
   }, []);
@@ -52,7 +54,7 @@ export default function useUmami(): Umami {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access -- window.umami is injected by the Umami script and has no type declaration
     return (window as any).umami as _Umami;
   }, [isUmamiAvailable]);
 
@@ -79,29 +81,8 @@ export default function useUmami(): Umami {
   );
 
   /**
-  Example
-  ```tsx
-  function handleRunIdentify() {
-    window['umami'].identify({
-      userId: 123,
-      name: 'brian',
-      number: Math.random() * 100,
-      test: 'test-data',
-      boolean: true,
-      booleanError: 'true',
-      time: new Date(),
-      time2: new Date().toISOString(),
-      nested: {
-        test: 'test-data',
-        number: 1,
-        object: {
-          test: 'test-data',
-        },
-      },
-      array: [1, 2, 3],
-    });
-  }
-  ```
+  Example: `identify({ userId: session.user.id })`. Only the opaque id is
+  accepted; the type rejects names, emails and handles.
   */
   const identify = useCallback(
     (session_data: SessionData) => {

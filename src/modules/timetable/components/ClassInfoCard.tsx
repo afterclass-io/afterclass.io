@@ -7,8 +7,8 @@ import {
   CardTitle,
 } from "@/common/components/card";
 import { formatDateSGT } from "@/common/functions/format-date-sgt";
-import type { ClassTimingLike } from "@/modules/timetable/functions/slot-math";
-import type { ClassExamTiming } from "./TimetableGrid";
+import type { ClassTimingLike } from "@/common/types/timetable";
+import type { ClassExamTiming } from "@/common/types/timetable";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -65,9 +65,7 @@ export function ClassInfoCard({
             <p className="font-medium">{section}</p>
           </div>
           <div className="flex flex-col gap-0.5">
-            <span className="text-muted-foreground text-xs">
-              Credit Units
-            </span>
+            <span className="text-muted-foreground text-xs">Credit Units</span>
             <p className="font-medium">{creditUnits}</p>
           </div>
         </div>

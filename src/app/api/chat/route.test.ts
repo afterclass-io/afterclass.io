@@ -46,12 +46,6 @@ vi.mock("@/server/assistant/quota", () => ({
 vi.mock("@/server/assistant/ratelimit", () => ({
   checkAndIncrement: mockCheckAndIncrement,
 }));
-vi.mock("@/server/ecfg/chat", () => ({
-  getChatConfig: mockGetChatConfig,
-  getChatWriteRateLimit: (c: { rateLimitPerMinute: number }) =>
-    c.rateLimitPerMinute,
-  getRateLimitWindowMinutes: () => 1,
-}));
 // route.ts reads the canonical chat-config directly.
 vi.mock("@/server/config/chat-config", () => ({
   getChatConfigAsync: mockGetChatConfig,
@@ -397,6 +391,28 @@ describe("POST /api/chat", () => {
         method: "POST",
         headers: { "content-length": String(600_000) },
         body: JSON.stringify({ messages: [{ role: "user", content: "hi" }] }),
+      }),
+    );
+    expect(res.status).toBe(413);
+    expect(mockReserveMessage).not.toHaveBeenCalled();
+  });
+
+  // A large body must be refused even when the content-length header is
+  // missing (chunked upload), unparseable, or smaller than the real body.
+  it.each([
+    ["no content-length header", undefined],
+    ["a non-numeric content-length", "abc"],
+    ["an understated content-length", "10"],
+  ])("413s an oversized body with %s", async (_label, header) => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    const big = JSON.stringify({
+      messages: [{ role: "user", content: "x".repeat(600_000) }],
+    });
+    const res = await POST(
+      new Request("http://localhost/api/chat", {
+        method: "POST",
+        headers: header === undefined ? {} : { "content-length": header },
+        body: big,
       }),
     );
     expect(res.status).toBe(413);

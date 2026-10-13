@@ -204,8 +204,7 @@ export const meetingsRoomTourSteps: TourStep[] = [
     element: '[data-test="save-availability-button"]',
     popover: {
       title: "Save when you are done",
-      description:
-        "Your changes are only shared with the group once you save.",
+      description: "Your changes are only shared with the group once you save.",
       side: "bottom",
       align: "end",
     },

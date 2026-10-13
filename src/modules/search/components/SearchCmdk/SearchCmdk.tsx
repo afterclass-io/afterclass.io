@@ -13,14 +13,16 @@ import { useRouter } from "next/navigation";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 import {
-  Modal,
-  ModalClose,
-  ModalContent,
-  ModalTitle,
-  ModalTrigger,
-} from "@/common/components/modal";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/common/components/dialog";
 import { SearchIcon } from "@/common/components/icons";
 import { useEdgeConfigs } from "@/common/hooks";
+import { isShortQuery, SHORT_QUERY_HINT } from "@/common/constants/search";
+import { cn } from "@/common/functions";
 import { SearchCmdkModalTrigger } from "./SearchCmdkModalTrigger";
 import { useProgress } from "@/common/providers/ProgressProvider";
 import { ProgressLink } from "@/common/components/progress-link";
@@ -48,6 +50,7 @@ export const SearchCmdk = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [hasSubmittedShort, setHasSubmittedShort] = useState(false);
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
   const [hasShownTooltip, setHasShownTooltip] = useAtom(
     hasShownCmdkTooltipAtom,
@@ -82,17 +85,24 @@ export const SearchCmdk = ({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [asChild]);
 
+  const trimmedTerm = searchTerm.trim();
+  const isShort = isShortQuery(trimmedTerm);
+
   const getSearchDestination = () => {
     const params = new URLSearchParams();
-    params.set("q", searchTerm);
+    params.set("q", trimmedTerm);
     return `/search?${params.toString()}`;
   };
 
   const onSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setOpen(false);
 
-    if (searchTerm.length === 0) return;
+    if (isShort) {
+      setHasSubmittedShort(true);
+      return;
+    }
+
+    setOpen(false);
 
     progress.start();
     startTransition(() => {
@@ -102,13 +112,8 @@ export const SearchCmdk = ({
   };
 
   return (
-    <Modal
-      open={open}
-      onOpenChange={setOpen}
-      hasCloseButton={false}
-      className="w-[45rem]"
-    >
-      <ModalTrigger asChild={asChild}>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild={asChild}>
         {asChild ? (
           children
         ) : (
@@ -117,13 +122,15 @@ export const SearchCmdk = ({
             onOpenChange={() => setIsTooltipOpen((prev) => !prev)}
           />
         )}
-      </ModalTrigger>
-      <ModalContent
+      </DialogTrigger>
+      <DialogContent
         data-test="search-cmdk-modal"
-        className="mt-[10%] flex-row items-center gap-2 overflow-hidden border-none px-4 py-0 sm:py-0"
+        showCloseButton={false}
+        overlayClassName="bg-background/60"
+        className="bg-accent text-muted-foreground mt-[10%] h-fit max-h-fit max-w-[720px] flex-row items-center gap-2 overflow-hidden rounded-[20px] border-none px-4 py-0 sm:py-0 md:mx-0 md:mt-[10%]"
       >
         <VisuallyHidden asChild>
-          <ModalTitle>Search for Professors or Courses</ModalTitle>
+          <DialogTitle>Search for Professors or Courses</DialogTitle>
         </VisuallyHidden>
         <form onSubmit={onSearchSubmit} className="h-full w-full">
           <InputRoot className="h-16 w-full items-center gap-4 border-none bg-transparent shadow-none focus-within:ring-0">
@@ -135,25 +142,46 @@ export const SearchCmdk = ({
                 placeholder="Search for Professors or Courses..."
                 type="text"
                 className="text-accent-foreground"
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setHasSubmittedShort(false);
+                }}
                 data-test="search-cmdk-input"
               />
             </InputControl>
             <InputAdornmentButton variant="default" asChild>
-              <ModalClose asChild>
+              <DialogClose
+                asChild
+                onClick={(e) => {
+                  // A too-short query keeps the palette open and shows the hint.
+                  if (!isShort) return;
+                  e.preventDefault();
+                  setHasSubmittedShort(true);
+                }}
+              >
                 <ProgressLink
                   href={getSearchDestination()}
                   className="flex size-fit items-center justify-center font-semibold"
-                  aria-label="close"
                   data-test="search-cmdk-submit"
                 >
                   Search
                 </ProgressLink>
-              </ModalClose>
+              </DialogClose>
             </InputAdornmentButton>
           </InputRoot>
+          {trimmedTerm !== "" && (
+            <p
+              role="status"
+              className={cn(
+                "px-9 pb-3 text-sm",
+                hasSubmittedShort && "text-error",
+              )}
+            >
+              {isShort ? SHORT_QUERY_HINT : "Press Enter to search."}
+            </p>
+          )}
         </form>
-      </ModalContent>
-    </Modal>
+      </DialogContent>
+    </Dialog>
   );
 };

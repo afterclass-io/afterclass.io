@@ -1,0 +1,45 @@
+[
+  {
+    "key": "enablePasswordLogin",
+    "value": false
+  },
+  {
+    "key": "enableContentModeration",
+    "value": true
+  },
+  {
+    "key": "enableCmdkTooltip",
+    "value": true
+  },
+  {
+    "key": "enableReviewEventsTracking",
+    "value": true
+  },
+  {
+    "key": "enableReviewSort",
+    "value": true
+  },
+  {
+    "key": "enableReviewFilter",
+    "value": true
+  },
+  {
+    "key": "enableReviewReactions",
+    "value": true
+  },
+  {
+    "key": "chat",
+    "value": {
+      "quotaPerMonth": 20,
+      "nudgeAt": 16,
+      "rateLimitPerMinute": 10,
+      "mcpRateLimitPerMinute": 60,
+      "maxInputTokens": 64000,
+      "maxOutputTokens": 4096,
+      "maxToolRounds": 12,
+      "chatEnabled": true,
+      "widgetEnabled": true,
+      "mcpEnabled": true
+    }
+  }
+]

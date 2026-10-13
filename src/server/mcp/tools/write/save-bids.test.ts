@@ -42,11 +42,15 @@ function makeCaller(procs: Record<string, unknown>) {
   return {
     userBids: {
       upsert: procs.userBidsUpsert,
+      upsertMany: procs.userBidsUpsertMany,
       listMine: procs.userBidsListMine,
       getBudget: procs.userBidsGetBudget,
     },
     bidWindows: { getCurrentWindow: procs.bidWindowsGetCurrentWindow },
-    classes: { getAll: procs.classesGetAll },
+    classes: {
+      getAll: procs.classesGetAll,
+      resolveByCodeSections: procs.classesResolveByCodeSections,
+    },
   } as unknown as ToolContext["caller"];
 }
 
@@ -69,25 +73,46 @@ describe("save-bids", () => {
   });
 
   it("bulk saves two bids, resolving classIds and returning { updated, plan } with notes stripped", async () => {
-    const upsert = vi
-      .fn()
-      .mockResolvedValue({ id: "b1", classId: "cl-g1", bidWindowId: 77 });
-    const getAll = vi
+    const upsertMany = vi
       .fn()
       .mockImplementation(
         async ({
-          courseCode,
-          section,
+          entries,
         }: {
-          courseCode: string;
-          section: string;
-        }) => {
-          if (courseCode === "COR-IS1702" && section === "G1")
-            return [{ id: "cl-g1", section: "G1" }];
-          if (courseCode === "ACCT102" && section === "G2")
-            return [{ id: "cl-g2", section: "G2" }];
-          return [];
-        },
+          entries: Array<{ classId: string; bidWindowId: number }>;
+        }) =>
+          entries.map((e) => ({
+            ok: true,
+            bid: { id: "b1", classId: e.classId, bidWindowId: e.bidWindowId },
+          })),
+      );
+    const resolveByCodeSections = vi
+      .fn()
+      .mockImplementation(
+        async ({
+          items,
+        }: {
+          items: Array<{ courseCode: string; section: string }>;
+        }) =>
+          items.map((i) => {
+            if (i.courseCode === "COR-IS1702" && i.section === "G1")
+              return {
+                courseCode: i.courseCode,
+                section: i.section,
+                classId: "cl-g1",
+              };
+            if (i.courseCode === "ACCT102" && i.section === "G2")
+              return {
+                courseCode: i.courseCode,
+                section: i.section,
+                classId: "cl-g2",
+              };
+            return {
+              courseCode: i.courseCode,
+              section: i.section,
+              classId: null,
+            };
+          }),
       );
     const listMine = vi.fn().mockResolvedValue([
       mkBid({
@@ -105,8 +130,8 @@ describe("save-bids", () => {
     ]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const caller = makeCaller({
-      userBidsUpsert: upsert,
-      classesGetAll: getAll,
+      userBidsUpsertMany: upsertMany,
+      classesResolveByCodeSections: resolveByCodeSections,
       bidWindowsGetCurrentWindow: vi.fn().mockResolvedValue(openWindow()),
       userBidsListMine: listMine,
       userBidsGetBudget: getBudget,
@@ -119,18 +144,22 @@ describe("save-bids", () => {
       ],
     });
     expect(res.isError).toBeUndefined();
-    expect(upsert).toHaveBeenCalledTimes(2);
-    expect(upsert).toHaveBeenNthCalledWith(1, {
-      classId: "cl-g1",
-      bidWindowId: 77,
-      bidAmount: 25,
-      notes: undefined,
-    });
-    expect(upsert).toHaveBeenNthCalledWith(2, {
-      classId: "cl-g2",
-      bidWindowId: 77,
-      bidAmount: 30,
-      notes: undefined,
+    expect(upsertMany).toHaveBeenCalledTimes(1);
+    expect(upsertMany).toHaveBeenCalledWith({
+      entries: [
+        {
+          classId: "cl-g1",
+          bidWindowId: 77,
+          bidAmount: 25,
+          notes: undefined,
+        },
+        {
+          classId: "cl-g2",
+          bidWindowId: 77,
+          bidAmount: 30,
+          notes: undefined,
+        },
+      ],
     });
     const parsed = JSON.parse(res.content[0]!.text) as {
       updated: Array<{ ok: boolean; courseCode: string; section: string }>;
@@ -143,20 +172,29 @@ describe("save-bids", () => {
   });
 
   it("save-bids per-entry results carry no notes key", async () => {
-    const upsert = vi.fn().mockResolvedValue({
-      id: "b1",
-      classId: "cl-g1",
-      bidWindowId: 77,
-      notes: "secret plan",
-    });
-    const getAll = vi.fn().mockResolvedValue([{ id: "cl-g1", section: "G1" }]);
+    const upsertMany = vi.fn().mockResolvedValue([
+      {
+        ok: true,
+        bid: {
+          id: "b1",
+          classId: "cl-g1",
+          bidWindowId: 77,
+          notes: "secret plan",
+        },
+      },
+    ]);
+    const resolveByCodeSections = vi
+      .fn()
+      .mockResolvedValue([
+        { courseCode: "COR-IS1702", section: "G1", classId: "cl-g1" },
+      ]);
     const listMine = vi
       .fn()
       .mockResolvedValue([mkBid({ classId: "cl-g1", bidWindowId: 77 })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const caller = makeCaller({
-      userBidsUpsert: upsert,
-      classesGetAll: getAll,
+      userBidsUpsertMany: upsertMany,
+      classesResolveByCodeSections: resolveByCodeSections,
       bidWindowsGetCurrentWindow: vi.fn().mockResolvedValue(openWindow()),
       userBidsListMine: listMine,
       userBidsGetBudget: getBudget,
@@ -177,17 +215,26 @@ describe("save-bids", () => {
   });
 
   it("fetches the current window and listMine exactly once per call (N+1 collapse)", async () => {
-    // Per-entry bidWindowId overrides targeting a non-current window: the loop
-    // still runs 3 resolves + 3 upserts, but run()'s own getCurrentWindow +
-    // listMine stay at 1 each. (Overrides are deliberate: a default-window
-    // success batch additionally triggers ONE plan-time listMine inside the
-    // shared buildBidPlan — constant, not per-entry — so it is excluded here
-    // to isolate run()'s hoisted fetches.)
-    const getAll = vi
+    // Per-entry bidWindowId overrides targeting a non-current window: the batch
+    // still runs resolveByCodeSections + upsertMany once, while run()'s own
+    // getCurrentWindow + listMine stay at 1 each. (Overrides are deliberate: a
+    // default-window success batch additionally triggers ONE plan-time listMine
+    // inside the shared buildBidPlan — constant, not per-entry — so it is
+    // excluded here to isolate run()'s hoisted fetches.)
+    const resolveByCodeSections = vi
       .fn()
-      .mockImplementation(async ({ section }: { section: string }) => [
-        { id: `cl-${section}`, section },
-      ]);
+      .mockImplementation(
+        async ({
+          items,
+        }: {
+          items: Array<{ courseCode: string; section: string }>;
+        }) =>
+          items.map((i) => ({
+            courseCode: i.courseCode,
+            section: i.section,
+            classId: `cl-${i.section}`,
+          })),
+      );
     const listMine = vi.fn().mockResolvedValue([
       mkBid({
         classId: "cl-G1",
@@ -196,24 +243,26 @@ describe("save-bids", () => {
       }),
     ]);
     const getCurrentWindow = vi.fn().mockResolvedValue(openWindow());
-    const upsert = vi
+    const upsertMany = vi
       .fn()
       .mockImplementation(
         async ({
-          classId,
-          bidWindowId,
+          entries,
         }: {
-          classId: string;
-          bidWindowId: number;
-        }) => ({
-          id: `b-${classId}`,
-          classId,
-          bidWindowId,
-        }),
+          entries: Array<{ classId: string; bidWindowId: number }>;
+        }) =>
+          entries.map((e) => ({
+            ok: true,
+            bid: {
+              id: `b-${e.classId}`,
+              classId: e.classId,
+              bidWindowId: e.bidWindowId,
+            },
+          })),
       );
     const caller = makeCaller({
-      userBidsUpsert: upsert,
-      classesGetAll: getAll,
+      userBidsUpsertMany: upsertMany,
+      classesResolveByCodeSections: resolveByCodeSections,
       bidWindowsGetCurrentWindow: getCurrentWindow,
       userBidsListMine: listMine,
       userBidsGetBudget: vi.fn().mockResolvedValue({ balance: 100 }),
@@ -242,7 +291,29 @@ describe("save-bids", () => {
       ],
     });
     expect(res.isError).toBeUndefined();
-    expect(upsert).toHaveBeenCalledTimes(3);
+    expect(upsertMany).toHaveBeenCalledTimes(1);
+    expect(upsertMany).toHaveBeenCalledWith({
+      entries: [
+        {
+          classId: "cl-G1",
+          bidWindowId: 99,
+          bidAmount: 25,
+          notes: undefined,
+        },
+        {
+          classId: "cl-G2",
+          bidWindowId: 99,
+          bidAmount: 30,
+          notes: undefined,
+        },
+        {
+          classId: "cl-G3",
+          bidWindowId: 99,
+          bidAmount: 35,
+          notes: undefined,
+        },
+      ],
+    });
     expect(getCurrentWindow).toHaveBeenCalledTimes(1);
     expect(listMine).toHaveBeenCalledTimes(1);
   });
@@ -251,12 +322,17 @@ describe("save-bids", () => {
     const getCurrentWindow = vi.fn().mockResolvedValue(openWindow());
     const listMine = vi.fn().mockResolvedValue([]);
     const caller = makeCaller({
-      userBidsUpsert: vi
+      userBidsUpsertMany: vi.fn().mockResolvedValue([
+        {
+          ok: true,
+          bid: { id: "b-new", classId: "cl-G1", bidWindowId: 77 },
+        },
+      ]),
+      classesResolveByCodeSections: vi
         .fn()
-        .mockResolvedValue({ id: "b-new", classId: "cl-G1", bidWindowId: 77 }),
-      classesGetAll: vi
-        .fn()
-        .mockResolvedValue([{ id: "cl-G1", section: "G1" }]),
+        .mockResolvedValue([
+          { courseCode: "COR-IS1702", section: "G1", classId: "cl-G1" },
+        ]),
       bidWindowsGetCurrentWindow: getCurrentWindow,
       userBidsListMine: listMine,
       userBidsGetBudget: vi.fn().mockResolvedValue({ balance: 100 }),
@@ -274,12 +350,19 @@ describe("save-bids", () => {
   });
 
   it("supports per-entry bidWindowId override", async () => {
-    const upsert = vi
-      .fn()
-      .mockResolvedValue({ id: "b1", classId: "cl1", bidWindowId: 99 });
+    const upsertMany = vi.fn().mockResolvedValue([
+      {
+        ok: true,
+        bid: { id: "b1", classId: "cl1", bidWindowId: 99 },
+      },
+    ]);
     const caller = makeCaller({
-      userBidsUpsert: upsert,
-      classesGetAll: vi.fn().mockResolvedValue([{ id: "cl1", section: "G1" }]),
+      userBidsUpsertMany: upsertMany,
+      classesResolveByCodeSections: vi
+        .fn()
+        .mockResolvedValue([
+          { courseCode: "COR-IS1702", section: "G1", classId: "cl1" },
+        ]),
       bidWindowsGetCurrentWindow: vi.fn().mockResolvedValue(openWindow()),
       userBidsListMine: vi.fn().mockResolvedValue([]),
       userBidsGetBudget: vi.fn().mockResolvedValue(null),
@@ -295,33 +378,55 @@ describe("save-bids", () => {
         },
       ],
     });
-    expect(upsert).toHaveBeenCalledWith({
-      classId: "cl1",
-      bidWindowId: 99,
-      bidAmount: 25,
-      notes: undefined,
+    expect(upsertMany).toHaveBeenCalledWith({
+      entries: [
+        {
+          classId: "cl1",
+          bidWindowId: 99,
+          bidAmount: 25,
+          notes: undefined,
+        },
+      ],
     });
     expect(res.isError).toBeUndefined();
   });
 
   it("reports partial failure per row without aborting other rows", async () => {
-    const upsert = vi
+    const upsertMany = vi
       .fn()
-      .mockImplementation(async ({ classId }: { classId: string }) => {
-        if (classId === "cl-g1")
-          return { id: "b1", classId: "cl-g1", bidWindowId: 77 };
-        throw new Error("upsert failed for g2");
-      });
-    const getAll = vi
+      .mockImplementation(
+        async ({ entries }: { entries: Array<{ classId: string }> }) =>
+          entries.map((e) => {
+            if (e.classId === "cl-g1")
+              return {
+                ok: true,
+                bid: { id: "b1", classId: "cl-g1", bidWindowId: 77 },
+              };
+            return { ok: false, message: "upsert failed for g2" };
+          }),
+      );
+    const resolveByCodeSections = vi
       .fn()
-      .mockImplementation(async ({ section }: { section: string }) => {
-        if (section === "G1") return [{ id: "cl-g1", section: "G1" }];
-        if (section === "G2") return [{ id: "cl-g2", section: "G2" }];
-        return [];
-      });
+      .mockImplementation(
+        async ({
+          items,
+        }: {
+          items: Array<{ courseCode: string; section: string }>;
+        }) =>
+          items.map((i) => ({
+            courseCode: i.courseCode,
+            section: i.section,
+            classId:
+              i.section === "G1"
+                ? "cl-g1"
+                : i.section === "G2"
+                  ? "cl-g2"
+                  : null,
+          })),
+      );
     const caller = makeCaller({
-      userBidsUpsert: upsert,
-      classesGetAll: getAll,
+      userBidsUpsertMany: upsertMany,
+      classesResolveByCodeSections: resolveByCodeSections,
       bidWindowsGetCurrentWindow: vi.fn().mockResolvedValue(openWindow()),
       userBidsListMine: vi
         .fn()
@@ -357,10 +462,14 @@ describe("save-bids", () => {
       opensAt: new Date(now.getTime() + 60_000),
       resultsAt: new Date(now.getTime() + 120_000),
     };
-    const upsert = vi.fn();
+    const upsertMany = vi.fn();
     const caller = makeCaller({
-      userBidsUpsert: upsert,
-      classesGetAll: vi.fn().mockResolvedValue([{ id: "cl1", section: "G1" }]),
+      userBidsUpsertMany: upsertMany,
+      classesResolveByCodeSections: vi
+        .fn()
+        .mockResolvedValue([
+          { courseCode: "COR-IS1702", section: "G1", classId: "cl1" },
+        ]),
       bidWindowsGetCurrentWindow: vi.fn().mockResolvedValue(closed),
       userBidsListMine: vi.fn().mockResolvedValue([]),
       userBidsGetBudget: vi.fn().mockResolvedValue(null),
@@ -375,13 +484,17 @@ describe("save-bids", () => {
     };
     expect(parsed.updated[0]!.ok).toBe(false);
     expect(parsed.updated[0]!.error).toMatch(/ask the user/i);
-    expect(upsert).not.toHaveBeenCalled();
+    expect(upsertMany).not.toHaveBeenCalled();
   });
 
   it("fails per-entry with 'not found' when class resolution returns nothing", async () => {
     const caller = makeCaller({
-      userBidsUpsert: vi.fn(),
-      classesGetAll: vi.fn().mockResolvedValue([]),
+      userBidsUpsertMany: vi.fn(),
+      classesResolveByCodeSections: vi
+        .fn()
+        .mockResolvedValue([
+          { courseCode: "UNKNOWN", section: "G1", classId: null },
+        ]),
       bidWindowsGetCurrentWindow: vi.fn().mockResolvedValue(openWindow()),
       userBidsListMine: vi.fn().mockResolvedValue([]),
       userBidsGetBudget: vi.fn().mockResolvedValue(null),
@@ -403,17 +516,24 @@ describe("save-bids", () => {
   });
 
   it("toViewProps unwraps plan from { updated, plan } envelope", async () => {
-    const upsert = vi
+    const upsertMany = vi.fn().mockResolvedValue([
+      {
+        ok: true,
+        bid: { id: "b1", classId: "cl-g1", bidWindowId: 77 },
+      },
+    ]);
+    const resolveByCodeSections = vi
       .fn()
-      .mockResolvedValue({ id: "b1", classId: "cl-g1", bidWindowId: 77 });
-    const getAll = vi.fn().mockResolvedValue([{ id: "cl-g1", section: "G1" }]);
+      .mockResolvedValue([
+        { courseCode: "COR-IS1702", section: "G1", classId: "cl-g1" },
+      ]);
     const listMine = vi
       .fn()
       .mockResolvedValue([mkBid({ classId: "cl-g1", bidWindowId: 77 })]);
     const getBudget = vi.fn().mockResolvedValue({ balance: 100 });
     const caller = makeCaller({
-      userBidsUpsert: upsert,
-      classesGetAll: getAll,
+      userBidsUpsertMany: upsertMany,
+      classesResolveByCodeSections: resolveByCodeSections,
       bidWindowsGetCurrentWindow: vi.fn().mockResolvedValue(openWindow()),
       userBidsListMine: listMine,
       userBidsGetBudget: getBudget,
@@ -427,14 +547,19 @@ describe("save-bids", () => {
   });
 
   it("passes a sub-floor bidAmount through unclamped (the e$10 floor is suggestion-only)", async () => {
-    const upsert = vi
-      .fn()
-      .mockResolvedValue({ id: "b1", classId: "cl-g1", bidWindowId: 77 });
+    const upsertMany = vi.fn().mockResolvedValue([
+      {
+        ok: true,
+        bid: { id: "b1", classId: "cl-g1", bidWindowId: 77 },
+      },
+    ]);
     const caller = makeCaller({
-      userBidsUpsert: upsert,
-      classesGetAll: vi
+      userBidsUpsertMany: upsertMany,
+      classesResolveByCodeSections: vi
         .fn()
-        .mockResolvedValue([{ id: "cl-g1", section: "G1" }]),
+        .mockResolvedValue([
+          { courseCode: "COR-IS1702", section: "G1", classId: "cl-g1" },
+        ]),
       bidWindowsGetCurrentWindow: vi.fn().mockResolvedValue(openWindow()),
       userBidsListMine: vi
         .fn()
@@ -449,11 +574,15 @@ describe("save-bids", () => {
     });
     expect(res.isError).toBeUndefined();
     // Server does NOT clamp inputs: the raw amount reaches the procedure.
-    expect(upsert).toHaveBeenCalledWith({
-      classId: "cl-g1",
-      bidWindowId: 77,
-      bidAmount: 5,
-      notes: undefined,
+    expect(upsertMany).toHaveBeenCalledWith({
+      entries: [
+        {
+          classId: "cl-g1",
+          bidWindowId: 77,
+          bidAmount: 5,
+          notes: undefined,
+        },
+      ],
     });
     const parsed = JSON.parse(res.content[0]!.text) as {
       updated: Array<{ ok: boolean }>;

@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createStore, Provider } from "jotai";
+import type { ReactElement, ReactNode } from "react";
 import type { Mock } from "vitest";
 
 const { mockUseChat, mockSendMessage } = vi.hoisted(() => ({
@@ -11,15 +13,7 @@ const { mockUseChat, mockSendMessage } = vi.hoisted(() => ({
 vi.mock("@ai-sdk/react", () => ({ useChat: mockUseChat }));
 vi.mock("./use-page-context", () => ({ usePageContext: () => null }));
 vi.mock("./use-persist-session", () => ({ usePersistSession: vi.fn() }));
-vi.mock("./chat-store", () => ({
-  useChatStore: Object.assign(
-    vi.fn(() => vi.fn()),
-    {
-      getState: () => ({}),
-    },
-  ),
-}));
-
+import { hydratedAtom } from "./chat-store";
 import { ChatPanel } from "./chat-panel";
 
 const baseProps = {
@@ -47,7 +41,18 @@ function mockChatState(overrides: Record<string, unknown> = {}) {
   });
 }
 
+// Hydrated store: hydrate() returns early, so no test touches IndexedDB.
+let store: ReturnType<typeof createStore>;
+
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <Provider store={store}>{children}</Provider>
+);
+
+const renderWithStore = (ui: ReactElement) => render(ui, { wrapper });
+
 beforeEach(() => {
+  store = createStore();
+  store.set(hydratedAtom, true);
   mockUseChat.mockReset();
   mockSendMessage.mockReset();
   vi.unstubAllGlobals();
@@ -56,13 +61,13 @@ beforeEach(() => {
 
 describe("ChatPanel consent gating", () => {
   it("renders the notice and no composer when unconsented", () => {
-    render(<ChatPanel {...baseProps} aiConsented={false} />);
+    renderWithStore(<ChatPanel {...baseProps} aiConsented={false} />);
     expect(screen.getByText("Before you chat with AI")).toBeTruthy();
     expect(screen.queryByLabelText("Message input")).toBeNull();
   });
 
   it("renders the composer and no notice when consented", () => {
-    render(<ChatPanel {...baseProps} aiConsented />);
+    renderWithStore(<ChatPanel {...baseProps} aiConsented />);
     expect(screen.getByLabelText("Message input")).toBeTruthy();
     expect(screen.queryByText("Before you chat with AI")).toBeNull();
   });
@@ -72,7 +77,7 @@ describe("ChatPanel consent gating", () => {
       "fetch",
       vi.fn(async () => new Response("{}", { status: 200 })),
     );
-    const { rerender } = render(
+    const { rerender } = renderWithStore(
       <ChatPanel {...baseProps} aiConsented={false} onConsented={vi.fn()} />,
     );
     expect(screen.getByText("Before you chat with AI")).toBeTruthy();
@@ -103,7 +108,7 @@ describe("ChatPanel consent gating", () => {
         };
       },
     );
-    render(
+    renderWithStore(
       <ChatPanel
         {...baseProps}
         onGate={onGate}
@@ -132,7 +137,7 @@ describe("ChatPanel consent gating", () => {
         };
       },
     );
-    render(
+    renderWithStore(
       <ChatPanel
         {...baseProps}
         onGate={onGate}
@@ -151,7 +156,7 @@ describe("ChatPanel optimistic quota", () => {
     // 43/50, so use values where the bar is visible and its message shifts).
     mockSendMessage.mockResolvedValue(undefined);
     const props = { ...baseProps, quota: 20, remaining: 10 };
-    render(<ChatPanel {...props} />);
+    renderWithStore(<ChatPanel {...props} />);
     expect(
       screen.getByText(/You've used 50% of your free messages/),
     ).toBeTruthy();
@@ -200,19 +205,19 @@ describe("ChatPanel scroll to bottom", () => {
 
   it("shows no scroll button when there are no messages", () => {
     mockChatState({ messages: [] });
-    render(<ChatPanel {...baseProps} />);
+    renderWithStore(<ChatPanel {...baseProps} />);
     expect(screen.queryByLabelText("Scroll to bottom")).toBeNull();
   });
 
   it("shows no scroll button while pinned at the bottom", () => {
     mockChatState({ messages: [userMsg("u1"), userMsg("u2")] });
-    render(<ChatPanel {...baseProps} />);
+    renderWithStore(<ChatPanel {...baseProps} />);
     expect(screen.queryByLabelText("Scroll to bottom")).toBeNull();
   });
 
   it("shows the scroll button after scrolling up, and clicking it returns to bottom", () => {
     mockChatState({ messages: [userMsg("u1"), userMsg("u2")] });
-    render(<ChatPanel {...baseProps} />);
+    renderWithStore(<ChatPanel {...baseProps} />);
     const el = scrollContainer();
     scrollUp(el);
     const button = screen.getByLabelText("Scroll to bottom");

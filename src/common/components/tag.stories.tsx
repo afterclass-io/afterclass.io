@@ -79,3 +79,48 @@ export const Rounded: Story = {
     className: "rounded-full",
   },
 };
+
+export const WarningFilled: Story = {
+  ...Default,
+  args: {
+    ...Default.args,
+    children: "Warning filled",
+    color: "warning",
+    variant: "filled",
+  },
+};
+
+export const WarningOutline: Story = {
+  ...Default,
+  args: {
+    ...Default.args,
+    children: "Warning outline",
+    color: "warning",
+    variant: "outline",
+  },
+};
+
+export const WarningSoft: Story = {
+  ...Default,
+  args: {
+    ...Default.args,
+    children: "Warning soft",
+    color: "warning",
+    variant: "soft",
+  },
+};
+
+export const WarningFilledDark: Story = {
+  ...WarningFilled,
+  parameters: { themes: { themeOverride: "dark" } },
+};
+
+export const WarningOutlineDark: Story = {
+  ...WarningOutline,
+  parameters: { themes: { themeOverride: "dark" } },
+};
+
+export const WarningSoftDark: Story = {
+  ...WarningSoft,
+  parameters: { themes: { themeOverride: "dark" } },
+};

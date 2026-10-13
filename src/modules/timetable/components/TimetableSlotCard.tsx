@@ -70,12 +70,18 @@ export function TimetableSlotCard({
   bidInfo,
   isExam = false,
 }: TimetableSlotCardProps) {
-  const { className: colorClasses } = courseColor(courseCode);
+  const { className: colorClasses, nowClassName: colorNow } =
+    courseColor(courseCode);
   const { topPct, heightPct, colIndex, colCount } = slot;
 
   const bidStatus = bidInfo?.status as UserBidStatus | undefined;
   const cardVariant = slotCardVariant(bidStatus);
-  const cardClasses = bidInfo ? (cardVariant ?? colorClasses) : colorClasses;
+  const cardClasses = bidInfo
+    ? (cardVariant?.className ?? colorClasses)
+    : colorClasses;
+  const nowClasses = bidInfo
+    ? (cardVariant?.nowClassName ?? colorNow)
+    : colorNow;
   const isSecured = bidStatus === "SECURED";
 
   // An extra gap between columns so cards don't touch
@@ -88,7 +94,10 @@ export function TimetableSlotCard({
 
   return (
     <div
-      className="group absolute"
+      className={cn(
+        "group absolute p-px focus-within:z-10 hover:z-10",
+        highlightNow && "z-20",
+      )}
       data-test="timetable-slot-card"
       style={{
         top: `${topPct}%`,
@@ -103,13 +112,13 @@ export function TimetableSlotCard({
         onClick={readOnly ? undefined : onClick}
         data-test={isSecured ? "timetable-slot-card-secured" : undefined}
         className={cn(
-          "block h-full w-full overflow-hidden rounded-md border px-1.5 py-0.5 text-left text-xs leading-tight transition-shadow",
+          "block h-full w-full overflow-hidden rounded-md border px-1.5 py-0.5 text-left text-xs leading-tight transition-shadow ring-inset",
           cardClasses,
           isExam && "border-dashed",
           readOnly
             ? "cursor-default"
-            : "focus-visible:ring-ring cursor-pointer hover:z-10 hover:shadow-md focus-visible:ring-1",
-          highlightNow && "ring-primary z-20 ring-2 ring-offset-1",
+            : "focus-visible:ring-ring cursor-pointer hover:shadow-md focus-visible:ring-1",
+          highlightNow && ["ring-2", nowClasses],
         )}
       >
         <span className="block truncate font-semibold">
@@ -136,12 +145,11 @@ export function TimetableSlotCard({
         {showChip && (
           <span
             className={cn(
-              "mt-0.5 inline-block rounded-sm px-1 py-px text-[10px] leading-none font-medium",
+              "text-2xs mt-0.5 inline-block rounded-sm px-1 py-px leading-none font-medium",
               bidChipVariant(bidInfo.status as UserBidStatus),
             )}
           >
-            {formatBidAmount(bidInfo.amount)}{" "}
-            · R{bidInfo.round}
+            {formatBidAmount(bidInfo.amount)} · R{bidInfo.round}
           </span>
         )}
       </button>

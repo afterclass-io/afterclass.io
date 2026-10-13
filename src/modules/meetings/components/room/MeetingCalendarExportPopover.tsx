@@ -1,6 +1,12 @@
 "use client";
 
-import { CalendarPlus, ChevronDown, Chrome, Download, Mail } from "lucide-react";
+import {
+  CalendarPlus,
+  ChevronDown,
+  Chrome,
+  Download,
+  Mail,
+} from "lucide-react";
 
 import { Button } from "@/common/components/button";
 import {
@@ -8,7 +14,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/common/components/popover";
-import { formatDateSGT, formatTimeSGT } from "@/common/functions/format-date-sgt";
+import {
+  formatDateSGT,
+  formatTimeSGT,
+} from "@/common/functions/format-date-sgt";
 import {
   buildMeetingCalendarLinks,
   type MeetingCalendarParams,

@@ -1,19 +1,14 @@
 import { z } from "zod";
 
-import { pickActiveOrFirst } from "../../current";
 import { stripSecretsFromValue } from "@/mcp/output-policy";
 import {
+  NO_ROADMAPS_MESSAGE,
   buildRoadmapView,
+  resolveRoadmapId,
   roadmapViewToViewProps,
   toRoadmapViewPropsShared,
 } from "../roadmap-view-shared";
-import {
-  errText,
-  errorMessage,
-  jsonText,
-  type McpTool,
-  type RouterOutputs,
-} from "../../types";
+import { errText, guardedRun, jsonText, type McpTool } from "../../types";
 
 const roadmapViewExtractor = roadmapViewToViewProps;
 
@@ -31,36 +26,22 @@ export const getMyRoadmapTool: McpTool<typeof getMyRoadmapSchema> = {
   inputSchema: getMyRoadmapSchema,
   readOnly: true,
   toViewProps: roadmapViewExtractor(false),
-  run: async ({ caller }, { roadmapId }) => {
-    try {
-      let resolvedId = roadmapId?.trim() ?? "";
-      if (!resolvedId) {
-        const mine: RouterOutputs["roadmaps"]["listMine"] =
-          await caller.roadmaps.listMine();
-        const active = pickActiveOrFirst(mine);
-        if (!active) {
-          return errText(
-            "You don't have any roadmaps yet. Create one first, then ask again.",
-          );
-        }
-        resolvedId = active.id;
-      }
-      const view = await buildRoadmapView(caller, resolvedId);
-      const normalized = toRoadmapViewPropsShared(
-        view,
-        false,
-        view.position as { yearNumber: number; term: string } | null,
-      );
-      // No JSON round-trip — the view channel carries the typed view; the
-      // text envelope stays for the model.
-      return {
-        ...jsonText(normalized),
-        viewProps: normalized as unknown as Record<string, unknown>,
-      };
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { roadmapId }) => {
+    const resolvedId = await resolveRoadmapId(caller, roadmapId?.trim() ?? "");
+    if (resolvedId === null) return errText(NO_ROADMAPS_MESSAGE);
+    const view = await buildRoadmapView(caller, resolvedId);
+    const normalized = toRoadmapViewPropsShared(
+      view,
+      false,
+      view.position as { yearNumber: number; term: string } | null,
+    );
+    // No JSON round-trip — the view channel carries the typed view; the
+    // text envelope stays for the model.
+    return {
+      ...jsonText(normalized),
+      viewProps: normalized as unknown as Record<string, unknown>,
+    };
+  }),
 };
 
 const getPublicRoadmapSchema = z.object({
@@ -74,15 +55,11 @@ export const getPublicRoadmapTool: McpTool<typeof getPublicRoadmapSchema> = {
   inputSchema: getPublicRoadmapSchema,
   readOnly: true,
   toViewProps: roadmapViewExtractor(true),
-  run: async ({ caller }, { roadmapId }) => {
-    try {
-      // Canonical output policy: bearer tokens must not reach the LLM
-      // (public payloads can still carry the owner's shareToken).
-      return jsonText(
-        stripSecretsFromValue(await caller.roadmaps.getById({ id: roadmapId })),
-      );
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { roadmapId }) => {
+    // Canonical output policy: bearer tokens must not reach the LLM
+    // (public payloads can still carry the owner's shareToken).
+    return jsonText(
+      stripSecretsFromValue(await caller.roadmaps.getById({ id: roadmapId })),
+    );
+  }),
 };

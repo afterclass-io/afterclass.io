@@ -20,7 +20,12 @@ const slotFixture = {
     course: { code: "IS101", name: "Intro", creditUnits: 1 },
     professor: { name: "Prof X" },
     classTimings: [
-      { dayOfWeek: "MON", startTime: "08:15", endTime: "11:30", venue: "SR 2-1" },
+      {
+        dayOfWeek: "MON",
+        startTime: "08:15",
+        endTime: "11:30",
+        venue: "SR 2-1",
+      },
     ],
     classExamTimings: [],
   },
@@ -85,5 +90,23 @@ describe("sharing.getSharedTimetable", () => {
     await expect(
       caller.getSharedTimetable({ token: "nope" }),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  it("masks profanity in the timetable name and owner username", async () => {
+    const findUnique = vi.fn().mockResolvedValue({
+      ...timetableFixture,
+      name: "Shit timetable",
+      user: { username: "bastard" },
+    });
+    const caller = makeCaller(router.createCaller, {
+      userTimetable: { findUnique },
+    });
+
+    const result = await caller.getSharedTimetable({ token: "tok_valid" });
+
+    expect(result.timetable).toEqual({
+      name: "**** timetable",
+      ownerUsername: "*******",
+    });
   });
 });

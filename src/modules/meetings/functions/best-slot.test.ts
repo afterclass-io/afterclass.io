@@ -5,7 +5,9 @@ import { findBestSlot, findTopSlots } from "./best-slot";
 describe("findBestSlot", () => {
   it("returns null when nobody is available", () => {
     expect(findBestSlot({}, 10)).toBeNull();
-    expect(findBestSlot({ 2: { availableCount: 0, ifNeededCount: 3 } }, 10)).toBeNull();
+    expect(
+      findBestSlot({ 2: { availableCount: 0, ifNeededCount: 3 } }, 10),
+    ).toBeNull();
   });
 
   it("picks the slot with the most available people", () => {
@@ -45,15 +47,30 @@ describe("findBestSlot", () => {
       };
       const top = findTopSlots(heatmap, 10, 3);
       expect(top).toHaveLength(3);
-      expect(top[0]).toMatchObject({ slotIndex: 2, rank: 1, availableCount: 5 });
-      expect(top[1]).toMatchObject({ slotIndex: 3, rank: 2, availableCount: 4, ifNeededCount: 2 });
-      expect(top[2]).toMatchObject({ slotIndex: 4, rank: 3, availableCount: 4, ifNeededCount: 1 });
+      expect(top[0]).toMatchObject({
+        slotIndex: 2,
+        rank: 1,
+        availableCount: 5,
+      });
+      expect(top[1]).toMatchObject({
+        slotIndex: 3,
+        rank: 2,
+        availableCount: 4,
+        ifNeededCount: 2,
+      });
+      expect(top[2]).toMatchObject({
+        slotIndex: 4,
+        rank: 3,
+        availableCount: 4,
+        ifNeededCount: 1,
+      });
     });
 
     it("returns empty array when no slots have availability", () => {
       expect(findTopSlots({}, 10)).toEqual([]);
-      expect(findTopSlots({ 1: { availableCount: 0, ifNeededCount: 2 } }, 10)).toEqual([]);
+      expect(
+        findTopSlots({ 1: { availableCount: 0, ifNeededCount: 2 } }, 10),
+      ).toEqual([]);
     });
   });
 });
-

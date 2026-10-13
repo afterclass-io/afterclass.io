@@ -1,9 +1,12 @@
-import { describe, expect, it } from "vitest";
-import {
-  DEFAULT_LLM_BASE_URL,
-  resolveLlmEnv,
-  resolveModelId,
-} from "./providers";
+import { describe, expect, it, vi } from "vitest";
+import { DEFAULT_LLM_BASE_URL, getModel, resolveLlmEnv } from "./providers";
+
+vi.mock("@/env", () => ({
+  env: { LLM_API_KEY: "k", LLM_BASE_URL: undefined },
+}));
+vi.mock("@/server/config/chat-config", () => ({
+  getChatConfigAsync: vi.fn(async () => ({ llmModel: "shared-model" })),
+}));
 
 describe("resolveLlmEnv", () => {
   it("throws fail-closed when LLM_API_KEY is missing (no empty-string fallback)", () => {
@@ -47,23 +50,11 @@ describe("resolveLlmEnv", () => {
   });
 });
 
-describe("resolveModelId", () => {
-  it("uses the assistant model for the assistant", () => {
-    expect(
-      resolveModelId("assistant", { llmModel: "a", moderationModel: "m" }),
-    ).toBe("a");
-  });
-  it("uses the moderation override for moderation", () => {
-    expect(
-      resolveModelId("moderation", { llmModel: "a", moderationModel: "m" }),
-    ).toBe("m");
-  });
-  it("falls back to the assistant model when no moderation override is set", () => {
-    expect(
-      resolveModelId("moderation", {
-        llmModel: "a",
-        moderationModel: undefined,
-      }),
-    ).toBe("a");
+describe("getModel", () => {
+  it("returns the configured llmModel for every caller", async () => {
+    // The chat assistant and the moderation judge both call getModel() with
+    // no argument, so they cannot resolve to different models.
+    const model = await getModel();
+    expect(model.modelId).toBe("shared-model");
   });
 });

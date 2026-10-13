@@ -9,13 +9,14 @@ import { Skeleton } from "@/common/components/skeleton";
 import { courseColor } from "@/modules/timetable/functions/course-color";
 import { cn } from "@/common/functions";
 import { useDebouncedValue } from "@/common/hooks/useDebouncedValue";
+import { isShortQuery, SHORT_QUERY_HINT } from "@/common/constants/search";
 import { GripVertical } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-export type SearchCourseResult = {
+type SearchCourseResult = {
   id: string;
   code: string;
   name: string;
@@ -88,7 +89,7 @@ function DraggableSearchChip({
         <div className="flex items-start justify-between gap-1.5">
           <span className="font-semibold break-words">{course.code}</span>
           {course.creditUnits > 0 && (
-            <span className="bg-background/60 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-bold">
+            <span className="bg-background/60 shrink-0 rounded-full px-1.5 py-0.5 text-xs leading-none font-bold">
               {course.creditUnits} CU
             </span>
           )}
@@ -116,14 +117,14 @@ export function CourseSearchSidebar({
   const searchQuery = api.roadmaps.searchCourses.useQuery(
     { query: debouncedQuery },
     {
-      enabled: debouncedQuery.length >= 1,
+      enabled: !isShortQuery(debouncedQuery),
       staleTime: 30_000,
     },
   );
 
   const results = useMemo(() => searchQuery.data ?? [], [searchQuery.data]);
 
-  const isLoading = searchQuery.isFetching && debouncedQuery.length >= 1;
+  const isLoading = searchQuery.isFetching && !isShortQuery(debouncedQuery);
 
   // Droppable "cancel" zone — dropping a sidebar-originated drag back here
   // is a no-op (cancels the add). This gives the search panel affordance
@@ -167,7 +168,7 @@ export function CourseSearchSidebar({
       </div>
 
       {/* Results (scrolls internally — never scrolls the whole page) */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2 [scrollbar-gutter:stable]">
+      <div className="min-h-0 flex-1 [scrollbar-gutter:stable] overflow-y-auto px-3 py-2">
         {isLoading && (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -176,11 +177,13 @@ export function CourseSearchSidebar({
           </div>
         )}
 
-        {!isLoading && debouncedQuery.length >= 1 && results.length === 0 && (
-          <p className="text-muted-foreground py-4 text-center text-sm">
-            No courses found for &quot;{debouncedQuery}&quot;
-          </p>
-        )}
+        {!isLoading &&
+          !isShortQuery(debouncedQuery) &&
+          results.length === 0 && (
+            <p className="text-muted-foreground py-4 text-center text-sm">
+              No courses found for &quot;{debouncedQuery}&quot;
+            </p>
+          )}
 
         {!isLoading && results.length > 0 && (
           <div className="space-y-1.5">
@@ -197,6 +200,12 @@ export function CourseSearchSidebar({
         {debouncedQuery.length === 0 && (
           <p className="text-muted-foreground py-4 text-center text-xs">
             Search for a course to get started
+          </p>
+        )}
+
+        {query.trim() !== "" && isShortQuery(query) && (
+          <p className="text-muted-foreground py-4 text-center text-xs">
+            {SHORT_QUERY_HINT}
           </p>
         )}
       </div>

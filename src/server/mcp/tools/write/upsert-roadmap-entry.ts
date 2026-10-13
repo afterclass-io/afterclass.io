@@ -5,20 +5,21 @@ import {
   TERM_ORDER,
   checkExamClashes,
   checkPrereqs,
-  checkTermDuplicates,
-  createIssueCollector,
-  dateKey,
   roadmapTermSchema,
   type FeasibilityEntry,
   type FeasibilityIssue,
 } from "../feasibility-check";
 import {
+  NO_ROADMAPS_MESSAGE,
   buildRoadmapView,
+  collectExamSlots,
+  resolveRoadmapId,
   roadmapViewToViewProps,
+  scanRoadmapEntries,
 } from "../roadmap-view-shared";
 import {
   errText,
-  errorMessage,
+  guardedRun,
   jsonText,
   type CourseRow,
   type McpTool,
@@ -59,27 +60,20 @@ export const upsertRoadmapEntryTool: McpTool<typeof upsertRoadmapEntrySchema> =
       "Add a course to a study roadmap (additive: does NOT wipe other entries). Provide the roadmap id (omit for your active roadmap), a course code (e.g. ACCT102), and the desired placement year + term (e.g. year 3, T1). Returns the full updated roadmap (via roadmap-view) PLUS feasibility info { issues, isFeasible } (PREREQ_MISSING / TERM_DUPLICATE / EXAM_CLASH - same as check-roadmap-feasibility). Replaces save-roadmap-entries for single-course edits. If the course is already in the roadmap, its placement is updated (moved) rather than duplicated. Self-contained: one call is the answer. Additive merge is done on existing roadmap entries (thin wrapper over existing tRPC procedures, no new Prisma queries).",
     inputSchema: upsertRoadmapEntrySchema,
     toViewProps: roadmapViewToViewProps(false),
-    run: async (
-      { caller },
-      { roadmapId, courseCode, yearNumber, term, sortOrder },
-    ) => {
-      try {
+    run: guardedRun(
+      async (
+        { caller },
+        { roadmapId, courseCode, yearNumber, term, sortOrder },
+      ) => {
         const trimmedCode = courseCode.trim();
         if (!trimmedCode) return errText("courseCode must not be empty");
 
         // Resolve roadmap id: explicit, else active.
-        let resolvedId = roadmapId?.trim() ?? "";
-        if (!resolvedId) {
-          const mine: RouterOutputs["roadmaps"]["listMine"] =
-            await caller.roadmaps.listMine();
-          const active = pickActiveOrFirst(mine);
-          if (!active) {
-            return errText(
-              "You don't have any roadmaps yet. Create one first, then ask again.",
-            );
-          }
-          resolvedId = active.id;
-        }
+        const resolvedId = await resolveRoadmapId(
+          caller,
+          roadmapId?.trim() ?? "",
+        );
+        if (resolvedId === null) return errText(NO_ROADMAPS_MESSAGE);
 
         // Resolve courseId from courseCode via existing procedure (thin wrapper).
         const course: CourseRow = await caller.courses.getByCourseCode({
@@ -164,10 +158,8 @@ export const upsertRoadmapEntryTool: McpTool<typeof upsertRoadmapEntrySchema> =
         }
 
         return jsonText(stripSecretsFromValue({ roadmapView, feasibility }));
-      } catch (e) {
-        return errText(errorMessage(e));
-      }
-    },
+      },
+    ),
   };
 
 // Feasibility derivation reusing the shared pure engine
@@ -181,7 +173,11 @@ async function runFeasibility(
 ): Promise<{ issues: FeasibilityIssue[]; isFeasible: boolean }> {
   const c = caller as {
     roadmaps: { getMine: (a: { roadmapId: string }) => Promise<unknown> };
-    courses: { getByCourseCode: (a: { code: string }) => Promise<unknown> };
+    courses: {
+      getEnrolmentRequirementsByCodes: (a: {
+        codes: string[];
+      }) => Promise<unknown>;
+    };
     timetable: {
       listMine: (a: { acadTermId: string }) => Promise<unknown>;
       getArrangement: (a: { timetableId: string }) => Promise<unknown>;
@@ -192,28 +188,26 @@ async function runFeasibility(
     entries: FeasibilityEntry[];
   };
 
-  const { issues, flagCourse } = createIssueCollector();
+  // TERM_DUPLICATE, plus the distinct codes for PREREQ_MISSING
+  const { issues, flagCourse, codes } = scanRoadmapEntries(entries);
 
-  // TERM_DUPLICATE
-  checkTermDuplicates(entries, flagCourse);
-
-  // PREREQ_MISSING (best-effort per course: lookup failure -> no requirements)
+  // PREREQ_MISSING (best-effort: batch lookup failure -> no requirements)
   const courseDetail = new Map<string, string | null>();
+  if (codes.length > 0) {
+    try {
+      const rows = (await c.courses.getEnrolmentRequirementsByCodes({
+        codes,
+      })) as Array<{ code: string; enrolmentRequirements: string | null }>;
+      for (const row of rows) {
+        courseDetail.set(row.code, row.enrolmentRequirements);
+      }
+    } catch {
+      // failure gives an empty Map -> treat every course as no requirements
+    }
+  }
   await checkPrereqs(
     entries,
-    async (code) => {
-      if (!courseDetail.has(code)) {
-        try {
-          const detail = (await c.courses.getByCourseCode({ code })) as {
-            enrolmentRequirements: string | null;
-          } | null;
-          courseDetail.set(code, detail?.enrolmentRequirements ?? null);
-        } catch {
-          courseDetail.set(code, null);
-        }
-      }
-      return courseDetail.get(code) ?? null;
-    },
+    async (code) => courseDetail.get(code) ?? null,
     flagCourse,
   );
 
@@ -248,25 +242,9 @@ async function runFeasibility(
             }>;
           }>;
         };
-        const exams: Array<{
-          courseCode: string;
-          courseName: string;
-          date: string;
-          startTime: string;
-          endTime: string;
-        }> = [];
-        for (const slot of arrangement.slots ?? []) {
-          for (const ex of slot.examTimings ?? []) {
-            exams.push({
-              courseCode: slot.courseCode,
-              courseName: slot.courseName,
-              date: dateKey(ex.date),
-              startTime: ex.startTime,
-              endTime: ex.endTime,
-            });
-          }
-        }
-        checkExamClashes(exams, (issue) => issues.push(issue));
+        checkExamClashes(collectExamSlots(arrangement.slots ?? []), (issue) =>
+          issues.push(issue),
+        );
       }
     } catch {
       // best-effort; skip

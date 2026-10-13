@@ -1,5 +1,6 @@
 import {
   assertIsoDate,
+  compareDateStart,
   formatHhmm,
   parseHhmm,
   type PollGrid,
@@ -18,10 +19,7 @@ export const DEFAULT_SUGGESTION_LIMIT = 5;
 export const MAX_SUGGESTION_LIMIT = 10;
 
 export type OptionTier =
-  | "everyone-free"
-  | "everyone-attendable"
-  | "partial"
-  | "none";
+  "everyone-free" | "everyone-attendable" | "partial" | "none";
 
 export type SuggestParticipant = {
   name: string;
@@ -42,7 +40,7 @@ export type SuggestQuery = {
   limit?: number;
 };
 
-export type TimeOption = {
+type TimeOption = {
   date: string;
   weekday: WeekdayLabel;
   start: string;
@@ -58,7 +56,7 @@ export type TimeOption = {
   summary: string;
 };
 
-export type SuggestEmptyReason = "all-past";
+type SuggestEmptyReason = "all-past";
 
 export type SuggestTimesResult = {
   participants: { total: number; noResponse: string[] };
@@ -156,13 +154,7 @@ function compareOptions(a: TimeOption, b: TimeOption): number {
   if (b.free.length !== a.free.length) {
     return b.free.length - a.free.length;
   }
-  if (a.date !== b.date) {
-    return a.date < b.date ? -1 : 1;
-  }
-  if (a.start !== b.start) {
-    return a.start < b.start ? -1 : 1;
-  }
-  return 0;
+  return compareDateStart(a, b);
 }
 
 export function suggestMeetingTimes(input: {
@@ -253,7 +245,9 @@ export function suggestMeetingTimes(input: {
 
   if (input.query.daysOfWeek !== undefined) {
     const allowedDays = new Set(input.query.daysOfWeek);
-    filteredDays = filteredDays.filter((d) => allowedDays.has(weekdayOf(d.date)));
+    filteredDays = filteredDays.filter((d) =>
+      allowedDays.has(weekdayOf(d.date)),
+    );
   }
 
   if (filteredDays.length === 0) {

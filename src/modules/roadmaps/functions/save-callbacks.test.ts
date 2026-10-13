@@ -4,7 +4,9 @@ import { createSaveEntriesCallbacks } from "./save-callbacks";
 const roadmapId = "r1";
 const prev = {
   roadmap: { id: "r1", name: "Test", description: null },
-  entries: [{ id: "old", courseId: "c1", yearNumber: 1, term: "T1", sortOrder: 0 }],
+  entries: [
+    { id: "old", courseId: "c1", yearNumber: 1, term: "T1", sortOrder: 0 },
+  ],
 };
 
 function makeUtils() {

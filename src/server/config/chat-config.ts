@@ -34,14 +34,14 @@
  * | minBid | 10 | `MIN_BID` in `src/server/mcp/tools/bid-shared.ts` |
  * | maxBidBudget | 10000 | `MAX_BUDGET` in `src/server/mcp/tools/write/bids.ts` |
  * | defaultBeatsPct | 70 | `DEFAULT_BEATS_PERCENTAGE` in bid-shared.ts |
- * | maxBidAmount | 99999 | upsert-bid / userBids `.max(99999)` schemas |
+ * | maxBidAmount | 99999 | userBids update/upsert/upsertMany and MCP save-bids `.max(...)` schemas |
  * | appTimezone | Asia/Singapore | `src/server/assistant/month.ts` TZ + format-date-sgt.ts |
  * | icalThrottlePerMinute | 60 | ical route `checkAndIncrement(\`ical:${ip}\`, 60, 1)` |
  * | inFlightStaleMs | 300000 | quota.ts IN_FLIGHT_STALE_MS = 5*60_000 |
  * | rateLimitRetentionWindows | 1440 | ratelimit.ts pruneRateLimits default 1440 |
  * | llmBaseUrl | https://openrouter.ai/api/v1 | providers.ts DEFAULT_LLM_BASE_URL |
  * | llmModel | @preset/afterclass | chat-config.ts DEFAULT_CHAT_CONFIG_VALUES (LLM_MODEL env > config.json > default) |
- * | chatMaxDurationSec | 300 | route.ts `maxDuration = 300` (Vercel Pro ceiling; keep in sync) |
+ * | chatMaxDurationSec | 300 | route.ts `maxDuration = 300` (Vercel Pro ceiling; `mirrored-tunables.test.ts` guards it) |
  * | chatEnabled | true | ecfg kill-switch: chat route 503 when false (ecfg-only, no ENV_BINDINGS) |
  * | widgetEnabled | true | ecfg kill-switch: widget hidden when false (surfaced via status; ecfg-only, no ENV_BINDINGS) |
  * | mcpEnabled | true | ecfg kill-switch: MCP transport refuses when false (server-side only; ecfg-only, no ENV_BINDINGS) |
@@ -51,13 +51,12 @@
  * | moderationJudgementsPerHour | 20 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  * | moderationReportsPerHour | 10 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  * | moderationClaimWindowMinutes | 5 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
- * | moderationJudgeTimeoutMs | 90000 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
+ * | moderationJudgeTimeoutMs | 30000 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  * | moderationLogRetentionDays | 90 | moderation design spec (ecfg-only, no ENV_BINDINGS) |
- * | moderationModel | undefined | moderation design spec (ecfg-only, no ENV_BINDINGS) |
  */
 import { z } from "zod";
 
-import { getEdgeConfig } from "@/common/providers/EdgeConfig/EdgeConfigProvider";
+import { getEdgeConfig } from "@/server/ecfg/edge-config";
 import fallbackJson from "@/server/ecfg/config.json";
 
 const positiveInt = (field: string) =>
@@ -66,6 +65,12 @@ const positiveInt = (field: string) =>
     .int()
     .positive()
     .finite();
+
+/**
+ * The tRPC route allows 60 s (`vercel.json`). The judge must finish well
+ * inside it. About 2.3 s of other work runs in the same route.
+ */
+export const MODERATION_JUDGE_TIMEOUT_MAX_MS = 45_000;
 
 export const chatConfigSchema = z.object({
   quotaPerMonth: positiveInt("quotaPerMonth"),
@@ -118,13 +123,12 @@ export const chatConfigSchema = z.object({
     .max(60),
   moderationJudgeTimeoutMs: z
     .number({
-      error: "moderationJudgeTimeoutMs must be an int in [1000, 120000]",
+      error: `moderationJudgeTimeoutMs must be an int in [1000, ${MODERATION_JUDGE_TIMEOUT_MAX_MS}]`,
     })
     .int()
     .min(1000)
-    .max(120000),
+    .max(MODERATION_JUDGE_TIMEOUT_MAX_MS),
   moderationLogRetentionDays: positiveInt("moderationLogRetentionDays"),
-  moderationModel: z.string().min(1).optional(),
 });
 
 export type ChatConfig = z.infer<typeof chatConfigSchema>;
@@ -161,10 +165,9 @@ export const DEFAULT_CHAT_CONFIG_VALUES: ChatConfig = {
   moderationJudgementsPerHour: 20,
   moderationReportsPerHour: 10,
   moderationClaimWindowMinutes: 5,
-  moderationJudgeTimeoutMs: 90000,
+  moderationJudgeTimeoutMs: 30_000,
   moderationLogRetentionDays: 90,
   // Explicit undefined: normalizeChatLayer keeps only keys present here.
-  moderationModel: undefined,
 };
 
 /** Env key → config field, with the parser applied to the raw env string.

@@ -95,17 +95,24 @@ describe("roadmapVotes.getByUser (integration)", () => {
     expect(res).toMatchObject({ userId: ownerId, roadmapId, weight: 1 });
   });
 
-  it("looks up another user's vote when userId is given", async () => {
+  it("ignores a client-supplied userId", async () => {
     const res = await makeCaller(router.createCaller, db, {
       user: { id: ownerId },
-    }).votesByUser({ userId: u3Id, roadmapId });
-    expect(res).toMatchObject({ userId: u3Id, weight: -1 });
+    }).votesByUser({ userId: u3Id, roadmapId } as never);
+    expect(res).toMatchObject({ userId: ownerId, weight: 1 });
   });
 
   it("returns null when the user has not voted", async () => {
     const res = await makeCaller(router.createCaller, db, {
-      user: { id: ownerId },
-    }).votesByUser({ userId: strangerId, roadmapId });
+      user: { id: strangerId },
+    }).votesByUser({ roadmapId });
     expect(res).toBeNull();
+  });
+
+  it("receives only the caller's own row when another userId is supplied", async () => {
+    const res = await makeCaller(router.createCaller, db, {
+      user: { id: u3Id },
+    }).votesByUser({ userId: ownerId, roadmapId } as never);
+    expect(res).toMatchObject({ userId: u3Id, weight: -1 });
   });
 });

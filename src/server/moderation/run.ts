@@ -1,5 +1,11 @@
+import * as Sentry from "@sentry/nextjs";
+
 import { ModerationVerdict } from "@/generated/prisma/enums";
-import { checkAndIncrement } from "@/server/assistant/ratelimit";
+import {
+  checkAndIncrement,
+  peekRateLimit,
+  releaseRateLimit,
+} from "@/server/assistant/ratelimit";
 import { getModel } from "@/server/assistant/providers";
 import {
   getChatConfigAsync,
@@ -57,11 +63,14 @@ const JUDGE_CEILING_KEY = "moderation:judge-hourly";
  *  1. count distinct reporters since the last clearance (a report written
  *     while a judgement is in flight predates the CLEARED row and is not
  *     counted next round — accepted, costs at most one extra reporter);
- *  2. take the claim (limit 1 per item + clearance count + claim window), so
+ *  2. peek the hourly ceiling before the claim, so an exhausted ceiling
+ *     never locks an item; only claim winners spend the ceiling;
+ *  3. take the claim (limit 1 per item + clearance count + claim window), so
  *     concurrent crossings judge once; a fixed-window boundary can rarely
  *     admit two (one wasted judgement, accepted);
- *  3. only claim winners spend the hourly ceiling;
- *  4. judge the LIVE text — never client-supplied text.
+ *  4. spend the hourly ceiling; if it filled since the peek, release the
+ *     claim so the item is not locked without a judgement;
+ *  5. judge the LIVE text — never client-supplied text.
  */
 export async function runModeration(
   target: ModerationTarget,
@@ -87,10 +96,20 @@ export async function runModeration(
   });
   if (reporters < effectiveThreshold(cfg, clearances)) return "below_threshold";
 
+  const peek = await peekRateLimit(
+    JUDGE_CEILING_KEY,
+    cfg.moderationJudgementsPerHour,
+    60,
+  );
+  if (!peek.ok) return "ceiling_reached";
+
+  const claimKey = `moderation:claim:${surface}:${itemId}:${clearances}`;
+  const acquiredAt = Date.now();
   const claim = await checkAndIncrement(
-    `moderation:claim:${surface}:${itemId}:${clearances}`,
+    claimKey,
     1,
     cfg.moderationClaimWindowMinutes,
+    acquiredAt,
   );
   if (!claim.ok) return "claim_lost";
   const ceiling = await checkAndIncrement(
@@ -98,7 +117,16 @@ export async function runModeration(
     cfg.moderationJudgementsPerHour,
     60,
   );
-  if (!ceiling.ok) return "ceiling_reached";
+  if (!ceiling.ok) {
+    // The ceiling filled after the peek. Give the claim back so the item is
+    // not locked for the claim window with no judgement.
+    await releaseRateLimit(
+      claimKey,
+      cfg.moderationClaimWindowMinutes,
+      acquiredAt,
+    );
+    return "ceiling_reached";
+  }
 
   const text = await adapter.readText(db, itemId);
   if (text === null) return "item_gone";
@@ -153,14 +181,15 @@ export async function runModeration(
 }
 
 /** The production judge: the moderation-purpose model, configured timeout. */
-export function createModerationJudge(timeoutMs = 90_000): Judge {
+export function createModerationJudge(timeoutMs: number): Judge {
   return async (input) => {
     let model: Awaited<ReturnType<typeof getModel>>;
     try {
-      model = await getModel("moderation");
-    } catch {
+      model = await getModel();
+    } catch (error) {
       // Missing key or invalid model config: nothing is removed; the ERROR
-      // row is the signal for a human.
+      // row is the signal for a human, and Sentry gets the cause.
+      Sentry.captureException(error, { tags: { area: "moderation.model" } });
       return {
         kind: "error",
         reason: "model_unavailable",

@@ -19,7 +19,7 @@ export type JudgeModel = Exclude<LanguageModel, string>;
 /** `surfaceLabel` must be a fixed constant chosen by the caller, never user input. */
 export type JudgeInput = { surfaceLabel: string; text: string };
 
-export type JudgeErrorReason =
+type JudgeErrorReason =
   | "timeout"
   | "provider_error"
   | "refusal"

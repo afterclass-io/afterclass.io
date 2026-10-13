@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 
+import { findOwnedTimetableOr404 } from "@/server/api/ownership";
 import { protectedProcedure } from "@/server/api/trpc";
 
 export const rename = protectedProcedure
@@ -11,13 +11,11 @@ export const rename = protectedProcedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const existing = await ctx.db.userTimetable.findUnique({
-      where: { id: input.timetableId, userId: ctx.session.user.id },
-    });
-
-    if (!existing) {
-      throw new TRPCError({ code: "NOT_FOUND" });
-    }
+    await findOwnedTimetableOr404(
+      ctx.db,
+      input.timetableId,
+      ctx.session.user.id,
+    );
 
     return ctx.db.userTimetable.update({
       where: { id: input.timetableId },

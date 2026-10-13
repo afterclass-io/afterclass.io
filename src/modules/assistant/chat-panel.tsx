@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  Suspense,
-} from "react";
+import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { ChevronDownIcon } from "lucide-react";
@@ -15,14 +8,17 @@ import { Composer } from "./composer";
 import { ConsentNotice } from "./consent-notice";
 import { TypingIndicator } from "./typing-indicator";
 import { MessageList } from "./message-list";
-import { AssistantErrorMessage, shouldShowChatError } from "./error-message";
+import { AssistantErrorMessage } from "./error-message";
 import { WelcomeSuggestions, FollowUpSuggestions } from "./suggestions";
 import { parseGateError, type ChatGate } from "./gate";
 import { QuotaAlertBar } from "./quota-alert-bar";
 import { usePersistSession } from "./use-persist-session";
 import { useChatScroll } from "./use-chat-scroll";
-import { useChatStore } from "./chat-store";
-import { usePageContext, type PageContext } from "./use-page-context";
+import { useChatControls } from "./use-chat-controls";
+import { useSetAtom } from "jotai";
+import { hydrateAtom } from "./chat-store";
+import type { PageContext } from "@/common/types/assistant";
+import { usePageContext } from "./use-page-context";
 
 export type ChatPanelProps = {
   quota: number;
@@ -102,27 +98,15 @@ function ChatPanelInner({
     [],
   );
 
-  const hydrate = useChatStore((s) => s.hydrate);
+  const hydrate = useSetAtom(hydrateAtom);
 
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
 
-  // Optimistic quota: decrement instantly on send, reconcile with the server
-  // DB count when the turn completes. Seeded from the parent prop and keyed
-  // by the parent's remaining value: when the parent pushes a fresh server
-  // count (e.g. a remount with new props), the state re-seeds; local sends
-  // in between only touch the seeded copy. (A sync effect calling setState
-  // directly trips react-hooks/set-state-in-effect, hence the key pattern.)
+  // Re-seed key for the optimistic quota (see the reseed block after
+  // useChatControls): the parent's remaining value is the key.
   const [optimisticSeed, setOptimisticSeed] = useState(remaining);
-  const [optimisticRemaining, setOptimisticRemaining] = useState(remaining);
-  if (optimisticSeed !== remaining) {
-    setOptimisticSeed(remaining);
-    setOptimisticRemaining(remaining);
-  }
-  // Skip the mount "ready": only sync after a send transitions through a
-  // non-ready chat status (submitted/streaming) back to ready.
-  const seenRunningRef = useRef(false);
 
   const chat = useChat({
     transport,
@@ -137,55 +121,32 @@ function ChatPanelInner({
     },
   });
 
-  // Wrap sendMessage: decrement instantly so quota feedback never waits on
-  // the stream; refund when the send itself rejects (e.g. immediate 403).
   // Stick-to-bottom: a fresh user message pins the thread back to the
   // latest turn so the outgoing message + incoming stream stay in view.
   const { containerRef, isAtBottom, scrollToBottom, handleScroll } =
     useChatScroll({ dependencies: [chat.messages, chat.status] });
 
-  const handleSendMessage = useCallback(
-    async (params: Parameters<typeof chat.sendMessage>[0]) => {
-      scrollToBottom("smooth");
-      setOptimisticRemaining((prev) => Math.max(0, prev - 1));
-      try {
-        return await chat.sendMessage(params);
-      } catch (e) {
-        setOptimisticRemaining((prev) => prev + 1);
-        throw e;
-      }
-    },
-    [chat, scrollToBottom],
-  );
+  const {
+    optimisticRemaining,
+    setOptimisticRemaining,
+    handleSendMessage,
+    retry,
+    isRunning,
+    showError,
+  } = useChatControls({
+    chat,
+    initialRemaining: remaining,
+    scrollToBottom,
+  });
 
-  // Background sync: when a turn completes (running → ready), refetch the
-  // authoritative DB count. The mount "ready" is skipped via seenRunningRef
-  // so the initial render never fires a status request.
-  useEffect(() => {
-    if (chat.status === "streaming" || chat.status === "submitted") {
-      seenRunningRef.current = true;
-      return;
-    }
-    if (
-      (chat.status !== "ready" && chat.status !== "error") ||
-      !seenRunningRef.current
-    )
-      return;
-    seenRunningRef.current = false;
-    let cancelled = false;
-    void fetch("/api/assistant/status")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((fresh: { remaining?: unknown } | null) => {
-        if (cancelled || fresh == null || typeof fresh !== "object") return;
-        if (typeof fresh.remaining === "number") {
-          setOptimisticRemaining(fresh.remaining);
-        }
-      })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, [chat.status]);
+  // Re-seed when the parent pushes a fresh server count (e.g. a remount with
+  // new props); local sends in between only touch the seeded copy. (A sync
+  // effect calling setState directly trips react-hooks/set-state-in-effect,
+  // hence the key pattern.)
+  if (optimisticSeed !== remaining) {
+    setOptimisticSeed(remaining);
+    setOptimisticRemaining(remaining);
+  }
 
   // The widget has no resume UI and its useChat starts empty on every fresh
   // mount. It keeps ONE session open for the life of this mount (created on the
@@ -200,27 +161,6 @@ function ChatPanelInner({
   });
 
   const hasMessages = Array.isArray(chat.messages) && chat.messages.length > 0;
-
-  // chat.error is a single global state that only reflects the LAST request;
-  // a new send clears it, so the bubble naturally maps to the current failed
-  // turn. Gate errors (quota/consent) are routed to onGate instead - never show
-  // both the gate surface and the error bubble.
-  const showError = shouldShowChatError(chat.error);
-
-  const retry = useCallback(() => {
-    if (!Array.isArray(chat.messages)) return;
-    const lastUser = [...chat.messages]
-      .reverse()
-      .find((m) => m.role === "user");
-    if (!lastUser) return;
-    const text = (Array.isArray(lastUser.parts) ? lastUser.parts : [])
-      .filter((p) => p.type === "text")
-      .map((p) => ("text" in p ? p.text : ""))
-      .join("");
-    if (!text) return;
-    // Re-send the failed message in place (messageId replaces it) - no duplicate.
-    void chat.sendMessage({ text, messageId: lastUser.id });
-  }, [chat]);
 
   return (
     <div className="flex h-full flex-col">
@@ -247,12 +187,7 @@ function ChatPanelInner({
             )}
           </div>
         ) : (
-          <MessageList
-            messages={chat.messages}
-            isStreaming={
-              chat.status === "streaming" || chat.status === "submitted"
-            }
-          />
+          <MessageList messages={chat.messages} isStreaming={isRunning} />
         )}
         {showError && (
           <AssistantErrorMessage error={chat.error} onRetry={retry} />
@@ -275,9 +210,7 @@ function ChatPanelInner({
           <FollowUpSuggestions
             onPick={(prompt) => void handleSendMessage({ text: prompt })}
             messages={chat.messages}
-            isRunning={
-              chat.status === "streaming" || chat.status === "submitted"
-            }
+            isRunning={isRunning}
             lastTurnFailed={showError}
           />
           <QuotaAlertBar

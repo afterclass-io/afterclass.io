@@ -21,6 +21,8 @@ export type RoadmapTermCellProps = {
   onCourseClick?: (entry: Entry) => void;
   /** Called when a chip's remove (×) affordance is clicked (edit mode only). */
   onRemove?: (entry: Entry) => void;
+  /** Compact cells sit in the stacked T3 column. */
+  compact?: boolean;
   className?: string;
 };
 
@@ -47,6 +49,7 @@ export function RoadmapTermCell({
   readOnly = false,
   onCourseClick,
   onRemove,
+  compact = false,
   className,
 }: RoadmapTermCellProps) {
   const droppableId = `${yearNumber}-${term}`;
@@ -62,13 +65,16 @@ export function RoadmapTermCell({
     return `${e.courseId}::${e.yearNumber}::${e.term}`;
   }
 
-  const sortableItems = entries.map((e) => sortableIds?.get(entryKey(e)) ?? e.courseId);
+  const sortableItems = entries.map(
+    (e) => sortableIds?.get(entryKey(e)) ?? e.courseId,
+  );
 
   return (
     <div
       ref={setNodeRef}
       className={cn(
-        "flex min-h-[120px] flex-col gap-1 rounded-lg border-2 border-dashed p-2 transition-colors",
+        "flex flex-col gap-1 rounded-lg border-2 border-dashed transition-colors",
+        compact ? "min-h-8 px-2 py-1" : "min-h-18 p-2",
         isOver && !readOnly
           ? "border-primary/50 bg-primary/5"
           : "border-muted-foreground/20",
@@ -80,16 +86,25 @@ export function RoadmapTermCell({
       aria-label={`Year ${yearNumber} ${TERM_LABELS[term] ?? term}`}
     >
       {/* Term header */}
-      <div className="flex items-center justify-between">
-        <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-          {term}
-        </span>
-        {entries.length > 0 && (
-          <span className="text-muted-foreground text-[10px] tabular-nums">
-            {entries.length} course{entries.length !== 1 ? "s" : ""}
-          </span>
-        )}
-      </div>
+      {(compact || entries.length > 0) && (
+        <div
+          className={cn(
+            "flex items-center",
+            compact ? "justify-between" : "justify-end",
+          )}
+        >
+          {compact && (
+            <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+              {term}
+            </span>
+          )}
+          {entries.length > 0 && (
+            <span className="text-muted-foreground text-2xs tabular-nums">
+              {entries.length} course{entries.length !== 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Entry chips — isolated per term so cross-term hover doesn't trigger
           sortable reorder animations (dnd-kit only reorders within the same
@@ -106,16 +121,18 @@ export function RoadmapTermCell({
               draggable={!readOnly}
               sortableId={sortableIds?.get(entryKey(entry))}
               onClick={onCourseClick ? () => onCourseClick(entry) : undefined}
-              onRemove={onRemove && !readOnly ? () => onRemove(entry) : undefined}
+              onRemove={
+                onRemove && !readOnly ? () => onRemove(entry) : undefined
+              }
             />
           ))}
         </div>
       </SortableContext>
 
       {/* Empty state */}
-      {entries.length === 0 && (
+      {!compact && entries.length === 0 && (
         <div className="flex flex-1 items-center justify-center">
-          <span className="text-muted-foreground/50 text-xs italic">
+          <span className="text-muted-foreground text-xs italic">
             {isOver ? "Drop here" : "Drag courses here"}
           </span>
         </div>

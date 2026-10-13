@@ -22,7 +22,7 @@ export const getAll = publicProcedure
       endsBefore: z.string().optional(), // "14:30"
       // -------------------
 
-      limit: z.number().default(100),
+      limit: z.number().int().min(1).default(100),
     }),
   )
   .query(async ({ ctx, input }) => {
@@ -36,11 +36,9 @@ export const getAll = publicProcedure
 
     const sessionFilters = [];
 
-
     if (input.day) {
-
       sessionFilters.push({
-        dayOfWeek: input.day, 
+        dayOfWeek: input.day,
       });
     }
 
@@ -61,7 +59,8 @@ export const getAll = publicProcedure
     }
 
     // Combine all session filters into a single AND condition forthe 'some' clause
-    const sessionsWhereClause = sessionFilters.length > 0 ? { AND: sessionFilters } : undefined;
+    const sessionsWhereClause =
+      sessionFilters.length > 0 ? { AND: sessionFilters } : undefined;
 
     const classes = await ctx.db.classes.findMany({
       select: PUBLIC_CLASS_FIELDS,
@@ -69,9 +68,10 @@ export const getAll = publicProcedure
         id: input.id,
         courseId: input.courseId,
         section: input.section,
-        acadTermId: input.id || input.allowAnyTerm
-          ? input.acadTermId // lookup by primary key or any-term: don't force term default
-          : (input.acadTermId ?? defaultAcadTermId),
+        acadTermId:
+          input.id || input.allowAnyTerm
+            ? input.acadTermId // lookup by primary key or any-term: don't force term default
+            : (input.acadTermId ?? defaultAcadTermId),
         professorId: input.professorId,
         professor: {
           slug: input.profSlug,
@@ -80,10 +80,11 @@ export const getAll = publicProcedure
           code: input.courseCode,
         },
         // --- ensure at least one ClassTiming satisfies the filters ---
-        classTimings: sessionsWhereClause ? {
-          some: sessionsWhereClause,
-        } : undefined,
-
+        classTimings: sessionsWhereClause
+          ? {
+              some: sessionsWhereClause,
+            }
+          : undefined,
       },
       orderBy: input.allowAnyTerm
         ? [{ acadTerm: { startDt: "desc" } }, { section: "asc" }]
@@ -95,7 +96,7 @@ export const getAll = publicProcedure
               section: "asc",
             },
           ],
-      take: input.limit > 100 ? 100 : input.limit,
+      take: Math.min(input.limit, 100),
     });
     return classes;
   });

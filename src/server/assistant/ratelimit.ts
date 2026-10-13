@@ -1,17 +1,18 @@
-import { db, txDb } from "@/server/db";
+import { db } from "@/server/db";
 
 /**
  * Fixed-window per-key counter with atomic check+increment.
  *
  * Window semantics: FIXED windows (`windowStart` = floor(now / windowMs) *
- * windowMs, one `RateLimitWindow` row per `<key>:<windowStart>`). A caller can
+ * windowMs, one `rate_limit` row per `<key>:<windowStart>`). A caller can
  * burst up to 2× the limit at a window boundary (last second of window N +
  * first second of window N+1). This is DOCUMENTED and accepted: the buckets
  * guard cost/nuisance (chat turns, tool writes, ical spray), not hard
- * real-time fairness — the atomic conditional `updateMany WHERE count < limit`
- * still makes every window's cap exact under concurrency (no lost-update
- * overshoot within a window). A sliding-window upgrade would cost a
- * read-modify-write per call; revisit only if boundary bursts show up in
+ * real-time fairness — a single atomic SQL statement
+ * (`INSERT ... ON CONFLICT DO UPDATE ... WHERE r."count" < limit RETURNING r."count"`)
+ * on the pooled client makes every window's cap exact under concurrency
+ * (no lost-update overshoot within a window). A sliding-window upgrade would
+ * cost a read-modify-write per call; revisit only if boundary bursts show up in
  * abuse review.
  *
  * Row lifecycle: windows rotate every minute, so stale rows accumulate one
@@ -22,41 +23,87 @@ import { db, txDb } from "@/server/db";
  * any scheduler that can import this module. Until wired, rows are harmless
  * (tiny, keyed, indexed by PK) but unbounded.
  */
-export async function checkAndIncrement(
+function windowFor(
+  key: string,
+  windowMinutes: number,
+  atMs = Date.now(),
+): {
+  windowMs: number;
+  windowStart: number;
+  rowKey: string;
+} {
+  const windowMs = windowMinutes * 60_000;
+  const windowStart = Math.floor(atMs / windowMs) * windowMs;
+  const rowKey = `${key}:${windowStart}`;
+  return { windowMs, windowStart, rowKey };
+}
+
+function retryAfterSeconds(windowStart: number, windowMs: number): number {
+  return Math.max(1, Math.ceil((windowStart + windowMs - Date.now()) / 1000));
+}
+
+/** Read-only. Never creates or increments a row. */
+export async function peekRateLimit(
   key: string,
   limit: number,
   windowMinutes: number,
 ): Promise<{ ok: boolean; retryAfterSeconds: number }> {
-  const windowMs = windowMinutes * 60_000;
-  const windowStart = Math.floor(Date.now() / windowMs) * windowMs;
-  const rowKey = `${key}:${windowStart}`;
-
-  // Interactive transaction → direct (non-pooled) client: pooled 6543
-  // pgbouncer breaks interactive $transaction.
-  return txDb.$transaction(async (tx) => {
-    // Ensure a row exists for this window (idempotent no-op if present).
-    await tx.rateLimitWindow.upsert({
-      where: { key: rowKey },
-      create: { key: rowKey, windowStart: BigInt(windowStart), count: 0 },
-      update: {},
-    });
-    // Conditional increment - only when still under limit. The WHERE + increment
-    // is atomic; concurrent callers cannot both read `count < limit` and both
-    // increment (only one UPDATE matches, the other sees count 0 and is blocked).
-    const result = await tx.rateLimitWindow.updateMany({
-      where: { key: rowKey, count: { lt: limit } },
-      data: { count: { increment: 1 } },
-    });
-    if (result.count === 0) {
-      const retryAfterSeconds = Math.max(
-        1,
-        Math.ceil((windowStart + windowMs - Date.now()) / 1000),
-      );
-      return { ok: false, retryAfterSeconds };
-    }
-    return { ok: true, retryAfterSeconds: 0 };
+  const { windowMs, windowStart, rowKey } = windowFor(key, windowMinutes);
+  const row = await db.rateLimitWindow.findUnique({
+    where: { key: rowKey },
+    select: { count: true },
   });
+  const ok = (row?.count ?? 0) < limit;
+  return {
+    ok,
+    retryAfterSeconds: ok ? 0 : retryAfterSeconds(windowStart, windowMs),
+  };
 }
+
+export async function checkAndIncrement(
+  key: string,
+  limit: number,
+  windowMinutes: number,
+  atMs = Date.now(),
+): Promise<{ ok: boolean; retryAfterSeconds: number }> {
+  const { windowMs, windowStart, rowKey } = windowFor(key, windowMinutes, atMs);
+  const retryAfter = retryAfterSeconds(windowStart, windowMs);
+  // A limit below 1 admits nobody. This keeps the old contract and skips the DB.
+  if (limit < 1) return { ok: false, retryAfterSeconds: retryAfter };
+
+  const rows = await db.$queryRaw<{ count: number }[]>`
+    INSERT INTO "rate_limit" AS r ("key", "window_start", "count", "updated_at")
+    VALUES (${rowKey}::text, ${BigInt(windowStart)}::bigint, 1, (now() AT TIME ZONE 'UTC'))
+    ON CONFLICT ("key") DO UPDATE
+      SET "count" = r."count" + 1,
+          "updated_at" = (now() AT TIME ZONE 'UTC')
+      WHERE r."count" < ${limit}::int
+    RETURNING r."count"`;
+  return rows.length > 0
+    ? { ok: true, retryAfterSeconds: 0 }
+    : { ok: false, retryAfterSeconds: retryAfter };
+}
+
+/**
+ * Gives back one unit in the window acquired at `acquiredAt`.
+ * A caller uses it to undo a claim it cannot act on. It never drops the
+ * count below zero and it creates no row.
+ */
+export async function releaseRateLimit(
+  key: string,
+  windowMinutes: number,
+  acquiredAt: number,
+): Promise<void> {
+  const { rowKey } = windowFor(key, windowMinutes, acquiredAt);
+  await db.$executeRaw`
+    UPDATE "rate_limit"
+    SET "count" = GREATEST("count" - 1, 0),
+        "updated_at" = (now() AT TIME ZONE 'UTC')
+    WHERE "key" = ${rowKey}::text`;
+}
+
+const PRUNE_BATCH_SIZE = 1000;
+const PRUNE_TIME_BUDGET_MS = 8_000; // vercel.json caps src/app/api/** at 10 s
 
 /**
  * GC for `RateLimitWindow` rows. Deletes windows older than
@@ -71,13 +118,25 @@ export async function checkAndIncrement(
 export async function pruneRateLimits(
   retentionWindows = 1440,
   windowMinutes = 1,
+  batchSize = PRUNE_BATCH_SIZE,
 ): Promise<{ deleted: number }> {
   const windowMs = windowMinutes * 60_000;
   const cutoff = BigInt(
     Math.floor(Date.now() / windowMs) * windowMs - retentionWindows * windowMs,
   );
-  const res = await db.rateLimitWindow.deleteMany({
-    where: { windowStart: { lt: cutoff } },
-  });
-  return { deleted: res.count };
+  const deadline = Date.now() + PRUNE_TIME_BUDGET_MS;
+  let deleted = 0;
+  for (;;) {
+    const n = await db.$executeRaw`
+      DELETE FROM "rate_limit"
+      WHERE "key" IN (
+        SELECT "key" FROM "rate_limit"
+        WHERE "window_start" < ${cutoff}::bigint
+        ORDER BY "window_start"
+        LIMIT ${batchSize}::int
+        FOR UPDATE SKIP LOCKED
+      )`;
+    deleted += n;
+    if (n < batchSize || Date.now() >= deadline) return { deleted };
+  }
 }

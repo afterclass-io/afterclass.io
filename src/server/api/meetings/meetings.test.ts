@@ -269,8 +269,18 @@ describe("meetingsRouter", () => {
 
       expect(result.term?.id).toBe("AY202627T1");
       expect(result.classes).toEqual([
-        { courseId: COURSE_ID, code: "IS215", name: "Digital Business", section: "G1" },
-        { courseId: COURSE_ID, code: "IS215", name: "Digital Business", section: "G2" },
+        {
+          courseId: COURSE_ID,
+          code: "IS215",
+          name: "Digital Business",
+          section: "G1",
+        },
+        {
+          courseId: COURSE_ID,
+          code: "IS215",
+          name: "Digital Business",
+          section: "G2",
+        },
       ]);
       expect(findManyMock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -312,7 +322,12 @@ describe("meetingsRouter", () => {
       course: { id: "c-1", code: "IS216", name: "Web App Dev" },
       section: "G1",
       teamIdentifier: "Team 3",
-      acadTerm: { id: "t-1", acadYearStart: 2026, acadYearEnd: 2027, term: "1" },
+      acadTerm: {
+        id: "t-1",
+        acadYearStart: 2026,
+        acadYearEnd: 2027,
+        term: "1",
+      },
       participants: [
         {
           id: "part-uuid-1",
@@ -366,11 +381,20 @@ describe("meetingsRouter", () => {
 
       // Verify in-memory heatmap aggregation
       // Slot 0: p1 available, p2 ifNeeded -> available 1, ifNeeded 1
-      expect(result.heatmap[0]).toEqual({ availableCount: 1, ifNeededCount: 1 });
+      expect(result.heatmap[0]).toEqual({
+        availableCount: 1,
+        ifNeededCount: 1,
+      });
       // Slot 1: p1 available, p2 available, p3 ifNeeded -> available 2, ifNeeded 1
-      expect(result.heatmap[1]).toEqual({ availableCount: 2, ifNeededCount: 1 });
+      expect(result.heatmap[1]).toEqual({
+        availableCount: 2,
+        ifNeededCount: 1,
+      });
       // Slot 2: p1 available, p2 available, p3 available -> available 3, ifNeeded 0
-      expect(result.heatmap[2]).toEqual({ availableCount: 3, ifNeededCount: 0 });
+      expect(result.heatmap[2]).toEqual({
+        availableCount: 3,
+        ifNeededCount: 0,
+      });
     });
 
     it("STRICT PRIVACY INVARIANT: Verifies zero Users.id exposure in responses (neither creator nor peers)", async () => {
@@ -419,7 +443,9 @@ describe("meetingsRouter", () => {
 
       const result = await caller.getPollBySlug({ slug: "abcdefghij" });
 
-      expect(result.participants.every((p) => p.isCurrentUser === false)).toBe(true);
+      expect(result.participants.every((p) => p.isCurrentUser === false)).toBe(
+        true,
+      );
       expect(result.heatmap[2]?.availableCount).toBe(3);
     });
 
@@ -519,7 +545,9 @@ describe("meetingsRouter", () => {
         { user: { id: PARTICIPANT_USER_ID_1 } },
       );
 
-      await expect(caller.joinPoll({ slug: "abcdefghij" })).rejects.toMatchObject({
+      await expect(
+        caller.joinPoll({ slug: "abcdefghij" }),
+      ).rejects.toMatchObject({
         code: "FORBIDDEN",
       });
       expect(upsertMock).not.toHaveBeenCalled();
@@ -556,7 +584,9 @@ describe("meetingsRouter", () => {
         { user: { id: PARTICIPANT_USER_ID_1 } },
       );
 
-      await expect(caller.joinPoll({ slug: "abcdefghij" })).rejects.toMatchObject({
+      await expect(
+        caller.joinPoll({ slug: "abcdefghij" }),
+      ).rejects.toMatchObject({
         code: "NOT_FOUND",
       });
     });
@@ -571,7 +601,10 @@ describe("meetingsRouter", () => {
       const caller = makeCaller(
         meetingsRouter.createCaller,
         {
-          meetingPoll: { findUnique: pollOwnedBy(CREATOR_ID), update: updateMock },
+          meetingPoll: {
+            findUnique: pollOwnedBy(CREATOR_ID),
+            update: updateMock,
+          },
         },
         { user: { id: CREATOR_ID } },
       );
@@ -598,7 +631,10 @@ describe("meetingsRouter", () => {
       const caller = makeCaller(
         meetingsRouter.createCaller,
         {
-          meetingPoll: { findUnique: pollOwnedBy(CREATOR_ID), update: updateMock },
+          meetingPoll: {
+            findUnique: pollOwnedBy(CREATOR_ID),
+            update: updateMock,
+          },
         },
         { user: { id: PARTICIPANT_USER_ID_1 } },
       );
@@ -617,7 +653,10 @@ describe("meetingsRouter", () => {
       );
 
       await expect(
-        caller.updatePoll({ slug: "abcdefghij", links: ["javascript:alert(1)"] }),
+        caller.updatePoll({
+          slug: "abcdefghij",
+          links: ["javascript:alert(1)"],
+        }),
       ).rejects.toThrow();
     });
   });
@@ -737,7 +776,12 @@ describe("meetingsRouter", () => {
           course: { id: "c-1", code: "IS216", name: "Web App Dev" },
           section: "G2",
           teamIdentifier: "Team Bravo",
-          acadTerm: { id: "t-1", acadYearStart: 2026, acadYearEnd: 2027, term: "1" },
+          acadTerm: {
+            id: "t-1",
+            acadYearStart: 2026,
+            acadYearEnd: 2027,
+            term: "1",
+          },
           createdAt: new Date("2026-09-28"),
           updatedAt: new Date("2026-09-28"),
           _count: { participants: 2 },
@@ -858,6 +902,121 @@ describe("meetingsRouter", () => {
       await expect(caller.listMyMeetings()).rejects.toMatchObject({
         code: "UNAUTHORIZED",
       });
+    });
+  });
+
+  describe("profanity masking", () => {
+    const pollRow = {
+      id: "poll-uuid-1",
+      slug: "abcdefghij",
+      title: "Shit sprint",
+      description: "fuck this",
+      agenda: "Avoid the bastard",
+      links: [],
+      creatorId: CREATOR_ID,
+      startDate: new Date("2026-10-10T00:00:00.000Z"),
+      endDate: new Date("2026-10-15T00:00:00.000Z"),
+      startHour: 9,
+      endHour: 18,
+      slotDurationMinutes: 15,
+      course: null,
+      section: null,
+      teamIdentifier: null,
+      acadTerm: null,
+      participants: [
+        {
+          id: "part-1",
+          userId: PARTICIPANT_USER_ID_1,
+          user: { firstName: "Bastard", lastName: "Smith" },
+          availableSlots: [1],
+          ifNeededSlots: [],
+        },
+        {
+          id: "part-2",
+          userId: PARTICIPANT_USER_ID_2,
+          user: { firstName: "Shit", lastName: "Mine" },
+          availableSlots: [2],
+          ifNeededSlots: [],
+        },
+      ],
+    };
+
+    it("getPollBySlug masks title, description, agenda and other participants for a non-creator", async () => {
+      const caller = makeCaller(
+        meetingsRouter.createCaller,
+        { meetingPoll: { findUnique: vi.fn().mockResolvedValue(pollRow) } },
+        { user: { id: PARTICIPANT_USER_ID_2 } },
+      );
+
+      const result = await caller.getPollBySlug({ slug: "abcdefghij" });
+      const serialized = JSON.stringify(result);
+
+      expect(result.poll.title).toBe("**** sprint");
+      expect(result.poll.description).toBe("**** this");
+      expect(result.poll.agenda).toBe("Avoid the *******");
+      expect(result.participants[0]?.name).toBe("******* Smith");
+      // The caller own name stays raw so the page shows what they typed.
+      expect(result.participants[1]?.name).toBe("Shit Mine");
+      expect(serialized).not.toContain("Bastard");
+      expect(serialized).not.toContain("bastard");
+    });
+
+    it("getPollBySlug keeps the creator raw text so editing never saves asterisks", async () => {
+      const caller = makeCaller(
+        meetingsRouter.createCaller,
+        { meetingPoll: { findUnique: vi.fn().mockResolvedValue(pollRow) } },
+        { user: { id: CREATOR_ID } },
+      );
+
+      const result = await caller.getPollBySlug({ slug: "abcdefghij" });
+
+      expect(result.poll.title).toBe("Shit sprint");
+      expect(result.poll.description).toBe("fuck this");
+      expect(result.poll.agenda).toBe("Avoid the bastard");
+    });
+
+    it("listMyMeetings masks polls created by others and keeps the caller own polls raw", async () => {
+      const row = (over: Record<string, unknown>) => ({
+        id: "p",
+        slug: "pollslug01",
+        title: "Shit sprint",
+        description: "fuck this",
+        startDate: new Date("2026-10-10"),
+        endDate: new Date("2026-10-15"),
+        startHour: 9,
+        endHour: 18,
+        slotDurationMinutes: 15,
+        creatorId: CREATOR_ID,
+        course: null,
+        section: null,
+        teamIdentifier: null,
+        acadTerm: null,
+        createdAt: new Date("2026-10-01"),
+        updatedAt: new Date("2026-10-01"),
+        _count: { participants: 1 },
+        participants: [],
+        ...over,
+      });
+      const caller = makeCaller(
+        meetingsRouter.createCaller,
+        {
+          meetingPoll: {
+            findMany: vi
+              .fn()
+              .mockResolvedValue([
+                row({}),
+                row({ creatorId: PARTICIPANT_USER_ID_1 }),
+              ]),
+          },
+        },
+        { user: { id: CREATOR_ID } },
+      );
+
+      const result = await caller.listMyMeetings();
+
+      expect(result[0]?.title).toBe("Shit sprint");
+      expect(result[1]?.title).toBe("**** sprint");
+      expect(result[1]?.description).toBe("**** this");
     });
   });
 });

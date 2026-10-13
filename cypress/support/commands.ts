@@ -1,4 +1,6 @@
 /// <reference types="cypress" />
+import type { HttpRequestInterceptor } from "cypress/types/net-stubbing";
+
 // ***********************************************
 // This example commands.ts shows you how to
 // create various custom commands and overwrite
@@ -28,8 +30,13 @@ Cypress.Commands.add(
       .click();
     // Wait for successful login: the URL must not be the login page anymore
     cy.url({ timeout: 15000 }).should("not.include", "/account/auth/login");
-    // Give NextAuth a moment to finalize the session cookie
-    cy.wait(800);
+    // NextAuth finalizes the session cookie after the redirect; wait for it
+    cy.getCookies().should((cookies) => {
+      expect(
+        cookies.some((cookie) => cookie.name.endsWith("session-token")),
+        "session cookie is set",
+      ).to.eq(true);
+    });
   },
 );
 
@@ -103,6 +110,73 @@ Cypress.Commands.add(
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 //
 
+/**
+ * Clicks a section action (add or swap) and waits for its outcome: a finished
+ * slot mutation, or the client-side "Time conflict" toast. On a conflict it
+ * clicks the fallback section and waits for that mutation to finish.
+ * Pass the indexes of the primary and fallback section actions.
+ */
+Cypress.Commands.add(
+  "pickSectionWithFallback",
+  ({ primary, fallback }: { primary: number; fallback: number }) => {
+    let finishedMutations = 0;
+    const countFinished: HttpRequestInterceptor = (req) => {
+      req.on("response", () => {
+        finishedMutations += 1;
+      });
+    };
+    cy.intercept("POST", "**/api/trpc/*timetable.addSlot*", countFinished);
+    cy.intercept(
+      "POST",
+      "**/api/trpc/*timetable.setSlotSection*",
+      countFinished,
+    );
+
+    cy.get("[data-test^=timetable-section-action-]").eq(primary).click();
+    cy.get("body").should(($body) => {
+      expect(
+        finishedMutations > 0 || $body.text().includes("Time conflict"),
+        "slot mutation finished or time conflict shown",
+      ).to.eq(true);
+    });
+    cy.get("body").then(($body) => {
+      if (finishedMutations === 0 && $body.text().includes("Time conflict")) {
+        cy.get("[data-test^=timetable-section-action-]")
+          .eq(fallback)
+          .click({ force: true });
+        cy.get("body").should(() => {
+          expect(finishedMutations, "fallback slot mutation finished").to.be.gt(
+            0,
+          );
+        });
+      }
+    });
+  },
+);
+
+/**
+ * Waits until React has hydrated every `[data-test]` element on the page.
+ * The server renders review lists, buttons and links into the HTML, so
+ * Cypress can click them before their handlers exist, and the click does
+ * nothing. React tags each DOM node it manages with a `__reactFiber$` key
+ * when it hydrates the node, so a node without the key has no handlers yet.
+ * Call it after `cy.visit()` or any login that lands on a page you then use.
+ */
+Cypress.Commands.add("waitForHydration", () => {
+  cy.get("[data-test]", { timeout: 20000 }).should(($elements) => {
+    const unhydrated = $elements
+      .toArray()
+      .filter(
+        (element) =>
+          !Object.keys(element).some((key) => key.startsWith("__reactFiber$")),
+      )
+      .map((element) => element.getAttribute("data-test"));
+    expect(unhydrated, "data-test elements React has not hydrated").to.deep.eq(
+      [],
+    );
+  });
+});
+
 Cypress.Commands.add("checkOgImage", () => {
   // Assert against the raw response, not the hydrated DOM: with per-route
   // generateMetadata the image tag is streamed and moved into <head> after
@@ -145,7 +219,12 @@ declare global {
         body: string;
         tips: string;
       }): Chainable<void>;
+      pickSectionWithFallback(sections: {
+        primary: number;
+        fallback: number;
+      }): Chainable<void>;
       checkOgImage(): Chainable<void>;
+      waitForHydration(): Chainable<void>;
     }
   }
 }

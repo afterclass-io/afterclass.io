@@ -19,7 +19,7 @@ export const SearchCmdkOnboardingTooltip = ({
       <TooltipTrigger asChild>{children}</TooltipTrigger>
       <TooltipContent side="right" sideOffset={36}>
         <div className="p-1 px-5 text-sm">
-          <div className="text-secondary-default">
+          <div>
             Looking for a
             <br />
             Professor or Course?

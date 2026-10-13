@@ -82,6 +82,46 @@ const config = [
       "@typescript-eslint/no-unsafe-assignment": "off",
     },
   },
+  {
+    files: ["src/**/*.{ts,tsx}", "views/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "CallExpression[callee.property.name='toLocaleDateString']",
+          message: "Use formatDateSGT from @/common/functions/format-date-sgt.",
+        },
+        {
+          selector: "CallExpression[callee.property.name='toLocaleTimeString']",
+          message: "Use formatTimeSGT from @/common/functions/format-date-sgt.",
+        },
+        {
+          selector:
+            "NewExpression[callee.object.name='Intl'][callee.property.name='DateTimeFormat']",
+          message:
+            "Use the shared SGT helpers in @/common/functions/format-date-sgt.",
+        },
+        {
+          selector: "Literal[value=/text-\\[\\d+px\\]/]",
+          message:
+            "Use a type-scale class (text-xs, or text-2xs for dense cells) instead of an arbitrary pixel size.",
+        },
+        {
+          selector: "TemplateElement[value.raw=/text-\\[\\d+px\\]/]",
+          message:
+            "Use a type-scale class (text-xs, or text-2xs for dense cells) instead of an arbitrary pixel size.",
+        },
+      ],
+    },
+  },
+  {
+    files: [
+      "src/common/functions/format-date-sgt.ts",
+      "**/*.test.{ts,tsx}",
+      "**/*.stories.{ts,tsx}",
+    ],
+    rules: { "no-restricted-syntax": "off" },
+  },
 ];
 
 export default config;

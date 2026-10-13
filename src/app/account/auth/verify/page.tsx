@@ -41,7 +41,7 @@ export default async function Verify(props: {
           <br className="hidden md:block" />
           20 minutes.
         </p>
-        <hr className="border-border-default my-1 md:my-3" />
+        <hr className="border-border my-1 md:my-3" />
         <p>
           If you are not receiving AfterClass emails, try these troubleshooting
           steps:
@@ -57,7 +57,7 @@ export default async function Verify(props: {
               {env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.map((domain, i) => (
                 <Fragment key={i}>
                   {i > 0 && <span className="mr-1">,</span>}
-                  <span className="before:bg-border-primary/15 relative inline-block before:absolute before:-inset-[2px] before:my-[5px]">
+                  <span className="before:bg-primary/15 relative inline-block before:absolute before:-inset-[2px] before:my-[5px]">
                     <pre className="text-secondary-foreground inline">
                       {domain}
                     </pre>

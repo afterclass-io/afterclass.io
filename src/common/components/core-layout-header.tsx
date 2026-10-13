@@ -2,7 +2,6 @@
 import { useSession } from "next-auth/react";
 
 import { SidebarTrigger } from "@/common/components/sidebar";
-import { Separator } from "@/common/components/separator";
 import { ThemeToggle } from "@/common/components/theme-toggle";
 import { AfterclassIcon, SearchIcon } from "@/common/components/icons";
 
@@ -17,12 +16,8 @@ import { UserProfile } from "@/common/components/user-profile";
 export const CoreLayoutHeader = () => {
   const { data: session } = useSession();
   return (
-    <header className="border-border-default bg-background sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b px-4">
+    <header className="border-border bg-background sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b px-4">
       <SidebarTrigger className="-ml-1" />
-      <Separator
-        orientation="vertical"
-        className="bg-border-elevated mr-2 hidden h-4 md:block"
-      />
       <div className="flex w-full items-center justify-between">
         <HomeBreadcrumb className="hidden md:block" />
         <ProgressLink
@@ -41,7 +36,7 @@ export const CoreLayoutHeader = () => {
               <div className="block md:hidden">
                 <SearchCmdk asChild>
                   <Button variant="outline" size="icon" aria-label="Search">
-                    <SearchIcon className="text-text-on-tertiary" />
+                    <SearchIcon className="text-muted-foreground" />
                   </Button>
                 </SearchCmdk>
               </div>

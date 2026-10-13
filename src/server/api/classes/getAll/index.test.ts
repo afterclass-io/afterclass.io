@@ -150,4 +150,37 @@ describe("classes.getAll — limit clamp", () => {
 
     expect(lastArg(db).take).toBe(25);
   });
+
+  it.each([-10, 0, 1.5])(
+    "rejects invalid limit %s with BAD_REQUEST",
+    async (limit) => {
+      const db = makeDb();
+      await expect(
+        makeCaller(router.createCaller, db, null).getAll({
+          acadTermId: "T",
+          limit,
+        }),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    },
+  );
+
+  it("passes a limit of 100", async () => {
+    const db = makeDb();
+    await makeCaller(router.createCaller, db, null).getAll({
+      acadTermId: "T",
+      limit: 100,
+    });
+
+    expect(lastArg(db).take).toBe(100);
+  });
+
+  it("passes a limit of 1", async () => {
+    const db = makeDb();
+    await makeCaller(router.createCaller, db, null).getAll({
+      acadTermId: "T",
+      limit: 1,
+    });
+
+    expect(lastArg(db).take).toBe(1);
+  });
 });

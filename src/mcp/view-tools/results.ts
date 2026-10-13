@@ -1,10 +1,10 @@
 import type { ToolResult } from "@/server/mcp/types";
 import type { ZodType } from "zod";
-import { errorResult, textResult } from "../envelopes";
+import { errorResult } from "../envelopes";
 import { dispatchToolCall, isDispatchCatalogError } from "../dispatch";
-import { getChatConfig } from "@/server/ecfg/chat";
+import { getChatConfigAsync } from "@/server/config/chat-config";
 
-export { errorResult, textResult };
+export { errorResult };
 
 /** MCP kill-switch refusal text (shared with register.ts viewless gate). */
 export const MCP_DISABLED_TEXT = "MCP access is currently disabled.";
@@ -17,17 +17,17 @@ export const MCP_DISABLED_TEXT = "MCP access is currently disabled.";
  * directly and must keep running with the flag off.
  */
 export async function checkMcpEnabled(): Promise<string | null> {
-  const cfg = await getChatConfig();
+  const cfg = await getChatConfigAsync();
   return cfg.mcpEnabled === false ? MCP_DISABLED_TEXT : null;
 }
 
-export type UnwrapOk = {
+type UnwrapOk = {
   ok: true;
   data: unknown;
   text: string;
   viewProps?: Record<string, unknown>;
 };
-export type UnwrapErr = { ok: false; error: string; text: string };
+type UnwrapErr = { ok: false; error: string; text: string };
 
 /**
  * Unwrap catalog run result into a data payload.
@@ -37,7 +37,7 @@ export type UnwrapErr = { ok: false; error: string; text: string };
  *   - "{}" for object-shaped tools (roadmap, reviews, bid-plan, explore)
  *   - "" for array-shaped / recommend tools where missing should be Invalid JSON
  */
-export function unwrapResultData(
+function unwrapResultData(
   result: ToolResult,
   tool?: { toViewProps?: (result: ToolResult) => unknown },
   fallbackJson = "{}",
@@ -45,8 +45,7 @@ export function unwrapResultData(
   const text = result.content[0]?.text ?? "";
   const viewProps = result.viewProps;
   let data: unknown =
-    (tool?.toViewProps ? tool.toViewProps(result) : undefined) ??
-    viewProps;
+    (tool?.toViewProps ? tool.toViewProps(result) : undefined) ?? viewProps;
   if (data !== undefined) {
     return { ok: true, data, text, viewProps };
   }
@@ -65,7 +64,7 @@ export function unwrapResultData(
  * applied) on success, so unknown-tolerant gates (e.g. roadmapOutput owner)
  * emit their coerced values downstream. Logs the field path on failure.
  */
-export function parseWithSchema(
+function parseWithSchema(
   schema: ZodType,
   data: unknown,
 ): { ok: true; data: unknown } | { ok: false; error: string } {
@@ -104,7 +103,7 @@ export function guardedParse(
   return r.ok ? { ok: true } : { ok: false, error: r.error };
 }
 
-export function isRawPayload(data: unknown): boolean {
+function isRawPayload(data: unknown): boolean {
   return (
     !!data &&
     typeof data === "object" &&
@@ -168,7 +167,7 @@ export async function runViewTool(
   return finishViewTool(opts, out.content, out.structuredContent);
 }
 
-export function isCatalogError(
+function isCatalogError(
   v: unknown,
 ): v is { __catalogError: true; text: string } {
   return isDispatchCatalogError(v);
@@ -179,7 +178,7 @@ export function isCatalogError(
  * structuredContent }. Pure over the dispatch result so bespoke adapters
  * (search-courses) can reuse the tail without changing envelopes.
  */
-export function finishViewTool(
+function finishViewTool(
   opts: Pick<
     RunViewToolOptions,
     "tool" | "schema" | "fallbackJson" | "rawPayloadMessage" | "summarize"

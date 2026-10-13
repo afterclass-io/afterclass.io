@@ -9,6 +9,9 @@ import {
   within,
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { atom, createStore, Provider } from "jotai";
+import type { ReactNode } from "react";
+import type * as ChatStore from "./chat-store";
 
 configure({ testIdAttribute: "data-test" });
 
@@ -18,7 +21,29 @@ vi.mock("./idb", () => ({
   idbDelete: vi.fn(async () => undefined),
 }));
 
-import { useChatStore, type StoredSession } from "./chat-store";
+type ChatStoreModule = typeof ChatStore;
+
+const { renameMock, deleteMock } = vi.hoisted(() => ({
+  renameMock: vi.fn<(id: string, title: string) => Promise<void>>(),
+  deleteMock: vi.fn<(id: string) => Promise<void>>(),
+}));
+
+// The rename/delete actions are replaced with spies so the tests assert the
+// calls the list makes; the state atoms stay real.
+vi.mock("./chat-store", async (importOriginal) => ({
+  ...(await importOriginal<ChatStoreModule>()),
+  renameSessionAtom: atom(null, (_get, _set, id: string, title: string) =>
+    renameMock(id, title),
+  ),
+  deleteSessionAtom: atom(null, (_get, _set, id: string) => deleteMock(id)),
+}));
+
+import {
+  activeSessionIdAtom,
+  hydratedAtom,
+  sessionsAtom,
+  type StoredSession,
+} from "./chat-store";
 import { SessionList } from "./session-list";
 
 const session = (id: string, title: string): StoredSession => ({
@@ -28,21 +53,24 @@ const session = (id: string, title: string): StoredSession => ({
   messages: [],
 });
 
-let renameMock: (id: string, title: string) => Promise<void>;
-let deleteMock: (id: string) => Promise<void>;
+let store: ReturnType<typeof createStore>;
+
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <Provider store={store}>{children}</Provider>
+);
 
 beforeEach(() => {
-  renameMock = vi.fn((_id: string, _title: string): Promise<void> =>
-    Promise.resolve(),
-  );
-  deleteMock = vi.fn((_id: string): Promise<void> => Promise.resolve());
-  useChatStore.setState({
-    hydrated: true,
-    sessions: [session("s1", "Math homework"), session("s2", "Essay draft")],
-    activeSessionId: "s1",
-    renameSession: renameMock,
-    deleteSession: deleteMock,
-  });
+  renameMock.mockReset();
+  renameMock.mockResolvedValue(undefined);
+  deleteMock.mockReset();
+  deleteMock.mockResolvedValue(undefined);
+  store = createStore();
+  store.set(hydratedAtom, true);
+  store.set(sessionsAtom, [
+    session("s1", "Math homework"),
+    session("s2", "Essay draft"),
+  ]);
+  store.set(activeSessionIdAtom, "s1");
 });
 
 function renderList() {
@@ -50,6 +78,7 @@ function renderList() {
   const onNew = vi.fn();
   render(
     <SessionList activeSessionId="s1" onSelect={onSelect} onNew={onNew} />,
+    { wrapper },
   );
   return { onSelect, onNew };
 }

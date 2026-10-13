@@ -1,7 +1,10 @@
 import React, { useEffect } from "react";
 import type { Decorator } from "@storybook/react";
+import { getDefaultStore } from "jotai";
 import {
-  useChatStore,
+  activeSessionIdAtom,
+  hydratedAtom,
+  sessionsAtom,
   type StoredSession,
 } from "@/modules/assistant/chat-store";
 import { __setChatState, type ChatStateParam } from "./mocks/ai-sdk-react";
@@ -9,11 +12,14 @@ import type { AssistantStatus } from "@/server/assistant/status";
 
 const NO_SESSIONS: StoredSession[] = [];
 
-export const seedAssistantStore = (
+const seedAssistantStore = (
   sessions: StoredSession[] = [],
   activeSessionId: string | null = null,
 ) => {
-  useChatStore.setState({ hydrated: true, sessions, activeSessionId });
+  const store = getDefaultStore();
+  store.set(hydratedAtom, true);
+  store.set(sessionsAtom, sessions);
+  store.set(activeSessionIdAtom, activeSessionId);
 };
 
 type AssistantParameters = {
@@ -22,7 +28,7 @@ type AssistantParameters = {
   status?: AssistantStatus | null;
 };
 
-export const mockAssistantStatus = (status: AssistantStatus | null) => {
+const mockAssistantStatus = (status: AssistantStatus | null) => {
   // Snapshot the live fetch: a forwarding closure would self-recurse after
   // cleanup restores it (closure -> window.fetch -> closure ...).
   const originalFetch = window.fetch.bind(window);

@@ -50,14 +50,14 @@ function RoadmapTimelineNodeInner({
             {courseCode}
           </span>
           {creditUnits > 0 && (
-            <span className="bg-background/60 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-bold">
+            <span className="bg-background/60 text-2xs shrink-0 rounded-full px-1.5 py-0.5 leading-none font-bold">
               {creditUnits} CU
             </span>
           )}
         </div>
 
         {/* Course name */}
-        <span className="line-clamp-2 text-[11px] leading-tight opacity-80">
+        <span className="text-2xs line-clamp-2 leading-tight opacity-80">
           {courseName}
         </span>
 

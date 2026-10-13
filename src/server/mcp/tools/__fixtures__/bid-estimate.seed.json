@@ -1,0 +1,150 @@
+{
+  "acadTerm": {
+    "id": "AY202425T1-PARITY",
+    "acadYearStart": 2024,
+    "acadYearEnd": 2025,
+    "term": "1"
+  },
+  "bidWindow": {
+    "id": 9101,
+    "acadTermId": "AY202425T1-PARITY",
+    "round": "1",
+    "window": 1,
+    "opensAt": "2020-01-01T00:00:00.000Z",
+    "resultsAt": "2035-01-01T00:00:00.000Z"
+  },
+  "safetyFactors": [
+    {
+      "acadTermId": "AY202425T1-PARITY",
+      "predictionType": "MEDIAN",
+      "beatsPercentage": 70,
+      "multiplier": 1.05
+    }
+  ],
+  "course": {
+    "code": "EST-PARITY-101",
+    "name": "Parity Estimation Fundamentals"
+  },
+  "sections": [
+    {
+      "section": "G1",
+      "classId": "cl-est-p-01",
+      "bossId": 91001,
+      "professor": { "name": "Prof Est Alpha", "slug": "prof-est-alpha" },
+      "prediction": {
+        "medianPredicted": 21,
+        "minPredicted": 11,
+        "medianUncertainty": 2
+      },
+      "vacancy": 15
+    },
+    {
+      "section": "G2",
+      "classId": "cl-est-p-02",
+      "bossId": 91002,
+      "professor": { "name": "Prof Est Beta", "slug": "prof-est-beta" },
+      "prediction": {
+        "medianPredicted": 22,
+        "minPredicted": 12,
+        "medianUncertainty": 2
+      },
+      "vacancy": 18
+    },
+    {
+      "section": "G3",
+      "classId": "cl-est-p-03",
+      "bossId": 91003,
+      "professor": { "name": "Prof Est Gamma", "slug": "prof-est-gamma" },
+      "prediction": {
+        "medianPredicted": 23,
+        "minPredicted": 13,
+        "medianUncertainty": 2
+      },
+      "vacancy": 12
+    },
+    {
+      "section": "G4",
+      "classId": "cl-est-p-04",
+      "bossId": 91004,
+      "professor": { "name": "Prof Est Delta", "slug": "prof-est-delta" },
+      "prediction": {
+        "medianPredicted": 24,
+        "minPredicted": 14,
+        "medianUncertainty": 2
+      },
+      "vacancy": 20
+    },
+    {
+      "section": "G5",
+      "classId": "cl-est-p-05",
+      "bossId": 91005,
+      "professor": { "name": "Prof Est Epsilon", "slug": "prof-est-epsilon" },
+      "prediction": {
+        "medianPredicted": 25,
+        "minPredicted": 15,
+        "medianUncertainty": 2
+      },
+      "vacancy": 22
+    },
+    {
+      "section": "G6",
+      "classId": "cl-est-p-06",
+      "bossId": 91006,
+      "professor": { "name": "Prof Est Zeta", "slug": "prof-est-zeta" },
+      "prediction": {
+        "medianPredicted": 26,
+        "minPredicted": 16,
+        "medianUncertainty": 2
+      },
+      "vacancy": 14
+    },
+    {
+      "section": "G7",
+      "classId": "cl-est-p-07",
+      "bossId": 91007,
+      "professor": { "name": "Prof Est Eta", "slug": "prof-est-eta" },
+      "prediction": {
+        "medianPredicted": 27,
+        "minPredicted": 17,
+        "medianUncertainty": 2
+      },
+      "vacancy": 16
+    },
+    {
+      "section": "G8",
+      "classId": "cl-est-p-08",
+      "bossId": 91008,
+      "professor": { "name": "Prof Est Theta", "slug": "prof-est-theta" },
+      "prediction": {
+        "medianPredicted": 28,
+        "minPredicted": 18,
+        "medianUncertainty": 2
+      },
+      "vacancy": 19
+    },
+    {
+      "section": "G9",
+      "classId": "cl-est-p-09",
+      "bossId": 91009,
+      "professor": { "name": "Prof Est Iota", "slug": "prof-est-iota" },
+      "prediction": {
+        "medianPredicted": 29,
+        "minPredicted": 19,
+        "medianUncertainty": 2
+      },
+      "vacancy": 11
+    },
+    {
+      "section": "G10",
+      "classId": "cl-est-p-10",
+      "bossId": 91010,
+      "professor": { "name": "Prof Est Kappa", "slug": "prof-est-kappa" },
+      "prediction": {
+        "medianPredicted": 30,
+        "minPredicted": 20,
+        "medianUncertainty": 2
+      },
+      "vacancy": 25
+    }
+  ]
+}

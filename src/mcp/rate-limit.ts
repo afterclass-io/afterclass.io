@@ -1,9 +1,3 @@
-import { checkBudget } from "@/server/assistant/budget";
-// Limit/window values come from the canonical chat-config via this shim
-// (centralized source + fail-closed range checks).
-import { getChatConfig, getRateLimitWindowMinutes } from "@/server/ecfg/chat";
-import type { ToolContext } from "@/server/mcp/types";
-
 /**
  * Budget matrix (documentation only — the numbers live with the transports).
  *
@@ -19,9 +13,9 @@ import type { ToolContext } from "@/server/mcp/types";
  *
  * | Bucket        | Owner (who charges it)                              | Limit source                                  |
  * |---------------|-------------------------------------------------------|-----------------------------------------------|
- * | `mcp-read:`   | MCP transport (`src/mcp/register.ts`, viewless reads; view-bound adapters) via `checkReadBudget` below | `chat.mcpRateLimitPerMinute` (`getChatConfig`) |
- * | `mcp-write:`  | MCP transport (viewless writes) via `checkWriteBudget` below; `dispatchToolCall` with `budget: "read"|"write"` + default prefixes | same `chat.mcpRateLimitPerMinute` ceiling, separate bucket |
- * | `chat-write:` | Chat transport (`src/server/assistant/tools.ts` via the dispatch policy formatter + limit, NOT via the helpers below) | `getChatWriteRateLimit(chat)` (env `CHAT_WRITE_RATE_LIMIT_PER_MINUTE`, falls back to `chat.rateLimitPerMinute`) |
+ * | `mcp-read:`   | MCP transport (`src/mcp/register.ts`, viewless reads; view-bound adapters) via `dispatchToolCall` with `budget: "read"` | `chat.mcpRateLimitPerMinute` (`getChatConfig`) |
+ * | `mcp-write:`  | MCP transport (viewless writes) via `dispatchToolCall` with `budget: "write"` + default prefixes | same `chat.mcpRateLimitPerMinute` ceiling, separate bucket |
+ * | `chat-write:` | Chat transport (`src/server/assistant/tools.ts` via the dispatch policy formatter + limit, NOT via the MCP prefixes) | `getChatWriteRateLimit(chat)` (env `CHAT_WRITE_RATE_LIMIT_PER_MINUTE`, falls back to `chat.rateLimitPerMinute`) |
  *
  * Why they don't share: reads are legitimately higher-volume than writes, so
  * `mcp-read:` and `mcp-write:` share the configured ceiling but draw from
@@ -160,63 +154,4 @@ function confirmRejection(toolName: string): string {
     `Tool "${toolName}" changes or publishes your data and requires explicit confirmation: ` +
     `call again with confirm:true after showing the user exactly what will change and getting explicit approval.`
   );
-}
-
-/**
- * Shared write-budget guard for MCP tools.
- * Returns null when within budget, or an error message when rate-limited.
- * Each tool call must invoke this exactly once (do not double-charge).
- */
-export async function checkWriteBudget(
-  ctx: ToolContext,
-  keyPrefix = "mcp-write",
-): Promise<string | null> {
-  const chat = await getChatConfig();
-  const limit = chat.mcpRateLimitPerMinute;
-  const windowMinutes = getRateLimitWindowMinutes();
-  // Single budget primitive: same key prefix, same limit source, same
-  // window — only the validation/delegation lives in checkBudget.
-  const res = await checkBudget(ctx, {
-    prefix: keyPrefix,
-    limit,
-    windowMs: windowMinutes * 60_000,
-    kind: "write",
-  });
-  if (!res.ok) {
-    return `Write rate limit exceeded: at most ${limit} write operations per minute are allowed. Please wait ~${res.retryAfterSeconds}s before trying again.`;
-  }
-  return null;
-}
-
-/**
- * Shared read-budget guard for readOnly MCP tools (share-token spray
- * mitigation: unauthenticated-adjacent token-guessing calls against
- * get-shared-timetable etc. are throttled per user).
- *
- * Reuses `mcpRateLimitPerMinute` with the separate `mcp-read:` key prefix —
- * reads share the configured ceiling but draw from their own bucket, so a
- * burst of reads can never starve writes (and vice versa). Read volume is
- * legitimately higher than write volume, so sharing the write ceiling here is
- * the conservative choice (a dedicated higher read limit can be split out in
- * ecfg later if reads hit the ceiling in normal use).
- */
-export async function checkReadBudget(
-  ctx: ToolContext,
-  keyPrefix = "mcp-read",
-): Promise<string | null> {
-  const chat = await getChatConfig();
-  const limit = chat.mcpRateLimitPerMinute;
-  const windowMinutes = getRateLimitWindowMinutes();
-  // Single budget primitive: same key prefix, same limit source, same
-  // window — only the validation/delegation lives in checkBudget.
-  const res = await checkBudget(ctx, {
-    prefix: keyPrefix,
-    limit,
-    windowMs: windowMinutes * 60_000,
-    kind: "read",
-  });
-  if (!res.ok) {
-    return `Read rate limit exceeded: at most ${limit} read operations per minute are allowed. Please wait ~${res.retryAfterSeconds}s before trying again.`;
-  }
-  return null;
 }

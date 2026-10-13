@@ -6,13 +6,7 @@ import {
   buildRoadmapView,
   roadmapViewToViewProps,
 } from "../roadmap-view-shared";
-import {
-  confirmField,
-  errText,
-  errorMessage,
-  jsonText,
-  type McpTool,
-} from "../../types";
+import { confirmField, guardedRun, jsonText, type McpTool } from "../../types";
 
 const termSchema = roadmapTermSchema;
 const visibilitySchema = z.enum(["PRIVATE", "UNLISTED", "PUBLIC"]);
@@ -36,18 +30,14 @@ export const createRoadmapTool: McpTool<typeof createRoadmapSchema> = {
     "Create a new study roadmap for the user. Returns the updated roadmap.",
   inputSchema: createRoadmapSchema,
   toViewProps: roadmapViewToViewProps(false),
-  run: async ({ caller }, { name }) => {
-    try {
-      const created = (await caller.roadmaps.create({ name })) as {
-        id: string;
-      };
-      const view = await buildRoadmapView(caller, created.id);
-      // Canonical output policy: bearer tokens must not reach the LLM.
-      return jsonText(stripSecretsFromValue(view));
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { name }) => {
+    const created = (await caller.roadmaps.create({ name })) as {
+      id: string;
+    };
+    const view = await buildRoadmapView(caller, created.id);
+    // Canonical output policy: bearer tokens must not reach the LLM.
+    return jsonText(stripSecretsFromValue(view));
+  }),
 };
 
 const renameRoadmapSchema = z.object({
@@ -60,16 +50,10 @@ export const renameRoadmapTool: McpTool<typeof renameRoadmapSchema> = {
   name: "rename-roadmap",
   description: "Rename a roadmap (and optionally update its description).",
   inputSchema: renameRoadmapSchema,
-  run: async ({ caller }, input) => {
-    try {
-      // Canonical output policy: bearer tokens must not reach the LLM.
-      return jsonText(
-        stripSecretsFromValue(await caller.roadmaps.rename(input)),
-      );
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, input) => {
+    // Canonical output policy: bearer tokens must not reach the LLM.
+    return jsonText(stripSecretsFromValue(await caller.roadmaps.rename(input)));
+  }),
 };
 
 const removeRoadmapSchema = z.object({
@@ -81,13 +65,9 @@ export const removeRoadmapTool: McpTool<typeof removeRoadmapSchema> = {
   name: "remove-roadmap",
   description: "Delete one of the user's roadmaps.",
   inputSchema: removeRoadmapSchema,
-  run: async ({ caller }, { roadmapId }) => {
-    try {
-      return jsonText(await caller.roadmaps.remove({ roadmapId }));
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { roadmapId }) => {
+    return jsonText(await caller.roadmaps.remove({ roadmapId }));
+  }),
 };
 
 const saveRoadmapEntriesSchema = z.object({
@@ -103,16 +83,12 @@ export const saveRoadmapEntriesTool: McpTool<typeof saveRoadmapEntriesSchema> =
       "Replace the course entries of a roadmap. entries is the full desired list: [{courseId, yearNumber (1-8), term (T1|T2|T3A|T3B), sortOrder}]. Returns the updated roadmap.",
     inputSchema: saveRoadmapEntriesSchema,
     toViewProps: roadmapViewToViewProps(false),
-    run: async ({ caller }, input) => {
-      try {
-        await caller.roadmaps.saveEntries(input);
-        const view = await buildRoadmapView(caller, input.roadmapId);
-        // Canonical output policy: bearer tokens must not reach the LLM.
-        return jsonText(stripSecretsFromValue(view));
-      } catch (e) {
-        return errText(errorMessage(e));
-      }
-    },
+    run: guardedRun(async ({ caller }, input) => {
+      await caller.roadmaps.saveEntries(input);
+      const view = await buildRoadmapView(caller, input.roadmapId);
+      // Canonical output policy: bearer tokens must not reach the LLM.
+      return jsonText(stripSecretsFromValue(view));
+    }),
   };
 
 const setRoadmapVisibilitySchema = z.object({
@@ -128,19 +104,15 @@ export const setRoadmapVisibilityTool: McpTool<
   description:
     "Set a roadmap's visibility - the single visibility tool. PRIVATE (only you; removes it from the public gallery), UNLISTED (shareable via link), or PUBLIC (publishes to the public gallery; requires a verified account).",
   inputSchema: setRoadmapVisibilitySchema,
-  run: async ({ caller }, { roadmapId, visibility }) => {
-    try {
-      const res = (await caller.sharing.setVisibility({
-        entity: "roadmap",
-        id: roadmapId,
-        visibility,
-      })) as Record<string, unknown>;
-      // Canonical output policy: bearer tokens must not reach the LLM
-      // (shareToken + icalToken; the legacy per-row strip inner call is
-      // dropped — the canonical strip subsumes it).
-      return jsonText(stripSecretsFromValue(res));
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { roadmapId, visibility }) => {
+    const res = (await caller.sharing.setVisibility({
+      entity: "roadmap",
+      id: roadmapId,
+      visibility,
+    })) as Record<string, unknown>;
+    // Canonical output policy: bearer tokens must not reach the LLM
+    // (shareToken + icalToken; the legacy per-row strip inner call is
+    // dropped — the canonical strip subsumes it).
+    return jsonText(stripSecretsFromValue(res));
+  }),
 };

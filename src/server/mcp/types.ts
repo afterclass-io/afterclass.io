@@ -1,6 +1,10 @@
 import { randomUUID } from "crypto";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import {
+  isForeignKeyViolation,
+  isUniqueConstraintViolation,
+} from "@/server/db-errors";
 import type { SessionUser } from "@/server/auth/config";
 import type { createCaller } from "@/server/api/root";
 
@@ -87,6 +91,23 @@ export const errText = (text: string): ToolResult => ({
   isError: true,
 });
 
+/**
+ * Wrap a tool `run` body so a thrown error becomes the model-facing
+ * `errText(errorMessage(e))` result instead of reaching the dispatcher, which
+ * would replace the friendly text with a generic internal error.
+ */
+export function guardedRun<TInput>(
+  fn: (ctx: ToolContext, input: TInput) => Promise<ToolResult>,
+): (ctx: ToolContext, input: TInput) => Promise<ToolResult> {
+  return async (ctx, input) => {
+    try {
+      return await fn(ctx, input);
+    } catch (e) {
+      return errText(errorMessage(e));
+    }
+  };
+}
+
 export const errorMessage = (e: unknown): string => {
   // tRPC errors carry a machine-stable `code` (e.g. NOT_FOUND, FORBIDDEN,
   // CONFLICT) the tools already surface as friendly model text — pass them
@@ -98,11 +119,10 @@ export const errorMessage = (e: unknown): string => {
     // would otherwise leak storage internals to the model surface; map it to
     // a generic retry message. Match on `code` (P2002/P2003) and on message
     // text for drivers that surface the failure without a code.
-    const code = (e as { code?: unknown }).code;
     const msg = e.message;
     if (
-      code === "P2002" ||
-      code === "P2003" ||
+      isUniqueConstraintViolation(e) ||
+      isForeignKeyViolation(e) ||
       /unique constraint|foreign key constraint|violates .*constraint/i.test(
         msg,
       )

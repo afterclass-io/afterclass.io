@@ -7,6 +7,13 @@ import {
 import { shortTermLabel } from "../utils/term-label";
 import { computeTermGroups, type ChartPoint } from "../utils/chart-points";
 
+// Point indexes of a term group's keys; keys without a point are dropped.
+function groupIndexes(keys: string[], keyToIdx: Map<string, number>): number[] {
+  return keys
+    .map((k) => keyToIdx.get(k))
+    .filter((v): v is number => v !== undefined);
+}
+
 /**
  * Inline-SVG min/median trend chart (extracted verbatim from
  * `views/bid-explorer/view.tsx`, mirror of the website `BidChart`, no
@@ -77,10 +84,7 @@ export const TrendChart: React.FC<{
   const nowBand =
     nowGroupIdx >= 0
       ? (() => {
-          const keys = groups[nowGroupIdx]!;
-          const idxs = keys
-            .map((k) => keyToIdx.get(k))
-            .filter((v): v is number => v !== undefined);
+          const idxs = groupIndexes(groups[nowGroupIdx]!, keyToIdx);
           return idxs.length > 0
             ? {
                 x1: bandLeft(Math.min(...idxs)),
@@ -102,9 +106,7 @@ export const TrendChart: React.FC<{
       style={{ width: "100%", height: "auto", display: "block" }}
     >
       {groups.map((g, gi) => {
-        const idxs = g
-          .map((k) => keyToIdx.get(k))
-          .filter((v): v is number => v !== undefined);
+        const idxs = groupIndexes(g, keyToIdx);
         if (gi % 2 !== 1 || idxs.length === 0) return null;
         const x1 = bandLeft(Math.min(...idxs));
         const x2 = bandRight(Math.max(...idxs));
@@ -137,7 +139,7 @@ export const TrendChart: React.FC<{
           y={PAD.top}
           width={nowBand.x2 - nowBand.x1}
           height={H - PAD.top - PAD.bottom}
-          fill="#2563eb"
+          fill={c.chartBand}
           opacity={0.06}
         />
       )}
@@ -177,7 +179,7 @@ export const TrendChart: React.FC<{
         d={line((p) => p.min)}
         data-series="min"
         fill="none"
-        stroke="#d97706"
+        stroke={c.chartMin}
         strokeWidth={2}
         strokeDasharray="5 3"
       />
@@ -193,9 +195,7 @@ export const TrendChart: React.FC<{
         />
       ))}
       {groups.map((g, gi) => {
-        const idxs = g
-          .map((k) => keyToIdx.get(k))
-          .filter((v): v is number => v !== undefined);
+        const idxs = groupIndexes(g, keyToIdx);
         if (idxs.length === 0) return null;
         const minIdx = Math.min(...idxs);
         const maxIdx = Math.max(...idxs);

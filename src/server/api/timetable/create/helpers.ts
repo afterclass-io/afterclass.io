@@ -9,6 +9,11 @@ export function autoName(plansCount: number): string {
 /**
  * The user's active plan for the term, creating one (auto-named like
  * `create` does for a first plan) when none exists.
+ *
+ * Runs inside a Serializable transaction with `withConflictRetry`. After a
+ * P2002 Postgres aborts the transaction, so the error must propagate; the
+ * caller's retry re-runs the transaction and the initial `findFirst` finds the
+ * winner.
  */
 export async function findOrCreateActivePlan(
   db: Prisma.TransactionClient,

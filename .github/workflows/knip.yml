@@ -6,16 +6,36 @@ on:
       - "main"
     paths:
       - "src/**"
+      - "views/**"
+      - "scripts/**"
+      - ".storybook/**"
+      - "cypress/**"
       - "package.json"
       - "bun.lock"
-      - "knip.json"
+      - "knip.jsonc"
+      - "prisma/**"
+      - "*.config.*"
+      - "vitest.*.ts"
+      - "instrumentation-client.ts"
+      - "tsconfig.json"
+      - ".github/workflows/knip.yml"
   pull_request:
     types: [opened, reopened, synchronize]
     paths:
       - "src/**"
+      - "views/**"
+      - "scripts/**"
+      - ".storybook/**"
+      - "cypress/**"
       - "package.json"
       - "bun.lock"
-      - "knip.json"
+      - "knip.jsonc"
+      - "prisma/**"
+      - "*.config.*"
+      - "vitest.*.ts"
+      - "instrumentation-client.ts"
+      - "tsconfig.json"
+      - ".github/workflows/knip.yml"
 
 jobs:
   knip:
@@ -33,10 +53,13 @@ jobs:
 
       - run: bun install
 
-      # NOTE: a green knip run does NOT prove all eight undeclared dependencies
-      # from GH #511 were handled — knip structurally cannot see the three
-      # root-config ones (dotenv, jiti, pg) imported only from next.config.js
-      # and prisma.config.ts outside the production entry graph. Those three
-      # were verified by inspection, not by this gate. See .scratch/specs/deps-remediation.md § "Scope of the declaration pass".
+      # `knip` is a pinned devDependency, so `bunx knip` runs that version.
+      # The production pass cannot see dotenv and jiti, which only
+      # next.config.js and prisma.config.ts import, so knip.jsonc ignores them.
       - name: Check unlisted and unused dependencies
-        run: bunx knip --production
+        run: bunx knip --production --exclude files,exports,types
+
+      # Default mode counts tests, stories and tool config as users, so this
+      # step reports only files, exports and types that nothing reaches.
+      - name: Check unused files, exports and types
+        run: bunx knip

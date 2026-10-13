@@ -1,0 +1,299 @@
+{
+  "user": {
+    "id": "usr-parity-feasibility",
+    "email": "usr-parity-feasibility@example.edu",
+    "username": "usr_parity_feasibility"
+  },
+  "acadTerm": {
+    "id": "AY202425T1-FEAS",
+    "acadYearStart": 2024,
+    "acadYearEnd": 2025,
+    "term": "1"
+  },
+  "roadmap": {
+    "id": "rm-parity-40",
+    "title": "Parity 40-Course 4-Year Plan"
+  },
+  "courses": [
+    {
+      "code": "CS101",
+      "name": "Foundations 1",
+      "prereq": null,
+      "year": 1,
+      "term": "T1"
+    },
+    {
+      "code": "CS102",
+      "name": "Foundations 2",
+      "prereq": null,
+      "year": 1,
+      "term": "T1"
+    },
+    {
+      "code": "CS103",
+      "name": "Foundations 3",
+      "prereq": null,
+      "year": 1,
+      "term": "T1"
+    },
+    {
+      "code": "CS104",
+      "name": "Foundations 4",
+      "prereq": null,
+      "year": 1,
+      "term": "T1"
+    },
+    {
+      "code": "CS105",
+      "name": "Foundations 5",
+      "prereq": null,
+      "year": 1,
+      "term": "T1"
+    },
+    {
+      "code": "CS106",
+      "name": "Core 1",
+      "prereq": "Pre-Requisite: CS101",
+      "year": 1,
+      "term": "T2"
+    },
+    {
+      "code": "CS107",
+      "name": "Core 2",
+      "prereq": null,
+      "year": 1,
+      "term": "T2"
+    },
+    {
+      "code": "CS108",
+      "name": "Core 3",
+      "prereq": null,
+      "year": 1,
+      "term": "T2"
+    },
+    {
+      "code": "CS109",
+      "name": "Core 4",
+      "prereq": null,
+      "year": 1,
+      "term": "T2"
+    },
+    {
+      "code": "CS110",
+      "name": "Core 5",
+      "prereq": null,
+      "year": 1,
+      "term": "T2"
+    },
+    {
+      "code": "CS111",
+      "name": "Intermediate 1",
+      "prereq": "Pre-Requisite: CS106",
+      "year": 2,
+      "term": "T1"
+    },
+    {
+      "code": "CS112",
+      "name": "Intermediate 2",
+      "prereq": null,
+      "year": 2,
+      "term": "T1"
+    },
+    {
+      "code": "CS113",
+      "name": "Intermediate 3",
+      "prereq": null,
+      "year": 2,
+      "term": "T1"
+    },
+    {
+      "code": "CS114",
+      "name": "Intermediate 4",
+      "prereq": null,
+      "year": 2,
+      "term": "T1"
+    },
+    {
+      "code": "CS115",
+      "name": "Intermediate 5",
+      "prereq": null,
+      "year": 2,
+      "term": "T1"
+    },
+    {
+      "code": "CS116",
+      "name": "Advanced Core 1",
+      "prereq": "Pre-Requisite: CS111",
+      "year": 2,
+      "term": "T2"
+    },
+    {
+      "code": "CS117",
+      "name": "Advanced Core 2",
+      "prereq": null,
+      "year": 2,
+      "term": "T2"
+    },
+    {
+      "code": "CS118",
+      "name": "Advanced Core 3",
+      "prereq": null,
+      "year": 2,
+      "term": "T2"
+    },
+    {
+      "code": "CS119",
+      "name": "Advanced Core 4",
+      "prereq": null,
+      "year": 2,
+      "term": "T2"
+    },
+    {
+      "code": "CS120",
+      "name": "Advanced Core 5",
+      "prereq": null,
+      "year": 2,
+      "term": "T2"
+    },
+    {
+      "code": "CS121",
+      "name": "Specialization 1",
+      "prereq": "Pre-Requisite: CS999",
+      "year": 3,
+      "term": "T1"
+    },
+    {
+      "code": "CS122",
+      "name": "Specialization 2",
+      "prereq": null,
+      "year": 3,
+      "term": "T1"
+    },
+    {
+      "code": "CS123",
+      "name": "Specialization 3",
+      "prereq": null,
+      "year": 3,
+      "term": "T1"
+    },
+    {
+      "code": "CS124",
+      "name": "Specialization 4",
+      "prereq": null,
+      "year": 3,
+      "term": "T1"
+    },
+    {
+      "code": "CS125",
+      "name": "Specialization 5",
+      "prereq": null,
+      "year": 3,
+      "term": "T1"
+    },
+    {
+      "code": "CS126",
+      "name": "Depth 1",
+      "prereq": null,
+      "year": 3,
+      "term": "T2"
+    },
+    {
+      "code": "CS127",
+      "name": "Depth 2",
+      "prereq": null,
+      "year": 3,
+      "term": "T2"
+    },
+    {
+      "code": "CS128",
+      "name": "Depth 3",
+      "prereq": null,
+      "year": 3,
+      "term": "T2"
+    },
+    {
+      "code": "CS129",
+      "name": "Depth 4",
+      "prereq": null,
+      "year": 3,
+      "term": "T2"
+    },
+    {
+      "code": "CS130",
+      "name": "Depth 5",
+      "prereq": null,
+      "year": 3,
+      "term": "T2"
+    },
+    {
+      "code": "CS131",
+      "name": "Senior Seminar 1",
+      "prereq": "Pre-Requisite: CS136",
+      "year": 4,
+      "term": "T1"
+    },
+    {
+      "code": "CS132",
+      "name": "Senior Seminar 2",
+      "prereq": null,
+      "year": 4,
+      "term": "T1"
+    },
+    {
+      "code": "CS133",
+      "name": "Senior Seminar 3",
+      "prereq": null,
+      "year": 4,
+      "term": "T1"
+    },
+    {
+      "code": "CS134",
+      "name": "Senior Seminar 4",
+      "prereq": null,
+      "year": 4,
+      "term": "T1"
+    },
+    {
+      "code": "CS135",
+      "name": "Senior Seminar 5",
+      "prereq": null,
+      "year": 4,
+      "term": "T1"
+    },
+    {
+      "code": "CS136",
+      "name": "Capstone 1",
+      "prereq": null,
+      "year": 4,
+      "term": "T2"
+    },
+    {
+      "code": "CS137",
+      "name": "Capstone 2",
+      "prereq": null,
+      "year": 4,
+      "term": "T2"
+    },
+    {
+      "code": "CS138",
+      "name": "Capstone 3",
+      "prereq": null,
+      "year": 4,
+      "term": "T2"
+    },
+    {
+      "code": "CS139",
+      "name": "Capstone 4",
+      "prereq": null,
+      "year": 4,
+      "term": "T2"
+    },
+    {
+      "code": "CS140",
+      "name": "Capstone 5",
+      "prereq": null,
+      "year": 4,
+      "term": "T2"
+    }
+  ]
+}

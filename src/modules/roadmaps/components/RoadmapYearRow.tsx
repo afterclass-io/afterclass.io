@@ -25,10 +25,15 @@ export type RoadmapYearRowProps = {
 // Constants
 // ---------------------------------------------------------------------------
 
-const TERMS = ["T1", "T2", "T3A", "T3B"] as const;
+/** Year label, T1, T2, merged T3 column. */
+export const YEAR_ROW_COLS = "grid-cols-[2.5rem_repeat(3,minmax(5.5rem,1fr))]";
 
-/** Fixed-width year-label column shared by the grid header and rows. */
-export const YEAR_LABEL_COL = "grid-cols-[2.5rem_repeat(4,minmax(0,1fr))]";
+/** Header text and the stored terms each grid column holds. */
+export const TERM_COLUMNS = [
+  { header: "T1", terms: ["T1"] },
+  { header: "T2", terms: ["T2"] },
+  { header: "T3", terms: ["T3A", "T3B"] },
+] as const;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -47,7 +52,7 @@ export function RoadmapYearRow({
 
   return (
     <div
-      className={cn("grid gap-2", YEAR_LABEL_COL, className)}
+      className={cn("grid gap-2", YEAR_ROW_COLS, className)}
       role="row"
       aria-label={`Year ${yearNumber}`}
     >
@@ -59,21 +64,37 @@ export function RoadmapYearRow({
       </div>
 
       {/* Term cells */}
-      {TERMS.map((term) => {
-        const termEntries = entriesForYear.filter((e) => e.term === term);
-        return (
+      {TERM_COLUMNS.map((col) =>
+        col.terms.length === 1 ? (
           <RoadmapTermCell
-            key={term}
+            key={col.header}
             yearNumber={yearNumber}
-            term={term}
-            entries={termEntries}
+            term={col.terms[0]}
+            entries={entriesForYear.filter((e) => e.term === col.terms[0])}
             sortableIds={sortableIds}
             readOnly={readOnly}
             onCourseClick={onCourseClick}
             onRemove={onRemove}
           />
-        );
-      })}
+        ) : (
+          <div key={col.header} className="flex min-w-0 flex-col gap-2">
+            {col.terms.map((term) => (
+              <RoadmapTermCell
+                key={term}
+                yearNumber={yearNumber}
+                term={term}
+                compact
+                className="flex-1"
+                entries={entriesForYear.filter((e) => e.term === term)}
+                sortableIds={sortableIds}
+                readOnly={readOnly}
+                onCourseClick={onCourseClick}
+                onRemove={onRemove}
+              />
+            ))}
+          </div>
+        ),
+      )}
     </div>
   );
 }

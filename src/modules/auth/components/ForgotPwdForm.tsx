@@ -1,41 +1,26 @@
 "use client";
-import { startTransition } from "react";
-import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { supabase } from "@/server/supabase";
+import { supabaseBrowser } from "@/common/tools/supabase/client";
+import { toast } from "sonner";
 
-import {
-  InputRoot,
-  InputAdornment,
-  InputControl,
-  Input,
-} from "@/common/components/input";
 import { Button } from "@/common/components/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/common/components/form";
+import { Form } from "@/common/components/form";
 import { env } from "@/env";
-import { EnvelopeIcon } from "@/common/components/icons";
-import { useProgress } from "@/common/providers/ProgressProvider";
 
 import { getUserPlatform } from "../functions";
+import { useNavigateWithProgress } from "../hooks/useNavigateWithProgress";
 import {
   ForgotPwdFormActionReturnType,
   type ForgotPwdFormInputs,
   forgotPwdFormInputsSchema,
 } from "../types";
 import { ProgressLink } from "@/common/components/progress-link";
+import { EmailField } from "./fields/EmailField";
 
 export const ForgotPwdForm = () => {
-  const router = useRouter();
-  const progress = useProgress();
+  const navigateWithProgress = useNavigateWithProgress();
 
   const form = useForm<ForgotPwdFormInputs>({
     resolver: zodResolver(forgotPwdFormInputsSchema),
@@ -57,30 +42,24 @@ export const ForgotPwdForm = () => {
     }
 
     if (result === ForgotPwdFormActionReturnType.USER_ON_V1) {
-      progress.start();
-
-      startTransition(() => {
-        router.push(`/account/auth/signup?email=${email}`);
-        progress.done();
-      });
+      navigateWithProgress(
+        `/account/auth/signup?${new URLSearchParams({ email })}`,
+      );
       return;
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabaseBrowser.auth.resetPasswordForEmail(email, {
       redirectTo: `${env.NEXT_PUBLIC_SITE_URL}/account/auth/reset-password`,
     });
     if (error) {
-      alert(error.message);
+      toast.error(error.message);
       form.reset();
       return;
     }
 
-    progress.start();
-
-    startTransition(() => {
-      router.push(`/account/auth/verify?email=${email}`);
-      progress.done();
-    });
+    navigateWithProgress(
+      `/account/auth/verify?${new URLSearchParams({ email })}`,
+    );
   };
 
   return (
@@ -89,32 +68,14 @@ export const ForgotPwdForm = () => {
         className="flex w-full flex-col gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <FormField
+        <EmailField
           control={form.control}
           name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>School Email Address</FormLabel>
-              <FormControl>
-                <InputRoot>
-                  <InputAdornment>
-                    <EnvelopeIcon />
-                  </InputAdornment>
-                  <InputControl>
-                    <Input
-                      {...field}
-                      disabled={form.formState.isSubmitting}
-                      placeholder="john.doe.2023@smu.edu.sg"
-                      autoComplete="on"
-                      tabIndex={1}
-                      data-test="email"
-                    />
-                  </InputControl>
-                </InputRoot>
-              </FormControl>
-              <FormMessage data-test="email-helper-text" />
-            </FormItem>
-          )}
+          label="School Email Address"
+          placeholder="john.doe.2023@smu.edu.sg"
+          tabIndex={1}
+          dataTest="email"
+          disabled={form.formState.isSubmitting}
         />
         <Button
           type="submit"

@@ -19,6 +19,7 @@ vi.mock("mcp-use/react", () => ({
 }));
 
 import BidExplorerView, { viewConfig, shortTermLabel } from "./view";
+import { TOKENS } from "../shared/tokens";
 import {
   useDynamicTool,
   useHostContext,
@@ -346,18 +347,14 @@ describe("BidExplorerView (v2)", () => {
       ).toBeInTheDocument();
       expect(screen.getByText("Round 1 · Window 1")).toBeInTheDocument();
       expect(
-        screen.getByText(
-          /AfterClass is not liable for any unsuccessful bids/,
-        ),
+        screen.getByText(/AfterClass is not liable for any unsuccessful bids/),
       ).toBeInTheDocument();
     });
 
     it("renders the Odds of having other bids metric with Likely badge", () => {
       seedContext({ status: "ready", toolInput: {}, toolOutput: fullProps });
       render(<BidExplorerView />);
-      expect(
-        screen.getByText("Odds of having other bids"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Odds of having other bids")).toBeInTheDocument();
       expect(screen.getByText("92.00%")).toBeInTheDocument();
       expect(screen.getByText("Likely")).toBeInTheDocument();
     });
@@ -480,7 +477,9 @@ describe("BidExplorerView (v2)", () => {
       expect(screen.getAllByText("10.00")).toHaveLength(2); // header + formula
       expect(screen.getByText("recommended (floor)")).toBeInTheDocument();
       expect(
-        screen.getByText("Floored to BOSS minimum bid of e$10.00 (raw formula: e$5.54)"),
+        screen.getByText(
+          "Floored to BOSS minimum bid of e$10.00 (raw formula: e$5.54)",
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -555,9 +554,7 @@ describe("BidExplorerView (v2)", () => {
         toolOutput: multiRoundProps,
       });
       render(<BidExplorerView />);
-      expect(
-        screen.getAllByRole("button", { name: "1" }),
-      ).toHaveLength(2); // round 1 + window 1 share the plain number label
+      expect(screen.getAllByRole("button", { name: "1" })).toHaveLength(2); // round 1 + window 1 share the plain number label
       expect(screen.getByRole("button", { name: "1A" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "2" })).toBeInTheDocument();
     });
@@ -873,7 +870,7 @@ describe("BidExplorerView (v2)", () => {
       expect(texts.find((t) => t.textContent === "now")).toBeUndefined();
       // Current term highlight rect renders when the term is visible.
       const highlights = Array.from(chart.querySelectorAll("rect")).filter(
-        (r) => r.getAttribute("fill") === "#2563eb",
+        (r) => r.getAttribute("fill") === TOKENS.light.chartBand,
       );
       expect(highlights).toHaveLength(1);
     });
@@ -1000,9 +997,7 @@ describe("BidExplorerView (v2)", () => {
         },
       });
       render(<BidExplorerView />);
-      expect(
-        screen.getAllByRole("button", { name: "1" }),
-      ).toHaveLength(2); // round 1 + window 1 share the plain number label
+      expect(screen.getAllByRole("button", { name: "1" })).toHaveLength(2); // round 1 + window 1 share the plain number label
       expect(screen.queryByRole("button", { name: "1A" })).toBeNull();
       expect(screen.queryByRole("button", { name: "2" })).toBeNull();
     });

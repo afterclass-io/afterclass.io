@@ -63,7 +63,8 @@ export default function TermsPage() {
           </Link>{" "}
           below. When several students report the same content, it is checked
           automatically against those rules. Reviews that break them are
-          deleted, and roadmaps that break them are made private, without notice.
+          deleted, and roadmaps that break them are made private, without
+          notice.
         </p>
       </PolicySection>
 
@@ -72,7 +73,7 @@ export default function TermsPage() {
           AfterClass is for honest, useful information about courses and
           professors. Criticism is welcome. These rules cover what is not.
         </p>
-        <h3 className="text-foreground font-semibold pt-2">Not allowed</h3>
+        <h3 className="text-foreground pt-2 font-semibold">Not allowed</h3>
         <ul className="list-disc space-y-2 pl-5">
           {POLICY_RULE_IDS.map((id) => (
             <li key={id}>
@@ -81,9 +82,9 @@ export default function TermsPage() {
             </li>
           ))}
         </ul>
-        <h3 className="text-foreground font-semibold pt-2">Always allowed</h3>
+        <h3 className="text-foreground pt-2 font-semibold">Always allowed</h3>
         <p>{POLICY_ALLOWED}</p>
-        <h3 className="text-foreground font-semibold pt-2">
+        <h3 className="text-foreground pt-2 font-semibold">
           How reporting works
         </h3>
         <p>

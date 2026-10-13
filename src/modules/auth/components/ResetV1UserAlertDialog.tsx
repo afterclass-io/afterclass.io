@@ -33,7 +33,7 @@ export const ResetV1UserAlertDialog = () => (
                 href={env.NEXT_PUBLIC_OLD_SITE_URL}
                 target="_blank"
                 variant="link"
-                className="text-muted-foreground hover:text-secondary-default inline-flex h-fit p-0 pb-[1px] text-[length:inherit] underline md:h-fit md:p-0"
+                className="text-muted-foreground hover:text-secondary-foreground inline-flex h-fit p-0 pb-[1px] text-[length:inherit] underline md:h-fit md:p-0"
               >
                 old AfterClass website.
               </ProgressLink>

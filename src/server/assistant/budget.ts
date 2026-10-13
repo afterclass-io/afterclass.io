@@ -6,10 +6,9 @@ import { checkAndIncrement } from "./ratelimit";
  * `checkBudget(ctx, opts)` validates `limit > 0 finite` (throws on
  * -1/0/NaN — a misconfigured limit must fail loudly at the call site,
  * never silently 429 the whole world) and delegates to `checkAndIncrement`
- * in `ratelimit.ts`. The four call sites share this one shape:
- * `checkWriteBudget`/`checkReadBudget` (`src/mcp/rate-limit.ts`), the
- * chat-write charge (via `dispatchToolCall` policy in
- * `src/server/assistant/tools.ts`), and the ical throttle
+ * in `ratelimit.ts`. The call sites share this one shape:
+ * the MCP and chat charges (via the `dispatchToolCall` policy in
+ * `src/mcp/dispatch.ts` and `src/server/assistant/tools.ts`), and the ical throttle
  * (`src/app/api/ical/[token]/route.ts`, per-IP key via a synthetic user
  * id). Key prefixes and limit sources stay identical.
  */

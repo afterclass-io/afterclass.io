@@ -4,10 +4,9 @@ import {
   DEFAULT_CHAT_CONFIG,
   edgeConfigSchema,
 } from "./config";
-// ecfg/chat.ts is a delegation shim over the canonical chat-config.
-// The env-override behaviors below now execute in the canonical module with
-// fail-closed semantics; these tests pin the shim end-to-end (env > Edge >
-// file > defaults) plus the preserved env-override-then-fallback write-limit precedence.
+// The env-override behaviors below run in the canonical chat-config module
+// with fail-closed semantics. These tests pin it end-to-end (env > Edge >
+// file > defaults) plus the env-override-then-fallback write-limit precedence.
 
 describe("chat config schema", () => {
   it("applies defaults when the chat object is missing", () => {
@@ -75,11 +74,10 @@ describe("chat config schema", () => {
       enableReviewFilter: true,
       enableReviewReactions: true,
       enableContentModeration: true,
-      chat: { moderationReportThreshold: 5, moderationModel: "m" },
+      chat: { moderationReportThreshold: 5 },
     });
     expect(parsed.enableContentModeration).toBe(true);
     expect(parsed.chat?.moderationReportThreshold).toBe(5);
-    expect(parsed.chat?.moderationModel).toBe("m");
   });
 
   it("an out-of-range moderation value does not invalidate the remote config", () => {
@@ -122,7 +120,7 @@ describe("getChatConfig env overrides", () => {
 
   it("overrides rateLimitPerMinute from CHAT_RATE_LIMIT_PER_MINUTE", async () => {
     process.env.CHAT_RATE_LIMIT_PER_MINUTE = "99";
-    vi.doMock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+    vi.doMock("@/server/ecfg/edge-config", () => ({
       getEdgeConfig: async () => ({
         enableAnnouncementBanner: false,
         enableCmdkTooltip: true,
@@ -133,14 +131,15 @@ describe("getChatConfig env overrides", () => {
         chat: { ...DEFAULT_CHAT_CONFIG },
       }),
     }));
-    const { getChatConfig } = await import("./chat");
+    const { getChatConfigAsync: getChatConfig } =
+      await import("@/server/config/chat-config");
     const cfg = await getChatConfig();
     expect(cfg.rateLimitPerMinute).toBe(99);
   });
 
   it("overrides mcpRateLimitPerMinute from CHAT_MCP_RATE_LIMIT_PER_MINUTE", async () => {
     process.env.CHAT_MCP_RATE_LIMIT_PER_MINUTE = "123";
-    vi.doMock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+    vi.doMock("@/server/ecfg/edge-config", () => ({
       getEdgeConfig: async () => ({
         enableAnnouncementBanner: false,
         enableCmdkTooltip: true,
@@ -151,7 +150,8 @@ describe("getChatConfig env overrides", () => {
         chat: { ...DEFAULT_CHAT_CONFIG },
       }),
     }));
-    const { getChatConfig } = await import("./chat");
+    const { getChatConfigAsync: getChatConfig } =
+      await import("@/server/config/chat-config");
     const cfg = await getChatConfig();
     expect(cfg.mcpRateLimitPerMinute).toBe(123);
   });
@@ -159,7 +159,7 @@ describe("getChatConfig env overrides", () => {
   it("overrides maxInputTokens from CHAT_MAX_INPUT_TOKENS", async () => {
     const overrideTokens = "32000";
     process.env.CHAT_MAX_INPUT_TOKENS = overrideTokens;
-    vi.doMock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+    vi.doMock("@/server/ecfg/edge-config", () => ({
       getEdgeConfig: async () => ({
         enableAnnouncementBanner: false,
         enableCmdkTooltip: true,
@@ -170,7 +170,8 @@ describe("getChatConfig env overrides", () => {
         chat: { ...DEFAULT_CHAT_CONFIG },
       }),
     }));
-    const { getChatConfig } = await import("./chat");
+    const { getChatConfigAsync: getChatConfig } =
+      await import("@/server/config/chat-config");
     const cfg = await getChatConfig();
     expect(cfg.maxInputTokens).toBe(Number(overrideTokens));
   });
@@ -207,9 +208,8 @@ describe("getChatConfig env overrides", () => {
     expect(() => get1()).toThrow(/window/i);
   });
 
-  // The legacy-shape shim passes the kill-switch flags through.
-  it("passes kill-switch flags through the legacy-shape return", async () => {
-    vi.doMock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+  it("returns the kill-switch flags from the Edge Config", async () => {
+    vi.doMock("@/server/ecfg/edge-config", () => ({
       getEdgeConfig: async () => ({
         enableAnnouncementBanner: false,
         enableCmdkTooltip: true,
@@ -225,7 +225,8 @@ describe("getChatConfig env overrides", () => {
         },
       }),
     }));
-    const { getChatConfig } = await import("./chat");
+    const { getChatConfigAsync: getChatConfig } =
+      await import("@/server/config/chat-config");
     const cfg = await getChatConfig();
     expect(cfg.chatEnabled).toBe(false);
     expect(cfg.widgetEnabled).toBe(false);

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type * as ChatConfigModule from "@/server/config/chat-config";
 import type { Mock } from "vitest";
 
 // `server-only` is carried by the server modules — stub as no-op in tests.
@@ -32,8 +33,9 @@ vi.mock("@/server/assistant/ratelimit", () => ({
     .fn()
     .mockResolvedValue({ ok: true, retryAfterSeconds: 0 }),
 }));
-vi.mock("@/server/ecfg/chat", () => ({
-  getChatConfig: vi.fn().mockResolvedValue({ mcpRateLimitPerMinute: 60 }),
+vi.mock("@/server/config/chat-config", async (importOriginal) => ({
+  ...(await importOriginal<typeof ChatConfigModule>()),
+  getChatConfigAsync: vi.fn().mockResolvedValue({ mcpRateLimitPerMinute: 60 }),
   getRateLimitWindowMinutes: () => 1,
 }));
 

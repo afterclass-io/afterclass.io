@@ -93,4 +93,3 @@ export function computeGroupTickLayout(
 
   return map;
 }
-

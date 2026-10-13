@@ -38,8 +38,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-import { compareRounds } from "@/modules/bidding/utils/round-order";
-import { parseBidWindowKey } from "@/modules/bidding/utils/bid-window-key";
+import { sortChartData } from "@/modules/bidding/utils/sort-chart-data";
 import { computeAcadTermGroups } from "@/modules/bidding/utils/acad-term-groups";
 import {
   computeTermBandBounds,
@@ -47,38 +46,6 @@ import {
   shouldShowNowMarker,
   withPlotIndex,
 } from "@/modules/bidding/utils/term-bands";
-
-export function sortChartData(
-  data: (
-    | { bidWindow: string; price: [number, number]; size: number }
-    | { bidWindow: string; min: number; median: number; size: number }
-  )[],
-) {
-  return [...data]
-    .map((d) => {
-      const min = "price" in d ? d.price[0] : d.min;
-      const median = "price" in d ? d.price[1] : d.median;
-      return {
-        bidWindow: d.bidWindow,
-        price: [min, median] as [number, number],
-        min,
-        median,
-        size: d.size,
-      };
-    })
-    .sort((a, b) => {
-      const aKey = parseBidWindowKey(a.bidWindow);
-      const bKey = parseBidWindowKey(b.bidWindow);
-      // Sort by acadTerm first (asc / chronological), then round order, then window number
-      if (aKey.acadTermId !== bKey.acadTermId)
-        return aKey.acadTermId.localeCompare(bKey.acadTermId);
-      const roundCmp = compareRounds(aKey.round, bKey.round);
-      if (roundCmp !== 0) return roundCmp;
-      return (
-        (parseInt(aKey.window, 10) || 0) - (parseInt(bKey.window, 10) || 0)
-      );
-    });
-}
 
 /** Tooltip header for a hovered point. Shadcn's ChartTooltipContent passes the
  * itemConfig label ('Median Bid') as value since XAxis is numeric, so the
@@ -88,9 +55,7 @@ export function formatBidTooltipLabel(
   payload: readonly { payload?: unknown }[] | undefined,
   bidWindowOfIdx: Map<number, string>,
 ) {
-  const dataPoint = payload?.[0]?.payload as
-    | { bidWindow?: string }
-    | undefined;
+  const dataPoint = payload?.[0]?.payload as { bidWindow?: string } | undefined;
   const bidWindow =
     dataPoint?.bidWindow ??
     (typeof value === "string" && value.includes("/")
@@ -296,7 +261,7 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
           />
         )}
 
-        {/* Median line — blue solid */}
+        {/* Median line — solid */}
         <Line
           dataKey="median"
           type="monotone"
@@ -307,7 +272,7 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
               ? false
               : {
                   r: 4,
-                  fill: "white",
+                  fill: "var(--card)",
                   stroke: "var(--color-median)",
                   strokeWidth: 2,
                 }
@@ -315,12 +280,12 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
           activeDot={{
             r: 6,
             fill: "var(--color-median)",
-            stroke: "white",
+            stroke: "var(--card)",
             strokeWidth: 2,
           }}
         />
 
-        {/* Min line — amber dashed */}
+        {/* Min line — dashed */}
         <Line
           dataKey="min"
           type="monotone"
@@ -332,7 +297,7 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
               ? false
               : {
                   r: 3,
-                  fill: "white",
+                  fill: "var(--card)",
                   stroke: "var(--color-min)",
                   strokeWidth: 2,
                 }
@@ -340,7 +305,7 @@ export const BidChart = ({ chartData, currentAcadTermId }: BidChartProps) => {
           activeDot={{
             r: 5,
             fill: "var(--color-min)",
-            stroke: "white",
+            stroke: "var(--card)",
             strokeWidth: 2,
           }}
         />

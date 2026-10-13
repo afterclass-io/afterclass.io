@@ -83,8 +83,7 @@ export const TimelineSeparator = React.forwardRef<
 });
 TimelineSeparator.displayName = "TimelineSeparator";
 
-export interface TimelineDotProps
-  extends React.ComponentPropsWithoutRef<"div"> {
+export interface TimelineDotProps extends React.ComponentPropsWithoutRef<"div"> {
   variant?: "default" | "outline";
 }
 

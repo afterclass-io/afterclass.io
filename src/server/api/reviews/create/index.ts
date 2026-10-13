@@ -2,10 +2,10 @@ import { Prisma } from "@/generated/prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { reviewFormSchema } from "@/common/tools/zod/schemas";
-import { protectedProcedure } from "@/server/api/trpc";
-import { ReviewableEnum } from "@/modules/submit/types";
+import { verifiedProcedure } from "@/server/api/trpc";
+import { ReviewableEnum } from "@/common/types/reviews";
 
-export const create = protectedProcedure
+export const create = verifiedProcedure
   .input(reviewFormSchema)
   .mutation(async ({ input, ctx }) => {
     const course = await ctx.db.courses.findFirst({
@@ -44,7 +44,8 @@ export const create = protectedProcedure
             await tx.reviewLabels.createMany({
               data: r.labels.map((label) => ({
                 reviewId: review.id,
-                labelId: parseInt(label),
+                // Schema validates label as a positive 32-bit integer string.
+                labelId: Number.parseInt(label, 10),
               })),
             });
           }

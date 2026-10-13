@@ -1,4 +1,6 @@
 "use client";
+import { useRef } from "react";
+
 import { ReviewEventType, ReviewType } from "@/generated/prisma/enums";
 
 import { api } from "@/common/tools/trpc/react";
@@ -13,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/common/components/dialog";
-import { type Review } from "@/modules/reviews/types";
+import { type Review } from "@/common/types/reviews";
 import { ProgressLink } from "@/common/components/progress-link";
 
 import { RevieweeGroup } from "../RevieweeGroup";
@@ -23,7 +25,6 @@ import { ReviewLabelGroup } from "../ReviewLabelGroup";
 import { useEdgeConfigs } from "@/common/hooks";
 import { ReviewFooter } from "../ReviewFooter";
 import { Separator } from "@/common/components/separator";
-import { censorProfanity } from "@/common/functions";
 
 export const ReviewModal = ({
   review,
@@ -39,6 +40,7 @@ export const ReviewModal = ({
   defaultOpen?: boolean;
 }) => {
   const ecfg = useEdgeConfigs();
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const reviewPath =
     review.reviewFor === ReviewType.PROFESSOR
@@ -62,7 +64,15 @@ export const ReviewModal = ({
     >
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        ref={contentRef}
+        tabIndex={-1}
+        // Focus the dialog itself, not the first control: the close button
+        // would otherwise show a focus ring as soon as the modal opens.
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          contentRef.current?.focus();
+        }}
+        className="focus:outline-hidden"
         data-test="review-modal"
       >
         <DialogHeader className="text-left">
@@ -82,7 +92,7 @@ export const ReviewModal = ({
           </DialogDescription>
         </DialogHeader>
         <DialogBody className="wrap-anywhere whitespace-pre-wrap">
-          {censorProfanity(review.body)}
+          {review.body}
         </DialogBody>
         <DialogFooter className="flex-col sm:flex-col">
           <ReviewFooter review={review} />

@@ -13,6 +13,10 @@ export const metadata: Metadata = {
 // Page
 // ---------------------------------------------------------------------------
 
+// No `loading.tsx` on this route, on purpose (#523). The page awaits only the
+// session read, and the roadmap lists load in the browser. A boundary above the
+// `view=mine` gate would start the response first, so the anonymous redirect
+// would turn from an HTTP redirect into a client redirect.
 export default async function RoadmapsPage({
   searchParams,
 }: {

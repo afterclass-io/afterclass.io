@@ -8,7 +8,6 @@ import { CoreLayout } from "@/common/components/core-layout";
 import ThemeProvider from "@/common/providers/ThemeProvider";
 import AuthProvider from "@/common/providers/AuthProvider";
 import TooltipProvider from "@/common/providers/TooltipProvider";
-import { inter, poppins } from "@/common/fonts";
 import { env } from "@/env";
 import { EdgeConfigProvider } from "@/common/providers/EdgeConfig";
 import { UmamiProvider } from "@/common/providers/Umami";
@@ -17,6 +16,7 @@ import ProgressProvider from "@/common/providers/ProgressProvider";
 import { GlobalProgressBar } from "@/modules/home/components/GlobalProgressBar";
 import { Toaster } from "@/common/components/sonner";
 import { UmamiIdentityTracker } from "@/modules/home/components/UmamiIdentityTracker";
+import { WebVitalsReporter } from "@/modules/home/components/WebVitalsReporter";
 import { AssistantProvider } from "@/modules/assistant/assistant-provider";
 
 const appName = "AfterClass";
@@ -34,11 +34,10 @@ export const viewport: Viewport = {
   ],
   width: "device-width",
   initialScale: 1.0,
-  maximumScale: 1.0,
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(env.NEXTAUTH_URL),
+  metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
   title: { default: appName, template: `%s | ${appName}` },
   description: appDesc,
   openGraph: {
@@ -62,11 +61,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${poppins.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="en" suppressHydrationWarning>
       <head>
         <UmamiProvider
           src="/statistics/script.js"
@@ -86,6 +81,7 @@ export default function RootLayout({
                       <CoreLayout>{children}</CoreLayout>
                       <Toaster />
                       <UmamiIdentityTracker />
+                      <WebVitalsReporter />
                       <AssistantProvider />
                     </ThemeProvider>
                   </JotaiProvider>

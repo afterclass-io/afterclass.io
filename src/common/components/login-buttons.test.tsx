@@ -88,8 +88,7 @@ describe("Login CTA href formatting", () => {
       mockPathname = "/course/CS101";
       const { container } = render(<InformationCardLoginButton />);
       const link = container.querySelector("a");
-      const expectedHref =
-        "/account/auth/login?callbackUrl=%2Fcourse%2FCS101";
+      const expectedHref = "/account/auth/login?callbackUrl=%2Fcourse%2FCS101";
       expect(link?.getAttribute("href")).toBe(expectedHref);
       expect(link?.getAttribute("href")).not.toContain("[object Object]");
 

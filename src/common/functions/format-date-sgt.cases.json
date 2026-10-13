@@ -1,0 +1,13 @@
+{
+  "dateTime": [
+    { "iso": "2026-07-06T09:00:00Z", "expected": "06 Jul 2026, Mon 5PM" },
+    { "iso": "2026-07-06T09:30:00Z", "expected": "06 Jul 2026, Mon 5:30PM" },
+    { "iso": "2026-07-05T16:00:00Z", "expected": "06 Jul 2026, Mon 12AM" },
+    { "iso": "2026-07-05T15:59:00Z", "expected": "05 Jul 2026, Sun 11:59PM" },
+    { "iso": "2026-07-06T04:00:00Z", "expected": "06 Jul 2026, Mon 12PM" }
+  ],
+  "dayBoundary": [
+    { "iso": "2026-09-30T16:30:00Z", "expected": "1 Oct 2026" },
+    { "iso": "2026-10-31T15:59:00Z", "expected": "31 Oct 2026" }
+  ]
+}

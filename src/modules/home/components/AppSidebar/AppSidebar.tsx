@@ -24,13 +24,7 @@ import {
   StatisticsTableIcon,
   TelegramIcon,
 } from "@/common/components/icons";
-import {
-  BotIcon,
-  FileTextIcon,
-  LockIcon,
-  PlugIcon,
-  Users,
-} from "lucide-react";
+import { BotIcon, FileTextIcon, LockIcon, PlugIcon, Users } from "lucide-react";
 import { env } from "@/env";
 import { toTitleCase } from "@/common/functions";
 import Link from "next/link";
@@ -47,7 +41,6 @@ type SidebarItemType = {
   external?: boolean;
   target?: string;
   showMobileOnly?: boolean;
-  devOnly?: boolean;
   isNew?: boolean;
   isActiveWithoutExact?: boolean; // Optional prop to indicate if the item should be active without exact match
 };
@@ -106,8 +99,6 @@ const SIDEBAR_CATEGORY_ITEMS: SidebarCategoryType = {
       isActiveWithoutExact: true,
       isNew: true,
     },
-    // Development-only links
-    ...(process.env.NODE_ENV === "development" ? [] : []),
   ],
   contribute: [
     {
@@ -208,7 +199,7 @@ export const AppSidebar = () => {
                     <ProgressLink
                       variant="ghost"
                       href={item.href}
-                      className="text-muted-foreground hover:bg-border-elevated hover:text-accent-foreground flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
+                      className="text-muted-foreground hover:bg-sidebar-accent hover:text-accent-foreground flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
                       data-test={`sidebar-${sidebarItemName(item.label)}`}
                     >
                       {item.icon}
@@ -237,43 +228,40 @@ export const AppSidebar = () => {
               <SidebarGroupLabel>{toTitleCase(key)}</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {items.map((item) =>
-                    item.devOnly &&
-                    process.env.NODE_ENV !== "development" ? null : (
-                      <SidebarMenuItem key={item.label}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={pathname === item.href}
+                  {items.map((item) => (
+                    <SidebarMenuItem key={item.label}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname === item.href}
+                      >
+                        <ProgressLink
+                          variant="ghost"
+                          href={item.href}
+                          target={
+                            item.external
+                              ? (item.target ?? "_blank")
+                              : undefined
+                          }
+                          className="text-muted-foreground hover:bg-sidebar-accent hover:text-accent-foreground flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
+                          data-umami-event={`sidebar-${sidebarItemName(item.label)}`}
+                          data-test={`sidebar-${sidebarItemName(item.label)}`}
                         >
-                          <ProgressLink
-                            variant="ghost"
-                            href={item.href}
-                            target={
-                              item.external
-                                ? (item.target ?? "_blank")
-                                : undefined
-                            }
-                            className="text-muted-foreground hover:bg-border-elevated hover:text-accent-foreground flex items-center justify-start gap-x-3 border border-transparent px-3 py-2 text-sm font-semibold after:!content-none"
-                            data-umami-event={`sidebar-${sidebarItemName(item.label)}`}
-                            data-test={`sidebar-${sidebarItemName(item.label)}`}
-                          >
-                            {item.icon}
-                            {item.label}
-                            {item.isNew && (
-                              <Tag
-                                variant="outline"
-                                color="success"
-                                size="xs"
-                                deletable={false}
-                              >
-                                new
-                              </Tag>
-                            )}
-                          </ProgressLink>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ),
-                  )}
+                          {item.icon}
+                          {item.label}
+                          {item.isNew && (
+                            <Tag
+                              variant="outline"
+                              color="success"
+                              size="xs"
+                              deletable={false}
+                            >
+                              new
+                            </Tag>
+                          )}
+                        </ProgressLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

@@ -1,0 +1,30 @@
+[
+  {
+    "name": "mid-window",
+    "nowIso": "2026-10-08T10:00:20.000Z",
+    "windowMinutes": 1,
+    "expectedWindowStart": "2026-10-08T10:00:00.000Z",
+    "expectedRetryAfterSeconds": 40
+  },
+  {
+    "name": "window start",
+    "nowIso": "2026-10-08T10:00:00.000Z",
+    "windowMinutes": 1,
+    "expectedWindowStart": "2026-10-08T10:00:00.000Z",
+    "expectedRetryAfterSeconds": 60
+  },
+  {
+    "name": "last millisecond",
+    "nowIso": "2026-10-08T10:00:59.999Z",
+    "windowMinutes": 1,
+    "expectedWindowStart": "2026-10-08T10:00:00.000Z",
+    "expectedRetryAfterSeconds": 1
+  },
+  {
+    "name": "hour window",
+    "nowIso": "2026-10-08T10:30:00.000Z",
+    "windowMinutes": 60,
+    "expectedWindowStart": "2026-10-08T10:00:00.000Z",
+    "expectedRetryAfterSeconds": 1800
+  }
+]

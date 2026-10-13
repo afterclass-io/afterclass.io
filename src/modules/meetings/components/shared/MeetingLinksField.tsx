@@ -27,7 +27,11 @@ export type MeetingLinksFieldProps = {
  * Add links one at a time: type or paste, press Enter or Add, and each link
  * becomes a removable chip. Pasting several links at once splits them.
  */
-export function MeetingLinksField({ value, onChange, id }: MeetingLinksFieldProps) {
+export function MeetingLinksField({
+  value,
+  onChange,
+  id,
+}: MeetingLinksFieldProps) {
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const isFull = value.length >= MAX_MEETING_LINKS;
@@ -58,9 +62,7 @@ export function MeetingLinksField({ value, onChange, id }: MeetingLinksFieldProp
             id={id}
             value={draft}
             disabled={isFull}
-            placeholder={
-              isFull ? "Link limit reached" : "Paste a link"
-            }
+            placeholder={isFull ? "Link limit reached" : "Paste a link"}
             aria-invalid={Boolean(error)}
             className="pl-8"
             onChange={(event) => {
@@ -78,11 +80,16 @@ export function MeetingLinksField({ value, onChange, id }: MeetingLinksFieldProp
               const text = event.clipboardData.getData("text");
               if (!/[\s,]/.test(text.trim())) return;
               event.preventDefault();
-              const { links, rejected, overflow } = addLinksFromText(value, text);
+              const { links, rejected, overflow } = addLinksFromText(
+                value,
+                text,
+              );
               onChange(links);
               setDraft(rejected.join(" "));
               setError(
-                overflow ? `You can add up to ${MAX_MEETING_LINKS} links` : null,
+                overflow
+                  ? `You can add up to ${MAX_MEETING_LINKS} links`
+                  : null,
               );
             }}
           />
@@ -113,12 +120,14 @@ export function MeetingLinksField({ value, onChange, id }: MeetingLinksFieldProp
                     variant="soft"
                     color="default"
                     deletable
-                    onDelete={() => onChange(value.filter((item) => item !== link))}
+                    onDelete={() =>
+                      onChange(value.filter((item) => item !== link))
+                    }
                   >
                     {getLinkLabel(link)}
                   </Tag>
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs break-all text-xs">
+                <TooltipContent className="max-w-xs text-xs break-all">
                   {link}
                 </TooltipContent>
               </Tooltip>
@@ -128,7 +137,8 @@ export function MeetingLinksField({ value, onChange, id }: MeetingLinksFieldProp
       )}
 
       <p className="text-muted-foreground text-xs">
-        {value.length}/{MAX_MEETING_LINKS} links. Press Enter to add; you can paste several at once.
+        {value.length}/{MAX_MEETING_LINKS} links. Press Enter to add; you can
+        paste several at once.
       </p>
     </div>
   );

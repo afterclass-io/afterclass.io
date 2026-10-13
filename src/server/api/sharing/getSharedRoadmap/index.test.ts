@@ -26,7 +26,12 @@ const roadmapFixture = {
       yearNumber: 1,
       term: "T1",
       sortOrder: 0,
-      course: { code: "IS101", name: "Intro", creditUnits: 1, description: "d" },
+      course: {
+        code: "IS101",
+        name: "Intro",
+        creditUnits: 1,
+        description: "d",
+      },
     },
   ],
 };
@@ -65,5 +70,56 @@ describe("sharing.getSharedRoadmap", () => {
     await expect(
       caller.getSharedRoadmap({ token: "nope" }),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  it("masks profanity in the roadmap name and owner username", async () => {
+    const findUnique = vi.fn().mockResolvedValue({
+      ...roadmapFixture,
+      name: "Shit plan",
+      user: { username: "bastard" },
+    });
+    const caller = makeCaller(router.createCaller, {
+      userRoadmap: { findUnique },
+    });
+
+    const result = await caller.getSharedRoadmap({ token: "tok_valid" });
+
+    expect(result.roadmap.name).toBe("**** plan");
+    expect(result.ownerUsername).toBe("*******");
+  });
+
+  it("selects only the fields the page uses, never the share token or user id", async () => {
+    const findUnique = vi.fn().mockResolvedValue(roadmapFixture);
+    const caller = makeCaller(router.createCaller, {
+      userRoadmap: { findUnique },
+    });
+
+    await caller.getSharedRoadmap({ token: "tok_valid" });
+
+    const args = findUnique.mock.calls[0]?.[0] as {
+      include?: unknown;
+      select?: Record<string, unknown>;
+    };
+    expect(args.include).toBeUndefined();
+    expect(Object.keys(args.select ?? {}).sort()).toEqual([
+      "entries",
+      "id",
+      "name",
+      "user",
+    ]);
+  });
+
+  it("never ships the raw owner username anywhere in the response", async () => {
+    const findUnique = vi.fn().mockResolvedValue({
+      ...roadmapFixture,
+      user: { username: "bastard" },
+    });
+    const caller = makeCaller(router.createCaller, {
+      userRoadmap: { findUnique },
+    });
+
+    const result = await caller.getSharedRoadmap({ token: "tok_valid" });
+
+    expect(JSON.stringify(result)).not.toContain("bastard");
   });
 });

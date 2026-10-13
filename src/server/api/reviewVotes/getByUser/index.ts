@@ -5,7 +5,6 @@ import { protectedProcedure } from "@/server/api/trpc";
 export const getByUser = protectedProcedure
   .input(
     z.object({
-      userId: z.string().optional(),
       reviewId: z.string().optional(),
     }),
   )
@@ -13,7 +12,7 @@ export const getByUser = protectedProcedure
     async ({ input, ctx }) =>
       await ctx.db.reviewVotes.findFirst({
         where: {
-          voterId: input.userId ?? ctx.session.user.id,
+          voterId: ctx.session.user.id,
           reviewId: input.reviewId,
         },
       }),

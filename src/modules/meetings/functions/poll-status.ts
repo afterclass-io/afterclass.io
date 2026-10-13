@@ -18,7 +18,9 @@ export function groupMeetingsByStatus<T extends DatedMeeting>(
     (toIsoDate(meeting.endDate) >= today ? upcoming : past).push(meeting);
   }
 
-  upcoming.sort((a, b) => toIsoDate(a.startDate).localeCompare(toIsoDate(b.startDate)));
+  upcoming.sort((a, b) =>
+    toIsoDate(a.startDate).localeCompare(toIsoDate(b.startDate)),
+  );
   past.sort((a, b) => toIsoDate(b.endDate).localeCompare(toIsoDate(a.endDate)));
   return { upcoming, past };
 }

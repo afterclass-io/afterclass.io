@@ -10,6 +10,10 @@
   --mt-if-needed-line: #997700;
   --mt-busy: #fbd5d5;
   --mt-event: #006be8;
+  /* Text on the card fills. The colours above fail 4.5:1 as small text. */
+  --mt-available-text: #00803f;
+  --mt-if-needed-text: #8a6800;
+  --mt-event-text: #003882;
 }
 
 .dark .meetings-theme {
@@ -19,4 +23,7 @@
   --mt-if-needed-line: #e5a800;
   --mt-busy: #5b2a2a;
   --mt-event: #53a2ff;
+  --mt-available-text: #29bc68;
+  --mt-if-needed-text: #e5a800;
+  --mt-event-text: #66adff;
 }

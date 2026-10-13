@@ -226,4 +226,26 @@ describe("runModeration against Postgres", () => {
       slug: null,
     });
   });
+
+  it("an exhausted hourly ceiling peeks before taking a claim without starving future runs", async () => {
+    const review = await seedReview(db, { reviewerId: authorId, courseId });
+    await reportReview(review.id, 3);
+    const target = { surface: "review" as const, itemId: review.id };
+    const judge = vi.fn<Judge>().mockResolvedValue(cleared);
+
+    await expect(
+      runModeration(target, { ...cfg, moderationJudgementsPerHour: 0 }, judge),
+    ).resolves.toBe("ceiling_reached");
+    expect(judge).not.toHaveBeenCalled();
+
+    const claimCount = await db.rateLimitWindow.count({
+      where: {
+        key: { startsWith: `moderation:claim:REVIEW:${review.id}:0:` },
+      },
+    });
+    expect(claimCount).toBe(0);
+
+    await expect(runModeration(target, cfg, judge)).resolves.toBe("cleared");
+    expect(judge).toHaveBeenCalledTimes(1);
+  });
 });

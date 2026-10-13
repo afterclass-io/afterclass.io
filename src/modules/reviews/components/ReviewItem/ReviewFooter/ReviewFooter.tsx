@@ -1,4 +1,4 @@
-import { type Review } from "@/modules/reviews/types";
+import { type Review } from "@/common/types/reviews";
 
 import { formatNumberShortScale } from "@/common/functions";
 import { EyeIcon } from "@/common/components/icons";
@@ -19,18 +19,16 @@ export const ReviewFooter = ({ review }: ReviewFooterProps) => {
 
   return (
     <div className="space-y-2">
-      {shouldShowReviewReactions && (
-        <ReviewReactionsGroup reviewId={review.id} />
-      )}
+      {shouldShowReviewReactions && <ReviewReactionsGroup review={review} />}
 
       <div className="flex flex-wrap gap-4">
-        <ReviewVoteGroup reviewId={review.id} />
+        <ReviewVoteGroup review={review} />
 
         {shouldShowReviewReactions && (
           <ReviewReactionButton reviewId={review.id} />
         )}
 
-        <ReviewShareButton reviewId={review.id} />
+        <ReviewShareButton review={review} />
 
         <ReportButton surface="review" refId={review.id} />
 

@@ -1,38 +1,20 @@
 "use client";
-import { startTransition, useEffect, Fragment } from "react";
+import { useEffect, Fragment } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/common/components/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/common/components/form";
-import { LockIcon, EnvelopeIcon } from "@/common/components/icons";
-import {
-  PasswordInputRoot,
-  PasswordInputAdornment,
-  PasswordInputAdornmentToggle,
-  PasswordInput,
-} from "@/common/components/input-password";
-import {
-  InputRoot,
-  InputAdornment,
-  InputControl,
-  Input,
-} from "@/common/components/input";
+import { Form } from "@/common/components/form";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
-import { useProgress } from "@/common/providers/ProgressProvider";
 import { ProgressLink } from "@/common/components/progress-link";
 import { toast } from "sonner";
+import { EmailField } from "./fields/EmailField";
+import { PasswordField } from "./fields/PasswordField";
 import { GoogleSignInButton } from "./GoogleSignInButton";
+import { useNavigateWithProgress } from "../hooks/useNavigateWithProgress";
 import { env } from "@/env";
 
 const loginFormInputsSchema = z.object({
@@ -49,8 +31,7 @@ export const LoginForm = ({
   enablePasswordLogin?: boolean;
 }) => {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const progress = useProgress();
+  const navigateWithProgress = useNavigateWithProgress();
 
   const form = useForm<LoginFormInputs>({
     resolver: zodResolver(loginFormInputsSchema),
@@ -75,7 +56,7 @@ export const LoginForm = ({
               {env.NEXT_PUBLIC_SUPPORTED_SCH_DOMAINS.map((domain, i) => (
                 <Fragment key={i}>
                   {i > 0 && <span className="mr-1">,</span>}
-                  <span className="before:bg-border-primary/15 relative inline-block before:absolute before:-inset-[2px] before:my-[5px]">
+                  <span className="before:bg-primary/15 relative inline-block before:absolute before:-inset-[2px] before:my-[5px]">
                     <pre className="text-secondary-foreground inline">
                       {domain}
                     </pre>
@@ -135,12 +116,7 @@ export const LoginForm = ({
       return;
     }
 
-    progress.start();
-    startTransition(() => {
-      router.push(signinResp.url ?? callbackUrl);
-      router.refresh();
-      progress.done();
-    });
+    navigateWithProgress(signinResp.url ?? callbackUrl, { refresh: true });
   };
 
   return (
@@ -151,69 +127,37 @@ export const LoginForm = ({
       >
         {enablePasswordLogin && (
           <>
-            <FormField
+            <EmailField
               control={form.control}
               name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>School Email Address</FormLabel>
-                  <FormControl>
-                    <InputRoot>
-                      <InputAdornment>
-                        <EnvelopeIcon />
-                      </InputAdornment>
-                      <InputControl>
-                        <Input
-                          {...field}
-                          disabled={form.formState.isSubmitting}
-                          placeholder="john.doe.2023@smu.edu.sg"
-                          autoComplete="on"
-                          tabIndex={1}
-                          data-test="email"
-                        />
-                      </InputControl>
-                    </InputRoot>
-                  </FormControl>
-                  <FormMessage data-test="email-helper-text" />
-                </FormItem>
-              )}
+              label="School Email Address"
+              placeholder="john.doe.2023@smu.edu.sg"
+              tabIndex={1}
+              dataTest="email"
+              disabled={form.formState.isSubmitting}
             />
-            <FormField
+            <PasswordField
               control={form.control}
               name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center justify-between">
-                    <span>Password</span>
-                    <ProgressLink
-                      href="/account/auth/forgot"
-                      variant="link"
-                      className="md:text-sm"
-                      tabIndex={5}
-                      data-test="forget"
-                    >
-                      Forgot password?
-                    </ProgressLink>
-                  </FormLabel>
-                  <FormControl>
-                    <PasswordInputRoot>
-                      <PasswordInputAdornment>
-                        <LockIcon />
-                      </PasswordInputAdornment>
-                      <PasswordInput
-                        {...field}
-                        disabled={form.formState.isSubmitting}
-                        placeholder="Enter password"
-                        autoComplete="on"
-                        tabIndex={2}
-                        data-test="password"
-                      />
-                      <PasswordInputAdornmentToggle />
-                    </PasswordInputRoot>
-                  </FormControl>
-                  <FormMessage data-test="password-helper-text" />
-                </FormItem>
-              )}
+              label={
+                <>
+                  <span>Password</span>
+                  <ProgressLink
+                    href="/account/auth/forgot"
+                    variant="link"
+                    className="md:text-sm"
+                    tabIndex={5}
+                    data-test="forget"
+                  >
+                    Forgot password?
+                  </ProgressLink>
+                </>
+              }
+              labelClassName="flex items-center justify-between"
+              placeholder="Enter password"
+              tabIndex={2}
+              dataTest="password"
+              disabled={form.formState.isSubmitting}
             />
           </>
         )}
@@ -255,12 +199,7 @@ export const LoginForm = ({
                 return;
               }
 
-              progress.start();
-              startTransition(() => {
-                router.push(resp?.url ?? "/");
-                router.refresh();
-                progress.done();
-              });
+              navigateWithProgress(resp?.url ?? "/", { refresh: true });
             }}
           >
             Sign in with Google

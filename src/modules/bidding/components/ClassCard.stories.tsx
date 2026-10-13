@@ -46,7 +46,6 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-
 export const Default: Story = {};
 
 export const NoProfessor: Story = {
@@ -55,20 +54,17 @@ export const NoProfessor: Story = {
   },
 };
 
-
 export const NoClassTimings: Story = {
   args: {
     classTiming: [],
   },
 };
 
-
 export const NoExamTimings: Story = {
   args: {
     examTiming: [],
   },
 };
-
 
 export const MultipleTimings: Story = {
   args: {
@@ -104,7 +100,6 @@ export const MultipleTimings: Story = {
     ],
   },
 };
-
 
 export const MissingExamDetails: Story = {
   args: {

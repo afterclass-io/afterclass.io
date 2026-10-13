@@ -4,8 +4,8 @@ import type { ThemeColors } from "../tokens";
 import { compareRounds } from "../utils/round-order";
 import { computeTermGroups, type ChartPoint } from "../utils/chart-points";
 
-export type SortColumn = "term" | "round" | "window" | "min" | "median";
-export type SortDirection = "asc" | "desc";
+type SortColumn = "term" | "round" | "window" | "min" | "median";
+type SortDirection = "asc" | "desc";
 
 const DEFAULT_VISIBLE_ROWS = 10;
 
@@ -143,7 +143,9 @@ export const HistoryTable: React.FC<{
                     fontFamily: "var(--font-geist-mono, ui-monospace)",
                   }}
                 >
-                  {typeof r.median === "number" ? r.median.toFixed(2) : r.median}
+                  {typeof r.median === "number"
+                    ? r.median.toFixed(2)
+                    : r.median}
                 </td>
               </tr>
             ))}

@@ -28,8 +28,7 @@ export function CreditTotalBadge() {
 
   if (!activeTimetableId) return null;
 
-  const variant =
-    total > 6.5 ? "error" : total > 5.5 ? "warning" : "default";
+  const variant = total > 6.5 ? "error" : total > 5.5 ? "warning" : "default";
 
   return (
     <span

@@ -1,4 +1,4 @@
-import { type Review } from "@/modules/reviews/types";
+import { type Review } from "@/common/types/reviews";
 import { SchoolIcon } from "@/common/components/icons";
 import { ProgressLink } from "@/common/components/progress-link";
 
@@ -23,7 +23,7 @@ export const RevieweeGroup = ({ review, variant }: RevieweeGroupProps) => {
           <ProgressLink
             variant="link"
             href={`/professor/${review.professorSlug}`}
-            className="hover:text-primary text-muted-foreground min-w-0 shrink break-words whitespace-normal hover:no-underline"
+            className="hover:text-primary text-muted-foreground h-auto min-h-9 min-w-0 shrink break-words whitespace-normal hover:no-underline"
             data-test="review-professor-label"
           >
             {review.professorName}

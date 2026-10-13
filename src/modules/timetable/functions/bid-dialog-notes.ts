@@ -8,7 +8,7 @@
 // saved notes. All the state transitions are encoded here as a pure function
 // so they can be unit-tested without mounting the tRPC-bound dialog.
 
-export type BidDialogNotesClassBid = {
+type BidDialogNotesClassBid = {
   bidWindowId: number;
   notes?: string | null;
 };
@@ -36,7 +36,7 @@ export type BidDialogNotesResult = {
   loadedNotesKey?: string;
 };
 
-export function notesKeyFor(classId: string, bidWindowId: string | number) {
+function notesKeyFor(classId: string, bidWindowId: string | number) {
   return `${classId}:${bidWindowId}`;
 }
 

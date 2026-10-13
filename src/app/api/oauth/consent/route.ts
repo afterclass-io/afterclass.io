@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { auth } from "@/server/auth";
 import {
   getSupabaseAccessToken,
@@ -13,6 +15,14 @@ import {
 } from "@/server/supabase-consent";
 
 export const runtime = "nodejs";
+
+// Untrusted request body. `csrfToken` stays `unknown` here so a wrong-typed
+// token still gets the 403 "bad csrf" answer from the CSRF check below.
+const consentBodySchema = z.object({
+  authorization_id: z.string().min(1),
+  decision: z.enum(["approve", "deny"]),
+  csrfToken: z.unknown().optional(),
+});
 
 // Same-origin CSRF guard shared by GET (details) and POST (decision):
 // reject cross-origin browser requests. Browsers send Sec-Fetch-Site; the
@@ -40,7 +50,9 @@ function sameOriginGuard(req: Request): Response | null {
   return null;
 }
 
-export async function GET(req: Request) {
+// Runs the same-origin guard, then reads the Supabase access token. Returns
+// the error Response to send when either check fails, otherwise the token.
+async function requireConsentSession(req: Request): Promise<string | Response> {
   const blocked = sameOriginGuard(req);
   if (blocked) return blocked;
   const token = await getSupabaseAccessToken();
@@ -55,6 +67,13 @@ export async function GET(req: Request) {
     }
     return Response.json({ error: "no supabase session" }, { status: 401 });
   }
+  return token;
+}
+
+export async function GET(req: Request) {
+  const tokenOrResponse = await requireConsentSession(req);
+  if (tokenOrResponse instanceof Response) return tokenOrResponse;
+  const token = tokenOrResponse;
   const authorizationId = new URL(req.url).searchParams.get("authorization_id");
   if (!authorizationId)
     return Response.json(
@@ -89,33 +108,21 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const blocked = sameOriginGuard(req);
-  if (blocked) return blocked;
-
-  const token = await getSupabaseAccessToken();
-  if (!token) {
-    const session = await auth();
-    if (session?.user && session.googleLinkFailed) {
-      console.error("[oauth/consent] link failed for signed-in user");
-      return Response.json({ error: "link_failed" }, { status: 401 });
-    }
-    return Response.json({ error: "no supabase session" }, { status: 401 });
-  }
-  // Malformed JSON is a 400, never a 500 (unhandled req.json() throw).
-  let body: {
-    authorization_id?: string;
-    decision?: string;
-    csrfToken?: string;
-  };
+  const tokenOrResponse = await requireConsentSession(req);
+  if (tokenOrResponse instanceof Response) return tokenOrResponse;
+  const token = tokenOrResponse;
+  // Malformed JSON and any body that is not the expected object are a 400,
+  // never a 500 (unhandled req.json() throw, or a `null` literal).
+  let raw: unknown;
   try {
-    body = (await req.json()) as typeof body;
+    raw = await req.json();
   } catch {
     return Response.json({ error: "bad body" }, { status: 400 });
   }
-  if (!body.authorization_id || !body.decision)
+  const parsed = consentBodySchema.safeParse(raw);
+  if (!parsed.success)
     return Response.json({ error: "bad body" }, { status: 400 });
-  if (body.decision !== "approve" && body.decision !== "deny")
-    return Response.json({ error: "bad body" }, { status: 400 });
+  const body = parsed.data;
   // CSRF verification: the page forwards the GET-issued token;
   // it must verify against this session's access token. Skipped only when
   // no app secret is configured (same-origin guard remains the backstop).

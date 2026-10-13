@@ -1,6 +1,7 @@
 "use client";
+import { useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { ReviewModal } from "../ReviewItem/ReviewModal";
 import { api } from "@/common/tools/trpc/react";
@@ -12,26 +13,35 @@ export const ReviewModalFocused = ({
   variant: "home" | "professor" | "course";
 }) => {
   const searchParams = useSearchParams();
-  const reviewId = searchParams?.get("review_id");
+  const pathname = usePathname();
+  const reviewId = searchParams?.get("review_id") ?? null;
   const router = useRouter();
-  const session = useSession();
-  if (!reviewId) return null;
+  const { status: sessionStatus } = useSession();
 
-  if (session.status !== "authenticated") {
-    if (session.status === "loading") return null;
-    router.push("/account/auth/login?callbackUrl=" + window.location.href);
-  }
+  // Every hook runs on every render. Conditions go in `enabled` and the
+  // effects, never in an early return above a hook.
+  const reviewQuery = api.reviews.getById.useQuery(reviewId ?? "", {
+    enabled: reviewId !== null && sessionStatus === "authenticated",
+  });
 
-  const reviewQuery = api.reviews.getById.useQuery(reviewId);
-  if (reviewQuery.status !== "success") {
-    if (reviewQuery.status === "error") {
-      toast.error("Review not found", {
-        id: reviewId,
-        description: "Please check the link or try again later",
-      });
-    }
-    return null;
-  }
+  const signedOut = sessionStatus === "unauthenticated";
+  const queryString = searchParams?.toString() ?? "";
+  useEffect(() => {
+    if (!reviewId || !signedOut) return;
+    const here = queryString ? `${pathname}?${queryString}` : pathname;
+    router.push(`/account/auth/login?callbackUrl=${encodeURIComponent(here)}`);
+  }, [reviewId, signedOut, pathname, queryString, router]);
+
+  const queryFailed = reviewQuery.status === "error";
+  useEffect(() => {
+    if (!reviewId || !queryFailed) return;
+    toast.error("Review not found", {
+      id: reviewId,
+      description: "Please check the link or try again later",
+    });
+  }, [reviewId, queryFailed]);
+
+  if (!reviewId || reviewQuery.status !== "success") return null;
 
   return (
     <ReviewModal variant={variant} review={reviewQuery.data} defaultOpen />

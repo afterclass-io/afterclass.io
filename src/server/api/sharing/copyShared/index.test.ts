@@ -13,10 +13,12 @@ const source = {
 };
 
 /** loadCopyableRoadmap uses userRoadmap.findUnique; copyRoadmapToUser uses userRoadmap.create. */
-function makeDb(opts: {
-  findUnique?: ReturnType<typeof vi.fn>;
-  create?: ReturnType<typeof vi.fn>;
-} = {}) {
+function makeDb(
+  opts: {
+    findUnique?: ReturnType<typeof vi.fn>;
+    create?: ReturnType<typeof vi.fn>;
+  } = {},
+) {
   return {
     userRoadmap: {
       findUnique: opts.findUnique ?? vi.fn().mockResolvedValue(source),
@@ -80,13 +82,14 @@ describe("sharing.copyShared", () => {
     });
   });
 
-  it("maps a Prisma FK-constraint error (P2003) to INTERNAL_SERVER_ERROR", async () => {
+  it("maps a Prisma FK-constraint error (P2003) to BAD_REQUEST", async () => {
     const caller = makeCaller(
       router.createCaller,
       makeDb({ create: vi.fn().mockRejectedValue({ code: "P2003" }) }),
     );
     await expect(caller.copyShared({ token: "tok" })).rejects.toMatchObject({
-      code: "INTERNAL_SERVER_ERROR",
+      code: "BAD_REQUEST",
+      message: "Cannot copy this roadmap — it contains an unknown course.",
     });
   });
 

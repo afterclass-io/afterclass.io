@@ -1,0 +1,33 @@
+{
+  "id": "rev-test-01",
+  "rating": 5,
+  "body": "Great course and professor!",
+  "tips": "Study weekly and do the practice problems.",
+  "countEventViews": 10,
+  "countVotes": 4,
+  "createdAt": "2024-02-15T08:30:00.000Z",
+  "reviewedUniversityId": 1,
+  "reviewedProfessorId": "prof-test-01",
+  "reviewedCourseId": "course-test-01",
+  "reviewedCourse": {
+    "code": "CS101",
+    "name": "Introduction to Computer Science"
+  },
+  "reviewer": {
+    "username": "student_alice"
+  },
+  "reviewLabels": [
+    {
+      "label": {
+        "name": "ENGAGING"
+      }
+    }
+  ],
+  "reviewedProfessor": {
+    "name": "Dr. Jane Smith",
+    "slug": "dr-jane-smith"
+  },
+  "reviewedUniversity": {
+    "abbrv": "SMU"
+  }
+}

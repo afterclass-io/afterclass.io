@@ -1,6 +1,6 @@
 import { type Prisma } from "@/generated/prisma/client";
 
-import { ReviewsSortBy } from "@/modules/reviews/types";
+import { ReviewsSortBy } from "@/common/types/reviews";
 import { TRPCError } from "@trpc/server";
 
 export const getOrderBy = (sortBy: ReviewsSortBy) => {

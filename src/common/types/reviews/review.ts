@@ -1,0 +1,27 @@
+import type { Labels } from "@/generated/prisma/client";
+import type {
+  ReviewType,
+  UniversityAbbreviation,
+} from "@/generated/prisma/enums";
+import type { ReviewEngagement } from "./engagement";
+
+export type Review = {
+  id: string;
+  body: string;
+  tips: string;
+  rating: number;
+  courseCode: string;
+  courseName: string;
+  username: string;
+  /** Member reviews only: the author row, with a masked username. */
+  reviewer?: { username: string };
+  likeCount: number;
+  countEventViews: number;
+  createdAt: number;
+  reviewLabels: Pick<Labels, "name">[];
+  university: UniversityAbbreviation;
+  reviewFor: ReviewType;
+  professorName?: string;
+  professorSlug?: string;
+  engagement?: ReviewEngagement;
+};

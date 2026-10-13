@@ -11,6 +11,17 @@ export type AcadTermSummary = {
   endDt: Date;
 };
 
+/**
+ * A summary plus the raw year and term code. Callers that map a term onto a
+ * roadmap year (`buildProgressSyncPlan`) need these; `toAcadTermSummary`
+ * stays the label-only shape.
+ */
+export type AcadTermDetail = AcadTermSummary & {
+  acadYearStart: number;
+  acadYearEnd: number;
+  term: string;
+};
+
 /** Row shape returned by AcadTerm.findMany */
 type AcadTermRow = {
   id: string;
@@ -100,18 +111,23 @@ export function resolveCurrentTerm(
 // ============================================================
 
 /**
- * Fetch all AcadTerm rows, map to summaries.
+ * Fetch all AcadTerm rows, map to summaries with the year and term code.
  * Sorted by `startDt` descending (most recent first).
  *
  * Exported as `_fetchAcadTerms` so tests can inject a mock delegate.
  */
 export async function _fetchAcadTerms(prisma: {
   acadTerm: AcadTermDelegate;
-}): Promise<AcadTermSummary[]> {
+}): Promise<AcadTermDetail[]> {
   const rows = await prisma.acadTerm.findMany({
     orderBy: { startDt: "desc" },
   });
-  return rows.map(toAcadTermSummary);
+  return rows.map((row) => ({
+    ...toAcadTermSummary(row),
+    acadYearStart: row.acadYearStart,
+    acadYearEnd: row.acadYearEnd,
+    term: row.term,
+  }));
 }
 
 // ============================================================
@@ -131,7 +147,7 @@ const CACHE_OPTIONS = { revalidate: 86400, tags: ["acad-terms"] };
  */
 export async function listAcadTerms(prisma: {
   acadTerm: AcadTermDelegate;
-}): Promise<AcadTermSummary[]> {
+}): Promise<AcadTermDetail[]> {
   // Outside the Next.js runtime (e.g. standalone `mcp-use dev/start`, which
   // shims `next/cache`), `unstable_cache` throws "incrementalCache missing".
   // Fall back to a direct DB fetch so MCP tools keep working there; the web

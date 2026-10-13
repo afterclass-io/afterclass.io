@@ -106,14 +106,16 @@ function AgendaRow({
   const { className: colorClasses } = courseColor(slot.courseCode);
   const bidStatus = bidInfo?.status as UserBidStatus | undefined;
   const cardVariant = slotCardVariant(bidStatus);
-  const cardClasses = bidInfo ? (cardVariant ?? colorClasses) : colorClasses;
+  const cardClasses = bidInfo
+    ? (cardVariant?.className ?? colorClasses)
+    : colorClasses;
   const rawVenue = slot.venue ?? slot.timing.venue ?? null;
   const venue = rawVenue ? abbreviateVenue(rawVenue) : null;
 
   return (
     <div className="group relative flex items-center gap-2 px-2 py-1.5">
       {/* Time column */}
-      <div className="text-muted-foreground w-20 shrink-0 font-mono text-[11px] leading-tight tabular-nums">
+      <div className="text-muted-foreground text-2xs w-20 shrink-0 font-mono leading-tight tabular-nums">
         <span className="block">{slot.timing.startTime}</span>
         <span className="block">{slot.timing.endTime}</span>
       </div>
@@ -147,12 +149,11 @@ function AgendaRow({
         {bidInfo && !readOnly && (
           <span
             className={cn(
-              "mt-0.5 inline-block rounded-sm px-1 py-px text-[10px] leading-none font-medium",
+              "text-2xs mt-0.5 inline-block rounded-sm px-1 py-px leading-none font-medium",
               bidChipVariant(bidInfo.status as UserBidStatus),
             )}
           >
-            {formatBidAmount(bidInfo.amount)}{" "}
-            · R{bidInfo.round}
+            {formatBidAmount(bidInfo.amount)} · R{bidInfo.round}
           </span>
         )}
       </button>

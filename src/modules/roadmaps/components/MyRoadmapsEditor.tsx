@@ -1,82 +1,46 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useAtom } from "jotai";
 import { toast } from "sonner";
-import {
-  GitBranch,
-  GraduationCap,
-  LayoutGrid,
-  RefreshCw,
-  Star,
-} from "lucide-react";
+import { GitBranch } from "lucide-react";
 import { api } from "@/common/tools/trpc/react";
-import { createOptimisticMutationCallbacks } from "@/common/hooks/create-optimistic-mutation-callbacks";
 import type { Entry } from "@/modules/roadmaps/functions/conflicts";
-import { createSaveEntriesCallbacks } from "@/modules/roadmaps/functions/save-callbacks";
 import {
   isConflictError,
   saveEntriesWithConflictRetry,
 } from "@/modules/roadmaps/functions/save-with-retry";
 import { findEntryByCourse } from "@/modules/roadmaps/functions/conflicts";
-import { extractAcadTermCode } from "@/modules/roadmaps/functions/term-mapping";
-import { roadmapPanelWidthsAtom } from "@/modules/roadmaps/atoms/roadmap";
+import {
+  extractAcadTermCode,
+  findAcadTermForRoadmapTerm,
+} from "@/modules/roadmaps/functions/term-mapping";
 import { hasSeenRoadmapsTourAtom } from "@/modules/roadmaps/atoms/roadmap";
+import { useRoadmapMutations } from "@/modules/roadmaps/hooks/use-roadmap-mutations";
+import { useRoadmapPanelResize } from "@/modules/roadmaps/hooks/use-roadmap-panel-resize";
 import { RoadmapGrid } from "@/modules/roadmaps/components/RoadmapGrid";
 import { RoadmapList } from "@/modules/roadmaps/components/RoadmapList";
-import { RoadmapTimeline } from "@/modules/roadmaps/components/RoadmapTimeline";
+import { LazyRoadmapTimeline } from "@/modules/roadmaps/components/LazyRoadmapTimeline";
+import {
+  RoadmapEditorHeader,
+  type EditorViewMode,
+} from "@/modules/roadmaps/components/RoadmapEditorHeader";
 import { CourseSearchSidebar } from "@/modules/roadmaps/components/CourseSearchSidebar";
 import { TermTimetableLink } from "@/modules/roadmaps/components/TermTimetableLink";
-import { ShareDialog } from "@/modules/sharing/components/ShareDialog";
 import { Button } from "@/common/components/button";
 import { Skeleton } from "@/common/components/skeleton";
-import { Textarea } from "@/common/components/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/common/components/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/common/components/tooltip";
-import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
 import { EmptyState } from "@/common/components/empty-state";
-import { TourReplayButton } from "@/common/tour/TourReplayButton";
 import { roadmapsTourSteps } from "@/common/tour/steps";
 import { useAutoStartTour } from "@/common/tour/useAutoStartTour";
-import { cn } from "@/common/functions";
 import { ResizeHandle } from "@/common/components/resize-handle";
-
-type EditorViewMode = "grid" | "timeline";
 
 // =============================================================================
 // Constants
 // =============================================================================
 
-/** Panel resize clamps (px). lg+ only; mobile keeps the stacked layout. */
-const LIST_MIN_WIDTH = 160;
-const LIST_MAX_WIDTH = 320;
-const SIDEBAR_MIN_WIDTH = 200;
-const SIDEBAR_MAX_WIDTH = 400;
-/** Keep at least this much width for the grid/timeline area when resizing. */
-const MAIN_MIN_WIDTH = 480;
-
-const DESCRIPTION_MAX_LENGTH = 500;
-
-/** Sentinel Select value for the "Clear" matriculation-year item. */
-const CLEAR_MATRIC_VALUE = "__clear__";
-
 // =============================================================================
 // Helpers
 // =============================================================================
-
-function clampWidth(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), Math.max(min, max));
-}
 
 /**
  * Academic-year part of an AcadTerm label. Labels are "AY2026/2027 1"
@@ -138,40 +102,8 @@ export function MyRoadmapsEditor() {
   const [viewMode, setViewMode] = useState<EditorViewMode>("grid");
 
   // ---- Resizable panel widths (persisted, lg+ only) ----
-  const [panelWidths, setPanelWidths] = useAtom(roadmapPanelWidthsAtom);
-  const layoutRef = useRef<HTMLDivElement | null>(null);
-
-  const handleListResize = useCallback(
-    (deltaX: number) => {
-      setPanelWidths((w) => {
-        const containerW = layoutRef.current?.clientWidth ?? Infinity;
-        const max = Math.min(
-          LIST_MAX_WIDTH,
-          containerW - w.sidebar - MAIN_MIN_WIDTH,
-        );
-        return { ...w, list: clampWidth(w.list + deltaX, LIST_MIN_WIDTH, max) };
-      });
-    },
-    [setPanelWidths],
-  );
-
-  const handleSidebarResize = useCallback(
-    (deltaX: number) => {
-      setPanelWidths((w) => {
-        const containerW = layoutRef.current?.clientWidth ?? Infinity;
-        const max = Math.min(
-          SIDEBAR_MAX_WIDTH,
-          containerW - w.list - MAIN_MIN_WIDTH,
-        );
-        // The handle sits left of the sidebar: dragging left widens it.
-        return {
-          ...w,
-          sidebar: clampWidth(w.sidebar - deltaX, SIDEBAR_MIN_WIDTH, max),
-        };
-      });
-    },
-    [setPanelWidths],
-  );
+  const { panelWidths, layoutRef, handleListResize, handleSidebarResize } =
+    useRoadmapPanelResize();
 
   // ---- Product tour: auto-start once per browser (replay via help icon) ----
   const [hasSeenTour, setHasSeenTour] = useAtom(hasSeenRoadmapsTourAtom);
@@ -286,134 +218,16 @@ export function MyRoadmapsEditor() {
   }, [getMineData]);
 
   // ---- Mutations ----
-  const createMutation = api.roadmaps.create.useMutation({
-    onSuccess: async (created) => {
-      await utils.roadmaps.listMine.invalidate();
-      setSelectedId(created.id);
-      setMutating(false);
-    },
-    onError: (error) => {
-      toast.error(
-        error.data?.code === "UNAUTHORIZED"
-          ? "You must be logged in to create a roadmap."
-          : `Failed to create roadmap: ${error.message}`,
-      );
-      setMutating(false);
-    },
-  });
-
-  const renameMutation = api.roadmaps.rename.useMutation({
-    onSuccess: async () => {
-      await utils.roadmaps.listMine.invalidate();
-      setMutating(false);
-    },
-    onError: () => {
-      toast.error("Failed to rename roadmap");
-      setMutating(false);
-    },
-  });
-
-  const removeMutation = api.roadmaps.remove.useMutation({
-    onSuccess: async () => {
-      await utils.roadmaps.listMine.invalidate();
-      setMutating(false);
-      // If the deleted roadmap was selected, pick another
-      if (selectedId === removeMutation.variables?.roadmapId) {
-        setSelectedId(null);
-      }
-    },
-    onError: () => {
-      toast.error("Failed to delete roadmap");
-      setMutating(false);
-    },
-  });
-
-  const saveEntriesMutation = api.roadmaps.saveEntries.useMutation({
-    ...createSaveEntriesCallbacks({
-      utils,
-      roadmapId: selectedId!,
-      toast: (m) => toast.error(m),
-    }),
-  });
-
-  const setActiveMutation = api.roadmaps.setActive.useMutation({
-    onSuccess: async () => {
-      await utils.roadmaps.listMine.invalidate();
-      toast.success("Roadmap marked as active");
-    },
-    onError: () => {
-      toast.error("Failed to mark roadmap as active");
-    },
-  });
-
-  const setMatricTermMutation = api.roadmaps.setMatricTerm.useMutation({
-    ...createOptimisticMutationCallbacks<
-      { roadmapId: string; matricTermId: string | null },
-      NonNullable<ReturnType<typeof utils.roadmaps.listMine.getData>>
-    >({
-      // listMine is an inputless query — thread no input through every utils
-      // call so cancel/snapshot/setData/invalidate hit the same cache key.
-      cancel: () => utils.roadmaps.listMine.cancel(),
-      getSnapshot: () => utils.roadmaps.listMine.getData(),
-      applyOptimistic: ({ roadmapId, matricTermId }) =>
-        utils.roadmaps.listMine.setData(undefined, (old) =>
-          old?.map((r) => (r.id === roadmapId ? { ...r, matricTermId } : r)),
-        ),
-      restoreSnapshot: (prev) =>
-        utils.roadmaps.listMine.setData(undefined, prev),
-      invalidate: async () => {
-        await utils.roadmaps.listMine.invalidate();
-        await utils.roadmaps.getMine.invalidate();
-      },
-      onError: (message) =>
-        toast.error(`Failed to save matriculation year: ${message}`),
-    }),
-    onSuccess: () =>
-      toast.success("Matriculation year saved", {
-        description:
-          "Existing modules keep their placement. Use Sync progress or re-add courses to reflect the new year.",
-      }),
-  });
-
-  const syncProgressMutation = api.roadmaps.syncProgress.useMutation({
-    onSuccess: async (result) => {
-      if (result.synced > 0) {
-        toast.success(
-          `${result.synced} course${result.synced === 1 ? "" : "s"} synced`,
-        );
-        await utils.roadmaps.getMine.invalidate({ roadmapId: selectedId! });
-        await utils.roadmaps.listMine.invalidate();
-      }
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to sync progress");
-    },
-  });
-
-  // Per-roadmap faculty — no global Users.facultyId. The Select always
-  // reflects the selected roadmap's facultyId, so switching roadmaps no
-  // longer leaks one roadmap's faculty into another.
-  const setFacultyMutation = api.roadmaps.setFaculty.useMutation({
-    ...createOptimisticMutationCallbacks<
-      { roadmapId: string; facultyId: number | null },
-      NonNullable<ReturnType<typeof utils.roadmaps.listMine.getData>>
-    >({
-      cancel: () => utils.roadmaps.listMine.cancel(),
-      getSnapshot: () => utils.roadmaps.listMine.getData(),
-      applyOptimistic: ({ roadmapId, facultyId }) =>
-        utils.roadmaps.listMine.setData(undefined, (old) =>
-          old?.map((r) => (r.id === roadmapId ? { ...r, facultyId } : r)),
-        ),
-      restoreSnapshot: (prev) =>
-        utils.roadmaps.listMine.setData(undefined, prev),
-      invalidate: async () => {
-        await utils.roadmaps.listMine.invalidate();
-        await utils.roadmaps.getMine.invalidate();
-      },
-      onError: (message) => toast.error(`Failed to save faculty: ${message}`),
-    }),
-    onSuccess: () => toast.success("Faculty saved for this roadmap"),
-  });
+  const {
+    createMutation,
+    renameMutation,
+    removeMutation,
+    saveEntriesMutation,
+    setActiveMutation,
+    setMatricTermMutation,
+    syncProgressMutation,
+    setFacultyMutation,
+  } = useRoadmapMutations({ selectedId, setSelectedId, setMutating });
 
   // ---- Handlers ----
   const handleCreate = useCallback(
@@ -553,7 +367,9 @@ export function MyRoadmapsEditor() {
   // ---- termFooter renderer for timetable links ----
   const termFooter = useCallback(
     (yearNumber: number, term: string) => {
-      if (!acadTermsData) return null;
+      if (!acadTermsData || !findAcadTermForRoadmapTerm(term, acadTermsData)) {
+        return null;
+      }
       return (
         <TermTimetableLink
           yearNumber={yearNumber}
@@ -644,215 +460,37 @@ export function MyRoadmapsEditor() {
 
         {/* Editor header: name + active/matric/sync + view toggle + share */}
         {!showEmptyState && selectedRoadmap && (
-          <div className="border-b">
-            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2">
-              <div className="flex min-w-0 items-center gap-2">
-                <h2 className="min-w-0 truncate text-sm font-semibold">
-                  {selectedRoadmap.name}
-                </h2>
-                {/* Active roadmap toggle (one active roadmap per user) */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    {/* Disabled buttons don't fire pointer events, so the
-                        tooltip anchors to this wrapper instead. */}
-                    <span className="inline-flex">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        aria-label={
-                          selectedRoadmap.isActive
-                            ? "Active roadmap"
-                            : "Mark as active roadmap"
-                        }
-                        disabled={
-                          selectedRoadmap.isActive ||
-                          setActiveMutation.isPending
-                        }
-                        onClick={() =>
-                          setActiveMutation.mutate({
-                            roadmapId: selectedRoadmap.id,
-                          })
-                        }
-                        data-test="roadmap-active-toggle"
-                      >
-                        <Star
-                          className={cn(
-                            "size-4",
-                            selectedRoadmap.isActive
-                              ? "fill-primary text-primary"
-                              : "text-muted-foreground",
-                          )}
-                        />
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {selectedRoadmap.isActive
-                      ? "Active roadmap — syncs with your timetables across terms"
-                      : "Mark as active to sync this roadmap with your timetables across terms"}
-                  </TooltipContent>
-                </Tooltip>
-                <span className="text-muted-foreground text-xs whitespace-nowrap">
-                  {selectedRoadmap.isActive
-                    ? "Active — syncs timetable"
-                    : "Set active"}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {selectedRoadmap.isActive && (
-                  <>
-                    {/* Matriculation year (which AY was Y1; starts in T1) */}
-                    <Select
-                      value={selectedMatricAy}
-                      onValueChange={(ay) => {
-                        // The "Clear" item resets the declaration (the server
-                        // procedure accepts null to clear).
-                        if (ay === CLEAR_MATRIC_VALUE) {
-                          setMatricTermMutation.mutate({
-                            roadmapId: selectedRoadmap.id,
-                            matricTermId: null,
-                          });
-                          return;
-                        }
-                        const option = matricYearOptions.find(
-                          (o) => o.ay === ay,
-                        );
-                        if (!option) return;
-                        setMatricTermMutation.mutate({
-                          roadmapId: selectedRoadmap.id,
-                          matricTermId: option.termId,
-                        });
-                      }}
-                      disabled={setMatricTermMutation.isPending}
-                    >
-                      <SelectTrigger
-                        className="w-36"
-                        aria-label="Matriculation year"
-                        data-test="matric-term-select"
-                      >
-                        <SelectValue placeholder="Matriculation year…" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {matricYearOptions.map((o) => (
-                          <SelectItem key={o.ay} value={o.ay}>
-                            {o.ay}
-                          </SelectItem>
-                        ))}
-                        <SelectItem
-                          value={CLEAR_MATRIC_VALUE}
-                          data-test="matric-term-clear"
-                        >
-                          Clear
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    {/* Explicit progress sync */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={
-                        !selectedRoadmap.matricTermId ||
-                        syncProgressMutation.isPending
-                      }
-                      onClick={() =>
-                        syncProgressMutation.mutate({
-                          roadmapId: selectedRoadmap.id,
-                        })
-                      }
-                      data-test="sync-progress-button"
-                    >
-                      <RefreshCw
-                        className={cn(
-                          "size-4",
-                          syncProgressMutation.isPending && "animate-spin",
-                        )}
-                      />
-                      <span className="hidden sm:inline">Sync progress</span>
-                    </Button>
-                  </>
-                )}
-
-                <ToggleGroup
-                  type="single"
-                  variant="segmented"
-                  size="sm"
-                  value={viewMode}
-                  onValueChange={(v) => v && setViewMode(v as EditorViewMode)}
-                  data-test="roadmap-view-toggle"
-                >
-                  <ToggleGroupItem
-                    value="grid"
-                    aria-label="Grid view"
-                    className="justify-center px-3"
-                  >
-                    <LayoutGrid className="size-4 shrink-0" />
-                    <span className="hidden sm:inline">Grid</span>
-                  </ToggleGroupItem>
-                  <ToggleGroupItem
-                    value="timeline"
-                    aria-label="Timeline view"
-                    className="justify-center px-3"
-                  >
-                    <GitBranch className="size-4 shrink-0" />
-                    <span className="hidden sm:inline">Timeline</span>
-                  </ToggleGroupItem>
-                </ToggleGroup>
-                <ShareDialog
-                  entity="roadmap"
-                  entityId={selectedRoadmap.id}
-                  entityName={selectedRoadmap.name}
-                  visibility={selectedRoadmap.visibility ?? "PRIVATE"}
-                  shareToken={selectedRoadmap.shareToken ?? null}
-                />
-                <TourReplayButton steps={roadmapsTourSteps} />
-              </div>
-            </div>
-
-            {/* Secondary row: description + faculty declaration (per-roadmap) */}
-            <div className="flex flex-wrap items-start gap-3 px-4 pb-2">
-              <DescriptionEditor
-                key={selectedRoadmap.id}
-                initialValue={selectedRoadmap.description ?? ""}
-                onSave={handleDescriptionBlur}
-              />
-              <div className="flex items-center gap-2">
-                <GraduationCap className="text-muted-foreground size-4 shrink-0" />
-                <Select
-                  key={selectedRoadmap.id}
-                  value={
-                    selectedRoadmap.facultyId != null
-                      ? String(selectedRoadmap.facultyId)
-                      : undefined
-                  }
-                  onValueChange={(v) => {
-                    const next = Number(v);
-                    setFacultyMutation.mutate({
-                      roadmapId: selectedRoadmap.id,
-                      facultyId: next,
-                    });
-                  }}
-                  disabled={setFacultyMutation.isPending}
-                >
-                  <SelectTrigger
-                    className="w-56"
-                    aria-label="Your faculty"
-                    data-test="faculty-select"
-                  >
-                    <SelectValue placeholder="Declare your faculty…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(facultiesData ?? []).map((f) => (
-                      <SelectItem key={f.id} value={String(f.id)}>
-                        {f.name} ({f.acronym})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
+          <RoadmapEditorHeader
+            selectedRoadmap={selectedRoadmap}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            isSettingActive={setActiveMutation.isPending}
+            onSetActive={() =>
+              setActiveMutation.mutate({ roadmapId: selectedRoadmap.id })
+            }
+            matricYearOptions={matricYearOptions}
+            selectedMatricAy={selectedMatricAy}
+            isMatricTermPending={setMatricTermMutation.isPending}
+            onMatricTermChange={(matricTermId) =>
+              setMatricTermMutation.mutate({
+                roadmapId: selectedRoadmap.id,
+                matricTermId,
+              })
+            }
+            isSyncing={syncProgressMutation.isPending}
+            onSyncProgress={() =>
+              syncProgressMutation.mutate({ roadmapId: selectedRoadmap.id })
+            }
+            onDescriptionSave={handleDescriptionBlur}
+            faculties={facultiesData ?? []}
+            isFacultyPending={setFacultyMutation.isPending}
+            onFacultyChange={(facultyId) =>
+              setFacultyMutation.mutate({
+                roadmapId: selectedRoadmap.id,
+                facultyId,
+              })
+            }
+          />
         )}
 
         {/* Entries loading */}
@@ -879,7 +517,7 @@ export function MyRoadmapsEditor() {
           !entriesError &&
           (viewMode === "timeline" ? (
             <div className="p-4">
-              <RoadmapTimeline entries={entries} readOnly />
+              <LazyRoadmapTimeline entries={entries} readOnly />
             </div>
           ) : (
             <div
@@ -916,43 +554,6 @@ export function MyRoadmapsEditor() {
             </div>
           ))}
       </div>
-    </div>
-  );
-}
-
-// =============================================================================
-// Helpers
-// =============================================================================
-
-/**
- * Roadmap description editor — multiline, capped at DESCRIPTION_MAX_LENGTH
- * characters with a live counter. Newlines are preserved on save.
- */
-function DescriptionEditor({
-  initialValue,
-  onSave,
-}: {
-  initialValue: string;
-  onSave: (description: string) => void;
-}) {
-  const [value, setValue] = useState(initialValue);
-
-  return (
-    <div className="relative min-w-56 flex-1">
-      <Textarea
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="Add a description (shown when you publish)…"
-        maxLength={DESCRIPTION_MAX_LENGTH}
-        rows={3}
-        className="min-h-16 resize-y pb-5 text-sm"
-        onBlur={() => onSave(value)}
-        aria-label="Roadmap description"
-        data-test="roadmap-description"
-      />
-      <span className="text-muted-foreground pointer-events-none absolute right-2 bottom-1.5 text-[10px] tabular-nums">
-        {value.length}/{DESCRIPTION_MAX_LENGTH}
-      </span>
     </div>
   );
 }

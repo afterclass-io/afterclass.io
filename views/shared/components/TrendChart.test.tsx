@@ -38,9 +38,9 @@ describe("TrendChart", () => {
     // manyTerms spans 4 terms across 5 points; the shared AY2024/25-T1
     // label renders once at the segment center.
     expect(termLabels).toHaveLength(4);
-    expect(
-      termLabels.filter((t) => t.textContent === "24/25-T1"),
-    ).toHaveLength(1);
+    expect(termLabels.filter((t) => t.textContent === "24/25-T1")).toHaveLength(
+      1,
+    );
   });
 
   it("shortens term labels and keeps all labels inside the viewBox", () => {
@@ -117,7 +117,7 @@ describe("TrendChart", () => {
     ).toBeUndefined();
     expect(
       Array.from(chart.querySelectorAll("rect")).filter(
-        (r) => r.getAttribute("fill") === "#2563eb",
+        (r) => r.getAttribute("fill") === TOKENS.light.chartBand,
       ),
     ).toHaveLength(1);
 
@@ -141,9 +141,30 @@ describe("TrendChart", () => {
     ).toBeUndefined();
     expect(
       Array.from(chart.querySelectorAll("rect")).filter(
-        (r) => r.getAttribute("fill") === "#2563eb",
+        (r) => r.getAttribute("fill") === TOKENS.light.chartBand,
       ),
     ).toHaveLength(0);
+  });
+
+  it("draws the min line and the term band from the theme tokens", () => {
+    render(
+      <TrendChart
+        points={manyTerms}
+        currentKey={null}
+        currentAcadTermId="AY2026/27-T1"
+        c={TOKENS.dark}
+      />,
+    );
+    const chart = screen.getByRole("img", { name: /bid trend/i });
+    expect(chart.querySelector('[data-series="min"]')).toHaveAttribute(
+      "stroke",
+      TOKENS.dark.chartMin,
+    );
+    expect(
+      Array.from(chart.querySelectorAll("rect")).filter(
+        (r) => r.getAttribute("fill") === TOKENS.dark.chartBand,
+      ),
+    ).toHaveLength(1);
   });
 
   it("renders no now text or dashed now line even with a legacy currentKey", () => {

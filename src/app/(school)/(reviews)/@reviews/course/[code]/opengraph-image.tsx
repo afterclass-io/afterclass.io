@@ -2,9 +2,13 @@ import { ImageResponse } from "next/og";
 import React from "react";
 
 import { BooksIcon } from "@/common/components/icons";
+import { OG_IMAGE_HEADERS } from "@/modules/opengraph/constants";
 import { OgImage } from "@/modules/opengraph/components/OgImage";
+import {
+  toOgRating,
+  toOgStatItems,
+} from "@/modules/opengraph/functions/ogFigures";
 import { getCoursePageData } from "@/modules/reviews/functions/getCoursePageData";
-import { toTitleCase, formatPercentage } from "@/common/functions";
 
 export const runtime = "nodejs";
 
@@ -77,21 +81,15 @@ export default async function Image({
         {course.name}
       </OgImage.Title>
       <OgImage.Content
-        rating={reviewCount > 0 ? averageRating.toFixed(2) : "-"}
+        rating={toOgRating(averageRating, reviewCount)}
         reviewCount={reviewCount}
         profCount={professorCount}
-        statItems={reviewLabels.map((label) => ({
-          label: toTitleCase(label.name),
-          value: formatPercentage(label.count && label.count / reviewCount),
-        }))}
+        statItems={toOgStatItems(reviewLabels, reviewCount)}
       />
     </OgImage>,
     {
       ...size,
-      headers: {
-        "Cache-Control":
-          "public, immutable, no-transform, max-age=86400, s-maxage=604800, stale-while-revalidate=86400",
-      },
+      headers: OG_IMAGE_HEADERS,
     },
   );
 }

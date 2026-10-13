@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 import { protectedProcedure } from "@/server/api/trpc";
+import { isUniqueConstraintViolation } from "@/server/db-errors";
 import { requireOwnedRoadmap } from "@/server/api/ownership";
 import { getCurrentWindowLogic } from "@/server/api/bidWindows/getCurrentWindow/helpers";
 import { getCurrentAcadTerm } from "@/common/tools/acad-term";
@@ -100,9 +101,7 @@ export const syncProgress = protectedProcedure
         slots: { select: { class: { select: { courseId: true } } } },
       },
     });
-    const slotsByTerm = new Map(
-      timetables.map((t) => [t.acadTermId, t.slots]),
-    );
+    const slotsByTerm = new Map(timetables.map((t) => [t.acadTermId, t.slots]));
 
     // ---- For each plan target, pull courses from the active timetable ----
     const toCreate: {
@@ -146,12 +145,7 @@ export const syncProgress = protectedProcedure
           });
         });
       } catch (err) {
-        if (
-          typeof err === "object" &&
-          err !== null &&
-          "code" in err &&
-          (err as { code: string }).code === "P2002"
-        ) {
+        if (isUniqueConstraintViolation(err)) {
           return { synced: 0, courseIds: [] as string[] };
         }
         throw err;

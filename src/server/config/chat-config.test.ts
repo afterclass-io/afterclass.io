@@ -71,7 +71,6 @@ describe("getChatConfig", () => {
       claimMinutes: c.moderationClaimWindowMinutes,
       timeoutMs: c.moderationJudgeTimeoutMs,
       retentionDays: c.moderationLogRetentionDays,
-      model: c.moderationModel,
     }).toEqual({
       threshold: 3,
       multiplier: 2,
@@ -79,9 +78,8 @@ describe("getChatConfig", () => {
       perHour: 20,
       reportsPerHour: 10,
       claimMinutes: 5,
-      timeoutMs: 90000,
+      timeoutMs: 30000,
       retentionDays: 90,
-      model: undefined,
     });
   });
 
@@ -90,10 +88,25 @@ describe("getChatConfig", () => {
       NODE_ENV: "test",
       MODERATION_REPORT_THRESHOLD: "99",
       CHAT_MODERATION_REPORT_THRESHOLD: "99",
-      MODERATION_MODEL: "env-model",
     });
     expect(c.moderationReportThreshold).toBe(3);
-    expect(c.moderationModel).toBeUndefined();
+  });
+
+  it("enforces the 45 000 ms ceiling on the judge timeout", async () => {
+    const { chatConfigSchema } = await import("./chat-config");
+    const strict = chatConfigSchema.strict();
+    expect(
+      strict.safeParse({
+        ...DEFAULT_CHAT_CONFIG_VALUES,
+        moderationJudgeTimeoutMs: 45_001,
+      }).success,
+    ).toBe(false);
+    expect(
+      strict.safeParse({
+        ...DEFAULT_CHAT_CONFIG_VALUES,
+        moderationJudgeTimeoutMs: 45_000,
+      }).success,
+    ).toBe(true);
   });
 
   it("fails closed on an out-of-range judge timeout or claim window", async () => {
@@ -119,14 +132,13 @@ describe("getChatConfigAsync moderation layer", () => {
 
   it("reads moderation tunables from the remote chat section", async () => {
     vi.resetModules();
-    vi.doMock("@/common/providers/EdgeConfig/EdgeConfigProvider", () => ({
+    vi.doMock("@/server/ecfg/edge-config", () => ({
       getEdgeConfig: async () => ({
-        chat: { moderationReportThreshold: 7, moderationModel: "judge-model" },
+        chat: { moderationReportThreshold: 7 },
       }),
     }));
     const { getChatConfigAsync } = await import("./chat-config");
     const c = await getChatConfigAsync();
     expect(c.moderationReportThreshold).toBe(7);
-    expect(c.moderationModel).toBe("judge-model");
   });
 });

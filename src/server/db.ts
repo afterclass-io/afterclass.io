@@ -9,12 +9,14 @@ import { env } from "@/env";
  *
  * - `db` — pooled app client over `DATABASE_URL`. All plain reads/writes
  *   (no interactive `$transaction`) go here. Its `PrismaPg` adapter owns
- *   pooling (`max: dev ? 2 : 5`, timeouts below); on Supabase this points at
+ *   pooling (`max: 2`, timeouts below); on Supabase this points at
  *   the pooled `:6543?pgbouncer=true` port (see `.env.example`).
  * - `txDb` (alias `directDb`) — transactional client over `DIRECT_URL`
- *   (direct `:5432`, no pgbouncer flag). Every interactive `$transaction`
- *   (`quota.ts`, `ratelimit.ts`) MUST use this: interactive transactions on
- *   the pooled port break (prepared-statement / transaction-mode conflicts).
+ *   (direct `:5432`, no pgbouncer flag). Its only production user is
+ *   `moderation/run.ts` (the `applyViolation` transaction), which holds a
+ *   direct connection on purpose. Use it for work that cannot run in
+ *   pgbouncer transaction mode. `quota.ts` does not use it: the quota claim
+ *   is one conditional `updateMany` on `db`, so it needs no transaction.
  *
  * DIRECT_URL requiredness: REQUIRED in production only (checked at runtime
  * below, not in the env schema — build-time validation cannot require

@@ -33,7 +33,7 @@ const SEVERITY: Record<Conflict["kind"], { label: string; className: string }> =
     },
     "cu-overload": {
       label: "CU",
-      className: "bg-warning/10 text-warning border border-warning/30",
+      className: "bg-warning/10 text-warning-text border border-warning/30",
     },
   } as const;
 
@@ -56,7 +56,7 @@ export function RoadmapConflictBadge({
             <TooltipTrigger asChild>
               <span
                 className={cn(
-                  "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] leading-none font-semibold",
+                  "text-2xs inline-flex items-center rounded px-1.5 py-0.5 leading-none font-semibold",
                   sev.className,
                 )}
               >

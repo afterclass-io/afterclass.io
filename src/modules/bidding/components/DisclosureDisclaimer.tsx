@@ -10,11 +10,9 @@ import {
 export const DisclosureDisclaimer = () => (
   <Tooltip delayDuration={300}>
     <TooltipTrigger asChild>
-      <span className="inline-flex items-center gap-1.5 text-muted-foreground cursor-help hover:text-foreground transition-colors">
+      <span className="text-muted-foreground hover:text-foreground inline-flex cursor-help items-center gap-1.5 transition-colors">
         <Info size={14} className="shrink-0" />
-        <span className="text-sm">
-          Data might be incomplete or inaccurate.
-        </span>
+        <span className="text-sm">Data might be incomplete or inaccurate.</span>
       </span>
     </TooltipTrigger>
     <TooltipContent
@@ -24,9 +22,7 @@ export const DisclosureDisclaimer = () => (
     >
       <div className="flex flex-col gap-3">
         <div>
-          <p className="font-semibold mb-1">
-            Best-effort matching
-          </p>
+          <p className="mb-1 font-semibold">Best-effort matching</p>
           <p className="text-muted-foreground">
             This trend is matched by course + professor. When a professor taught
             multiple sections of the same course in a term, the section with the
@@ -36,8 +32,8 @@ export const DisclosureDisclaimer = () => (
           </p>
         </div>
         <div>
-          <p className="font-semibold mb-1">Missing data implies:</p>
-          <ol className="list-decimal pl-4 text-muted-foreground space-y-0.5">
+          <p className="mb-1 font-semibold">Missing data implies:</p>
+          <ol className="text-muted-foreground list-decimal space-y-0.5 pl-4">
             <li>Class was not scraped</li>
             <li>Class was not offered in that academic term</li>
             <li>Class was preassigned (students placed without bidding)</li>

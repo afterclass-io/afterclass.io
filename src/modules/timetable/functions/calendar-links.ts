@@ -2,6 +2,14 @@
  * Pure helpers for the calendar export ("Add to calendar") popover.
  */
 
+/**
+ * Error message for a PRIVATE timetable that asks for a calendar link. The
+ * server throws it; the popover and the MCP tool match it to offer the
+ * link-sharing opt-in instead of a plain error.
+ */
+export const LINK_SHARING_REQUIRED_MESSAGE =
+  "Set your timetable to link-sharing before creating a calendar link";
+
 export type CalendarLinks = {
   /** Plain https URL — the feed URL for web calendars ("Add from URL" in
    *  Google Calendar) and the one-off .ics download. */

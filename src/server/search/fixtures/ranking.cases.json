@@ -1,0 +1,40 @@
+{
+  "description": "Expected ranked order for the fixed catalog in catalog.json. Rows outside the catalog are ignored. Before ranking, the navbar and /search had no ORDER BY, so any row order was possible.",
+  "cases": [
+    {
+      "name": "exact code",
+      "query": "IS216",
+      "expectedCodes": ["IS216"]
+    },
+    {
+      "name": "exact code beats its prefix sibling",
+      "query": "MATH101",
+      "expectedCodes": ["MATH101"]
+    },
+    {
+      "name": "code prefix puts the shorter code first on a tie",
+      "query": "MATH",
+      "expectedCodes": ["MATH101", "MATH101A"]
+    },
+    {
+      "name": "spaced code",
+      "query": "ACCT 102",
+      "expectedCodes": ["ACCT102"]
+    },
+    {
+      "name": "hyphenated code",
+      "query": "COR-STAT1203",
+      "expectedCodes": ["COR-STAT1203"]
+    },
+    {
+      "name": "name query where similarity decides",
+      "query": "Statistical Analysis",
+      "expectedCodes": ["COR-STAT1202", "COR-STAT1203", "COR-STAT1204"]
+    },
+    {
+      "name": "tie on name similarity falls back to code order",
+      "query": "Introductory Economics",
+      "expectedCodes": ["EC1101E", "ECON101"]
+    }
+  ]
+}

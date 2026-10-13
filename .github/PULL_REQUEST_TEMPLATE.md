@@ -28,3 +28,4 @@ closes #ISSUE_NUMBER
 - [ ] I have tested the changes
 - [ ] _(where applicable)_ I have added tests to cover my changes
 - [ ] _(where applicable)_ I have updated the documentation accordingly
+- [ ] _(where applicable)_ New tables enable RLS and new functions revoke `EXECUTE` from `anon`, `authenticated` and `PUBLIC` (enforced by `src/server/rls.integration.test.ts`)

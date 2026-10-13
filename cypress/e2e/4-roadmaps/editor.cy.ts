@@ -82,9 +82,7 @@ context("Roadmaps: Editor", function () {
     cy.get("[data-test=roadmap-list]").contains(name).click();
 
     // Search for a course
-    cy.get("input[aria-label='Search courses to add to roadmap']").type(
-      "COR-",
-    );
+    cy.get("input[aria-label='Search courses to add to roadmap']").type("COR-");
 
     // Wait for results to appear (look for CU credit units indicator)
     cy.contains("CU", { timeout: 15000 }).should("be.visible");
@@ -99,9 +97,7 @@ context("Roadmaps: Editor", function () {
     cy.get("[data-test=roadmap-list]").contains(name).click();
 
     // Search for a course
-    cy.get("input[aria-label='Search courses to add to roadmap']").type(
-      "COR-",
-    );
+    cy.get("input[aria-label='Search courses to add to roadmap']").type("COR-");
 
     // Wait for results
     cy.contains("CU", { timeout: 15000 }).should("be.visible");
@@ -128,9 +124,7 @@ context("Roadmaps: Editor", function () {
     cy.get("[data-test=roadmap-list]").contains(name).click();
 
     // Add a course
-    cy.get("input[aria-label='Search courses to add to roadmap']").type(
-      "COR-",
-    );
+    cy.get("input[aria-label='Search courses to add to roadmap']").type("COR-");
     cy.contains("CU", { timeout: 15000 }).should("be.visible");
     cy.get("[role='button']")
       .filter((_index, el) => Cypress.$(el).text().includes("CU"))
@@ -169,7 +163,8 @@ context("Roadmaps: Editor", function () {
     createRoadmap(original);
 
     // Hover over the item and click the rename button
-    cy.get("[data-test=roadmap-list]").contains(original)
+    cy.get("[data-test=roadmap-list]")
+      .contains(original)
       .closest(".group")
       .find(`[aria-label='Rename ${original}']`)
       .click({ force: true });
@@ -264,7 +259,8 @@ context("Roadmaps: Editor", function () {
     createRoadmap(name);
 
     // Hover and click delete
-    cy.get("[data-test=roadmap-list]").contains(name)
+    cy.get("[data-test=roadmap-list]")
+      .contains(name)
       .closest(".group")
       .find(`[aria-label='Delete ${name}']`)
       .click({ force: true });
@@ -289,9 +285,7 @@ context("Roadmaps: Editor", function () {
     cy.get("[data-test=roadmap-list]").contains(name).click();
 
     // Add a course
-    cy.get("input[aria-label='Search courses to add to roadmap']").type(
-      "COR-",
-    );
+    cy.get("input[aria-label='Search courses to add to roadmap']").type("COR-");
     cy.contains("CU", { timeout: 15000 }).should("be.visible");
     cy.get("[role='button']")
       .filter((_index, el) => Cypress.$(el).text().includes("CU"))
@@ -304,7 +298,8 @@ context("Roadmaps: Editor", function () {
     );
 
     // Rename
-    cy.get("[data-test=roadmap-list]").contains(name)
+    cy.get("[data-test=roadmap-list]")
+      .contains(name)
       .closest(".group")
       .find(`[aria-label='Rename ${name}']`)
       .click({ force: true });
@@ -316,7 +311,8 @@ context("Roadmaps: Editor", function () {
       .should("be.visible");
 
     // Delete
-    cy.get("[data-test=roadmap-list]").contains(renamed)
+    cy.get("[data-test=roadmap-list]")
+      .contains(renamed)
       .closest(".group")
       .find(`[aria-label='Delete ${renamed}']`)
       .click({ force: true });

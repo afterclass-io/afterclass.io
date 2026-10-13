@@ -1,6 +1,9 @@
 import { type Prisma } from "@/generated/prisma/client";
 
 export const DEFAULT_PAGE_SIZE = 10;
+export const REVIEW_PAGE_MAX = 50;
+export const REVIEW_SKIP_MAX = 500;
+export const REVIEW_ENGAGEMENT_BATCH_MAX = 50;
 
 export const PUBLIC_REVIEW_FIELDS = {
   id: true,

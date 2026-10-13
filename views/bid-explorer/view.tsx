@@ -9,7 +9,8 @@ import {
 } from "mcp-use/react";
 import type { BidExplorerData } from "../../src/mcp/view-tools/schemas";
 import { useCtaFeedback } from "../shared/use-cta-feedback";
-import { TOKENS, Skeleton } from "../shared/tokens";
+import { TOKENS, type ThemeColors } from "../shared/tokens";
+import { viewStatusFallback } from "../shared/view-shell";
 import { format2dp } from "../shared/format";
 import { compareRounds } from "../shared/utils/round-order";
 import { buildChartPoints } from "../shared/utils/chart-points";
@@ -61,6 +62,151 @@ const confidenceLabel = (score: number): string =>
         : score < 0.9
           ? "High"
           : "Very High";
+
+// Odds / confidence bar row (BidPredictionCard parity). The bar fill and the
+// pill both read the same 0-1 probability; `marginTop` only offsets the
+// second row.
+function ProbabilityRow({
+  c,
+  label,
+  probability,
+  pillText,
+  marginTop,
+}: {
+  c: ThemeColors;
+  label: string;
+  probability: number;
+  pillText: string;
+  marginTop?: number;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        fontSize: 12,
+        marginTop,
+      }}
+    >
+      <span style={{ width: 180, flexShrink: 0 }}>{label}</span>
+      <div
+        role="progressbar"
+        aria-label={label}
+        aria-valuenow={Number((probability * 100).toFixed(2))}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        style={{
+          flex: 1,
+          height: 8,
+          borderRadius: 9999,
+          background: c.border,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: `${probability * 100}%`,
+            height: "100%",
+            borderRadius: 9999,
+            background: c.primary,
+          }}
+        />
+      </div>
+      <span
+        style={{
+          fontFamily: "var(--font-geist-mono, ui-monospace)",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {(probability * 100).toFixed(2)}%
+      </span>
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          padding: "2px 8px",
+          borderRadius: 9999,
+          background:
+            probability >= 0.5
+              ? "oklch(0.7 0.2 150 / 15%)"
+              : "oklch(0.6 0.2 20 / 12%)",
+          color:
+            probability >= 0.5 ? "oklch(0.45 0.2 150)" : "oklch(0.55 0.22 20)",
+          border: `1px solid ${c.border}`,
+        }}
+      >
+        {pillText}
+      </span>
+    </div>
+  );
+}
+
+// One value stacked over its caption inside the Formula equation.
+function FormulaTerm({
+  c,
+  value,
+  caption,
+}: {
+  c: ThemeColors;
+  value: string;
+  caption: string;
+}) {
+  return (
+    <span style={{ textAlign: "center" }}>
+      <span
+        style={{
+          fontFamily: "var(--font-geist-mono, ui-monospace)",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {value}
+      </span>
+      <span
+        style={{
+          display: "block",
+          fontSize: 11,
+          fontWeight: 400,
+          color: c.mutedFg,
+        }}
+      >
+        {caption}
+      </span>
+    </span>
+  );
+}
+
+// Min / Median block of the Formula breakdown: heading, equation row, and an
+// optional note below the equation.
+function FormulaSection({
+  title,
+  note,
+  children,
+}: {
+  title: string;
+  note?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={{ marginTop: 8 }}>
+      <div style={{ fontSize: 12, fontWeight: 600 }}>{title}</div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "center",
+          gap: 8,
+          fontSize: 18,
+          fontWeight: 700,
+          marginTop: 4,
+        }}
+      >
+        {children}
+      </div>
+      {note}
+    </div>
+  );
+}
 
 // NOTE: ROUND_ORDER/compareRounds, buildChartPoints/ChartPoint, shortTermLabel,
 // estimateLabelWidth/clampLabelCenterX, TrendChart, HistoryTable, ToggleButton
@@ -305,24 +451,8 @@ const BidExplorerView: React.FC = () => {
   // State returns AFTER every hook above: pending/error/empty must not
   // return before the useMemo block, or hook order changes when toolOutput
   // arrives after mount (pending -> ready without remount).
-  if (status === "pending") return <Skeleton dark={dark} />;
-  if (status === "error") {
-    return (
-      <div
-        role="alert"
-        style={{
-          fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
-          color: c.cardFg,
-          background: c.card,
-          border: `1px solid ${c.border}`,
-          borderRadius: c.radius,
-          padding: 16,
-        }}
-      >
-        {error.message}
-      </div>
-    );
-  }
+  const fallback = viewStatusFallback({ status, dark, error });
+  if (fallback) return fallback;
   if (isEmpty) {
     return (
       <div
@@ -434,133 +564,19 @@ const BidExplorerView: React.FC = () => {
         hasBidsProbability !== null &&
         confidenceScore !== null && (
           <div style={{ marginTop: 12 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                fontSize: 12,
-              }}
-            >
-              <span style={{ width: 180, flexShrink: 0 }}>
-                Odds of having other bids
-              </span>
-              <div
-                role="progressbar"
-                aria-label="Odds of having other bids"
-                aria-valuenow={Number(
-                  (hasBidsProbability * 100).toFixed(2),
-                )}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                style={{
-                  flex: 1,
-                  height: 8,
-                  borderRadius: 9999,
-                  background: c.border,
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    width: `${hasBidsProbability * 100}%`,
-                    height: "100%",
-                    borderRadius: 9999,
-                    background: c.primary,
-                  }}
-                />
-              </div>
-              <span
-                style={{
-                  fontFamily: "var(--font-geist-mono, ui-monospace)",
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                {(hasBidsProbability * 100).toFixed(2)}%
-              </span>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: "2px 8px",
-                  borderRadius: 9999,
-                  background:
-                    hasBidsProbability >= 0.5
-                      ? "oklch(0.7 0.2 150 / 15%)"
-                      : "oklch(0.6 0.2 20 / 12%)",
-                  color:
-                    hasBidsProbability >= 0.5
-                      ? "oklch(0.45 0.2 150)"
-                      : "oklch(0.55 0.22 20)",
-                  border: `1px solid ${c.border}`,
-                }}
-              >
-                {hasBidsProbability >= 0.5 ? "Likely" : "Unlikely"}
-              </span>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                fontSize: 12,
-                marginTop: 8,
-              }}
-            >
-              <span style={{ width: 180, flexShrink: 0 }}>
-                Confidence Level
-              </span>
-              <div
-                role="progressbar"
-                aria-label="Confidence Level"
-                aria-valuenow={Number((confidenceScore * 100).toFixed(2))}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                style={{
-                  flex: 1,
-                  height: 8,
-                  borderRadius: 9999,
-                  background: c.border,
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    width: `${confidenceScore * 100}%`,
-                    height: "100%",
-                    borderRadius: 9999,
-                    background: c.primary,
-                  }}
-                />
-              </div>
-              <span
-                style={{
-                  fontFamily: "var(--font-geist-mono, ui-monospace)",
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                {(confidenceScore * 100).toFixed(2)}%
-              </span>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: "2px 8px",
-                  borderRadius: 9999,
-                  background:
-                    confidenceScore >= 0.5
-                      ? "oklch(0.7 0.2 150 / 15%)"
-                      : "oklch(0.6 0.2 20 / 12%)",
-                  color:
-                    confidenceScore >= 0.5
-                      ? "oklch(0.45 0.2 150)"
-                      : "oklch(0.55 0.22 20)",
-                  border: `1px solid ${c.border}`,
-                }}
-              >
-                {confidenceLabel(confidenceScore)}
-              </span>
-            </div>
+            <ProbabilityRow
+              c={c}
+              label="Odds of having other bids"
+              probability={hasBidsProbability}
+              pillText={hasBidsProbability >= 0.5 ? "Likely" : "Unlikely"}
+            />
+            <ProbabilityRow
+              c={c}
+              label="Confidence Level"
+              probability={confidenceScore}
+              pillText={confidenceLabel(confidenceScore)}
+              marginTop={8}
+            />
           </div>
         )}
       {/* Historical trend chart (below the prediction section when history is present) */}
@@ -670,9 +686,7 @@ const BidExplorerView: React.FC = () => {
                 const ladderIdx = safetyFactors.findIndex(
                   (f) => f.beatsPercentage === next,
                 );
-                setFactorIdx(
-                  ladderIdx >= 0 ? ladderIdx : defaultIdx(),
-                );
+                setFactorIdx(ladderIdx >= 0 ? ladderIdx : defaultIdx());
               }}
               style={{ width: "100%", accentColor: c.primary }}
             />
@@ -694,9 +708,7 @@ const BidExplorerView: React.FC = () => {
                     const ladderIdx = safetyFactors.findIndex(
                       (f) => f.beatsPercentage === t,
                     );
-                    setFactorIdx(
-                      ladderIdx >= 0 ? ladderIdx : defaultIdx(),
-                    );
+                    setFactorIdx(ladderIdx >= 0 ? ladderIdx : defaultIdx());
                   }}
                   style={{
                     background: "transparent",
@@ -705,8 +717,7 @@ const BidExplorerView: React.FC = () => {
                     padding: 0,
                     fontSize: 11,
                     fontWeight: beatsPercentage === t ? 700 : 400,
-                    color:
-                      beatsPercentage === t ? c.primary : c.mutedFg,
+                    color: beatsPercentage === t ? c.primary : c.mutedFg,
                   }}
                 >
                   {t}%
@@ -742,226 +753,85 @@ const BidExplorerView: React.FC = () => {
       {prediction && suggested !== null && (
         <div style={{ marginTop: 12 }}>
           <div style={{ fontSize: 14, fontWeight: 600 }}>Formula</div>
-          <div style={{ marginTop: 8 }}>
-            <div style={{ fontSize: 12, fontWeight: 600 }}>Min</div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "center",
-                gap: 8,
-                fontSize: 18,
-                fontWeight: 700,
-                marginTop: 4,
-              }}
-            >
-              <span style={{ textAlign: "center" }}>
-                <span
+          <FormulaSection title="Min">
+            <FormulaTerm
+              c={c}
+              value={recommendedMin !== null ? format2dp(recommendedMin) : "—"}
+              caption="recommended"
+            />
+            <span style={{ color: c.mutedFg }}>=</span>
+            <FormulaTerm
+              c={c}
+              value={
+                prediction.minPredicted !== null
+                  ? format2dp(prediction.minPredicted)
+                  : "—"
+              }
+              caption="predicted"
+            />
+            <span style={{ color: c.mutedFg }}>+</span>
+            <span style={{ color: c.mutedFg }}>(</span>
+            <FormulaTerm
+              c={c}
+              value={format2dp(minMultiplier)}
+              caption="multiplier"
+            />
+            <span style={{ color: c.mutedFg }}>*</span>
+            <FormulaTerm
+              c={c}
+              value={format2dp(prediction.minUncertainty ?? 0)}
+              caption="uncertainty"
+            />
+            <span style={{ color: c.mutedFg }}>)</span>
+          </FormulaSection>
+          <FormulaSection
+            title="Median"
+            note={
+              isMedianFloored && (
+                <div
                   style={{
-                    fontFamily: "var(--font-geist-mono, ui-monospace)",
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {recommendedMin !== null
-                    ? format2dp(recommendedMin)
-                    : "—"}
-                </span>
-                <span
-                  style={{
-                    display: "block",
+                    marginTop: 4,
                     fontSize: 11,
                     fontWeight: 400,
                     color: c.mutedFg,
+                    textAlign: "center",
                   }}
                 >
-                  recommended
-                </span>
-              </span>
-              <span style={{ color: c.mutedFg }}>=</span>
-              <span style={{ textAlign: "center" }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-geist-mono, ui-monospace)",
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {prediction.minPredicted !== null
-                    ? format2dp(prediction.minPredicted)
-                    : "—"}
-                </span>
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: 11,
-                    fontWeight: 400,
-                    color: c.mutedFg,
-                  }}
-                >
-                  predicted
-                </span>
-              </span>
-              <span style={{ color: c.mutedFg }}>+</span>
-              <span style={{ color: c.mutedFg }}>(</span>
-              <span style={{ textAlign: "center" }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-geist-mono, ui-monospace)",
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {format2dp(minMultiplier)}
-                </span>
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: 11,
-                    fontWeight: 400,
-                    color: c.mutedFg,
-                  }}
-                >
-                  multiplier
-                </span>
-              </span>
-              <span style={{ color: c.mutedFg }}>*</span>
-              <span style={{ textAlign: "center" }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-geist-mono, ui-monospace)",
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {format2dp(prediction.minUncertainty ?? 0)}
-                </span>
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: 11,
-                    fontWeight: 400,
-                    color: c.mutedFg,
-                  }}
-                >
-                  uncertainty
-                </span>
-              </span>
-              <span style={{ color: c.mutedFg }}>)</span>
-            </div>
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <div style={{ fontSize: 12, fontWeight: 600 }}>Median</div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "center",
-                gap: 8,
-                fontSize: 18,
-                fontWeight: 700,
-                marginTop: 4,
-              }}
-            >
-              <span style={{ textAlign: "center" }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-geist-mono, ui-monospace)",
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {recommendedMedian !== null
-                    ? format2dp(recommendedMedian)
-                    : "—"}
-                </span>
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: 11,
-                    fontWeight: 400,
-                    color: c.mutedFg,
-                  }}
-                >
-                  {isMedianFloored ? "recommended (floor)" : "recommended"}
-                </span>
-              </span>
-              <span style={{ color: c.mutedFg }}>=</span>
-              <span style={{ textAlign: "center" }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-geist-mono, ui-monospace)",
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {format2dp(prediction.medianPredicted)}
-                </span>
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: 11,
-                    fontWeight: 400,
-                    color: c.mutedFg,
-                  }}
-                >
-                  predicted
-                </span>
-              </span>
-              <span style={{ color: c.mutedFg }}>+</span>
-              <span style={{ color: c.mutedFg }}>(</span>
-              <span style={{ textAlign: "center" }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-geist-mono, ui-monospace)",
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {format2dp(medianMultiplier)}
-                </span>
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: 11,
-                    fontWeight: 400,
-                    color: c.mutedFg,
-                  }}
-                >
-                  multiplier
-                </span>
-              </span>
-              <span style={{ color: c.mutedFg }}>*</span>
-              <span style={{ textAlign: "center" }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-geist-mono, ui-monospace)",
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {format2dp(prediction.medianUncertainty ?? 0)}
-                </span>
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: 11,
-                    fontWeight: 400,
-                    color: c.mutedFg,
-                  }}
-                >
-                  uncertainty
-                </span>
-              </span>
-              <span style={{ color: c.mutedFg }}>)</span>
-            </div>
-            {isMedianFloored && (
-              <div
-                style={{
-                  marginTop: 4,
-                  fontSize: 11,
-                  fontWeight: 400,
-                  color: c.mutedFg,
-                  textAlign: "center",
-                }}
-              >
-                Floored to BOSS minimum bid of e${format2dp(10)} (raw formula: e$
-                {format2dp(rawMedian)})
-              </div>
-            )}
-          </div>
+                  Floored to BOSS minimum bid of e${format2dp(10)} (raw formula:
+                  e$
+                  {format2dp(rawMedian)})
+                </div>
+              )
+            }
+          >
+            <FormulaTerm
+              c={c}
+              value={
+                recommendedMedian !== null ? format2dp(recommendedMedian) : "—"
+              }
+              caption={isMedianFloored ? "recommended (floor)" : "recommended"}
+            />
+            <span style={{ color: c.mutedFg }}>=</span>
+            <FormulaTerm
+              c={c}
+              value={format2dp(prediction.medianPredicted)}
+              caption="predicted"
+            />
+            <span style={{ color: c.mutedFg }}>+</span>
+            <span style={{ color: c.mutedFg }}>(</span>
+            <FormulaTerm
+              c={c}
+              value={format2dp(medianMultiplier)}
+              caption="multiplier"
+            />
+            <span style={{ color: c.mutedFg }}>*</span>
+            <FormulaTerm
+              c={c}
+              value={format2dp(prediction.medianUncertainty ?? 0)}
+              caption="uncertainty"
+            />
+            <span style={{ color: c.mutedFg }}>)</span>
+          </FormulaSection>
         </div>
       )}
       {/* CTA */}

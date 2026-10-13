@@ -1,7 +1,10 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import type { PrismaClient } from "@/generated/prisma/client";
-import { getCurrentAcadTerm, type AcadTermSummary } from "@/common/tools/acad-term";
+import {
+  getCurrentAcadTerm,
+  type AcadTermSummary,
+} from "@/common/tools/acad-term";
 import {
   countDaysInclusive,
   isWithinTerm,
@@ -38,7 +41,9 @@ export const createPollInput = z
 
 export type CreatePollInput = z.infer<typeof createPollInput>;
 
-export async function requireCurrentTerm(db: PrismaClient): Promise<AcadTermSummary> {
+export async function requireCurrentTerm(
+  db: PrismaClient,
+): Promise<AcadTermSummary> {
   const term = await getCurrentAcadTerm(db);
   if (!term) {
     throw new TRPCError({
@@ -49,7 +54,10 @@ export async function requireCurrentTerm(db: PrismaClient): Promise<AcadTermSumm
   return term;
 }
 
-export function assertValidWindow(input: CreatePollInput, term: AcadTermSummary) {
+export function assertValidWindow(
+  input: CreatePollInput,
+  term: AcadTermSummary,
+) {
   const range = { start: input.startDate, end: input.endDate };
 
   if (range.start > range.end) {

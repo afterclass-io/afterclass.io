@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 import { publicProcedure } from "@/server/api/trpc";
+import { censorProfanity, censorProfanityOrNull } from "@/server/profanity";
 
 export const getById = publicProcedure
   .input(z.object({ id: z.string() }))
@@ -78,10 +79,18 @@ export const getById = publicProcedure
       ownerFaculty = f ? { name: f.name, acronym: f.acronym } : null;
     }
 
+    // The raw username never leaves the server: only the masked copy ships.
+    // `entries` is returned once, at the top level.
+    const { user, entries, ...roadmapFields } = roadmap;
+
     return {
-      roadmap,
-      entries: roadmap.entries,
-      ownerUsername: roadmap.user.username,
+      roadmap: {
+        ...roadmapFields,
+        name: censorProfanity(roadmap.name),
+        description: censorProfanityOrNull(roadmap.description),
+      },
+      entries,
+      ownerUsername: censorProfanity(user.username),
       ownerFaculty,
       voteCount: roadmap._count.votes,
       viewerHasVoted,

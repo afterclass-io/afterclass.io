@@ -1,5 +1,5 @@
 import ical, { ICalCalendarMethod, ICalWeekday } from "ical-generator";
-import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import type { ArrangedClass } from "@/common/types/timetable";
 import { dayOfWeekToIcalCode } from "@/common/functions/day-of-week";
 
 // ---------------------------------------------------------------------------
@@ -47,7 +47,7 @@ const ICAL_DAY_TO_JS: Record<string, number> = {
 function sgtDateTime(
   year: number,
   month: number, // 1-based
-  day: number,   // 1-based
+  day: number, // 1-based
   hours: number,
   minutes: number,
 ): Date {
@@ -152,10 +152,18 @@ export function buildIcal(input: ICalInput): string {
         const d = new Date(occurrence);
 
         const start = sgtDateTime(
-          d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), startH, startM,
+          d.getUTCFullYear(),
+          d.getUTCMonth() + 1,
+          d.getUTCDate(),
+          startH,
+          startM,
         );
         const end = sgtDateTime(
-          d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), endH, endM,
+          d.getUTCFullYear(),
+          d.getUTCMonth() + 1,
+          d.getUTCDate(),
+          endH,
+          endM,
         );
 
         cal.createEvent({

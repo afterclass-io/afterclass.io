@@ -26,9 +26,9 @@ context("ResetPwd", function () {
         "eq",
         `${Cypress.config("baseUrl")}/account/auth/signup?email=${TEST_EMAIL_V1_VALID}`,
       );
-      cy.get("div[data-test=v1-signup-alert-dialog]", { timeout: 10000 }).should(
-        "be.visible",
-      );
+      cy.get("div[data-test=v1-signup-alert-dialog]", {
+        timeout: 10000,
+      }).should("be.visible");
     });
 
     it("should be able to submit password reset request for v2 email", function () {
@@ -44,7 +44,7 @@ context("ResetPwd", function () {
         .should("have.text", "Confirming your email...");
       // by this time this should have requsted once
       cy.get("@mockPasswordReset.all").should("have.length", 1);
-      cy.wait(10_000);
+      cy.wait("@mockPasswordReset");
       cy.url({ timeout: 15000 }).should(
         "eq",
         `${Cypress.config("baseUrl")}/account/auth/verify?email=${TEST_EMAIL_V2_VALID}`,

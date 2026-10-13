@@ -1,177 +1,261 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 
 // vi.mock factories are hoisted above top-level const declarations, so the mock
 // fns must be created via vi.hoisted to avoid a TDZ ("Cannot access ... before
 // initialization") error.
-const { txRateLimitWindowFindUnique, txRateLimitWindowUpsert, txRateLimitWindowUpdateMany } =
-  vi.hoisted(() => ({
-    txRateLimitWindowFindUnique: vi.fn() as Mock,
-    txRateLimitWindowUpsert: vi.fn() as Mock,
-    txRateLimitWindowUpdateMany: vi.fn() as Mock,
-  }));
-
-const { mockRateLimitWindowDeleteMany } = vi.hoisted(() => ({
-  mockRateLimitWindowDeleteMany: vi.fn() as Mock,
+const {
+  mockQueryRaw,
+  mockExecuteRaw,
+  txRateLimitWindowFindUnique,
+  txRateLimitWindowUpsert,
+  txRateLimitWindowUpdateMany,
+  mockTxTransaction,
+} = vi.hoisted(() => ({
+  mockQueryRaw: vi.fn() as Mock,
+  mockExecuteRaw: vi.fn() as Mock,
+  txRateLimitWindowFindUnique: vi.fn() as Mock,
+  txRateLimitWindowUpsert: vi.fn() as Mock,
+  txRateLimitWindowUpdateMany: vi.fn() as Mock,
+  mockTxTransaction: vi.fn() as Mock,
 }));
-
-const tx = {
-  rateLimitWindow: {
-    findUnique: txRateLimitWindowFindUnique,
-    upsert: txRateLimitWindowUpsert,
-    updateMany: txRateLimitWindowUpdateMany,
-  },
-};
 
 vi.mock("@/server/db", () => ({
   db: {
+    $queryRaw: mockQueryRaw,
+    $executeRaw: mockExecuteRaw,
     rateLimitWindow: {
       findUnique: txRateLimitWindowFindUnique,
       upsert: txRateLimitWindowUpsert,
       updateMany: txRateLimitWindowUpdateMany,
-      deleteMany: mockRateLimitWindowDeleteMany,
     },
-    $transaction: (fn: (tx: Record<string, unknown>) => unknown) => fn(tx),
   },
-  // checkAndIncrement runs its interactive $transaction on txDb.
   txDb: {
-    $transaction: (fn: (tx: Record<string, unknown>) => unknown) => fn(tx),
+    $transaction: mockTxTransaction,
   },
 }));
 
-import { checkAndIncrement, pruneRateLimits } from "./ratelimit";
+import testCases from "./ratelimit.cases.json";
+import {
+  checkAndIncrement,
+  peekRateLimit,
+  pruneRateLimits,
+  releaseRateLimit,
+} from "./ratelimit";
 
 describe("checkAndIncrement", () => {
+  beforeEach(() => {
+    vi.useRealTimers();
+    mockQueryRaw.mockReset();
+    mockExecuteRaw.mockReset();
+    mockTxTransaction.mockReset();
+    txRateLimitWindowFindUnique.mockReset();
+    txRateLimitWindowUpsert.mockReset();
+    txRateLimitWindowUpdateMany.mockReset();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("allows when the statement returns a row", async () => {
+    mockQueryRaw.mockResolvedValueOnce([{ count: 1 }]);
+    const r = await checkAndIncrement("chat:u1", 10, 1);
+    expect(r).toEqual({ ok: true, retryAfterSeconds: 0 });
+  });
+
+  it("blocks when the statement returns no row", async () => {
+    mockQueryRaw.mockResolvedValueOnce([]);
+    const r = await checkAndIncrement("chat:u1", 10, 1);
+    expect(r.ok).toBe(false);
+    expect(r.retryAfterSeconds).toBeGreaterThan(0);
+  });
+
+  it("sends one parameterized statement", async () => {
+    const now = 1700000000000;
+    vi.setSystemTime(now);
+    const windowMs = 60_000;
+    const windowStart = Math.floor(now / windowMs) * windowMs;
+
+    mockQueryRaw.mockResolvedValueOnce([{ count: 1 }]);
+    await checkAndIncrement("chat:u1", 10, 1);
+
+    expect(mockQueryRaw).toHaveBeenCalledTimes(1);
+    const rawCall = mockQueryRaw.mock.calls[0] as [string[], ...unknown[]];
+    const sql = rawCall[0].join("");
+    const params = rawCall.slice(1);
+
+    expect(sql).toContain('INSERT INTO "rate_limit"');
+    expect(sql).toContain('ON CONFLICT ("key") DO UPDATE');
+    expect(sql).toContain('WHERE r."count" <');
+    expect(sql).toContain("RETURNING");
+    expect(params).toEqual([`chat:u1:${windowStart}`, BigInt(windowStart), 10]);
+  });
+
+  it("sets updated_at in SQL", async () => {
+    mockQueryRaw.mockResolvedValueOnce([{ count: 1 }]);
+    await checkAndIncrement("chat:u1", 10, 1);
+
+    const rawCall = mockQueryRaw.mock.calls[0] as [string[], ...unknown[]];
+    const sql = rawCall[0].join("");
+    expect(sql).toContain("\"updated_at\" = (now() AT TIME ZONE 'UTC')");
+  });
+
+  it("uses no transaction", async () => {
+    mockQueryRaw.mockResolvedValueOnce([{ count: 1 }]);
+    await checkAndIncrement("chat:u1", 10, 1);
+
+    expect(mockTxTransaction).not.toHaveBeenCalled();
+    expect(mockQueryRaw).toHaveBeenCalledTimes(1);
+  });
+
+  it("window math cases", async () => {
+    for (const tc of testCases) {
+      mockQueryRaw.mockReset();
+      vi.setSystemTime(new Date(tc.nowIso));
+      mockQueryRaw.mockResolvedValueOnce([]);
+
+      const r = await checkAndIncrement("chat:u1", 10, tc.windowMinutes);
+      expect(r.ok).toBe(false);
+      expect(r.retryAfterSeconds).toBe(tc.expectedRetryAfterSeconds);
+
+      expect(mockQueryRaw).toHaveBeenCalledTimes(1);
+      const rawCall = mockQueryRaw.mock.calls[0] as [string[], ...unknown[]];
+      const params = rawCall.slice(1);
+      const expectedStartMs = Date.parse(tc.expectedWindowStart);
+      expect(params[0]).toBe(`chat:u1:${expectedStartMs}`);
+      expect(params[1]).toEqual(BigInt(expectedStartMs));
+    }
+  });
+
+  it("limit below 1", async () => {
+    for (const limit of [0, -1]) {
+      mockQueryRaw.mockReset();
+      const r = await checkAndIncrement("chat:u1", limit, 1);
+      expect(r.ok).toBe(false);
+      expect(r.retryAfterSeconds).toBeGreaterThanOrEqual(1);
+      expect(mockQueryRaw).not.toHaveBeenCalled();
+    }
+  });
+
+  it("propagates store errors", async () => {
+    mockQueryRaw.mockRejectedValueOnce(new Error("P2024"));
+    await expect(checkAndIncrement("chat:u1", 10, 1)).rejects.toThrow("P2024");
+  });
+});
+
+describe("peekRateLimit", () => {
   beforeEach(() => {
     txRateLimitWindowFindUnique.mockReset();
     txRateLimitWindowUpsert.mockReset();
     txRateLimitWindowUpdateMany.mockReset();
-    mockRateLimitWindowDeleteMany.mockReset();
   });
 
-  it("allows within the limit via atomic conditional increment", async () => {
-    txRateLimitWindowUpsert.mockResolvedValue(undefined);
-    txRateLimitWindowUpdateMany.mockResolvedValue({ count: 1 });
-    const r: { ok: boolean; retryAfterSeconds: number } =
-      await checkAndIncrement("chat:u1", 10, 1);
+  it("returns ok: true when no row exists without creating or incrementing a row", async () => {
+    txRateLimitWindowFindUnique.mockResolvedValue(null);
+    const r = await peekRateLimit("k", 10, 1);
     expect(r).toEqual({ ok: true, retryAfterSeconds: 0 });
-    expect(txRateLimitWindowUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { key: expect.stringContaining("chat:u1:") as string },
-        // Asymmetric matchers are typed as `any` by vitest; suppress unsafe-assignment for the mock assertion.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        create: expect.objectContaining({
-          key: expect.stringContaining("chat:u1:") as string,
-          windowStart: expect.any(BigInt) as bigint,
-          count: 0,
-        }),
-        update: {},
-      }) as Record<string, unknown>,
-    );
-    expect(txRateLimitWindowUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: {
-          key: expect.stringContaining("chat:u1:") as string,
-          count: { lt: 10 },
-        },
-        data: { count: { increment: 1 } },
-      }) as Record<string, unknown>,
-    );
+    expect(txRateLimitWindowUpsert).not.toHaveBeenCalled();
+    expect(txRateLimitWindowUpdateMany).not.toHaveBeenCalled();
+    expect(txRateLimitWindowFindUnique).toHaveBeenCalledWith({
+      where: { key: expect.stringContaining("k:") as string },
+      select: { count: true },
+    });
   });
 
-  it("blocks over the limit when conditional update matches 0 (atomic)", async () => {
-    txRateLimitWindowUpsert.mockResolvedValue(undefined);
-    txRateLimitWindowUpdateMany.mockResolvedValue({ count: 0 });
-    const r: { ok: boolean; retryAfterSeconds: number } =
-      await checkAndIncrement("chat:u1", 10, 1);
+  it("returns ok: false and retryAfterSeconds >= 1 when count equals limit", async () => {
+    txRateLimitWindowFindUnique.mockResolvedValue({ count: 10 });
+    const r = await peekRateLimit("k", 10, 1);
     expect(r.ok).toBe(false);
-    expect(r.retryAfterSeconds).toBeGreaterThan(0);
-    expect(txRateLimitWindowUpsert).toHaveBeenCalledTimes(1);
-    expect(txRateLimitWindowUpdateMany).toHaveBeenCalledTimes(1);
+    expect(r.retryAfterSeconds).toBeGreaterThanOrEqual(1);
+    expect(txRateLimitWindowUpsert).not.toHaveBeenCalled();
+    expect(txRateLimitWindowUpdateMany).not.toHaveBeenCalled();
   });
 
-  it("creates a new row on the first call in a window (ensure upsert then conditional increment)", async () => {
-    txRateLimitWindowUpsert.mockResolvedValue(undefined);
-    txRateLimitWindowUpdateMany.mockResolvedValue({ count: 1 });
-    const r: { ok: boolean; retryAfterSeconds: number } =
-      await checkAndIncrement("chat:u1", 10, 1);
+  it("returns ok: true when count is limit - 1", async () => {
+    txRateLimitWindowFindUnique.mockResolvedValue({ count: 9 });
+    const r = await peekRateLimit("k", 10, 1);
     expect(r).toEqual({ ok: true, retryAfterSeconds: 0 });
-    expect(txRateLimitWindowUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { key: expect.stringContaining("chat:u1:") as string },
-        // Asymmetric matchers typed as `any` - see above.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        create: expect.objectContaining({
-          key: expect.stringContaining("chat:u1:") as string,
-          count: 0,
-        }),
-        update: {},
-      }) as Record<string, unknown>,
-    );
+  });
+});
+
+describe("releaseRateLimit", () => {
+  beforeEach(() => mockExecuteRaw.mockReset());
+
+  it("releases the acquired bucket after the clock crosses an hour", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(3_599_999);
+      const acquiredAt = Date.now();
+      mockQueryRaw.mockResolvedValue([{ count: 1 }]);
+      await checkAndIncrement("k", 1, 5);
+      const acquiredKey: unknown = mockQueryRaw.mock.calls.at(-1)?.[1];
+      vi.setSystemTime(3_600_001);
+      await releaseRateLimit("k", 5, acquiredAt);
+      expect(mockExecuteRaw.mock.calls[0]?.[1]).toBe(acquiredKey);
+      expect(acquiredKey).toBe("k:3300000");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
-  it("allows exactly one below the limit (boundary) via conditional increment", async () => {
-    txRateLimitWindowUpsert.mockResolvedValue(undefined);
-    txRateLimitWindowUpdateMany.mockResolvedValue({ count: 1 });
-    const r: { ok: boolean; retryAfterSeconds: number } =
-      await checkAndIncrement("chat:u1", 10, 1);
-    expect(r).toEqual({ ok: true, retryAfterSeconds: 0 });
-    expect(txRateLimitWindowUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ count: { lt: 10 } }) as Record<
-          string,
-          unknown
-        >,
-      }) as Record<string, unknown>,
-    );
-  });
-
-  it("does not allow a limit+1 burst when concurrent callers race (one conditional update wins)", async () => {
-    txRateLimitWindowUpsert.mockResolvedValue(undefined);
-    // First caller wins (count 1), second caller's conditional update matches 0
-    txRateLimitWindowUpdateMany
-      .mockResolvedValueOnce({ count: 1 })
-      .mockResolvedValueOnce({ count: 0 });
-    const r1: { ok: boolean; retryAfterSeconds: number } =
-      await checkAndIncrement("chat:u1", 10, 1);
-    const r2: { ok: boolean; retryAfterSeconds: number } =
-      await checkAndIncrement("chat:u1", 10, 1);
-    expect(r1).toEqual({ ok: true, retryAfterSeconds: 0 });
-    expect(r2.ok).toBe(false);
-    expect(txRateLimitWindowUpsert).toHaveBeenCalledTimes(2);
-    expect(txRateLimitWindowUpdateMany).toHaveBeenCalledTimes(2);
-  });
-
-  it("increments the count atomically across calls in the same window (conditional updateMany)", async () => {
-    txRateLimitWindowUpsert.mockResolvedValue(undefined);
-    txRateLimitWindowUpdateMany.mockResolvedValue({ count: 1 });
-    const r1: { ok: boolean; retryAfterSeconds: number } =
-      await checkAndIncrement("chat:u1", 10, 1);
-    const r2: { ok: boolean; retryAfterSeconds: number } =
-      await checkAndIncrement("chat:u1", 10, 1);
-    expect(r1).toEqual({ ok: true, retryAfterSeconds: 0 });
-    expect(r2).toEqual({ ok: true, retryAfterSeconds: 0 });
-    expect(txRateLimitWindowUpdateMany).toHaveBeenCalledTimes(2);
-    expect(txRateLimitWindowUpsert).toHaveBeenCalledTimes(2);
+  it("sends one parameterized update for the acquired window row", async () => {
+    mockExecuteRaw.mockResolvedValue(1);
+    await releaseRateLimit("k", 5, Date.now());
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(1);
+    const [strings, ...values] = mockExecuteRaw.mock.calls[0] as [
+      string[],
+      ...unknown[],
+    ];
+    expect(strings.join("?")).toContain('GREATEST("count" - 1, 0)');
+    expect(values).toHaveLength(1);
+    expect(values[0]).toEqual(expect.stringMatching(/^k:\d+$/));
   });
 });
 
 describe("pruneRateLimits", () => {
-  it("deletes windows older than the retention cutoff and returns the count", async () => {
-    mockRateLimitWindowDeleteMany.mockResolvedValue({ count: 7 });
+  beforeEach(() => {
+    vi.useRealTimers();
+    mockExecuteRaw.mockReset();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("prune single short batch", async () => {
+    mockExecuteRaw.mockResolvedValueOnce(7);
     const r = await pruneRateLimits();
     expect(r).toEqual({ deleted: 7 });
-    expect(mockRateLimitWindowDeleteMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { windowStart: { lt: expect.any(BigInt) as bigint } },
-      }) as Record<string, unknown>,
-    );
-    // Cutoff is in the past (retention keeps ~24h of windows).
-    const cutoff = (
-      mockRateLimitWindowDeleteMany.mock.calls[0]?.[0] as {
-        where: { windowStart: { lt: bigint } };
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(1);
+    const rawCall = mockExecuteRaw.mock.calls[0] as [string[], ...unknown[]];
+    const cutoffParam = rawCall[1];
+    expect(typeof cutoffParam).toBe("bigint");
+    expect((cutoffParam as bigint) < BigInt(Date.now())).toBe(true);
+  });
+
+  it("prune continues on full batches", async () => {
+    mockExecuteRaw
+      .mockResolvedValueOnce(1000)
+      .mockResolvedValueOnce(1000)
+      .mockResolvedValueOnce(5);
+    const r = await pruneRateLimits();
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(3);
+    expect(r).toEqual({ deleted: 2005 });
+  });
+
+  it("prune stops at the time budget", async () => {
+    vi.useFakeTimers();
+    const now = 1700000000000;
+    vi.setSystemTime(now);
+    mockExecuteRaw.mockImplementation(async () => {
+      if (mockExecuteRaw.mock.calls.length === 2) {
+        vi.advanceTimersByTime(8001);
       }
-    ).where.windowStart.lt;
-    expect(cutoff < BigInt(Date.now())).toBe(true);
+      return 1000;
+    });
+    const r = await pruneRateLimits();
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(2);
+    expect(r).toEqual({ deleted: 2000 });
   });
 });

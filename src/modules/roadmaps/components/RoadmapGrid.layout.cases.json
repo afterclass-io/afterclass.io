@@ -1,0 +1,38 @@
+{
+  "t3bEntry": [
+    {
+      "courseId": "course-t3b",
+      "courseCode": "MGMT101",
+      "courseName": "Management",
+      "creditUnits": 1,
+      "yearNumber": 1,
+      "term": "T3B"
+    }
+  ],
+  "cuOverloadEntries": [
+    {
+      "courseId": "c1",
+      "courseCode": "CS101",
+      "courseName": "CS1",
+      "creditUnits": 2,
+      "yearNumber": 1,
+      "term": "T3A"
+    },
+    {
+      "courseId": "c2",
+      "courseCode": "CS102",
+      "courseName": "CS2",
+      "creditUnits": 2,
+      "yearNumber": 1,
+      "term": "T3A"
+    },
+    {
+      "courseId": "c3",
+      "courseCode": "CS103",
+      "courseName": "CS3",
+      "creditUnits": 2,
+      "yearNumber": 1,
+      "term": "T3A"
+    }
+  ]
+}

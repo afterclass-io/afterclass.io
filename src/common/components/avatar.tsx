@@ -1,53 +1,119 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as AvatarPrimitive from "@radix-ui/react-avatar"
+import * as React from "react";
+import Image, { type ImageProps } from "next/image";
 
-import { cn } from "@/common/functions"
+import { cn } from "@/common/functions";
 
-function Avatar({
-  className,
-  ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Root>) {
-  return (
-    <AvatarPrimitive.Root
-      data-slot="avatar"
-      className={cn(
-        "relative flex size-8 shrink-0 overflow-hidden rounded-full",
-        className
-      )}
-      {...props}
-    />
-  )
+type ImageStatus = "loading" | "loaded" | "error";
+
+const AvatarContext = React.createContext<{
+  status: ImageStatus;
+  setStatus: (status: ImageStatus) => void;
+} | null>(null);
+
+function useAvatar() {
+  const context = React.useContext(AvatarContext);
+  if (!context) {
+    throw new Error("Avatar parts must be used within an Avatar.");
+  }
+  return context;
 }
 
+function Avatar({ className, ...props }: React.ComponentProps<"span">) {
+  const [status, setStatus] = React.useState<ImageStatus>("loading");
+  const value = React.useMemo(() => ({ status, setStatus }), [status]);
+
+  return (
+    <AvatarContext.Provider value={value}>
+      <span
+        data-slot="avatar"
+        className={cn(
+          "relative flex size-8 shrink-0 overflow-hidden rounded-full",
+          className,
+        )}
+        {...props}
+      />
+    </AvatarContext.Provider>
+  );
+}
+
+type AvatarImageProps = Omit<
+  ImageProps,
+  "src" | "width" | "height" | "alt" | "fill"
+> & {
+  src?: string | null;
+  alt: string;
+  /** Rendered edge length in CSS pixels. The avatar is square. */
+  size: number;
+};
+
+/**
+ * Served through the Next.js image optimiser: modern format, sized for the
+ * container, with `size` reserving the space before the file arrives. The
+ * initials in `AvatarFallback` show until the image loads, and again when
+ * there is no `src` or the file fails to load.
+ */
 function AvatarImage({
   className,
+  src,
+  alt,
+  size,
+  onLoad,
+  onError,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+}: AvatarImageProps) {
+  const { status, setStatus } = useAvatar();
+
+  // The status belongs to one file. When `src` changes, start again: an error
+  // must not hide the new file, and a loaded state must not hide the initials
+  // while the new file loads. A layout effect runs before any load event can
+  // arrive, so it never overwrites the new file's own result.
+  const previousSrc = React.useRef(src);
+  React.useLayoutEffect(() => {
+    if (previousSrc.current === src) return;
+    previousSrc.current = src;
+    setStatus("loading");
+  }, [src, setStatus]);
+
+  if (!src || status === "error") return null;
+
   return (
-    <AvatarPrimitive.Image
+    <Image
       data-slot="avatar-image"
-      className={cn("aspect-square size-full", className)}
+      src={src}
+      alt={alt}
+      width={size}
+      height={size}
+      onLoad={(event) => {
+        setStatus("loaded");
+        onLoad?.(event);
+      }}
+      onError={(event) => {
+        setStatus("error");
+        onError?.(event);
+      }}
+      className={cn("absolute inset-0 size-full object-cover", className)}
       {...props}
     />
-  )
+  );
 }
 
-function AvatarFallback({
-  className,
-  ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+function AvatarFallback({ className, ...props }: React.ComponentProps<"span">) {
+  const { status } = useAvatar();
+
+  if (status === "loaded") return null;
+
   return (
-    <AvatarPrimitive.Fallback
+    <span
       data-slot="avatar-fallback"
       className={cn(
         "bg-muted flex size-full items-center justify-center rounded-full",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
-export { Avatar, AvatarImage, AvatarFallback }
+export { Avatar, AvatarImage, AvatarFallback };

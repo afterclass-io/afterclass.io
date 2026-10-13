@@ -10,10 +10,7 @@ export const InformationCardLoginButton = () => {
     : "/account/auth/login";
 
   return (
-    <ProgressLink
-      variant="link"
-      href={href}
-    >
+    <ProgressLink variant="link" href={href}>
       Login
     </ProgressLink>
   );

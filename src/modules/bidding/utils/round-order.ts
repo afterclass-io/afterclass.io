@@ -8,7 +8,7 @@
  * This ordering has been stable across 5+ years of SMU history (2021–2026).
  * The 7 rounds are: 1, 1A, 1B, 1C, 1F, 2, 2A.
  */
-export const ROUND_ORDER: Record<string, number> = {
+const ROUND_ORDER: Record<string, number> = {
   "1": 0,
   "1A": 1,
   "1B": 2,

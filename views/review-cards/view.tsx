@@ -5,6 +5,7 @@ import type { ReviewCardsData } from "../../src/mcp/view-tools/schemas";
 import { TOKENS, Skeleton } from "../shared/tokens";
 import { ViewShell } from "../shared/view-shell";
 import { ReviewCard } from "../shared/components/ReviewCard";
+import { ViewCard } from "../shared/components/ViewCard";
 
 /**
  * MCP App View (mcp-use v2) for the `get-course-reviews` tool. Must stay
@@ -57,20 +58,7 @@ const ReviewCardsView: React.FC = () => {
   const reviews = props?.reviews ?? [];
   const context = props?.context ?? "";
   return (
-    <div
-      style={{
-        fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
-        color: c.cardFg,
-        background: c.card,
-        border: `1px solid ${c.border}`,
-        borderRadius: c.radius,
-        padding: 16,
-        boxSizing: "border-box",
-        width: "100%",
-        maxWidth: "100%",
-      }}
-    >
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
+    <ViewCard c={c}>
       {/* Header: title + context badge */}
       <div
         style={{
@@ -122,7 +110,7 @@ const ReviewCardsView: React.FC = () => {
           ))}
         </div>
       )}
-    </div>
+    </ViewCard>
   );
 };
 

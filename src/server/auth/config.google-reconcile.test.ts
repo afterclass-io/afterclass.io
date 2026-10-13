@@ -27,11 +27,12 @@ vi.mock("./supabase-link", () => ({
 
 vi.mock("@sentry/nextjs", () => ({
   addBreadcrumb: vi.fn(),
+  captureException: vi.fn(),
 }));
 
 import { authConfig } from "./config";
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
+// eslint-disable-next-line @typescript-eslint/unbound-method -- the callback is a plain function that does not use this
 const jwt = authConfig.callbacks.jwt;
 
 function googleParams(over: Record<string, unknown> = {}) {
@@ -52,6 +53,7 @@ const legacyRow = {
   isVerified: true,
   universityId: 1,
   deprecatedPasswordDigest: null,
+  supabaseUserId: null,
 };
 
 describe("google jwt reconcile (legacy id self-heal)", () => {
@@ -73,16 +75,16 @@ describe("google jwt reconcile (legacy id self-heal)", () => {
     usersFindUnique
       .mockResolvedValueOnce(legacyRow) // by email
       .mockResolvedValueOnce(null); // no clash on supa id
-    const updated = { ...legacyRow, id: "supa-uid" };
+    const updated = { ...legacyRow, supabaseUserId: "supa-uid" };
     usersUpdate.mockResolvedValue(updated);
 
     const token = await jwt(googleParams());
 
     expect(usersUpdate).toHaveBeenCalledWith({
-      where: { email: "a@smu.edu.sg" },
-      data: { id: "supa-uid" },
+      where: { id: "random-uuid" },
+      data: { supabaseUserId: "supa-uid" },
     });
-    expect(token?.sub).toBe("supa-uid");
+    expect(token?.sub).toBe("random-uuid");
     expect(token?.supabaseAccessToken).toBe("supa-access");
     expect(token?.googleLinkFailed).toBe(false);
   });
@@ -99,7 +101,7 @@ describe("google jwt reconcile (legacy id self-heal)", () => {
       .mockResolvedValueOnce(null);
     const updated = {
       ...legacyRow,
-      id: "supa-uid",
+      supabaseUserId: "supa-uid",
       firstName: "Jordan",
       lastName: "Teo",
     };
@@ -117,11 +119,129 @@ describe("google jwt reconcile (legacy id self-heal)", () => {
 
     expect(usersUpdate).toHaveBeenCalledTimes(1);
     expect(usersUpdate).toHaveBeenCalledWith({
-      where: { email: "a@smu.edu.sg" },
-      data: { id: "supa-uid", firstName: "Jordan", lastName: "Teo" },
+      where: { id: "random-uuid" },
+      data: {
+        supabaseUserId: "supa-uid",
+        firstName: "Jordan",
+        lastName: "Teo",
+      },
     });
-    expect(token?.sub).toBe("supa-uid");
+    expect(token?.sub).toBe("random-uuid");
     expect(token?.user).toMatchObject({ firstName: "Jordan", lastName: "Teo" });
+  });
+
+  it("never includes an id key in the reconcile update payload", async () => {
+    linkMock.mockResolvedValue({
+      accessToken: "supa-access",
+      refreshToken: "supa-refresh",
+      expiresAt: 9999999999,
+      supabaseUserId: "supa-uid",
+    });
+    usersFindUnique
+      .mockResolvedValueOnce(legacyRow)
+      .mockResolvedValueOnce(null);
+    usersUpdate.mockResolvedValue({ ...legacyRow, supabaseUserId: "supa-uid" });
+
+    await jwt(googleParams());
+
+    expect(usersUpdate).toHaveBeenCalledTimes(1);
+    const updateCall = usersUpdate.mock.calls[0]?.[0] as
+      { data?: Record<string, unknown> } | undefined;
+    expect(updateCall?.data).not.toHaveProperty("id");
+  });
+
+  it("does not run reconcile update when dbUser.supabaseUserId already matches the link id", async () => {
+    linkMock.mockResolvedValue({
+      accessToken: "supa-access",
+      refreshToken: "supa-refresh",
+      expiresAt: 9999999999,
+      supabaseUserId: "supa-uid",
+    });
+    const alreadyLinkedRow = {
+      ...legacyRow,
+      supabaseUserId: "supa-uid",
+    };
+    usersFindUnique.mockResolvedValue(alreadyLinkedRow);
+
+    const token = await jwt(googleParams());
+
+    expect(usersUpdate).not.toHaveBeenCalled();
+    expect(token?.sub).toBe("random-uuid");
+    expect(token?.supabaseAccessToken).toBe("supa-access");
+    expect(token?.googleLinkFailed).toBe(false);
+  });
+
+  it("sets both id and supabaseUserId when creating a new user on link success", async () => {
+    linkMock.mockResolvedValue({
+      accessToken: "supa-access",
+      refreshToken: "supa-refresh",
+      expiresAt: 9999999999,
+      supabaseUserId: "supa-uid",
+    });
+    usersFindUnique.mockResolvedValue(null);
+    unisFindMany.mockResolvedValue([
+      { id: 1, domains: [{ domain: "smu.edu.sg" }] },
+    ]);
+    const createdRow = {
+      ...legacyRow,
+      id: "supa-uid",
+      supabaseUserId: "supa-uid",
+    };
+    usersCreate.mockResolvedValue(createdRow);
+
+    const token = await jwt(googleParams());
+
+    expect(usersCreate).toHaveBeenCalledTimes(1);
+    const createCall = usersCreate.mock.calls[0]?.[0] as
+      { data?: Record<string, unknown> } | undefined;
+    expect(createCall?.data?.id).toBe("supa-uid");
+    expect(createCall?.data?.supabaseUserId).toBe("supa-uid");
+    expect(token?.sub).toBe("supa-uid");
+    expect(token?.user).not.toHaveProperty("deprecatedPasswordDigest");
+    expect(token?.user).not.toHaveProperty("supabaseUserId");
+  });
+
+  it("returns a token without throwing when the reconcile update rejects (e.g. unique clash)", async () => {
+    linkMock.mockResolvedValue({
+      accessToken: "supa-access",
+      refreshToken: "supa-refresh",
+      expiresAt: 9999999999,
+      supabaseUserId: "supa-uid",
+    });
+    usersFindUnique
+      .mockResolvedValueOnce(legacyRow)
+      .mockResolvedValueOnce(null);
+    usersUpdate.mockRejectedValueOnce(
+      new Error("Unique constraint failed on the fields: (`supabase_user_id`)"),
+    );
+
+    const token = await jwt(googleParams());
+
+    expect(token).toBeDefined();
+    expect(token?.sub).toBe("random-uuid");
+    expect(token?.user).toMatchObject({ id: "random-uuid" });
+  });
+
+  it("clears the Supabase tokens when the reconcile write hits a unique violation", async () => {
+    linkMock.mockResolvedValue({
+      accessToken: "supa-access",
+      refreshToken: "supa-refresh",
+      expiresAt: 9999999999,
+      supabaseUserId: "supa-uid",
+    });
+    usersFindUnique
+      .mockResolvedValueOnce(legacyRow)
+      .mockResolvedValueOnce(null);
+    usersUpdate.mockRejectedValueOnce(
+      new Error("Unique constraint failed on the fields: (`supabase_user_id`)"),
+    );
+
+    const token = await jwt(googleParams());
+
+    expect(token?.sub).toBe("random-uuid");
+    expect(token?.supabaseAccessToken).toBeNull();
+    expect(token?.supabaseRefreshToken).toBeNull();
+    expect(token?.supabaseExpiresAt).toBeNull();
   });
 
   it("backfills names alone when no reconcile is needed", async () => {
@@ -217,5 +337,43 @@ describe("google jwt reconcile (legacy id self-heal)", () => {
     } finally {
       errSpy.mockRestore();
     }
+  });
+
+  it("marks an unverified row verified when Google signs it in", async () => {
+    linkMock.mockResolvedValue({
+      accessToken: "supa-access",
+      refreshToken: "supa-refresh",
+      expiresAt: 9999999999,
+      supabaseUserId: "random-uuid",
+    });
+    const unverified = { ...legacyRow, isVerified: false };
+    usersFindUnique.mockResolvedValueOnce(unverified);
+    usersUpdate.mockResolvedValueOnce({ ...unverified, isVerified: true });
+
+    const token = await jwt(googleParams());
+
+    expect(usersUpdate).toHaveBeenCalledTimes(1);
+    expect(usersUpdate).toHaveBeenCalledWith({
+      where: { id: "random-uuid" },
+      data: { isVerified: true },
+    });
+    expect(token?.user).toMatchObject({ isVerified: true });
+  });
+
+  it("does not write isVerified for a row that is already verified", async () => {
+    linkMock.mockResolvedValue({
+      accessToken: "supa-access",
+      refreshToken: "supa-refresh",
+      expiresAt: 9999999999,
+      supabaseUserId: "random-uuid",
+    });
+    usersFindUnique.mockResolvedValueOnce({
+      ...legacyRow,
+      supabaseUserId: "random-uuid",
+    });
+
+    await jwt(googleParams());
+
+    expect(usersUpdate).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,7 @@
 import { type NextRequest } from "next/server";
 import { getFeedData } from "@/server/api/timetable/getFeedData";
 import { buildIcal } from "@/modules/timetable/functions/build-ical";
+import { clientKey } from "@/server/api/client-key";
 import { checkBudget } from "@/server/assistant/budget";
 import { getChatConfigAsync } from "@/server/config/chat-config";
 
@@ -15,17 +16,17 @@ import { getChatConfigAsync } from "@/server/config/chat-config";
  * server-side, and returns a valid iCalendar (.ics) feed.
  *
  * Abuse controls:
+ * - WAF layer: Vercel WAF rule `rate-limit-ical` limits anonymous floods
+ *   (120/min per IP) before the function runs.
  * - Throttle: token-guessing spray against this unauthenticated endpoint is
  *   rate-limited per IP (`ical:<ip>`, 60/min fixed window via the shared
  *   `checkAndIncrement` store). Over-limit callers get 429; the token lookup
  *   never runs.
- * - Expiry: `icalToken`s are permanent bearer credentials with NO expiry
- *   column today. Revocation exists (`setVisibility` revokes the token when
- *   a timetable flips to PRIVATE, and `getFeedData` refuses PRIVATE feeds
- *   even with a valid token). Rotation: re-mint via
- *   `get-timetable-calendar-link`. A future migration should add
- *   `icalTokenExpiresAt` + document rotation here; until then this comment
- *   is the documented expiry story.
+ * - Expiry: links stop working at the end of the academic term (404,
+ *   the same as an invalid link). Revocation exists via `revokeIcalToken`
+ *   and `setVisibility` (flipping to PRIVATE revokes the token).
+ *   Rotation: owners can rotate the link with `timetable.rotateIcalToken`;
+ *   the old link then returns 404.
  *
  * Headers:
  * - Content-Type: text/calendar; charset=utf-8
@@ -34,20 +35,21 @@ import { getChatConfigAsync } from "@/server/config/chat-config";
  *
  * Responses:
  * - 200 → iCal feed
- * - 404 → token invalid, revoked, or timetable missing
+ * - 404 → token invalid, revoked, or timetable missing; the term ended;
+ *   or the timetable is PRIVATE
  * - 429 → throttled (slow down token-guessing spray)
  */
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ token: string }> },
 ): Promise<Response> {
-  // Per-IP throttle BEFORE the token lookup so spray never reaches the DB.
+  // Per-IP throttle (layer 2 behind Vercel WAF) BEFORE the token lookup so
+  // spray never reaches the DB.
   // Limit comes from the canonical chat-config (`icalThrottlePerMinute`,
   // default 60 — same number as the old literal, centralized source).
   // Fail-closed: checkBudget throws on a misconfigured limit instead of
   // silently 429ing the whole world.
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ip = clientKey(req.headers);
   const { icalThrottlePerMinute } = await getChatConfigAsync();
   // `checkBudget` composes the bucket as `<prefix>:<user.id>`, so prefix
   // "ical" + the raw IP keeps the `ical:<ip>` bucket and shared limits.

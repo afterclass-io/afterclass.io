@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { resolveTermId } from "../../current";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { errText, guardedRun, jsonText, type McpTool } from "../../types";
 import { resolveFacultyId } from "./faculties";
 
 const searchCoursesSchema = z.object({
@@ -59,11 +59,11 @@ export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
       return { raw: text };
     }
   },
-  run: async (
-    { caller },
-    { acadTermId, query, facultyId, day, startsAfter, endsBefore },
-  ) => {
-    try {
+  run: guardedRun(
+    async (
+      { caller },
+      { acadTermId, query, facultyId, day, startsAfter, endsBefore },
+    ) => {
       // Omitted or empty-string acadTermId defaults to the current term.
       // An empty string must never reach SQL (it returns `[]` for every query).
       const term = await resolveTermId(caller, acadTermId);
@@ -101,10 +101,8 @@ export const searchCoursesTool: McpTool<typeof searchCoursesSchema> = {
         return r;
       });
       return jsonText(mapped);
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+    },
+  ),
 };
 
 const getCourseSchema = z.object({
@@ -117,15 +115,11 @@ export const getCourseTool: McpTool<typeof getCourseSchema> = {
     "Get detailed information for one course by its exact code (e.g. COR-STAT1202), including its SIS prerequisite / enrolment requirements (enrolmentRequirements) and degree-area tags (courseArea) when present.",
   inputSchema: getCourseSchema,
   readOnly: true,
-  run: async ({ caller }, { code }) => {
-    try {
-      const course = await caller.courses.getByCourseCode({ code });
-      if (!course) return errText(`Course ${code} not found`);
-      return jsonText(course);
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { code }) => {
+    const course = await caller.courses.getByCourseCode({ code });
+    if (!course) return errText(`Course ${code} not found`);
+    return jsonText(course);
+  }),
 };
 
 /**
@@ -175,65 +169,61 @@ export const getClassesTool: McpTool<typeof getClassesSchema> = {
     "Get class sections with timings, venue, and professor for a course and term. All filters are optional. Supports time filters day/startsAfter/endsBefore (e.g. day=Mon, startsAfter=18:00 for night classes). Returns at most 20 rows. Paginates with an opaque cursor: pass the previous page's nextCursor to fetch the next page. For stable paging pass the cursor alone — filters are still applied when combined.",
   inputSchema: getClassesSchema,
   readOnly: true,
-  run: async ({ caller }, input) => {
-    try {
-      // The cursor is declared on the input schema (so dispatch validation
-      // keeps it) but must never reach the router — sliced in-memory below.
-      const { cursor: _cursor, ...filters } = input as typeof input & {
-        cursor?: unknown;
-      };
-      void _cursor;
-      const clamped = {
-        ...filters,
-        limit: Math.min(input.limit, MAX_CLASSES_LIMIT),
-      };
-      const rows = (await caller.classes.getAll(clamped)) as Array<
-        Record<string, unknown>
-      >;
-      // Cursor pagination (additive): without a cursor the payload is the
-      // clamped rows plus a nextCursor key; with a cursor the same rows are
-      // sliced in-memory from the item whose id matches the cursor. The
-      // router has no cursor support, so the slice happens here — the cursor
-      // is the previous page's last item id (stable enough for a 20-row
-      // window; no new router surface needed for a 20-row cap).
-      // This stays inline instead of pageByCursor — the clamped router fetch
-      // needs the OPTIMISTIC rule (a full page
-      // reports its last id because a 21st row may exist beyond the fetch
-      // window), while pageByCursor is the EXACT rule (null when no known
-      // items remain). Two pinned tests pin the optimistic behavior here.
-      const cursor = (input as { cursor?: unknown }).cursor;
-      if (typeof cursor !== "string") {
-        const lastId =
-          rows.length > 0
-            ? (rows[rows.length - 1] as { id?: unknown }).id
-            : undefined;
-        return jsonText({
-          items: rows,
-          nextCursor:
-            typeof lastId === "string" && rows.length >= clamped.limit
-              ? lastId
-              : null,
-        });
-      }
-      const idx = rows.findIndex((r) => (r as { id?: unknown }).id === cursor);
-      const page = idx === -1 ? rows : rows.slice(idx + 1);
+  run: guardedRun(async ({ caller }, input) => {
+    // The cursor is declared on the input schema (so dispatch validation
+    // keeps it) but must never reach the router — sliced in-memory below.
+    const { cursor: _cursor, ...filters } = input as typeof input & {
+      cursor?: unknown;
+    };
+    void _cursor;
+    const clamped = {
+      ...filters,
+      limit: Math.min(input.limit, MAX_CLASSES_LIMIT),
+    };
+    const rows = (await caller.classes.getAll(clamped)) as Array<
+      Record<string, unknown>
+    >;
+    // Cursor pagination (additive): without a cursor the payload is the
+    // clamped rows plus a nextCursor key; with a cursor the same rows are
+    // sliced in-memory from the item whose id matches the cursor. The
+    // router has no cursor support, so the slice happens here — the cursor
+    // is the previous page's last item id (stable enough for a 20-row
+    // window; no new router surface needed for a 20-row cap).
+    // This stays inline instead of pageByCursor — the clamped router fetch
+    // needs the OPTIMISTIC rule (a full page
+    // reports its last id because a 21st row may exist beyond the fetch
+    // window), while pageByCursor is the EXACT rule (null when no known
+    // items remain). Two pinned tests pin the optimistic behavior here.
+    const cursor = (input as { cursor?: unknown }).cursor;
+    if (typeof cursor !== "string") {
       const lastId =
-        page.length > 0
-          ? (page[page.length - 1] as { id?: unknown }).id
+        rows.length > 0
+          ? (rows[rows.length - 1] as { id?: unknown }).id
           : undefined;
-      // Same exhaustion rule as the first page: a short page means the
-      // dataset is exhausted, so nextCursor is null regardless of cursor.
       return jsonText({
-        items: page,
+        items: rows,
         nextCursor:
-          typeof lastId === "string" && page.length >= clamped.limit
+          typeof lastId === "string" && rows.length >= clamped.limit
             ? lastId
             : null,
       });
-    } catch (e) {
-      return errText(errorMessage(e));
     }
-  },
+    const idx = rows.findIndex((r) => (r as { id?: unknown }).id === cursor);
+    const page = idx === -1 ? rows : rows.slice(idx + 1);
+    const lastId =
+      page.length > 0
+        ? (page[page.length - 1] as { id?: unknown }).id
+        : undefined;
+    // Same exhaustion rule as the first page: a short page means the
+    // dataset is exhausted, so nextCursor is null regardless of cursor.
+    return jsonText({
+      items: page,
+      nextCursor:
+        typeof lastId === "string" && page.length >= clamped.limit
+          ? lastId
+          : null,
+    });
+  }),
 };
 
 const getProfessorSchema = z.object({
@@ -245,11 +235,7 @@ export const getProfessorTool: McpTool<typeof getProfessorSchema> = {
   description: "Get a professor's profile by their URL slug (e.g. 'john-doe').",
   inputSchema: getProfessorSchema,
   readOnly: true,
-  run: async ({ caller }, { slug }) => {
-    try {
-      return jsonText(await caller.professors.getBySlug({ slug }));
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { slug }) => {
+    return jsonText(await caller.professors.getBySlug({ slug }));
+  }),
 };

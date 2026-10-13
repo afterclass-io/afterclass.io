@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ReviewsSortBy } from "@/modules/reviews/types";
+import { ReviewsSortBy } from "@/common/types/reviews";
 import { getOrderBy } from "./functions";
 
 describe("getOrderBy", () => {

@@ -36,12 +36,12 @@ export function ResizeHandle({ onDelta, className, label }: ResizeHandleProps) {
       aria-orientation="vertical"
       aria-label={label}
       className={cn(
-        "hidden lg:flex w-1 cursor-col-resize touch-none shrink-0 items-center justify-center hover:bg-primary/20 transition-colors",
+        "hover:bg-primary/20 hidden w-1 shrink-0 cursor-col-resize touch-none items-center justify-center transition-colors lg:flex",
         className,
       )}
       onPointerDown={onPointerDown}
     >
-      <div className="h-8 w-0.5 rounded-full bg-border group-hover:bg-primary/50" />
+      <div className="bg-border group-hover:bg-primary/50 h-8 w-0.5 rounded-full" />
     </div>
   );
 }

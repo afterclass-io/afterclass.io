@@ -1,14 +1,6 @@
 "use client";
 import { usePathname, useSearchParams } from "next/navigation";
-
-export type PageContext = {
-  pathname: string;
-  course?: string;
-  section?: string;
-  classId?: string;
-  profSlug?: string;
-  meetingSlug?: string;
-};
+import type { PageContext } from "@/common/types/assistant";
 
 const PARAM_MAP = {
   course: "course",

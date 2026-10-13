@@ -240,7 +240,6 @@ describe("CalendarLinksView copy action", () => {
 
   it("falls back to execCommand when clipboard.writeText rejects (iframe)", async () => {
     const origClipboard = navigator.clipboard;
-    const origExecCommand = document.execCommand;
     let execCalledWith: string | null = null;
     Object.defineProperty(navigator, "clipboard", {
       value: {
@@ -248,10 +247,13 @@ describe("CalendarLinksView copy action", () => {
       },
       configurable: true,
     });
-    document.execCommand = vi.fn((cmd: string) => {
-      execCalledWith = cmd;
-      return true;
-    }) as never;
+    Object.defineProperty(document, "execCommand", {
+      value: (cmd: string) => {
+        execCalledWith = cmd;
+        return true;
+      },
+      configurable: true,
+    });
     try {
       seedContext({
         status: "ready",
@@ -268,7 +270,7 @@ describe("CalendarLinksView copy action", () => {
         value: origClipboard,
         configurable: true,
       });
-      document.execCommand = origExecCommand;
+      Reflect.deleteProperty(document, "execCommand");
     }
   });
 
@@ -280,9 +282,7 @@ describe("CalendarLinksView copy action", () => {
       meta: fullMeta,
     });
     render(<CalendarLinksView />);
-    const input = screen.getByLabelText(
-      "Calendar feed URL",
-    ) as HTMLInputElement;
+    const input = screen.getByLabelText<HTMLInputElement>("Calendar feed URL");
     const selectSpy = vi.spyOn(input, "select");
     fireEvent.click(input);
     expect(selectSpy).toHaveBeenCalled();

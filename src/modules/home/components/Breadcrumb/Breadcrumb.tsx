@@ -212,8 +212,7 @@ export const HomeBreadcrumb = (
         );
         isSuccess = true;
       } else {
-        const pollTitle =
-          meetingQuery.data?.poll.title ?? "Meeting Details";
+        const pollTitle = meetingQuery.data?.poll.title ?? "Meeting Details";
         elements.push(
           { label: "Meetings", href: "/meetings" },
           { label: pollTitle },

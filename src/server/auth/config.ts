@@ -8,14 +8,31 @@ import * as Sentry from "@sentry/nextjs";
 import { type Users } from "@/generated/prisma/client";
 
 import { env } from "@/env";
-import { getEdgeConfig } from "@/common/providers/EdgeConfig/EdgeConfigProvider";
 import { signInWithEmail } from "../supabase";
+import { isPasswordLoginEnabled } from "./password-login";
 import { exchangeGoogleIdToken } from "./supabase-link";
 import { db } from "@/server/db";
 import randomId from "@/common/functions/randomId";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
+import { emailMatchesDomain } from "@/common/functions/email-domain";
 
-export type SessionUser = Omit<Users, "deprecatedPasswordDigest">;
+/**
+ * Prisma error messages echo the failing query arguments, which hold the
+ * user email. Report only the error class and code for Prisma errors.
+ */
+function redactDbError(e: unknown): unknown {
+  if (e instanceof Error && e.name.startsWith("PrismaClient")) {
+    const code = (e as { code?: unknown }).code;
+    return new Error(typeof code === "string" ? `${e.name} ${code}` : e.name);
+  }
+  return e;
+}
+
+// supabaseUserId is an internal identity link, not session data.
+export type SessionUser = Omit<
+  Users,
+  "deprecatedPasswordDigest" | "supabaseUserId"
+>;
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -79,18 +96,7 @@ export const authConfig = {
       // You can pass any HTML attribute to the <input> tag through the object.
       credentials: { email: { type: "text" }, password: { type: "password" } },
       async authorize(credentials) {
-        // Jailbreak prevention: password login is disabled unless the
-        // `enablePasswordLogin` Edge Config flag is on. In dev the local
-        // env var is authoritative (unset means allowed for testing), so
-        // an enabled Edge Config flag cannot override an explicit opt-out.
-        const ecfg = await getEdgeConfig().catch(() => null);
-        const isDev = process.env.NODE_ENV === "development";
-        const allowPassword = isDev
-          ? process.env.ENABLE_PASSWORD_LOGIN !== "false"
-          : (ecfg?.enablePasswordLogin ?? false);
-        if (!allowPassword) {
-          return null;
-        }
+        if (!(await isPasswordLoginEnabled())) return null;
 
         const Credential = z.object({
           email: emailValidationSchema,
@@ -110,6 +116,14 @@ export const authConfig = {
           passwordDigest &&
           (await bcrypt.compare(c.data.password, passwordDigest))
         ) {
+          if (!user.isVerified) {
+            Sentry.addBreadcrumb({
+              category: "auth",
+              message: `User ${user.id} attempted login with unverified email.`,
+              level: "warning",
+            });
+            return null;
+          }
           Sentry.addBreadcrumb({
             category: "auth",
             message: `User ${user.id} logged in with v1 credentials.`,
@@ -139,7 +153,20 @@ export const authConfig = {
           // The user will be sent to the error page with the error message as a query parameter
         }
 
+        const isConfirmed = !!data.user.confirmed_at;
+
         if (user) {
+          if (!user.isVerified && !isConfirmed) return null;
+          if (!user.isVerified && isConfirmed) {
+            const updated = await db.users.update({
+              where: { id: user.id },
+              data: { isVerified: true },
+            });
+            return {
+              ...updated,
+              supabaseAccessToken: data.session?.access_token ?? null,
+            };
+          }
           // Any object returned will be saved in `user` property of the JWT.
           // Carry the Supabase access token so the OAuth consent flow can
           // re-authenticate as the user against Supabase's OAuth server.
@@ -149,12 +176,14 @@ export const authConfig = {
           };
         }
 
+        if (!isConfirmed) return null;
+
         // user signed into supabase successfully, but user doesn't exist in our database
         const universities = await db.universities.findMany({
           include: { domains: true },
         });
         const uniOfThisEmail = universities.find((u) =>
-          u.domains.some((d) => emailDomain!.endsWith(d.domain)),
+          u.domains.some((d) => emailMatchesDomain(c.data.email, d.domain)),
         );
         if (!uniOfThisEmail) {
           Sentry.addBreadcrumb({
@@ -174,7 +203,7 @@ export const authConfig = {
             id: data.user.id,
             email: data.user.email ?? c.data.email,
             username: `user_${randomId()}`,
-            isVerified: !!data.user.confirmed_at || false,
+            isVerified: true,
             universityId: uniOfThisEmail.id,
           },
         });
@@ -206,17 +235,27 @@ export const authConfig = {
   },
   callbacks: {
     redirect({ url, baseUrl }) {
-      // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url;
+      if (
+        url.startsWith("/") &&
+        !url.startsWith("//") &&
+        !url.startsWith("/\\")
+      ) {
+        return `${baseUrl}${url}`;
+      }
+      try {
+        const parsed = new URL(url);
+        if (parsed.origin === baseUrl) return url;
+      } catch {
+        return baseUrl;
+      }
       return baseUrl;
     },
     async jwt({ token, user, account, profile, trigger }) {
       if (token.sub && user) {
         // strip user object of unwanted sensitive fields before populating to token
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { deprecatedPasswordDigest, ...rest } = user as Users;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured only to omit these fields from the token user
+        const { deprecatedPasswordDigest, supabaseUserId, ...rest } =
+          user as Users;
         // to expose user object in session
         token.user = rest;
         // Persist the Supabase access token in the JWT so the OAuth consent
@@ -290,13 +329,18 @@ export const authConfig = {
             include: { domains: true },
           });
           const uniOfThisEmail = universities.find((u) =>
-            u.domains.some((d) => emailToUse.endsWith(d.domain)),
+            u.domains.some((d) => emailMatchesDomain(emailToUse, d.domain)),
           );
           if (!uniOfThisEmail) throw new Error("Email not found in database");
           try {
             const created = await db.users.create({
               data: {
-                ...(link ? { id: link.supabaseUserId } : {}),
+                ...(link
+                  ? {
+                      id: link.supabaseUserId,
+                      supabaseUserId: link.supabaseUserId,
+                    }
+                  : {}),
                 email: emailToUse,
                 username: `user_${randomId()}`,
                 isVerified: true,
@@ -305,8 +349,9 @@ export const authConfig = {
                 ...getGoogleNameFields(profile as GoogleProfile | null),
               },
             });
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { deprecatedPasswordDigest, ...rest } = created;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured only to omit these fields from the token user
+            const { deprecatedPasswordDigest, supabaseUserId, ...rest } =
+              created;
             token.sub = rest.id;
             token.user = rest;
             return token;
@@ -317,6 +362,16 @@ export const authConfig = {
             });
             if (!dbUser) throw e;
           }
+        }
+        // Google proved the address: signIn() rejects a profile whose
+        // email_verified is false. A row left unverified by an older email
+        // sign-up becomes verified here, as the Supabase credentials path
+        // does when the address is confirmed.
+        if (!dbUser.isVerified) {
+          dbUser = await db.users.update({
+            where: { id: dbUser.id },
+            data: { isVerified: true },
+          });
         }
         // Names Google knows that the row lacks (accounts created before
         // Google names were stored). Never overwrites a stored name. Applied
@@ -330,10 +385,15 @@ export const authConfig = {
             ? { lastName: googleName.lastName }
             : {}),
         };
-        // Reconcile legacy generated-id rows: when a later exchange succeeds
-        // with a Supabase id, move the row to it (FKs are ON UPDATE CASCADE)
-        // so resolveMcpUser matches. Never block login on the reconcile.
-        if (link && dbUser.id !== link.supabaseUserId) {
+        // Reconcile legacy generated-id rows: the row keeps its id; the
+        // Supabase id is stored in supabaseUserId so resolveMcpUser matches;
+        // foreign keys use NO ACTION on update, so the primary key never changes.
+        // Never block login on the reconcile.
+        if (
+          link &&
+          dbUser.id !== link.supabaseUserId &&
+          dbUser.supabaseUserId !== link.supabaseUserId
+        ) {
           try {
             const clash = await db.users.findUnique({
               where: { id: link.supabaseUserId },
@@ -347,19 +407,29 @@ export const authConfig = {
               token.supabaseExpiresAt = null;
             } else {
               const updated = await db.users.update({
-                where: { email: emailToUse },
-                data: { id: link.supabaseUserId, ...nameBackfill },
+                where: { id: dbUser.id },
+                data: {
+                  supabaseUserId: link.supabaseUserId,
+                  ...nameBackfill,
+                },
               });
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { deprecatedPasswordDigest, ...rest } = updated;
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured only to omit these fields from the token user
+              const { deprecatedPasswordDigest, supabaseUserId, ...rest } =
+                updated;
               token.sub = rest.id;
               token.user = rest;
               return token;
             }
           } catch (e) {
-            Sentry.addBreadcrumb({
-              category: "auth",
-              message: `Google user reconcile failed: ${e instanceof Error ? e.message : String(e)}`,
+            // The reconcile write lost (for example a unique clash on the
+            // Supabase id): same fail-closed rule as the clash branch.
+            token.supabaseAccessToken = null;
+            token.supabaseRefreshToken = null;
+            token.supabaseExpiresAt = null;
+            // Sign-in still succeeds, so no event would carry a breadcrumb
+            // to Sentry. Report the error itself.
+            Sentry.captureException(redactDbError(e), {
+              tags: { area: "auth.google-reconcile" },
               level: "warning",
             });
           }
@@ -372,8 +442,8 @@ export const authConfig = {
           });
         }
         // strip user object of unwanted sensitive fields before populating to token
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { deprecatedPasswordDigest, ...rest } = dbUser;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured only to omit these fields from the token user
+        const { deprecatedPasswordDigest, supabaseUserId, ...rest } = dbUser;
         // Keep token.sub on the local row so trigger:"update" lookups hit
         // it (Auth.js seeds sub from the provider id, not Users.id).
         token.sub = rest.id;
@@ -388,8 +458,8 @@ export const authConfig = {
           where: { id: token.sub },
         });
         if (dbUser) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { deprecatedPasswordDigest, ...rest } = dbUser;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured only to omit these fields from the token user
+          const { deprecatedPasswordDigest, supabaseUserId, ...rest } = dbUser;
           token.user = rest;
         }
       }
@@ -434,14 +504,16 @@ export const authConfig = {
           include: { domains: true },
         });
         const uniOfThisEmail = universities.find((u) =>
-          u.domains.some((d) => googleProfile.email.endsWith(d.domain)),
+          u.domains.some((d) =>
+            emailMatchesDomain(googleProfile.email, d.domain),
+          ),
         );
         if (!uniOfThisEmail) {
           Sentry.addBreadcrumb({
             type: "error",
             category: "auth",
             message:
-              `Unexpected email domain '${googleProfile.email}'.\n` +
+              `Unexpected email domain '${googleProfile.email.split("@").pop()}'.\n` +
               "\tUser has signed up with this email but the domain is not associated with any university. " +
               "\tPlease check the database for the domain and add it to the universities table if necessary",
             level: "error",

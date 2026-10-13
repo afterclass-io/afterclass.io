@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { PageContext } from "@/modules/assistant/use-page-context";
+import type { PageContext } from "@/common/types/assistant";
 
 // Server-side mirror of the client PageContext shape. Validates untrusted
 // client input: allowlisted keys only (.strict()), length caps. Invalid

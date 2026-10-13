@@ -6,20 +6,11 @@ import {
 import { groupSlotsIntoRuns } from "@/modules/meetings/functions/slot-runs";
 
 export const SGT_TIMEZONE = "Asia/Singapore";
-export const SGT_OFFSET_MINUTES = 480;
+const SGT_OFFSET_MINUTES = 480;
 
 export type Weekday = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
-export type WeekdayLabel = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
-export const WEEKDAYS: readonly Weekday[] = [
-  "mon",
-  "tue",
-  "wed",
-  "thu",
-  "fri",
-  "sat",
-  "sun",
-] as const;
-
+export type WeekdayLabel =
+  "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
 const WEEKDAYS_ORDER: readonly Weekday[] = [
   "sun",
   "mon",
@@ -50,7 +41,7 @@ export type PollGrid = {
 };
 export type PollDay = { date: string; weekday: WeekdayLabel };
 export type SlotTime = { date: string; start: string; end: string }; // HH:MM SGT
-export type AvailabilityStatus = "available" | "ifNeeded";
+type AvailabilityStatus = "available" | "ifNeeded";
 export type AvailabilityRange = SlotTime & { status: AvailabilityStatus };
 
 export class SlotTimeError extends Error {
@@ -121,7 +112,9 @@ export function parseHhmm(value: string): number {
     return 1440;
   }
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) {
-    throw new SlotTimeError(`Invalid time "${value}"; use HH:MM (24-hour, SGT).`);
+    throw new SlotTimeError(
+      `Invalid time "${value}"; use HH:MM (24-hour, SGT).`,
+    );
   }
   const [hoursStr, minsStr] = value.split(":");
   return Number(hoursStr) * 60 + Number(minsStr);
@@ -241,6 +234,20 @@ export function slotIndicesToRanges(
   });
 }
 
+/** Orders rows by date, then by start time. Both fields sort as plain strings. */
+export function compareDateStart(
+  a: { date: string; start: string },
+  b: { date: string; start: string },
+): number {
+  if (a.date !== b.date) {
+    return a.date < b.date ? -1 : 1;
+  }
+  if (a.start !== b.start) {
+    return a.start < b.start ? -1 : 1;
+  }
+  return 0;
+}
+
 export function availabilityToRanges(
   grid: PollGrid,
   slots: {
@@ -249,7 +256,9 @@ export function availabilityToRanges(
   },
 ): AvailabilityRange[] {
   const availableSet = new Set(slots.availableSlots);
-  const filteredIfNeeded = slots.ifNeededSlots.filter((s) => !availableSet.has(s));
+  const filteredIfNeeded = slots.ifNeededSlots.filter(
+    (s) => !availableSet.has(s),
+  );
 
   const availRanges: AvailabilityRange[] = slotIndicesToRanges(
     grid,
@@ -262,15 +271,7 @@ export function availabilityToRanges(
   ).map((r) => ({ ...r, status: "ifNeeded" as const }));
 
   const combined = [...availRanges, ...ifNeededRanges];
-  combined.sort((a, b) => {
-    if (a.date !== b.date) {
-      return a.date < b.date ? -1 : 1;
-    }
-    if (a.start !== b.start) {
-      return a.start < b.start ? -1 : 1;
-    }
-    return 0;
-  });
+  combined.sort(compareDateStart);
   return combined;
 }
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { appRouter } from "@/server/api/root";
 import {
   getCacheControlForTrpcRequest,
   PUBLIC_CACHEABLE_PROCEDURES,
@@ -102,5 +103,44 @@ describe("getCacheControlForTrpcRequest", () => {
       "CDN-Cache-Control": PRIVATE_CACHE_VALUE,
       "Vercel-CDN-Cache-Control": PRIVATE_CACHE_VALUE,
     });
+  });
+
+  it.each([
+    "roadmaps.getById",
+    "roadmapReactions.getByRoadmapId",
+    "sharing.getSharedRoadmap",
+    "sharing.getSharedTimetable",
+  ])("returns private cache headers for evicted procedure %s", (name) => {
+    const headers = getCacheControlForTrpcRequest({
+      type: "query",
+      paths: [name],
+      errors: [],
+    });
+    expect(headers["Cache-Control"]).toBe(PRIVATE_CACHE_VALUE);
+  });
+
+  it.each([
+    "roadmaps.getById",
+    "roadmapReactions.getByRoadmapId",
+    "sharing.getSharedRoadmap",
+    "sharing.getSharedTimetable",
+  ])("excludes %s from PUBLIC_CACHEABLE_PROCEDURES", (name) => {
+    expect(PUBLIC_CACHEABLE_PROCEDURES.has(name)).toBe(false);
+  });
+
+  it("returns private headers when batched with an evicted procedure", () => {
+    const headers = getCacheControlForTrpcRequest({
+      type: "query",
+      paths: ["courses.getByCourseCode", "roadmaps.getById"],
+      errors: [],
+    });
+    expect(headers["Cache-Control"]).toBe(PRIVATE_CACHE_VALUE);
+  });
+
+  it("resolves every name in PUBLIC_CACHEABLE_PROCEDURES to a real procedure in appRouter", () => {
+    const procedureKeys = Object.keys(appRouter._def.procedures);
+    for (const name of PUBLIC_CACHEABLE_PROCEDURES) {
+      expect(procedureKeys).toContain(name);
+    }
   });
 });

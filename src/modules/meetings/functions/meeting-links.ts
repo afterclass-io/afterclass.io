@@ -17,11 +17,9 @@ const isHttpUrl = (value: string) => {
 /** A list of web links attached to a meeting; only http(s) is accepted. */
 export const meetingLinksSchema = z
   .array(
-    z
-      .string()
-      .trim()
-      .max(MAX_LINK_LENGTH)
-      .refine(isHttpUrl, { message: "Enter a full link starting with https://" }),
+    z.string().trim().max(MAX_LINK_LENGTH).refine(isHttpUrl, {
+      message: "Enter a full link starting with https://",
+    }),
   )
   .max(MAX_MEETING_LINKS);
 
@@ -43,7 +41,9 @@ export function parseLinkLines(text: string): string[] {
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean)
-    .map((line) => (/^[a-z][a-z0-9+.-]*:\/\//i.test(line) ? line : `https://${line}`));
+    .map((line) =>
+      /^[a-z][a-z0-9+.-]*:\/\//i.test(line) ? line : `https://${line}`,
+    );
 }
 
 export type AddLinksResult = {
@@ -58,7 +58,10 @@ export type AddLinksResult = {
  * Adds typed or pasted links to an existing list. Entries can be separated by
  * whitespace or commas, so pasting a whole block works. Duplicates are ignored.
  */
-export function addLinksFromText(existing: string[], raw: string): AddLinksResult {
+export function addLinksFromText(
+  existing: string[],
+  raw: string,
+): AddLinksResult {
   const links = [...existing];
   const rejected: string[] = [];
   let overflow = false;

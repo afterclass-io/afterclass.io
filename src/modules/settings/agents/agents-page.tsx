@@ -23,5 +23,7 @@ export async function AgentsPage() {
     console.error("Failed to load connected agents", err);
     return <AgentsView state={{ kind: "error" }} />;
   }
-  return <AgentsView state={{ kind: "ready", grants }} revokeAction={revokeAgent} />;
+  return (
+    <AgentsView state={{ kind: "ready", grants }} revokeAction={revokeAgent} />
+  );
 }

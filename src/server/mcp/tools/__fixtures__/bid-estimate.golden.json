@@ -1,0 +1,325 @@
+{
+  "courseCode": "EST-PARITY-101",
+  "courseName": "Parity Estimation Fundamentals",
+  "bidWindow": {
+    "id": 9101,
+    "acadTermId": "AY202425T1-PARITY",
+    "round": "1",
+    "window": 1,
+    "opensAt": "2020-01-01T00:00:00.000Z",
+    "closesAt": null,
+    "resultsAt": "2035-01-01T00:00:00.000Z",
+    "acadTerm": {
+      "id": "AY202425T1-PARITY",
+      "acadYearStart": 2024,
+      "acadYearEnd": 2025,
+      "term": "1",
+      "bossId": 91999,
+      "startDt": "2024-08-01T00:00:00.000Z",
+      "endDt": "2024-12-01T00:00:00.000Z"
+    }
+  },
+  "estimates": [
+    {
+      "section": "G1",
+      "classId": "cl-est-p-01",
+      "professorName": "Prof Est Alpha",
+      "professorSlug": "prof-est-alpha",
+      "medianPredicted": 21,
+      "minPredicted": 11,
+      "suggestedBidAmount": 23.1,
+      "multiplierUsed": 1.05,
+      "rationale": "Predicted 21 + safety multiplier 1.05 x uncertainty 2 (beats 70% of bids).",
+      "vacancy": 15,
+      "bidWindow": {
+        "id": 9101,
+        "acadTermId": "AY202425T1-PARITY",
+        "round": "1",
+        "window": 1,
+        "opensAt": "2020-01-01T00:00:00.000Z",
+        "closesAt": null,
+        "resultsAt": "2035-01-01T00:00:00.000Z",
+        "acadTerm": {
+          "id": "AY202425T1-PARITY",
+          "acadYearStart": 2024,
+          "acadYearEnd": 2025,
+          "term": "1",
+          "bossId": 91999,
+          "startDt": "2024-08-01T00:00:00.000Z",
+          "endDt": "2024-12-01T00:00:00.000Z"
+        }
+      }
+    },
+    {
+      "section": "G10",
+      "classId": "cl-est-p-10",
+      "professorName": "Prof Est Kappa",
+      "professorSlug": "prof-est-kappa",
+      "medianPredicted": 30,
+      "minPredicted": 20,
+      "suggestedBidAmount": 32.1,
+      "multiplierUsed": 1.05,
+      "rationale": "Predicted 30 + safety multiplier 1.05 x uncertainty 2 (beats 70% of bids).",
+      "vacancy": 25,
+      "bidWindow": {
+        "id": 9101,
+        "acadTermId": "AY202425T1-PARITY",
+        "round": "1",
+        "window": 1,
+        "opensAt": "2020-01-01T00:00:00.000Z",
+        "closesAt": null,
+        "resultsAt": "2035-01-01T00:00:00.000Z",
+        "acadTerm": {
+          "id": "AY202425T1-PARITY",
+          "acadYearStart": 2024,
+          "acadYearEnd": 2025,
+          "term": "1",
+          "bossId": 91999,
+          "startDt": "2024-08-01T00:00:00.000Z",
+          "endDt": "2024-12-01T00:00:00.000Z"
+        }
+      }
+    },
+    {
+      "section": "G2",
+      "classId": "cl-est-p-02",
+      "professorName": "Prof Est Beta",
+      "professorSlug": "prof-est-beta",
+      "medianPredicted": 22,
+      "minPredicted": 12,
+      "suggestedBidAmount": 24.1,
+      "multiplierUsed": 1.05,
+      "rationale": "Predicted 22 + safety multiplier 1.05 x uncertainty 2 (beats 70% of bids).",
+      "vacancy": 18,
+      "bidWindow": {
+        "id": 9101,
+        "acadTermId": "AY202425T1-PARITY",
+        "round": "1",
+        "window": 1,
+        "opensAt": "2020-01-01T00:00:00.000Z",
+        "closesAt": null,
+        "resultsAt": "2035-01-01T00:00:00.000Z",
+        "acadTerm": {
+          "id": "AY202425T1-PARITY",
+          "acadYearStart": 2024,
+          "acadYearEnd": 2025,
+          "term": "1",
+          "bossId": 91999,
+          "startDt": "2024-08-01T00:00:00.000Z",
+          "endDt": "2024-12-01T00:00:00.000Z"
+        }
+      }
+    },
+    {
+      "section": "G3",
+      "classId": "cl-est-p-03",
+      "professorName": "Prof Est Gamma",
+      "professorSlug": "prof-est-gamma",
+      "medianPredicted": 23,
+      "minPredicted": 13,
+      "suggestedBidAmount": 25.1,
+      "multiplierUsed": 1.05,
+      "rationale": "Predicted 23 + safety multiplier 1.05 x uncertainty 2 (beats 70% of bids).",
+      "vacancy": 12,
+      "bidWindow": {
+        "id": 9101,
+        "acadTermId": "AY202425T1-PARITY",
+        "round": "1",
+        "window": 1,
+        "opensAt": "2020-01-01T00:00:00.000Z",
+        "closesAt": null,
+        "resultsAt": "2035-01-01T00:00:00.000Z",
+        "acadTerm": {
+          "id": "AY202425T1-PARITY",
+          "acadYearStart": 2024,
+          "acadYearEnd": 2025,
+          "term": "1",
+          "bossId": 91999,
+          "startDt": "2024-08-01T00:00:00.000Z",
+          "endDt": "2024-12-01T00:00:00.000Z"
+        }
+      }
+    },
+    {
+      "section": "G4",
+      "classId": "cl-est-p-04",
+      "professorName": "Prof Est Delta",
+      "professorSlug": "prof-est-delta",
+      "medianPredicted": 24,
+      "minPredicted": 14,
+      "suggestedBidAmount": 26.1,
+      "multiplierUsed": 1.05,
+      "rationale": "Predicted 24 + safety multiplier 1.05 x uncertainty 2 (beats 70% of bids).",
+      "vacancy": 20,
+      "bidWindow": {
+        "id": 9101,
+        "acadTermId": "AY202425T1-PARITY",
+        "round": "1",
+        "window": 1,
+        "opensAt": "2020-01-01T00:00:00.000Z",
+        "closesAt": null,
+        "resultsAt": "2035-01-01T00:00:00.000Z",
+        "acadTerm": {
+          "id": "AY202425T1-PARITY",
+          "acadYearStart": 2024,
+          "acadYearEnd": 2025,
+          "term": "1",
+          "bossId": 91999,
+          "startDt": "2024-08-01T00:00:00.000Z",
+          "endDt": "2024-12-01T00:00:00.000Z"
+        }
+      }
+    },
+    {
+      "section": "G5",
+      "classId": "cl-est-p-05",
+      "professorName": "Prof Est Epsilon",
+      "professorSlug": "prof-est-epsilon",
+      "medianPredicted": 25,
+      "minPredicted": 15,
+      "suggestedBidAmount": 27.1,
+      "multiplierUsed": 1.05,
+      "rationale": "Predicted 25 + safety multiplier 1.05 x uncertainty 2 (beats 70% of bids).",
+      "vacancy": 22,
+      "bidWindow": {
+        "id": 9101,
+        "acadTermId": "AY202425T1-PARITY",
+        "round": "1",
+        "window": 1,
+        "opensAt": "2020-01-01T00:00:00.000Z",
+        "closesAt": null,
+        "resultsAt": "2035-01-01T00:00:00.000Z",
+        "acadTerm": {
+          "id": "AY202425T1-PARITY",
+          "acadYearStart": 2024,
+          "acadYearEnd": 2025,
+          "term": "1",
+          "bossId": 91999,
+          "startDt": "2024-08-01T00:00:00.000Z",
+          "endDt": "2024-12-01T00:00:00.000Z"
+        }
+      }
+    },
+    {
+      "section": "G6",
+      "classId": "cl-est-p-06",
+      "professorName": "Prof Est Zeta",
+      "professorSlug": "prof-est-zeta",
+      "medianPredicted": 26,
+      "minPredicted": 16,
+      "suggestedBidAmount": 28.1,
+      "multiplierUsed": 1.05,
+      "rationale": "Predicted 26 + safety multiplier 1.05 x uncertainty 2 (beats 70% of bids).",
+      "vacancy": 14,
+      "bidWindow": {
+        "id": 9101,
+        "acadTermId": "AY202425T1-PARITY",
+        "round": "1",
+        "window": 1,
+        "opensAt": "2020-01-01T00:00:00.000Z",
+        "closesAt": null,
+        "resultsAt": "2035-01-01T00:00:00.000Z",
+        "acadTerm": {
+          "id": "AY202425T1-PARITY",
+          "acadYearStart": 2024,
+          "acadYearEnd": 2025,
+          "term": "1",
+          "bossId": 91999,
+          "startDt": "2024-08-01T00:00:00.000Z",
+          "endDt": "2024-12-01T00:00:00.000Z"
+        }
+      }
+    },
+    {
+      "section": "G7",
+      "classId": "cl-est-p-07",
+      "professorName": "Prof Est Eta",
+      "professorSlug": "prof-est-eta",
+      "medianPredicted": 27,
+      "minPredicted": 17,
+      "suggestedBidAmount": 29.1,
+      "multiplierUsed": 1.05,
+      "rationale": "Predicted 27 + safety multiplier 1.05 x uncertainty 2 (beats 70% of bids).",
+      "vacancy": 16,
+      "bidWindow": {
+        "id": 9101,
+        "acadTermId": "AY202425T1-PARITY",
+        "round": "1",
+        "window": 1,
+        "opensAt": "2020-01-01T00:00:00.000Z",
+        "closesAt": null,
+        "resultsAt": "2035-01-01T00:00:00.000Z",
+        "acadTerm": {
+          "id": "AY202425T1-PARITY",
+          "acadYearStart": 2024,
+          "acadYearEnd": 2025,
+          "term": "1",
+          "bossId": 91999,
+          "startDt": "2024-08-01T00:00:00.000Z",
+          "endDt": "2024-12-01T00:00:00.000Z"
+        }
+      }
+    },
+    {
+      "section": "G8",
+      "classId": "cl-est-p-08",
+      "professorName": "Prof Est Theta",
+      "professorSlug": "prof-est-theta",
+      "medianPredicted": 28,
+      "minPredicted": 18,
+      "suggestedBidAmount": 30.1,
+      "multiplierUsed": 1.05,
+      "rationale": "Predicted 28 + safety multiplier 1.05 x uncertainty 2 (beats 70% of bids).",
+      "vacancy": 19,
+      "bidWindow": {
+        "id": 9101,
+        "acadTermId": "AY202425T1-PARITY",
+        "round": "1",
+        "window": 1,
+        "opensAt": "2020-01-01T00:00:00.000Z",
+        "closesAt": null,
+        "resultsAt": "2035-01-01T00:00:00.000Z",
+        "acadTerm": {
+          "id": "AY202425T1-PARITY",
+          "acadYearStart": 2024,
+          "acadYearEnd": 2025,
+          "term": "1",
+          "bossId": 91999,
+          "startDt": "2024-08-01T00:00:00.000Z",
+          "endDt": "2024-12-01T00:00:00.000Z"
+        }
+      }
+    },
+    {
+      "section": "G9",
+      "classId": "cl-est-p-09",
+      "professorName": "Prof Est Iota",
+      "professorSlug": "prof-est-iota",
+      "medianPredicted": 29,
+      "minPredicted": 19,
+      "suggestedBidAmount": 31.1,
+      "multiplierUsed": 1.05,
+      "rationale": "Predicted 29 + safety multiplier 1.05 x uncertainty 2 (beats 70% of bids).",
+      "vacancy": 11,
+      "bidWindow": {
+        "id": 9101,
+        "acadTermId": "AY202425T1-PARITY",
+        "round": "1",
+        "window": 1,
+        "opensAt": "2020-01-01T00:00:00.000Z",
+        "closesAt": null,
+        "resultsAt": "2035-01-01T00:00:00.000Z",
+        "acadTerm": {
+          "id": "AY202425T1-PARITY",
+          "acadYearStart": 2024,
+          "acadYearEnd": 2025,
+          "term": "1",
+          "bossId": 91999,
+          "startDt": "2024-08-01T00:00:00.000Z",
+          "endDt": "2024-12-01T00:00:00.000Z"
+        }
+      }
+    }
+  ],
+  "summary": "Here are the suggested bid amounts for EST-PARITY-101:\n- G1 (Prof Est Alpha): e$23.1 (median predicted: e$21, minimum predicted: e$11)\n- G10 (Prof Est Kappa): e$32.1 (median predicted: e$30, minimum predicted: e$20)\n- G2 (Prof Est Beta): e$24.1 (median predicted: e$22, minimum predicted: e$12)\n- G3 (Prof Est Gamma): e$25.1 (median predicted: e$23, minimum predicted: e$13)\n- G4 (Prof Est Delta): e$26.1 (median predicted: e$24, minimum predicted: e$14)\n- G5 (Prof Est Epsilon): e$27.1 (median predicted: e$25, minimum predicted: e$15)\n- G6 (Prof Est Zeta): e$28.1 (median predicted: e$26, minimum predicted: e$16)\n- G7 (Prof Est Eta): e$29.1 (median predicted: e$27, minimum predicted: e$17)\n- G8 (Prof Est Theta): e$30.1 (median predicted: e$28, minimum predicted: e$18)\n- G9 (Prof Est Iota): e$31.1 (median predicted: e$29, minimum predicted: e$19)\nOpen each section in the bid explorer to play with the safety slider before confirming.\n\n- EST-PARITY-101 G1: explore in the bid explorer — Open in bid analytics: http://localhost:3000/bidding/analytics?course=EST-PARITY-101&section=G1&classId=cl-est-p-01\n- EST-PARITY-101 G10: explore in the bid explorer — Open in bid analytics: http://localhost:3000/bidding/analytics?course=EST-PARITY-101&section=G10&classId=cl-est-p-10\n- EST-PARITY-101 G2: explore in the bid explorer — Open in bid analytics: http://localhost:3000/bidding/analytics?course=EST-PARITY-101&section=G2&classId=cl-est-p-02\n- EST-PARITY-101 G3: explore in the bid explorer — Open in bid analytics: http://localhost:3000/bidding/analytics?course=EST-PARITY-101&section=G3&classId=cl-est-p-03\n- EST-PARITY-101 G4: explore in the bid explorer — Open in bid analytics: http://localhost:3000/bidding/analytics?course=EST-PARITY-101&section=G4&classId=cl-est-p-04\n- EST-PARITY-101 G5: explore in the bid explorer — Open in bid analytics: http://localhost:3000/bidding/analytics?course=EST-PARITY-101&section=G5&classId=cl-est-p-05\n- EST-PARITY-101 G6: explore in the bid explorer — Open in bid analytics: http://localhost:3000/bidding/analytics?course=EST-PARITY-101&section=G6&classId=cl-est-p-06\n- EST-PARITY-101 G7: explore in the bid explorer — Open in bid analytics: http://localhost:3000/bidding/analytics?course=EST-PARITY-101&section=G7&classId=cl-est-p-07\n- EST-PARITY-101 G8: explore in the bid explorer — Open in bid analytics: http://localhost:3000/bidding/analytics?course=EST-PARITY-101&section=G8&classId=cl-est-p-08\n- EST-PARITY-101 G9: explore in the bid explorer — Open in bid analytics: http://localhost:3000/bidding/analytics?course=EST-PARITY-101&section=G9&classId=cl-est-p-09"
+}

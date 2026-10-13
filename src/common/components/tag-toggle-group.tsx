@@ -6,10 +6,9 @@ import type { FieldValues, ControllerRenderProps } from "react-hook-form";
 import { Tag } from "@/common/components/tag";
 
 type OptionalControllerProps = {
-  [K in keyof ControllerRenderProps<
-    FieldValues,
-    string
-  >]?: ControllerRenderProps<FieldValues, string>[K];
+  [
+    K in keyof ControllerRenderProps<FieldValues, string>
+  ]?: ControllerRenderProps<FieldValues, string>[K];
 };
 
 export type TagToggleGroupProps = ComponentPropsWithoutRef<"button"> &

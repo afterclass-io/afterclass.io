@@ -58,7 +58,10 @@ export const DisabledOutsideBounds: Story = {
         selected={selected}
         onSelect={setSelected}
         defaultMonth={new Date(2026, 9)}
-        disabled={[{ before: new Date(2026, 9, 5) }, { after: new Date(2026, 9, 25) }]}
+        disabled={[
+          { before: new Date(2026, 9, 5) },
+          { after: new Date(2026, 9, 25) },
+        ]}
         className="rounded-md border"
       />
     );

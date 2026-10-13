@@ -12,7 +12,7 @@ export const DEFAULT_WIDGET_SIZE: Size = { width: 400, height: 560 };
 // fits" instead of overflowing.
 export const EXPANDED_WIDGET_SIZE: Size = { width: 640, height: 760 };
 
-export function clamp(value: number, min: number, max: number): number {
+function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
@@ -109,14 +109,6 @@ export function fromOffsets(
     y: viewport.height - offsets.bottom - LAUNCHER_SIZE,
   };
   return clampPosition(raw, launcherSize, viewport);
-}
-
-export function clampOffsets(
-  offsets: LauncherOffsets,
-  viewport: Size,
-): LauncherOffsets {
-  const pos = fromOffsets(offsets, viewport);
-  return toOffsets(pos, viewport);
 }
 
 export function applyDrag(

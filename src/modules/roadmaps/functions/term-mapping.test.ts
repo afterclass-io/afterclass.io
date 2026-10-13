@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { mapRoadmapTermToAcadCode, extractAcadTermCode } from "./term-mapping";
+import cases from "./term-mapping.cases.json";
+import {
+  mapRoadmapTermToAcadCode,
+  extractAcadTermCode,
+  findAcadTermForRoadmapTerm,
+} from "./term-mapping";
 
 // ---------------------------------------------------------------------------
 // mapRoadmapTermToAcadCode
@@ -30,5 +35,27 @@ describe("extractAcadTermCode", () => {
 
   it("returns null when the label has no term suffix", () => {
     expect(extractAcadTermCode("AY2024/25")).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// findAcadTermForRoadmapTerm
+// ---------------------------------------------------------------------------
+
+describe("findAcadTermForRoadmapTerm", () => {
+  it("returns the matching row for T1 and T2", () => {
+    expect(findAcadTermForRoadmapTerm("T1", cases)).toEqual(cases[0]);
+    expect(findAcadTermForRoadmapTerm("T2", cases)).toEqual(cases[1]);
+  });
+
+  it("returns the T3 row for T3A, T3B, and T3", () => {
+    expect(findAcadTermForRoadmapTerm("T3A", cases)).toEqual(cases[2]);
+    expect(findAcadTermForRoadmapTerm("T3B", cases)).toEqual(cases[2]);
+    expect(findAcadTermForRoadmapTerm("T3", cases)).toEqual(cases[2]);
+  });
+
+  it("returns undefined for empty list or when term is not present", () => {
+    expect(findAcadTermForRoadmapTerm("T1", [])).toBeUndefined();
+    expect(findAcadTermForRoadmapTerm("T3A", [cases[0]!])).toBeUndefined();
   });
 });

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { resolveTermId } from "../../current";
 import { bidPlanToViewProps, buildBidPlan } from "../bid-plan-shared";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { errText, guardedRun, jsonText, type McpTool } from "../../types";
 
 const myBidPlanSchema = z.object({
   acadTermId: z
@@ -18,19 +18,15 @@ export const myBidPlanTool: McpTool<typeof myBidPlanSchema> = {
   inputSchema: myBidPlanSchema,
   readOnly: true,
   toViewProps: bidPlanToViewProps,
-  run: async ({ caller }, { acadTermId }) => {
-    try {
-      const term = await resolveTermId(caller, acadTermId);
-      if (!term.ok) return errText(term.errText);
-      const plan = await buildBidPlan(caller, term.value);
-      // No JSON round-trip — the view channel carries the typed plan; the
-      // text envelope stays for the model.
-      return {
-        ...jsonText(plan),
-        viewProps: plan as unknown as Record<string, unknown>,
-      };
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { acadTermId }) => {
+    const term = await resolveTermId(caller, acadTermId);
+    if (!term.ok) return errText(term.errText);
+    const plan = await buildBidPlan(caller, term.value);
+    // No JSON round-trip — the view channel carries the typed plan; the
+    // text envelope stays for the model.
+    return {
+      ...jsonText(plan),
+      viewProps: plan as unknown as Record<string, unknown>,
+    };
+  }),
 };

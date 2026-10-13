@@ -1,30 +1,17 @@
 "use client";
 
-import { startTransition, useState } from "react";
+import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { supabase } from "@/server/supabase";
+import { supabaseBrowser } from "@/common/tools/supabase/client";
+import { toast } from "sonner";
 
 import { Button } from "@/common/components/button";
-import {
-  PasswordInputRoot,
-  PasswordInputAdornment,
-  PasswordInputAdornmentToggle,
-  PasswordInput,
-} from "@/common/components/input-password";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/common/components/form";
-import { LockIcon } from "@/common/components/icons";
-import { useProgress } from "@/common/providers/ProgressProvider";
+import { Form } from "@/common/components/form";
+import { useNavigateWithProgress } from "../hooks/useNavigateWithProgress";
+import { PasswordField } from "./fields/PasswordField";
 
 const resetPwdFormInputsSchema = z.object({
   password: z
@@ -34,8 +21,7 @@ const resetPwdFormInputsSchema = z.object({
 type ResetPwdFormInputs = z.infer<typeof resetPwdFormInputsSchema>;
 
 export const ResetPasswordForm = () => {
-  const router = useRouter();
-  const progress = useProgress();
+  const navigateWithProgress = useNavigateWithProgress();
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState(false);
   const form = useForm<ResetPwdFormInputs>({
     resolver: zodResolver(resetPwdFormInputsSchema),
@@ -45,19 +31,15 @@ export const ResetPasswordForm = () => {
     },
   });
   const onSubmit: SubmitHandler<ResetPwdFormInputs> = async ({ password }) => {
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await supabaseBrowser.auth.updateUser({ password });
     if (error) {
-      alert(error.message);
+      toast.error(error.message);
       form.reset();
       return;
     }
     setIsSubmitSuccessful(true);
 
-    progress.start();
-    startTransition(() => {
-      router.push("/account/auth/login");
-      progress.done();
-    });
+    navigateWithProgress("/account/auth/login");
   };
 
   return (
@@ -66,30 +48,13 @@ export const ResetPasswordForm = () => {
         className="flex w-full flex-col gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <FormField
+        <PasswordField
           control={form.control}
           name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>New Password</FormLabel>
-              <FormControl>
-                <PasswordInputRoot>
-                  <PasswordInputAdornment>
-                    <LockIcon />
-                  </PasswordInputAdornment>
-                  <PasswordInput
-                    {...field}
-                    disabled={form.formState.isSubmitting}
-                    placeholder="Enter password"
-                    autoComplete="on"
-                    tabIndex={1}
-                  />
-                  <PasswordInputAdornmentToggle />
-                </PasswordInputRoot>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="New Password"
+          placeholder="Enter password"
+          tabIndex={1}
+          disabled={form.formState.isSubmitting}
         />
         <Button
           type="submit"

@@ -8,7 +8,7 @@ import {
   SMU_PERIODS,
   periodBandStyle,
 } from "@/modules/timetable/functions/slot-math";
-import type { ClassTimingLike } from "@/modules/timetable/functions/slot-math";
+import type { ArrangedClass } from "@/common/types/timetable";
 import { TimetableDayColumn } from "./TimetableDayColumn";
 import type { DaySlot } from "./TimetableDayColumn";
 import type { BidInfo } from "./TimetableSlotCard";
@@ -18,25 +18,6 @@ import { TimetableAgenda } from "./TimetableAgenda";
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-export type ArrangedClass = {
-  classId: string;
-  courseCode: string;
-  courseName: string;
-  section: string;
-  professorName?: string | null;
-  creditUnits: number;
-  timings: ClassTimingLike[];
-  examTimings: ClassExamTiming[];
-};
-
-export type ClassExamTiming = {
-  date: Date | string;
-  dayOfWeek?: string | null;
-  startTime: string;
-  endTime: string;
-  venue?: string | null;
-};
 
 export type TimetableGridProps = {
   classes: ArrangedClass[];
@@ -62,6 +43,15 @@ export type TimetableGridProps = {
 
 /** Mon–Fri only: weekend slots (rare, e.g. some exams) are not rendered. */
 const ALL_DAYS = [1, 2, 3, 4, 5] as const;
+
+/** Placeholder geometry for a slot until `layoutDay` positions it. */
+const UNPOSITIONED = {
+  topPct: 0,
+  heightPct: 0,
+  colIndex: 0,
+  colCount: 1,
+  rawIndex: 0,
+};
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -123,7 +113,7 @@ export function TimetableGrid({
           docked (≥xl); the wrapper still scrolls internally. */}
       <div
         data-test="timetable-grid"
-        className="border-border bg-card hidden isolate overflow-x-auto rounded-lg border [contain:inline-size] lg:block"
+        className="border-border bg-card isolate hidden overflow-x-auto rounded-lg border [contain:inline-size] lg:block"
       >
         <div className="relative flex h-[70vh] max-h-[720px] min-h-[480px] min-w-[680px]">
           {/* Time axis column (stays visible while scrolling horizontally) */}
@@ -132,7 +122,7 @@ export function TimetableGrid({
                 axis labels in this column stay in sync with the period bands
                 and slot cards in every day column. */}
             <div
-              className="bg-muted/50 border-border shrink-0 border-b px-2 py-1.5 text-xs font-semibold invisible"
+              className="bg-muted/50 border-border invisible shrink-0 border-b px-2 py-1.5 text-xs font-semibold"
               aria-hidden
             >
               Mon
@@ -227,41 +217,13 @@ function buildClassDays(classes: ArrangedClass[]): Record<number, DaySlot[]> {
         venue: timing.venue ?? null,
         // These fields will be overwritten by layoutDay
         timing,
-        topPct: 0,
-        heightPct: 0,
-        colIndex: 0,
-        colCount: 1,
-        rawIndex: 0,
+        ...UNPOSITIONED,
       });
     }
   }
 
   // Run layoutDay on each day's timings
-  for (const dayNum of ALL_DAYS) {
-    const raw = days[dayNum] ?? [];
-    if (raw.length === 0) continue;
-
-    const positioned = layoutDay(raw.map((s) => s.timing));
-    const positionedByRawIndex = new Map(
-      positioned.map((p) => [p.rawIndex, p]),
-    );
-    days[dayNum] = raw
-      .map((slot, idx) => {
-        const pos = positionedByRawIndex.get(idx);
-        if (!pos) {
-          // Slot was filtered out (fully outside the visible grid) — skip it.
-          return null;
-        }
-        return {
-          ...slot,
-          topPct: pos.topPct,
-          heightPct: pos.heightPct,
-          colIndex: pos.colIndex,
-          colCount: pos.colCount,
-        };
-      })
-      .filter((s): s is DaySlot => s !== null);
-  }
+  layoutDayColumns(days);
 
   return days;
 }
@@ -294,16 +256,22 @@ function buildExamDays(classes: ArrangedClass[]): Record<number, DaySlot[]> {
           endTime: timing.endTime,
           venue: timing.venue,
         },
-        topPct: 0,
-        heightPct: 0,
-        colIndex: 0,
-        colCount: 1,
-        rawIndex: 0,
+        ...UNPOSITIONED,
       });
     }
   }
 
   // Run layoutDay on each day's exam timings
+  layoutDayColumns(days);
+
+  return days;
+}
+
+/**
+ * Positions each day's slots with `layoutDay` and drops the slots it filters
+ * out. Mutates `days` in place.
+ */
+function layoutDayColumns(days: Record<number, DaySlot[]>) {
   for (const dayNum of ALL_DAYS) {
     const raw = days[dayNum] ?? [];
     if (raw.length === 0) continue;
@@ -329,6 +297,4 @@ function buildExamDays(classes: ArrangedClass[]): Record<number, DaySlot[]> {
       })
       .filter((s): s is DaySlot => s !== null);
   }
-
-  return days;
 }

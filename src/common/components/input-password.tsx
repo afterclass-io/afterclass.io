@@ -11,7 +11,7 @@ import {
 } from "@/common/components/input";
 import * as PasswordInputPrimitive from "@/common/components/input-password-primitive";
 
-export type PasswordInputProps = React.ComponentPropsWithoutRef<
+type PasswordInputProps = React.ComponentPropsWithoutRef<
   typeof PasswordInputPrimitive.Root
 > &
   React.ComponentPropsWithoutRef<typeof InputRoot>;
@@ -31,8 +31,6 @@ const PasswordInputRoot = React.forwardRef<
 PasswordInputRoot.displayName = "PasswordInputRoot";
 
 const PasswordInputAdornment = InputAdornment;
-
-const PasswordInputAdornmentButton = InputAdornmentButton;
 
 const PasswordInput = React.forwardRef<
   React.ComponentRef<typeof PasswordInputPrimitive.Input>,
@@ -68,7 +66,6 @@ PasswordInputAdornmentToggle.displayName = "PasswordInputAdornmentToggle";
 export {
   PasswordInputRoot,
   PasswordInputAdornment,
-  PasswordInputAdornmentButton,
   PasswordInput,
   PasswordInputAdornmentToggle,
 };

@@ -143,7 +143,9 @@ export function MeetingMatrixGrid({
         isPainting && "touch-none",
         className,
       )}
-      style={{ touchAction: isPainting ? "none" : isDragging ? "none" : "pan-x pan-y" }}
+      style={{
+        touchAction: isPainting ? "none" : isDragging ? "none" : "pan-x pan-y",
+      }}
       onTouchMove={isPainting ? painter.onTouchMove : selection.onTouchMove}
     >
       <div
@@ -152,7 +154,7 @@ export function MeetingMatrixGrid({
           gridTemplateColumns: `56px repeat(${dates.length}, minmax(80px, 1fr))`,
         }}
       >
-        <div className="bg-muted sticky left-0 z-30 flex h-12 items-center justify-center border-r border-b text-[11px] font-medium text-muted-foreground">
+        <div className="bg-muted text-muted-foreground text-2xs sticky left-0 z-30 flex h-12 items-center justify-center border-r border-b font-medium">
           SGT
         </div>
 
@@ -166,7 +168,7 @@ export function MeetingMatrixGrid({
                 isToday && "bg-primary/5",
               )}
             >
-              <span className="text-muted-foreground text-[11px] font-semibold uppercase">
+              <span className="text-muted-foreground text-2xs font-semibold uppercase">
                 {formatDateSGT(date, { weekday: "short" })}
               </span>
               <span className="text-foreground text-xs font-bold">
@@ -184,8 +186,10 @@ export function MeetingMatrixGrid({
                 key={time}
                 className={cn(
                   SLOT_ROW_CLASS,
-                  "text-muted-foreground flex items-start justify-end border-t pr-2 text-[10px]",
-                  isHour ? "border-border font-medium" : "border-transparent text-transparent",
+                  "text-muted-foreground text-2xs flex items-start justify-end border-t pr-2",
+                  isHour
+                    ? "border-border font-medium"
+                    : "border-transparent text-transparent",
                 )}
               >
                 {isHour && <span>{time}</span>}
@@ -197,7 +201,9 @@ export function MeetingMatrixGrid({
         {dates.map((date, dayIdx) => {
           const dayStart = dayIdx * slotsPerDay;
           const dayRange =
-            range && range.start >= dayStart && range.end < dayStart + slotsPerDay
+            range &&
+            range.start >= dayStart &&
+            range.end < dayStart + slotsPerDay
               ? range
               : null;
 
@@ -209,7 +215,9 @@ export function MeetingMatrixGrid({
                 isSameDaySGT(date, today) && "bg-primary/[0.02]",
               )}
             >
-              {isSameDaySGT(date, today) && <CurrentTimeIndicator highlightNow />}
+              {isSameDaySGT(date, today) && (
+                <CurrentTimeIndicator highlightNow />
+              )}
 
               {timeSlots.map((time, slotInDay) => {
                 const slotIndex = dayStart + slotInDay;
@@ -219,7 +227,10 @@ export function MeetingMatrixGrid({
                     : "border-t-border/25";
 
                 if (viewMode === "heatmap") {
-                  const { available, ifNeeded } = getSlotTally(tally, slotIndex);
+                  const { available, ifNeeded } = getSlotTally(
+                    tally,
+                    slotIndex,
+                  );
                   const ratio = calculateHeatmapRatio(
                     available.length,
                     ifNeeded.length,
@@ -258,7 +269,10 @@ export function MeetingMatrixGrid({
                         "bg-[color-mix(in_srgb,var(--mt-available-soft)_75%,transparent)]",
                       isIfNeeded &&
                         "bg-[color-mix(in_srgb,var(--mt-if-needed)_80%,transparent)]",
-                      !isAvailable && !isIfNeeded && isPainting && "hover:bg-muted/40",
+                      !isAvailable &&
+                        !isIfNeeded &&
+                        isPainting &&
+                        "hover:bg-muted/40",
                     )}
                   />
                 );
@@ -279,7 +293,8 @@ export function MeetingMatrixGrid({
                   className="border-primary bg-primary/10 pointer-events-none absolute inset-x-0 z-[2] rounded-sm border-2"
                   style={{
                     top: (dayRange.start - dayStart) * SLOT_ROW_HEIGHT_PX,
-                    height: (dayRange.end - dayRange.start + 1) * SLOT_ROW_HEIGHT_PX,
+                    height:
+                      (dayRange.end - dayRange.start + 1) * SLOT_ROW_HEIGHT_PX,
                   }}
                 />
               )}

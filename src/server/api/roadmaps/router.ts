@@ -7,8 +7,6 @@ import { rename } from "./rename";
 import { remove } from "./remove";
 import { saveEntries } from "./saveEntries";
 import { searchCourses } from "./searchCourses";
-import { publish } from "./publish";
-import { unpublish } from "./unpublish";
 import { listPublic } from "./listPublic";
 import { getById } from "./getById";
 import { copyPublic } from "./copyPublic";
@@ -28,8 +26,6 @@ export const roadmapsRouter = createTRPCRouter({
   remove,
   saveEntries,
   searchCourses,
-  publish,
-  unpublish,
   listPublic,
   getById,
   copyPublic,

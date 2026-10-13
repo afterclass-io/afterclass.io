@@ -30,7 +30,8 @@ function toSessionUser(
 
 /**
  * Map the authenticated caller (from mcp-use oauthSupabaseProvider ctx.auth) to a
- * Prisma user. Email/password users have Users.id == Supabase auth.users.id.
+ * Prisma user. Google users may carry the Supabase id in `supabaseUserId`; others
+ * have `Users.id` equal to it.
  * Fail closed (undefined) otherwise — there is no email fallback because
  * Supabase JWTs carry no verified-email claim (see SupabaseOAuthUser: only
  * id/email/name/role/aal/amr/session_id), so an email match would be spoofable.
@@ -40,8 +41,10 @@ export async function resolveMcpUser(
 ): Promise<SessionUser | undefined> {
   const user = auth?.user;
   if (!user?.id) return undefined;
-  const byId = await db.users.findUnique({ where: { id: user.id } });
-  if (byId) return toSessionUser(byId);
+  const match = await db.users.findFirst({
+    where: { OR: [{ supabaseUserId: user.id }, { id: user.id }] },
+  });
+  if (match) return toSessionUser(match);
   return undefined;
 }
 

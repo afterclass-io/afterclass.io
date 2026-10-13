@@ -4,11 +4,36 @@ import { useState } from "react";
 import { ClassPicker, type ClassSelection } from "./ClassPicker";
 
 const CLASSES = [
-  { courseId: "c-215", code: "IS215", name: "Digital Business - Technologies and Transformation", section: "G1" },
-  { courseId: "c-215", code: "IS215", name: "Digital Business - Technologies and Transformation", section: "G2" },
-  { courseId: "c-216", code: "IS216", name: "Web Application Development II", section: "G1" },
-  { courseId: "c-216", code: "IS216", name: "Web Application Development II", section: "G2" },
-  { courseId: "c-111", code: "COR-STAT1202", name: "Statistical Thinking", section: "G10" },
+  {
+    courseId: "c-215",
+    code: "IS215",
+    name: "Digital Business - Technologies and Transformation",
+    section: "G1",
+  },
+  {
+    courseId: "c-215",
+    code: "IS215",
+    name: "Digital Business - Technologies and Transformation",
+    section: "G2",
+  },
+  {
+    courseId: "c-216",
+    code: "IS216",
+    name: "Web Application Development II",
+    section: "G1",
+  },
+  {
+    courseId: "c-216",
+    code: "IS216",
+    name: "Web Application Development II",
+    section: "G2",
+  },
+  {
+    courseId: "c-111",
+    code: "COR-STAT1202",
+    name: "Statistical Thinking",
+    section: "G10",
+  },
 ];
 
 const meta = {

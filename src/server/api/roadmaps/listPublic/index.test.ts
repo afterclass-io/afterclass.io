@@ -104,7 +104,10 @@ describe("listPublic", () => {
   });
 
   it.each([
-    ["most-viewed", [{ viewCount: "desc" }, { publishedAt: "desc" }, { id: "desc" }]],
+    [
+      "most-viewed",
+      [{ viewCount: "desc" }, { publishedAt: "desc" }, { id: "desc" }],
+    ],
     ["newest", [{ publishedAt: "desc" }, { id: "desc" }]],
   ])("orders %s via DB orderBy", async (sort, orderBy) => {
     const findMany = vi.fn().mockResolvedValue([]);
@@ -142,7 +145,9 @@ describe("listPublic", () => {
     ]);
     const facultiesFindMany = vi
       .fn()
-      .mockResolvedValue([{ id: 10, name: "School of Economics", acronym: "SOE" }]);
+      .mockResolvedValue([
+        { id: 10, name: "School of Economics", acronym: "SOE" },
+      ]);
     const dbMock = {
       userRoadmap: { findMany },
       faculties: { findMany: facultiesFindMany },
@@ -203,5 +208,47 @@ describe("listPublic", () => {
     expect(facultiesFindMany).not.toHaveBeenCalled();
     expect(result.nextCursor).toBeNull();
     expect(result.items[0]!.faculty).toBeNull();
+  });
+
+  it("masks profanity in each item's name, description and owner username", async () => {
+    const findMany = vi.fn().mockResolvedValue([
+      roadmapRow({
+        id: "r1",
+        name: "Shit plan",
+        description: "fuck this",
+        user: { username: "bastard" },
+      }),
+      roadmapRow({ id: "r2", description: null }),
+    ]);
+    const dbMock = {
+      userRoadmap: { findMany },
+      faculties: { findMany: vi.fn().mockResolvedValue([]) },
+    };
+    const caller = makeCaller(router.createCaller, dbMock, null);
+
+    const result = await caller.listPublic({});
+
+    expect(result.items[0]?.roadmap.name).toBe("**** plan");
+    expect(result.items[0]?.roadmap.description).toBe("**** this");
+    expect(result.items[0]?.ownerUsername).toBe("*******");
+    expect(result.items[1]?.roadmap.description).toBeNull();
+  });
+
+  it("never ships the raw owner username anywhere in the response", async () => {
+    const findMany = vi
+      .fn()
+      .mockResolvedValue([
+        roadmapRow({ id: "r1", user: { username: "bastard" } }),
+      ]);
+    const dbMock = {
+      userRoadmap: { findMany },
+      faculties: { findMany: vi.fn().mockResolvedValue([]) },
+    };
+    const caller = makeCaller(router.createCaller, dbMock, null);
+
+    const result = await caller.listPublic({});
+
+    expect(JSON.stringify(result)).not.toContain("bastard");
+    expect(result.items[0]?.ownerUsername).toBe("*******");
   });
 });

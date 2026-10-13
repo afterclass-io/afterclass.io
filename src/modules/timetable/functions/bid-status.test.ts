@@ -25,7 +25,9 @@ describe("bidChipVariant", () => {
     expect(bidChipVariant("PLANNED")).toBe("bg-info/15 text-info");
     expect(bidChipVariant("DROPPED")).toBe("bg-error/15 text-error");
     expect(bidChipVariant("CANCELLED")).toBe("bg-error/15 text-error");
-    expect(bidChipVariant("PARTICIPATED")).toBe("bg-muted text-muted-foreground");
+    expect(bidChipVariant("PARTICIPATED")).toBe(
+      "bg-muted text-muted-foreground",
+    );
   });
 
   it("falls back to the muted variant for an unknown status (impossible state)", () => {
@@ -42,8 +44,14 @@ describe("slotCardVariant", () => {
 
   it("returns a non-null card variant for every known status", () => {
     for (const s of ALL) expect(slotCardVariant(s)).not.toBeNull();
-    expect(slotCardVariant("DROPPED")).toBe(
+    expect(slotCardVariant("DROPPED")?.className).toBe(
       "bg-error/15 border-error/30 text-foreground",
+    );
+    expect(slotCardVariant("DROPPED")?.nowClassName).toBe("ring-error");
+    expect(slotCardVariant("SECURED")?.nowClassName).toBe("ring-success");
+    expect(slotCardVariant("PLANNED")?.nowClassName).toBe("ring-info");
+    expect(slotCardVariant("PARTICIPATED")?.nowClassName).toBe(
+      "ring-foreground/40",
     );
   });
 

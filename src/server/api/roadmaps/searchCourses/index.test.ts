@@ -60,11 +60,9 @@ describe("roadmaps.searchCourses", () => {
     expect(sql).toContain("similarity(");
     expect(sql).toContain("ILIKE");
     expect(sql).toContain("ORDER BY");
-    expect(sql).toContain("LIMIT 20");
+    expect(params).toContain(20);
     expect(params).toContain("statistics");
-    // Roadmaps variant intentionally has no professor branch - assert absence
-    expect(sql).not.toContain("JOIN professors");
-    expect(sql).not.toContain("professor_id");
+    expect(params).toContain(null);
     expect(result).toEqual([statRow]);
   });
 

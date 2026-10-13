@@ -14,8 +14,7 @@ import * as nextServer from "next/server";
 export function runAfterResponse(task: () => Promise<void>): void {
   try {
     const afterFn = Reflect.get(nextServer, "after") as
-      | ((task: () => Promise<void>) => void)
-      | undefined;
+      ((task: () => Promise<void>) => void) | undefined;
     if (typeof afterFn === "function") {
       afterFn(task);
       return;

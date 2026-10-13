@@ -12,6 +12,10 @@ describe("courseColor", () => {
     expect(a).toEqual(b);
   });
 
+  it("returns a ring class for the current slot", () => {
+    expect(courseColor("CS101").nowClassName).toMatch(/^ring-/);
+  });
+
   it("different codes can return different colors", () => {
     const results = new Set([
       JSON.stringify(courseColor("CS101")),

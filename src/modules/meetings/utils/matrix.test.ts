@@ -137,19 +137,37 @@ describe("matrix slot math utilities", () => {
       // Oct 12 at 08:00 -> slot 0
       const target0 = new Date(2026, 9, 12, 8, 0);
       expect(
-        dateTimeToSlotIndex(target0, startDate, startHour, endHour, slotMinutes),
+        dateTimeToSlotIndex(
+          target0,
+          startDate,
+          startHour,
+          endHour,
+          slotMinutes,
+        ),
       ).toBe(0);
 
       // Oct 12 at 08:14 -> still slot 0 (08:00 - 08:15 interval)
       const target14 = new Date(2026, 9, 12, 8, 14);
       expect(
-        dateTimeToSlotIndex(target14, startDate, startHour, endHour, slotMinutes),
+        dateTimeToSlotIndex(
+          target14,
+          startDate,
+          startHour,
+          endHour,
+          slotMinutes,
+        ),
       ).toBe(0);
 
       // Oct 12 at 08:15 -> slot 1
       const target15 = new Date(2026, 9, 12, 8, 15);
       expect(
-        dateTimeToSlotIndex(target15, startDate, startHour, endHour, slotMinutes),
+        dateTimeToSlotIndex(
+          target15,
+          startDate,
+          startHour,
+          endHour,
+          slotMinutes,
+        ),
       ).toBe(1);
 
       // Oct 13 at 09:30 -> day 1, (9:30 - 8:00) = 1.5h = 6 slots -> 56 + 6 = 62

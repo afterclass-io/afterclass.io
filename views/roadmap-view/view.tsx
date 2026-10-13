@@ -8,7 +8,9 @@ import {
 } from "mcp-use/react";
 import type { RoadmapViewData } from "../../src/mcp/view-tools/schemas";
 import { useCtaFeedback } from "../shared/use-cta-feedback";
-import { TOKENS, Skeleton } from "../shared/tokens";
+import { TOKENS } from "../shared/tokens";
+import { ViewCard } from "../shared/components/ViewCard";
+import { viewStatusFallback } from "../shared/view-shell";
 
 /**
  * MCP App View (mcp-use v2) for the `get-my-roadmap` tool. Must stay
@@ -46,24 +48,8 @@ const RoadmapView: React.FC = () => {
   );
   const { isAvailable } = useHostContext();
 
-  if (status === "pending") return <Skeleton dark={dark} />;
-  if (status === "error") {
-    return (
-      <div
-        role="alert"
-        style={{
-          fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
-          color: c.cardFg,
-          background: c.card,
-          border: `1px solid ${c.border}`,
-          borderRadius: c.radius,
-          padding: 16,
-        }}
-      >
-        {error.message}
-      </div>
-    );
-  }
+  const fallback = viewStatusFallback({ status, dark, error });
+  if (fallback) return fallback;
   // `toolOutput` is the normalized RoadmapView from the tool's
   // outputSchema. The tool adapter passes its schemas `as never`, so read
   // defensively (every field optional with a skeleton fallback).
@@ -93,20 +79,7 @@ const RoadmapView: React.FC = () => {
   );
 
   return (
-    <div
-      style={{
-        fontFamily: "var(--font-inter, ui-sans-serif, system-ui)",
-        color: c.cardFg,
-        background: c.card,
-        border: `1px solid ${c.border}`,
-        borderRadius: c.radius,
-        padding: 16,
-        boxSizing: "border-box",
-        width: "100%",
-        maxWidth: "100%",
-      }}
-    >
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
+    <ViewCard c={c}>
       {/* Header: roadmap name + owner/votes subline for public roadmaps */}
       <div style={{ fontSize: 14, fontWeight: 600 }}>{name}</div>
       {isPublic && owner && (
@@ -268,7 +241,7 @@ const RoadmapView: React.FC = () => {
               : "Copy this roadmap"}
         </button>
       )}
-    </div>
+    </ViewCard>
   );
 };
 

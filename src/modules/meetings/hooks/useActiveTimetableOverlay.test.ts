@@ -128,9 +128,24 @@ describe("mapTimetableSlotsToOverlay (pure algorithm)", () => {
 
   it("safely skips slots with invalid time strings or missing days", () => {
     const malformedSlots: TimetableSlotLike[] = [
-      { courseCode: "BAD1", startTime: "invalid", endTime: "10:00", dayOfWeek: "MON" },
-      { courseCode: "BAD2", startTime: "09:00", endTime: "invalid", dayOfWeek: "MON" },
-      { courseCode: "BAD3", startTime: "09:00", endTime: "10:00", dayOfWeek: null },
+      {
+        courseCode: "BAD1",
+        startTime: "invalid",
+        endTime: "10:00",
+        dayOfWeek: "MON",
+      },
+      {
+        courseCode: "BAD2",
+        startTime: "09:00",
+        endTime: "invalid",
+        dayOfWeek: "MON",
+      },
+      {
+        courseCode: "BAD3",
+        startTime: "09:00",
+        endTime: "10:00",
+        dayOfWeek: null,
+      },
     ];
 
     const result = mapTimetableSlotsToOverlay({

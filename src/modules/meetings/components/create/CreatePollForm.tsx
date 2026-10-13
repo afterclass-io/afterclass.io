@@ -64,7 +64,10 @@ function createPollSchema(term: TermWindow) {
         .max(120, "Title cannot exceed 120 characters"),
       agenda: z
         .string()
-        .max(MAX_AGENDA_LENGTH, `Agenda cannot exceed ${MAX_AGENDA_LENGTH} characters`)
+        .max(
+          MAX_AGENDA_LENGTH,
+          `Agenda cannot exceed ${MAX_AGENDA_LENGTH} characters`,
+        )
         .optional(),
       links: meetingLinksSchema.optional(),
       startDate: z.iso.date(),
@@ -263,9 +266,7 @@ function CreatePollFormBody({ term, classes }: CreatePollFormBodyProps) {
                 <ClassPicker
                   id="poll-class"
                   classes={classes}
-                  value={
-                    courseId && section ? { courseId, section } : null
-                  }
+                  value={courseId && section ? { courseId, section } : null}
                   onChange={(selection) => {
                     form.setValue("courseId", selection?.courseId ?? "");
                     form.setValue("section", selection?.section ?? "");

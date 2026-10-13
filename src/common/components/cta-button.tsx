@@ -28,7 +28,7 @@ export const CtaButton = ({
     if (!isValidElement(iconElement)) {
       return null;
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the icon element props are unknown; cloneElement needs a loose props type
     return cloneElement(iconElement as ReactElement<any>, {
       className: "size-6",
     });

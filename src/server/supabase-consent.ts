@@ -1,16 +1,20 @@
-import { createHash, createHmac, timingSafeEqual } from "crypto";
+import { createHash, createHmac } from "crypto";
 
 import { createClient } from "@supabase/supabase-js";
 
 import { env } from "@/env";
+import { verifyExpiringHmac } from "@/server/hmac-verify";
+import { serverSupabaseAuthOptions } from "@/server/supabase";
+import { instrumentSupabase } from "@/common/tools/supabase/instrument";
+import { getAuthSecret } from "@/server/auth/auth-secret";
 
 /**
  * Per-call Supabase client authenticated as the user via their access token.
  *
- * The app's shared `supabase` client (`@/server/supabase`) is an anonymous,
- * browser-scoped client. The Supabase OAuth-server methods must run as the
- * signed-in user, so we build a fresh client per call with the user's access
- * token (carried in the NextAuth session, see `src/server/auth/config.ts`).
+ * Each Supabase call builds its own client. The Supabase OAuth-server methods
+ * must run as the signed-in user, so we build a fresh client per call with
+ * the user's access token (carried in the NextAuth session, see
+ * `src/server/auth/config.ts`).
  *
  * NOTE: the Supabase access token in the NextAuth JWT is captured at
  * sign-in and expires after ~1h. The JWT refresh token (Google sign-ins,
@@ -19,12 +23,15 @@ import { env } from "@/env";
  * (e.g. the consent route returns 400); recommend the user re-login.
  */
 async function userClient(accessToken: string, refreshToken?: string | null) {
-  const client = createClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      global: { headers: { Authorization: `Bearer ${accessToken}` } },
-    },
+  const client = instrumentSupabase(
+    createClient(
+      env.NEXT_PUBLIC_SUPABASE_URL,
+      env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        ...serverSupabaseAuthOptions,
+        global: { headers: { Authorization: `Bearer ${accessToken}` } },
+      },
+    ),
   );
   // The supabase-js OAuth methods (getAuthorizationDetails / approve /
   // deny / listGrants / revokeGrant) read the active session from the
@@ -133,7 +140,7 @@ export interface UserGrant {
 const CONSENT_CSRF_TTL_MS = 10 * 60_000;
 
 export function resolveConsentCsrfSecret(): string | undefined {
-  return process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+  return getAuthSecret();
 }
 
 export function issueConsentCsrf(accessToken: string, secret: string): string {
@@ -159,16 +166,12 @@ export function verifyConsentCsrf(
     const expS = parts.pop();
     const bound = parts.join(".");
     if (bound !== binding) return false;
-    if (sig === undefined || expS === undefined) return false;
-    if (!/^\d+$/.test(expS)) return false;
-    if (Date.now() > Number(expS)) return false;
-    const expect = createHmac("sha256", secret)
-      .update(`${bound}.${expS}`)
-      .digest("hex");
-    const sigBuf = Buffer.from(sig);
-    const expectBuf = Buffer.from(expect);
-    if (sigBuf.length !== expectBuf.length) return false;
-    return timingSafeEqual(sigBuf, expectBuf);
+    return verifyExpiringHmac({
+      signedPrefix: bound,
+      expiry: expS,
+      signature: sig,
+      secret,
+    });
   } catch {
     return false;
   }

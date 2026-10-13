@@ -21,7 +21,7 @@ import {
   hasTimeConflict,
   toTimingLikes,
 } from "@/modules/timetable/functions/slot-math";
-import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import type { ArrangedClass } from "@/common/types/timetable";
 
 /** Re-exported so callers can keep importing `SectionOption` from here. */
 export type { SectionOption } from "@/modules/timetable/hooks/use-slot-mutations";
@@ -52,6 +52,15 @@ function formatExamLine(t: SectionExamTiming): string {
 }
 
 const lineClasses = "text-muted-foreground text-xs break-words tabular-nums";
+
+function TimingRow({ line, venue }: { line: string; venue?: string | null }) {
+  return (
+    <div>
+      <p className={lineClasses}>{line}</p>
+      {venue && <p className={lineClasses}>📍 {abbreviateVenue(venue)}</p>}
+    </div>
+  );
+}
 
 /**
  * Displays all sections for a course with an "Add to timetable" or
@@ -188,24 +197,16 @@ export function SectionPicker({
             {sec.timings && sec.timings.length > 0 && (
               <div className="mt-0.5 space-y-0.5">
                 {sec.timings.map((t, i) => (
-                  <div key={i}>
-                    <p className={lineClasses}>{formatTimingLine(t)}</p>
-                    {t.venue && (
-                      <p className={lineClasses}>
-                        📍 {abbreviateVenue(t.venue)}
-                      </p>
-                    )}
-                  </div>
+                  <TimingRow
+                    key={i}
+                    line={formatTimingLine(t)}
+                    venue={t.venue}
+                  />
                 ))}
               </div>
             )}
             {sec.examTimings?.map((t, i) => (
-              <div key={i}>
-                <p className={lineClasses}>{formatExamLine(t)}</p>
-                {t.venue && (
-                  <p className={lineClasses}>📍 {abbreviateVenue(t.venue)}</p>
-                )}
-              </div>
+              <TimingRow key={i} line={formatExamLine(t)} venue={t.venue} />
             ))}
           </div>
           <Button

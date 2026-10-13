@@ -33,7 +33,7 @@ User opens widget -> AssistantProvider mounts -> GET /api/assistant/status
                                                            buildAssistantTools(ctx)
                                                                           |
                                                                           v
-                                                           getModel("assistant") -> LLM_MODEL
+                                                           getModel()            -> LLM_MODEL
                                                            (LLM_* env)
                                                                           |
                                                                           v
@@ -70,7 +70,7 @@ User opens widget -> AssistantProvider mounts -> GET /api/assistant/status
 | `quota-alert-bar.tsx`                                                                        | Inline non-jarring alert above the composer at 50% / 10% / 0% remaining (amber/red tint, X dismiss persisted in sessionStorage). Logic in `quota-alert.ts`.                                                                                                                                                             |
 | `quota-meter/`                                                                               | Persistent subtle quota meter (`logic.ts` pure state + `quota-meter.tsx` progress bar).                                                                                                                                                                                                                                 |
 | `welcome-bubble/`                                                                            | Random engagement bubble (`logic.ts`: `pickEngagementMessage`, 7-day interval, max 3 shows, 4s delay, 12s auto-dismiss).                                                                                                                                                                                                |
-| `chat-store.ts`                                                                              | Zustand store backed by IndexedDB (`idb.ts`) - `hydrate`, `createSession`, `saveSession`, `renameSession`, `deleteSession`, `setActive`. Caps/pruning in `chat-store-logic.ts`.                                                                                                                                         |
+| `chat-store.ts`                                                                              | Jotai atoms backed by IndexedDB (`idb.ts`) - state atoms `sessionsAtom`, `hydratedAtom`, `activeSessionIdAtom` plus action atoms `hydrateAtom`, `createSessionAtom`, `saveSessionAtom`, `renameSessionAtom`, `deleteSessionAtom`. Caps/pruning in `chat-store-logic.ts`.                                                |
 | `session-list.tsx`                                                                           | Sidebar session list shared by widget + `/assistant`.                                                                                                                                                                                                                                                                   |
 | `connect-gate.tsx`                                                                           | Gate screen when quota exhausted; links to `/settings/agents/connect`.                                                                                                                                                                                                                                                  |
 | `mcp-recommendation.tsx`                                                                     | One-click MCP App recommendation card (3 branded buttons).                                                                                                                                                                                                                                                              |
@@ -81,16 +81,16 @@ User opens widget -> AssistantProvider mounts -> GET /api/assistant/status
 
 ### Server (`src/server/assistant/`)
 
-| File           | Purpose                                                                                                                                                                                                                                                                                                                                            |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `canned.ts`    | Canned answers for static capability-style prompts, short-circuited **before** the quota reserve.                                                                                                                                                                                                                                                  |
-| `tools.ts`     | `buildAssistantTools(ctx)` - converts the shared MCP `allTools` into an AI SDK `ToolSet`.                                                                                                                                                                                                                                                          |
-| `providers.ts` | `getModel(purpose)` - single OpenAI-compatible provider configured from generic `LLM_API_KEY` plus `LLM_BASE_URL`/`LLM_MODEL` (defaults: OpenRouter `@preset/afterclass`). The model id is resolved by `resolveModelId` through chat-config; `getModel("moderation")` uses the optional remote-only `moderationModel`, falling back to `llmModel`. |
-| `trim.ts`      | `trimToBudget(messages)` - prunes reasoning/tool-call bloat, then drops oldest messages until under max input tokens.                                                                                                                                                                                                                              |
-| `quota.ts`     | `reserveMessage`, `settleUsage` - monthly message quota and token-count tracking.                                                                                                                                                                                                                                                                  |
-| `ratelimit.ts` | `checkAndIncrement` - fixed-window rate limiter per user.                                                                                                                                                                                                                                                                                          |
-| `month.ts`     | `currentMonthPeriod()` - `"YYYY-MM"` in Asia/Singapore time.                                                                                                                                                                                                                                                                                       |
-| `status.ts`    | `getAssistantStatus(userId, supabaseAccessToken?)` - aggregates quota and Supabase grant data (`hasConnectedAgent`).                                                                                                                                                                                                                               |
+| File           | Purpose                                                                                                                                                                                                                                                                                             |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `canned.ts`    | Canned answers for static capability-style prompts, short-circuited **before** the quota reserve.                                                                                                                                                                                                   |
+| `tools.ts`     | `buildAssistantTools(ctx)` - converts the shared MCP `allTools` into an AI SDK `ToolSet`.                                                                                                                                                                                                           |
+| `providers.ts` | `getModel()` - single OpenAI-compatible provider configured from generic `LLM_API_KEY` plus `LLM_BASE_URL`/`LLM_MODEL` (defaults: OpenRouter `@preset/afterclass`). The model id is `llmModel` from chat-config. The chat assistant and the moderation judge share this one model and one base URL. |
+| `trim.ts`      | `trimToBudget(messages)` - prunes reasoning/tool-call bloat, then drops oldest messages until under max input tokens.                                                                                                                                                                               |
+| `quota.ts`     | `reserveMessage`, `settleUsage` - monthly message quota and token-count tracking.                                                                                                                                                                                                                   |
+| `ratelimit.ts` | `checkAndIncrement` - fixed-window rate limiter per user (one atomic SQL statement on the pooled client).                                                                                                                                                                                           |
+| `month.ts`     | `currentMonthPeriod()` - `"YYYY-MM"` in Asia/Singapore time.                                                                                                                                                                                                                                        |
+| `status.ts`    | `getAssistantStatus(userId, supabaseAccessToken?)` - aggregates quota and Supabase grant data (`hasConnectedAgent`).                                                                                                                                                                                |
 
 ### Routes
 
@@ -117,8 +117,8 @@ All limits are driven by the `chat` section of the Edge Config. The hardcoded de
 
 ### Changing Config
 
-1. Edit the `chat` section in `src/server/ecfg/config.json`.
-2. Run `bun run ecfg:update` - this pushes the entire JSON to Vercel Edge Config.
+1. Edit the `chat` section in the Vercel dashboard (or update `src/server/ecfg/config.json` for initial defaults).
+2. Because Edge Config uses a seed-only model, existing store values are never overwritten from code. Edit values directly in the Vercel dashboard.
 3. The change takes effect within ~30 seconds (Edge Config propagation). No deploy needed.
 
 The `DEFAULT_CHAT_CONFIG` in `src/server/ecfg/config.ts` is the **hardcoded fallback** - used when the Edge Config is unreachable (e.g., in local dev without a Vercel token) or when the `chat` key is absent from the remote config. If you want new defaults to apply everywhere, update both `config.json` and `DEFAULT_CHAT_CONFIG`.
@@ -129,7 +129,7 @@ Quota resets automatically at the start of each calendar month in **Asia/Singapo
 
 - `currentMonthPeriod()` returns a period key like `"2026-08"` computed from the current SGT date.
 - `checkQuota(userId)` looks up `ChatUsage` by `(userId, period)`. If no row exists for the current period, `messageCount` defaults to 0 - effectively a fresh quota.
-- `reserveMessage(userId)` atomically checks and reserves a message slot **before** streaming begins. It runs inside an interactive transaction: it reads the current `messageCount`, and if under quota, upserts the `ChatUsage` row with `messageCount` incremented by 1. This means the slot is always consumed, even if the client disconnects mid-stream - closing the previous TOCTOU bypass where `onEnd` (which fires after the stream completes) was the only place usage was recorded.
+- `reserveMessage(userId)` atomically checks and reserves a message slot **before** streaming begins. It runs three pooled statements and no interactive transaction: an upsert ensures the period row exists, a conditional `updateMany` (`messageCount < quota`) claims the slot and its `count` says whether it succeeded, and a read returns the remaining count. Only one concurrent caller can win the last slot. This means the slot is always consumed, even if the client disconnects mid-stream - closing the previous TOCTOU bypass where `onEnd` (which fires after the stream completes) was the only place usage was recorded.
 - `settleUsage(userId, tokens)` records raw token counts in `onEnd` after the streaming response completes. It runs as a single `chatUsage` upsert recording observability only — OpenRouter's credit budget owns cost control. Token settlement is best-effort on disconnect - this is an accepted trade-off since the pre-reserved message slot already closes the primary quota-abuse vector.
 
 ### Database Schema
@@ -169,7 +169,7 @@ When the quota gate trips, `AssistantProvider` renders `ConnectGate`, which show
 - **`CHAT_RATE_LIMIT_WINDOW_MINUTES`** - (optional) fixed-window size in minutes (default 1).
 - **`SKIP_ENV_VALIDATION=1`** - set this when running `bun run lint` to bypass `src/env.ts` validation (`next lint` forces `NODE_ENV=production`, which makes the real production-required vars - `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` - required; run lint with `SKIP_ENV_VALIDATION=true` and unset it afterwards).
 
-The LLM provider is a single generic OpenAI-compatible backend (defaults route through OpenRouter `@preset/afterclass`), configured from `LLM_API_KEY` plus `LLM_BASE_URL`/`LLM_MODEL` (see `src/server/assistant/providers.ts`). Rate limits can be overridden via `CHAT_*` env vars (see `src/server/ecfg/chat.ts`).
+The LLM provider is a single generic OpenAI-compatible backend (defaults route through OpenRouter `@preset/afterclass`), configured from `LLM_API_KEY` plus `LLM_BASE_URL`/`LLM_MODEL` (see `src/server/assistant/providers.ts`). Rate limits can be overridden via `CHAT_*` env vars (see `src/server/config/chat-config.ts`).
 
 ## Smoke Testing (Local Dev)
 
@@ -180,7 +180,7 @@ The LLM provider is a single generic OpenAI-compatible backend (defaults route t
    - A **real `LLM_API_KEY`** in `.env` (the placeholder will fail).
    - A **signed-in browser session** (Google OAuth).
    - A running dev server with the database seeded.
-5. To simulate the quota gate: temporarily set `chat.quotaPerMonth` to `1` in `config.json`, run `bun run ecfg:update`, then send a second message - the widget should show the ConnectGate.
+5. To simulate the quota gate: temporarily set `chat.quotaPerMonth` to `1` in the Vercel dashboard, then send a second message - the widget should show the ConnectGate.
 
 ## Testing
 

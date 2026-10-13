@@ -207,7 +207,8 @@ describe("timetable.searchCourses", () => {
     const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const sql = rawCall[0].join("?");
     // Now matches description/courseArea as well — old code/name-only assertion updated; see W4.
-    expect(sql).toContain("plainto_tsquery('simple', ? || ':*')");
+    expect(sql).toContain("to_tsquery('simple', ?::text)");
+    expect(sql).not.toContain("plainto_tsquery");
     expect(sql).toContain("word_similarity(c.name");
     expect(sql).toContain("word_similarity(COALESCE(c.description");
     expect(sql).toContain("word_similarity(COALESCE(c.course_area");
@@ -242,8 +243,8 @@ describe("timetable.searchCourses", () => {
     await caller.timetable.searchCourses({ acadTermId: "t1", query: "tech" });
 
     const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
-    const sql = rawCall[0].join("?");
-    expect(sql).not.toContain("belong_to_faculty");
+    const params = rawCall.slice(1);
+    expect(params).toContain(null);
   });
 
   it("ranks an exact code match first (IS210 beats IS215-style prefix collisions)", async () => {
@@ -365,8 +366,9 @@ describe("timetable.searchCourses", () => {
     await caller.timetable.searchCourses({ acadTermId: "t1", query: "IS" });
 
     const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const params = rawCall.slice(1);
+    expect(params).toContain(null);
     const sql = rawCall[0].join("?");
-    expect(sql).not.toContain("belong_to_faculty");
     const timingLines = sql
       .split("\n")
       .filter(

@@ -52,7 +52,10 @@ export const RoadmapVoteGroup = ({
             }
           | undefined;
         if (snapshot) {
-          utils.roadmapVotes.count.setData({ roadmapId }, snapshot.previousCount);
+          utils.roadmapVotes.count.setData(
+            { roadmapId },
+            snapshot.previousCount,
+          );
           utils.roadmapVotes.getByUser.setData(
             { roadmapId },
             snapshot.previousUserVote as never,

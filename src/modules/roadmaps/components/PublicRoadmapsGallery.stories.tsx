@@ -51,7 +51,7 @@ function sampleItem({
 }: {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   slug: string;
   facultyId: number | null;
   publishedAt: Date;
@@ -72,7 +72,6 @@ function sampleItem({
       publishedAt,
       viewCount,
       shareCount: 0,
-      user: { username },
       _count: { entries: entryCount, votes: voteCount },
     },
     ownerUsername: username,
@@ -150,19 +149,36 @@ const SAMPLE_FACULTIES: FacultiesList = [SCIS, LKCSB, SOSS, SOL];
 // tRPC cache seeding (the gallery's only data seam)
 // ---------------------------------------------------------------------------
 
-function SeedGalleryData({ children }: { children: ReactNode }) {
+function SeedGalleryData({
+  children,
+  page = SAMPLE_PAGE,
+}: {
+  children: ReactNode;
+  page?: ListPublicPage;
+}) {
   const utils = api.useUtils();
-  useState(() => {
+  const seed = (p: ListPublicPage) => {
     // Keep the seeded queries fresh so Storybook never refetches against a
     // real /api/trpc endpoint while a story is open.
     const updatedAt = Date.now() + 60 * 60 * 1000;
     utils.roadmaps.listPublic.setInfiniteData(
       GALLERY_INPUT,
-      { pages: [SAMPLE_PAGE], pageParams: [null] },
+      { pages: [p], pageParams: [null] },
       { updatedAt },
     );
     utils.faculties.list.setData(undefined, SAMPLE_FACULTIES, { updatedAt });
+  };
+
+  useState(() => {
+    seed(page);
   });
+
+  const [currentPage, setCurrentPage] = useState(page);
+  if (currentPage !== page) {
+    setCurrentPage(page);
+    seed(page);
+  }
+
   return <>{children}</>;
 }
 
@@ -175,8 +191,13 @@ const meta = {
   component: PublicRoadmapsGallery,
   tags: ["autodocs"],
   decorators: [
-    (Story) => (
-      <SeedGalleryData>
+    (Story, context) => (
+      <SeedGalleryData
+        key={context.id}
+        page={
+          (context.parameters as { galleryPage?: ListPublicPage })?.galleryPage
+        }
+      >
         <Story />
       </SeedGalleryData>
     ),
@@ -200,6 +221,170 @@ export const NarrowViewport: Story = {
   parameters: {
     viewport: {
       defaultViewport: "mobile1", // 320px wide
+    },
+  },
+};
+
+/**
+ * Short single-line title still reserves two lines of vertical height (min-h-[2lh]).
+ */
+export const ShortTitle: Story = {
+  parameters: {
+    galleryPage: {
+      nextCursor: null,
+      items: [
+        sampleItem({
+          id: "rm-short-title",
+          name: "SWE",
+          description:
+            "A focused plan covering data structures, software design, and distributed systems fundamentals.",
+          slug: "swe",
+          facultyId: SCIS.id,
+          publishedAt: new Date("2026-07-01T00:00:00.000Z"),
+          viewCount: 3402,
+          username: "alexander",
+          entryCount: 24,
+          voteCount: 128,
+          faculty: SCIS,
+        }),
+      ],
+    },
+  },
+};
+
+/**
+ * Title longer than one line clamps to two lines without overflowing.
+ */
+export const TwoLineTitle: Story = {
+  parameters: {
+    galleryPage: {
+      nextCursor: null,
+      items: [
+        sampleItem({
+          id: "rm-two-line-title",
+          name: "Software Engineering & Distributed Systems Core Specialisation Track",
+          description:
+            "A focused plan covering data structures, software design, and distributed systems fundamentals.",
+          slug: "swe-distributed-systems",
+          facultyId: SCIS.id,
+          publishedAt: new Date("2026-07-01T00:00:00.000Z"),
+          viewCount: 3402,
+          username: "alexander",
+          entryCount: 24,
+          voteCount: 128,
+          faculty: SCIS,
+        }),
+      ],
+    },
+  },
+};
+
+/**
+ * Empty description renders an empty paragraph that still reserves two lines (min-h-[2lh]),
+ * keeping footer alignment consistent across cards.
+ */
+export const NoDescription: Story = {
+  parameters: {
+    galleryPage: {
+      nextCursor: null,
+      items: [
+        sampleItem({
+          id: "rm-no-desc",
+          name: "Finance Major Pathway",
+          description: "",
+          slug: "finance-major-pathway",
+          facultyId: LKCSB.id,
+          publishedAt: new Date("2026-06-20T00:00:00.000Z"),
+          viewCount: 2105,
+          username: "brenda",
+          entryCount: 36,
+          voteCount: 89,
+          faculty: LKCSB,
+        }),
+      ],
+    },
+  },
+};
+
+/**
+ * Description with multiple lines preserves line breaks (whitespace-pre-line)
+ * and clamps to 2 lines (line-clamp-2).
+ */
+export const MultiLineDescription: Story = {
+  parameters: {
+    galleryPage: {
+      nextCursor: null,
+      items: [
+        sampleItem({
+          id: "rm-multiline-desc",
+          name: "Psychology Major Pathway",
+          description:
+            "First line of description with core modules.\nSecond line with elective choices.\nThird line which should be clamped by line-clamp-2.",
+          slug: "psychology-major-pathway",
+          facultyId: SOSS.id,
+          publishedAt: new Date("2026-06-10T00:00:00.000Z"),
+          viewCount: 980,
+          username: "charlie",
+          entryCount: 20,
+          voteCount: 45,
+          faculty: SOSS,
+        }),
+      ],
+    },
+  },
+};
+
+/**
+ * Row of three cards with varying title and description lengths.
+ * Verifies that card titles start at the same y position, descriptions keep equal height,
+ * and metadata rows share a single aligned baseline.
+ */
+export const MixedRow: Story = {
+  parameters: {
+    galleryPage: {
+      nextCursor: null,
+      items: [
+        sampleItem({
+          id: "rm-mixed-1",
+          name: "SWE",
+          description: "Core algorithms and systems.\nPractical labs included.",
+          slug: "swe-mixed",
+          facultyId: SCIS.id,
+          publishedAt: new Date("2026-07-01T00:00:00.000Z"),
+          viewCount: 3402,
+          username: "alexander",
+          entryCount: 24,
+          voteCount: 128,
+          faculty: SCIS,
+        }),
+        sampleItem({
+          id: "rm-mixed-2",
+          name: "Finance & Accounting Double Degree Specialisation",
+          description: "",
+          slug: "finance-accounting-mixed",
+          facultyId: LKCSB.id,
+          publishedAt: new Date("2026-06-20T00:00:00.000Z"),
+          viewCount: 2105,
+          username: "brenda",
+          entryCount: 36,
+          voteCount: 89,
+          faculty: LKCSB,
+        }),
+        sampleItem({
+          id: "rm-mixed-3",
+          name: "Social Sciences Track",
+          description:
+            "A comprehensive track covering qualitative and quantitative research methodologies.",
+          slug: "social-sciences-mixed",
+          facultyId: null,
+          publishedAt: new Date("2026-06-10T00:00:00.000Z"),
+          viewCount: 980,
+          username: "charlie",
+          entryCount: 20,
+          voteCount: 45,
+          faculty: null,
+        }),
+      ],
     },
   },
 };

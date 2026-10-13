@@ -1,0 +1,8 @@
+# Pre-commit guard: format staged files so no commit lands unformatted.
+# Never bypass with --no-verify. Set LEFTHOOK=0 only to debug the hook itself.
+pre-commit:
+  jobs:
+    - name: prettier
+      glob: "*.{ts,tsx,js,jsx,mjs,cjs,json,css,md,yml,yaml}"
+      run: npx prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true

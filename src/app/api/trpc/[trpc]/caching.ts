@@ -1,3 +1,6 @@
+// A procedure belongs here only if its response is identical for every
+// caller and needs no secret input. Never add a procedure that reads
+// ctx.session or accepts a share or bearer token.
 export const PUBLIC_CACHEABLE_PROCEDURES: ReadonlySet<string> = new Set([
   "courses.getAllByUniAbbrv",
   "courses.getByCourseCode",
@@ -5,9 +8,7 @@ export const PUBLIC_CACHEABLE_PROCEDURES: ReadonlySet<string> = new Set([
   "courses.countByProfSlug",
   "professors.getAllByUniAbbrv",
   "professors.getByCourseCode",
-  "professors.getByProfSlug",
   "professors.getBySlug",
-  "professors.getByClassId",
   "professors.getProfessorsByClassId",
   "professors.countByCourseCode",
   "classes.getAll",
@@ -24,21 +25,13 @@ export const PUBLIC_CACHEABLE_PROCEDURES: ReadonlySet<string> = new Set([
   "reviews.getByProfSlug",
   "reviews.count",
   "reviewVotes.count",
-  "reviewLabels.getAllByType",
-  "reviewLabels.getByProfSlug",
-  "reviewLabels.countByCourseCode",
   "acadTerms.current",
-  "acadTerms.getAll",
   "safetyFactors.getAll",
   "labels.getAllByType",
   "labels.getAll",
   "faculties.list",
-  "roadmaps.getById",
   "roadmaps.listPublic",
   "roadmapVotes.count",
-  "roadmapReactions.getByRoadmapId",
-  "sharing.getSharedRoadmap",
-  "sharing.getSharedTimetable",
 ]);
 
 const PUBLIC_CACHE_VALUE =

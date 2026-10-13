@@ -23,6 +23,31 @@ import { TOKENS, Skeleton, viewShellStyle } from "./tokens";
  */
 export type ViewShellStatus = "pending" | "ready" | "error";
 
+/**
+ * The non-ready body of a view: the shared Skeleton while `pending`, the
+ * card-chrome alert while `error`, and `null` once `ready`. Views call it
+ * after their hooks (`const fallback = viewStatusFallback(...); if (fallback)
+ * return fallback;`) so hook order never depends on the status.
+ */
+export function viewStatusFallback({
+  status,
+  dark,
+  error,
+}: {
+  status: ViewShellStatus;
+  dark: boolean;
+  error?: { message: string } | null;
+}): React.ReactNode {
+  if (status === "ready") return null;
+  if (status === "pending") return <Skeleton dark={dark} />;
+  const c = dark ? TOKENS.dark : TOKENS.light;
+  return (
+    <div role="alert" style={viewShellStyle(c)}>
+      {error?.message ?? "Something went wrong."}
+    </div>
+  );
+}
+
 export const ViewShell: React.FC<{
   status: ViewShellStatus;
   dark: boolean;
@@ -30,16 +55,6 @@ export const ViewShell: React.FC<{
   skeleton?: React.ReactNode;
   children: React.ReactNode;
 }> = ({ status, dark, error, skeleton, children }) => {
-  const c = dark ? TOKENS.dark : TOKENS.light;
-  if (status === "pending") {
-    return <>{skeleton ?? <Skeleton dark={dark} />}</>;
-  }
-  if (status === "error") {
-    return (
-      <div role="alert" style={viewShellStyle(c)}>
-        {error?.message ?? "Something went wrong."}
-      </div>
-    );
-  }
-  return <>{children}</>;
+  if (status === "pending" && skeleton) return <>{skeleton}</>;
+  return <>{viewStatusFallback({ status, dark, error }) ?? children}</>;
 };

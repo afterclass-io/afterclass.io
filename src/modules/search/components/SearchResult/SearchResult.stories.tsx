@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { SearchResult } from "./SearchResult";
-import { type SearchCourseResult } from "@/modules/search/functions/searchCourse";
-import { type SearchProfResult } from "@/modules/search/functions/searchProf";
+import {
+  type SearchCourseResult,
+  type SearchProfResult,
+} from "@/modules/search/types";
 import {
   BooksIcon,
   GraduationCapIcon,
@@ -93,6 +95,7 @@ export const Default: Story = {
         <SearchResult>
           <SearchResult.Title searchTerm="test" />
           <SearchResult.Content
+            query="test"
             searchedCourse={searchedCourse}
             searchedProf={searchedProf}
           />
@@ -111,11 +114,12 @@ export const WithoutFilter: Story = {
           <SearchResult.List>
             <SearchResult.Empty
               show={searchedCourse.length + searchedProf.length === 0}
+              reason="none"
+              query="test"
             />
             {searchedCourse.map((c) => (
               <SearchResult.Item
                 key={c.courseCode}
-                school={c.uniAbbrv}
                 href={`/course/${c.courseCode}`}
                 title={c.courseName}
                 subtitle={c.courseCode}
@@ -128,7 +132,6 @@ export const WithoutFilter: Story = {
             {searchedProf.map((p) => (
               <SearchResult.Item
                 key={p.profSlug}
-                school={p.uniAbbrv}
                 href={`/professor/${p.profSlug}`}
                 title={p.profName}
                 filterStats={[
@@ -151,12 +154,6 @@ export const JustSearchResultFilter: Story = {
         <SearchResult.Filter
           onValueChange={(value) => console.log(value)}
           filters={{
-            school: [
-              { label: "All", value: "all", isDefault: true },
-              { label: "SMU", value: "SMU" },
-              { label: "NUS", value: "NUS" },
-              { label: "NTU", value: "NTU" },
-            ],
             type: [
               { label: "All", value: "all", isDefault: true },
               { label: "Professor", value: "professor" },
@@ -174,7 +171,6 @@ export const JustProfSearchResultItem: Story = {
     return (
       <SearchResult.Item
         key={searchedProf[0]!.profSlug}
-        school={searchedProf[0]!.uniAbbrv}
         href={`/professor/${searchedProf[0]!.profSlug}`}
         title={searchedProf[0]!.profName}
         filterStats={[
@@ -191,7 +187,6 @@ export const JustCourseSearchResultItem: Story = {
     return (
       <SearchResult.Item
         key={searchedCourse[0]!.courseCode}
-        school={searchedCourse[0]!.uniAbbrv}
         href={`/course/${searchedCourse[0]!.courseCode}`}
         title={searchedCourse[0]!.courseName}
         subtitle={searchedCourse[0]!.courseCode}
@@ -200,6 +195,24 @@ export const JustCourseSearchResultItem: Story = {
           { icon: <GraduationCapIcon />, stat: 32 },
         ]}
       />
+    );
+  },
+};
+
+export const LongCourseTitleItem: Story = {
+  render: () => {
+    return (
+      <div className="w-80">
+        <SearchResult.Item
+          href={`/course/${searchedCourse[0]!.courseCode}`}
+          title="An extremely long course title that would otherwise push the chevron out of the card"
+          subtitle={searchedCourse[0]!.courseCode}
+          filterStats={[
+            { icon: <PencilIcon />, stat: 12 },
+            { icon: <GraduationCapIcon />, stat: 32 },
+          ]}
+        />
+      </div>
     );
   },
 };

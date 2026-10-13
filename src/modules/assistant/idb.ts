@@ -43,25 +43,26 @@ export async function idbGetAll<T>(): Promise<T[]> {
   });
 }
 
-export async function idbPut<T extends { id: string }>(
-  value: T,
+// Settles on transaction completion, not request success, so a resolved write is durable.
+async function runWrite(
+  failureMessage: string,
+  action: (store: IDBObjectStore) => void,
 ): Promise<void> {
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, "readwrite");
-    tx.objectStore(STORE).put(value);
+    action(tx.objectStore(STORE));
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error ?? new Error("Failed to write session"));
+    tx.onerror = () => reject(tx.error ?? new Error(failureMessage));
   });
 }
 
+export async function idbPut<T extends { id: string }>(
+  value: T,
+): Promise<void> {
+  return runWrite("Failed to write session", (store) => store.put(value));
+}
+
 export async function idbDelete(id: string): Promise<void> {
-  const db = await openDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, "readwrite");
-    tx.objectStore(STORE).delete(id);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () =>
-      reject(tx.error ?? new Error("Failed to delete session"));
-  });
+  return runWrite("Failed to delete session", (store) => store.delete(id));
 }

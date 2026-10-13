@@ -1,8 +1,9 @@
-import { Prisma } from "@/generated/prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { getEdgeConfig } from "@/common/providers/EdgeConfig/EdgeConfigProvider";
+import { isForeignKeyViolation } from "@/server/db-errors";
+
+import { getEdgeConfig } from "@/server/ecfg/edge-config";
 import { runAfterResponse } from "@/server/after-response";
 import { verifiedProcedure } from "@/server/api/trpc";
 import { checkAndIncrement } from "@/server/assistant/ratelimit";
@@ -18,7 +19,7 @@ import {
  */
 export const REPORT_ACK = { received: true } as const;
 
-export const reportInput = z.object({
+const reportInput = z.object({
   surface: z.enum(REPORT_SURFACES),
   /** Review id or roadmap id (see surfaces.ts). */
   ref: z.string().trim().min(1).max(64),
@@ -63,10 +64,7 @@ export const report = verifiedProcedure
     } catch (error) {
       // The item was deleted between resolve and insert (FK violation):
       // answer exactly like any other report.
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2003"
-      ) {
+      if (isForeignKeyViolation(error)) {
         return REPORT_ACK;
       }
       throw error;
@@ -74,7 +72,10 @@ export const report = verifiedProcedure
     if (count > 0) {
       runAfterResponse(async () => {
         const { runModerationTask } = await import("@/server/moderation/run");
-        await runModerationTask({ surface: input.surface, itemId: item.itemId });
+        await runModerationTask({
+          surface: input.surface,
+          itemId: item.itemId,
+        });
       });
     }
     return REPORT_ACK;

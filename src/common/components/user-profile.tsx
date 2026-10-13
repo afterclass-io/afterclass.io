@@ -4,7 +4,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/common/components/avatar";
-import { ExitIcon } from "@radix-ui/react-icons";
+import { LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
 import type { SessionUser } from "@/server/auth/config";
 import {
@@ -29,7 +29,7 @@ export const UserProfile = ({ user }: Props) => {
         <div className="text-muted-foreground overflow-hidden text-sm text-ellipsis">
           <Avatar className="h-6 w-6">
             {/* Decorative: the email is rendered as adjacent text below. */}
-            <AvatarImage src={user.photoUrl ?? undefined} alt="" />
+            <AvatarImage src={user.photoUrl} alt="" size={24} />
             <AvatarFallback className="text-center">
               {user.email[0]?.toUpperCase() ?? "U"}
             </AvatarFallback>
@@ -44,7 +44,7 @@ export const UserProfile = ({ user }: Props) => {
           onClick={() => handleLogout()}
         >
           <p>Logout</p>
-          <ExitIcon />
+          <LogOut />
         </Button>
       </PopoverContent>
     </Popover>

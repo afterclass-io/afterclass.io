@@ -55,19 +55,19 @@ function CourseChipInner({
       )}
       <span className="truncate font-semibold">{courseCode}</span>
       {creditUnits > 0 && (
-        <span className="bg-background/60 ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-bold">
+        <span className="bg-background/60 text-2xs ml-auto shrink-0 rounded-full px-1.5 py-0.5 leading-none font-bold">
           {creditUnits} CU
         </span>
       )}
       {/* Course name on its own line — wide screens only */}
-      <span className="hidden w-full text-[11px] leading-tight font-normal break-words opacity-80 lg:block">
+      <span className="text-2xs hidden w-full leading-tight font-normal break-words opacity-80 lg:block">
         {courseName}
       </span>
       {onRemove && (
         <button
           type="button"
           aria-label={`Remove ${courseCode} from roadmap`}
-          className="hover:bg-background/80 absolute top-1 right-1 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+          className="hover:bg-background/80 text-muted-foreground hover:text-foreground absolute top-1 right-1 rounded p-0.5 transition-colors"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();

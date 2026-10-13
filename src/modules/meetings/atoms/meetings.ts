@@ -41,9 +41,6 @@ export const meetingHideIfNeededAtom = atomWithStorage<boolean>(
  */
 export const meetingVisibleOverlaysAtom = atomWithStorage<
   Record<OverlaySource, boolean>
->(
-  "meetingVisibleOverlays",
-  { timetable: true, google: true },
-  undefined,
-  { getOnInit: true },
-);
+>("meetingVisibleOverlays", { timetable: true, google: true }, undefined, {
+  getOnInit: true,
+});

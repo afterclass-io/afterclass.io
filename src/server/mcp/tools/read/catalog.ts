@@ -1,11 +1,13 @@
 import { z } from "zod";
 
-import { ReviewsFilterFor, ReviewsSortBy } from "@/modules/reviews/types";
+import { ReviewsFilterFor, ReviewsSortBy } from "@/common/types/reviews";
+
+import { toCodeKey } from "@/server/search/query";
 
 import { resolveTermId } from "../../current";
 import {
   errText,
-  errorMessage,
+  guardedRun,
   jsonText,
   type McpTool,
   type ToolResult,
@@ -124,6 +126,12 @@ const reviewCardsToViewProps = (
   return reviewCardsProps(text);
 };
 
+/** Agent-facing reviews payload: a bare list becomes `items`; a paged envelope is spread after `context`. */
+const reviewsPayload = (context: string, data: unknown) =>
+  Array.isArray(data)
+    ? { context, items: data }
+    : { context, ...(data as Record<string, unknown>) };
+
 const getCourseReviewsSchema = z
   .object({
     code: z.string().optional().describe("Exact course code"),
@@ -153,36 +161,27 @@ export const getCourseReviewsTool: McpTool<typeof getCourseReviewsSchema> = {
   inputSchema: getCourseReviewsSchema,
   readOnly: true,
   toViewProps: reviewCardsToViewProps,
-  run: async ({ caller }, { code, query, limit, cursor }) => {
-    try {
-      let resolvedCode = code?.trim() ?? "";
-      if (!resolvedCode) {
-        const q = query!.trim();
-        const hits = (await caller.roadmaps.searchCourses({
-          query: q,
-        })) as Array<{ code: string }>;
-        if (hits.length === 0) return errText(`No courses found for "${q}".`);
-        const norm = q.toUpperCase().replace(/[\s-]/g, "");
-        const exact = hits.find(
-          (h) => h.code.toUpperCase().replace(/[\s-]/g, "") === norm,
-        );
-        resolvedCode = (exact ?? hits[0]!).code;
-      }
-      const data = await caller.reviews.getByCourseCodeProtected({
-        code: resolvedCode,
-        limit,
-        ...(cursor !== undefined ? { cursor } : {}),
-        filterFor: ReviewsFilterFor.ALL,
-        sortBy: ReviewsSortBy.LATEST,
-      });
-      const payload = Array.isArray(data)
-        ? { context: resolvedCode, items: data }
-        : { context: resolvedCode, ...(data as Record<string, unknown>) };
-      return jsonText(payload);
-    } catch (e) {
-      return errText(errorMessage(e));
+  run: guardedRun(async ({ caller }, { code, query, limit, cursor }) => {
+    let resolvedCode = code?.trim() ?? "";
+    if (!resolvedCode) {
+      const q = query!.trim();
+      const hits = (await caller.roadmaps.searchCourses({
+        query: q,
+      })) as Array<{ code: string }>;
+      if (hits.length === 0) return errText(`No courses found for "${q}".`);
+      const norm = toCodeKey(q);
+      const exact = hits.find((h) => toCodeKey(h.code) === norm);
+      resolvedCode = (exact ?? hits[0]!).code;
     }
-  },
+    const data = await caller.reviews.getByCourseCodeProtected({
+      code: resolvedCode,
+      limit,
+      ...(cursor !== undefined ? { cursor } : {}),
+      filterFor: ReviewsFilterFor.ALL,
+      sortBy: ReviewsSortBy.LATEST,
+    });
+    return jsonText(reviewsPayload(resolvedCode, data));
+  }),
 };
 
 const getProfessorReviewsSchema = z.object({
@@ -201,23 +200,16 @@ export const getProfessorReviewsTool: McpTool<
   inputSchema: getProfessorReviewsSchema,
   readOnly: true,
   toViewProps: reviewCardsToViewProps,
-  run: async ({ caller }, { slug, limit, cursor }) => {
-    try {
-      const data = await caller.reviews.getByProfSlugProtected({
-        slug,
-        limit,
-        ...(cursor !== undefined ? { cursor } : {}),
-        filterFor: ReviewsFilterFor.ALL,
-        sortBy: ReviewsSortBy.LATEST,
-      });
-      const payload = Array.isArray(data)
-        ? { context: slug, items: data }
-        : { context: slug, ...(data as Record<string, unknown>) };
-      return jsonText(payload);
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { slug, limit, cursor }) => {
+    const data = await caller.reviews.getByProfSlugProtected({
+      slug,
+      limit,
+      ...(cursor !== undefined ? { cursor } : {}),
+      filterFor: ReviewsFilterFor.ALL,
+      sortBy: ReviewsSortBy.LATEST,
+    });
+    return jsonText(reviewsPayload(slug, data));
+  }),
 };
 
 const getBidPredictionSchema = z.object({
@@ -230,16 +222,12 @@ export const getBidPredictionTool: McpTool<typeof getBidPredictionSchema> = {
     "Get the latest bid prediction (expected median and minimum clearing price) for a class.",
   inputSchema: getBidPredictionSchema,
   readOnly: true,
-  run: async ({ caller }, { classId }) => {
-    try {
-      const prediction = await caller.bidPredictions.getBy({ classId });
-      if (!prediction)
-        return errText(`No prediction available for class ${classId}`);
-      return jsonText(prediction);
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, { classId }) => {
+    const prediction = await caller.bidPredictions.getBy({ classId });
+    if (!prediction)
+      return errText(`No prediction available for class ${classId}`);
+    return jsonText(prediction);
+  }),
 };
 
 const getBidResultsSchema = z
@@ -260,31 +248,27 @@ export const getBidResultsTool: McpTool<typeof getBidResultsSchema> = {
     "Get past bid results (clearing medians/mins). Provide either a classId (use get-classes to resolve it from a course code and section) or a courseCode + section pair.",
   inputSchema: getBidResultsSchema,
   readOnly: true,
-  run: async ({ caller }, input) => {
-    try {
-      const { limit = 20, ...filters } = input as {
-        classId?: string;
-        courseCode?: string;
-        section?: string;
-        limit?: number;
-      };
-      const data = (await caller.bidResults.getBy(filters)) as unknown;
-      if (Array.isArray(data)) {
-        return jsonText((data as unknown[]).slice(0, limit));
-      }
-      if (
-        data !== null &&
-        typeof data === "object" &&
-        Array.isArray((data as { items?: unknown }).items)
-      ) {
-        const obj = data as { items: unknown[] } & Record<string, unknown>;
-        return jsonText({ ...obj, items: obj.items.slice(0, limit) });
-      }
-      return jsonText(data);
-    } catch (e) {
-      return errText(errorMessage(e));
+  run: guardedRun(async ({ caller }, input) => {
+    const { limit = 20, ...filters } = input as {
+      classId?: string;
+      courseCode?: string;
+      section?: string;
+      limit?: number;
+    };
+    const data = (await caller.bidResults.getBy(filters)) as unknown;
+    if (Array.isArray(data)) {
+      return jsonText((data as unknown[]).slice(0, limit));
     }
-  },
+    if (
+      data !== null &&
+      typeof data === "object" &&
+      Array.isArray((data as { items?: unknown }).items)
+    ) {
+      const obj = data as { items: unknown[] } & Record<string, unknown>;
+      return jsonText({ ...obj, items: obj.items.slice(0, limit) });
+    }
+    return jsonText(data);
+  }),
 };
 
 const listAcadTermsSchema = z.object({});
@@ -295,21 +279,17 @@ export const listAcadTermsTool: McpTool<typeof listAcadTermsSchema> = {
     "List all academic terms (e.g. AY2026/27 Term 1). Returns { terms, currentTermId } - use currentTermId when a term-scoped tool needs a default.",
   inputSchema: listAcadTermsSchema,
   readOnly: true,
-  run: async ({ caller }) => {
+  run: guardedRun(async ({ caller }) => {
+    const terms = await caller.acadTerms.list();
+    let currentTermId: string | null = null;
     try {
-      const terms = await caller.acadTerms.list();
-      let currentTermId: string | null = null;
-      try {
-        const current = await caller.acadTerms.current();
-        currentTermId = current?.id ?? null;
-      } catch {
-        currentTermId = null;
-      }
-      return jsonText({ terms, currentTermId });
-    } catch (e) {
-      return errText(errorMessage(e));
+      const current = await caller.acadTerms.current();
+      currentTermId = current?.id ?? null;
+    } catch {
+      currentTermId = null;
     }
-  },
+    return jsonText({ terms, currentTermId });
+  }),
 };
 
 const getBidWindowsSchema = z.object({
@@ -322,25 +302,21 @@ export const getBidWindowsTool: McpTool<typeof getBidWindowsSchema> = {
     "Get bid windows (rounds and dates) for an academic term. Returns { windows, currentWindowId }. Omit acadTermId to use the current term.",
   inputSchema: getBidWindowsSchema,
   readOnly: true,
-  run: async ({ caller }, { acadTermId }) => {
+  run: guardedRun(async ({ caller }, { acadTermId }) => {
+    // Empty acadTermId must never reach SQL - resolveTermId trims and
+    // falls back to the current term (friendly error when none exists).
+    const term = await resolveTermId(caller, acadTermId);
+    if (!term.ok) return errText(term.errText);
+    const windows = await caller.bidWindows.getByAcadTerm({
+      acadTermId: term.value,
+    });
+    let currentWindowId: number | null = null;
     try {
-      // Empty acadTermId must never reach SQL - resolveTermId trims and
-      // falls back to the current term (friendly error when none exists).
-      const term = await resolveTermId(caller, acadTermId);
-      if (!term.ok) return errText(term.errText);
-      const windows = await caller.bidWindows.getByAcadTerm({
-        acadTermId: term.value,
-      });
-      let currentWindowId: number | null = null;
-      try {
-        const current = await caller.bidWindows.getCurrentWindow();
-        currentWindowId = current?.id ?? null;
-      } catch {
-        currentWindowId = null;
-      }
-      return jsonText({ windows, currentWindowId });
-    } catch (e) {
-      return errText(errorMessage(e));
+      const current = await caller.bidWindows.getCurrentWindow();
+      currentWindowId = current?.id ?? null;
+    } catch {
+      currentWindowId = null;
     }
-  },
+    return jsonText({ windows, currentWindowId });
+  }),
 };

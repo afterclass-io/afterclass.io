@@ -37,7 +37,7 @@ export const SearchResultFilter = ({
                 key={j}
                 value={item.value}
                 aria-label={`Toggle ${item.label}`}
-                className="bg-card text-text-em-high focus-ring hover:bg-accent data-[state=on]:bg-primary data-[state=on]:text-primary-foreground inline-flex h-10 flex-shrink-0 items-center justify-center px-5 py-1 text-base transition-colors"
+                className="bg-card text-foreground focus-ring hover:bg-accent data-[state=on]:bg-primary data-[state=on]:text-primary-foreground inline-flex h-10 flex-shrink-0 items-center justify-center px-5 py-1 text-base transition-colors"
               >
                 {item.label}
               </ToggleGroupItem>

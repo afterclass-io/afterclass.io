@@ -29,10 +29,10 @@ describe("requirePublicRoadmap", () => {
     const db = {
       userRoadmap: { findFirst: vi.fn().mockResolvedValue(null) },
     };
-    await expect(
-      requirePublicRoadmap(db as never, "r1"),
-    ).rejects.toMatchObject({
-      code: "NOT_FOUND",
-    });
+    await expect(requirePublicRoadmap(db as never, "r1")).rejects.toMatchObject(
+      {
+        code: "NOT_FOUND",
+      },
+    );
   });
 });

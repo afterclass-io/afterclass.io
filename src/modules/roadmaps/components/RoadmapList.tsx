@@ -272,7 +272,7 @@ export function RoadmapList({
                       className="inline-flex shrink-0"
                       aria-label="Unlisted roadmap"
                     >
-                      <Share2 className="text-warning size-3 shrink-0" />
+                      <Share2 className="text-warning-text size-3 shrink-0" />
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -308,7 +308,7 @@ export function RoadmapList({
               )}
 
               {/* Entry count badge — stays put; actions are always visible (no hover reveal) */}
-              <span className="bg-muted text-muted-foreground shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+              <span className="bg-muted text-muted-foreground shrink-0 rounded-full px-1.5 py-0.5 text-xs font-semibold tabular-nums">
                 {item.entryCount}
               </span>
 

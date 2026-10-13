@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Button } from "@/common/components/button";
 import { EmptyState } from "@/common/components/empty-state";
 import { formatDateSGT } from "@/common/functions/format-date-sgt";
+import { useCopyToClipboard } from "@/common/hooks/use-copy-to-clipboard";
 import { api, type RouterOutputs } from "@/common/tools/trpc/react";
 import { meetingsRoomTourSteps } from "@/common/tour/steps";
 import { useAutoStartTour } from "@/common/tour/useAutoStartTour";
@@ -29,7 +30,10 @@ import { MeetingRoomHeader } from "@/modules/meetings/components/room/MeetingRoo
 import { MeetingEditPanel } from "@/modules/meetings/components/room/MeetingEditPanel";
 import { MeetingGroupPanel } from "@/modules/meetings/components/room/MeetingGroupPanel";
 import { SelectedRangeBar } from "@/modules/meetings/components/room/SelectedRangeBar";
-import { findBestSlot, findTopSlots } from "@/modules/meetings/functions/best-slot";
+import {
+  findBestSlot,
+  findTopSlots,
+} from "@/modules/meetings/functions/best-slot";
 import {
   slotRangeToInstants,
   summarizeRangeAvailability,
@@ -51,10 +55,13 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
   const [isEditing, setIsEditing] = useState(false);
   const [brushMode, setBrushMode] = useAtom(meetingBrushModeAtom);
   const [hideIfNeeded, setHideIfNeeded] = useAtom(meetingHideIfNeededAtom);
-  const [visibleSources, setVisibleSources] = useAtom(meetingVisibleOverlaysAtom);
+  const [visibleSources, setVisibleSources] = useAtom(
+    meetingVisibleOverlaysAtom,
+  );
   const [selectedRange, setSelectedRange] = useState<SlotRange | null>(null);
 
   const utils = api.useUtils();
+  const { copy: copyToClipboard } = useCopyToClipboard();
   const isSignedIn = Boolean(session?.user);
 
   const [hasSeenTour, setHasSeenTour] = useAtom(hasSeenMeetingsTourAtom);
@@ -159,20 +166,23 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
       poll.endHour,
       poll.slotDurationMinutes,
     );
-    const day = formatDateSGT(date, { weekday: "short", day: "numeric", month: "short" });
+    const day = formatDateSGT(date, {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+    });
     return {
       label: `${day} ${timeStr} (${best.availableCount}/${participants.length})`,
-      onSelect: () => setSelectedRange({ start: best.slotIndex, end: best.slotIndex }),
+      onSelect: () =>
+        setSelectedRange({ start: best.slotIndex, end: best.slotIndex }),
     };
   }, [heatmap, totalSlots, poll, participants.length]);
 
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast.success("Meeting link copied");
-    } catch {
-      toast.error("Failed to copy link");
-    }
+  const handleCopyLink = () => {
+    void copyToClipboard(window.location.href, {
+      successMessage: "Meeting link copied",
+      errorMessage: "Failed to copy link",
+    });
   };
 
   const handleAutofillTimetable = () => {
@@ -230,16 +240,20 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
     (overlay) => visibleSources[overlay.source],
   );
 
-  const rangeSummary = !isEditing && selectedRange && {
-    ...slotRangeToInstants(selectedRange, pollWindow),
-    ...summarizeRangeAvailability(participants, selectedRange),
-  };
+  const rangeSummary = !isEditing &&
+    selectedRange && {
+      ...slotRangeToInstants(selectedRange, pollWindow),
+      ...summarizeRangeAvailability(participants, selectedRange),
+    };
 
   return (
     <div className="flex flex-col gap-2">
       {/* Google Identity Services, used by the Google Calendar sync. */}
       {isSignedIn && (
-        <Script src="https://accounts.google.com/gsi/client" strategy="lazyOnload" />
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          strategy="lazyOnload"
+        />
       )}
       <MeetingRoomHeader
         title={poll.title}
@@ -305,7 +319,10 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
               onBrushModeChange={setBrushMode}
               visibleSources={visibleSources}
               onVisibleSourceChange={(source, visible) =>
-                setVisibleSources((current) => ({ ...current, [source]: visible }))
+                setVisibleSources((current) => ({
+                  ...current,
+                  [source]: visible,
+                }))
               }
               hasTimetable={timetable.hasTimetable}
               isTimetableLoading={timetable.isLoading}

@@ -98,8 +98,7 @@ export function dateKey(date: unknown): string {
   return String(date);
 }
 
-export type FeasibilityIssueType =
-  "PREREQ_MISSING" | "EXAM_CLASH" | "TERM_DUPLICATE";
+type FeasibilityIssueType = "PREREQ_MISSING" | "EXAM_CLASH" | "TERM_DUPLICATE";
 
 export type FeasibilityIssue = {
   type: FeasibilityIssueType;

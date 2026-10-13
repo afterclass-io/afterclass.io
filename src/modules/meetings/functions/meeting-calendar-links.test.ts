@@ -20,7 +20,9 @@ describe("meeting-calendar-links", () => {
 
   describe("formatIcsDate", () => {
     it("formats dates to RFC 5545 UTC timestamp format", () => {
-      const formatted = formatIcsDate(new Date(Date.UTC(2026, 9, 12, 6, 15, 0)));
+      const formatted = formatIcsDate(
+        new Date(Date.UTC(2026, 9, 12, 6, 15, 0)),
+      );
       expect(formatted).toBe("20261012T061500Z");
     });
   });
@@ -29,7 +31,9 @@ describe("meeting-calendar-links", () => {
     it("escapes backslashes, semicolons, commas, and newlines", () => {
       const raw = "Note: A, B; C \\ D\nNext line\r\nAnother line";
       const escaped = escapeIcsText(raw);
-      expect(escaped).toBe("Note: A\\, B\\; C \\\\ D\\nNext line\\nAnother line");
+      expect(escaped).toBe(
+        "Note: A\\, B\\; C \\\\ D\\nNext line\\nAnother line",
+      );
     });
   });
 
@@ -46,7 +50,9 @@ describe("meeting-calendar-links", () => {
         "20261012T060000Z/20261012T073000Z",
       );
 
-      expect(parsed.searchParams.get("details")).toBe(sampleMeeting.description);
+      expect(parsed.searchParams.get("details")).toBe(
+        sampleMeeting.description,
+      );
     });
 
     it("handles minimal parameters without crashing", () => {
@@ -91,9 +97,7 @@ describe("meeting-calendar-links", () => {
       expect(ics).toContain("UID:test-uid-123@afterclass.io");
       expect(ics).toContain("DTSTART");
       expect(ics).toContain("DTEND");
-      expect(ics).toContain(
-        "SUMMARY:IS216 Project Meeting: Milestone 1",
-      );
+      expect(ics).toContain("SUMMARY:IS216 Project Meeting: Milestone 1");
       expect(ics).toContain(
         "DESCRIPTION:Review prototype architecture and plan user tests.",
       );
@@ -103,7 +107,9 @@ describe("meeting-calendar-links", () => {
 
     it("generates a downloadable data URL for ics file", () => {
       const dataUrl = generateIcsMeetingDataUrl(sampleMeeting);
-      expect(dataUrl.startsWith("data:text/calendar;charset=utf-8,")).toBe(true);
+      expect(dataUrl.startsWith("data:text/calendar;charset=utf-8,")).toBe(
+        true,
+      );
 
       const decoded = decodeURIComponent(
         dataUrl.replace("data:text/calendar;charset=utf-8,", ""),

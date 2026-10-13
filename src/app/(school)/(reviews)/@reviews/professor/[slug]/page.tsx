@@ -2,6 +2,7 @@ import { type Metadata } from "next";
 
 import { JsonLd } from "@/common/components/json-ld";
 import { buildBreadcrumbJsonLd, buildPersonJsonLd } from "@/common/tools/seo";
+import { HydrateClient } from "@/common/tools/trpc/server";
 import { env } from "@/env";
 import {
   ReviewSection,
@@ -14,6 +15,8 @@ import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader"
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
 import { getProfessorPageData } from "@/modules/reviews/functions/getProfessorPageData";
 import { professorDescription } from "@/modules/reviews/functions/pageDescriptions";
+import { prefetchReviewFeed } from "@/modules/reviews/functions/prefetchReviewFeed";
+import { auth } from "@/server/auth";
 
 // `@reviews` is the single metadata owner for `/professor/[slug]`. Parallel
 // slots merge in traversal order and the last writer wins, so do NOT export
@@ -62,6 +65,8 @@ export default async function Professor(props: {
   params: Promise<{ slug: string }>;
   searchParams?: Promise<{
     course?: string | string[];
+    filter?: string | string[];
+    sort?: string | string[];
   }>;
 }) {
   const searchParams = await props.searchParams;
@@ -75,15 +80,30 @@ export default async function Professor(props: {
 
   // The same request-scoped, `cache`d query `generateMetadata` runs; the two
   // calls dedupe by function identity and arguments, so this is one query.
-  const data = await getProfessorPageData(params.slug);
+  // The session is read here, not in the browser, so the feed is fetched once
+  // under the procedure the signed-in or signed-out viewer will keep using.
+  const isAuthenticated = Boolean(await auth());
+  const professorCourseCodes = courseCodes.length > 0 ? courseCodes : undefined;
+  const [data] = await Promise.all([
+    getProfessorPageData(params.slug),
+    prefetchReviewFeed(
+      {
+        variant: "professor",
+        slug: params.slug,
+        courseCodes: professorCourseCodes,
+      },
+      searchParams ?? {},
+      isAuthenticated,
+    ),
+  ]);
 
   return (
-    <>
+    <HydrateClient>
       {data ? (
         <>
           <JsonLd
             data={buildPersonJsonLd({
-              siteUrl: env.NEXTAUTH_URL,
+              siteUrl: env.NEXT_PUBLIC_SITE_URL,
               name: data.professor.name,
               slug: params.slug,
               averageRating: data.averageRating,
@@ -92,7 +112,7 @@ export default async function Professor(props: {
           />
           <JsonLd
             data={buildBreadcrumbJsonLd({
-              siteUrl: env.NEXTAUTH_URL,
+              siteUrl: env.NEXT_PUBLIC_SITE_URL,
               name: data.professor.name,
               path: `/professor/${params.slug}`,
             })}
@@ -108,11 +128,12 @@ export default async function Professor(props: {
           <ReviewItemLoader
             variant="professor"
             slug={params.slug}
-            courseCodes={courseCodes.length > 0 ? courseCodes : undefined}
+            courseCodes={professorCourseCodes}
+            isAuthenticated={isAuthenticated}
           />
         </ReviewSectionList>
       </ReviewSection>
       <ReviewModalFocused variant="professor" />
-    </>
+    </HydrateClient>
   );
 }

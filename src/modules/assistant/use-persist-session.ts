@@ -2,7 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import type { UIMessage } from "ai";
-import { useChatStore } from "./chat-store";
+import { useSetAtom, useStore } from "jotai";
+import {
+  activeSessionIdAtom,
+  createSessionAtom,
+  saveSessionAtom,
+} from "./chat-store";
 
 /**
  * Saves the full thread snapshot to the shared local store whenever a run
@@ -29,6 +34,9 @@ export function usePersistSession({
   messages: UIMessage[];
   keepOwnSession?: boolean;
 }) {
+  const store = useStore();
+  const createSession = useSetAtom(createSessionAtom);
+  const saveSession = useSetAtom(saveSessionAtom);
   const prevStatus = useRef(status);
   const ownSessionId = useRef<string | null>(null);
 
@@ -49,17 +57,16 @@ export function usePersistSession({
     // IndexedDB must never surface an unhandled rejection — warn and retry
     // on the next run-end instead.
     void (async () => {
-      const store = useChatStore.getState();
       let id: string;
       if (keepOwnSession) {
-        ownSessionId.current ??= await store.createSession();
+        ownSessionId.current ??= await createSession();
         id = ownSessionId.current;
       } else {
-        id = store.activeSessionId ?? (await store.createSession());
+        id = store.get(activeSessionIdAtom) ?? (await createSession());
       }
-      await store.saveSession(id, snapshot);
+      await saveSession(id, snapshot);
     })().catch(() =>
       console.warn("[assistant] persist failed, will retry next run-end"),
     );
-  }, [status, messages, keepOwnSession]);
+  }, [status, messages, keepOwnSession, store, createSession, saveSession]);
 }

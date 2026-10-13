@@ -22,12 +22,12 @@ import { getToolOutputBudget } from "@/server/config/chat-config";
  */
 export const DEFAULT_MAX_OUTPUT_CHARS: number = getToolOutputBudget().maxChars;
 
-export const DEFAULT_TRUNCATION_NOTE: string = getToolOutputBudget().note;
+const DEFAULT_TRUNCATION_NOTE: string = getToolOutputBudget().note;
 
 /** Pagination defaults matching the `my-bids` schema (limit default 20, max 50). */
-export const DEFAULT_PAGE_LIMIT = 20;
-export const MAX_PAGE_LIMIT = 50;
-export const DEFAULT_PAGE_OFFSET = 0;
+const DEFAULT_PAGE_LIMIT = 20;
+const MAX_PAGE_LIMIT = 50;
+const DEFAULT_PAGE_OFFSET = 0;
 
 /** Case-sensitive exact keys stripped from model-visible output. */
 const SECRET_KEYS: ReadonlySet<string> = new Set([
@@ -276,8 +276,8 @@ export function truncate(
   return text.slice(0, maxChars) + note;
 }
 
-export const TOOL_OUTPUT_OPEN = "<tool_output>";
-export const TOOL_OUTPUT_CLOSE = "</tool_output>";
+const TOOL_OUTPUT_OPEN = "<tool_output>";
+const TOOL_OUTPUT_CLOSE = "</tool_output>";
 
 /**
  * Wrap model-visible tool OUTPUT text in `<tool_output>` delimiters.

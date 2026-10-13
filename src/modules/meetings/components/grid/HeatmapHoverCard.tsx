@@ -48,7 +48,7 @@ function NameList({
           {names.join(", ")}
         </p>
       ) : (
-        <p className="text-muted-foreground/60 mt-0.5 pl-3.5 italic">None</p>
+        <p className="text-muted-foreground mt-0.5 pl-3.5 italic">None</p>
       )}
     </div>
   );
@@ -130,7 +130,7 @@ export function HeatmapHoverCard({
           })}{" "}
           • {timeStr}
         </p>
-        <p className="text-muted-foreground text-[11px]">
+        <p className="text-muted-foreground text-xs">
           {available.length} of {participants.length} available
           {ifNeeded.length > 0 && ` (${ifNeeded.length} if needed)`}
         </p>
@@ -139,14 +139,14 @@ export function HeatmapHoverCard({
         label="Available"
         names={available}
         dotClass="bg-(--mt-available)"
-        labelClass="text-(--mt-available)"
+        labelClass="text-(--mt-available-text)"
       />
       {!hideIfNeeded && (
         <NameList
           label="If needed"
           names={ifNeeded}
           dotClass="border border-(--mt-if-needed-line) bg-(--mt-if-needed)"
-          labelClass="text-(--mt-if-needed-line)"
+          labelClass="text-(--mt-if-needed-text)"
         />
       )}
       <NameList

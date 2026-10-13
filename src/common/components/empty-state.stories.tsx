@@ -21,7 +21,7 @@ export const Default: Story = {
 
 export const WithIcon: Story = {
   args: {
-    icon: <Search className="h-8 w-8 text-muted-foreground" />,
+    icon: <Search className="text-muted-foreground h-8 w-8" />,
     title: "No classes added yet",
     description: "Add your first course to get started.",
     action: <Button size="sm">Add your first course</Button>,

@@ -22,7 +22,7 @@ interface BrushOption {
 }
 
 /** The legend doubles as the brush picker, so the colours explain themselves. */
-export const BRUSH_OPTIONS: BrushOption[] = [
+const BRUSH_OPTIONS: BrushOption[] = [
   {
     mode: "AVAILABLE",
     label: "Available",
@@ -87,7 +87,11 @@ export function MeetingAvailabilityBrush({
       <p className="text-muted-foreground text-xs font-medium">
         Choose a colour, then click or drag on the grid
       </p>
-      <div role="radiogroup" aria-label="Availability brush" className="space-y-1">
+      <div
+        role="radiogroup"
+        aria-label="Availability brush"
+        className="space-y-1"
+      >
         {BRUSH_OPTIONS.map((option, index) => {
           const isActive = activeMode === option.mode;
 
@@ -108,7 +112,10 @@ export function MeetingAvailabilityBrush({
               )}
             >
               <span
-                className={cn("size-4 shrink-0 rounded-sm border", option.swatchClass)}
+                className={cn(
+                  "size-4 shrink-0 rounded-sm border",
+                  option.swatchClass,
+                )}
               />
               <span className="min-w-0 flex-1">
                 <span className="block font-medium">{option.label}</span>
@@ -116,7 +123,7 @@ export function MeetingAvailabilityBrush({
                   {option.hint}
                 </span>
               </span>
-              <Kbd variant="outline" className="text-[10px] text-muted-foreground/70">
+              <Kbd variant="outline" className="text-muted-foreground text-xs">
                 {index + 1}
               </Kbd>
             </button>

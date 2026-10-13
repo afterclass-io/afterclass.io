@@ -25,7 +25,12 @@ function makeRoadmapRow(overrides: Record<string, unknown> = {}) {
         yearNumber: 1,
         term: "T1",
         sortOrder: 0,
-        course: { code: "CS101", name: "Intro", creditUnits: 1, description: "d" },
+        course: {
+          code: "CS101",
+          name: "Intro",
+          creditUnits: 1,
+          description: "d",
+        },
       },
     ],
     _count: { votes: 7 },
@@ -33,7 +38,10 @@ function makeRoadmapRow(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function makeDb(row: unknown, opts: { vote?: unknown; faculty?: unknown } = {}) {
+function makeDb(
+  row: unknown,
+  opts: { vote?: unknown; faculty?: unknown } = {},
+) {
   return {
     userRoadmap: { findUnique: vi.fn().mockResolvedValue(row) },
     roadmapVote: {
@@ -150,5 +158,31 @@ describe("roadmaps.getById", () => {
       id: "rm1",
     });
     expect(res.ownerFaculty).toBeNull();
+  });
+
+  it("masks profanity in the roadmap name, description and owner username", async () => {
+    const db = makeDb(
+      makeRoadmapRow({
+        name: "This plan is shit",
+        description: "A fuck of a plan",
+        user: { username: "bastard" },
+      }),
+    );
+    const res = await makeCaller(router.createCaller, db, anon).getById({
+      id: "rm1",
+    });
+    expect(res.roadmap.name).toBe("This plan is ****");
+    expect(res.roadmap.description).toBe("A **** of a plan");
+    expect(res.ownerUsername).toBe("*******");
+  });
+
+  it("never ships the raw owner username anywhere in the response", async () => {
+    const db = makeDb(makeRoadmapRow({ user: { username: "bastard" } }));
+    const res = await makeCaller(router.createCaller, db, anon).getById({
+      id: "rm1",
+    });
+    expect(JSON.stringify(res)).not.toContain("bastard");
+    expect(res.ownerUsername).toBe("*******");
+    expect(res.entries).toHaveLength(1);
   });
 });

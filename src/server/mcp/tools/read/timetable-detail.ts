@@ -9,7 +9,7 @@ import {
   pickActiveOrFirst,
   resolveTermId,
 } from "../../current";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { errText, guardedRun, jsonText, type McpTool } from "../../types";
 
 const getMyTimetableDetailSchema = z.object({
   timetableId: z
@@ -126,73 +126,69 @@ export const getMyTimetableDetailTool: McpTool<
     "Get the full weekly arrangement of your timetable including class times, venues, and professors - use when a student asks 'show me my timetable' or 'what classes do I have?'",
   inputSchema: getMyTimetableDetailSchema,
   readOnly: true,
-  run: async ({ caller, user }, { timetableId, acadTermId }) => {
-    try {
-      let id = timetableId;
-      // Populated only when a listMine lookup can tell us the truth about this
-      // timetable. When only timetableId is given (no enrichment), meta stays
-      // undefined and isActive/termId are omitted from the response rather
-      // than defaulted to false/absent-with-marker.
-      let meta: { isActive: boolean; termId?: string } | undefined;
-      let resolvedName: string | undefined;
+  run: guardedRun(async ({ caller, user }, { timetableId, acadTermId }) => {
+    let id = timetableId;
+    // Populated only when a listMine lookup can tell us the truth about this
+    // timetable. When only timetableId is given (no enrichment), meta stays
+    // undefined and isActive/termId are omitted from the response rather
+    // than defaulted to false/absent-with-marker.
+    let meta: { isActive: boolean; termId?: string } | undefined;
+    let resolvedName: string | undefined;
 
-      if (!id) {
-        // Omitted/empty acadTermId (with no timetableId) defaults to the
-        // current academic term. A provided timetableId already pins the term,
-        // so it never triggers a term default.
-        const term = await resolveTermId(caller, acadTermId);
-        if (!term.ok) return errText(term.errText);
-        const mine = await caller.timetable.listMine({
-          acadTermId: term.value,
-        });
-        const active = pickActiveOrFirst(mine);
-        if (!active) {
-          return errText(
-            `You don't have any timetables for academic term ${term.value}. Create one first, then ask again.`,
-          );
-        }
-        id = active.id;
-        resolvedName = active.name;
-        meta = { isActive: active.isActive, termId: active.acadTermId };
-      } else if (acadTermId?.trim()) {
-        // Enrich metadata (isActive/termId) from listMine when we can.
-        const mine = await caller.timetable.listMine({
-          acadTermId: normalizeAcadTermId(acadTermId),
-        });
-        const match = mine.find((t) => t.id === id);
-        if (match) {
-          resolvedName = match.name;
-          meta = { isActive: match.isActive, termId: match.acadTermId };
-        }
+    if (!id) {
+      // Omitted/empty acadTermId (with no timetableId) defaults to the
+      // current academic term. A provided timetableId already pins the term,
+      // so it never triggers a term default.
+      const term = await resolveTermId(caller, acadTermId);
+      if (!term.ok) return errText(term.errText);
+      const mine = await caller.timetable.listMine({
+        acadTermId: term.value,
+      });
+      const active = pickActiveOrFirst(mine);
+      if (!active) {
+        return errText(
+          `You don't have any timetables for academic term ${term.value}. Create one first, then ask again.`,
+        );
       }
-
-      const arrangement = (await caller.timetable.getArrangement({
-        timetableId: id,
-      })) as Arrangement;
-
-      // Main's getArrangement returns { slots, bids } (no timetable object).
-      // The tool contract requires the real timetable name, so resolve it when
-      // the arrangement doesn't include it and listMine didn't already provide it.
-      let name = resolvedName ?? arrangement.timetable?.name;
-      if (!name) {
-        // Ownership failure (missing or another user's row) surfaces as the
-        // same "not found" text as before; other errors propagate to the
-        // outer handler.
-        let row: { name: string };
-        try {
-          row = await requireOwnedTimetable(db, id, user.id, { name: true });
-        } catch (e) {
-          if (e instanceof TRPCError && e.code === "FORBIDDEN") {
-            return errText(`Timetable ${id} not found.`);
-          }
-          throw e;
-        }
-        name = row.name;
+      id = active.id;
+      resolvedName = active.name;
+      meta = { isActive: active.isActive, termId: active.acadTermId };
+    } else if (acadTermId?.trim()) {
+      // Enrich metadata (isActive/termId) from listMine when we can.
+      const mine = await caller.timetable.listMine({
+        acadTermId: normalizeAcadTermId(acadTermId),
+      });
+      const match = mine.find((t) => t.id === id);
+      if (match) {
+        resolvedName = match.name;
+        meta = { isActive: match.isActive, termId: match.acadTermId };
       }
-
-      return jsonText(toDetail(arrangement, id, name, meta));
-    } catch (e) {
-      return errText(errorMessage(e));
     }
-  },
+
+    const arrangement = (await caller.timetable.getArrangement({
+      timetableId: id,
+    })) as Arrangement;
+
+    // Main's getArrangement returns { slots, bids } (no timetable object).
+    // The tool contract requires the real timetable name, so resolve it when
+    // the arrangement doesn't include it and listMine didn't already provide it.
+    let name = resolvedName ?? arrangement.timetable?.name;
+    if (!name) {
+      // Ownership failure (missing or another user's row) surfaces as the
+      // same "not found" text as before; other errors propagate to the
+      // outer handler.
+      let row: { name: string };
+      try {
+        row = await requireOwnedTimetable(db, id, user.id, { name: true });
+      } catch (e) {
+        if (e instanceof TRPCError && e.code === "FORBIDDEN") {
+          return errText(`Timetable ${id} not found.`);
+        }
+        throw e;
+      }
+      name = row.name;
+    }
+
+    return jsonText(toDetail(arrangement, id, name, meta));
+  }),
 };

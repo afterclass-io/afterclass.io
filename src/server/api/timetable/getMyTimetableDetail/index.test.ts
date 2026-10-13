@@ -7,12 +7,22 @@ import { getMyTimetableDetail } from "./index";
 
 const router = createTRPCRouter({ getMyTimetableDetail });
 
-function makeMockSlot(classId: string, dayOfWeek = "Mon", startTime = "08:15", endTime = "11:30") {
+function makeMockSlot(
+  classId: string,
+  dayOfWeek = "Mon",
+  startTime = "08:15",
+  endTime = "11:30",
+) {
   return {
     class: {
       id: classId,
       section: "G1",
-      course: { id: "course-1", code: "IS216", name: "Cloud Computing", creditUnits: 1 },
+      course: {
+        id: "course-1",
+        code: "IS216",
+        name: "Cloud Computing",
+        creditUnits: 1,
+      },
       professor: { id: "prof-1", name: "Prof Tan" },
       classTimings: [
         {
@@ -130,7 +140,9 @@ describe("timetable.getMyTimetableDetail", () => {
     };
 
     const caller = makeCaller(router.createCaller, db, session);
-    const result = await caller.getMyTimetableDetail({ timetableId: "tt-specific" });
+    const result = await caller.getMyTimetableDetail({
+      timetableId: "tt-specific",
+    });
 
     expect(db.userTimetable.findUnique).toHaveBeenCalledWith(
       expect.objectContaining({

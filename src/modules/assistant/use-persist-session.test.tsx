@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createStore, Provider } from "jotai";
+import type { ReactNode } from "react";
 import type { UIMessage } from "ai";
 
 vi.mock("./idb", () => ({
@@ -9,7 +11,12 @@ vi.mock("./idb", () => ({
   idbDelete: vi.fn(async () => undefined),
 }));
 
-import { useChatStore } from "./chat-store";
+import {
+  activeSessionIdAtom,
+  hydratedAtom,
+  sessionsAtom,
+  type StoredSession,
+} from "./chat-store";
 import { usePersistSession } from "./use-persist-session";
 
 const msg = (
@@ -22,6 +29,18 @@ const msg = (
   parts: [{ type: "text", text }],
 });
 
+let store: ReturnType<typeof createStore>;
+
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <Provider store={store}>{children}</Provider>
+);
+
+function seedStore(sessions: StoredSession[], activeSessionId: string | null) {
+  store.set(hydratedAtom, true);
+  store.set(sessionsAtom, sessions);
+  store.set(activeSessionIdAtom, activeSessionId);
+}
+
 function renderPersist(keepOwnSession: boolean) {
   type Props = {
     status: "submitted" | "streaming" | "ready" | "error";
@@ -30,16 +49,12 @@ function renderPersist(keepOwnSession: boolean) {
   return renderHook<void, Props>(
     ({ status, messages }) =>
       usePersistSession({ status, messages, keepOwnSession }),
-    { initialProps: { status: "ready", messages: [] } },
+    { initialProps: { status: "ready", messages: [] }, wrapper },
   );
 }
 
 beforeEach(() => {
-  useChatStore.setState({
-    hydrated: false,
-    sessions: [],
-    activeSessionId: null,
-  });
+  store = createStore();
 });
 
 describe("usePersistSession - widget session reuse", () => {
@@ -56,10 +71,8 @@ describe("usePersistSession - widget session reuse", () => {
         messages: [msg("user", "q1", "u1"), msg("assistant", "a1", "a1")],
       }),
     );
-    await waitFor(() =>
-      expect(useChatStore.getState().sessions).toHaveLength(1),
-    );
-    const firstId = useChatStore.getState().sessions[0]!.id;
+    await waitFor(() => expect(store.get(sessionsAtom)).toHaveLength(1));
+    const firstId = store.get(sessionsAtom)[0]!.id;
 
     // Run 2: a second run-end on the SAME mount must NOT create a second session.
     act(() =>
@@ -85,18 +98,17 @@ describe("usePersistSession - widget session reuse", () => {
     );
 
     await waitFor(() => {
-      const s = useChatStore.getState();
-      expect(s.sessions).toHaveLength(1);
-      expect(s.sessions[0]!.id).toBe(firstId);
+      const sessions = store.get(sessionsAtom);
+      expect(sessions).toHaveLength(1);
+      expect(sessions[0]!.id).toBe(firstId);
     });
-    expect(useChatStore.getState().sessions[0]!.messages).toHaveLength(4);
+    expect(store.get(sessionsAtom)[0]!.messages).toHaveLength(4);
   });
 
   it("never writes to the shared active session (clobber fix preserved)", async () => {
     const sharedThread = msg("user", "saved /assistant thread message", "s1");
-    useChatStore.setState({
-      hydrated: true,
-      sessions: [
+    seedStore(
+      [
         {
           id: "shared-1",
           title: "Existing /assistant thread",
@@ -104,8 +116,8 @@ describe("usePersistSession - widget session reuse", () => {
           messages: [sharedThread],
         },
       ],
-      activeSessionId: "shared-1",
-    });
+      "shared-1",
+    );
 
     const { rerender } = renderPersist(true);
     act(() =>
@@ -125,26 +137,25 @@ describe("usePersistSession - widget session reuse", () => {
     );
 
     await waitFor(() => {
-      const s = useChatStore.getState();
+      const sessions = store.get(sessionsAtom);
       // The shared thread is untouched, plus exactly ONE new widget session.
-      const shared = s.sessions.find((x) => x.id === "shared-1");
+      const shared = sessions.find((x) => x.id === "shared-1");
       expect(shared).toBeDefined();
       expect(shared!.messages).toEqual([sharedThread]);
-      expect(s.sessions).toHaveLength(2);
+      expect(sessions).toHaveLength(2);
     });
 
-    const widgetSession = useChatStore
-      .getState()
-      .sessions.find((x) => x.id !== "shared-1");
+    const widgetSession = store
+      .get(sessionsAtom)
+      .find((x) => x.id !== "shared-1");
     expect(widgetSession).toBeDefined();
     expect(widgetSession!.messages).toHaveLength(2);
-    expect(useChatStore.getState().activeSessionId).toBe(widgetSession!.id);
+    expect(store.get(activeSessionIdAtom)).toBe(widgetSession!.id);
   });
 
   it("page keeps default reuse - saves into the shared active session without creating a new one", async () => {
-    useChatStore.setState({
-      hydrated: true,
-      sessions: [
+    seedStore(
+      [
         {
           id: "shared-1",
           title: "Thread",
@@ -152,8 +163,8 @@ describe("usePersistSession - widget session reuse", () => {
           messages: [msg("user", "first", "u0")],
         },
       ],
-      activeSessionId: "shared-1",
-    });
+      "shared-1",
+    );
 
     const { rerender } = renderPersist(false);
     act(() =>
@@ -173,12 +184,10 @@ describe("usePersistSession - widget session reuse", () => {
       }),
     );
 
-    await waitFor(() =>
-      expect(useChatStore.getState().sessions).toHaveLength(1),
-    );
-    const s = useChatStore.getState();
-    expect(s.sessions[0]!.id).toBe("shared-1");
-    expect(s.sessions[0]!.messages).toHaveLength(3);
+    await waitFor(() => expect(store.get(sessionsAtom)).toHaveLength(1));
+    const sessions = store.get(sessionsAtom);
+    expect(sessions[0]!.id).toBe("shared-1");
+    expect(sessions[0]!.messages).toHaveLength(3);
   });
 
   it("widget creates a session on first run-end even when the shared active session is null", async () => {
@@ -192,10 +201,8 @@ describe("usePersistSession - widget session reuse", () => {
         messages: [msg("user", "q", "u1"), msg("assistant", "a", "a1")],
       }),
     );
-    await waitFor(() =>
-      expect(useChatStore.getState().sessions).toHaveLength(1),
-    );
-    expect(useChatStore.getState().activeSessionId).not.toBeNull();
+    await waitFor(() => expect(store.get(sessionsAtom)).toHaveLength(1));
+    expect(store.get(activeSessionIdAtom)).not.toBeNull();
   });
 
   it("a persist failure warns (no unhandled rejection) and retries on the next run-end", async () => {
@@ -244,7 +251,7 @@ describe("usePersistSession - widget session reuse", () => {
         }),
       );
       await waitFor(() =>
-        expect(useChatStore.getState().sessions[0]?.messages).toHaveLength(4),
+        expect(store.get(sessionsAtom)[0]?.messages).toHaveLength(4),
       );
     } finally {
       warn.mockRestore();

@@ -13,8 +13,10 @@ import {
 } from "@/common/tools/zod/schemas";
 import { api } from "@/common/tools/trpc/react";
 import { Form } from "@/common/components/form";
-import { ReviewableEnum } from "@/modules/submit/types";
+import { ReviewableEnum } from "@/common/types/reviews";
 import { SubmitButtonGroup } from "../SubmitButtonGroup";
+import { buildReviewSubmitBreadcrumb } from "./review-breadcrumb";
+import { ReviewScopeProvider } from "./review-scope";
 import { useProgress } from "@/common/providers/ProgressProvider";
 
 export const ReviewForm = ({ children }: { children: ReactNode }) => {
@@ -40,7 +42,7 @@ export const ReviewForm = ({ children }: { children: ReactNode }) => {
     },
   });
 
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const progress = useProgress();
 
@@ -60,7 +62,7 @@ export const ReviewForm = ({ children }: { children: ReactNode }) => {
     }
     // router should not be a dependency here
     // https://stackoverflow.com/a/75008835
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- router must not be a dependency; see the comment above
   }, [reviewsMutation.isSuccess]);
 
   // uncomment this useEffect to see the form values in the console on change
@@ -72,14 +74,7 @@ export const ReviewForm = ({ children }: { children: ReactNode }) => {
   // }, [formMethods.watch]);
 
   const onSubmit: SubmitHandler<ReviewFormInputsSchema> = (data) => {
-    Sentry.addBreadcrumb({
-      category: "review.submit",
-      message:
-        "Review Submitted." +
-        `\n\tSession:\n${JSON.stringify(session)}\n` +
-        `\n\tData:\n${JSON.stringify(data)}`,
-      level: "info",
-    });
+    Sentry.addBreadcrumb(buildReviewSubmitBreadcrumb(data));
 
     reviewsMutation.mutate({
       ...data,
@@ -92,7 +87,7 @@ export const ReviewForm = ({ children }: { children: ReactNode }) => {
         className="flex flex-col items-start gap-5 md:gap-14"
         onSubmit={formMethods.handleSubmit(onSubmit)}
       >
-        {children}
+        <ReviewScopeProvider>{children}</ReviewScopeProvider>
         <SubmitButtonGroup isLoading={isLoading} />
       </form>
     </Form>

@@ -89,9 +89,7 @@ describe("POST /api/assistant/consent", () => {
 
   it("stamps consent and returns consented:true on {agree:true}", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1" } });
-    mockSetAiConsentNow.mockResolvedValue(
-      new Date("2026-09-09T00:00:00.000Z"),
-    );
+    mockSetAiConsentNow.mockResolvedValue(new Date("2026-09-09T00:00:00.000Z"));
     const res = await POST(postReq({ agree: true }));
     expect(res.status).toBe(200);
     expect(mockSetAiConsentNow).toHaveBeenCalledWith("u1");

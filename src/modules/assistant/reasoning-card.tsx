@@ -35,7 +35,7 @@ export function ReasoningCard({
         </>
       }
     >
-      <pre className="text-muted-foreground max-h-40 overflow-auto text-[11px] break-words whitespace-pre-wrap">
+      <pre className="text-muted-foreground max-h-40 overflow-auto text-xs break-words whitespace-pre-wrap">
         {text}
       </pre>
     </ExpandableCard>

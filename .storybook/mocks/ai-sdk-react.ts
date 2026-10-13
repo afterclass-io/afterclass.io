@@ -47,7 +47,7 @@ export type ChatStateParam = {
 // Chat state is handed to the mock by the `withAssistant` decorator via
 // module-scope communication instead of `useParameter`. WHY: `useParameter`
 // reads the preview hooks context, which Storybook only sets during the
-// SYNCHRONOUS story render pass. `ChatPage` subscribes to the zustand store's
+// SYNCHRONOUS story render pass. `ChatPage` subscribes to the chat store's
 // `hydrated` slice; the decorator's `useEffect` seeds the store (setting
 // `hydrated: true`), which re-renders `ChatPage` OUTSIDE that pass, where
 // `useParameter` throws. Module scope always holds the latest value: the

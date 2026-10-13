@@ -9,7 +9,7 @@ import {
 } from "../../current";
 import {
   errText,
-  errorMessage,
+  guardedRun,
   jsonText,
   type CourseRow,
   type McpTool,
@@ -55,16 +55,16 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
     "Estimate bid prices for a course's sections for the upcoming bidding window. Provide a course code (e.g. COR-IS1702); optionally filter to a single section (e.g. G1). Returns per-section median and minimum clearing prices from the latest bid predictions, a suggested bid amount (predicted + multiplier x uncertainty for 70% confidence when available, never below e$10), and the current vacancy for the resolved window. Window resolution: explicit bidWindow > open window > latest window (estimates then use prior-window results — immediate-next-window only). If the course or its sections are not found, explains what was tried. Self-contained: one call is the answer. For anything related to bid predictions, prefer explore-bid-options (interactive bid-explorer chart/table/slider; it accepts courseCode+section); use this tool for text answers or multi-section comparison, and always surface its bid-explorer link(s) so the user can open the interactive view.",
   inputSchema: bidEstimateSchema,
   readOnly: true,
-  run: async (
-    { caller },
-    {
-      courseCode,
-      section,
-      acadTermId: acadTermInput,
-      bidWindow: bidWindowInput,
-    },
-  ) => {
-    try {
+  run: guardedRun(
+    async (
+      { caller },
+      {
+        courseCode,
+        section,
+        acadTermId: acadTermInput,
+        bidWindow: bidWindowInput,
+      },
+    ) => {
       const trimmedCode = courseCode.trim();
       if (!trimmedCode) return errText("courseCode must not be empty");
 
@@ -162,16 +162,41 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
         // leave empty -> multiplier 1.0
       }
 
+      const classIds = classes.map((c) => c.id);
+
+      let predictionsMap = new Map<
+        string,
+        RouterOutputs["bidPredictions"]["getByClassIds"][number]
+      >();
+      try {
+        const batchPredictions = await caller.bidPredictions.getByClassIds({
+          classIds,
+        });
+        if (Array.isArray(batchPredictions)) {
+          predictionsMap = new Map(batchPredictions.map((p) => [p.classId, p]));
+        }
+      } catch {
+        // leave empty Map
+      }
+
+      let vacanciesMap = new Map<string, number>();
+      try {
+        const batchVacancies = await caller.bidResults.getVacanciesByClassIds({
+          classIds,
+          bidWindowId: openWindowId,
+        });
+        if (Array.isArray(batchVacancies)) {
+          vacanciesMap = new Map(
+            batchVacancies.map((v) => [v.classId, v.vacancy]),
+          );
+        }
+      } catch {
+        // leave empty Map
+      }
+
       const estimates: Array<Record<string, unknown>> = [];
       for (const cls of classes) {
-        let prediction: RouterOutputs["bidPredictions"]["getBy"] = null;
-        try {
-          prediction = await caller.bidPredictions.getBy({
-            classId: cls.id,
-          });
-        } catch {
-          prediction = null;
-        }
+        const prediction = predictionsMap.get(cls.id) ?? null;
 
         const median = prediction?.medianPredicted ?? null;
         const min = prediction?.minPredicted ?? null;
@@ -211,24 +236,7 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
           rationale = `Predicted median ${median}; no open window context for safety multiplier.`;
         }
 
-        // Vacancy for the OPEN window: look up BidResult for this class filtered to the open window.
-        let vacancy: number | null = null;
-        try {
-          const results: RouterOutputs["bidResults"]["getBy"] =
-            await caller.bidResults.getBy({
-              classId: cls.id,
-            });
-          if (Array.isArray(results)) {
-            const row = results.find(
-              (r) =>
-                r.bidWindowId === openWindowId ||
-                r.bidWindow?.id === openWindowId,
-            );
-            if (row) vacancy = row.vacancy ?? null;
-          }
-        } catch {
-          // leave vacancy null
-        }
+        const vacancy: number | null = vacanciesMap.get(cls.id) ?? null;
 
         estimates.push({
           section: cls.section,
@@ -307,10 +315,8 @@ export const bidEstimateTool: McpTool<typeof bidEstimateSchema> = {
         estimates,
         summary: `${summary}${exploreBlock}`,
       });
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+    },
+  ),
 };
 
 type WindowDetails = {

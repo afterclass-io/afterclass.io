@@ -15,7 +15,7 @@ import {
 import { ChevronDownIcon } from "@/common/components/icons";
 import { type ReviewFormInputsSchema } from "@/common/tools/zod/schemas";
 
-import { ReviewerEnum } from "@/modules/submit/types";
+import { ReviewerEnum } from "@/common/types/reviews";
 import { Loader2 } from "lucide-react";
 
 export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
@@ -63,6 +63,7 @@ export const SubmitButtonGroup = ({ isLoading }: { isLoading: boolean }) => {
             data-test="review-submit-select-trigger"
             className="h-full"
             size="icon"
+            aria-label="Select submission identity"
           >
             <ChevronDownIcon className="size-5" />
           </Button>

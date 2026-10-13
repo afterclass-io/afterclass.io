@@ -35,7 +35,9 @@ describe("roadmaps.syncProgress", () => {
   it("rejects syncing a non-active roadmap", async () => {
     const dbMock = {
       userRoadmap: {
-        findUnique: vi.fn().mockResolvedValue(ownedRoadmap({ isActive: false })),
+        findUnique: vi
+          .fn()
+          .mockResolvedValue(ownedRoadmap({ isActive: false })),
       },
     };
     const caller = makeCaller(router.createCaller, dbMock);
@@ -47,7 +49,9 @@ describe("roadmaps.syncProgress", () => {
   it("rejects syncing before a matriculation term is declared", async () => {
     const dbMock = {
       userRoadmap: {
-        findUnique: vi.fn().mockResolvedValue(ownedRoadmap({ matricTermId: null })),
+        findUnique: vi
+          .fn()
+          .mockResolvedValue(ownedRoadmap({ matricTermId: null })),
       },
     };
     const caller = makeCaller(router.createCaller, dbMock);
@@ -67,7 +71,9 @@ describe("roadmaps.syncProgress", () => {
   });
 
   it("no-ops when the sync plan is empty (no terms between matriculation and now)", async () => {
-    vi.mocked(getCurrentWindowLogic).mockResolvedValue({ acadTermId: "t1" } as never);
+    vi.mocked(getCurrentWindowLogic).mockResolvedValue({
+      acadTermId: "t1",
+    } as never);
     const dbMock = {
       userRoadmap: { findUnique: vi.fn().mockResolvedValue(ownedRoadmap()) },
       userRoadmapEntry: { findMany: vi.fn().mockResolvedValue([]) },
@@ -125,12 +131,24 @@ describe("roadmaps.syncProgress", () => {
         }),
       },
       userRoadmapEntry: {
-        findMany: vi.fn().mockResolvedValue([{ courseId: "c-old", sortOrder: 0 }]),
+        findMany: vi
+          .fn()
+          .mockResolvedValue([{ courseId: "c-old", sortOrder: 0 }]),
       },
       acadTerm: {
         findMany: vi.fn().mockResolvedValue([
-          { id: "t0", acadYearStart: 2026, term: "1", startDt: new Date("2026-08-01T00:00:00Z") },
-          { id: "t1", acadYearStart: 2026, term: "2", startDt: new Date("2026-11-01T00:00:00Z") },
+          {
+            id: "t0",
+            acadYearStart: 2026,
+            term: "1",
+            startDt: new Date("2026-08-01T00:00:00Z"),
+          },
+          {
+            id: "t1",
+            acadYearStart: 2026,
+            term: "2",
+            startDt: new Date("2026-11-01T00:00:00Z"),
+          },
         ]),
       },
       userTimetable: {
@@ -140,7 +158,9 @@ describe("roadmaps.syncProgress", () => {
         ]),
       },
       bidWindow: { findMany: vi.fn().mockResolvedValue([]) },
-      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
+      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn(tx),
+      ),
     };
     const caller = makeCaller(router.createCaller, dbMock);
     const result = await caller.syncProgress({ roadmapId: "r1" });
@@ -158,7 +178,9 @@ describe("roadmaps.syncProgress", () => {
   });
 
   it("swallows P2002 from concurrent syncs — transaction boundary catch", async () => {
-    vi.mocked(getCurrentWindowLogic).mockResolvedValue({ acadTermId: "t1" } as never);
+    vi.mocked(getCurrentWindowLogic).mockResolvedValue({
+      acadTermId: "t1",
+    } as never);
     const dbMock = {
       userRoadmap: {
         findUnique: vi.fn().mockResolvedValue({
@@ -170,18 +192,32 @@ describe("roadmaps.syncProgress", () => {
         }),
       },
       userRoadmapEntry: {
-        findMany: vi.fn().mockResolvedValue([{ courseId: "c-old", sortOrder: 0 }]),
+        findMany: vi
+          .fn()
+          .mockResolvedValue([{ courseId: "c-old", sortOrder: 0 }]),
       },
       acadTerm: {
         findMany: vi.fn().mockResolvedValue([
-          { id: "t0", acadYearStart: 2026, term: "1", startDt: new Date("2026-08-01T00:00:00Z") },
-          { id: "t1", acadYearStart: 2026, term: "2", startDt: new Date("2026-11-01T00:00:00Z") },
+          {
+            id: "t0",
+            acadYearStart: 2026,
+            term: "1",
+            startDt: new Date("2026-08-01T00:00:00Z"),
+          },
+          {
+            id: "t1",
+            acadYearStart: 2026,
+            term: "2",
+            startDt: new Date("2026-11-01T00:00:00Z"),
+          },
         ]),
       },
       userTimetable: {
-        findMany: vi.fn().mockResolvedValue([
-          { acadTermId: "t0", slots: [{ class: { courseId: "c-new" } }] },
-        ]),
+        findMany: vi
+          .fn()
+          .mockResolvedValue([
+            { acadTermId: "t0", slots: [{ class: { courseId: "c-new" } }] },
+          ]),
       },
       bidWindow: { findMany: vi.fn().mockResolvedValue([]) },
       $transaction: vi.fn(async () => {
@@ -194,7 +230,9 @@ describe("roadmaps.syncProgress", () => {
   });
 
   it("propagates non-P2002 failure — updatedAt bump/slot copy failure rejects (no half-commit)", async () => {
-    vi.mocked(getCurrentWindowLogic).mockResolvedValue({ acadTermId: "t1" } as never);
+    vi.mocked(getCurrentWindowLogic).mockResolvedValue({
+      acadTermId: "t1",
+    } as never);
     const createMany = vi.fn().mockRejectedValue(new Error("createMany boom"));
     const update = vi.fn();
     const tx = {
@@ -212,24 +250,42 @@ describe("roadmaps.syncProgress", () => {
         }),
       },
       userRoadmapEntry: {
-        findMany: vi.fn().mockResolvedValue([{ courseId: "c-old", sortOrder: 0 }]),
+        findMany: vi
+          .fn()
+          .mockResolvedValue([{ courseId: "c-old", sortOrder: 0 }]),
       },
       acadTerm: {
         findMany: vi.fn().mockResolvedValue([
-          { id: "t0", acadYearStart: 2026, term: "1", startDt: new Date("2026-08-01T00:00:00Z") },
-          { id: "t1", acadYearStart: 2026, term: "2", startDt: new Date("2026-11-01T00:00:00Z") },
+          {
+            id: "t0",
+            acadYearStart: 2026,
+            term: "1",
+            startDt: new Date("2026-08-01T00:00:00Z"),
+          },
+          {
+            id: "t1",
+            acadYearStart: 2026,
+            term: "2",
+            startDt: new Date("2026-11-01T00:00:00Z"),
+          },
         ]),
       },
       userTimetable: {
-        findMany: vi.fn().mockResolvedValue([
-          { acadTermId: "t0", slots: [{ class: { courseId: "c-new" } }] },
-        ]),
+        findMany: vi
+          .fn()
+          .mockResolvedValue([
+            { acadTermId: "t0", slots: [{ class: { courseId: "c-new" } }] },
+          ]),
       },
       bidWindow: { findMany: vi.fn().mockResolvedValue([]) },
-      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
+      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn(tx),
+      ),
     };
     const caller = makeCaller(router.createCaller, dbMock);
-    await expect(caller.syncProgress({ roadmapId: "r1" })).rejects.toThrow("createMany boom");
+    await expect(caller.syncProgress({ roadmapId: "r1" })).rejects.toThrow(
+      "createMany boom",
+    );
     expect(createMany).toHaveBeenCalled();
     expect(dbMock.$transaction).toHaveBeenCalledTimes(1);
     expect(update).not.toHaveBeenCalled();

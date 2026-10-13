@@ -21,7 +21,7 @@ describe("bidResults.getBy", () => {
 
     await caller.getBy({ courseCode: "CS101", section: "G1" });
 
-    /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+    /* eslint-disable @typescript-eslint/no-unsafe-assignment -- expect.objectContaining returns any */
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({

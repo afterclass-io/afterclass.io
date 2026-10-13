@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { formatBidCurrency, formatBidCurrencyCompact } from "./format-bid-currency";
+import {
+  formatBidCurrency,
+  formatBidCurrencyCompact,
+} from "./format-bid-currency";
 
 describe("formatBidCurrency", () => {
   it("formats e$ with 2dp and thousands separators", () => {

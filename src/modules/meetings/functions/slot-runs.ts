@@ -28,9 +28,7 @@ export function groupSlotsIntoRuns(
     const dayIndex = Math.floor(slot / slotsPerDay);
     const last = runs.at(-1);
     const continuesRun =
-      last !== undefined &&
-      previous === slot - 1 &&
-      dayIndex === last.dayIndex;
+      last !== undefined && previous === slot - 1 && dayIndex === last.dayIndex;
 
     if (continuesRun) {
       last.length += 1;

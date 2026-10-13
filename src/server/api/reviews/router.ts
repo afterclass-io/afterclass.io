@@ -9,6 +9,7 @@ import { getByCourseCodeProtected } from "./getByCourseCodeProtected";
 import { getById } from "./getById";
 import { getByProfSlug } from "./getByProfSlug";
 import { getByProfSlugProtected } from "./getByProfSlugProtected";
+import { getEngagement } from "./getEngagement";
 import { getMetadataForCourse } from "./getMetadataForCourse";
 import { getMetadataForProf } from "./getMetadataForProf";
 
@@ -22,6 +23,7 @@ export const reviewsRouter = createTRPCRouter({
   getById,
   getByProfSlug,
   getByProfSlugProtected,
+  getEngagement,
   getMetadataForCourse,
   getMetadataForProf,
 });

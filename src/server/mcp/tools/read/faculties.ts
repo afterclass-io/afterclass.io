@@ -2,8 +2,7 @@ import { z } from "zod";
 
 import type { ResolveResult } from "../../current";
 import {
-  errText,
-  errorMessage,
+  guardedRun,
   jsonText,
   type McpTool,
   type RouterCaller,
@@ -18,13 +17,9 @@ export const listFacultiesTool: McpTool<typeof listFacultiesSchema> = {
     "List all faculties (schools) with id, name, and acronym (e.g. SCIS for the School of Computing and Information Systems). Use this to resolve a faculty name or acronym to its numeric id before calling tools that accept facultyId.",
   inputSchema: listFacultiesSchema,
   readOnly: true,
-  run: async ({ caller }) => {
-    try {
-      return jsonText(await caller.faculties.list());
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }) => {
+    return jsonText(await caller.faculties.list());
+  }),
 };
 
 type FacultyRows = RouterOutputs["faculties"]["list"];

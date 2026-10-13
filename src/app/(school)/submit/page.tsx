@@ -20,20 +20,20 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// No `loading.tsx` on this route, on purpose (#523). The only waits are the
+// session read and one labels query, and both finish in a few milliseconds.
+// A boundary above the sign-in gate would start the response first, so the
+// anonymous redirect would turn from an HTTP redirect into a client redirect.
 export default async function SubmitReviewPage() {
   const session = await auth();
   if (!session) {
-    return signIn();
+    return signIn(undefined, { redirectTo: "/submit" });
   }
 
   // TODO: get school from user field, to be populated automatically on successful signup based on user's email domain
   const school = "SMU" satisfies UniversityAbbreviation;
 
-  const [courses, professors, labels] = await Promise.all([
-    api.courses.getAllByUniAbbrv({ universityAbbrv: school }),
-    api.professors.getAllByUniAbbrv({ universityAbbrv: school }),
-    api.labels.getAll(),
-  ]);
+  const labels = await api.labels.getAll();
 
   return (
     <ConstrainedContainer className="flex flex-col space-y-5 md:space-y-8">
@@ -42,10 +42,6 @@ export default async function SubmitReviewPage() {
       </PageTitle>
       <ReviewForm>
         <ReviewFormSection
-          comboboxItems={courses.map((course) => ({
-            value: course.id,
-            label: `${course.code} ${course.name}`,
-          }))}
           reviewLabels={labels
             .filter((label) => label.typeOf === ReviewType.COURSE)
             .map((label) => ({
@@ -56,10 +52,6 @@ export default async function SubmitReviewPage() {
           type="course"
         />
         <ReviewFormSection
-          comboboxItems={professors.map((prof) => ({
-            value: prof.id,
-            label: prof.name,
-          }))}
           reviewLabels={labels
             .filter((label) => label.typeOf === ReviewType.PROFESSOR)
             .map((label) => ({

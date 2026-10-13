@@ -1,7 +1,7 @@
 import { type Metadata } from "next";
 import { redirect } from "next/navigation";
 import { emailValidationSchema } from "@/common/tools/zod/schemas";
-import { getEdgeConfig } from "@/common/providers/EdgeConfig/EdgeConfigProvider";
+import { isPasswordLoginEnabled } from "@/server/auth/password-login";
 import {
   AuthCard,
   SignupForm,
@@ -16,11 +16,7 @@ export const metadata: Metadata = {
 export default async function SignUp(props: {
   searchParams: Promise<{ email: string | string[] | undefined }>;
 }) {
-  const ecfg = await getEdgeConfig().catch(() => null);
-  const isDev = process.env.NODE_ENV === "development";
-  const enablePasswordLogin = isDev
-    ? process.env.ENABLE_PASSWORD_LOGIN !== "false"
-    : (ecfg?.enablePasswordLogin ?? false);
+  const enablePasswordLogin = await isPasswordLoginEnabled();
   if (!enablePasswordLogin) {
     redirect("/account/auth/login");
   }

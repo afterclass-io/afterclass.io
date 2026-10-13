@@ -1,26 +1,23 @@
-import { api } from "@/common/tools/trpc/server";
 import { GraduationCapIcon } from "@/common/components/icons";
-import { PageTitle } from "@/common/components/page-title";
 import { notFound } from "next/navigation";
-import { SchoolTag } from "@/common/components/tag-school";
+import { ReviewHeaderTitle } from "@/modules/reviews/components/ReviewHeaderTitle";
+import { getProfessorBySlug } from "@/modules/reviews/functions/getProfessorBySlug";
 
 export default async function ProfessorHeader(props: {
   params: Promise<{ slug: string }>;
 }) {
   const params = await props.params;
-  const professor = await api.professors.getBySlug({ slug: params.slug });
+  const professor = await getProfessorBySlug(params.slug);
   if (!professor) {
     return notFound();
   }
 
   return (
-    <div className="w-full">
-      <PageTitle
-        contentLeft={<GraduationCapIcon className="h-9 w-9" />}
-        contentRight={<SchoolTag school={professor.belongToUniversity.abbrv} />}
-      >
-        {professor.name}
-      </PageTitle>
-    </div>
+    <ReviewHeaderTitle
+      icon={<GraduationCapIcon className="h-9 w-9" />}
+      school={professor.belongToUniversity.abbrv}
+    >
+      {professor.name}
+    </ReviewHeaderTitle>
   );
 }

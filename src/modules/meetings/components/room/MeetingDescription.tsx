@@ -84,7 +84,7 @@ export function MeetingDescription({
           variant="link"
           size="sm"
           onClick={startEditing}
-          className="h-auto p-0 text-muted-foreground hover:text-foreground text-sm"
+          className="text-muted-foreground hover:text-foreground h-auto p-0 text-sm"
           data-test="meeting-description-add"
         >
           Add a description

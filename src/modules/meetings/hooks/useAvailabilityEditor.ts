@@ -46,7 +46,9 @@ export function useAvailabilityEditor({
     },
   });
 
-  const availableSlots = edited ? edited.available : (savedAvailable ?? NO_SLOTS);
+  const availableSlots = edited
+    ? edited.available
+    : (savedAvailable ?? NO_SLOTS);
   const ifNeededSlots = edited ? edited.ifNeeded : (savedIfNeeded ?? NO_SLOTS);
 
   const setPainted = useCallback(

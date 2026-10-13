@@ -1,8 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { ReviewItem } from "./ReviewItem";
-import { ReviewType, UniversityAbbreviation } from "@/generated/prisma/enums";
-import { type Review } from "@/modules/reviews/types";
+import {
+  ReviewReactionType,
+  ReviewType,
+  UniversityAbbreviation,
+} from "@/generated/prisma/enums";
+import { type Review } from "@/common/types/reviews";
 
 const review = {
   id: "1",
@@ -58,6 +62,24 @@ export const DefaultHomePage: Story = {
     variant: "home",
   },
 };
+export const WithEngagement: Story = {
+  ...DefaultHomePage,
+  args: {
+    ...DefaultHomePage.args,
+    review: {
+      ...review,
+      engagement: {
+        viewerVote: 1,
+        viewerReaction: ReviewReactionType.LIKE,
+        reactionCounts: [
+          { reaction: ReviewReactionType.LIKE, count: 5 },
+          { reaction: ReviewReactionType.SLAY, count: 2 },
+        ],
+        shareCount: 3,
+      },
+    },
+  },
+};
 export const LockedHomePage: Story = {
   ...DefaultHomePage,
   args: {
@@ -108,4 +130,36 @@ export const CoursePageLongProfessorName: Story = {
     ...DefaultCoursePage.args,
     review: { ...review, professorName: "Chiraphol New Chiyachantana" },
   },
+};
+
+// A typical phone screen (390 px wide, e.g. iPhone 14).
+const phoneWidth: Story["decorators"] = [
+  (Story) => (
+    <div style={{ width: 390 }}>
+      <Story />
+    </div>
+  ),
+];
+
+const longNameAndCodeReview: Review = {
+  ...review,
+  professorName: "Chiraphol New Chiyachantana",
+  professorSlug: "chiraphol-new-chiyachantana",
+  courseCode: "IS415-GEOSPATIAL-ANALYTICS-AND-APPLICATIONS",
+  courseName: "Geospatial Analytics and Applications",
+};
+
+export const HomeLongNameAndCode: Story = {
+  args: { ...DefaultHomePage.args, review: longNameAndCodeReview },
+  decorators: phoneWidth,
+};
+
+export const ProfessorLongNameAndCode: Story = {
+  args: { ...DefaultProfessorPage.args, review: longNameAndCodeReview },
+  decorators: phoneWidth,
+};
+
+export const CourseLongNameAndCode: Story = {
+  args: { ...DefaultCoursePage.args, review: longNameAndCodeReview },
+  decorators: phoneWidth,
 };

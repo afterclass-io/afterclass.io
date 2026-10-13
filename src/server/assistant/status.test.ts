@@ -3,9 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/server/assistant/quota", () => ({
   getQuotaState: vi.fn(),
 }));
-vi.mock("@/server/ecfg/chat", () => ({
-  getChatConfig: async () => ({ quotaPerMonth: 50, nudgeAt: 40 }),
-}));
 // status.ts reads the canonical chat-config directly.
 vi.mock("@/server/config/chat-config", () => ({
   getChatConfigAsync: async () => ({

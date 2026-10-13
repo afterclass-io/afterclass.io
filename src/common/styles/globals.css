@@ -4,3 +4,13 @@
 @import "./radix-dialog.css";
 @import "./shadcn.css";
 @import "./meetings-theme.css";
+
+@theme {
+  /*
+   * The sidebar is a fixed shell from this width up and an overlay sheet below
+   * it. Keep it equal to MOBILE_BREAKPOINT in src/common/hooks/use-mobile.ts.
+   * The server cannot know the viewport width, so the shell is shown or hidden
+   * with this media query and the first paint is correct at every width.
+   */
+  --breakpoint-sidebar: 1250px;
+}

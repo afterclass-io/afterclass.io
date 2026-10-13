@@ -84,6 +84,28 @@ function mkCaller(opts: {
               },
             },
       ),
+      getByClassIds: vi
+        .fn()
+        .mockImplementation(async ({ classIds }: { classIds: string[] }) => {
+          const pred =
+            opts.prediction !== undefined
+              ? opts.prediction
+              : {
+                  medianPredicted: 25,
+                  minPredicted: 18,
+                  bidWindow: {
+                    id: 77,
+                    acadTermId: "AY202627T1",
+                    round: "1",
+                    window: 1,
+                  },
+                };
+          if (!pred) return [];
+          return classIds.map((classId) => ({
+            classId,
+            ...(pred as Record<string, unknown>),
+          }));
+        }),
     },
     bidResults: {
       getBy: vi
@@ -92,6 +114,37 @@ function mkCaller(opts: {
           opts.bidResults ?? [
             { bidWindowId: 77, vacancy: 12, bidWindow: { id: 77 } },
           ],
+        ),
+      getVacanciesByClassIds: vi
+        .fn()
+        .mockImplementation(
+          async ({
+            classIds,
+            bidWindowId,
+          }: {
+            classIds: string[];
+            bidWindowId: number;
+          }) => {
+            const results = opts.bidResults ?? [
+              { bidWindowId: 77, vacancy: 12, bidWindow: { id: 77 } },
+            ];
+            const row = (
+              results as Array<{
+                bidWindowId?: number;
+                bidWindow?: { id?: number };
+                vacancy?: number | null;
+              }>
+            ).find(
+              (r) =>
+                r.bidWindowId === bidWindowId ||
+                r.bidWindow?.id === bidWindowId,
+            );
+            if (row?.vacancy == null) return [];
+            return classIds.map((classId) => ({
+              classId,
+              vacancy: row.vacancy,
+            }));
+          },
         ),
     },
     safetyFactors: {
@@ -169,8 +222,11 @@ describe("bid-estimate", () => {
       caller.classes.getAll as ReturnType<typeof vi.fn>,
     ).toHaveBeenCalled();
     expect(
-      caller.bidPredictions.getBy as ReturnType<typeof vi.fn>,
-    ).toHaveBeenCalledTimes(2);
+      caller.bidPredictions.getByClassIds as ReturnType<typeof vi.fn>,
+    ).toHaveBeenCalledTimes(1);
+    expect(
+      caller.bidPredictions.getByClassIds as ReturnType<typeof vi.fn>,
+    ).toHaveBeenCalledWith({ classIds: ["cl-g1", "cl-g2"] });
   });
 
   it("filters to a single section when section is given", async () => {
@@ -432,8 +488,8 @@ describe("bid-estimate", () => {
         getByCourseCode: vi.fn().mockRejectedValue(new Error("db down")),
       },
       classes: { getAll: vi.fn() },
-      bidPredictions: { getBy: vi.fn() },
-      bidResults: { getBy: vi.fn() },
+      bidPredictions: { getBy: vi.fn(), getByClassIds: vi.fn() },
+      bidResults: { getBy: vi.fn(), getVacanciesByClassIds: vi.fn() },
       safetyFactors: { getAll: vi.fn() },
     } as unknown as ToolContext["caller"];
     const ctx: ToolContext = { user: fakeUser, caller };

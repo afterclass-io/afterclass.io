@@ -2,7 +2,7 @@
 import { type ReviewReactionType as DbReviewReactionType } from "@/generated/prisma/enums";
 
 import { api } from "@/common/tools/trpc/react";
-import { ReviewReactionType } from "@/modules/reviews/types";
+import { ReviewReactionType } from "@/common/types/reviews";
 import { useOptimisticReaction } from "@/modules/roadmaps/hooks/useOptimisticReaction";
 import { Button } from "@/common/components/button";
 
@@ -18,6 +18,11 @@ export const RoadmapReactionsGroup = ({ roadmapId }: { roadmapId: string }) => {
   }
 
   const { counts, viewerReaction } = roadmapReactionsQuery.data;
+
+  // An empty row would still take a flex gap in the page layout.
+  if (counts.length === 0) {
+    return null;
+  }
 
   const handleReactionChange = (newReaction: DbReviewReactionType) => {
     if (viewerReaction === newReaction) {

@@ -10,6 +10,12 @@ const resolve = {
       import.meta.dirname,
       "node_modules/next/server.js",
     ),
+    // `server-only` throws outside a React Server Component bundle; tests
+    // that import @/server/* run in plain Node.
+    "server-only": path.resolve(
+      import.meta.dirname,
+      "vitest.server-only.stub.ts",
+    ),
   },
 };
 
@@ -24,6 +30,7 @@ const oxc = {
 // runtime, not from `@/env`.
 const dummyEnv = {
   DATABASE_URL: "postgresql://user:pass@localhost:5432/db",
+  NEXTAUTH_SECRET: "test-nextauth-secret",
   GOOGLE_CLIENT_ID: "test-client-id",
   GOOGLE_CLIENT_SECRET: "test-client-secret",
   NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-anon-key",
@@ -70,7 +77,6 @@ export default defineConfig({
         // Re-export barrels. Listed by exact path because procedure entrypoints
         // are also named index.ts and must stay in scope.
         "src/modules/auth/functions/index.ts",
-        "src/modules/search/functions/index.ts",
         "src/common/functions/index.ts",
         "src/common/functions/crypto/index.ts",
         "src/common/hooks/index.ts",

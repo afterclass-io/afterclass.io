@@ -1,43 +1,5 @@
-import { getAll } from "@vercel/edge-config";
-import { edgeConfigSchema } from "@/server/ecfg/config";
-import fallbackConfig from "@/server/ecfg/config.json";
+import { getEdgeConfig } from "@/server/ecfg/edge-config";
 import { EdgeConfigContextProvider } from "./EdgeConfigContextProvider";
-
-async function fetchAndValidateEdgeConfig() {
-  try {
-    // * FUTURE NOTE *
-    // if edge requests count nears the threshold,
-    // we should consider caching the edge config & revalidate every 24h
-    const rawConfig = await getAll();
-    const result = edgeConfigSchema.safeParse(rawConfig);
-
-    if (!result.success) {
-      console.warn(
-        "Failed to parse edge config:\n",
-        result.error.message,
-        "\nReceived config:\n",
-        rawConfig,
-      );
-      return null;
-    }
-
-    return result.data;
-  } catch (error) {
-    console.warn(
-      "Failed to fetch edge config:\n",
-      error instanceof Error ? error.message : error,
-    );
-    return null;
-  }
-}
-
-function getFallbackConfig() {
-  return fallbackConfig;
-}
-
-export async function getEdgeConfig() {
-  return (await fetchAndValidateEdgeConfig()) ?? getFallbackConfig();
-}
 
 export async function EdgeConfigProvider({
   children,
@@ -46,8 +8,10 @@ export async function EdgeConfigProvider({
 }) {
   const edgeConfig = await getEdgeConfig();
 
+  // `chat` holds server-only tunables (LLM model and base URL, limits). No
+  // client code reads it, so it stays out of the browser payload.
   return (
-    <EdgeConfigContextProvider edgeConfig={edgeConfig}>
+    <EdgeConfigContextProvider edgeConfig={{ ...edgeConfig, chat: undefined }}>
       {children}
     </EdgeConfigContextProvider>
   );

@@ -28,7 +28,7 @@ import type { ToolContext } from "../types";
  * - `then` resolves to `undefined` so awaiting a context never mistakes the
  *   caller for a thenable.
  */
-export type FakeCallerStubs = Record<string, Record<string, unknown>>;
+type FakeCallerStubs = Record<string, Record<string, unknown>>;
 
 export interface MakeFakeToolContextOptions {
   /** Merged over the default fake user (id "u1"). */

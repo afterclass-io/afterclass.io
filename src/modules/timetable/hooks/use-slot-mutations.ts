@@ -9,7 +9,7 @@ import {
   toArrangedClass,
   type SlotWithClass,
 } from "@/modules/timetable/functions/arranged-class";
-import type { ArrangedClass } from "@/modules/timetable/components/TimetableGrid";
+import type { ArrangedClass } from "@/common/types/timetable";
 
 /** Timing shape returned per section from `searchCourses`. */
 export type SectionTiming = {
@@ -91,6 +91,43 @@ function toSlotWithClass(sec: SectionOption): SlotWithClass {
   };
 }
 
+type Utils = ReturnType<typeof api.useUtils>;
+
+/**
+ * The arrangement cache steps every slot mutation shares: cancel the
+ * in-flight fetch, snapshot the slots, restore them on error, and refetch on
+ * settle. Each caller adds its own optimistic write and toast copy.
+ */
+function arrangementCacheCallbacks(
+  utils: Utils,
+  activeTimetableId: string | null,
+) {
+  return {
+    cancel: () =>
+      utils.timetable.getArrangement.cancel({
+        timetableId: activeTimetableId ?? "",
+      }),
+    getSnapshot: () =>
+      activeTimetableId
+        ? utils.timetable.getArrangement.getData({
+            timetableId: activeTimetableId,
+          })?.slots
+        : undefined,
+    restoreSnapshot: (slots: ArrangedClass[] | undefined) => {
+      if (slots && activeTimetableId) {
+        utils.timetable.getArrangement.setData(
+          { timetableId: activeTimetableId },
+          (old) => (old ? { ...old, slots } : old),
+        );
+      }
+    },
+    invalidate: () =>
+      utils.timetable.getArrangement.invalidate({
+        timetableId: activeTimetableId ?? "",
+      }),
+  };
+}
+
 /**
  * Remove a class from the active timetable (grid X affordance).
  *
@@ -108,34 +145,13 @@ export function useRemoveSlotMutation() {
       { timetableId: string; classId: string },
       ArrangedClass[] | undefined
     >({
-      cancel: () =>
-        utils.timetable.getArrangement.cancel({
-          timetableId: activeTimetableId ?? "",
-        }),
-      getSnapshot: () =>
-        activeTimetableId
-          ? utils.timetable.getArrangement.getData({
-              timetableId: activeTimetableId,
-            })?.slots
-          : undefined,
+      ...arrangementCacheCallbacks(utils, activeTimetableId),
       applyOptimistic: ({ timetableId, classId }) =>
         utils.timetable.getArrangement.setData({ timetableId }, (old) =>
           old
             ? { ...old, slots: old.slots.filter((s) => s.classId !== classId) }
             : old,
         ),
-      restoreSnapshot: (slots) => {
-        if (slots && activeTimetableId) {
-          utils.timetable.getArrangement.setData(
-            { timetableId: activeTimetableId },
-            (old) => (old ? { ...old, slots } : old),
-          );
-        }
-      },
-      invalidate: () =>
-        utils.timetable.getArrangement.invalidate({
-          timetableId: activeTimetableId ?? "",
-        }),
       onError: (message) => toast.error(`Failed to remove class: ${message}`),
     }),
     onSuccess: () => toast.success("Removed class from timetable"),
@@ -147,7 +163,11 @@ export function useRemoveSlotMutation() {
  * wiring identical to removeSlot — the picked section is mapped through the
  * shared `toArrangedClass` so the optimistic slot matches the server shape.
  */
-export function useAddSlotMutation({ sections = [], courseCode, onDone }: SlotMutationOptions = {}) {
+export function useAddSlotMutation({
+  sections = [],
+  courseCode,
+  onDone,
+}: SlotMutationOptions = {}) {
   const activeTimetableId = useAtomValue(activeTimetableIdAtom);
   const utils = api.useUtils();
 
@@ -156,16 +176,7 @@ export function useAddSlotMutation({ sections = [], courseCode, onDone }: SlotMu
       { timetableId: string; classId: string },
       ArrangedClass[] | undefined
     >({
-      cancel: () =>
-        utils.timetable.getArrangement.cancel({
-          timetableId: activeTimetableId ?? "",
-        }),
-      getSnapshot: () =>
-        activeTimetableId
-          ? utils.timetable.getArrangement.getData({
-              timetableId: activeTimetableId,
-            })?.slots
-          : undefined,
+      ...arrangementCacheCallbacks(utils, activeTimetableId),
       applyOptimistic: ({ timetableId, classId }) => {
         const picked = sections.find((s) => s.classId === classId);
         if (!picked) return;
@@ -178,18 +189,6 @@ export function useAddSlotMutation({ sections = [], courseCode, onDone }: SlotMu
             : old,
         );
       },
-      restoreSnapshot: (slots) => {
-        if (slots && activeTimetableId) {
-          utils.timetable.getArrangement.setData(
-            { timetableId: activeTimetableId },
-            (old) => (old ? { ...old, slots } : old),
-          );
-        }
-      },
-      invalidate: () =>
-        utils.timetable.getArrangement.invalidate({
-          timetableId: activeTimetableId ?? "",
-        }),
       onError: () =>
         toast.error(
           courseCode
@@ -200,7 +199,9 @@ export function useAddSlotMutation({ sections = [], courseCode, onDone }: SlotMu
     onSuccess: (data) => {
       if (data.created) {
         toast.success(
-          courseCode ? `Added ${courseCode} to timetable` : "Added class to timetable",
+          courseCode
+            ? `Added ${courseCode} to timetable`
+            : "Added class to timetable",
         );
       } else {
         toast.info(
@@ -218,7 +219,11 @@ export function useAddSlotMutation({ sections = [], courseCode, onDone }: SlotMu
  * Swap a course to another section (course already present). Mirrors the
  * server: delete every slot of the course, then create the picked section.
  */
-export function useSetSlotSectionMutation({ sections = [], courseCode, onDone }: SlotMutationOptions = {}) {
+export function useSetSlotSectionMutation({
+  sections = [],
+  courseCode,
+  onDone,
+}: SlotMutationOptions = {}) {
   const activeTimetableId = useAtomValue(activeTimetableIdAtom);
   const utils = api.useUtils();
 
@@ -227,16 +232,7 @@ export function useSetSlotSectionMutation({ sections = [], courseCode, onDone }:
       { timetableId: string; courseId: string; classId: string },
       ArrangedClass[] | undefined
     >({
-      cancel: () =>
-        utils.timetable.getArrangement.cancel({
-          timetableId: activeTimetableId ?? "",
-        }),
-      getSnapshot: () =>
-        activeTimetableId
-          ? utils.timetable.getArrangement.getData({
-              timetableId: activeTimetableId,
-            })?.slots
-          : undefined,
+      ...arrangementCacheCallbacks(utils, activeTimetableId),
       applyOptimistic: ({ timetableId, classId }) => {
         const picked = sections.find((s) => s.classId === classId);
         if (!picked) return;
@@ -247,30 +243,21 @@ export function useSetSlotSectionMutation({ sections = [], courseCode, onDone }:
                 slots: [
                   // The server deletes every slot of the course, then
                   // creates the picked section — mirror that here.
-                  ...old.slots.filter((s) => s.courseCode !== picked.courseCode),
+                  ...old.slots.filter(
+                    (s) => s.courseCode !== picked.courseCode,
+                  ),
                   toArrangedClass(toSlotWithClass(picked)),
                 ],
               }
             : old,
         );
       },
-      restoreSnapshot: (slots) => {
-        if (slots && activeTimetableId) {
-          utils.timetable.getArrangement.setData(
-            { timetableId: activeTimetableId },
-            (old) => (old ? { ...old, slots } : old),
-          );
-        }
-      },
-      invalidate: () =>
-        utils.timetable.getArrangement.invalidate({
-          timetableId: activeTimetableId ?? "",
-        }),
-      onError: () =>
-        toast.error("Failed to swap section. Please try again."),
+      onError: () => toast.error("Failed to swap section. Please try again."),
     }),
     onSuccess: () => {
-      toast.success(courseCode ? `Swapped section for ${courseCode}` : "Swapped section");
+      toast.success(
+        courseCode ? `Swapped section for ${courseCode}` : "Swapped section",
+      );
       onDone?.();
     },
   });

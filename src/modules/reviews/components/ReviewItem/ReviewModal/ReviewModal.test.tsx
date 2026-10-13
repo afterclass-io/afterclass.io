@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ReviewType, UniversityAbbreviation } from "@/generated/prisma/enums";
-import type { Review } from "@/modules/reviews/types";
+import type { Review } from "@/common/types/reviews";
 
 vi.mock("@/common/tools/trpc/react", () => ({
   api: {
@@ -19,8 +19,16 @@ vi.mock("@/common/tools/trpc/react", () => ({
       countEvent: { useQuery: () => ({ data: 0, isPending: false }) },
     },
     reviewVotes: {
-      getByUser: { useQuery: () => ({ data: null }), getData: vi.fn(), setData: vi.fn() },
-      count: { useQuery: () => ({ data: 0 }), invalidate: vi.fn(), setData: vi.fn() },
+      getByUser: {
+        useQuery: () => ({ data: null }),
+        getData: vi.fn(),
+        setData: vi.fn(),
+      },
+      count: {
+        useQuery: () => ({ data: 0 }),
+        invalidate: vi.fn(),
+        setData: vi.fn(),
+      },
       voteOrUnvote: { useMutation: () => ({ mutate: vi.fn() }) },
     },
     reviewReactions: {
@@ -62,7 +70,7 @@ import { ReviewModal } from "./ReviewModal";
 
 const mockReview: Review = {
   id: "rv-modal-1",
-  body: "This professor is shit at teaching",
+  body: "This professor is **** at teaching",
   tips: "Avoid this class",
   rating: 1,
   courseCode: "IS111",

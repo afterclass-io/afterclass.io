@@ -4,6 +4,7 @@ import { SearchResultList } from "./SearchResultList";
 import { SearchResultEmpty } from "./SearchResultEmpty";
 import { SearchResultItem } from "./SearchResultItem";
 import { SearchResultFilter } from "./SearchResultFilter";
+import { SearchResultSkeleton } from "./SearchResultSkeleton";
 
 export const SearchResult = ({ children }: { children: React.ReactNode }) => {
   return <div className="flex h-full w-full flex-col gap-10">{children}</div>;
@@ -15,3 +16,4 @@ SearchResult.List = SearchResultList;
 SearchResult.Item = SearchResultItem;
 SearchResult.Empty = SearchResultEmpty;
 SearchResult.Filter = SearchResultFilter;
+SearchResult.Skeleton = SearchResultSkeleton;

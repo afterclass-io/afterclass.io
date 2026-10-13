@@ -10,7 +10,9 @@ describe("getGoogleNameFields", () => {
   });
 
   it("omits missing or blank parts", () => {
-    expect(getGoogleNameFields({ given_name: "Alice", family_name: " " })).toEqual({
+    expect(
+      getGoogleNameFields({ given_name: "Alice", family_name: " " }),
+    ).toEqual({
       firstName: "Alice",
     });
     expect(getGoogleNameFields(null)).toEqual({});

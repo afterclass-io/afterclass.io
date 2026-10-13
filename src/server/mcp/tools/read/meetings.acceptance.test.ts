@@ -2,10 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { SessionUser } from "@/server/auth/config";
 import type { ToolContext } from "../../types";
-import {
-  getMeetingPollDetailTool,
-  suggestMeetingTimesTool,
-} from "./meetings";
+import { getMeetingPollDetailTool, suggestMeetingTimesTool } from "./meetings";
 
 const fakeUser: SessionUser = {
   id: "u1",

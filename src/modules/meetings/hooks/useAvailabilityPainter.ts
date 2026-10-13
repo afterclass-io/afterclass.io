@@ -5,9 +5,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { AvailabilityBrushMode } from "@/modules/meetings/components/grid/MeetingAvailabilityBrush";
 import { slotsBetween } from "@/modules/meetings/functions/slot-runs";
 import {
-  slotIndexAtPoint,
-  useReleaseListener,
-} from "@/modules/meetings/hooks/slot-pointer";
+  handleTouchDragMove,
+  type SlotDragHandlers,
+  slotDragHandlers,
+} from "@/modules/meetings/hooks/slot-drag-handlers";
+import { useReleaseListener } from "@/modules/meetings/hooks/slot-pointer";
 
 export type PaintedSlots = {
   available: Set<number>;
@@ -125,7 +127,11 @@ export function useAvailabilityPainter({
 
   const extendDrag = (slot: number) => {
     const last = lastSlotRef.current;
-    if (!isDraggingRef.current || last === null || touchedRef.current.has(slot)) {
+    if (
+      !isDraggingRef.current ||
+      last === null ||
+      touchedRef.current.has(slot)
+    ) {
       return;
     }
     for (const crossed of slotsBetween(last, slot, slotsPerDay)) paint(crossed);
@@ -134,23 +140,8 @@ export function useAvailabilityPainter({
   return {
     painted,
     isDragging,
-    slotHandlers: (slot: number) =>
-      enabled
-        ? {
-            onPointerDown: (e: React.PointerEvent) => {
-              if (e.button === 0 && e.pointerType !== "touch") startDrag(slot);
-            },
-            onPointerEnter: () => extendDrag(slot),
-            onTouchStart: (e: React.TouchEvent) => {
-              if (e.touches.length === 1) startDrag(slot);
-            },
-          }
-        : {},
-    onTouchMove: (e: React.TouchEvent) => {
-      if (e.cancelable) e.preventDefault();
-      const touch = e.touches[0];
-      const slot = touch && slotIndexAtPoint(touch.clientX, touch.clientY);
-      if (slot !== null && slot !== undefined) extendDrag(slot);
-    },
+    slotHandlers: (slot: number): SlotDragHandlers =>
+      enabled ? slotDragHandlers(slot, startDrag, extendDrag) : {},
+    onTouchMove: (e: React.TouchEvent) => handleTouchDragMove(e, extendDrag),
   };
 }

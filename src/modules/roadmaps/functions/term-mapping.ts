@@ -24,3 +24,14 @@ export function extractAcadTermCode(label: string): string | null {
   const match = /T(\d+[A-Za-z]?)/.exec(label);
   return match ? `T${match[1]}` : null;
 }
+
+/** First AcadTerm whose label term matches the roadmap term, or undefined. */
+export function findAcadTermForRoadmapTerm<T extends { label: string }>(
+  roadmapTerm: string,
+  acadTerms: readonly T[],
+): T | undefined {
+  const targetTermCode = mapRoadmapTermToAcadCode(roadmapTerm);
+  return acadTerms.find(
+    (at) => extractAcadTermCode(at.label) === targetTermCode,
+  );
+}

@@ -12,7 +12,8 @@ import {
   disambiguateNames,
   suggestMeetingTimes,
 } from "@/modules/meetings/functions/suggest-times";
-import { errText, errorMessage, jsonText, type McpTool } from "../../types";
+import { guardedRun, jsonText, type McpTool } from "../../types";
+import { hhmm, isoDate, meetingPollSlug } from "../meeting-schemas";
 import { absoluteUrl, meetingPage, PAGE_LINK_NOTE } from "../page-links";
 
 const getMyMeetingsSchema = z.object({
@@ -31,43 +32,33 @@ export const getMyMeetingsTool: McpTool<typeof getMyMeetingsSchema> = {
   description: `List the group meeting polls the user created or joined, with dates (YYYY-MM-DD, SGT) and whether the user has filled in their availability (hasResponded). Use suggest-meeting-times to find the best time for a poll. ${PAGE_LINK_NOTE}`,
   inputSchema: getMyMeetingsSchema,
   readOnly: true,
-  run: async ({ caller }, input) => {
-    try {
-      const meetings = await caller.meetings.listMyMeetings();
-      const limit = input?.limit ?? 5;
-      const limited = meetings.slice(0, limit);
-      return jsonText({
-        meetings: limited.map((m) => ({
-          id: m.id,
-          slug: m.slug,
-          title: m.title,
-          description: m.description,
-          startDate: toIsoDate(m.startDate),
-          endDate: toIsoDate(m.endDate),
-          course: m.course
-            ? { code: m.course.code, name: m.course.name }
-            : null,
-          section: m.section,
-          teamIdentifier: m.teamIdentifier,
-          participantCount: m.participantCount,
-          isCreator: m.isCreator,
-          hasResponded: m.hasResponded,
-          url: absoluteUrl(meetingPage(m.slug)),
-        })),
-        total: meetings.length,
-      });
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, input) => {
+    const meetings = await caller.meetings.listMyMeetings();
+    const limit = input?.limit ?? 5;
+    const limited = meetings.slice(0, limit);
+    return jsonText({
+      meetings: limited.map((m) => ({
+        id: m.id,
+        slug: m.slug,
+        title: m.title,
+        description: m.description,
+        startDate: toIsoDate(m.startDate),
+        endDate: toIsoDate(m.endDate),
+        course: m.course ? { code: m.course.code, name: m.course.name } : null,
+        section: m.section,
+        teamIdentifier: m.teamIdentifier,
+        participantCount: m.participantCount,
+        isCreator: m.isCreator,
+        hasResponded: m.hasResponded,
+        url: absoluteUrl(meetingPage(m.slug)),
+      })),
+      total: meetings.length,
+    });
+  }),
 };
 
 const getMeetingPollDetailSchema = z.object({
-  slug: z
-    .string()
-    .min(6)
-    .max(20)
-    .describe("The meeting poll slug (from /meetings/[slug])"),
+  slug: meetingPollSlug,
 });
 
 export const getMeetingPollDetailTool: McpTool<
@@ -77,61 +68,50 @@ export const getMeetingPollDetailTool: McpTool<
   description: `Get a group meeting poll's details, its date/time window, and each participant's availability as Singapore-time date/time ranges (with hasResponded). To pick a meeting time or see who can make it, use suggest-meeting-times instead. ${PAGE_LINK_NOTE}`,
   inputSchema: getMeetingPollDetailSchema,
   readOnly: true,
-  run: async ({ caller }, input) => {
-    try {
-      const detail = await caller.meetings.getPollBySlug({ slug: input.slug });
-      const grid = toPollGrid(detail.poll);
-      const names = disambiguateNames(detail.participants.map((p) => p.name));
-      const participants = detail.participants.map((p, i) => ({
-        name: names[i]!,
-        isCurrentUser: p.isCurrentUser,
-        hasResponded: p.availableSlots.length + p.ifNeededSlots.length > 0,
-        availability: availabilityToRanges(grid, p),
-      }));
-      const respondedCount = participants.filter((p) => p.hasResponded).length;
-      return jsonText({
-        poll: {
-          slug: detail.poll.slug,
-          title: detail.poll.title,
-          description: detail.poll.description,
-          agenda: detail.poll.agenda,
-          links: detail.poll.links,
-          isCreator: detail.poll.isCreator,
-          course: detail.poll.course
-            ? { code: detail.poll.course.code, name: detail.poll.course.name }
-            : null,
-          section: detail.poll.section,
-          teamIdentifier: detail.poll.teamIdentifier,
-          startDate: grid.startDate,
-          endDate: grid.endDate,
-          timezone: SGT_TIMEZONE,
-        },
-        window: {
-          days: pollDays(grid),
-          startHour: grid.startHour,
-          endHour: grid.endHour,
-          slotMinutes: grid.slotMinutes,
-        },
-        participantCount: participants.length,
-        respondedCount,
-        participants,
-        url: absoluteUrl(meetingPage(detail.poll.slug)),
-      });
-    } catch (e) {
-      return errText(errorMessage(e));
-    }
-  },
+  run: guardedRun(async ({ caller }, input) => {
+    const detail = await caller.meetings.getPollBySlug({ slug: input.slug });
+    const grid = toPollGrid(detail.poll);
+    const names = disambiguateNames(detail.participants.map((p) => p.name));
+    const participants = detail.participants.map((p, i) => ({
+      name: names[i]!,
+      isCurrentUser: p.isCurrentUser,
+      hasResponded: p.availableSlots.length + p.ifNeededSlots.length > 0,
+      availability: availabilityToRanges(grid, p),
+    }));
+    const respondedCount = participants.filter((p) => p.hasResponded).length;
+    return jsonText({
+      poll: {
+        slug: detail.poll.slug,
+        title: detail.poll.title,
+        description: detail.poll.description,
+        agenda: detail.poll.agenda,
+        links: detail.poll.links,
+        isCreator: detail.poll.isCreator,
+        course: detail.poll.course
+          ? { code: detail.poll.course.code, name: detail.poll.course.name }
+          : null,
+        section: detail.poll.section,
+        teamIdentifier: detail.poll.teamIdentifier,
+        startDate: grid.startDate,
+        endDate: grid.endDate,
+        timezone: SGT_TIMEZONE,
+      },
+      window: {
+        days: pollDays(grid),
+        startHour: grid.startHour,
+        endHour: grid.endHour,
+        slotMinutes: grid.slotMinutes,
+      },
+      participantCount: participants.length,
+      respondedCount,
+      participants,
+      url: absoluteUrl(meetingPage(detail.poll.slug)),
+    });
+  }),
 };
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
-const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$|^24:00$/);
-
 const suggestMeetingTimesSchema = z.object({
-  slug: z
-    .string()
-    .min(6)
-    .max(20)
-    .describe("The meeting poll slug (from /meetings/[slug])"),
+  slug: meetingPollSlug,
   durationMinutes: z
     .number()
     .int()
@@ -188,46 +168,42 @@ export const suggestMeetingTimesTool: McpTool<
   description: `Find the best meeting times in a group meeting poll and who can make each one. Use this, not get-meeting-poll-detail, to answer 'best time / when can we meet / who can make it' questions, and for per-time breakdowns (do not build tables by hand). Polls do not define a meeting length: omit durationMinutes unless the user stated one, and never assume one. Each option is a time window (start to end) in Singapore time with a tier and a summary; quote the summary. People listed under ifNeeded are NOT available, only willing if needed; never call them available. Best first: everyone free, then everyone free or if needed, then partial. Pass structured filters for the window the user asked about (weekend = daysOfWeek ["sat","sun"]; evenings = earliestStart "18:00", latestEnd "22:00"). Also returns the best option for each day. ${PAGE_LINK_NOTE}`,
   inputSchema: suggestMeetingTimesSchema,
   readOnly: true,
-  run: async ({ caller }, input) => {
-    try {
-      const now = new Date();
-      const { slug, ...query } = input;
-      const detail = await caller.meetings.getPollBySlug({ slug });
-      const grid = toPollGrid(detail.poll);
-      const result = suggestMeetingTimes({
-        grid,
-        participants: detail.participants,
-        query,
-        now,
-      });
-      let message: string | undefined;
-      if (result.emptyReason === "all-past") {
-        message =
-          "Every matching time is already in the past. Pass includePast: true to see past times.";
-      } else if (result.requiredUnmet) {
-        message = `No time in this window works for all of: ${input.requireParticipants?.join(", ") ?? ""}. These are the closest options; see each option's unavailable list.`;
-      } else if (result.nobodyCanAttend) {
-        message =
-          "Nobody has marked any time in this window as available or if needed; these are the earliest open times.";
-      }
-      return jsonText({
-        poll: {
-          slug: detail.poll.slug,
-          title: detail.poll.title,
-          timezone: SGT_TIMEZONE,
-          slotMinutes: grid.slotMinutes,
-        },
-        asOf: formatSgtIso(now),
-        participants: result.participants,
-        query,
-        options: result.options,
-        bestPerDay: result.bestPerDay,
-        nobodyCanAttend: result.nobodyCanAttend,
-        ...(message ? { message } : {}),
-        url: absoluteUrl(meetingPage(detail.poll.slug)),
-      });
-    } catch (e) {
-      return errText(errorMessage(e));
+  run: guardedRun(async ({ caller }, input) => {
+    const now = new Date();
+    const { slug, ...query } = input;
+    const detail = await caller.meetings.getPollBySlug({ slug });
+    const grid = toPollGrid(detail.poll);
+    const result = suggestMeetingTimes({
+      grid,
+      participants: detail.participants,
+      query,
+      now,
+    });
+    let message: string | undefined;
+    if (result.emptyReason === "all-past") {
+      message =
+        "Every matching time is already in the past. Pass includePast: true to see past times.";
+    } else if (result.requiredUnmet) {
+      message = `No time in this window works for all of: ${input.requireParticipants?.join(", ") ?? ""}. These are the closest options; see each option's unavailable list.`;
+    } else if (result.nobodyCanAttend) {
+      message =
+        "Nobody has marked any time in this window as available or if needed; these are the earliest open times.";
     }
-  },
+    return jsonText({
+      poll: {
+        slug: detail.poll.slug,
+        title: detail.poll.title,
+        timezone: SGT_TIMEZONE,
+        slotMinutes: grid.slotMinutes,
+      },
+      asOf: formatSgtIso(now),
+      participants: result.participants,
+      query,
+      options: result.options,
+      bestPerDay: result.bestPerDay,
+      nobodyCanAttend: result.nobodyCanAttend,
+      ...(message ? { message } : {}),
+      url: absoluteUrl(meetingPage(detail.poll.slug)),
+    });
+  }),
 };

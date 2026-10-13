@@ -300,4 +300,33 @@ describe("roadmaps.planSemester", () => {
     expect(userRoadmapFindManyMock).not.toHaveBeenCalled();
     expect(userRoadmapEntryFindManyMock).not.toHaveBeenCalled();
   });
+
+  it("masks profanity in the top senior roadmap name and owner username", async () => {
+    userRoadmapEntryFindManyMock.mockImplementation(
+      (args?: { where?: { roadmapId?: string } }) => {
+        if (args?.where?.roadmapId) return Promise.resolve([]);
+        return Promise.resolve(
+          seniorEntries.map((e) =>
+            e.roadmapId === "srA"
+              ? {
+                  ...e,
+                  roadmap: {
+                    name: "This plan is shit",
+                    user: { username: "bastard" },
+                  },
+                }
+              : e,
+          ),
+        );
+      },
+    );
+
+    const result = await caller.roadmaps.planSemester({
+      targetTermId: "2025-T3A",
+    });
+    expect(result.candidates[0]?.topSeniorRoadmap).toEqual({
+      name: "This plan is ****",
+      ownerUsername: "*******",
+    });
+  });
 });
