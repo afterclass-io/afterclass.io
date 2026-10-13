@@ -2,16 +2,16 @@ import { type Metadata } from "next";
 
 import { ConstrainedContainer } from "@/common/components/constrained-container";
 import { SearchResult } from "@/modules/search/components/SearchResult";
-import {
-  type SearchCourseResult,
-  type SearchProfResult,
-} from "@/modules/search/types";
+import { isShortQuery } from "@/common/constants/search";
+import { MAX_QUERY_LEN } from "@/common/tools/query-normalize";
+import type { ResultsPage } from "@/server/search/search-results";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
 import {
-  DEFAULT_UNIVERSITY_ABBRV,
-  searchCourses,
-  searchProfessors,
+  type CourseHit,
+  type ProfessorHit,
+  searchCourseResults,
+  searchProfessorResults,
 } from "@/server/search/search-service";
 
 export const metadata: Metadata = {
@@ -25,45 +25,37 @@ export default async function Search(props: {
   searchParams: Promise<{ q?: string }>;
 }) {
   const searchParams = await props.searchParams;
-  const query = searchParams?.q ?? "";
+  const query = (searchParams?.q ?? "").slice(0, MAX_QUERY_LEN);
 
-  let searchedCourse: SearchCourseResult[] = [];
-  let searchedProf: SearchProfResult[] = [];
+  let initialCourses: ResultsPage<CourseHit> = {
+    rows: [],
+    totals: { matches: 0, related: 0 },
+    nextCursor: null,
+  };
+  let initialProfessors: ResultsPage<ProfessorHit> = {
+    rows: [],
+    totals: { matches: 0, related: 0 },
+    nextCursor: null,
+  };
   // No try/catch: a failed search must reach the (school) error boundary and
   // Sentry's onRequestError hook, not render as "No results found".
-  if (query) {
+  if (!isShortQuery(query)) {
     const session = await auth();
     const withCounts = Boolean(session);
-    const [coursesResult, profsResult] = await Promise.all([
-      searchCourses(db, {
+    [initialCourses, initialProfessors] = await Promise.all([
+      searchCourseResults(db, {
         query,
-        limit: 5,
+        group: "matches",
+        limit: 20,
         withCounts,
-        universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
       }),
-      searchProfessors(db, {
+      searchProfessorResults(db, {
         query,
-        limit: 5,
+        group: "matches",
+        limit: 20,
         withCounts,
-        universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
       }),
     ]);
-
-    searchedCourse = coursesResult.rows.map((row) => ({
-      uniAbbrv: row.uniAbbrv,
-      courseCode: row.code,
-      courseName: row.name,
-      profCount: row.profCount,
-      reviewCount: row.reviewCount,
-    }));
-
-    searchedProf = profsResult.rows.map((row) => ({
-      uniAbbrv: row.uniAbbrv,
-      profName: row.name,
-      profSlug: row.slug,
-      courseCount: row.courseCount,
-      reviewCount: row.reviewCount,
-    }));
   }
 
   return (
@@ -72,8 +64,8 @@ export default async function Search(props: {
         <SearchResult.Title searchTerm={query} />
         <SearchResult.Content
           query={query}
-          searchedCourse={searchedCourse}
-          searchedProf={searchedProf}
+          initialCourses={initialCourses}
+          initialProfessors={initialProfessors}
         />
       </SearchResult>
     </ConstrainedContainer>

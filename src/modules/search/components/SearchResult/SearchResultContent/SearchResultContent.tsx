@@ -1,91 +1,92 @@
 "use client";
-import { z } from "zod";
+
 import { useState } from "react";
-import {
-  type SearchCourseResult,
-  type SearchProfResult,
-} from "@/modules/search/types";
-import {
-  BooksIcon,
-  GraduationCapIcon,
-  PencilIcon,
-} from "@/common/components/icons";
-import { SearchResultList } from "../SearchResultList";
-import { SearchResultItem } from "../SearchResultItem";
+import { useSearchParams } from "next/navigation";
+import { api, type RouterOutputs } from "@/common/tools/trpc/react";
+import { isShortQuery } from "@/common/constants/search";
+import { Button } from "@/common/components/button";
 import { SearchResultFilter } from "../SearchResultFilter";
 import { SearchResultEmpty } from "../SearchResultEmpty";
-import { Separator } from "@/common/components/separator";
-import { MIN_QUERY_LEN } from "@/common/constants/search";
+import { ResultsSection } from "./ResultsSection";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- the schema is used only for its inferred type
-const filterOptions = z.object({
-  type: z.enum(["all", "professor", "course"]),
-});
-type FilterOptions = z.infer<typeof filterOptions>;
-
-export const SearchResultContent = ({
-  query,
-  searchedCourse,
-  searchedProf,
-}: {
+type CoursePage = RouterOutputs["search"]["courseResults"];
+type ProfessorPage = RouterOutputs["search"]["professorResults"];
+type Props = {
   query: string;
-  searchedCourse: SearchCourseResult[];
-  searchedProf: SearchProfResult[];
-}) => {
-  const [filter, setFilter] = useState<FilterOptions>({
-    type: "all",
-  });
+  initialCourses: CoursePage;
+  initialProfessors: ProfessorPage;
+};
 
-  const isEmpty = () => {
-    switch (filter.type) {
-      case "all":
-        return searchedCourse.length + searchedProf.length === 0;
-      case "course":
-        return searchedCourse.length === 0;
-      case "professor":
-        return searchedProf.length === 0;
-    }
-  };
+export function SearchResultContent(props: Props) {
+  if (isShortQuery(props.query)) {
+    return <SearchResultEmpty show reason="short" query={props.query} />;
+  }
+  return <PagedResults key={props.query} {...props} />;
+}
+
+function PagedResults({ query, initialCourses, initialProfessors }: Props) {
+  const params = useSearchParams();
+  const type =
+    params.get("type") === "course"
+      ? "course"
+      : params.get("type") === "professor"
+        ? "professor"
+        : "all";
+  const showCourses = type !== "professor";
+  const showProfessors = type !== "course";
+  const [expanded, setExpanded] = useState<
+    Partial<Record<"all" | "course" | "professor", boolean>>
+  >({});
+
+  const courses = api.search.courseResults.useInfiniteQuery(
+    { query, group: "matches", limit: 20 },
+    {
+      initialData: { pages: [initialCourses], pageParams: [undefined] },
+      staleTime: 30_000,
+      enabled: showCourses,
+      getNextPageParam: (last) => last.nextCursor ?? undefined,
+    },
+  );
+  const professors = api.search.professorResults.useInfiniteQuery(
+    { query, group: "matches", limit: 20 },
+    {
+      initialData: { pages: [initialProfessors], pageParams: [undefined] },
+      staleTime: 30_000,
+      enabled: showProfessors,
+      getNextPageParam: (last) => last.nextCursor ?? undefined,
+    },
+  );
+  const courseTotals = courses.data?.pages[0]?.totals ?? initialCourses.totals;
+  const professorTotals =
+    professors.data?.pages[0]?.totals ?? initialProfessors.totals;
+  const matches =
+    (showCourses ? courseTotals.matches : 0) +
+    (showProfessors ? professorTotals.matches : 0);
+  const related =
+    (showCourses ? courseTotals.related : 0) +
+    (showProfessors ? professorTotals.related : 0);
+  const showRelated = expanded[type] ?? (matches === 0 && related > 0);
+  const relatedCourses = api.search.courseResults.useInfiniteQuery(
+    { query, group: "related", limit: 20 },
+    {
+      enabled: showRelated && showCourses && courseTotals.related > 0,
+      staleTime: 30_000,
+      getNextPageParam: (last) => last.nextCursor ?? undefined,
+    },
+  );
+  const relatedProfessors = api.search.professorResults.useInfiniteQuery(
+    { query, group: "related", limit: 20 },
+    {
+      enabled: showRelated && showProfessors && professorTotals.related > 0,
+      staleTime: 30_000,
+      getNextPageParam: (last) => last.nextCursor ?? undefined,
+    },
+  );
 
   return (
-    <div className="flex h-full gap-12">
-      <SearchResultList>
-        <SearchResultEmpty
-          show={isEmpty()}
-          reason={query.trim().length < MIN_QUERY_LEN ? "short" : "none"}
-          query={query}
-        />
-        {(filter.type === "all" || filter.type === "course") &&
-          searchedCourse.map((c) => (
-            <SearchResultItem
-              key={c.courseCode}
-              href={`/course/${c.courseCode}`}
-              title={c.courseName}
-              subtitle={c.courseCode}
-              filterStats={[
-                { icon: <PencilIcon />, stat: c.reviewCount },
-                { icon: <GraduationCapIcon />, stat: c.profCount },
-              ]}
-            />
-          ))}
-        {(filter.type === "all" || filter.type === "professor") &&
-          searchedProf.map((p) => (
-            <SearchResultItem
-              key={p.profSlug}
-              href={`/professor/${p.profSlug}`}
-              title={p.profName}
-              filterStats={[
-                { icon: <PencilIcon />, stat: p.reviewCount },
-                { icon: <BooksIcon />, stat: p.courseCount },
-              ]}
-            />
-          ))}
-      </SearchResultList>
-      <Separator orientation="vertical" className="hidden lg:block" />
+    <div className="flex w-full flex-col gap-8">
       <SearchResultFilter
-        onValueChange={(key, value) => {
-          setFilter((prev) => ({ ...prev, [key]: value }));
-        }}
+        values={{ type }}
         filters={{
           type: [
             { label: "All", value: "all", isDefault: true },
@@ -93,7 +94,73 @@ export const SearchResultContent = ({
             { label: "Course", value: "course" },
           ],
         }}
+        onValueChange={(_, value) => {
+          const next = new URLSearchParams(params.toString());
+          if (value === "all") next.delete("type");
+          else next.set("type", value);
+          window.history.pushState(null, "", `?${next.toString()}`);
+        }}
       />
+      {matches + related === 0 && (
+        <SearchResultEmpty show reason="none" query={query} />
+      )}
+      {showCourses && courseTotals.matches > 0 && (
+        <ResultsSection
+          entity="courses"
+          total={courseTotals.matches}
+          result={courses}
+        />
+      )}
+      {showProfessors && professorTotals.matches > 0 && (
+        <ResultsSection
+          entity="professors"
+          total={professorTotals.matches}
+          result={professors}
+        />
+      )}
+      {related > 0 && (
+        <section
+          className="flex flex-col gap-4 border-t pt-6"
+          aria-label="Related matches"
+        >
+          <Button
+            variant="ghost"
+            className="h-auto justify-between self-start px-0 text-base"
+            aria-expanded={showRelated}
+            aria-controls="related-search-results"
+            onClick={() =>
+              setExpanded((prev) => ({ ...prev, [type]: !showRelated }))
+            }
+          >
+            Related matches ({related}){" "}
+            <span aria-hidden="true">{showRelated ? "−" : "+"}</span>
+          </Button>
+          {showRelated && (
+            <div id="related-search-results" className="flex flex-col gap-6">
+              <p className="text-muted-foreground text-sm">
+                These results have similar wording and may not contain your
+                keyword.
+              </p>
+              {showCourses && courseTotals.related > 0 && (
+                <ResultsSection
+                  entity="courses"
+                  total={courseTotals.related}
+                  result={relatedCourses}
+                  related
+                />
+              )}
+              {showProfessors && professorTotals.related > 0 && (
+                <ResultsSection
+                  entity="professors"
+                  total={professorTotals.related}
+                  result={relatedProfessors}
+                  related
+                />
+              )}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
-};
+}

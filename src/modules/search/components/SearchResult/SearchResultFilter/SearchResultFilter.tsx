@@ -15,12 +15,14 @@ export type Filter = Record<string, FilterOption[]>;
 export const SearchResultFilter = ({
   filters,
   onValueChange,
+  values,
 }: {
   filters: Filter;
   onValueChange: (key: string, value: FilterOption["value"]) => void;
+  values?: Record<string, string>;
 }) => {
   return (
-    <div className="sticky top-24 hidden size-fit flex-col items-start gap-8 lg:flex">
+    <div className="flex w-full flex-wrap items-start gap-4">
       {Object.entries(filters).map(([filterFor, filterOptions], i) => (
         <div key={i} className="flex flex-col gap-4">
           <Label key={i} className="w-fit">
@@ -28,9 +30,13 @@ export const SearchResultFilter = ({
           </Label>
           <ToggleGroup
             type="single"
+            aria-label={`${toTitleCase(filterFor)} filter`}
             className="border"
             defaultValue={filterOptions.find((item) => item.isDefault)?.value}
-            onValueChange={(v) => onValueChange(filterFor, v)}
+            value={values?.[filterFor]}
+            onValueChange={(v) => {
+              if (v) onValueChange(filterFor, v);
+            }}
           >
             {filterOptions.map((item, j) => (
               <ToggleGroupItem
