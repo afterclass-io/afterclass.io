@@ -27,6 +27,13 @@ export default function PrivacyPage() {
         >
           terms of service
         </Link>
+        . Learn more{" "}
+        <Link
+          href="/about"
+          className="text-primary underline-offset-4 hover:underline"
+        >
+          about AfterClass
+        </Link>
         .
       </p>
 
@@ -34,7 +41,11 @@ export default function PrivacyPage() {
         <p>
           <span className="text-foreground">Account data:</span> your name,
           email, username, faculty, and university, which you provide when you
-          sign up with your school email.
+          sign up with your school email. When you sign in with Google, we
+          receive your email, name, profile picture, and account identifier to
+          identify you, verify your university account, and create or link your
+          AfterClass account. Our authentication provider, Supabase, processes
+          your Google identity token to establish your account session.
         </p>
         <p>
           <span className="text-foreground">Activity data:</span> the
@@ -51,6 +62,59 @@ export default function PrivacyPage() {
           AI turns never include passwords, login tokens, or private notes. Note
           that review bodies and the names you give your timetables are free
           text, so avoid putting personal details in them.
+        </p>
+      </PolicySection>
+
+      <PolicySection title="Google Calendar and meeting availability">
+        <p>
+          Calendar sync is optional. When you select it in a meeting, we request
+          read-only access using the Google Calendar permission
+          calendar.events.readonly. We read events from your primary calendar
+          for the meeting&apos;s date range, including event identifiers,
+          titles, start and end times, whether an event is marked free or busy,
+          and your own attendance response. These fields help us display busy
+          periods and suggest available meeting times. We cannot create, edit,
+          or delete your Google Calendar events through this integration.
+        </p>
+        <p>
+          Your browser requests events directly from Google using a temporary
+          access token. This integration does not persist the Calendar access
+          token or raw events in our database or browser storage. The Calendar
+          overlay stays in memory while the meeting view is open. Closing or
+          reloading the view clears the overlay but does not revoke
+          Google&apos;s permission grant. Hiding the Calendar overlay only
+          changes its visibility in the meeting view.
+        </p>
+        <p>
+          If you autofill availability from your calendars and then save it,
+          AfterClass stores the available and if-needed time slots you submit in
+          the meeting poll. That availability is used to coordinate the meeting
+          and is visible to people with access to the poll. Calendar event
+          titles and raw event details are not included in the saved
+          availability. You can edit or clear your availability and save again;
+          closing the Calendar view does not delete previously saved
+          availability.
+        </p>
+        <p>
+          This Calendar integration does not send event details or Calendar
+          access tokens to AI providers or advertisers, or use them to train AI
+          models. Our separate AI feature&apos;s processing described below does
+          not include this Calendar overlay.
+        </p>
+        <p>
+          You can revoke AfterClass&apos;s Google access in your Google
+          Account&apos;s{" "}
+          <a
+            href="https://myaccount.google.com/connections"
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            connections settings
+          </a>
+          . Revoking access prevents future Calendar requests but does not
+          delete your AfterClass account or saved meeting availability. To
+          request deletion of stored account or meeting data, contact us using
+          the details below. Manual meeting availability remains available
+          without Calendar access.
         </p>
       </PolicySection>
 
@@ -122,7 +186,14 @@ export default function PrivacyPage() {
           AI feature — the rest of the site keeps working.
         </p>
         <p>
-          To make a request, reach us on Telegram at{" "}
+          To make a request, email{" "}
+          <a
+            href="mailto:helloafterclass@gmail.com"
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            helloafterclass@gmail.com
+          </a>{" "}
+          or reach us on Telegram at{" "}
           <span className="text-foreground">@afterclass</span> (the AfterClass
           helpdesk link on the login page).
         </p>
