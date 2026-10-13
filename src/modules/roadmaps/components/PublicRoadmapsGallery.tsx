@@ -172,7 +172,7 @@ export function PublicRoadmapsGallery() {
                 <Card className="h-full gap-3 py-4 transition-shadow hover:shadow-md">
                   <CardHeader>
                     <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="group-hover:text-primary line-clamp-2 min-h-[2lh] min-w-0 text-lg leading-snug transition-colors">
+                      <CardTitle className="group-hover:text-primary line-clamp-2 min-w-0 text-lg leading-snug transition-colors">
                         {item.roadmap.name}
                       </CardTitle>
                       {item.faculty && (

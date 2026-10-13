@@ -226,7 +226,7 @@ export const NarrowViewport: Story = {
 };
 
 /**
- * Short single-line title still reserves two lines of vertical height (min-h-[2lh]).
+ * Short single-line title uses its natural height, keeping the description close.
  */
 export const ShortTitle: Story = {
   parameters: {
