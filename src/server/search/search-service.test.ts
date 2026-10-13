@@ -3,6 +3,7 @@ import type { PrismaClient } from "@/generated/prisma/client";
 import { UniversityAbbreviation } from "@/generated/prisma/enums";
 
 import { searchCourses, searchProfessors } from "./search-service";
+import { readSqlCall } from "./sql-test-helpers";
 
 const queryRawMock = vi.fn();
 const mockDb = {
@@ -86,7 +87,7 @@ describe("search-service", () => {
       await searchCourses(mockDb, { query: "intro", limit: 10 });
 
       expect(queryRawMock).toHaveBeenCalledTimes(1);
-      const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+      const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
       const sql = rawCall[0].join("?");
 
       expect(sql).toContain("to_tsquery('simple', ?::text)");
@@ -103,14 +104,14 @@ describe("search-service", () => {
       queryRawMock.mockResolvedValue([]);
 
       await searchCourses(mockDb, { query: "intro to computing", limit: 5 });
-      let rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+      let rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
       let params = rawCall.slice(1);
       expect(params).toContain("intro:* & to:* & computing:*");
       expect(params).toContain(5);
 
       queryRawMock.mockClear();
       await searchCourses(mockDb, { query: "intro to computing", limit: 20 });
-      rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+      rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
       params = rawCall.slice(1);
       expect(params).toContain("intro:* & to:* & computing:*");
       expect(params).toContain(20);
@@ -121,7 +122,7 @@ describe("search-service", () => {
 
       await searchCourses(mockDb, { query: "COR STAT 1202", limit: 10 });
 
-      const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+      const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
       const params = rawCall.slice(1);
       expect(params).toContain("CORSTAT1202");
     });
@@ -131,7 +132,7 @@ describe("search-service", () => {
 
       await searchCourses(mockDb, { query: "100%", limit: 10 });
 
-      const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+      const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
       const params = rawCall.slice(1);
       expect(params).toContain("100\\%");
     });
@@ -252,7 +253,7 @@ describe("search-service", () => {
       });
 
       expect(queryRawMock).toHaveBeenCalledTimes(1);
-      const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+      const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
       const params = rawCall.slice(1);
       expect(params).toContain(false); // hasQuery is false
       expect(params).toContain("x"); // professorSlug
@@ -289,7 +290,7 @@ describe("search-service", () => {
       expect(result.rows[0]?.courseCount).toBe(2);
       expect(result.rows[0]?.reviewCount).toBe(3);
 
-      const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+      const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
       const sql = rawCall[0].join("?");
       const params = rawCall.slice(1);
 
@@ -323,7 +324,7 @@ describe("search-service", () => {
 
       await searchProfessors(mockDb, { query: "ada lovelace", limit: 3 });
 
-      const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+      const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
       const params = rawCall.slice(1);
       expect(params).toContain("ada:* & lovelace:*");
       expect(params).toContain(3);
@@ -339,7 +340,7 @@ describe("search-service", () => {
       });
 
       expect(queryRawMock).toHaveBeenCalledTimes(1);
-      const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+      const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
       const params = rawCall.slice(1);
       expect(params).toContain(false); // hasQuery is false
       expect(params).toContain("IS216"); // courseCode

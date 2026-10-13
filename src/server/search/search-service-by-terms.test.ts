@@ -3,6 +3,7 @@ import type { PrismaClient } from "@/generated/prisma/client";
 import { UniversityAbbreviation } from "@/generated/prisma/enums";
 
 import { searchCoursesByTerms } from "./search-service";
+import { readSqlCall } from "./sql-test-helpers";
 
 const queryRawMock = vi.fn();
 const mockDb = {
@@ -48,7 +49,7 @@ describe("searchCoursesByTerms", () => {
     });
 
     expect(queryRawMock).toHaveBeenCalledTimes(1);
-    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
     const sql = rawCall[0].join("?");
     expect(sql).toContain("PARTITION BY t.term_id");
     expect(sql).toContain("h.ord <= ?");

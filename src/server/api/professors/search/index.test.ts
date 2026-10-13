@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
+import { readSqlCall } from "@/server/search/sql-test-helpers";
 
 // vi.mock factories are hoisted above top-level const declarations, so the
 // mock fns must be created via vi.hoisted to avoid a TDZ ("Cannot access ...
@@ -63,7 +64,7 @@ describe("professors.search", () => {
 
     await caller.professors.search({ query: "GOH, Jing Rong", limit: 5 });
 
-    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
     const sql = rawCall[0].join("?");
     const params = rawCall.slice(1);
     expect(sql).toContain("FROM professors p");
@@ -87,7 +88,7 @@ describe("professors.search", () => {
       rows: [{ id: "p1", slug: "goh-jing-rong", name: "Goh, Jing Rong" }],
       count: 1,
     });
-    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
     const sql = rawCall[0].join("?");
     const params = rawCall.slice(1);
     // Normalized query has no comma; the REPLACE branch matches the
@@ -108,7 +109,7 @@ describe("professors.search", () => {
 
     await caller.professors.search({ query: "Goh" });
 
-    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
+    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
     const params = rawCall.slice(1);
     expect(params).toContain(10);
   });

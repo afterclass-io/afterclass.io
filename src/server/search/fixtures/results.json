@@ -1,0 +1,311 @@
+{
+  "courses": [
+    {
+      "code": "RESULT-00",
+      "name": "Singapore Studies 0",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-01",
+      "name": "Singapore Studies 1",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-02",
+      "name": "Singapore Studies 2",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-03",
+      "name": "Singapore Studies 3",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-04",
+      "name": "Singapore Studies 4",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-05",
+      "name": "Singapore Studies 5",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-06",
+      "name": "Singapore Studies 6",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-07",
+      "name": "Singapore Studies 7",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-08",
+      "name": "Singapore Studies 8",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-09",
+      "name": "Singapore Studies 9",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-10",
+      "name": "Singapore Studies 10",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-11",
+      "name": "Singapore Studies 11",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-12",
+      "name": "Singapore Studies 12",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-13",
+      "name": "Singapore Studies 13",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-14",
+      "name": "Singapore Studies 14",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-15",
+      "name": "Singapore Studies 15",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-16",
+      "name": "Singapore Studies 16",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-17",
+      "name": "Singapore Studies 17",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-18",
+      "name": "Singapore Studies 18",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-19",
+      "name": "Singapore Studies 19",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-20",
+      "name": "Singapore Studies 20",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-21",
+      "name": "Singapore Studies 21",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-22",
+      "name": "Singapore Studies 22",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-23",
+      "name": "Singapore Studies 23",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-SUBSTRING",
+      "name": "Perspectives on preSingapore society",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-DESCRIPTION",
+      "name": "Regional History",
+      "description": "Singapore society",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-AREA",
+      "name": "Regional Studies",
+      "description": "",
+      "courseArea": "Singapore"
+    },
+    {
+      "code": "RESULT-FUZZY",
+      "name": "Singapor",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-CODE100",
+      "name": "Coding Studies",
+      "description": "",
+      "courseArea": ""
+    },
+    {
+      "code": "RESULT-CODE100A",
+      "name": "Coding Studies Advanced",
+      "description": "",
+      "courseArea": ""
+    }
+  ],
+  "professors": [
+    {
+      "slug": "results-prof-0",
+      "name": "Singapore",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-1",
+      "name": "Singapore Scholar 1",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-2",
+      "name": "Singapore Scholar 2",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-3",
+      "name": "Singapore Scholar 3",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-4",
+      "name": "Singapore Scholar 4",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-5",
+      "name": "Singapore Scholar 5",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-6",
+      "name": "Singapore Scholar 6",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-7",
+      "name": "Singapore Scholar 7",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-8",
+      "name": "Singapore Scholar 8",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-9",
+      "name": "Singapore Scholar 9",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-10",
+      "name": "Singapore Scholar 10",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-11",
+      "name": "Singapore Scholar 11",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-12",
+      "name": "Singapore Scholar 12",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-13",
+      "name": "Singapore Scholar 13",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-14",
+      "name": "Singapore Scholar 14",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-15",
+      "name": "Singapore Scholar 15",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-16",
+      "name": "Singapore Scholar 16",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-17",
+      "name": "Singapore Scholar 17",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-18",
+      "name": "Singapore Scholar 18",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-19",
+      "name": "Singapore Scholar 19",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-20",
+      "name": "Singapore Scholar 20",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-prof-21",
+      "name": "Singapore Scholar 21",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-alias",
+      "name": "Alias Scholar",
+      "bossAliases": ["Singapore"]
+    },
+    {
+      "slug": "results-singapore-slug",
+      "name": "Slug Scholar",
+      "bossAliases": []
+    },
+    {
+      "slug": "results-fuzzy",
+      "name": "Singapor",
+      "bossAliases": []
+    }
+  ]
+}

@@ -1,8 +1,9 @@
 import type { PrismaClient } from "@/generated/prisma/client";
 import { UniversityAbbreviation } from "@/generated/prisma/enums";
-import { MIN_QUERY_LEN } from "@/common/constants/search";
-import { normalizeSearchQuery } from "@/common/tools/query-normalize";
-import { buildTsQuery, escapeLike, toCodeKey } from "./query";
+import { escapeLike, prepareQuery, toCodeKey } from "./query";
+import { coursePredicates, professorPredicates } from "./predicates";
+
+export { searchCourseResults, searchProfessorResults } from "./search-results";
 
 /** SMU is the only live university. Callers use this value; none hard-codes it. */
 export const DEFAULT_UNIVERSITY_ABBRV: UniversityAbbreviation =
@@ -91,13 +92,6 @@ type ProfessorRow = {
   reviewCount?: bigint | number;
 };
 
-function prepareQuery(raw: string) {
-  const q = normalizeSearchQuery(raw);
-  const tsQuery = buildTsQuery(q);
-  const hasQuery = q.length >= MIN_QUERY_LEN && tsQuery !== null;
-  return { q, tsQuery, hasQuery };
-}
-
 function countIfRequested(
   requested: boolean,
   count: bigint | number | undefined,
@@ -115,6 +109,7 @@ export async function searchCourses(
 ): Promise<SearchResult<CourseHit>> {
   const { q, tsQuery, hasQuery } = prepareQuery(input.query);
   const codeKey = toCodeKey(q);
+  const { keyword, fuzzy } = coursePredicates(q, tsQuery);
 
   if (!hasQuery && !input.scope) {
     return { rows: [], total: 0 };
@@ -181,14 +176,7 @@ export async function searchCourses(
         AND (
           ${hasQuery}::boolean = false
           OR (
-            c.code ILIKE ('%' || ${qLike} || '%')
-            OR REPLACE(c.code, '-', '') LIKE ('%' || ${codeKeyLike} || '%')
-            OR to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description,'') || ' ' || COALESCE(c.course_area,''))
-               @@ to_tsquery('simple', ${tsQuery}::text)
-            OR word_similarity(c.name, ${q}) > 0.3
-            OR word_similarity(COALESCE(c.description,''), ${q}) > 0.3
-            OR word_similarity(COALESCE(c.course_area,''), ${q}) > 0.3
-            OR similarity(c.code, ${q}) > 0.3
+            ${keyword} OR ${fuzzy}
             OR (${acadTermId}::text IS NOT NULL AND EXISTS (
               SELECT 1 FROM classes clp
               JOIN professors p ON p.id = clp.professor_id
@@ -263,6 +251,7 @@ export async function searchCoursesByTerms(
   const codeKeyLike = escapeLike(codeKey);
   const facultyId = input.facultyId ?? null;
   const limitPerTerm = input.limitPerTerm;
+  const { keyword, fuzzy } = coursePredicates(q, tsQuery);
 
   const rows = await db.$queryRaw<CourseTermRow[]>`
     WITH terms AS (
@@ -294,14 +283,7 @@ export async function searchCoursesByTerms(
           WHERE cl.course_id = c.id AND cl.acad_term_id = t.term_id
         )
         AND (
-          c.code ILIKE ('%' || ${qLike} || '%')
-          OR REPLACE(c.code, '-', '') LIKE ('%' || ${codeKeyLike} || '%')
-          OR to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description,'') || ' ' || COALESCE(c.course_area,''))
-             @@ to_tsquery('simple', ${tsQuery}::text)
-          OR word_similarity(c.name, ${q}) > 0.3
-          OR word_similarity(COALESCE(c.description,''), ${q}) > 0.3
-          OR word_similarity(COALESCE(c.course_area,''), ${q}) > 0.3
-          OR similarity(c.code, ${q}) > 0.3
+          ${keyword} OR ${fuzzy}
           OR EXISTS (
             SELECT 1 FROM classes clp
             JOIN professors p ON p.id = clp.professor_id
@@ -348,6 +330,7 @@ export async function searchProfessors(
   input: ProfessorSearchInput,
 ): Promise<SearchResult<ProfessorHit>> {
   const { q, tsQuery, hasQuery } = prepareQuery(input.query);
+  const { keyword, fuzzy } = professorPredicates(q, tsQuery);
 
   if (!hasQuery && !input.scope) {
     return { rows: [], total: 0 };
@@ -384,15 +367,7 @@ export async function searchProfessors(
         AND (
           ${hasQuery}::boolean = false
           OR (
-            p.name ILIKE ('%' || ${qLike} || '%')
-            OR REPLACE(p.name, ',', '') ILIKE ('%' || ${qLike} || '%')
-            OR p.slug ILIKE ('%' || ${qLike} || '%')
-            OR word_similarity(p.name, ${q}) > 0.3
-            OR EXISTS (
-              SELECT 1 FROM unnest(p.boss_aliases) AS alias
-              WHERE alias ILIKE ('%' || ${qLike} || '%')
-            )
-            OR to_tsvector('simple', p.name) @@ to_tsquery('simple', ${tsQuery}::text)
+            ${keyword} OR ${fuzzy}
           )
         )
       ORDER BY ord

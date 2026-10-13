@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
+import { readSqlCall } from "@/server/search/sql-test-helpers";
 
 // vi.mock factories are hoisted above top-level const declarations, so the
 // mock fns must be created via vi.hoisted to avoid a TDZ ("Cannot access ...
@@ -49,11 +50,8 @@ describe("roadmaps.searchCourses", () => {
     const result = await caller.roadmaps.searchCourses({ query: "statistics" });
 
     expect(queryRawMock).toHaveBeenCalledTimes(1);
-    const rawCall = queryRawMock.mock.calls[0] as unknown as [
-      TemplateStringsArray,
-      ...unknown[],
-    ];
-    const sqlFragments = rawCall[0] as unknown as string[];
+    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
+    const sqlFragments = rawCall[0];
     const params = rawCall.slice(1);
     const sql = sqlFragments.join("?");
     expect(sql).toContain("to_tsvector");
