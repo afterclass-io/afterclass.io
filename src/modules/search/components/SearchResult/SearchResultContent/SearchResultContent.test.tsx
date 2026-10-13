@@ -6,6 +6,7 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -13,14 +14,37 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { SearchResultContent } from "./SearchResultContent";
 
 const m = vi.hoisted(() => ({
+  intersections: new Map<string, (inView: boolean) => void>(),
   fetch:
     vi.fn<
       (entity: string, input: object, cursor: number) => Promise<unknown>
     >(),
+}));
+vi.mock("react-intersection-observer", () => ({
+  InView: ({
+    onChange,
+    children,
+    skip = false,
+    "data-test": id,
+  }: {
+    onChange: (visible: boolean) => void;
+    children: React.ReactNode;
+    skip?: boolean;
+    "data-test": string;
+  }) => {
+    useEffect(() => {
+      if (skip) return;
+      m.intersections.set(id, onChange);
+      return () => {
+        m.intersections.delete(id);
+      };
+    }, [id, onChange, skip]);
+    return <div data-testid={id}>{children}</div>;
+  },
 }));
 vi.mock("next/navigation", () => ({
   useSearchParams: () => {
@@ -94,7 +118,7 @@ function setup(
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  return render(
+  const view = render(
     <SearchResultContent
       query="Singapore"
       initialCourses={initialCourses}
@@ -107,11 +131,13 @@ function setup(
       ),
     },
   );
+  return { ...view, client };
 }
 
 describe("complete search results UI", () => {
   beforeEach(() => {
     m.fetch.mockReset();
+    m.intersections.clear();
     window.history.replaceState(null, "", "/search?q=Singapore");
     const pushState = window.history.pushState.bind(window.history);
     vi.spyOn(window.history, "pushState").mockImplementation((...args) => {
@@ -301,6 +327,82 @@ describe("complete search results UI", () => {
     fireEvent.click(screen.getByRole("radio", { name: "Toggle Course" }));
     expect(screen.getByText("Singapore Politics")).toBeInTheDocument();
     expect(m.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("loads on visibility, guards repeated intersections and stops at exhaustion", async () => {
+    let resolve: (value: unknown) => void = () => undefined;
+    m.fetch.mockImplementationOnce(
+      () =>
+        new Promise((r) => {
+          resolve = r;
+        }),
+    );
+    setup();
+    const sentinel = "search-load-more-courses";
+    expect(screen.getByTestId(sentinel)).toBeInTheDocument();
+    act(() => m.intersections.get(sentinel)!(false));
+    expect(m.fetch).not.toHaveBeenCalled();
+    act(() => {
+      const callback = m.intersections.get(sentinel)!;
+      callback(true);
+      callback(true);
+    });
+    await waitFor(() => expect(m.fetch).toHaveBeenCalledTimes(1));
+    await act(async () =>
+      resolve({
+        ...initialCourses,
+        rows: [{ ...course, id: "c2", name: "Singapore Politics" }],
+        nextCursor: 2,
+      }),
+    );
+    await screen.findByText("Singapore Politics");
+    m.fetch.mockResolvedValueOnce({
+      ...initialCourses,
+      rows: [{ ...course, id: "c3", name: "Singapore History" }],
+      nextCursor: null,
+    });
+    act(() => m.intersections.get(sentinel)!(true));
+    await screen.findByText("Singapore History");
+    expect(screen.queryByTestId(sentinel)).not.toBeInTheDocument();
+    expect(m.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("removes the automatic sentinel on failure until a successful manual retry", async () => {
+    m.fetch.mockRejectedValueOnce(new Error("Network failed"));
+    setup();
+    act(() => m.intersections.get("search-load-more-courses")!(true));
+    await screen.findByRole("button", { name: "Retry courses" });
+    expect(
+      screen.queryByTestId("search-load-more-courses"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(course.name)).toBeInTheDocument();
+  });
+
+  it("rearms the sentinel after a background refetch with unchanged page count", async () => {
+    let resolve: (value: unknown) => void = () => undefined;
+    m.fetch.mockImplementationOnce(
+      () =>
+        new Promise((r) => {
+          resolve = r;
+        }),
+    );
+    const { client } = setup();
+    const sentinel = "search-load-more-courses";
+    act(() => {
+      void client.invalidateQueries({ queryKey: ["courses"] });
+    });
+    await waitFor(() => expect(m.fetch).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(m.intersections.has(sentinel)).toBe(false));
+    await act(async () => resolve(initialCourses));
+    await waitFor(() => expect(m.intersections.has(sentinel)).toBe(true));
+    m.fetch.mockResolvedValueOnce({
+      ...initialCourses,
+      rows: [{ ...course, id: "c2", name: "Singapore Politics" }],
+      nextCursor: null,
+    });
+    act(() => m.intersections.get(sentinel)!(true));
+    await screen.findByText("Singapore Politics");
+    expect(m.fetch).toHaveBeenCalledTimes(2);
   });
 
   it("allows collapsing automatically expanded related matches", async () => {

@@ -1,10 +1,12 @@
 "use client";
 
 import { useRef } from "react";
+import { InView } from "react-intersection-observer";
 import type { RouterOutputs } from "@/common/tools/trpc/react";
 import { Button } from "@/common/components/button";
 import {
   BooksIcon,
+  AfterclassIcon,
   GraduationCapIcon,
   PencilIcon,
 } from "@/common/components/icons";
@@ -99,15 +101,33 @@ export function ResultsSection({
         </div>
       )}
       {!result.isError && result.hasNextPage && (
-        <Button
-          variant="outline"
-          className="self-start"
-          disabled={result.isFetching}
-          onClick={() => void load()}
-          aria-label={`Load more ${label}`}
-        >
-          {result.isFetching ? "Loading…" : "Load more"}
-        </Button>
+        <>
+          <InView
+            key={result.data?.pages.length ?? 0}
+            as="div"
+            skip={result.isFetching}
+            className="flex w-full justify-center p-4"
+            data-test={`search-load-more-${label.replaceAll(" ", "-")}`}
+            onChange={(inView) => {
+              if (inView) void load();
+            }}
+          >
+            <AfterclassIcon
+              size={64}
+              aria-hidden
+              className="text-primary/80 animate-pulse transition-colors duration-1500"
+            />
+          </InView>
+          <Button
+            variant="outline"
+            className="sr-only focus:not-sr-only"
+            disabled={result.isFetching}
+            onClick={() => void load()}
+            aria-label={`Load more ${label}`}
+          >
+            {result.isFetching ? "Loading…" : "Load more"}
+          </Button>
+        </>
       )}
     </section>
   );
