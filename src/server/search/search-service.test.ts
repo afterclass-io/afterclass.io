@@ -1,12 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { PrismaClient } from "@/generated/prisma/client";
+import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 import { UniversityAbbreviation } from "@/generated/prisma/enums";
 
 import { searchCourses, searchProfessors } from "./search-service";
 
 const queryRawMock = vi.fn();
 const mockDb = {
-  $queryRaw: queryRawMock,
+  $queryRaw: (strings: TemplateStringsArray, ...values: unknown[]) => {
+    // Model Prisma's SQL-fragment flattening; retain all existing SQL/parameter assertions.
+    const sql = Prisma.sql(strings, ...values);
+    return queryRawMock(sql.strings, ...sql.values) as Promise<unknown>;
+  },
 } as unknown as PrismaClient;
 
 const courseRowDefaults = {
@@ -78,6 +82,22 @@ describe("search-service", () => {
 
       expect(queryRawMock).toHaveBeenCalledTimes(1);
       expect(result.rows).toHaveLength(1);
+    });
+
+    it("isolates indexed content candidates instead of evaluating long-text functions on every outer row", async () => {
+      queryRawMock.mockResolvedValue([]);
+      await searchCourses(mockDb, { query: "Singapore", limit: 20, cursor: 0 });
+      const sql = (
+        queryRawMock.mock.calls[0] as [string[], ...unknown[]]
+      )[0].join("?");
+      expect(sql).toContain("c.id IN (");
+      expect(sql).toContain(
+        "cardinality(show_trgm(COALESCE(c.description,'')))",
+      );
+      expect(sql).toContain(
+        "cardinality(show_trgm(COALESCE(c.course_area,'')))",
+      );
+      expect(sql).toContain("UNION ALL");
     });
 
     it("constructs SQL containing expected fragments and never contains plainto_tsquery", async () => {

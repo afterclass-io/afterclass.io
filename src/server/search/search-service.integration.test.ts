@@ -10,6 +10,8 @@ import {
   searchCourses,
   searchProfessors,
 } from "./search-service";
+import { courseContentMatches } from "./course-content-matches";
+import { buildTsQuery, escapeLike } from "./query";
 import catalog from "./fixtures/catalog.json";
 import rankingCases from "./fixtures/ranking.cases.json";
 
@@ -392,4 +394,64 @@ describe("search-service integration", () => {
       expect(codes).toEqual(expectedCodes);
     },
   );
+  it("installs the measured content expression indexes", async () => {
+    const rows = await db.$queryRaw<{ indexname: string }[]>`
+      SELECT indexname FROM pg_indexes WHERE schemaname = 'public'
+      AND indexname IN ('courses_search_content_fts_idx', 'courses_description_trigram_count_idx', 'courses_area_trigram_count_idx', 'courses_code_name_trgm_idx')
+    `;
+    expect(rows.map((row) => row.indexname).sort()).toEqual([
+      "courses_area_trigram_count_idx",
+      "courses_code_name_trgm_idx",
+      "courses_description_trigram_count_idx",
+      "courses_search_content_fts_idx",
+    ]);
+  });
+
+  it.each([
+    "Singapore",
+    "IS216",
+    "stat",
+    "probability",
+    "計算",
+    "café",
+    "%",
+    "_",
+  ])(
+    "keeps content candidate IDs identical to the original predicates for %s",
+    async (query) => {
+      const qLike = escapeLike(query);
+      const tsQuery = buildTsQuery(query);
+      const actual = await db.$queryRaw<
+        { id: string }[]
+      >`${courseContentMatches(query, qLike, tsQuery)}`;
+      const expected = await db.$queryRaw<{ id: string }[]>`
+        SELECT c.id FROM courses c WHERE
+          c.code ILIKE ('%' || ${qLike} || '%')
+          OR to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description,'') || ' ' || COALESCE(c.course_area,'')) @@ to_tsquery('simple', ${tsQuery}::text)
+          OR word_similarity(COALESCE(c.description,''), ${query}) > 0.3
+          OR word_similarity(COALESCE(c.course_area,''), ${query}) > 0.3
+      `;
+      expect([...new Set(actual.map((row) => row.id))].sort()).toEqual(
+        expected.map((row) => row.id).sort(),
+      );
+    },
+  );
+
+  it("never rejects a directional fuzzy match with the conservative cardinality bound", async () => {
+    const discarded = await db.$queryRaw<{ value: string; query: string }[]>`
+      WITH fields AS (
+        SELECT name AS value FROM courses
+        UNION ALL SELECT COALESCE(description,'') FROM courses
+        UNION ALL SELECT COALESCE(course_area,'') FROM courses
+        UNION ALL SELECT value FROM (VALUES ('日本語 日本語'), ('café café'), ('a a a'), ('')) v(value)
+      ), queries AS (
+        SELECT query FROM (VALUES ('Singapore'), ('stat'), ('probability'), ('café'), ('日本語'), ('a a'), ('%'), ('a b c d e f')) q(query)
+      )
+      SELECT value, query FROM fields CROSS JOIN queries
+      WHERE word_similarity(value, query) > 0.3 AND NOT (
+        cardinality(show_trgm(value)) BETWEEN 1 AND (ceil(cardinality(show_trgm(query)) / 0.3) + 1)::int
+      )
+    `;
+    expect(discarded).toEqual([]);
+  });
 });

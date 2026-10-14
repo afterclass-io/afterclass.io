@@ -134,6 +134,7 @@ model Courses {
   userRoadmapEntry   UserRoadmapEntry[]
   meetingPolls       MeetingPoll[]
 
+  @@index([code(ops: raw("gin_trgm_ops")), name(ops: raw("gin_trgm_ops"))], type: Gin, map: "courses_code_name_trgm_idx")
   @@map("courses")
 }
 

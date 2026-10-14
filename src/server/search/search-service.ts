@@ -3,6 +3,7 @@ import { UniversityAbbreviation } from "@/generated/prisma/enums";
 import { MIN_QUERY_LEN } from "@/common/constants/search";
 import { normalizeSearchQuery } from "@/common/tools/query-normalize";
 import { buildTsQuery, escapeLike, toCodeKey } from "./query";
+import { courseContentMatches } from "./course-content-matches";
 
 /** SMU is the only live university. Callers use this value; none hard-codes it. */
 export const DEFAULT_UNIVERSITY_ABBRV: UniversityAbbreviation =
@@ -212,13 +213,9 @@ export async function searchCourses(
         AND (
           ${hasQuery}::boolean = false
           OR (
-            c.code ILIKE ('%' || ${qLike} || '%')
+            c.id IN (${courseContentMatches(q, qLike, tsQuery)})
             OR REPLACE(c.code, '-', '') LIKE ('%' || ${codeKeyLike} || '%')
-            OR to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description,'') || ' ' || COALESCE(c.course_area,''))
-               @@ to_tsquery('simple', ${tsQuery}::text)
             OR word_similarity(c.name, ${q}) > 0.3
-            OR word_similarity(COALESCE(c.description,''), ${q}) > 0.3
-            OR word_similarity(COALESCE(c.course_area,''), ${q}) > 0.3
             OR similarity(c.code, ${q}) > 0.3
             OR (${acadTermId}::text IS NOT NULL AND EXISTS (
               SELECT 1 FROM classes clp
@@ -331,13 +328,9 @@ export async function searchCoursesByTerms(
           WHERE cl.course_id = c.id AND cl.acad_term_id = t.term_id
         )
         AND (
-          c.code ILIKE ('%' || ${qLike} || '%')
+          c.id IN (${courseContentMatches(q, qLike, tsQuery)})
           OR REPLACE(c.code, '-', '') LIKE ('%' || ${codeKeyLike} || '%')
-          OR to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description,'') || ' ' || COALESCE(c.course_area,''))
-             @@ to_tsquery('simple', ${tsQuery}::text)
           OR word_similarity(c.name, ${q}) > 0.3
-          OR word_similarity(COALESCE(c.description,''), ${q}) > 0.3
-          OR word_similarity(COALESCE(c.course_area,''), ${q}) > 0.3
           OR similarity(c.code, ${q}) > 0.3
           OR EXISTS (
             SELECT 1 FROM classes clp
