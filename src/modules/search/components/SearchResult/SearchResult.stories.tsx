@@ -1,8 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { SearchResult } from "./SearchResult";
-import { ResultsSection } from "./SearchResultContent/ResultsSection";
-import catalog from "@/server/search/fixtures/results.json";
 import {
   type SearchCourseResult,
   type SearchProfResult,
@@ -27,109 +25,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-const resultCourses = catalog.courses.slice(0, 20).map((c) => ({
-  id: c.code,
-  code: c.code,
-  name: c.name,
-  creditUnits: 1,
-  uniAbbrv: "SMU" as const,
-  reviewCount: 0,
-  profCount: 0,
-}));
-const page = {
-  rows: resultCourses,
-  totals: { matches: 27, related: 1 },
-  nextCursor: 20,
-};
-const result = {
-  data: { pages: [page] },
-  hasNextPage: true,
-  isFetching: false,
-  isLoading: false,
-  isError: false,
-  isFetchNextPageError: false,
-  fetchNextPage: () => Promise.resolve(),
-  refetch: () => Promise.resolve(),
-};
-
-export const Paginated: Story = {
-  render: () => (
-    <div className="w-full max-w-3xl">
-      <SearchResult>
-        <SearchResult.Title searchTerm="Singapore" />
-        <SearchResult.Filter
-          filters={{
-            type: [
-              { label: "All", value: "all", isDefault: true },
-              { label: "Professor", value: "professor" },
-              { label: "Course", value: "course" },
-            ],
-          }}
-          onValueChange={() => undefined}
-        />
-        <ResultsSection entity="courses" total={27} result={result} />
-      </SearchResult>
-    </div>
-  ),
-};
-
-export const LoadingMore: Story = {
-  render: () => (
-    <ResultsSection
-      entity="courses"
-      total={27}
-      result={{ ...result, isFetching: true }}
-    />
-  ),
-};
-
-export const Retry: Story = {
-  render: () => (
-    <ResultsSection
-      entity="courses"
-      total={27}
-      result={{ ...result, isError: true, isFetchNextPageError: true }}
-    />
-  ),
-};
-
-export const RelatedMatches: Story = {
-  render: () => (
-    <div className="flex w-full max-w-3xl flex-col gap-4">
-      <p className="text-muted-foreground text-sm">
-        These results have similar wording and may not contain your keyword.
-      </p>
-      <ResultsSection
-        entity="professors"
-        total={1}
-        related
-        result={{
-          ...result,
-          hasNextPage: false,
-          data: {
-            pages: [
-              {
-                rows: [
-                  {
-                    id: "sing",
-                    slug: "sing",
-                    name: "Sing",
-                    uniAbbrv: "SMU",
-                    courseCount: 0,
-                    reviewCount: 0,
-                  },
-                ],
-                totals: { matches: 0, related: 1 },
-                nextCursor: null,
-              },
-            ],
-          },
-        }}
-      />
-    </div>
-  ),
-};
 
 const searchedCourse = [
   {
@@ -201,31 +96,8 @@ export const Default: Story = {
           <SearchResult.Title searchTerm="test" />
           <SearchResult.Content
             query="test"
-            initialCourses={{
-              rows: searchedCourse.map((c) => ({
-                id: c.courseCode,
-                code: c.courseCode,
-                name: c.courseName,
-                creditUnits: 1,
-                uniAbbrv: c.uniAbbrv,
-                profCount: c.profCount,
-                reviewCount: c.reviewCount,
-              })),
-              totals: { matches: searchedCourse.length, related: 0 },
-              nextCursor: null,
-            }}
-            initialProfessors={{
-              rows: searchedProf.map((p) => ({
-                id: p.profSlug,
-                slug: p.profSlug,
-                name: p.profName,
-                uniAbbrv: p.uniAbbrv,
-                courseCount: p.courseCount,
-                reviewCount: p.reviewCount,
-              })),
-              totals: { matches: searchedProf.length, related: 0 },
-              nextCursor: null,
-            }}
+            searchedCourse={searchedCourse}
+            searchedProf={searchedProf}
           />
         </SearchResult>
       </div>

@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
-import { readSqlCall } from "@/server/search/sql-test-helpers";
 
 // vi.mock factories are hoisted above top-level const declarations, so the
 // mock fns must be created via vi.hoisted to avoid a TDZ ("Cannot access ...
@@ -145,7 +144,7 @@ describe("timetable.searchCourses", () => {
     // The ranked raw SQL must still include the professor-name branch, scoped
     // to the same acad term (mirrors the pre-upgrade `classes.some({
     // acadTermId, professor: { name: contains } })` branch).
-    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const sqlFragments = rawCall[0];
     const params = rawCall.slice(1);
     const sql = sqlFragments.join("?");
@@ -190,7 +189,7 @@ describe("timetable.searchCourses", () => {
       query: "ACCT 102",
     });
 
-    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const params = rawCall.slice(1);
     expect(params).toContain("ACCT102");
     expect(params).not.toContain("ACCT 102");
@@ -205,7 +204,7 @@ describe("timetable.searchCourses", () => {
       query: "statistics",
     });
 
-    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const sql = rawCall[0].join("?");
     // Now matches description/courseArea as well — old code/name-only assertion updated; see W4.
     expect(sql).toContain("to_tsquery('simple', ?::text)");
@@ -230,7 +229,7 @@ describe("timetable.searchCourses", () => {
       facultyId: 4,
     });
 
-    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const sql = rawCall[0].join("?");
     expect(sql).toContain("belong_to_faculty");
     const params = rawCall.slice(1);
@@ -243,7 +242,7 @@ describe("timetable.searchCourses", () => {
 
     await caller.timetable.searchCourses({ acadTermId: "t1", query: "tech" });
 
-    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const params = rawCall.slice(1);
     expect(params).toContain(null);
   });
@@ -254,7 +253,7 @@ describe("timetable.searchCourses", () => {
 
     await caller.timetable.searchCourses({ acadTermId: "t1", query: "IS210" });
 
-    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const sql = rawCall[0].join("?");
     const params = rawCall.slice(1);
     expect(params).toContain("IS210");
@@ -278,7 +277,7 @@ describe("timetable.searchCourses", () => {
       facultyId: 4,
     });
 
-    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const sql = rawCall[0].join("?");
     expect(sql).toContain("belong_to_faculty");
     const orderBy = sql.slice(sql.indexOf("ORDER BY"));
@@ -297,7 +296,7 @@ describe("timetable.searchCourses", () => {
       endsBefore: "22:00",
     });
 
-    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const sql = rawCall[0].join("?");
     const params = rawCall.slice(1);
     // Same semantics as classes.getAll: one timing row must satisfy every
@@ -318,7 +317,7 @@ describe("timetable.searchCourses", () => {
 
     await caller.timetable.searchCourses({ acadTermId: "t1", query: "IS" });
 
-    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const params = rawCall.slice(1);
     // Gate flag false => the class_timing EXISTS short-circuits, so courses
     // whose classes have no timings still match, exactly as before.
@@ -339,7 +338,7 @@ describe("timetable.searchCourses", () => {
       facultyId: 4,
     });
 
-    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const sql = rawCall[0].join("?");
     const params = rawCall.slice(1);
     expect(params).toContain(null);
@@ -366,7 +365,7 @@ describe("timetable.searchCourses", () => {
 
     await caller.timetable.searchCourses({ acadTermId: "t1", query: "IS" });
 
-    const rawCall = readSqlCall(queryRawMock.mock.calls[0]!);
+    const rawCall = queryRawMock.mock.calls[0] as [string[], ...unknown[]];
     const params = rawCall.slice(1);
     expect(params).toContain(null);
     const sql = rawCall[0].join("?");

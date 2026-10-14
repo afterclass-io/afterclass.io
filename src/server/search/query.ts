@@ -1,17 +1,4 @@
-import { MIN_QUERY_LEN } from "@/common/constants/search";
-import { normalizeSearchQuery } from "@/common/tools/query-normalize";
-
 const MAX_TSQUERY_TOKENS = 8;
-
-export function prepareQuery(raw: string) {
-  const q = normalizeSearchQuery(raw);
-  const tsQuery = buildTsQuery(q);
-  return {
-    q,
-    tsQuery,
-    hasQuery: q.length >= MIN_QUERY_LEN && tsQuery !== null,
-  };
-}
 
 /** Returns a to_tsquery string such as "cor:* & stat1202:*", or null if no token remains. */
 export function buildTsQuery(q: string): string | null {

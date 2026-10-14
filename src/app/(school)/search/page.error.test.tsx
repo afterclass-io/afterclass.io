@@ -2,15 +2,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({
   auth: vi.fn(),
-  searchCourseResults: vi.fn(),
-  searchProfessorResults: vi.fn(),
+  searchCourses: vi.fn(),
+  searchProfessors: vi.fn(),
 }));
 
 vi.mock("@/server/auth", () => ({ auth: m.auth }));
 vi.mock("@/server/db", () => ({ db: {} }));
 vi.mock("@/server/search/search-service", () => ({
-  searchCourseResults: m.searchCourseResults,
-  searchProfessorResults: m.searchProfessorResults,
+  DEFAULT_UNIVERSITY_ABBRV: "SMU",
+  searchCourses: m.searchCourses,
+  searchProfessors: m.searchProfessors,
 }));
 
 import Search from "./page";
@@ -26,12 +27,8 @@ describe("Search page failure", () => {
 
   it("lets a search service error reach the error boundary", async () => {
     const failure = new Error("connection refused");
-    m.searchCourseResults.mockRejectedValue(failure);
-    m.searchProfessorResults.mockResolvedValue({
-      rows: [],
-      totals: { matches: 0, related: 0 },
-      nextCursor: null,
-    });
+    m.searchCourses.mockRejectedValue(failure);
+    m.searchProfessors.mockResolvedValue({ rows: [], total: 0 });
 
     await expect(
       Search({ searchParams: Promise.resolve({ q: "IS215" }) }),

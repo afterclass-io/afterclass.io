@@ -14,7 +14,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect } from "react";
 import { SearchResultContent } from "./SearchResultContent";
 
 const m = vi.hoisted(() => ({
@@ -29,7 +29,7 @@ vi.mock("react-intersection-observer", () => ({
     onChange,
     children,
     skip = false,
-    "data-test": id,
+    "data-test": id = "search-sentinel",
   }: {
     onChange: (visible: boolean) => void;
     children: React.ReactNode;
@@ -44,18 +44,6 @@ vi.mock("react-intersection-observer", () => ({
       };
     }, [id, onChange, skip]);
     return <div data-testid={id}>{children}</div>;
-  },
-}));
-vi.mock("next/navigation", () => ({
-  useSearchParams: () => {
-    const search = useSyncExternalStore(
-      (listener) => {
-        window.addEventListener("popstate", listener);
-        return () => window.removeEventListener("popstate", listener);
-      },
-      () => window.location.search,
-    );
-    return new URLSearchParams(search);
   },
 }));
 vi.mock("@/common/tools/trpc/react", () => ({
@@ -93,335 +81,216 @@ vi.mock("../SearchResultItem", () => ({
 }));
 
 const course = {
-  id: "c1",
-  code: "LAW108",
-  name: "The Singapore Legal System",
+  courseCode: "LAW108",
+  courseName: "Singapore Legal System",
   uniAbbrv: "SMU" as const,
-  creditUnits: 1,
   profCount: 0,
   reviewCount: 0,
 };
-const initialCourses = {
-  rows: [course],
-  totals: { matches: 3, related: 1 },
-  nextCursor: 1,
+const professor = {
+  profSlug: "tan",
+  profName: "Tan",
+  uniAbbrv: "SMU" as const,
+  courseCount: 0,
+  reviewCount: 0,
 };
-const initialProfessors = {
-  rows: [],
-  totals: { matches: 0, related: 1 },
-  nextCursor: null,
+const props = {
+  query: "Singapore",
+  searchedCourse: [course],
+  searchedProf: [professor],
+  courseTotal: 2,
+  profTotal: 1,
 };
-
 function setup(
   overrides: Partial<React.ComponentProps<typeof SearchResultContent>> = {},
 ) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  const view = render(
-    <SearchResultContent
-      query="Singapore"
-      initialCourses={initialCourses}
-      initialProfessors={initialProfessors}
-      {...overrides}
-    />,
-    {
-      wrapper: ({ children }) => (
-        <QueryClientProvider client={client}>{children}</QueryClientProvider>
-      ),
-    },
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={client}>{children}</QueryClientProvider>
   );
-  return { ...view, client };
+  return {
+    ...render(<SearchResultContent {...props} {...overrides} />, { wrapper }),
+    client,
+  };
 }
-
-describe("complete search results UI", () => {
-  beforeEach(() => {
-    m.fetch.mockReset();
-    m.intersections.clear();
-    window.history.replaceState(null, "", "/search?q=Singapore");
-    const pushState = window.history.pushState.bind(window.history);
-    vi.spyOn(window.history, "pushState").mockImplementation((...args) => {
-      pushState(...args);
-      window.dispatchEvent(new PopStateEvent("popstate"));
-    });
+afterEach(cleanup);
+beforeEach(() => {
+  m.fetch.mockReset();
+  m.intersections.clear();
+});
+async function scroll() {
+  await act(async () => {
+    m.intersections.get("search-sentinel")?.(true);
   });
-  afterEach(() => {
-    cleanup();
-    vi.restoreAllMocks();
-  });
-
-  it("renders totals, defers related requests and appends without duplicates", async () => {
+}
+describe("paginated search", () => {
+  it("loads on scroll and deduplicates overlapping rows", async () => {
     m.fetch.mockResolvedValue({
       rows: [
         course,
-        { ...course, id: "c2", code: "LAW109", name: "Singapore Politics" },
+        { ...course, courseCode: "LAW109", courseName: "Singapore II" },
       ],
-      totals: { matches: 3, related: 1 },
+      total: 2,
       nextCursor: null,
     });
     setup();
-    expect(screen.getByText("Showing 1 of 3 courses")).toBeInTheDocument();
-    expect(m.fetch).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Load more courses" }));
-    await screen.findByText("Singapore Politics");
-    expect(screen.getAllByText(course.name)).toHaveLength(1);
-    expect(screen.getByText("Showing 2 of 3 courses")).toBeInTheDocument();
-    expect(m.fetch).toHaveBeenCalledTimes(1);
+    await scroll();
+    expect(await screen.findByText("Singapore II")).toBeInTheDocument();
+    expect(screen.getAllByText(course.courseName)).toHaveLength(1);
+    expect(m.fetch).toHaveBeenCalledWith(
+      "courses",
+      { query: "Singapore", limit: 20 },
+      1,
+    );
     expect(
-      screen.queryByRole("button", { name: "Load more courses" }),
+      screen.queryByRole("button", { name: "Load more results" }),
     ).not.toBeInTheDocument();
   });
-
-  it("prevents concurrent loads and preserves cards with a retry after failure", async () => {
-    let reject: (reason: Error) => void = () => undefined;
+  it("guards repeated intersections while a request is pending", async () => {
+    let resolve!: (value: unknown) => void;
+    m.fetch.mockImplementation(
+      () =>
+        new Promise((r) => {
+          resolve = r;
+        }),
+    );
+    setup();
+    const intersect = m.intersections.get("search-sentinel")!;
+    act(() => {
+      intersect(true);
+      intersect(true);
+    });
+    expect(m.fetch).toHaveBeenCalledTimes(1);
+    await act(async () => resolve({ rows: [], total: 1, nextCursor: null }));
+  });
+  it("retains cards on failure and retries the same page", async () => {
+    m.fetch.mockRejectedValueOnce(new Error("offline")).mockResolvedValueOnce({
+      rows: [{ ...course, courseCode: "LAW109", courseName: "Singapore II" }],
+      total: 2,
+      nextCursor: null,
+    });
+    setup();
+    await scroll();
+    expect(screen.getByText(course.courseName)).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("button", { name: /Retry/ }));
+    expect(await screen.findByText("Singapore II")).toBeInTheDocument();
+    expect(m.fetch.mock.calls.map((call) => call[2])).toEqual([1, 1]);
+  });
+  it("keeps loaded cards when switching the existing type filter", async () => {
+    m.fetch.mockResolvedValue({
+      rows: [{ ...course, courseCode: "LAW109", courseName: "Singapore II" }],
+      total: 2,
+      nextCursor: null,
+    });
+    setup();
+    await scroll();
+    fireEvent.click(screen.getByText("Professor"));
+    expect(screen.queryByText("Singapore II")).not.toBeInTheDocument();
+    expect(screen.getByText("Tan")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("All"));
+    expect(screen.getByText("Singapore II")).toBeInTheDocument();
+    expect(m.fetch).toHaveBeenCalledTimes(1);
+  });
+  it("uses separate caches and resets on a new query", async () => {
+    m.fetch.mockResolvedValue({
+      rows: [{ ...course, courseCode: "LAW109", courseName: "Singapore II" }],
+      total: 2,
+      nextCursor: null,
+    });
+    const view = setup();
+    await scroll();
+    view.rerender(
+      <SearchResultContent
+        {...props}
+        query="Economics"
+        searchedCourse={[{ ...course, courseName: "Economics" }]}
+        courseTotal={1}
+      />,
+    );
+    expect(screen.queryByText("Singapore II")).not.toBeInTheDocument();
+    expect(screen.getByText("Economics")).toBeInTheDocument();
+  });
+  it("retries an exhausted background refresh with refetch", async () => {
+    const { client } = setup({
+      courseTotal: 1,
+      searchedProf: [],
+      profTotal: 0,
+    });
+    m.fetch.mockRejectedValueOnce(new Error("offline"));
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: ["courses"] });
+    });
+    expect(screen.getByText(course.courseName)).toBeInTheDocument();
+    m.fetch.mockResolvedValueOnce({
+      rows: [course],
+      total: 1,
+      nextCursor: null,
+    });
+    fireEvent.click(await screen.findByRole("button", { name: /Retry/ }));
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: /Retry/ }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(m.fetch).toHaveBeenCalledTimes(2);
+    expect(m.fetch.mock.calls.map((call) => call[2])).toEqual([0, 0]);
+  });
+  it("pauses the shared loader across filter changes during a failed load", async () => {
+    let reject!: (reason: Error) => void;
     m.fetch.mockImplementationOnce(
       () =>
-        new Promise((_, r) => {
+        new Promise((_resolve, r) => {
           reject = r;
         }),
     );
-    setup();
-    const button = screen.getByRole("button", { name: "Load more courses" });
-    fireEvent.click(button);
-    fireEvent.click(button);
-    await waitFor(() => expect(m.fetch).toHaveBeenCalledTimes(1));
-    expect(button).toBeDisabled();
-    reject(new Error("Network failed"));
-    await screen.findByRole("button", { name: "Retry courses" });
-    expect(screen.getByText(course.name)).toBeInTheDocument();
-    m.fetch.mockResolvedValue({
-      rows: [{ ...course, id: "c2", name: "Singapore Politics" }],
-      totals: initialCourses.totals,
-      nextCursor: null,
+    setup({ profTotal: 2 });
+    fireEvent.click(screen.getByText("Course"));
+    act(() => {
+      m.intersections.get("search-sentinel")!(true);
     });
-    fireEvent.click(screen.getByRole("button", { name: "Retry courses" }));
-    await screen.findByText("Singapore Politics");
-  });
-
-  it("loads fuzzy matches only on expansion and keeps them in a separate section", async () => {
-    m.fetch.mockImplementation((entity) =>
-      Promise.resolve({
-        rows:
-          entity === "professors"
-            ? [
-                {
-                  id: "p1",
-                  name: "Sing",
-                  slug: "sing",
-                  uniAbbrv: "SMU",
-                  courseCount: 0,
-                  reviewCount: 0,
-                },
-              ]
-            : [],
-        totals: { matches: 0, related: 1 },
-        nextCursor: null,
-      }),
-    );
-    setup();
-    fireEvent.click(screen.getByRole("button", { name: /Related matches/ }));
-    await screen.findByText("Sing");
-    expect(m.fetch).toHaveBeenCalledTimes(2);
-    expect(
-      screen.getByText(
-        "These results have similar wording and may not contain your keyword.",
-      ),
-    ).toBeInTheDocument();
-  });
-
-  it("updates the type URL, retains batches and automatically expands related-only results", async () => {
-    m.fetch.mockResolvedValue({
-      rows: [],
-      totals: initialProfessors.totals,
-      nextCursor: null,
-    });
-    setup();
-    fireEvent.click(screen.getByRole("radio", { name: "Toggle Professor" }));
-    expect(window.location.search).toContain("type=professor");
-    await waitFor(() => expect(m.fetch).toHaveBeenCalledTimes(1));
-    expect(screen.queryByText(course.name)).not.toBeInTheDocument();
-    expect(screen.queryByText(/No results for/)).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("radio", { name: "Toggle Course" }));
-    expect(screen.getByText(course.name)).toBeInTheDocument();
-    expect(screen.getByText("Showing 1 of 3 courses")).toBeInTheDocument();
-  });
-
-  it("renders short and truly empty states without fetching", () => {
-    const empty = {
-      rows: [],
-      totals: { matches: 0, related: 0 },
-      nextCursor: null,
-    };
-    const view = setup({
-      query: "i",
-      initialCourses: empty,
-      initialProfessors: empty,
-    });
-    expect(screen.getByText("Type 2 or more characters.")).toBeInTheDocument();
-    expect(m.fetch).not.toHaveBeenCalled();
-    view.unmount();
-    setup({
-      query: "Unknown",
-      initialCourses: empty,
-      initialProfessors: empty,
-    });
-    expect(screen.getByText("No results for “Unknown”.")).toBeInTheDocument();
-  });
-
-  it("isolates a changed query from an older request still in flight", async () => {
-    let resolve: (value: unknown) => void = () => undefined;
-    m.fetch.mockImplementationOnce(
-      () =>
-        new Promise((r) => {
-          resolve = r;
-        }),
-    );
-    const view = setup();
-    fireEvent.click(screen.getByRole("button", { name: "Load more courses" }));
-    await waitFor(() => expect(m.fetch).toHaveBeenCalledTimes(1));
-    const next = {
-      rows: [{ ...course, id: "new", name: "Accounting" }],
-      totals: { matches: 1, related: 0 },
-      nextCursor: null,
-    };
-    view.rerender(
-      <SearchResultContent
-        query="Accounting"
-        initialCourses={next}
-        initialProfessors={{
-          ...initialProfessors,
-          totals: { matches: 0, related: 0 },
-        }}
-      />,
-    );
-    expect(screen.getByText("Accounting")).toBeInTheDocument();
-    resolve({
-      ...initialCourses,
-      rows: [{ ...course, id: "old", name: "Old Singapore result" }],
-      nextCursor: null,
+    fireEvent.click(screen.getByText("Professor"));
+    expect(m.intersections.has("search-sentinel")).toBe(false);
+    await act(async () => {
+      reject(new Error("offline"));
     });
     await waitFor(() =>
-      expect(
-        screen.queryByText("Old Singapore result"),
-      ).not.toBeInTheDocument(),
+      expect(m.intersections.has("search-sentinel")).toBe(true),
     );
-    expect(screen.queryByText(course.name)).not.toBeInTheDocument();
-  });
-
-  it("retains appended batches across type changes", async () => {
-    m.fetch.mockResolvedValue({
-      ...initialCourses,
-      rows: [{ ...course, id: "c2", name: "Singapore Politics" }],
+    m.fetch.mockResolvedValueOnce({
+      rows: [{ ...professor, profSlug: "lee", profName: "Lee" }],
+      total: 2,
       nextCursor: null,
     });
-    setup({
-      initialProfessors: {
-        ...initialProfessors,
-        totals: { matches: 0, related: 0 },
-      },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Load more courses" }));
-    await screen.findByText("Singapore Politics");
-    fireEvent.click(screen.getByRole("radio", { name: "Toggle Professor" }));
-    expect(screen.queryByText("Singapore Politics")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("radio", { name: "Toggle Course" }));
-    expect(screen.getByText("Singapore Politics")).toBeInTheDocument();
-    expect(m.fetch).toHaveBeenCalledTimes(1);
+    await scroll();
+    expect(await screen.findByText("Lee")).toBeInTheDocument();
   });
-
-  it("loads on visibility, guards repeated intersections and stops at exhaustion", async () => {
-    let resolve: (value: unknown) => void = () => undefined;
-    m.fetch.mockImplementationOnce(
-      () =>
-        new Promise((r) => {
-          resolve = r;
-        }),
-    );
-    setup();
-    const sentinel = "search-load-more-courses";
-    expect(screen.getByTestId(sentinel)).toBeInTheDocument();
-    act(() => m.intersections.get(sentinel)!(false));
+  it("shows the short-query hint without making requests", () => {
+    setup({ query: "S" });
     expect(m.fetch).not.toHaveBeenCalled();
-    act(() => {
-      const callback = m.intersections.get(sentinel)!;
-      callback(true);
-      callback(true);
-    });
-    await waitFor(() => expect(m.fetch).toHaveBeenCalledTimes(1));
-    await act(async () =>
-      resolve({
-        ...initialCourses,
-        rows: [{ ...course, id: "c2", name: "Singapore Politics" }],
-        nextCursor: 2,
-      }),
+    expect(screen.queryByText(course.courseName)).not.toBeInTheDocument();
+  });
+  it("re-arms the scroll loader after a background refresh", async () => {
+    m.fetch.mockImplementation(async (_entity, _input, cursor) =>
+      cursor === 0 || cursor === undefined
+        ? { rows: [course], total: 2, nextCursor: 1 }
+        : {
+            rows: [
+              { ...course, courseCode: "LAW109", courseName: "Singapore II" },
+            ],
+            total: 2,
+            nextCursor: null,
+          },
     );
-    await screen.findByText("Singapore Politics");
-    m.fetch.mockResolvedValueOnce({
-      ...initialCourses,
-      rows: [{ ...course, id: "c3", name: "Singapore History" }],
-      nextCursor: null,
+    const { client } = setup({ searchedProf: [], profTotal: 0 });
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: ["courses"] });
     });
-    act(() => m.intersections.get(sentinel)!(true));
-    await screen.findByText("Singapore History");
-    expect(screen.queryByTestId(sentinel)).not.toBeInTheDocument();
-    expect(m.fetch).toHaveBeenCalledTimes(2);
-  });
-
-  it("removes the automatic sentinel on failure until a successful manual retry", async () => {
-    m.fetch.mockRejectedValueOnce(new Error("Network failed"));
-    setup();
-    act(() => m.intersections.get("search-load-more-courses")!(true));
-    await screen.findByRole("button", { name: "Retry courses" });
-    expect(
-      screen.queryByTestId("search-load-more-courses"),
-    ).not.toBeInTheDocument();
-    expect(screen.getByText(course.name)).toBeInTheDocument();
-  });
-
-  it("rearms the sentinel after a background refetch with unchanged page count", async () => {
-    let resolve: (value: unknown) => void = () => undefined;
-    m.fetch.mockImplementationOnce(
-      () =>
-        new Promise((r) => {
-          resolve = r;
-        }),
+    await waitFor(() =>
+      expect(m.intersections.has("search-sentinel")).toBe(true),
     );
-    const { client } = setup();
-    const sentinel = "search-load-more-courses";
-    act(() => {
-      void client.invalidateQueries({ queryKey: ["courses"] });
-    });
-    await waitFor(() => expect(m.fetch).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(m.intersections.has(sentinel)).toBe(false));
-    await act(async () => resolve(initialCourses));
-    await waitFor(() => expect(m.intersections.has(sentinel)).toBe(true));
-    m.fetch.mockResolvedValueOnce({
-      ...initialCourses,
-      rows: [{ ...course, id: "c2", name: "Singapore Politics" }],
-      nextCursor: null,
-    });
-    act(() => m.intersections.get(sentinel)!(true));
-    await screen.findByText("Singapore Politics");
-    expect(m.fetch).toHaveBeenCalledTimes(2);
-  });
-
-  it("allows collapsing automatically expanded related matches", async () => {
-    m.fetch.mockResolvedValue({
-      rows: [],
-      totals: initialProfessors.totals,
-      nextCursor: null,
-    });
-    setup({
-      initialCourses: {
-        rows: [],
-        totals: { matches: 0, related: 0 },
-        nextCursor: null,
-      },
-    });
-    await waitFor(() => expect(m.fetch).toHaveBeenCalledTimes(1));
-    const button = screen.getByRole("button", { name: /Related matches/ });
-    expect(button).toHaveAttribute("aria-expanded", "true");
-    fireEvent.click(button);
-    expect(button).toHaveAttribute("aria-expanded", "false");
+    await scroll();
+    expect(await screen.findByText("Singapore II")).toBeInTheDocument();
   });
 });

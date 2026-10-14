@@ -1,9 +1,8 @@
 import type { PrismaClient } from "@/generated/prisma/client";
 import { UniversityAbbreviation } from "@/generated/prisma/enums";
-import { escapeLike, prepareQuery, toCodeKey } from "./query";
-import { coursePredicates, professorPredicates } from "./predicates";
-
-export { searchCourseResults, searchProfessorResults } from "./search-results";
+import { MIN_QUERY_LEN } from "@/common/constants/search";
+import { normalizeSearchQuery } from "@/common/tools/query-normalize";
+import { buildTsQuery, escapeLike, toCodeKey } from "./query";
 
 /** SMU is the only live university. Callers use this value; none hard-codes it. */
 export const DEFAULT_UNIVERSITY_ABBRV: UniversityAbbreviation =
@@ -33,6 +32,7 @@ export type ProfessorHit = {
 export type CourseSearchInput = {
   query: string;
   limit: number; // 1..50, set by the caller
+  cursor?: number;
   universityAbbrv?: UniversityAbbreviation;
   acadTermId?: string;
   facultyId?: number;
@@ -57,6 +57,7 @@ export type CourseTermsSearchResult = {
 export type ProfessorSearchInput = {
   query: string;
   limit: number;
+  cursor?: number;
   universityAbbrv?: UniversityAbbreviation;
   scope?: { courseCode: string };
   withCounts?: boolean;
@@ -92,6 +93,13 @@ type ProfessorRow = {
   reviewCount?: bigint | number;
 };
 
+function prepareQuery(raw: string) {
+  const q = normalizeSearchQuery(raw);
+  const tsQuery = buildTsQuery(q);
+  const hasQuery = q.length >= MIN_QUERY_LEN && tsQuery !== null;
+  return { q, tsQuery, hasQuery };
+}
+
 function countIfRequested(
   requested: boolean,
   count: bigint | number | undefined,
@@ -103,13 +111,42 @@ function exactCodeMatches(rows: CourseHit[], codeKey: string) {
   return rows.filter((r) => toCodeKey(r.code) === codeKey);
 }
 
+/** Exact codes remain exclusive for legacy callers; page mode enforces this in SQL. */
+function applyExactCodeShortcut(
+  result: SearchResult<CourseHit>,
+  codeKey: string,
+  enabled: boolean,
+) {
+  if (!enabled || !codeKey) return result;
+  const rows = exactCodeMatches(result.rows, codeKey);
+  return rows.length > 0 ? { rows, total: rows.length } : result;
+}
+
+function isExactCodePage(
+  input: CourseSearchInput,
+  hasQuery: boolean,
+  codeKey: string,
+) {
+  return input.cursor !== undefined && hasQuery && codeKey.length > 0;
+}
+
+/** The LEFT JOIN retains the total on empty pages; its null row is not a hit. */
+function mapSearchRows<T extends { id: string; count: bigint | number }, U>(
+  rows: T[],
+  map: (row: T) => U,
+): SearchResult<U> {
+  return {
+    total: Number(rows[0]?.count ?? 0),
+    rows: rows.filter((row) => row.id != null).map(map),
+  };
+}
+
 export async function searchCourses(
   db: PrismaClient,
   input: CourseSearchInput,
 ): Promise<SearchResult<CourseHit>> {
   const { q, tsQuery, hasQuery } = prepareQuery(input.query);
   const codeKey = toCodeKey(q);
-  const { keyword, fuzzy } = coursePredicates(q, tsQuery);
 
   if (!hasQuery && !input.scope) {
     return { rows: [], total: 0 };
@@ -132,14 +169,13 @@ export async function searchCourses(
   const limit = input.limit;
 
   const rows = await db.$queryRaw<CourseRow[]>`
-    WITH hits AS (
+    WITH matches AS (
       SELECT
         c.id,
         c.code,
         c.name,
         c.credit_units AS "creditUnits",
         u.abbrv AS "uniAbbrv",
-        COUNT(*) OVER () AS count,
         ROW_NUMBER() OVER (
           ORDER BY
             (c.code = UPPER(${q}) OR REPLACE(c.code, '-', '') = ${codeKey})::int DESC,
@@ -176,7 +212,14 @@ export async function searchCourses(
         AND (
           ${hasQuery}::boolean = false
           OR (
-            ${keyword} OR ${fuzzy}
+            c.code ILIKE ('%' || ${qLike} || '%')
+            OR REPLACE(c.code, '-', '') LIKE ('%' || ${codeKeyLike} || '%')
+            OR to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description,'') || ' ' || COALESCE(c.course_area,''))
+               @@ to_tsquery('simple', ${tsQuery}::text)
+            OR word_similarity(c.name, ${q}) > 0.3
+            OR word_similarity(COALESCE(c.description,''), ${q}) > 0.3
+            OR word_similarity(COALESCE(c.course_area,''), ${q}) > 0.3
+            OR similarity(c.code, ${q}) > 0.3
             OR (${acadTermId}::text IS NOT NULL AND EXISTS (
               SELECT 1 FROM classes clp
               JOIN professors p ON p.id = clp.professor_id
@@ -189,23 +232,32 @@ export async function searchCourses(
             ))
           )
         )
-      ORDER BY ord
-      LIMIT ${limit}
+    ), filtered AS (
+      SELECT m.*, COUNT(*) OVER () AS count
+      FROM matches m
+      WHERE ${!isExactCodePage(input, hasQuery, codeKey)}::boolean
+        OR NOT EXISTS (
+          SELECT 1 FROM matches x
+          WHERE regexp_replace(UPPER(x.code), '[-[:space:]‐‑‒–—―−]+', '', 'g') = ${codeKey}
+        )
+        OR regexp_replace(UPPER(m.code), '[-[:space:]‐‑‒–—―−]+', '', 'g') = ${codeKey}
+    ), hits AS (
+      SELECT * FROM filtered ORDER BY ord LIMIT ${limit} OFFSET ${input.cursor ?? 0}
     )
     SELECT
-      h.id, h.code, h.name, h."creditUnits", h."uniAbbrv", h.count,
+      h.id, h.code, h.name, h."creditUnits", h."uniAbbrv", t.count,
       CASE WHEN ${withCounts}::boolean
         THEN (SELECT COUNT(DISTINCT cl.professor_id)::int FROM classes cl WHERE cl.course_id = h.id)
         ELSE 0 END AS "profCount",
       CASE WHEN ${withCounts}::boolean
         THEN (SELECT COUNT(*)::int FROM reviews rv WHERE rv.reviewed_course_id = h.id)
         ELSE 0 END AS "reviewCount"
-    FROM hits h
+    FROM (SELECT COALESCE(MAX(count), 0) AS count FROM filtered) t
+    LEFT JOIN hits h ON true
     ORDER BY h.ord;
   `;
 
-  const total = Number(rows[0]?.count ?? 0);
-  const mappedRows: CourseHit[] = rows.map((r) => ({
+  const result = mapSearchRows(rows, (r): CourseHit => ({
     id: r.id,
     code: r.code,
     name: r.name,
@@ -215,14 +267,11 @@ export async function searchCourses(
     reviewCount: countIfRequested(withCounts, r.reviewCount),
   }));
 
-  if (hasQuery && codeKey) {
-    const exact = exactCodeMatches(mappedRows, codeKey);
-    if (exact.length > 0) {
-      return { rows: exact, total: exact.length };
-    }
-  }
-
-  return { rows: mappedRows, total };
+  return applyExactCodeShortcut(
+    result,
+    codeKey,
+    input.cursor === undefined && hasQuery,
+  );
 }
 
 /**
@@ -251,7 +300,6 @@ export async function searchCoursesByTerms(
   const codeKeyLike = escapeLike(codeKey);
   const facultyId = input.facultyId ?? null;
   const limitPerTerm = input.limitPerTerm;
-  const { keyword, fuzzy } = coursePredicates(q, tsQuery);
 
   const rows = await db.$queryRaw<CourseTermRow[]>`
     WITH terms AS (
@@ -283,7 +331,14 @@ export async function searchCoursesByTerms(
           WHERE cl.course_id = c.id AND cl.acad_term_id = t.term_id
         )
         AND (
-          ${keyword} OR ${fuzzy}
+          c.code ILIKE ('%' || ${qLike} || '%')
+          OR REPLACE(c.code, '-', '') LIKE ('%' || ${codeKeyLike} || '%')
+          OR to_tsvector('simple', c.code || ' ' || c.name || ' ' || COALESCE(c.description,'') || ' ' || COALESCE(c.course_area,''))
+             @@ to_tsquery('simple', ${tsQuery}::text)
+          OR word_similarity(c.name, ${q}) > 0.3
+          OR word_similarity(COALESCE(c.description,''), ${q}) > 0.3
+          OR word_similarity(COALESCE(c.course_area,''), ${q}) > 0.3
+          OR similarity(c.code, ${q}) > 0.3
           OR EXISTS (
             SELECT 1 FROM classes clp
             JOIN professors p ON p.id = clp.professor_id
@@ -330,7 +385,6 @@ export async function searchProfessors(
   input: ProfessorSearchInput,
 ): Promise<SearchResult<ProfessorHit>> {
   const { q, tsQuery, hasQuery } = prepareQuery(input.query);
-  const { keyword, fuzzy } = professorPredicates(q, tsQuery);
 
   if (!hasQuery && !input.scope) {
     return { rows: [], total: 0 };
@@ -343,7 +397,7 @@ export async function searchProfessors(
   const limit = input.limit;
 
   const rows = await db.$queryRaw<ProfessorRow[]>`
-    WITH hits AS (
+    WITH matches AS (
       SELECT
         p.id,
         p.slug,
@@ -354,7 +408,7 @@ export async function searchProfessors(
           ORDER BY
             (p.name ILIKE (${qLike} || '%'))::int DESC,
             word_similarity(p.name, ${q}) DESC,
-            p.name
+            p.name, p.id
         ) AS ord
       FROM professors p
       JOIN universities u ON u.id = p.belong_to_university
@@ -367,26 +421,34 @@ export async function searchProfessors(
         AND (
           ${hasQuery}::boolean = false
           OR (
-            ${keyword} OR ${fuzzy}
+            p.name ILIKE ('%' || ${qLike} || '%')
+            OR REPLACE(p.name, ',', '') ILIKE ('%' || ${qLike} || '%')
+            OR p.slug ILIKE ('%' || ${qLike} || '%')
+            OR word_similarity(p.name, ${q}) > 0.3
+            OR EXISTS (
+              SELECT 1 FROM unnest(p.boss_aliases) AS alias
+              WHERE alias ILIKE ('%' || ${qLike} || '%')
+            )
+            OR to_tsvector('simple', p.name) @@ to_tsquery('simple', ${tsQuery}::text)
           )
         )
-      ORDER BY ord
-      LIMIT ${limit}
+    ), hits AS (
+      SELECT * FROM matches ORDER BY ord LIMIT ${limit} OFFSET ${input.cursor ?? 0}
     )
     SELECT
-      h.id, h.slug, h.name, h."uniAbbrv", h.count,
+      h.id, h.slug, h.name, h."uniAbbrv", t.count,
       CASE WHEN ${withCounts}::boolean
         THEN (SELECT COUNT(DISTINCT cl.course_id)::int FROM classes cl WHERE cl.professor_id = h.id)
         ELSE 0 END AS "courseCount",
       CASE WHEN ${withCounts}::boolean
         THEN (SELECT COUNT(*)::int FROM reviews rv WHERE rv.reviewed_professor_id = h.id)
         ELSE 0 END AS "reviewCount"
-    FROM hits h
+    FROM (SELECT COALESCE(MAX(count), 0) AS count FROM matches) t
+    LEFT JOIN hits h ON true
     ORDER BY h.ord;
   `;
 
-  const total = Number(rows[0]?.count ?? 0);
-  const mappedRows: ProfessorHit[] = rows.map((r) => ({
+  return mapSearchRows(rows, (r): ProfessorHit => ({
     id: r.id,
     slug: r.slug,
     name: r.name,
@@ -394,6 +456,4 @@ export async function searchProfessors(
     courseCount: countIfRequested(withCounts, r.courseCount),
     reviewCount: countIfRequested(withCounts, r.reviewCount),
   }));
-
-  return { rows: mappedRows, total };
 }

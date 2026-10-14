@@ -1,31 +1,21 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import type { ComponentProps, ReactElement } from "react";
-import type { SearchResultContent } from "@/modules/search/components/SearchResult/SearchResultContent/SearchResultContent";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({
   auth: vi.fn(),
-  searchCourseResults: vi.fn(),
-  searchProfessorResults: vi.fn(),
+  searchCourses: vi.fn(),
+  searchProfessors: vi.fn(),
 }));
 
 vi.mock("@/server/auth", () => ({ auth: m.auth }));
 vi.mock("@/server/db", () => ({ db: {} }));
 vi.mock("@/server/search/search-service", () => ({
-  searchCourseResults: m.searchCourseResults,
-  searchProfessorResults: m.searchProfessorResults,
+  DEFAULT_UNIVERSITY_ABBRV: "SMU",
+  searchCourses: m.searchCourses,
+  searchProfessors: m.searchProfessors,
 }));
 
 import Search from "./page";
-
-type PageTree = ReactElement<{
-  children: ReactElement<{
-    children: [
-      unknown,
-      ReactElement<ComponentProps<typeof SearchResultContent>>,
-    ];
-  }>;
-}>;
 
 describe("Search page", () => {
   beforeEach(() => {
@@ -35,14 +25,14 @@ describe("Search page", () => {
   it("does not call search services when query is empty", async () => {
     const jsx = await Search({ searchParams: Promise.resolve({ q: "" }) });
     expect(m.auth).not.toHaveBeenCalled();
-    expect(m.searchCourseResults).not.toHaveBeenCalled();
-    expect(m.searchProfessorResults).not.toHaveBeenCalled();
+    expect(m.searchCourses).not.toHaveBeenCalled();
+    expect(m.searchProfessors).not.toHaveBeenCalled();
     expect(jsx).toBeDefined();
   });
 
-  it("seeds 20 keyword results with withCounts: false when signed out", async () => {
+  it("calls search services with withCounts: false and DEFAULT_UNIVERSITY_ABBRV when signed out", async () => {
     m.auth.mockResolvedValue(null);
-    m.searchCourseResults.mockResolvedValue({
+    m.searchCourses.mockResolvedValue({
       rows: [
         {
           id: "1",
@@ -54,10 +44,9 @@ describe("Search page", () => {
           reviewCount: 0,
         },
       ],
-      totals: { matches: 1, related: 0 },
-      nextCursor: null,
+      total: 1,
     });
-    m.searchProfessorResults.mockResolvedValue({
+    m.searchProfessors.mockResolvedValue({
       rows: [
         {
           id: "2",
@@ -68,111 +57,87 @@ describe("Search page", () => {
           reviewCount: 0,
         },
       ],
-      totals: { matches: 1, related: 0 },
-      nextCursor: null,
+      total: 1,
     });
 
     const jsx = await Search({ searchParams: Promise.resolve({ q: "IS215" }) });
 
     expect(m.auth).toHaveBeenCalledTimes(1);
-    expect(m.searchCourseResults).toHaveBeenCalledWith(
+    expect(m.searchCourses).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         query: "IS215",
         limit: 20,
+        cursor: 0,
         withCounts: false,
-        group: "matches",
+        universityAbbrv: "SMU",
       }),
     );
-    expect(m.searchProfessorResults).toHaveBeenCalledWith(
+    expect(m.searchProfessors).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         query: "IS215",
         limit: 20,
+        cursor: 0,
         withCounts: false,
-        group: "matches",
+        universityAbbrv: "SMU",
       }),
     );
-    const content = (jsx as PageTree).props.children.props.children[1];
-    expect(content.props.initialCourses).toEqual(
-      await m.searchCourseResults.mock.results[0]!.value,
-    );
-    expect(content.props.initialProfessors).toEqual(
-      await m.searchProfessorResults.mock.results[0]!.value,
-    );
+    expect(jsx).toBeDefined();
   });
 
   it("calls search services with withCounts: true when signed in", async () => {
     m.auth.mockResolvedValue({ user: { id: "u1" } });
-    m.searchCourseResults.mockResolvedValue({
-      rows: [],
-      totals: { matches: 0, related: 0 },
-      nextCursor: null,
-    });
-    m.searchProfessorResults.mockResolvedValue({
-      rows: [],
-      totals: { matches: 0, related: 0 },
-      nextCursor: null,
-    });
+    m.searchCourses.mockResolvedValue({ rows: [], total: 0 });
+    m.searchProfessors.mockResolvedValue({ rows: [], total: 0 });
 
     await Search({ searchParams: Promise.resolve({ q: "CS101" }) });
 
-    expect(m.searchCourseResults).toHaveBeenCalledWith(
+    expect(m.searchCourses).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         query: "CS101",
         limit: 20,
+        cursor: 0,
         withCounts: true,
-        group: "matches",
+        universityAbbrv: "SMU",
       }),
     );
-    expect(m.searchProfessorResults).toHaveBeenCalledWith(
+    expect(m.searchProfessors).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         query: "CS101",
         limit: 20,
+        cursor: 0,
         withCounts: true,
-        group: "matches",
+        universityAbbrv: "SMU",
       }),
     );
-  });
-
-  it("caps the SSR query so pagination accepts the same search", async () => {
-    m.auth.mockResolvedValue(null);
-    const empty = {
-      rows: [],
-      totals: { matches: 0, related: 0 },
-      nextCursor: null,
-    };
-    m.searchCourseResults.mockResolvedValue(empty);
-    m.searchProfessorResults.mockResolvedValue(empty);
-    const query = "Singapore" + " ".repeat(191) + "x";
-    const jsx = await Search({ searchParams: Promise.resolve({ q: query }) });
-    expect(m.searchCourseResults).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ query: query.slice(0, 200) }),
-    );
-    const content = (jsx as PageTree).props.children.props.children[1];
-    expect(content.props.query).toBe(query.slice(0, 200));
   });
 
   it("renders the short-query state, not no results, for a one-character query", async () => {
     m.auth.mockResolvedValue(null);
-    m.searchCourseResults.mockResolvedValue({
-      rows: [],
-      totals: { matches: 0, related: 0 },
-      nextCursor: null,
-    });
-    m.searchProfessorResults.mockResolvedValue({
-      rows: [],
-      totals: { matches: 0, related: 0 },
-      nextCursor: null,
-    });
+    m.searchCourses.mockResolvedValue({ rows: [], total: 0 });
+    m.searchProfessors.mockResolvedValue({ rows: [], total: 0 });
 
     const jsx = await Search({ searchParams: Promise.resolve({ q: "i" }) });
     const html = renderToStaticMarkup(jsx);
 
     expect(html).toContain("Type 2 or more characters.");
     expect(html).not.toContain("No results");
+  });
+  it("caps the SSR query at the same length as paginated requests", async () => {
+    m.auth.mockResolvedValue(null);
+    m.searchCourses.mockResolvedValue({ rows: [], total: 0 });
+    m.searchProfessors.mockResolvedValue({ rows: [], total: 0 });
+    await Search({ searchParams: Promise.resolve({ q: "x".repeat(201) }) });
+    expect(m.searchCourses).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({ query: "x".repeat(200) }),
+    );
+    expect(m.searchProfessors).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({ query: "x".repeat(200) }),
+    );
   });
 });
