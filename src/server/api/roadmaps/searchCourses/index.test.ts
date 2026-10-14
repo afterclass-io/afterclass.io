@@ -1,3 +1,4 @@
+import { Prisma } from "@/generated/prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 
@@ -8,6 +9,12 @@ const { queryRawMock } = vi.hoisted(() => ({
   queryRawMock: vi.fn() as Mock,
 }));
 
+// Match Prisma's serialization of composed SQL without weakening SQL/parameter assertions.
+function queryRaw(strings: TemplateStringsArray, ...values: unknown[]) {
+  const sql = Prisma.sql(strings, ...values);
+  return queryRawMock(sql.strings, ...sql.values) as Promise<unknown>;
+}
+
 // `server-only` is a Next.js build-time guard that throws when imported outside
 // a Next.js server bundle. `@/server/api/root` -> timetable router ->
 // `getFeedData` imports it, so stub it as a no-op (same pattern as
@@ -15,7 +22,7 @@ const { queryRawMock } = vi.hoisted(() => ({
 vi.mock("server-only", () => ({}));
 
 vi.mock("@/server/db", () => ({
-  db: { $queryRaw: queryRawMock },
+  db: { $queryRaw: queryRaw },
 }));
 
 import { createCaller } from "@/server/api/root";
@@ -32,7 +39,7 @@ const statRow = {
 const caller = createCaller(
   () =>
     ({
-      db: { $queryRaw: queryRawMock },
+      db: { $queryRaw: queryRaw },
       session: null,
       headers: new Headers(),
     }) as never,

@@ -6,6 +6,7 @@ import {
   type SearchCourseResult,
   type SearchProfResult,
 } from "@/modules/search/types";
+import { MAX_QUERY_LEN } from "@/common/tools/query-normalize";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
 import {
@@ -25,10 +26,12 @@ export default async function Search(props: {
   searchParams: Promise<{ q?: string }>;
 }) {
   const searchParams = await props.searchParams;
-  const query = searchParams?.q ?? "";
+  const query = (searchParams?.q ?? "").slice(0, MAX_QUERY_LEN);
 
   let searchedCourse: SearchCourseResult[] = [];
   let searchedProf: SearchProfResult[] = [];
+  let courseTotal = 0;
+  let profTotal = 0;
   // No try/catch: a failed search must reach the (school) error boundary and
   // Sentry's onRequestError hook, not render as "No results found".
   if (query) {
@@ -37,18 +40,22 @@ export default async function Search(props: {
     const [coursesResult, profsResult] = await Promise.all([
       searchCourses(db, {
         query,
-        limit: 5,
+        limit: 20,
+        cursor: 0,
         withCounts,
         universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
       }),
       searchProfessors(db, {
         query,
-        limit: 5,
+        limit: 20,
+        cursor: 0,
         withCounts,
         universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
       }),
     ]);
 
+    courseTotal = coursesResult.total;
+    profTotal = profsResult.total;
     searchedCourse = coursesResult.rows.map((row) => ({
       uniAbbrv: row.uniAbbrv,
       courseCode: row.code,
@@ -72,6 +79,8 @@ export default async function Search(props: {
         <SearchResult.Title searchTerm={query} />
         <SearchResult.Content
           query={query}
+          courseTotal={courseTotal}
+          profTotal={profTotal}
           searchedCourse={searchedCourse}
           searchedProf={searchedProf}
         />

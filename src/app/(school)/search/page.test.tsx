@@ -67,7 +67,8 @@ describe("Search page", () => {
       expect.anything(),
       expect.objectContaining({
         query: "IS215",
-        limit: 5,
+        limit: 20,
+        cursor: 0,
         withCounts: false,
         universityAbbrv: "SMU",
       }),
@@ -76,7 +77,8 @@ describe("Search page", () => {
       expect.anything(),
       expect.objectContaining({
         query: "IS215",
-        limit: 5,
+        limit: 20,
+        cursor: 0,
         withCounts: false,
         universityAbbrv: "SMU",
       }),
@@ -95,7 +97,8 @@ describe("Search page", () => {
       expect.anything(),
       expect.objectContaining({
         query: "CS101",
-        limit: 5,
+        limit: 20,
+        cursor: 0,
         withCounts: true,
         universityAbbrv: "SMU",
       }),
@@ -104,7 +107,8 @@ describe("Search page", () => {
       expect.anything(),
       expect.objectContaining({
         query: "CS101",
-        limit: 5,
+        limit: 20,
+        cursor: 0,
         withCounts: true,
         universityAbbrv: "SMU",
       }),
@@ -121,5 +125,19 @@ describe("Search page", () => {
 
     expect(html).toContain("Type 2 or more characters.");
     expect(html).not.toContain("No results");
+  });
+  it("caps the SSR query at the same length as paginated requests", async () => {
+    m.auth.mockResolvedValue(null);
+    m.searchCourses.mockResolvedValue({ rows: [], total: 0 });
+    m.searchProfessors.mockResolvedValue({ rows: [], total: 0 });
+    await Search({ searchParams: Promise.resolve({ q: "x".repeat(201) }) });
+    expect(m.searchCourses).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({ query: "x".repeat(200) }),
+    );
+    expect(m.searchProfessors).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({ query: "x".repeat(200) }),
+    );
   });
 });

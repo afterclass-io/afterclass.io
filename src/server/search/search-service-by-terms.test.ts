@@ -1,12 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { PrismaClient } from "@/generated/prisma/client";
+import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 import { UniversityAbbreviation } from "@/generated/prisma/enums";
 
 import { searchCoursesByTerms } from "./search-service";
 
 const queryRawMock = vi.fn();
 const mockDb = {
-  $queryRaw: queryRawMock,
+  $queryRaw: (strings: TemplateStringsArray, ...values: unknown[]) => {
+    // Model Prisma's SQL-fragment flattening; retain all existing SQL/parameter assertions.
+    const sql = Prisma.sql(strings, ...values);
+    return queryRawMock(sql.strings, ...sql.values) as Promise<unknown>;
+  },
 } as unknown as PrismaClient;
 
 const row = (code: string, acadTermId: string) => ({
