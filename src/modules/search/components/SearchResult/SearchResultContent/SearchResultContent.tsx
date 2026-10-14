@@ -66,6 +66,7 @@ function PagedResults({
         pageParams: [undefined],
       },
       staleTime: 30_000,
+      gcTime: 0,
       getNextPageParam: (last) => last.nextCursor ?? undefined,
     },
   );
@@ -84,6 +85,7 @@ function PagedResults({
         pageParams: [undefined],
       },
       staleTime: 30_000,
+      gcTime: 0,
       getNextPageParam: (last) => last.nextCursor ?? undefined,
     },
   );
