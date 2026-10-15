@@ -71,7 +71,7 @@ describe("embedded /api/mcp", () => {
     const body = payload as {
       result?: { tools?: Array<{ name: string }> };
     };
-    expect(body.result?.tools).toHaveLength(55);
+    expect(body.result?.tools).toHaveLength(56);
     vi.unstubAllEnvs();
   }, 120_000);
 
@@ -157,7 +157,7 @@ describe("embedded /api/mcp views", () => {
     const { route, payload } = await postRpc("tools/list", {}, 3);
     const tools =
       (payload as { result?: { tools?: ToolDef[] } }).result?.tools ?? [];
-    expect(tools.length).toBe(55);
+    expect(tools.length).toBe(56);
     // KEY-PATH CALIBRATION (mcp-use@2.3.4, verified against the live
     // tools/list response): the brief's `_mcp-use`-substring sketch does
     // not match — view-bound tools carry
