@@ -42,6 +42,7 @@ export type MeetingCardProps = {
   meeting: MeetingCardItem;
   onDelete?: () => void;
   isDeleting?: boolean;
+  isDeletePending?: boolean;
 };
 
 /** Compact meeting summary; the whole card is one link to the room. */
@@ -49,6 +50,7 @@ export function MeetingCard({
   meeting,
   onDelete,
   isDeleting = false,
+  isDeletePending = false,
 }: MeetingCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -129,8 +131,11 @@ export function MeetingCard({
               </AlertDialogCancel>
               <AlertDialogAction
                 className={cn(buttonVariants({ variant: "destructive" }))}
-                disabled={isDeleting}
-                onClick={onDelete}
+                disabled={isDeleting || isDeletePending}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onDelete?.();
+                }}
                 data-test="confirm-delete-meeting-button"
               >
                 {isDeleting ? (

@@ -165,7 +165,11 @@ export function MeetingsDashboardView() {
                         ? () => deletePoll.mutate({ slug: meeting.slug })
                         : undefined
                     }
-                    isDeleting={deletePoll.isPending}
+                    isDeleting={
+                      deletePoll.isPending &&
+                      deletePoll.variables?.slug === meeting.slug
+                    }
+                    isDeletePending={deletePoll.isPending}
                   />
                 ))}
               </div>

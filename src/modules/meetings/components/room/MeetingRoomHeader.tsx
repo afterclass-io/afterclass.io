@@ -44,7 +44,7 @@ export type MeetingRoomHeaderProps = {
   acadTermId?: string;
   canEditDetails: boolean;
   isSavingDetails: boolean;
-  onSaveTitle?: (title: string) => void;
+  onSaveTitle?: (title: string) => void | Promise<void>;
   onSaveDescription: (description: string | null) => void;
   onDeleteMeeting?: () => void;
   isDeleting?: boolean;
@@ -181,7 +181,10 @@ export function MeetingRoomHeader({
                 <AlertDialogAction
                   className={cn(buttonVariants({ variant: "destructive" }))}
                   disabled={isDeleting}
-                  onClick={onDeleteMeeting}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onDeleteMeeting?.();
+                  }}
                   data-test="confirm-delete-meeting"
                 >
                   {isDeleting ? (

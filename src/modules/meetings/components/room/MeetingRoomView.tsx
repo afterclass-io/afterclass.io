@@ -295,7 +295,9 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
         acadTermId={poll.acadTerm?.id}
         canEditDetails={poll.isCreator}
         isSavingDetails={updateDetails.isPending}
-        onSaveTitle={(title) => updateDetails.mutate({ slug, title })}
+        onSaveTitle={async (title) => {
+          await updateDetails.mutateAsync({ slug, title });
+        }}
         onSaveDescription={(description) =>
           updateDetails.mutate({ slug, description })
         }

@@ -14,7 +14,7 @@ export type PageTitleProps = ComponentPropsWithoutRef<"div"> & {
   /** When true and onSave is provided, enables inline title editing */
   editable?: boolean;
   value?: string;
-  onSave?: (nextTitle: string) => void;
+  onSave?: (nextTitle: string) => void | Promise<void>;
   isSaving?: boolean;
   maxLength?: number;
 };
@@ -28,7 +28,7 @@ export const PageTitle = ({
   editable,
   value,
   onSave,
-  isSaving,
+  isSaving = false,
   maxLength = 120,
   ...props
 }: PageTitleProps) => {
@@ -46,12 +46,16 @@ export const PageTitle = ({
     setDraft(initialText);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const trimmed = draft.trim();
     if (!trimmed || isSaving) return;
     if (trimmed !== initialText && onSave) {
-      onSave(trimmed);
+      try {
+        await onSave(trimmed);
+      } catch {
+        return;
+      }
     }
     setIsEditing(false);
   };
@@ -65,72 +69,72 @@ export const PageTitle = ({
       )}
     >
       {contentLeft}
-      {editable && isEditing ? (
-        <form
-          onSubmit={handleSubmit}
-          className="flex min-w-0 flex-1 items-center gap-2"
-        >
-          <input
-            type="text"
-            autoFocus
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") {
-                e.preventDefault();
-                handleCancel();
-              }
-            }}
-            maxLength={maxLength}
-            className={cn(
-              "border-input bg-background focus-visible:ring-ring min-w-0 flex-1 rounded-md border px-3 py-1 text-lg font-bold shadow-xs focus-visible:ring-2 focus-visible:outline-hidden md:text-2xl",
-              className,
-            )}
-            data-test="page-title-input"
-            aria-label="Edit title"
-            disabled={isSaving}
-          />
-          <div className="flex shrink-0 items-center gap-1">
-            <Button
-              type="submit"
-              size="icon"
-              variant="ghost"
-              className="size-8"
-              disabled={isSaving || !draft.trim()}
-              data-test="page-title-save"
-              aria-label="Save title"
-            >
-              {isSaving ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Check className="size-4" />
-              )}
-            </Button>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              className="size-8"
-              onClick={handleCancel}
-              disabled={isSaving}
-              data-test="page-title-cancel"
-              aria-label="Cancel editing title"
-            >
-              <X className="size-4" />
-            </Button>
-          </div>
-        </form>
-      ) : (
-        <div className="flex min-w-0 items-center gap-2">
-          <Heading
-            className={cn("text-center text-lg md:text-3xl", className)}
-            as="h1"
-            {...props}
-            data-test="page-title"
+      {editable && onSave ? (
+        isEditing ? (
+          <form
+            onSubmit={handleSubmit}
+            className="flex min-w-0 flex-1 items-center gap-2"
           >
-            {children}
-          </Heading>
-          {editable && onSave && (
+            <input
+              type="text"
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  e.preventDefault();
+                  handleCancel();
+                }
+              }}
+              maxLength={maxLength}
+              className={cn(
+                "border-input bg-background focus-visible:ring-ring min-w-0 flex-1 rounded-md border px-3 py-1 text-lg font-bold shadow-xs focus-visible:ring-2 focus-visible:outline-hidden md:text-2xl",
+                className,
+              )}
+              data-test="page-title-input"
+              aria-label="Edit title"
+              disabled={isSaving}
+            />
+            <div className="flex shrink-0 items-center gap-1">
+              <Button
+                type="submit"
+                size="icon"
+                variant="ghost"
+                className="size-8"
+                disabled={(isSaving ?? false) || !draft.trim()}
+                data-test="page-title-save"
+                aria-label="Save title"
+              >
+                {isSaving ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Check className="size-4" />
+                )}
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="size-8"
+                onClick={handleCancel}
+                disabled={isSaving}
+                data-test="page-title-cancel"
+                aria-label="Cancel editing title"
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <div className="flex min-w-0 items-center gap-2">
+            <Heading
+              className={cn("text-center text-lg md:text-3xl", className)}
+              as="h1"
+              {...props}
+              data-test="page-title"
+            >
+              {children}
+            </Heading>
             <Button
               type="button"
               variant="ghost"
@@ -142,8 +146,17 @@ export const PageTitle = ({
             >
               <Pencil className="size-3.5" />
             </Button>
-          )}
-        </div>
+          </div>
+        )
+      ) : (
+        <Heading
+          className={cn("text-center text-lg md:text-3xl", className)}
+          as="h1"
+          {...props}
+          data-test="page-title"
+        >
+          {children}
+        </Heading>
       )}
       {contentRight}
     </div>
