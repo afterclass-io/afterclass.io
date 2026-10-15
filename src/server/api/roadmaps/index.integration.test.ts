@@ -37,7 +37,10 @@ beforeAll(async () => {
   facultyName = faculty.name;
   facultyAcronym = faculty.acronym;
 
-  const [owner, voter] = await Promise.all([seedUser(db), seedUser(db)]);
+  const [owner, voter] = await Promise.all([
+    seedUser(db, { username: `testowner-${suffix.slice(0, 8)}` }),
+    seedUser(db, { username: `testvoter-${suffix.slice(0, 8)}` }),
+  ]);
   ownerId = owner.id;
   ownerUsername = owner.username;
   voterId = voter.id;

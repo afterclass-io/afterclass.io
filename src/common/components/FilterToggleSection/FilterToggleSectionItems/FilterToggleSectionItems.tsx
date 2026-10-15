@@ -13,7 +13,7 @@ export const FilterToggleSectionItems = ({
     <div
       data-slot="filter-toggle-section-items"
       className={cn(
-        "flex flex-col items-start gap-0 self-stretch md:flex-row md:flex-wrap md:content-start md:gap-4",
+        "flex flex-col items-start gap-0 self-stretch md:grid md:grid-cols-3 md:content-start md:gap-4",
         className,
       )}
       {...props}

@@ -1,11 +1,31 @@
 "use client";
 
-import { Check, Copy, Loader2, MoreHorizontal, Pencil } from "lucide-react";
+import { useState } from "react";
+import {
+  Check,
+  Copy,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
-import { Button } from "@/common/components/button";
+import { Button, buttonVariants } from "@/common/components/button";
+import { cn } from "@/common/functions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/common/components/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/common/components/dropdown-menu";
 import { PageTitle } from "@/common/components/page-title";
@@ -24,7 +44,10 @@ export type MeetingRoomHeaderProps = {
   acadTermId?: string;
   canEditDetails: boolean;
   isSavingDetails: boolean;
+  onSaveTitle?: (title: string) => void | Promise<void>;
   onSaveDescription: (description: string | null) => void;
+  onDeleteMeeting?: () => void;
+  isDeleting?: boolean;
   isEditing: boolean;
   hasUnsavedChanges: boolean;
   isSaving: boolean;
@@ -44,7 +67,10 @@ export function MeetingRoomHeader({
   acadTermId,
   canEditDetails,
   isSavingDetails,
+  onSaveTitle,
   onSaveDescription,
+  onDeleteMeeting,
+  isDeleting = false,
   isEditing,
   hasUnsavedChanges,
   isSaving,
@@ -53,11 +79,19 @@ export function MeetingRoomHeader({
   onCancel,
   onSave,
 }: MeetingRoomHeaderProps) {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   return (
     <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
       <div className="min-w-0 space-y-1">
         <div className="flex min-w-0 items-center gap-2">
-          <PageTitle className="text-left text-2xl font-bold tracking-tight break-words md:text-2xl!">
+          <PageTitle
+            className="text-left text-2xl font-bold tracking-tight break-words md:text-2xl!"
+            editable={canEditDetails}
+            value={title}
+            onSave={onSaveTitle}
+            isSaving={isSavingDetails}
+          >
             {title}
           </PageTitle>
         </div>
@@ -89,7 +123,8 @@ export function MeetingRoomHeader({
           Copy link
         </Button>
 
-        {course && section && (
+        {(Boolean(course && section) ||
+          (canEditDetails && Boolean(onDeleteMeeting))) && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -102,14 +137,66 @@ export function MeetingRoomHeader({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <CourseBacktrackMenuItem
-                courseId={course.id}
-                courseCode={course.code}
-                section={section}
-                acadTermId={acadTermId}
-              />
+              {course && section && (
+                <CourseBacktrackMenuItem
+                  courseId={course.id}
+                  courseCode={course.code}
+                  section={section}
+                  acadTermId={acadTermId}
+                />
+              )}
+              {canEditDetails && onDeleteMeeting && (
+                <DropdownMenuItem
+                  variant="destructive"
+                  className="cursor-pointer gap-2"
+                  onClick={() => setShowDeleteDialog(true)}
+                  data-test="delete-meeting-menu-item"
+                >
+                  <Trash2 className="size-4" />
+                  Delete meeting
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
+        )}
+
+        {canEditDetails && onDeleteMeeting && (
+          <AlertDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete meeting?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete &ldquo;{title}&rdquo;? This
+                  will permanently remove the poll and all submitted
+                  availability.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isDeleting}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  className={cn(buttonVariants({ variant: "destructive" }))}
+                  disabled={isDeleting}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onDeleteMeeting?.();
+                  }}
+                  data-test="confirm-delete-meeting"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-1.5 size-3.5" />
+                  )}
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
 
         {isEditing ? (

@@ -8,7 +8,13 @@ import {
   toPollGrid,
 } from "@/modules/meetings/functions/slot-time";
 import { db } from "@/server/db";
-import { errText, guardedRun, jsonText, type McpTool } from "../../types";
+import {
+  confirmField,
+  errText,
+  guardedRun,
+  jsonText,
+  type McpTool,
+} from "../../types";
 import { hhmm, isoDate, meetingPollSlug } from "../meeting-schemas";
 import { absoluteUrl, meetingPage, PAGE_LINK_NOTE } from "../page-links";
 
@@ -225,6 +231,27 @@ export const submitMeetingAvailabilityTool: McpTool<
       availability: ranges,
       url: absoluteUrl(meetingPage(input.slug)),
       message: `Availability saved for ${absoluteUrl(meetingPage(input.slug))} (${mode}, ${ranges.length} ranges).`,
+    });
+  }),
+};
+
+const removeMeetingPollSchema = z.object({
+  slug: meetingPollSlug.describe(
+    "Slug of the meeting poll to permanently delete (must be created by the signed-in user)",
+  ),
+  ...confirmField,
+});
+
+export const removeMeetingPollTool: McpTool<typeof removeMeetingPollSchema> = {
+  name: "remove-meeting-poll",
+  description: `Permanently delete a meeting poll owned by the signed-in user and remove all submitted participant availability. Requires explicit user confirmation. ${PAGE_LINK_NOTE}`,
+  inputSchema: removeMeetingPollSchema,
+  run: guardedRun(async ({ caller }, input) => {
+    await caller.meetings.deletePoll({ slug: input.slug });
+    return jsonText({
+      success: true,
+      slug: input.slug,
+      message: `Meeting poll "${input.slug}" was permanently deleted.`,
     });
   }),
 };

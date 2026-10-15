@@ -37,7 +37,7 @@ export const FilterToggleSectionItem = ({
     <div
       data-slot="filter-toggle-section-item"
       className={cn(
-        "group hover:bg-accent flex cursor-pointer items-center gap-2 self-stretch rounded-lg py-2 pr-2 pl-1 md:w-64 md:gap-4 md:border md:p-3",
+        "group hover:bg-accent flex w-full min-w-0 cursor-pointer items-center gap-2 self-stretch rounded-lg py-2 pr-2 pl-1 md:gap-4 md:border md:p-3",
         selected && "bg-accent",
       )}
       {...props}

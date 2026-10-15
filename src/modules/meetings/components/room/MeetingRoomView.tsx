@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useAtom } from "jotai";
 import { Check, Loader2 } from "lucide-react";
@@ -15,8 +16,10 @@ import { useCopyToClipboard } from "@/common/hooks/use-copy-to-clipboard";
 import { api, type RouterOutputs } from "@/common/tools/trpc/react";
 import { meetingsRoomTourSteps } from "@/common/tour/steps";
 import { useAutoStartTour } from "@/common/tour/useAutoStartTour";
+import { ResizeHandle } from "@/common/components/resize-handle";
 import {
   hasSeenMeetingsTourAtom,
+  meetingAsideWidthAtom,
   meetingBrushModeAtom,
   meetingHideIfNeededAtom,
   meetingVisibleOverlaysAtom,
@@ -60,6 +63,9 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
   );
   const [selectedRange, setSelectedRange] = useState<SlotRange | null>(null);
 
+  const router = useRouter();
+  const [asideWidth, setAsideWidth] = useAtom(meetingAsideWidthAtom);
+
   const utils = api.useUtils();
   const { copy: copyToClipboard } = useCopyToClipboard();
   const isSignedIn = Boolean(session?.user);
@@ -70,18 +76,46 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
     onDone: useCallback(() => setHasSeenTour(true), [setHasSeenTour]),
   });
 
-  // Opening a shared link adds the meeting to the signed-in viewer's list.
-  const { mutate: joinPoll } = api.meetings.joinPoll.useMutation({
+  const deletePollMutation = api.meetings.deletePoll.useMutation({
     onSuccess: async () => {
-      await utils.meetings.getPollBySlug.invalidate({ slug });
+      toast.success("Meeting deleted");
       await utils.meetings.listMyMeetings.invalidate();
+      router.push("/meetings");
     },
-    onError: (err) => toast.error(err.message || "Could not join this meeting"),
+    onError: (err) => toast.error(err.message || "Failed to delete meeting"),
   });
+
+  // Opening a shared link adds the meeting to the signed-in viewer's list.
+  const { mutate: joinPoll, isPending: isJoining } =
+    api.meetings.joinPoll.useMutation({
+      onSuccess: async () => {
+        await utils.meetings.getPollBySlug.invalidate({ slug });
+        await utils.meetings.listMyMeetings.invalidate();
+      },
+      onError: (err) =>
+        toast.error(err.message || "Could not join this meeting"),
+    });
   const hasJoined = participants.some((p) => p.isCurrentUser);
+  const joinAttemptedRef = useRef<string | null>(null);
   useEffect(() => {
-    if (isSignedIn && !hasJoined) joinPoll({ slug });
-  }, [isSignedIn, hasJoined, joinPoll, slug]);
+    if (
+      isSignedIn &&
+      !hasJoined &&
+      !isJoining &&
+      !deletePollMutation.isPending &&
+      joinAttemptedRef.current !== slug
+    ) {
+      joinAttemptedRef.current = slug;
+      joinPoll({ slug });
+    }
+  }, [
+    isSignedIn,
+    hasJoined,
+    isJoining,
+    deletePollMutation.isPending,
+    joinPoll,
+    slug,
+  ]);
 
   const updateDetails = api.meetings.updatePoll.useMutation({
     onSuccess: async () => {
@@ -264,9 +298,14 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
         acadTermId={poll.acadTerm?.id}
         canEditDetails={poll.isCreator}
         isSavingDetails={updateDetails.isPending}
+        onSaveTitle={async (title) => {
+          await updateDetails.mutateAsync({ slug, title });
+        }}
         onSaveDescription={(description) =>
           updateDetails.mutate({ slug, description })
         }
+        onDeleteMeeting={() => deletePollMutation.mutate({ slug })}
+        isDeleting={deletePollMutation.isPending}
         isEditing={isEditing}
         hasUnsavedChanges={editor.hasUnsavedChanges}
         isSaving={editor.isSaving}
@@ -276,7 +315,10 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
         onSave={editor.save}
       />
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <div
+        className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_var(--aside-width)]"
+        style={{ "--aside-width": `${asideWidth}px` } as React.CSSProperties}
+      >
         <div className="min-w-0 space-y-3">
           <MeetingMatrixGrid
             startDate={poll.startDate}
@@ -312,7 +354,14 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
           )}
         </div>
 
-        <aside className="space-y-4">
+        <aside className="relative space-y-4">
+          <ResizeHandle
+            label="Drag to resize sidebar"
+            onDelta={(dx) =>
+              setAsideWidth((w) => Math.max(240, Math.min(480, w - dx)))
+            }
+            className="group absolute top-0 -left-3 z-20 h-full w-3"
+          />
           {isEditing && (
             <MeetingEditPanel
               brushMode={brushMode}

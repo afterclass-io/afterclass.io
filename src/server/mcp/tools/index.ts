@@ -66,6 +66,7 @@ import {
 } from "./read/meetings";
 import {
   createMeetingPollTool,
+  removeMeetingPollTool,
   submitMeetingAvailabilityTool,
 } from "./write/meetings";
 
@@ -118,6 +119,7 @@ export const allTools: McpTool[] = [
   // write - meetings
   createMeetingPollTool,
   submitMeetingAvailabilityTool,
+  removeMeetingPollTool,
   // write - bids
   upsertBidTool,
   removeBidTool,

@@ -134,11 +134,11 @@ export async function _fetchAcadTerms(prisma: {
 // Cached public API (Next.js unstable_cache)
 // ============================================================
 
-const CACHE_OPTIONS = { revalidate: 86400, tags: ["acad-terms"] };
+const CACHE_OPTIONS = { revalidate: 60, tags: ["acad-terms"] };
 
 /**
  * List all academic terms, newest first.
- * Cached for 24 hours; tagged `"acad-terms"` for manual revalidation.
+ * Cached for 60 seconds; tagged `"acad-terms"` for manual revalidation.
  *
  * NOTE: `unstable_cache` derives its cache key from `JSON.stringify(args)`,
  * so the Prisma client (a circular structure) must never be passed as an
@@ -151,7 +151,7 @@ export async function listAcadTerms(prisma: {
   // Outside the Next.js runtime (e.g. standalone `mcp-use dev/start`, which
   // shims `next/cache`), `unstable_cache` throws "incrementalCache missing".
   // Fall back to a direct DB fetch so MCP tools keep working there; the web
-  // app path still gets the 24h cache.
+  // app path still gets the cache.
   try {
     const cached = unstable_cache(
       () => _fetchAcadTerms(prisma),
