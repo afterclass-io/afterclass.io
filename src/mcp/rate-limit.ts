@@ -52,6 +52,7 @@ export const destructiveTools = new Set([
   "remove-class-from-timetable",
   "remove-bid",
   "remove-roadmap",
+  "remove-meeting-poll",
   "save-roadmap-entries", // full-replace: entries:[] wipes the roadmap
   "save-bids", // bulk overwrite of bid state
   "set-bid-status", // flips financial status

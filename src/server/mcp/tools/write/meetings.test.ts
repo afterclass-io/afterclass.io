@@ -6,6 +6,7 @@ import type { ToolContext } from "../../types";
 import { PAGE_LINK_NOTE } from "../page-links";
 import {
   createMeetingPollTool,
+  removeMeetingPollTool,
   submitMeetingAvailabilityTool,
 } from "./meetings";
 
@@ -39,6 +40,7 @@ function makeCtx(procs: {
   createPoll?: ReturnType<typeof vi.fn>;
   submitAvailability?: ReturnType<typeof vi.fn>;
   getPollBySlug?: ReturnType<typeof vi.fn>;
+  deletePoll?: ReturnType<typeof vi.fn>;
 }): ToolContext {
   return {
     user: fakeUser,
@@ -47,6 +49,7 @@ function makeCtx(procs: {
         createPoll: procs.createPoll ?? vi.fn(),
         submitAvailability: procs.submitAvailability ?? vi.fn(),
         getPollBySlug: procs.getPollBySlug ?? vi.fn(),
+        deletePoll: procs.deletePoll ?? vi.fn(),
       },
     } as unknown as ToolContext["caller"],
   };
@@ -518,8 +521,45 @@ describe("submitMeetingAvailabilityTool", () => {
   });
 
   it("every meeting write tool tells agents to relay the returned url verbatim", () => {
-    for (const tool of [createMeetingPollTool, submitMeetingAvailabilityTool]) {
+    for (const tool of [
+      createMeetingPollTool,
+      submitMeetingAvailabilityTool,
+      removeMeetingPollTool,
+    ]) {
       expect(tool.description).toContain(PAGE_LINK_NOTE);
     }
+  });
+});
+
+describe("removeMeetingPollTool", () => {
+  it("deletes a meeting poll and returns success message", async () => {
+    const deletePollFn = vi.fn().mockResolvedValue({ success: true });
+    const ctx = makeCtx({ deletePoll: deletePollFn });
+
+    const result = await removeMeetingPollTool.run(ctx, {
+      slug: "newpoll123",
+      confirm: true,
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(result.content[0]?.text).toContain("permanently deleted");
+    expect(deletePollFn).toHaveBeenCalledWith({ slug: "newpoll123" });
+  });
+
+  it("surfaces procedure error when deleting fails", async () => {
+    const deletePollFn = vi
+      .fn()
+      .mockRejectedValue(new Error("You do not own this meeting poll"));
+    const ctx = makeCtx({ deletePoll: deletePollFn });
+
+    const result = await removeMeetingPollTool.run(ctx, {
+      slug: "newpoll123",
+      confirm: true,
+    });
+
+    expect(result.isError).toBe(true);
+    expect(result.content[0]?.text).toContain(
+      "You do not own this meeting poll",
+    );
   });
 });

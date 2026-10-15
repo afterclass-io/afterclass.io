@@ -278,6 +278,7 @@ describe("buildAssistantTools", () => {
       "get-timetable-calendar-link",
       "remove-bid",
       "remove-class-from-timetable",
+      "remove-meeting-poll",
       "remove-roadmap",
       "remove-timetable",
       "save-bids",
@@ -341,6 +342,7 @@ describe("buildAssistantTools", () => {
     ["set-timetable-visibility", { timetableId: "tt1", visibility: "PUBLIC" }],
     ["set-roadmap-visibility", { roadmapId: "r1", visibility: "PUBLIC" }],
     ["get-timetable-calendar-link", { timetableId: "tt1" }],
+    ["remove-meeting-poll", { slug: "slug1234" }],
   ])(
     "chat schema for %s declares optional confirm so confirm:true survives validation",
     async (name, baseArgs) => {
