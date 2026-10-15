@@ -44,3 +44,14 @@ export const meetingVisibleOverlaysAtom = atomWithStorage<
 >("meetingVisibleOverlays", { timetable: true, google: true }, undefined, {
   getOnInit: true,
 });
+
+/**
+ * User's preferred aside panel width in the meeting room (px, lg+ only).
+ * Persisted in browser localStorage. Clamped between 240 and 480.
+ */
+export const meetingAsideWidthAtom = atomWithStorage<number>(
+  "meetingAsideWidth",
+  280,
+  undefined,
+  { getOnInit: true },
+);

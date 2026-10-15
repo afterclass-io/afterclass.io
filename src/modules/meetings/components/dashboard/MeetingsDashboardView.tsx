@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Calendar, Plus, Users } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/common/components/button";
 import { EmptyState } from "@/common/components/empty-state";
@@ -22,6 +23,7 @@ export function MeetingsDashboardView() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const utils = api.useUtils();
   const {
     data: meetings,
     isLoading,
@@ -29,6 +31,14 @@ export function MeetingsDashboardView() {
   } = api.meetings.listMyMeetings.useQuery(undefined, {
     enabled: Boolean(session?.user),
     staleTime: 30_000,
+  });
+
+  const deletePoll = api.meetings.deletePoll.useMutation({
+    onSuccess: async () => {
+      toast.success("Meeting deleted");
+      await utils.meetings.listMyMeetings.invalidate();
+    },
+    onError: (err) => toast.error(err.message || "Failed to delete meeting"),
   });
 
   const { upcoming, past } = useMemo(
@@ -147,7 +157,16 @@ export function MeetingsDashboardView() {
             {visible.length > 0 ? (
               <div className={CARD_GRID}>
                 {visible.map((meeting) => (
-                  <MeetingCard key={meeting.id} meeting={meeting} />
+                  <MeetingCard
+                    key={meeting.id}
+                    meeting={meeting}
+                    onDelete={
+                      meeting.isCreator
+                        ? () => deletePoll.mutate({ slug: meeting.slug })
+                        : undefined
+                    }
+                    isDeleting={deletePoll.isPending}
+                  />
                 ))}
               </div>
             ) : (
