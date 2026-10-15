@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
@@ -96,13 +96,16 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
         toast.error(err.message || "Could not join this meeting"),
     });
   const hasJoined = participants.some((p) => p.isCurrentUser);
+  const joinAttemptedRef = useRef<string | null>(null);
   useEffect(() => {
     if (
       isSignedIn &&
       !hasJoined &&
       !isJoining &&
-      !deletePollMutation.isPending
+      !deletePollMutation.isPending &&
+      joinAttemptedRef.current !== slug
     ) {
+      joinAttemptedRef.current = slug;
       joinPoll({ slug });
     }
   }, [
