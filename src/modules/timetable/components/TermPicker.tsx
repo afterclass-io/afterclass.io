@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import { useAtom, useSetAtom } from "jotai";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/common/tools/trpc/react";
+import { formatAcadTermLabel } from "@/common/tools/acad-term";
 import {
   activeTimetableIdAtom,
   selectedTermIdAtom,
@@ -46,7 +47,27 @@ export function TermPicker({ className }: TermPickerProps) {
     enabled: currentWindowQuery.isSuccess && currentWindowQuery.data === null,
   });
 
-  const terms = useMemo(() => termsQuery.data ?? [], [termsQuery.data]);
+  const terms = useMemo(() => {
+    const list = termsQuery.data ? [...termsQuery.data] : [];
+    const windowTerm = currentWindowQuery.data?.acadTerm;
+    if (windowTerm && !list.some((t) => t.id === windowTerm.id)) {
+      list.push({
+        id: windowTerm.id,
+        label: formatAcadTermLabel(
+          windowTerm.acadYearStart,
+          windowTerm.acadYearEnd,
+          windowTerm.term,
+        ),
+        startDt: new Date(windowTerm.startDt),
+        endDt: new Date(windowTerm.endDt),
+        acadYearStart: windowTerm.acadYearStart,
+        acadYearEnd: windowTerm.acadYearEnd,
+        term: windowTerm.term,
+      });
+      list.sort((a, b) => b.startDt.getTime() - a.startDt.getTime());
+    }
+    return list;
+  }, [termsQuery.data, currentWindowQuery.data?.acadTerm]);
 
   // Auto-select on first load: a valid deep link wins, else the current bid
   // term. Runs only while nothing is selected, so later manual changes (and
@@ -84,7 +105,7 @@ export function TermPicker({ className }: TermPickerProps) {
 
   return (
     <Select
-      value={selectedTermId ?? undefined}
+      value={selectedTermId ?? ""}
       onValueChange={(id) => {
         setSelectedTermId(id);
         setActiveTimetableId(null);
