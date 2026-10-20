@@ -430,7 +430,7 @@ describe("meetingsRouter", () => {
       expect(result.poll).not.toHaveProperty("creatorId");
     });
 
-    it("works correctly for unauthenticated callers (session null)", async () => {
+    it("rejects unauthenticated callers (session null)", async () => {
       const findUniqueMock = vi.fn().mockResolvedValue(mockPollData);
 
       const caller = makeCaller(
@@ -441,12 +441,10 @@ describe("meetingsRouter", () => {
         null,
       );
 
-      const result = await caller.getPollBySlug({ slug: "abcdefghij" });
-
-      expect(result.participants.every((p) => p.isCurrentUser === false)).toBe(
-        true,
-      );
-      expect(result.heatmap[2]?.availableCount).toBe(3);
+      await expect(
+        caller.getPollBySlug({ slug: "abcdefghij" }),
+      ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+      expect(findUniqueMock).not.toHaveBeenCalled();
     });
 
     it("rejects a new responder once the poll has 10 participants", async () => {
@@ -479,13 +477,9 @@ describe("meetingsRouter", () => {
     it("throws NOT_FOUND if poll does not exist", async () => {
       const findUniqueMock = vi.fn().mockResolvedValue(null);
 
-      const caller = makeCaller(
-        meetingsRouter.createCaller,
-        {
-          meetingPoll: { findUnique: findUniqueMock },
-        },
-        null,
-      );
+      const caller = makeCaller(meetingsRouter.createCaller, {
+        meetingPoll: { findUnique: findUniqueMock },
+      });
 
       await expect(
         caller.getPollBySlug({ slug: "nonexistent" }),

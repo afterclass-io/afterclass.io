@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { publicProcedure } from "@/server/api/trpc";
+import { protectedProcedure } from "@/server/api/trpc";
 import { formatUserDisplayName } from "@/common/functions/format-user-display-name";
 import { censorProfanity, censorProfanityOrNull } from "@/server/profanity";
 
-export const getPollBySlug = publicProcedure
+export const getPollBySlug = protectedProcedure
   .input(
     z.object({
       slug: z.string().min(6).max(20),
@@ -77,7 +77,7 @@ export const getPollBySlug = publicProcedure
       }
     }
 
-    const currentUserId = ctx.session?.user?.id;
+    const currentUserId = ctx.session.user.id;
     const isCreator = Boolean(
       currentUserId && poll.creatorId === currentUserId,
     );
