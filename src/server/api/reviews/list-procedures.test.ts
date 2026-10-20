@@ -5,6 +5,13 @@ import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { ReviewsFilterFor, ReviewsSortBy } from "@/common/types/reviews";
 
+const m = vi.hoisted((): { publicData: Record<string, boolean> } => ({
+  publicData: { courses: true, professors: true, reviews: true },
+}));
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: async () => ({ publicData: m.publicData }),
+}));
+
 import { getAll } from "./getAll";
 import { getAllProtected } from "./getAllProtected";
 import { getByCourseCode } from "./getByCourseCode";
@@ -171,11 +178,15 @@ describe.each(allProcs)("reviews.$name (mocked db)", ({ name, extra }) => {
 });
 
 describe.each(publicProcs)(
-  "reviews.$name hides private fields",
+  "reviews.$name for an anonymous caller",
   ({ name, extra }) => {
-    it("zeroes rating and blanks body/tips regardless of the row", async () => {
+    beforeEach(() => {
+      m.publicData = { courses: true, professors: true, reviews: true };
+    });
+
+    it("returns the full review once reviews is public", async () => {
       const db = makeDbMock([makeRow()]);
-      const caller = makeCaller(router.createCaller, db);
+      const caller = makeCaller(router.createCaller, db, null);
       const res = await (
         caller[name] as (
           i: unknown,
@@ -184,10 +195,43 @@ describe.each(publicProcs)(
         ...base,
         ...extra,
       });
-      expect(res.items[0]).toMatchObject({ rating: 0, body: "", tips: "" });
+      expect(res.items[0]).toMatchObject({
+        rating: 5,
+        body: "real body",
+        tips: "real tips",
+      });
     });
   },
 );
+
+describe("anonymous reads while professors is private", () => {
+  beforeEach(() => {
+    m.publicData = { courses: true, professors: false, reviews: true };
+  });
+
+  it.each([
+    { name: "getAll" as const, extra: {} },
+    { name: "getByCourseCode" as const, extra: { code: "CS101" } },
+  ])("reviews.$name keeps course reviews only", async ({ name, extra }) => {
+    const db = makeDbMock([]);
+    const caller = makeCaller(router.createCaller, db, null);
+    await (caller[name] as (i: unknown) => Promise<unknown>)({
+      ...base,
+      ...extra,
+    });
+    expect(lastWhere(db.reviews.findMany)).toHaveProperty(
+      "reviewedProfessorId",
+      null,
+    );
+  });
+
+  it("reviews.getByProfSlug is closed", async () => {
+    const caller = makeCaller(router.createCaller, makeDbMock([]), null);
+    await expect(
+      caller.getByProfSlug({ ...base, slug: "dr-x" }),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  });
+});
 
 describe.each(protectedProcs)(
   "reviews.$name (protected)",

@@ -36,8 +36,9 @@ export default async function BiddingHistoryPage({
 }) {
   const session = await auth();
 
-  // The page also resolves the selected course and professor.
-  if (!(await canViewData(session, "classData", "courses", "professors"))) {
+  // `classData` implies `courses` and `professors` (see PUBLIC_DATA_PARENTS),
+  // so the selected course and professor lookups below are covered too.
+  if (!(await canViewData(session, "classData"))) {
     return (
       <div className="flex w-full max-w-5xl flex-col gap-6 pt-4">
         <AuthWall variant="full" feature="bidding analytics" />

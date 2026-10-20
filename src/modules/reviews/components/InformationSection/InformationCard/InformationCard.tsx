@@ -1,6 +1,5 @@
 import { ClipboardIcon } from "@/common/components/icons";
 import { InformationCardSkeleton } from "./InformationCardSkeleton";
-import { InformationCardLoginButton } from "./InformationCardLoginButton";
 import { InformationModal } from "./InformationModal";
 import { Heading } from "@/common/components/heading";
 
@@ -31,5 +30,4 @@ export const InformationCard = ({
 };
 
 InformationCard.Skeleton = InformationCardSkeleton;
-InformationCard.LoginButton = InformationCardLoginButton;
 InformationCard.Modal = InformationModal;

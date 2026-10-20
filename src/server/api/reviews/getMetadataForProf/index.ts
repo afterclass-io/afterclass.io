@@ -5,7 +5,7 @@ import { z } from "zod";
 import { dataProcedure } from "@/server/api/trpc";
 import { getReviewMetadataSummary } from "../metadata";
 
-export const getMetadataForProf = dataProcedure("reviews")
+export const getMetadataForProf = dataProcedure("reviews", "professors")
   .input(
     z.object({
       slug: z.string(),

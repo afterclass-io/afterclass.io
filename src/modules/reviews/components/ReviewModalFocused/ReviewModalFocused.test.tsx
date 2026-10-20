@@ -92,33 +92,12 @@ describe("ReviewModalFocused", () => {
     ).not.toThrow();
   });
 
-  it("keeps the same hooks when the session finishes loading", () => {
-    m.sessionStatus = "loading";
-    const { rerender } = render(<ReviewModalFocused variant="course" />);
-    m.sessionStatus = "authenticated";
-    expect(() =>
-      rerender(<ReviewModalFocused variant="course" />),
-    ).not.toThrow();
-  });
-
-  it("sends a signed-out visitor to login once, with an encoded relative callback", () => {
+  it("opens the review for a signed-out visitor without a login redirect", () => {
     m.sessionStatus = "unauthenticated";
-    const { rerender } = render(<ReviewModalFocused variant="course" />);
-    rerender(<ReviewModalFocused variant="course" />);
-    rerender(<ReviewModalFocused variant="course" />);
-
-    expect(m.push).toHaveBeenCalledTimes(1);
-    expect(m.push).toHaveBeenCalledWith(
-      `/account/auth/login?callbackUrl=${encodeURIComponent("/course/COR-IS1702?review_id=r1")}`,
-    );
-  });
-
-  it("does not fetch the review for a signed-out visitor", () => {
-    m.sessionStatus = "unauthenticated";
-    render(<ReviewModalFocused variant="course" />);
-    for (const call of m.useQuery.mock.calls) {
-      expect(call[1]).toMatchObject({ enabled: false });
-    }
+    const { getByTestId } = render(<ReviewModalFocused variant="course" />);
+    expect(getByTestId("review-modal")).toBeTruthy();
+    expect(m.useQuery).toHaveBeenCalledWith("r1", { enabled: true });
+    expect(m.push).not.toHaveBeenCalled();
   });
 
   it("does nothing without a review_id", () => {

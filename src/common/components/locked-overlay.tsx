@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { LockIcon } from "@/common/components/icons";
 import { ProgressLink } from "@/common/components/progress-link";
@@ -16,8 +16,12 @@ export type LockedOverlayProps = {
 
 export const LockedOverlay = ({ ctaType = "rating" }: LockedOverlayProps) => {
   const pathname = usePathname();
+  // Keeps the query (e.g. ?course=CS101) so sign-in returns to the same view.
+  const query = useSearchParams()?.toString();
   const href = pathname
-    ? `/account/auth/login?callbackUrl=${encodeURIComponent(pathname)}`
+    ? `/account/auth/login?callbackUrl=${encodeURIComponent(
+        query ? `${pathname}?${query}` : pathname,
+      )}`
     : "/account/auth/login";
 
   return (

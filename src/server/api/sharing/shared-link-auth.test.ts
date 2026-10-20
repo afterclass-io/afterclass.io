@@ -48,7 +48,7 @@ const roadmapCaller = (session: typeof signedIn | null, isPublic: boolean) =>
 
 const publicRoadmaps = (value: boolean) =>
   mockGetEdgeConfig.mockResolvedValue({
-    publicData: { publicRoadmaps: value },
+    publicData: { courses: true, publicRoadmaps: value },
   });
 
 describe("sharing.getSharedRoadmap auth", () => {

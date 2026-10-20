@@ -138,8 +138,10 @@ export const publicProcedure = t.procedure
 /**
  * Public procedure gated per data domain
  *
- * Anonymous callers get UNAUTHORIZED unless every listed domain is public in
- * Edge Config. Signed-in callers skip the Edge Config read entirely.
+ * Anonymous callers get UNAUTHORIZED unless every listed domain is
+ * effectively public in Edge Config (a domain's parents count, see
+ * PUBLIC_DATA_PARENTS). Name the domain of the data returned; list several
+ * only for a join of sibling domains. Signed-in callers skip the read.
  */
 export const dataProcedure = (...domains: PublicDataDomain[]) =>
   publicProcedure.use(async ({ ctx, next }) => {

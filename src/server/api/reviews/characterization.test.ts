@@ -15,7 +15,10 @@ import expectedKeys from "./fixtures/member-review-keys.json";
 
 // Anonymous callers need the data domain public; setup only.
 vi.mock("@/server/ecfg/edge-config", () => ({
-  getEdgeConfig: () => Promise.resolve({ publicData: { reviews: true } }),
+  getEdgeConfig: () =>
+    Promise.resolve({
+      publicData: { courses: true, professors: true, reviews: true },
+    }),
 }));
 
 const router = createTRPCRouter({
@@ -51,7 +54,7 @@ describe("reviews characterization (baseline 6ea5ba90 contracts)", () => {
     expect(item.tips).toBe(row.tips);
   });
 
-  it("characterizes public getAll procedure output masking", async () => {
+  it("characterizes public getAll procedure output once reviews is public", async () => {
     const row = {
       ...memberReviewRow,
       createdAt: new Date(memberReviewRow.createdAt),
@@ -68,9 +71,11 @@ describe("reviews characterization (baseline 6ea5ba90 contracts)", () => {
 
     expect(res.items).toHaveLength(1);
     const item = res.items[0]!;
-    expect(item.rating).toBe(0);
-    expect(item.body).toBe("");
-    expect(item.tips).toBe("");
+    // A public `reviews` domain shows the review itself, not a teaser.
+    expect(item.rating).toBe(row.rating);
+    expect(item.body).toBe(row.body);
+    expect(item.tips).toBe(row.tips);
+    expect(item.engagement).toBeUndefined();
   });
 
   it("characterizes review select field contracts", () => {

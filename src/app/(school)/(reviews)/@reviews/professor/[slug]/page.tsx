@@ -1,6 +1,5 @@
 import { type Metadata } from "next";
 
-import { AuthWall } from "@/common/components/auth-wall";
 import { JsonLd } from "@/common/components/json-ld";
 import { buildBreadcrumbJsonLd, buildPersonJsonLd } from "@/common/tools/seo";
 import { HydrateClient } from "@/common/tools/trpc/server";
@@ -12,16 +11,20 @@ import {
   ReviewSectionListFilter,
   ReviewSectionHeaderSortGroup,
 } from "@/modules/reviews/components/ReviewSection";
-import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader";
+import {
+  LockedReviewFeed,
+  ReviewItemLoader,
+} from "@/modules/reviews/components/ReviewItemLoader";
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
+import { getProfessorBySlug } from "@/modules/reviews/functions/getProfessorBySlug";
 import { getProfessorPageData } from "@/modules/reviews/functions/getProfessorPageData";
 import { professorDescription } from "@/modules/reviews/functions/pageDescriptions";
 import { prefetchReviewFeed } from "@/modules/reviews/functions/prefetchReviewFeed";
 import { auth } from "@/server/auth";
 import { canViewData } from "@/server/ecfg/public-data";
 
-// Everything the page reads: the professor, their course count and reviews.
-const PROFESSOR_PAGE_DOMAINS = ["professors", "courses", "reviews"] as const;
+// The SEO description and JSON-LD carry the review figures and course count.
+const PROFESSOR_FIGURES_DOMAINS = ["professors", "courses", "reviews"] as const;
 
 // `@reviews` is the single metadata owner for `/professor/[slug]`. Parallel
 // slots merge in traversal order and the last writer wins, so do NOT export
@@ -31,15 +34,27 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const { slug } = await props.params;
 
-  // The title, description and rating figures are all gated data.
-  if (!(await canViewData(await auth(), ...PROFESSOR_PAGE_DOMAINS))) {
+  const session = await auth();
+  if (!(await canViewData(session, "professors"))) {
     return {
-      title: "Sign in to view professor reviews",
+      title: "Sign in to view this professor",
       robots: { index: false, follow: false },
     };
   }
 
   try {
+    const canonical = `/professor/${slug}`;
+    // Professor data is public but the figures are not: name them only.
+    if (!(await canViewData(session, ...PROFESSOR_FIGURES_DOMAINS))) {
+      const professor = await getProfessorBySlug(slug);
+      if (!professor)
+        return {
+          title: "Professor not found",
+          robots: { index: false, follow: false },
+        };
+      return { title: professor.name, alternates: { canonical } };
+    }
+
     const data = await getProfessorPageData(slug);
     if (!data)
       return {
@@ -48,7 +63,6 @@ export async function generateMetadata(props: {
       };
     const title = data.professor.name;
     const description = professorDescription(data);
-    const canonical = `/professor/${slug}`;
     return {
       title,
       description,
@@ -87,8 +101,16 @@ export default async function Professor(props: {
   const session = await auth();
   // `@header` shows the wall when `professors` itself is private.
   if (!(await canViewData(session, "professors"))) return null;
-  if (!(await canViewData(session, ...PROFESSOR_PAGE_DOMAINS))) {
-    return <AuthWall variant="full" feature="professor reviews" />;
+  // `reviews` implies `courses` (see PUBLIC_DATA_PARENTS), so the course
+  // filter below needs no check of its own.
+  if (!(await canViewData(session, "reviews"))) {
+    return (
+      <ReviewSection>
+        <ReviewSectionList>
+          <LockedReviewFeed />
+        </ReviewSectionList>
+      </ReviewSection>
+    );
   }
 
   let courseCodes: string[] = [];

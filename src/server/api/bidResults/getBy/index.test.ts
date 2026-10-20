@@ -4,7 +4,10 @@ import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 // Anonymous callers need `classData` public; setup only.
 vi.mock("@/server/ecfg/edge-config", () => ({
-  getEdgeConfig: () => Promise.resolve({ publicData: { classData: true } }),
+  getEdgeConfig: () =>
+    Promise.resolve({
+      publicData: { courses: true, professors: true, classData: true },
+    }),
 }));
 
 import { getBy } from "./index";

@@ -11,7 +11,8 @@ export default async function ProfessorFilter(props: {
   const params = await props.params;
   const session = await auth();
   if (!(await canViewData(session, "professors"))) return null;
-  if (!session) {
+  // The tabs list the courses this professor teaches.
+  if (!(await canViewData(session, "courses"))) {
     return <FilterToggleSection filterType={ReviewType.COURSE} isLocked />;
   }
 

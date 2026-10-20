@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { ReviewItem } from "./ReviewItem";
+import { LockedReviewItem } from "./LockedReviewItem";
 import {
   ReviewReactionType,
   ReviewType,
@@ -48,7 +49,6 @@ const meta = {
   tags: ["autodocs"],
   args: {
     review: review,
-    isLocked: false,
     isMocked: true,
   },
   // More on argTypes: https://storybook.js.org/docs/api/argtypes
@@ -80,12 +80,9 @@ export const WithEngagement: Story = {
     },
   },
 };
-export const LockedHomePage: Story = {
-  ...DefaultHomePage,
-  args: {
-    ...DefaultHomePage.args,
-    isLocked: true,
-  },
+// Signed-out visitor while `reviews` is private: no review data at all.
+export const Locked: Story = {
+  render: () => <LockedReviewItem />,
 };
 export const DefaultProfessorPage: Story = {
   ...DefaultHomePage,
@@ -94,25 +91,11 @@ export const DefaultProfessorPage: Story = {
     variant: "professor",
   },
 };
-export const LockedProfessorPage: Story = {
-  ...DefaultProfessorPage,
-  args: {
-    ...DefaultProfessorPage.args,
-    isLocked: true,
-  },
-};
 export const DefaultCoursePage: Story = {
   ...DefaultHomePage,
   args: {
     ...DefaultHomePage.args,
     variant: "course",
-  },
-};
-export const LockedCoursePage: Story = {
-  ...DefaultCoursePage,
-  args: {
-    ...DefaultCoursePage.args,
-    isLocked: true,
   },
 };
 

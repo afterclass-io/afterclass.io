@@ -18,10 +18,14 @@ vi.mock("@/server/assistant/budget", () => ({
 
 type Gate = { domains: PublicDataDomain[]; paths: string[] };
 
-/** Spec §5.3: every gated endpoint, grouped by the domains it requires. */
+/**
+ * Spec §5.3: every gated endpoint, grouped by the store flags it requires.
+ * A child domain also needs its parents (PUBLIC_DATA_PARENTS), so the
+ * parents are listed with it.
+ */
 const gates: Gate[] = [
   {
-    domains: ["classData"],
+    domains: ["courses", "professors", "classData"],
     paths: [
       "classes.getAll",
       "classes.getAllByCourseId",
@@ -69,18 +73,22 @@ const gates: Gate[] = [
     ],
   },
   {
-    domains: ["reviews"],
+    domains: ["courses", "reviews"],
     paths: [
       "reviews.getAll",
+      "reviews.getById",
       "reviews.getByCourseCode",
-      "reviews.getByProfSlug",
       "reviews.getMetadataForCourse",
-      "reviews.getMetadataForProf",
       "reviewVotes.count",
     ],
   },
   {
-    domains: ["publicRoadmaps"],
+    // A feed about one professor also needs `professors`.
+    domains: ["courses", "professors", "reviews"],
+    paths: ["reviews.getByProfSlug", "reviews.getMetadataForProf"],
+  },
+  {
+    domains: ["courses", "publicRoadmaps"],
     paths: [
       "roadmaps.listPublic",
       "roadmaps.getById",
@@ -150,6 +158,18 @@ describe("endpoint data gates (spec §5.3)", () => {
       await expect(callPath(path)).rejects.not.toMatchObject({
         code: "UNAUTHORIZED",
       });
+    },
+  );
+
+  it.each(cases.filter(({ domains }) => domains.length > 1))(
+    "$path stays closed while any of $domains is private",
+    async ({ path, domains }) => {
+      for (const off of domains) {
+        storeWith(Object.fromEntries(domains.map((d) => [d, d !== off])));
+        await expect(callPath(path)).rejects.toMatchObject({
+          code: "UNAUTHORIZED",
+        });
+      }
     },
   );
 });

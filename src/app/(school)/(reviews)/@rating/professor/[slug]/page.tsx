@@ -23,7 +23,7 @@ export default async function ProfessorRating(props: {
     typeOf: ReviewType.PROFESSOR,
   });
 
-  if (!session) {
+  if (!(await canViewData(session, "reviews"))) {
     return <LockedRatingMetadataSection labels={validProfessorReviewLabels} />;
   }
 

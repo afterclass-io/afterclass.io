@@ -10,7 +10,6 @@ import { z } from "zod";
 import {
   DEFAULT_PAGE_SIZE,
   PRIVATE_REVIEW_FIELDS,
-  PUBLIC_REVIEW_FIELDS,
   REVIEW_PAGE_MAX,
   REVIEW_SKIP_MAX,
 } from "./constants";
@@ -63,20 +62,21 @@ export type ReviewScope =
     };
 
 export type ReviewViewer =
-  | { kind: "public" }
+  /**
+   * An anonymous caller, let in by a public `reviews` domain. It reads the
+   * same fields as a member. `courseReviewsOnly` drops every review that
+   * names a professor, for when the `professors` domain is private.
+   */
+  | { kind: "public"; courseReviewsOnly?: boolean }
   | { kind: "member"; userId: string; includeEngagement?: boolean };
 
 export type ReviewPage = { items: Review[]; nextCursor: string | undefined };
-
-type PublicReviewRow = Prisma.ReviewsGetPayload<{
-  select: typeof PUBLIC_REVIEW_FIELDS;
-}>;
 
 type PrivateReviewRow = Prisma.ReviewsGetPayload<{
   select: typeof PRIVATE_REVIEW_FIELDS;
 }>;
 
-const sharedFields = (row: PublicReviewRow) => ({
+const sharedFields = (row: PrivateReviewRow) => ({
   createdAt: row.createdAt.getTime(),
   courseCode: row.reviewedCourse.code,
   courseName: row.reviewedCourse.name,
@@ -91,16 +91,6 @@ const sharedFields = (row: PublicReviewRow) => ({
   professorSlug: row.reviewedProfessor?.slug,
   university: row.reviewedUniversity.abbrv,
 });
-
-const toPublicReview = (row: PublicReviewRow): Review =>
-  ({
-    id: row.id,
-    rating: 0,
-    countEventViews: row.countEventViews,
-    body: "",
-    tips: "",
-    ...sharedFields(row),
-  }) satisfies Review;
 
 export const toMemberReview = (row: PrivateReviewRow): Review =>
   ({
@@ -141,6 +131,10 @@ export function buildReviewWhere(
     where.votes = { some: { voterId: viewer.userId } };
   }
 
+  if (viewer.kind === "public" && viewer.courseReviewsOnly) {
+    where.reviewedProfessorId = null;
+  }
+
   return where;
 }
 
@@ -175,24 +169,16 @@ export async function listReviews(
     orderBy: getOrderBy(page.sortBy),
   } satisfies Prisma.ReviewsFindManyArgs;
 
-  const { items, nextCursor } =
-    viewer.kind === "public"
-      ? toReviewPage(
-          await db.reviews.findMany({
-            ...pageArgs,
-            select: PUBLIC_REVIEW_FIELDS,
-          }),
-          page.limit,
-          toPublicReview,
-        )
-      : toReviewPage(
-          await db.reviews.findMany({
-            ...pageArgs,
-            select: PRIVATE_REVIEW_FIELDS,
-          }),
-          page.limit,
-          toMemberReview,
-        );
+  // Anonymous callers reach here only when `reviews` is public, so they get
+  // the full review. Engagement below stays member-only.
+  const { items, nextCursor } = toReviewPage(
+    await db.reviews.findMany({
+      ...pageArgs,
+      select: PRIVATE_REVIEW_FIELDS,
+    }),
+    page.limit,
+    toMemberReview,
+  );
 
   if (
     viewer.kind === "member" &&
@@ -219,20 +205,30 @@ export async function listReviews(
 export async function getReviewById(
   db: PrismaClient,
   reviewId: string,
-  viewerId: string,
+  viewer: ReviewViewer,
 ): Promise<Review> {
   const review = await db.reviews.findUnique({
     where: { id: reviewId },
     select: PRIVATE_REVIEW_FIELDS,
   });
-  if (!review) {
+  // A professor review hidden from the list is hidden here too, so a direct
+  // link never reveals it.
+  const hidden =
+    viewer.kind === "public" &&
+    viewer.courseReviewsOnly &&
+    review?.reviewedProfessorId != null;
+  if (!review || hidden) {
     throw new TRPCError({
       code: "NOT_FOUND",
       message: "Review not found",
     });
   }
   const mapped = toMemberReview(review);
-  const engagementMap = await loadReviewEngagement(db, viewerId, [reviewId]);
-  mapped.engagement = engagementMap[reviewId];
+  if (viewer.kind === "member") {
+    const engagementMap = await loadReviewEngagement(db, viewer.userId, [
+      reviewId,
+    ]);
+    mapped.engagement = engagementMap[reviewId];
+  }
   return mapped;
 }

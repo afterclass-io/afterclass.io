@@ -30,11 +30,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const api = createCaller({ db, session: null, headers: new Headers() });
 
-  // A course or professor page is indexable only when the catalogue and the
-  // reviews it shows are all public (see its `generateMetadata`).
-  const [reviewPagesPublic, roadmapsPublic, classDataPublic] =
+  // A course or professor page is indexable when its own domain is public
+  // (see its `generateMetadata`); its reviews are gated on the page itself.
+  const [coursesPublic, professorsPublic, roadmapsPublic, classDataPublic] =
     await Promise.all([
-      isDataPublic("courses", "professors", "reviews"),
+      isDataPublic("courses"),
+      isDataPublic("professors"),
       isDataPublic("publicRoadmaps"),
       isDataPublic("classData"),
     ]);
@@ -43,10 +44,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!classDataPublic) privateDomains.push("classData");
 
   const [courses, professors, roadmaps] = await Promise.all([
-    reviewPagesPublic
+    coursesPublic
       ? api.courses.getAllByUniAbbrv({ universityAbbrv: school })
       : [],
-    reviewPagesPublic
+    professorsPublic
       ? api.professors.getAllByUniAbbrv({ universityAbbrv: school })
       : [],
     roadmapsPublic

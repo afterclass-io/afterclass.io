@@ -1,8 +1,11 @@
 import { z } from "zod";
 
-import { protectedProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { getReviewById } from "../service";
+import { reviewViewerFor } from "../viewer";
 
-export const getById = protectedProcedure
+export const getById = dataProcedure("reviews")
   .input(z.string())
-  .query(({ ctx, input }) => getReviewById(ctx.db, input, ctx.session.user.id));
+  .query(async ({ ctx, input }) =>
+    getReviewById(ctx.db, input, await reviewViewerFor(ctx.session)),
+  );

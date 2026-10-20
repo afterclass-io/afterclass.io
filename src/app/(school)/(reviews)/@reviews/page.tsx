@@ -1,4 +1,3 @@
-import { AuthWall } from "@/common/components/auth-wall";
 import { JsonLd } from "@/common/components/json-ld";
 import { buildWebSiteJsonLd } from "@/common/tools/seo";
 import { HydrateClient } from "@/common/tools/trpc/server";
@@ -10,7 +9,10 @@ import {
   ReviewSectionListFilter,
   ReviewSectionHeaderSortGroup,
 } from "@/modules/reviews/components/ReviewSection";
-import { ReviewItemLoader } from "@/modules/reviews/components/ReviewItemLoader";
+import {
+  LockedReviewFeed,
+  ReviewItemLoader,
+} from "@/modules/reviews/components/ReviewItemLoader";
 import { ReviewModalFocused } from "@/modules/reviews/components/ReviewModalFocused";
 import { prefetchReviewFeed } from "@/modules/reviews/functions/prefetchReviewFeed";
 import { auth } from "@/server/auth";
@@ -25,7 +27,13 @@ export default async function Home(props: {
   const searchParams = await props.searchParams;
   const session = await auth();
   if (!(await canViewData(session, "reviews"))) {
-    return <AuthWall variant="full" feature="reviews" />;
+    return (
+      <ReviewSection>
+        <ReviewSectionList>
+          <LockedReviewFeed />
+        </ReviewSectionList>
+      </ReviewSection>
+    );
   }
 
   // The session is read here, not in the browser, so the feed is fetched once

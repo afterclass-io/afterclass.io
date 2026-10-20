@@ -3,7 +3,7 @@ import { type PrismaClient } from "@/generated/prisma/client";
 import { ReviewType } from "@/generated/prisma/enums";
 import { ReviewsFilterFor, ReviewsSortBy } from "@/common/types/reviews";
 import { TRPCError } from "@trpc/server";
-import { PUBLIC_REVIEW_FIELDS } from "./constants";
+import { PRIVATE_REVIEW_FIELDS } from "./constants";
 import {
   buildReviewWhere,
   getReviewById,
@@ -155,7 +155,7 @@ describe("review service (service.ts)", () => {
   });
 
   describe("listReviews", () => {
-    it("public list receives PUBLIC_REVIEW_FIELDS and blanks rating, body, tips", async () => {
+    it("public list reads the full review: real rating, body and tips", async () => {
       const row = makeRow();
       const findMany = vi.fn().mockResolvedValue([row]);
       const db = { reviews: { findMany } } as unknown as PrismaClient;
@@ -168,14 +168,29 @@ describe("review service (service.ts)", () => {
 
       expect(findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          select: PUBLIC_REVIEW_FIELDS,
+          select: PRIVATE_REVIEW_FIELDS,
         }),
       );
       expect(res.items).toHaveLength(1);
       const item = res.items[0]!;
-      expect(item.rating).toBe(0);
-      expect(item.body).toBe("");
-      expect(item.tips).toBe("");
+      expect(item.rating).toBe(5);
+      expect(item.body).toBe("real body");
+      expect(item.tips).toBe("real tips");
+      expect("engagement" in item).toBe(false);
+    });
+
+    it("public list with courseReviewsOnly drops reviews that name a professor", async () => {
+      const findMany = vi.fn().mockResolvedValue([]);
+      const db = { reviews: { findMany } } as unknown as PrismaClient;
+
+      await listReviews(db, {
+        scope: { kind: "course", code: "CS101" },
+        page: makePage(),
+        viewer: { kind: "public", courseReviewsOnly: true },
+      });
+
+      const [args] = findMany.mock.lastCall as [{ where: object }];
+      expect(args.where).toHaveProperty("reviewedProfessorId", null);
     });
 
     it("member viewer with includeEngagement: false succeeds with findMany only and has no engagement key", async () => {
@@ -425,7 +440,10 @@ describe("review service (service.ts)", () => {
         reviewEvents: { groupBy: vi.fn().mockResolvedValue([]) },
       } as unknown as PrismaClient;
 
-      const review = await getReviewById(db, "rev-1", "u1");
+      const review = await getReviewById(db, "rev-1", {
+        kind: "member",
+        userId: "u1",
+      });
       expect(review.id).toBe("rev-1");
       expect(review.username).toBe("alice");
       expect(review.engagement).toEqual({
@@ -436,14 +454,37 @@ describe("review service (service.ts)", () => {
       });
     });
 
+    it("returns a public viewer the review without engagement", async () => {
+      const db = {
+        reviews: { findUnique: vi.fn().mockResolvedValue(makeRow()) },
+        get reviewVotes() {
+          throw new Error("reviewVotes accessed");
+        },
+      } as unknown as PrismaClient;
+
+      const review = await getReviewById(db, "r1", { kind: "public" });
+      expect(review.body).toBe("real body");
+      expect("engagement" in review).toBe(false);
+    });
+
+    it("hides a professor review from a courseReviewsOnly viewer", async () => {
+      const db = {
+        reviews: { findUnique: vi.fn().mockResolvedValue(makeRow()) },
+      } as unknown as PrismaClient;
+
+      await expect(
+        getReviewById(db, "r1", { kind: "public", courseReviewsOnly: true }),
+      ).rejects.toThrow(TRPCError);
+    });
+
     it("throws TRPCError NOT_FOUND when review is missing", async () => {
       const db = {
         reviews: { findUnique: vi.fn().mockResolvedValue(null) },
       } as unknown as PrismaClient;
 
-      await expect(getReviewById(db, "nonexistent", "u1")).rejects.toThrow(
-        TRPCError,
-      );
+      await expect(
+        getReviewById(db, "nonexistent", { kind: "public" }),
+      ).rejects.toThrow(TRPCError);
     });
   });
 });

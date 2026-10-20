@@ -19,7 +19,7 @@ export default async function CourseRating(props: {
   const validCourseReviewLabels = await api.labels.getAllByType({
     typeOf: ReviewType.COURSE,
   });
-  if (!session) {
+  if (!(await canViewData(session, "reviews"))) {
     return <LockedRatingMetadataSection labels={validCourseReviewLabels} />;
   }
 

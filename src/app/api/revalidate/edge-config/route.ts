@@ -7,7 +7,7 @@ import { EDGE_CONFIG_CACHE_TAG } from "@/server/ecfg/edge-config";
 /**
  * Operator hook: drop the cached Edge Config read so the next request fetches
  * the live store. Call it after changing Edge Config, instead of waiting for
- * the 24 hour window or shipping a deploy.
+ * the one minute cache window.
  *
  *   curl -X POST -H "Authorization: Bearer $CRON_SECRET" \
  *     https://afterclass.io/api/revalidate/edge-config
