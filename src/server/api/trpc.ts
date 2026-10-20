@@ -13,7 +13,8 @@ import { z, ZodError } from "zod";
 import * as Sentry from "@sentry/nextjs";
 
 import { db } from "@/server/db";
-import { getEdgeConfig } from "@/server/ecfg/edge-config";
+import type { PublicDataDomain } from "@/server/ecfg/config";
+import { canViewData } from "@/server/ecfg/public-data";
 
 /**
  * 1. CONTEXT
@@ -135,38 +136,21 @@ export const publicProcedure = t.procedure
   .use(timingMiddleware);
 
 /**
- * Creates a procedure middleware that enforces Edge Config-driven auth gates
- * on sensitive university operational data (e.g. bidding curves, section timings).
+ * Public procedure gated per data domain
  *
- * Fast path: if the user is already authenticated (session?.user exists),
- * the Edge Config lookup is bypassed entirely (0ms overhead).
+ * Anonymous callers get UNAUTHORIZED unless every listed domain is public in
+ * Edge Config. Signed-in callers skip the Edge Config read entirely.
  */
-const operationalGate = (
-  flagKey: "requireAuthForBidding" | "requireAuthForClasses",
-  label: string,
-) =>
+export const dataProcedure = (...domains: PublicDataDomain[]) =>
   publicProcedure.use(async ({ ctx, next }) => {
-    if (!ctx.session?.user) {
-      const ecfg = await getEdgeConfig().catch(() => null);
-      if (ecfg?.[flagKey]) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: `Sign in required to view ${label}`,
-        });
-      }
+    if (!(await canViewData(ctx.session, ...domains))) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Sign in required to view this data",
+      });
     }
     return next();
   });
-
-export const biddingProcedure = operationalGate(
-  "requireAuthForBidding",
-  "bidding data",
-);
-
-export const classesProcedure = operationalGate(
-  "requireAuthForClasses",
-  "class schedule data",
-);
 
 /**
  * Protected (authenticated) procedure

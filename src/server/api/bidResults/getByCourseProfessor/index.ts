@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { biddingProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { getAcadYearCutoff } from "@/server/api/bidResults/acad-year-window";
 import { findBidResults } from "@/server/api/bidResults/findBidResults";
 
-export const getByCourseProfessor = biddingProcedure
+export const getByCourseProfessor = dataProcedure("classData")
   .input(
     z.object({
       courseCode: z.string(),

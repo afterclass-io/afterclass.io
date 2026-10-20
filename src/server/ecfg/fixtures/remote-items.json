@@ -28,12 +28,14 @@
     "value": true
   },
   {
-    "key": "requireAuthForBidding",
-    "value": false
-  },
-  {
-    "key": "requireAuthForClasses",
-    "value": false
+    "key": "publicData",
+    "value": {
+      "classData": false,
+      "reviews": false,
+      "courses": false,
+      "professors": false,
+      "publicRoadmaps": false
+    }
   },
   {
     "key": "chat",

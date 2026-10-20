@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import { classesProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { PUBLIC_CLASS_FIELDS } from "@/server/api/classes/constants";
 
-export const getAllByCourseId = classesProcedure
+export const getAllByCourseId = dataProcedure("classData")
   .input(z.object({ courseId: z.string(), acadTermId: z.string().optional() }))
   .query(async ({ ctx, input }) => {
     const classes = await ctx.db.classes.findMany({

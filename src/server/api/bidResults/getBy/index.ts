@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { biddingProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { getAcadYearCutoff } from "@/server/api/bidResults/acad-year-window";
 import { findBidResults } from "@/server/api/bidResults/findBidResults";
 
-export const getBy = biddingProcedure
+export const getBy = dataProcedure("classData")
   .input(
     z.object({
       section: z.string().optional(),

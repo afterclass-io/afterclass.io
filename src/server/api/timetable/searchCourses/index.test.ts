@@ -22,6 +22,11 @@ function queryRaw(strings: TemplateStringsArray, ...values: unknown[]) {
 // `src/server/mcp/caller.test.ts` and `src/mcp/user.test.ts`).
 vi.mock("server-only", () => ({}));
 
+// Anonymous callers need `classData` public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () => Promise.resolve({ publicData: { classData: true } }),
+}));
+
 vi.mock("@/server/db", () => ({
   db: {
     $queryRaw: queryRaw,
