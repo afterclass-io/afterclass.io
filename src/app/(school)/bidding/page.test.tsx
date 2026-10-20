@@ -124,7 +124,12 @@ describe("Bidding page entry state", () => {
     });
     const markup = renderToStaticMarkup(jsx);
 
-    expect(m.canViewData).toHaveBeenCalledWith(null, "classData");
+    expect(m.canViewData).toHaveBeenCalledWith(
+      null,
+      "classData",
+      "courses",
+      "professors",
+    );
     expect(m.getAll).not.toHaveBeenCalled();
     expect(markup).toContain("bidding history");
     expect(markup).toContain("Sign in");
