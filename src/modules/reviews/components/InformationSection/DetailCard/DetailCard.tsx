@@ -9,16 +9,21 @@ import { TrendingUp } from "lucide-react";
 
 interface Props {
   course: NonNullable<getByCourseCodeResolved>;
+  /** Whether the viewer may see class data; anonymous viewers need `classData` public. */
+  canViewClassData: boolean;
 }
 
-export const DetailCard = async ({ course }: Props) => {
-  const currentWindow = await getCurrentWindowOrNull(() =>
-    api.bidWindows.getCurrentWindow(),
-  );
-  const classes = await api.classes.getAllByCourseId({
-    courseId: course.id,
-    acadTermId: currentWindow?.acadTermId,
-  });
+export const DetailCard = async ({ course, canViewClassData }: Props) => {
+  let classes: Awaited<ReturnType<typeof api.classes.getAllByCourseId>> = [];
+  if (canViewClassData) {
+    const currentWindow = await getCurrentWindowOrNull(() =>
+      api.bidWindows.getCurrentWindow(),
+    );
+    classes = await api.classes.getAllByCourseId({
+      courseId: course.id,
+      acadTermId: currentWindow?.acadTermId,
+    });
+  }
 
   let latestClass;
   if (classes.length > 0) {

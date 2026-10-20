@@ -5,6 +5,7 @@ import {
 } from "@/modules/reviews/components/RatingMetadataSection";
 import { ReviewType } from "@/generated/prisma/enums";
 import { auth } from "@/server/auth";
+import { canViewData } from "@/server/ecfg/public-data";
 
 export default async function CourseRating(props: {
   params: Promise<{ code: string }>;
@@ -13,6 +14,8 @@ export default async function CourseRating(props: {
   const searchParams = await props.searchParams;
   const params = await props.params;
   const session = await auth();
+  if (!(await canViewData(session, "courses"))) return null;
+
   const validCourseReviewLabels = await api.labels.getAllByType({
     typeOf: ReviewType.COURSE,
   });

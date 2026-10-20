@@ -9,6 +9,8 @@ import {
   toOgStatItems,
 } from "@/modules/opengraph/functions/ogFigures";
 import { getProfessorPageData } from "@/modules/reviews/functions/getProfessorPageData";
+import { auth } from "@/server/auth";
+import { canViewData } from "@/server/ecfg/public-data";
 
 export const runtime = "nodejs";
 
@@ -53,6 +55,11 @@ export default async function Image({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
+  // The figures on the image are professor, course and review data.
+  if (!(await canViewData(await auth(), "professors", "courses", "reviews"))) {
+    return null;
+  }
 
   const data = await getProfessorPageData(slug);
   if (!data) return null;

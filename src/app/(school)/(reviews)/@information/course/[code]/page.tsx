@@ -3,19 +3,21 @@ import { InformationCard } from "@/modules/reviews/components/InformationSection
 import { DetailCard } from "@/modules/reviews/components/InformationSection/DetailCard";
 import { getCourseByCode } from "@/modules/reviews/functions/getCourseByCode";
 import { auth } from "@/server/auth";
+import { canViewData } from "@/server/ecfg/public-data";
 
 export default async function CourseInfo(props: {
   params: Promise<{ code: string }>;
 }) {
   const params = await props.params;
-  const [session, course] = await Promise.all([
-    auth(),
-    getCourseByCode(params.code.toUpperCase()),
-  ]);
+  const session = await auth();
+  if (!(await canViewData(session, "courses"))) return null;
+
+  const course = await getCourseByCode(params.code.toUpperCase());
 
   if (!course) {
     return notFound();
   }
+  const canViewClassData = await canViewData(session, "classData");
 
   return (
     <div className="grid w-full grid-cols-25 gap-4 md:gap-6">
@@ -32,7 +34,7 @@ export default async function CourseInfo(props: {
         </InformationCard>
       </div>
       <div className="col-span-25 md:col-span-9">
-        <DetailCard course={course} />
+        <DetailCard course={course} canViewClassData={canViewClassData} />
       </div>
     </div>
   );

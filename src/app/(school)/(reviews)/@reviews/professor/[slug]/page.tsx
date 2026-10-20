@@ -1,5 +1,6 @@
 import { type Metadata } from "next";
 
+import { AuthWall } from "@/common/components/auth-wall";
 import { JsonLd } from "@/common/components/json-ld";
 import { buildBreadcrumbJsonLd, buildPersonJsonLd } from "@/common/tools/seo";
 import { HydrateClient } from "@/common/tools/trpc/server";
@@ -17,6 +18,10 @@ import { getProfessorPageData } from "@/modules/reviews/functions/getProfessorPa
 import { professorDescription } from "@/modules/reviews/functions/pageDescriptions";
 import { prefetchReviewFeed } from "@/modules/reviews/functions/prefetchReviewFeed";
 import { auth } from "@/server/auth";
+import { canViewData } from "@/server/ecfg/public-data";
+
+// Everything the page reads: the professor, their course count and reviews.
+const PROFESSOR_PAGE_DOMAINS = ["professors", "courses", "reviews"] as const;
 
 // `@reviews` is the single metadata owner for `/professor/[slug]`. Parallel
 // slots merge in traversal order and the last writer wins, so do NOT export
@@ -25,6 +30,14 @@ export async function generateMetadata(props: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await props.params;
+
+  // The title, description and rating figures are all gated data.
+  if (!(await canViewData(await auth(), ...PROFESSOR_PAGE_DOMAINS))) {
+    return {
+      title: "Sign in to view professor reviews",
+      robots: { index: false, follow: false },
+    };
+  }
 
   try {
     const data = await getProfessorPageData(slug);
@@ -71,6 +84,13 @@ export default async function Professor(props: {
 }) {
   const searchParams = await props.searchParams;
   const params = await props.params;
+  const session = await auth();
+  // `@header` shows the wall when `professors` itself is private.
+  if (!(await canViewData(session, "professors"))) return null;
+  if (!(await canViewData(session, ...PROFESSOR_PAGE_DOMAINS))) {
+    return <AuthWall variant="full" feature="professor reviews" />;
+  }
+
   let courseCodes: string[] = [];
   if (searchParams?.course) {
     courseCodes = Array.isArray(searchParams?.course)
@@ -82,7 +102,7 @@ export default async function Professor(props: {
   // calls dedupe by function identity and arguments, so this is one query.
   // The session is read here, not in the browser, so the feed is fetched once
   // under the procedure the signed-in or signed-out viewer will keep using.
-  const isAuthenticated = Boolean(await auth());
+  const isAuthenticated = Boolean(session);
   const professorCourseCodes = courseCodes.length > 0 ? courseCodes : undefined;
   const [data] = await Promise.all([
     getProfessorPageData(params.slug),

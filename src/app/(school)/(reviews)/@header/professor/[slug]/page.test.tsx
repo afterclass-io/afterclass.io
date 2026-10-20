@@ -3,6 +3,11 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/server/auth", () => ({ auth: async () => null }));
+vi.mock("@/server/ecfg/public-data", () => ({
+  canViewData: async () => true,
+}));
+
 const { getProfessorBySlugMock, notFoundMock } = vi.hoisted(() => ({
   getProfessorBySlugMock: vi.fn(),
   notFoundMock: vi.fn(() => {

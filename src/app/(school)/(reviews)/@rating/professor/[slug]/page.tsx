@@ -1,6 +1,7 @@
 import { ReviewType } from "@/generated/prisma/enums";
 
 import { auth } from "@/server/auth";
+import { canViewData } from "@/server/ecfg/public-data";
 import {
   LockedRatingMetadataSection,
   RatingMetadataSection,
@@ -16,6 +17,7 @@ export default async function ProfessorRating(props: {
   const searchParams = await props.searchParams;
   const params = await props.params;
   const session = await auth();
+  if (!(await canViewData(session, "professors"))) return null;
 
   const validProfessorReviewLabels = await api.labels.getAllByType({
     typeOf: ReviewType.PROFESSOR,

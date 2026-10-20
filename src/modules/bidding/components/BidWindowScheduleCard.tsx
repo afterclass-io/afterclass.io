@@ -22,6 +22,8 @@ import {
 import { cn } from "@/common/functions";
 import { api } from "@/common/tools/trpc/server";
 import { inferAcadTerm } from "@/common/functions";
+import { auth } from "@/server/auth";
+import { canViewData } from "@/server/ecfg/public-data";
 import { getCurrentWindowOrNull } from "@/server/api/bidWindows/getCurrentWindow/safe";
 import { ProgressLink } from "@/common/components/progress-link";
 import { Button } from "@/common/components/button";
@@ -157,6 +159,8 @@ const TimelineWithIcon = ({
 };
 
 export const BidWindowScheduleCard = async () => {
+  if (!(await canViewData(await auth(), "classData"))) return null;
+
   // "Now" in Singapore time — read once per render.
   // eslint-disable-next-line react-hooks/purity -- server component: time read is the point, not render impurity
   const now = new TZDate(Date.now(), "Asia/Singapore");
