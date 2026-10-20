@@ -61,6 +61,8 @@ export function CourseSearchPanel({
     {
       enabled: !!selectedTermId && !isShortQuery(debouncedQuery),
       staleTime: 30_000,
+      retry: (failureCount, error) =>
+        error.data?.code !== "UNAUTHORIZED" && failureCount < 3,
     },
   );
 
@@ -209,9 +211,23 @@ export function CourseSearchPanel({
           </div>
         )}
 
+        {/* Unauthorized error state */}
+        {!isShortQuery(debouncedQuery) &&
+          !isSearching &&
+          searchQuery.error?.data?.code === "UNAUTHORIZED" && (
+            <div className="py-6">
+              <AuthWall
+                variant="compact"
+                feature="course search"
+                description="Sign in to search courses and view class schedules."
+              />
+            </div>
+          )}
+
         {/* No results */}
         {!isShortQuery(debouncedQuery) &&
           !isSearching &&
+          !searchQuery.error &&
           results.length === 0 && (
             <p className="text-muted-foreground py-8 text-center text-sm">
               No courses found for &quot;{debouncedQuery}&quot;.

@@ -1,10 +1,21 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { EdgeConfig } from "@/server/ecfg/config";
 
 const m = vi.hoisted(() => ({
   getAll: vi.fn(),
   getByCourseCode: vi.fn(),
   getBySlug: vi.fn(),
+  auth: vi.fn<() => Promise<{ user?: unknown; expires?: string } | null>>(),
+  getEdgeConfig: vi.fn<() => Promise<Partial<EdgeConfig>>>(),
+}));
+
+vi.mock("@/server/auth", () => ({
+  auth: () => m.auth(),
+}));
+
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () => m.getEdgeConfig(),
 }));
 
 vi.mock("@/common/tools/trpc/server", () => ({
@@ -56,6 +67,14 @@ const rawClass = {
 describe("Bidding analytics page entry state", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    m.auth.mockResolvedValue({
+      user: { id: "test-user" },
+      expires: new Date(Date.now() + 3600000).toISOString(),
+    });
+    m.getEdgeConfig.mockResolvedValue({
+      requireAuthForBidding: false,
+      requireAuthForClasses: false,
+    });
     m.getAll.mockResolvedValue([rawClass]);
     m.getByCourseCode.mockResolvedValue({ code: "CS101", name: "Intro" });
     m.getBySlug.mockResolvedValue({ slug: "prof-a", name: "Prof A" });
@@ -96,5 +115,37 @@ describe("Bidding analytics page entry state", () => {
     expect(m.getBySlug).toHaveBeenCalledWith({ slug: "prof-a" });
     expect(markup).toContain('data-course="CS101 Intro"');
     expect(markup).toContain('data-professor="Prof A"');
+  });
+
+  it("renders AuthWall when requireAuthForBidding is true and user is signed out", async () => {
+    m.auth.mockResolvedValue(null);
+    m.getEdgeConfig.mockResolvedValue({
+      requireAuthForBidding: true,
+      requireAuthForClasses: false,
+    });
+
+    const jsx = await BiddingAnalyticsPage({
+      searchParams: Promise.resolve({}),
+    });
+    const markup = renderToStaticMarkup(jsx);
+
+    expect(markup).toContain("bidding analytics");
+    expect(markup).toContain("Sign in");
+  });
+
+  it("renders AuthWall when requireAuthForClasses is true and user is signed out", async () => {
+    m.auth.mockResolvedValue(null);
+    m.getEdgeConfig.mockResolvedValue({
+      requireAuthForBidding: false,
+      requireAuthForClasses: true,
+    });
+
+    const jsx = await BiddingAnalyticsPage({
+      searchParams: Promise.resolve({}),
+    });
+    const markup = renderToStaticMarkup(jsx);
+
+    expect(markup).toContain("bidding analytics");
+    expect(markup).toContain("Sign in");
   });
 });

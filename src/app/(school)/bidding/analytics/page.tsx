@@ -39,7 +39,10 @@ export default async function BiddingHistoryPage({
     getEdgeConfig().catch(() => null),
   ]);
 
-  if (ecfg?.requireAuthForBidding && !session?.user) {
+  if (
+    (ecfg?.requireAuthForBidding || ecfg?.requireAuthForClasses) &&
+    !session?.user
+  ) {
     return (
       <div className="flex w-full max-w-5xl flex-col gap-6 pt-4">
         <AuthWall variant="full" feature="bidding analytics" />

@@ -19,12 +19,10 @@ import {
 } from "@tanstack/react-query";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { toast } from "sonner";
 import {
   LayoutGrid,
   CalendarDays,
-  LogIn,
   Search,
   Undo2,
   Redo2,

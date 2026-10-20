@@ -8,8 +8,7 @@ import { cn } from "@/common/functions";
 import { Button } from "@/common/components/button";
 import { EmptyState } from "@/common/components/empty-state";
 
-export type AuthWallVariant =
-  "full" | "card" | "compact" | "inline" | "overlay";
+type AuthWallVariant = "full" | "card" | "compact" | "inline" | "overlay";
 
 export interface AuthWallProps {
   /**

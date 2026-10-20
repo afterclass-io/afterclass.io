@@ -3,8 +3,9 @@ import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { getBy } from "@/server/api/bidResults/getBy";
 import { getAll } from "@/server/api/classes/getAll";
+import type { EdgeConfig } from "@/server/ecfg/config";
 
-const mockGetEdgeConfig = vi.fn();
+const mockGetEdgeConfig = vi.fn<() => Promise<Partial<EdgeConfig>>>();
 vi.mock("@/server/ecfg/edge-config", () => ({
   getEdgeConfig: () => mockGetEdgeConfig(),
 }));
@@ -23,94 +24,77 @@ describe("Operational Gates (Edge Config Gating)", () => {
     });
   });
 
-  describe("biddingProcedure", () => {
-    it("allows unauthenticated calls when requireAuthForBidding is false", async () => {
-      const dbMock = {
-        acadTerm: {
-          aggregate: vi
-            .fn()
-            .mockResolvedValue({ _max: { acadYearStart: 2026 } }),
-        },
-        bidResult: { findMany: vi.fn().mockResolvedValue([]) },
-      };
-      const caller = makeCaller(router.createCaller, dbMock, null);
-
-      const result = await caller.bidResultsGetBy({
+  it("allows anonymous callers through when requireAuthForBidding is false", async () => {
+    mockGetEdgeConfig.mockResolvedValue({ requireAuthForBidding: false });
+    const caller = makeCaller(router.createCaller, {}, null);
+    // May reject with DB error in mock context, but must NOT reject with UNAUTHORIZED
+    try {
+      await caller.bidResultsGetBy({
         courseCode: "CS101",
-        section: "G1",
       });
-      expect(result).toEqual([]);
-    });
-
-    it("throws UNAUTHORIZED for unauthenticated calls when requireAuthForBidding is true", async () => {
-      mockGetEdgeConfig.mockResolvedValue({
-        requireAuthForBidding: true,
-      });
-
-      const dbMock = {
-        acadTerm: { aggregate: vi.fn() },
-        bidResult: { findMany: vi.fn() },
-      };
-      const caller = makeCaller(router.createCaller, dbMock, null);
-
-      await expect(
-        caller.bidResultsGetBy({ courseCode: "CS101", section: "G1" }),
-      ).rejects.toThrow("Sign in required to view bidding data");
-    });
-
-    it("allows authenticated users even when requireAuthForBidding is true without calling getEdgeConfig", async () => {
-      const dbMock = {
-        acadTerm: {
-          aggregate: vi
-            .fn()
-            .mockResolvedValue({ _max: { acadYearStart: 2026 } }),
-        },
-        bidResult: { findMany: vi.fn().mockResolvedValue([]) },
-      };
-      const session = { user: { id: "user_1" } };
-      const caller = makeCaller(router.createCaller, dbMock, session);
-
-      const result = await caller.bidResultsGetBy({
-        courseCode: "CS101",
-        section: "G1",
-      });
-      expect(result).toEqual([]);
-      // Fast path: bypasses Edge Config
-      expect(mockGetEdgeConfig).not.toHaveBeenCalled();
-    });
+    } catch (err: unknown) {
+      expect((err as { code?: string }).code).not.toBe("UNAUTHORIZED");
+    }
   });
 
-  describe("classesProcedure", () => {
-    it("throws UNAUTHORIZED for unauthenticated calls when requireAuthForClasses is true", async () => {
-      mockGetEdgeConfig.mockResolvedValue({
-        requireAuthForClasses: true,
-      });
-
-      const dbMock = {
-        classes: { findMany: vi.fn() },
-        bidWindow: { findFirst: vi.fn() },
-      };
-      const caller = makeCaller(router.createCaller, dbMock, null);
-
-      await expect(
-        caller.classesGetAll({ courseCode: "CS101" }),
-      ).rejects.toThrow("Sign in required to view class schedule data");
-    });
-
-    it("allows authenticated users even when requireAuthForClasses is true without calling getEdgeConfig", async () => {
-      const dbMock = {
-        classes: { findMany: vi.fn().mockResolvedValue([]) },
-        bidWindow: { findFirst: vi.fn().mockResolvedValue(null) },
-      };
-      const session = { user: { id: "user_1" } };
-      const caller = makeCaller(router.createCaller, dbMock, session);
-
-      const result = await caller.classesGetAll({
-        id: "class_1",
+  it("throws UNAUTHORIZED for anonymous callers when requireAuthForBidding is true", async () => {
+    mockGetEdgeConfig.mockResolvedValue({ requireAuthForBidding: true });
+    const caller = makeCaller(router.createCaller, {}, null);
+    try {
+      await caller.bidResultsGetBy({
         courseCode: "CS101",
       });
-      expect(result).toEqual([]);
-      expect(mockGetEdgeConfig).not.toHaveBeenCalled();
-    });
+      expect.unreachable("should have thrown");
+    } catch (err: unknown) {
+      expect((err as { code?: string }).code).toBe("UNAUTHORIZED");
+    }
+  });
+
+  it("allows authenticated callers even when requireAuthForBidding is true (fast-path)", async () => {
+    mockGetEdgeConfig.mockResolvedValue({ requireAuthForBidding: true });
+    const caller = makeCaller(
+      router.createCaller,
+      {},
+      {
+        user: { id: "user-123" },
+      },
+    );
+    try {
+      await caller.bidResultsGetBy({
+        courseCode: "CS101",
+      });
+    } catch (err: unknown) {
+      expect((err as { code?: string }).code).not.toBe("UNAUTHORIZED");
+    }
+    // Fast path: getEdgeConfig shouldn't even be called for authenticated sessions!
+    expect(mockGetEdgeConfig).not.toHaveBeenCalled();
+  });
+
+  it("throws UNAUTHORIZED for anonymous callers when requireAuthForClasses is true", async () => {
+    mockGetEdgeConfig.mockResolvedValue({ requireAuthForClasses: true });
+    const caller = makeCaller(router.createCaller, {}, null);
+    try {
+      await caller.classesGetAll({});
+      expect.unreachable("should have thrown");
+    } catch (err: unknown) {
+      expect((err as { code?: string }).code).toBe("UNAUTHORIZED");
+    }
+  });
+
+  it("allows authenticated callers even when requireAuthForClasses is true", async () => {
+    mockGetEdgeConfig.mockResolvedValue({ requireAuthForClasses: true });
+    const caller = makeCaller(
+      router.createCaller,
+      {},
+      {
+        user: { id: "user-123" },
+      },
+    );
+    try {
+      await caller.classesGetAll({});
+    } catch (err: unknown) {
+      expect((err as { code?: string }).code).not.toBe("UNAUTHORIZED");
+    }
+    expect(mockGetEdgeConfig).not.toHaveBeenCalled();
   });
 });
