@@ -59,8 +59,10 @@ export function BidsTable() {
   const effectiveTermId = termFilter ?? selectedTermId ?? null;
 
   // ---- Queries ----
+  // The assistant and MCP agents can change bids from another tab.
   const bidsQuery = api.userBids.listMine.useQuery(undefined, {
     staleTime: 15_000,
+    refetchOnWindowFocus: true,
   });
   const termsQuery = api.acadTerms.list.useQuery();
   const windowsQuery = api.bidWindows.getByAcadTerm.useQuery(

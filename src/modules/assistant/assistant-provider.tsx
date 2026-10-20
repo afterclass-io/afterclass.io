@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import { AssistantWidget } from "./assistant-widget";
 import { ChatPanel } from "./chat-panel";
@@ -52,7 +53,7 @@ function SignedInAssistant({
   );
 
   // Reset local consent from the server payload whenever it changes (open-
-  // refetch, route-change refetch). Local onConsented/onConsentRevoked flips
+  // refetch, auth-change refetch). Local onConsented/onConsentRevoked flips
   // in between do not touch `status`, so this adjustment does not fight them.
   const [prevAiConsented, setPrevAiConsented] = useState(status.aiConsented);
   if (status.aiConsented !== prevAiConsented) {
@@ -102,19 +103,23 @@ function SignedInAssistant({
 
 export function AssistantProvider() {
   const pathname = usePathname();
+  const { status: authStatus } = useSession();
   const [status, setStatus] = useState<Status>(null);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    if (authStatus === "loading") return;
     fetch("/api/assistant/status")
       .then((r) => r.json() as Promise<Status>)
       .then((s) => setStatus(s))
       .catch(() => setStatus(null));
-    // Deps: re-fetch on route change - login uses client-side router.push, so
-    // this provider stays mounted and must pick up the new auth state.
-  }, [pathname]);
+    // Deps: re-fetch when the auth state changes - login uses client-side
+    // router.push, so this provider stays mounted and must pick up the new
+    // auth state. Not on every route change: each fetch is a function
+    // invocation, and the open-refetch below re-asks before each use.
+  }, [authStatus]);
 
-  // Refetch every time the widget OPENS (in addition to route
+  // Refetch every time the widget OPENS (in addition to the auth
   // change above), so each return re-asks: the server consent read resets the
   // local consent state. The widgetEnabled early-return in SignedInAssistant
   // still composes first (fully hidden beats the notice).

@@ -258,4 +258,33 @@ describe("performance invariants", () => {
       );
     });
   });
+
+  describe("background function invocations", () => {
+    it("does not refetch the session on every tab focus", () => {
+      expect(read("src/common/providers/AuthProvider.tsx")).toContain(
+        "<SessionProvider refetchOnWindowFocus={false}>",
+      );
+    });
+
+    it("fetches assistant status on auth changes, not on every route change", () => {
+      const provider = read("src/modules/assistant/assistant-provider.tsx");
+      expect(provider).toContain("}, [authStatus]);");
+      expect(provider).not.toContain("}, [pathname]);");
+    });
+  });
+
+  describe("publicly cached OG images", () => {
+    // The CDN cache key carries no cookies, so a session-dependent gate
+    // would serve an image drawn for a member to anonymous viewers.
+    it.each([
+      "src/app/(school)/(reviews)/@reviews/course/[code]/opengraph-image.tsx",
+      "src/app/(school)/(reviews)/@reviews/professor/[slug]/opengraph-image.tsx",
+    ])("%s gates on public data alone", (file) => {
+      const source = read(file);
+      expect(source).toContain("OG_IMAGE_HEADERS");
+      expect(source).toContain("await isDataPublic(");
+      expect(source).not.toContain("canViewData");
+      expect(source).not.toContain("@/server/auth");
+    });
+  });
 });
