@@ -1,21 +1,22 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { EdgeConfig } from "@/server/ecfg/config";
 
 const m = vi.hoisted(() => ({
   getAll: vi.fn(),
   getByCourseCode: vi.fn(),
   getBySlug: vi.fn(),
   auth: vi.fn<() => Promise<{ user?: unknown; expires?: string } | null>>(),
-  getEdgeConfig: vi.fn<() => Promise<Partial<EdgeConfig>>>(),
+  canViewData:
+    vi.fn<(session: unknown, ...domains: string[]) => Promise<boolean>>(),
 }));
 
 vi.mock("@/server/auth", () => ({
   auth: () => m.auth(),
 }));
 
-vi.mock("@/server/ecfg/edge-config", () => ({
-  getEdgeConfig: () => m.getEdgeConfig(),
+vi.mock("@/server/ecfg/public-data", () => ({
+  canViewData: (session: unknown, ...domains: string[]) =>
+    m.canViewData(session, ...domains),
 }));
 
 vi.mock("@/common/tools/trpc/server", () => ({
@@ -71,10 +72,7 @@ describe("Bidding page entry state", () => {
       user: { id: "test-user" },
       expires: new Date(Date.now() + 3600000).toISOString(),
     });
-    m.getEdgeConfig.mockResolvedValue({
-      requireAuthForBidding: false,
-      requireAuthForClasses: false,
-    });
+    m.canViewData.mockResolvedValue(true);
     m.getAll.mockResolvedValue([rawClass]);
     m.getByCourseCode.mockResolvedValue({ code: "CS101", name: "Intro" });
     m.getBySlug.mockResolvedValue({ slug: "prof-a", name: "Prof A" });
@@ -117,18 +115,17 @@ describe("Bidding page entry state", () => {
     expect(markup).toContain('data-professor="Prof A"');
   });
 
-  it("renders AuthWall when requireAuthForBidding is true and user is signed out", async () => {
+  it("renders AuthWall when classData is private and user is signed out", async () => {
     m.auth.mockResolvedValue(null);
-    m.getEdgeConfig.mockResolvedValue({
-      requireAuthForBidding: true,
-      requireAuthForClasses: false,
-    });
+    m.canViewData.mockResolvedValue(false);
 
     const jsx = await BiddingHistoryPage({
       searchParams: Promise.resolve({}),
     });
     const markup = renderToStaticMarkup(jsx);
 
+    expect(m.canViewData).toHaveBeenCalledWith(null, "classData");
+    expect(m.getAll).not.toHaveBeenCalled();
     expect(markup).toContain("bidding history");
     expect(markup).toContain("Sign in");
   });

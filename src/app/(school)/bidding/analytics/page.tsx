@@ -1,7 +1,7 @@
 import { type Metadata } from "next";
 import { api } from "@/common/tools/trpc/server";
 import { auth } from "@/server/auth";
-import { getEdgeConfig } from "@/server/ecfg/edge-config";
+import { canViewData } from "@/server/ecfg/public-data";
 import { AuthWall } from "@/common/components/auth-wall";
 import {
   Card,
@@ -34,15 +34,9 @@ export default async function BiddingHistoryPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const [session, ecfg] = await Promise.all([
-    auth(),
-    getEdgeConfig().catch(() => null),
-  ]);
+  const session = await auth();
 
-  if (
-    (ecfg?.requireAuthForBidding || ecfg?.requireAuthForClasses) &&
-    !session?.user
-  ) {
+  if (!(await canViewData(session, "classData"))) {
     return (
       <div className="flex w-full max-w-5xl flex-col gap-6 pt-4">
         <AuthWall variant="full" feature="bidding analytics" />
