@@ -6,6 +6,12 @@ import { createTRPCRouter } from "@/server/api/trpc";
 import { listPublic } from "./index";
 import { listPublicInput } from "./input";
 
+// Anonymous callers need the data domain public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () =>
+    Promise.resolve({ publicData: { publicRoadmaps: true } }),
+}));
+
 describe("listPublicInput", () => {
   it("applies the default limit", () => {
     const parsed = listPublicInput.parse({});

@@ -1,6 +1,8 @@
 // A procedure belongs here only if its response is identical for every
-// caller and needs no secret input. Never add a procedure that reads
-// ctx.session or accepts a share or bearer token.
+// anonymous caller and needs no secret input. Never add a procedure that
+// accepts a share or bearer token. Gated procedures read ctx.session only to
+// decide access: an anonymous request succeeds only for a public domain, so
+// only anonymous responses are CDN-cached and signed-in ones stay private.
 export const PUBLIC_CACHEABLE_PROCEDURES: ReadonlySet<string> = new Set([
   "courses.getAllByUniAbbrv",
   "courses.getByCourseCode",
@@ -44,14 +46,17 @@ export function getCacheControlForTrpcRequest({
   paths,
   errors,
   eagerGeneration,
+  signedIn = false,
 }: {
   type: string;
   paths: readonly string[] | undefined;
   errors: readonly unknown[];
   eagerGeneration?: boolean;
+  signedIn?: boolean;
 }) {
   const cacheable =
     !eagerGeneration &&
+    !signedIn &&
     type === "query" &&
     errors.length === 0 &&
     !!paths &&

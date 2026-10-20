@@ -1,12 +1,12 @@
 import { type Prisma } from "@/generated/prisma/client";
 import { Visibility } from "@/generated/prisma/enums";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { censorProfanity, censorProfanityOrNull } from "@/server/profanity";
 
 import { listPublicInput } from "./input";
 
-export const listPublic = publicProcedure
+export const listPublic = dataProcedure("publicRoadmaps")
   .input(listPublicInput)
   .query(async ({ ctx, input }) => {
     const { cursor, limit, facultyId, query, sort } = input;

@@ -13,6 +13,11 @@ vi.mock("@/server/db", () => ({ db: { $queryRaw: queryRawMock } }));
 
 import { createCaller } from "@/server/api/root";
 
+// Anonymous callers need the data domain public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () => Promise.resolve({ publicData: { classData: true } }),
+}));
+
 const caller = createCaller(
   () =>
     ({

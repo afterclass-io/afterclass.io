@@ -1,6 +1,8 @@
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { getCurrentWindowLogic } from "./helpers";
 
-export const getCurrentWindow = publicProcedure.query(async ({ ctx }) => {
-  return getCurrentWindowLogic(ctx.db);
-});
+export const getCurrentWindow = dataProcedure("classData").query(
+  async ({ ctx }) => {
+    return getCurrentWindowLogic(ctx.db);
+  },
+);

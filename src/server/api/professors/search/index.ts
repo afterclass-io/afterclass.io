@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { searchProfessors } from "@/server/search/search-service";
 
-export const search = publicProcedure
+export const search = dataProcedure("professors")
   .input(
     z.object({
       query: z.string().min(1).max(200),

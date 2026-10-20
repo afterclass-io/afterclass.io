@@ -13,7 +13,6 @@ export type UseMeetingOverlaysOptions = {
   endHour: number;
   slotMinutes: number;
   acadTermId?: string;
-  enabled: boolean;
 };
 
 /**
@@ -28,7 +27,6 @@ export function useMeetingOverlays({
   endHour,
   slotMinutes,
   acadTermId,
-  enabled,
 }: UseMeetingOverlaysOptions) {
   const timetable = useActiveTimetableOverlay({
     startDate,
@@ -37,7 +35,6 @@ export function useMeetingOverlays({
     endHour,
     slotMinutes,
     acadTermId,
-    enabled,
   });
   const google = useGoogleCalendarOverlay({
     startDate,

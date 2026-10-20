@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 
-export const getEnrolmentRequirementsByCodes = publicProcedure
+export const getEnrolmentRequirementsByCodes = dataProcedure("courses")
   .input(
     z.object({
       codes: z.array(z.string().min(1)).min(1).max(100),

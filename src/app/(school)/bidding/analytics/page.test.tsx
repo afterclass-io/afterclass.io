@@ -5,6 +5,18 @@ const m = vi.hoisted(() => ({
   getAll: vi.fn(),
   getByCourseCode: vi.fn(),
   getBySlug: vi.fn(),
+  auth: vi.fn<() => Promise<{ user?: unknown; expires?: string } | null>>(),
+  canViewData:
+    vi.fn<(session: unknown, ...domains: string[]) => Promise<boolean>>(),
+}));
+
+vi.mock("@/server/auth", () => ({
+  auth: () => m.auth(),
+}));
+
+vi.mock("@/server/ecfg/public-data", () => ({
+  canViewData: (session: unknown, ...domains: string[]) =>
+    m.canViewData(session, ...domains),
 }));
 
 vi.mock("@/common/tools/trpc/server", () => ({
@@ -56,6 +68,11 @@ const rawClass = {
 describe("Bidding analytics page entry state", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    m.auth.mockResolvedValue({
+      user: { id: "test-user" },
+      expires: new Date(Date.now() + 3600000).toISOString(),
+    });
+    m.canViewData.mockResolvedValue(true);
     m.getAll.mockResolvedValue([rawClass]);
     m.getByCourseCode.mockResolvedValue({ code: "CS101", name: "Intro" });
     m.getBySlug.mockResolvedValue({ slug: "prof-a", name: "Prof A" });
@@ -96,5 +113,25 @@ describe("Bidding analytics page entry state", () => {
     expect(m.getBySlug).toHaveBeenCalledWith({ slug: "prof-a" });
     expect(markup).toContain('data-course="CS101 Intro"');
     expect(markup).toContain('data-professor="Prof A"');
+  });
+
+  it("renders AuthWall when classData is private and user is signed out", async () => {
+    m.auth.mockResolvedValue(null);
+    m.canViewData.mockResolvedValue(false);
+
+    const jsx = await BiddingAnalyticsPage({
+      searchParams: Promise.resolve({}),
+    });
+    const markup = renderToStaticMarkup(jsx);
+
+    expect(m.canViewData).toHaveBeenCalledWith(
+      null,
+      "classData",
+      "courses",
+      "professors",
+    );
+    expect(m.getAll).not.toHaveBeenCalled();
+    expect(markup).toContain("bidding analytics");
+    expect(markup).toContain("Sign in");
   });
 });

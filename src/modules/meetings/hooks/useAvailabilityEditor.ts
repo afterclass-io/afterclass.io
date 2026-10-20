@@ -16,7 +16,6 @@ export type UseAvailabilityEditorOptions = {
   /** Slots already saved for the signed-in user. */
   savedAvailable: number[] | undefined;
   savedIfNeeded: number[] | undefined;
-  isSignedIn: boolean;
   /** Called once the edits are saved. */
   onSaved?: () => void;
 };
@@ -27,7 +26,6 @@ export function useAvailabilityEditor({
   totalSlots,
   savedAvailable,
   savedIfNeeded,
-  isSignedIn,
   onSaved,
 }: UseAvailabilityEditorOptions) {
   const utils = api.useUtils();
@@ -63,10 +61,6 @@ export function useAvailabilityEditor({
   );
 
   const save = () => {
-    if (!isSignedIn) {
-      toast.error("Please sign in to save your availability");
-      return;
-    }
     saveMutation.mutate({ slug, availableSlots, ifNeededSlots });
   };
 

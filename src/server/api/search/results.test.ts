@@ -2,6 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 import { makeCaller } from "@/server/api/trpc-test-helpers";
 import { searchRouter } from "./router";
 
+// Anonymous callers need the data domain public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () =>
+    Promise.resolve({ publicData: { courses: true, professors: true } }),
+}));
+
 const service = vi.hoisted(() => ({ courses: vi.fn(), professors: vi.fn() }));
 vi.mock("@/server/search/search-service", async (original) => ({
   ...(await original<object>()),

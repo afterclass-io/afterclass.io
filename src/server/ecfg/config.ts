@@ -64,6 +64,30 @@ export const chatConfigSchema = chatTunablesSchema
   .default(DEFAULT_CHAT_CONFIG)
   .transform((cfg) => ({ ...DEFAULT_CHAT_CONFIG, ...cfg }));
 
+export const DEFAULT_PUBLIC_DATA = {
+  classData: false,
+  reviews: false,
+  courses: false,
+  professors: false,
+  publicRoadmaps: false,
+} as const;
+
+export type PublicDataDomain = keyof typeof DEFAULT_PUBLIC_DATA;
+
+// Partial remote object merged over the private defaults, so a missing key or
+// a missing section still parses and stays private.
+const publicDataSchema = z
+  .object({
+    classData: z.boolean(),
+    reviews: z.boolean(),
+    courses: z.boolean(),
+    professors: z.boolean(),
+    publicRoadmaps: z.boolean(),
+  })
+  .partial()
+  .default(DEFAULT_PUBLIC_DATA)
+  .transform((cfg) => ({ ...DEFAULT_PUBLIC_DATA, ...cfg }));
+
 export const edgeConfigSchema = z.object({
   enableCmdkTooltip: z.boolean(),
   enableReviewEventsTracking: z.boolean(),
@@ -79,6 +103,9 @@ export const edgeConfigSchema = z.object({
   // key would fail validation and discard the whole remote config).
   // Remote-only: no env override, so it cannot be bypassed.
   enableContentModeration: z.boolean().default(true),
+  // Per-domain visibility for anonymous users. Every domain is private unless
+  // the remote config flips it public; signed-in users always see everything.
+  publicData: publicDataSchema,
   // A config whose remote Edge Config hasn't been updated with `chat` yet must
   // still parse. NOTE (zod 4.5+): an inner schema's `.default()` is now applied
   // even when the key is absent/undefined, so `chat` is always populated (with

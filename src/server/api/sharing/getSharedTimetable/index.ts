@@ -37,6 +37,12 @@ export const getSharedTimetable = publicProcedure
       throw new TRPCError({ code: "NOT_FOUND" });
     }
 
+    // Contains class data and a private timetable: login only. Checked after
+    // the lookup so unknown tokens stay NOT_FOUND.
+    if (!ctx.session?.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
     const slots = timetable.slots.map((slot) => toArrangedClass(slot));
 
     return {

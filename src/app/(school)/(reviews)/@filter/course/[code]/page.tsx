@@ -1,6 +1,7 @@
 import { ReviewType } from "@/generated/prisma/enums";
 
 import { auth } from "@/server/auth";
+import { canViewData } from "@/server/ecfg/public-data";
 import { FilterToggleSection } from "@/modules/reviews/components/FilterToggleSection";
 import { api } from "@/common/tools/trpc/server";
 import { BooksIcon, PencilIcon } from "@/common/components/icons";
@@ -10,6 +11,7 @@ export default async function CourseFilter(props: {
 }) {
   const params = await props.params;
   const session = await auth();
+  if (!(await canViewData(session, "courses"))) return null;
   if (!session) {
     return <FilterToggleSection filterType={ReviewType.PROFESSOR} isLocked />;
   }

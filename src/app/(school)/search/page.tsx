@@ -1,5 +1,6 @@
 import { type Metadata } from "next";
 
+import { AuthWall } from "@/common/components/auth-wall";
 import { ConstrainedContainer } from "@/common/components/constrained-container";
 import { SearchResult } from "@/modules/search/components/SearchResult";
 import {
@@ -8,6 +9,7 @@ import {
 } from "@/modules/search/types";
 import { MAX_QUERY_LEN } from "@/common/tools/query-normalize";
 import { auth } from "@/server/auth";
+import { canViewData } from "@/server/ecfg/public-data";
 import { db } from "@/server/db";
 import {
   DEFAULT_UNIVERSITY_ABBRV,
@@ -37,40 +39,61 @@ export default async function Search(props: {
   if (query) {
     const session = await auth();
     const withCounts = Boolean(session);
+    // This page queries the database directly, so each result type is gated
+    // here rather than by a tRPC procedure.
+    const [canViewCourses, canViewProfessors] = await Promise.all([
+      canViewData(session, "courses"),
+      canViewData(session, "professors"),
+    ]);
+    if (!canViewCourses && !canViewProfessors) {
+      return (
+        <ConstrainedContainer>
+          <AuthWall variant="full" feature="search results" />
+        </ConstrainedContainer>
+      );
+    }
     const [coursesResult, profsResult] = await Promise.all([
-      searchCourses(db, {
-        query,
-        limit: 20,
-        cursor: 0,
-        withCounts,
-        universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
-      }),
-      searchProfessors(db, {
-        query,
-        limit: 20,
-        cursor: 0,
-        withCounts,
-        universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
-      }),
+      canViewCourses
+        ? searchCourses(db, {
+            query,
+            limit: 20,
+            cursor: 0,
+            withCounts,
+            universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
+          })
+        : null,
+      canViewProfessors
+        ? searchProfessors(db, {
+            query,
+            limit: 20,
+            cursor: 0,
+            withCounts,
+            universityAbbrv: DEFAULT_UNIVERSITY_ABBRV,
+          })
+        : null,
     ]);
 
-    courseTotal = coursesResult.total;
-    profTotal = profsResult.total;
-    searchedCourse = coursesResult.rows.map((row) => ({
-      uniAbbrv: row.uniAbbrv,
-      courseCode: row.code,
-      courseName: row.name,
-      profCount: row.profCount,
-      reviewCount: row.reviewCount,
-    }));
+    if (coursesResult) {
+      courseTotal = coursesResult.total;
+      searchedCourse = coursesResult.rows.map((row) => ({
+        uniAbbrv: row.uniAbbrv,
+        courseCode: row.code,
+        courseName: row.name,
+        profCount: row.profCount,
+        reviewCount: row.reviewCount,
+      }));
+    }
 
-    searchedProf = profsResult.rows.map((row) => ({
-      uniAbbrv: row.uniAbbrv,
-      profName: row.name,
-      profSlug: row.slug,
-      courseCount: row.courseCount,
-      reviewCount: row.reviewCount,
-    }));
+    if (profsResult) {
+      profTotal = profsResult.total;
+      searchedProf = profsResult.rows.map((row) => ({
+        uniAbbrv: row.uniAbbrv,
+        profName: row.name,
+        profSlug: row.slug,
+        courseCount: row.courseCount,
+        reviewCount: row.reviewCount,
+      }));
+    }
   }
 
   return (

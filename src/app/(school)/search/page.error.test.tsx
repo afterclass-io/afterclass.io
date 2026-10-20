@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/server/ecfg/public-data", () => ({
+  canViewData: async () => true,
+}));
+
 const m = vi.hoisted(() => ({
   auth: vi.fn(),
   searchCourses: vi.fn(),

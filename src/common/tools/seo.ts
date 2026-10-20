@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 
+import type { PublicDataDomain } from "@/server/ecfg/config";
 import { DEFAULT_MAX_RATING } from "@/common/components/rating-group.constants";
 
 /** Deployment context as Vercel reports it; unset locally and in CI. */
@@ -41,11 +42,13 @@ export type SitemapSources = {
   courses: { code: string }[];
   professors: { slug: string }[];
   roadmaps: { id: string }[];
+  /** Domains private to anonymous visitors; their static pages are left out. */
+  privateDomains?: PublicDataDomain[];
 };
 
 export function buildSitemap(
   baseUrl: string,
-  { courses, professors, roadmaps }: SitemapSources,
+  { courses, professors, roadmaps, privateDomains = [] }: SitemapSources,
 ): MetadataRoute.Sitemap {
   // A single sitemap holds at most 50,000 URLs; split into a sitemap index
   // before the catalogue reaches that, not after.
@@ -53,12 +56,24 @@ export function buildSitemap(
     { url: abs(baseUrl, "/"), changeFrequency: "weekly", priority: 1.0 },
     { url: abs(baseUrl, "/privacy"), changeFrequency: "yearly", priority: 0.3 },
     { url: abs(baseUrl, "/terms"), changeFrequency: "yearly", priority: 0.3 },
-    { url: abs(baseUrl, "/bidding"), changeFrequency: "weekly", priority: 0.8 },
-    {
-      url: abs(baseUrl, "/roadmaps"),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
+    ...(privateDomains.includes("classData")
+      ? []
+      : [
+          {
+            url: abs(baseUrl, "/bidding"),
+            changeFrequency: "weekly" as const,
+            priority: 0.8,
+          },
+        ]),
+    ...(privateDomains.includes("publicRoadmaps")
+      ? []
+      : [
+          {
+            url: abs(baseUrl, "/roadmaps"),
+            changeFrequency: "weekly" as const,
+            priority: 0.8,
+          },
+        ]),
     ...courses.map((course) => ({
       url: abs(baseUrl, `/course/${encodeURIComponent(course.code)}`),
       changeFrequency: "monthly" as const,

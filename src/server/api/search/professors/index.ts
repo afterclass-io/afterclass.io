@@ -2,13 +2,13 @@ import { z } from "zod";
 
 import { UniversityAbbreviation } from "@/generated/prisma/enums";
 import { MAX_QUERY_LEN } from "@/common/tools/query-normalize";
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import {
   DEFAULT_UNIVERSITY_ABBRV,
   searchProfessors,
 } from "@/server/search/search-service";
 
-export const professors = publicProcedure
+export const professors = dataProcedure("professors")
   .input(
     z.object({
       query: z.string().max(MAX_QUERY_LEN),

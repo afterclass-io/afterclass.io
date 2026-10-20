@@ -7,6 +7,7 @@ import { api } from "@/common/tools/trpc/react";
 import { selectedTermIdAtom } from "@/modules/timetable/atoms/timetable";
 import { Input } from "@/common/components/input";
 import { Skeleton } from "@/common/components/skeleton";
+import { AuthWall } from "@/common/components/auth-wall";
 import { cn } from "@/common/functions";
 import { useDebouncedValue } from "@/common/hooks/useDebouncedValue";
 import { isShortQuery, SHORT_QUERY_HINT } from "@/common/constants/search";
@@ -18,6 +19,7 @@ export type CourseSearchPanelProps = {
   timetableCourseCodes: Set<string>;
   /** Classes currently on the active timetable's grid (for clash checks). */
   existingSlots?: ArrangedClass[];
+  isLoggedIn?: boolean;
   className?: string;
 };
 
@@ -33,6 +35,7 @@ export type CourseSearchPanelProps = {
 export function CourseSearchPanel({
   timetableCourseCodes,
   existingSlots = [],
+  isLoggedIn = true,
   className,
 }: CourseSearchPanelProps) {
   const selectedTermId = useAtomValue(selectedTermIdAtom);
@@ -58,6 +61,8 @@ export function CourseSearchPanel({
     {
       enabled: !!selectedTermId && !isShortQuery(debouncedQuery),
       staleTime: 30_000,
+      retry: (failureCount, error) =>
+        error.data?.code !== "UNAUTHORIZED" && failureCount < 3,
     },
   );
 
@@ -181,14 +186,24 @@ export function CourseSearchPanel({
                 {/* Expanded section picker */}
                 {expandedCourseId === course.id && (
                   <div className="border-border mt-1 ml-4 border-l pl-4">
-                    <SectionPicker
-                      courseId={course.id}
-                      courseCode={course.code}
-                      alreadyInTimetable={timetableCourseCodes.has(course.code)}
-                      sections={expandedSections}
-                      existingSlots={existingSlots}
-                      onDone={() => setExpandedCourseId(null)}
-                    />
+                    {isLoggedIn ? (
+                      <SectionPicker
+                        courseId={course.id}
+                        courseCode={course.code}
+                        alreadyInTimetable={timetableCourseCodes.has(
+                          course.code,
+                        )}
+                        sections={expandedSections}
+                        existingSlots={existingSlots}
+                        onDone={() => setExpandedCourseId(null)}
+                      />
+                    ) : (
+                      <AuthWall
+                        variant="compact"
+                        feature="class sections"
+                        description="Sign in to view timings and add to your timetable."
+                      />
+                    )}
                   </div>
                 )}
               </div>
@@ -196,9 +211,23 @@ export function CourseSearchPanel({
           </div>
         )}
 
+        {/* Unauthorized error state */}
+        {!isShortQuery(debouncedQuery) &&
+          !isSearching &&
+          searchQuery.error?.data?.code === "UNAUTHORIZED" && (
+            <div className="py-6">
+              <AuthWall
+                variant="compact"
+                feature="course search"
+                description="Sign in to search courses and view class schedules."
+              />
+            </div>
+          )}
+
         {/* No results */}
         {!isShortQuery(debouncedQuery) &&
           !isSearching &&
+          !searchQuery.error &&
           results.length === 0 && (
             <p className="text-muted-foreground py-8 text-center text-sm">
               No courses found for &quot;{debouncedQuery}&quot;.

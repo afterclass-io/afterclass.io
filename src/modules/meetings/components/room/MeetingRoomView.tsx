@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useAtom } from "jotai";
 import { Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -53,7 +52,6 @@ type PollData = RouterOutputs["meetings"]["getPollBySlug"];
 
 function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
   const { poll, participants, heatmap } = data;
-  const { data: session } = useSession();
 
   const [isEditing, setIsEditing] = useState(false);
   const [brushMode, setBrushMode] = useAtom(meetingBrushModeAtom);
@@ -68,7 +66,6 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
 
   const utils = api.useUtils();
   const { copy: copyToClipboard } = useCopyToClipboard();
-  const isSignedIn = Boolean(session?.user);
 
   const [hasSeenTour, setHasSeenTour] = useAtom(hasSeenMeetingsTourAtom);
   useAutoStartTour(meetingsRoomTourSteps, {
@@ -99,7 +96,6 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
   const joinAttemptedRef = useRef<string | null>(null);
   useEffect(() => {
     if (
-      isSignedIn &&
       !hasJoined &&
       !isJoining &&
       !deletePollMutation.isPending &&
@@ -108,14 +104,7 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
       joinAttemptedRef.current = slug;
       joinPoll({ slug });
     }
-  }, [
-    isSignedIn,
-    hasJoined,
-    isJoining,
-    deletePollMutation.isPending,
-    joinPoll,
-    slug,
-  ]);
+  }, [hasJoined, isJoining, deletePollMutation.isPending, joinPoll, slug]);
 
   const updateDetails = api.meetings.updatePoll.useMutation({
     onSuccess: async () => {
@@ -145,7 +134,6 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
     totalSlots,
     savedAvailable: currentUser?.availableSlots,
     savedIfNeeded: currentUser?.ifNeededSlots,
-    isSignedIn,
     onSaved: () => setIsEditing(false),
   });
   const { overlays, timetable, google } = useMeetingOverlays({
@@ -155,7 +143,6 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
     endHour: poll.endHour,
     slotMinutes: poll.slotDurationMinutes,
     acadTermId: poll.acadTerm?.id,
-    enabled: isSignedIn,
   });
 
   const pollWindow = {
@@ -220,10 +207,6 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
   };
 
   const handleAutofillTimetable = () => {
-    if (!session) {
-      toast.error("Please sign in to autofill from your timetable");
-      return;
-    }
     if (timetable.isLoading) {
       toast.info("Loading your timetable. Try again in a moment.");
       return;
@@ -257,10 +240,6 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
   };
 
   const handleStartEditing = () => {
-    if (!isSignedIn) {
-      toast.error("Please sign in to add your availability");
-      return;
-    }
     setSelectedRange(null);
     setIsEditing(true);
   };
@@ -283,12 +262,10 @@ function MeetingRoom({ data, slug }: { data: PollData; slug: string }) {
   return (
     <div className="flex flex-col gap-2">
       {/* Google Identity Services, used by the Google Calendar sync. */}
-      {isSignedIn && (
-        <Script
-          src="https://accounts.google.com/gsi/client"
-          strategy="lazyOnload"
-        />
-      )}
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="lazyOnload"
+      />
       <MeetingRoomHeader
         title={poll.title}
         description={poll.description}

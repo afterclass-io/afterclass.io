@@ -21,6 +21,11 @@ vi.mock("@/server/db", () => ({
 
 import { createCaller } from "@/server/api/root";
 
+// Anonymous callers need the data domain public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () => Promise.resolve({ publicData: { professors: true } }),
+}));
+
 // Row shape returned by the raw professors search. `count` comes from
 // `COUNT(*) OVER ()`, so it is a bigint in Node-postgres.
 const profRow = {

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { PROFESSOR_FIELDS } from "../constants";
 
-export const getByCourseCode = publicProcedure
+export const getByCourseCode = dataProcedure("courses", "professors")
   .input(
     z.object({
       code: z.string(),

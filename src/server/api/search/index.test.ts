@@ -15,6 +15,12 @@ vi.mock("@/server/db", () => ({
 
 import { createCaller } from "@/server/api/root";
 
+// Anonymous callers need the data domain public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () =>
+    Promise.resolve({ publicData: { courses: true, professors: true } }),
+}));
+
 const caller = createCaller(
   () =>
     ({

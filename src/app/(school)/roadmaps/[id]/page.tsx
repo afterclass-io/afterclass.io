@@ -1,5 +1,9 @@
 import { cache } from "react";
+import { AuthWall } from "@/common/components/auth-wall";
+import { ConstrainedContainer } from "@/common/components/constrained-container";
 import { api } from "@/common/tools/trpc/server";
+import { auth } from "@/server/auth";
+import { canViewData } from "@/server/ecfg/public-data";
 import { notFound } from "next/navigation";
 import { TRPCError } from "@trpc/server";
 import { type Metadata } from "next";
@@ -20,6 +24,13 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const { id } = await props.params;
   if (!id) return { title: "Roadmap Not Found" };
+
+  if (!(await canViewData(await auth(), "publicRoadmaps"))) {
+    return {
+      title: "Sign in to view this roadmap",
+      robots: { index: false, follow: false },
+    };
+  }
 
   try {
     const data = await getCachedRoadmap(id);
@@ -42,6 +53,14 @@ export default async function PublicRoadmapPage(props: {
 }) {
   const { id } = await props.params;
   if (!id) notFound();
+
+  if (!(await canViewData(await auth(), "publicRoadmaps"))) {
+    return (
+      <ConstrainedContainer>
+        <AuthWall variant="full" feature="this roadmap" />
+      </ConstrainedContainer>
+    );
+  }
 
   let data: Awaited<ReturnType<typeof api.roadmaps.getById>>;
   try {

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { ReviewType } from "@/generated/prisma/enums";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import {
   idb as db,
@@ -21,6 +21,11 @@ import { getByProfSlug } from "./getByProfSlug";
 import { getByProfSlugProtected } from "./getByProfSlugProtected";
 import { getMetadataForCourse } from "./getMetadataForCourse";
 import { getMetadataForProf } from "./getMetadataForProf";
+
+// Anonymous callers need the data domains public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () => Promise.resolve({ publicData: { reviews: true } }),
+}));
 
 const router = createTRPCRouter({
   getAll,

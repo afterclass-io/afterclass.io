@@ -19,12 +19,10 @@ import {
 } from "@tanstack/react-query";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { toast } from "sonner";
 import {
   LayoutGrid,
   CalendarDays,
-  LogIn,
   Search,
   Undo2,
   Redo2,
@@ -63,6 +61,7 @@ import { Skeleton } from "@/common/components/skeleton";
 import { ShareDialog } from "@/modules/sharing/components/ShareDialog";
 import { CalendarExportPopover } from "@/modules/timetable/components/CalendarExportPopover";
 import { Button } from "@/common/components/button";
+import { AuthWall } from "@/common/components/auth-wall";
 import { EmptyState } from "@/common/components/empty-state";
 import { PageTitle } from "@/common/components/page-title";
 import { ResizeHandle } from "@/common/components/resize-handle";
@@ -597,18 +596,10 @@ export default function TimetablePage() {
 
           {/* Logged out: invite login instead of firing protected queries */}
           {selectedTermId && sessionStatus !== "loading" && !isLoggedIn && (
-            <EmptyState
+            <AuthWall
               className="min-h-[400px]"
-              icon={<LogIn />}
-              title="Log in to build your timetable"
+              feature="your timetable"
               description="Browse courses in the search panel, or log in to save timetables, track bids and share your schedule."
-              action={
-                <Button asChild>
-                  <Link href="/account/auth/login?callbackUrl=%2Ftimetable">
-                    Log in
-                  </Link>
-                </Button>
-              }
             />
           )}
 
@@ -663,6 +654,7 @@ export default function TimetablePage() {
             <CourseSearchPanel
               timetableCourseCodes={timetableCourseCodes}
               existingSlots={classes}
+              isLoggedIn={isLoggedIn}
               className="min-h-0 flex-1"
             />
           </div>

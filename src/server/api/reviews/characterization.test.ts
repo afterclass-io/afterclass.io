@@ -13,6 +13,11 @@ import { PRIVATE_REVIEW_FIELDS, PUBLIC_REVIEW_FIELDS } from "./constants";
 import memberReviewRow from "./fixtures/member-review-row.json";
 import expectedKeys from "./fixtures/member-review-keys.json";
 
+// Anonymous callers need the data domain public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () => Promise.resolve({ publicData: { reviews: true } }),
+}));
+
 const router = createTRPCRouter({
   getAll,
   getAllProtected,

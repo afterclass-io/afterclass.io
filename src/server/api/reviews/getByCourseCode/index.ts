@@ -1,7 +1,7 @@
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { listReviews, reviewListInputs } from "../service";
 
-export const getByCourseCode = publicProcedure
+export const getByCourseCode = dataProcedure("reviews")
   .input(reviewListInputs.course)
   .query(({ ctx, input }) =>
     listReviews(ctx.db, {

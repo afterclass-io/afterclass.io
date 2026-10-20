@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { ReviewType } from "@/generated/prisma/enums";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import {
   idb as db,
@@ -15,6 +15,11 @@ import { getByReviewId as reactionsByReviewId } from "../reviewReactions/getByRe
 import { count as votesCount } from "../reviewVotes/count";
 import { getByUser as votesByUser } from "../reviewVotes/getByUser";
 import { count as reviewsCount } from "./count";
+
+// Anonymous callers need the data domains public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () => Promise.resolve({ publicData: { reviews: true } }),
+}));
 
 const router = createTRPCRouter({
   reactionsByReviewId,

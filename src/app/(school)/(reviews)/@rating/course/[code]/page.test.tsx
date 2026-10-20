@@ -3,6 +3,10 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/server/ecfg/public-data", () => ({
+  canViewData: async () => true,
+}));
+
 const { authMock, getAllByTypeMock, getMetadataForCourseMock } = vi.hoisted(
   () => ({
     authMock: vi.fn(),

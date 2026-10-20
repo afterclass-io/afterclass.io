@@ -28,6 +28,16 @@
     "value": true
   },
   {
+    "key": "publicData",
+    "value": {
+      "classData": false,
+      "reviews": false,
+      "courses": false,
+      "professors": false,
+      "publicRoadmaps": false
+    }
+  },
+  {
     "key": "chat",
     "value": {
       "quotaPerMonth": 20,

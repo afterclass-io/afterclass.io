@@ -13,6 +13,8 @@ import { z, ZodError } from "zod";
 import * as Sentry from "@sentry/nextjs";
 
 import { db } from "@/server/db";
+import type { PublicDataDomain } from "@/server/ecfg/config";
+import { canViewData } from "@/server/ecfg/public-data";
 
 /**
  * 1. CONTEXT
@@ -132,6 +134,23 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 export const publicProcedure = t.procedure
   .use(sentryMiddleware)
   .use(timingMiddleware);
+
+/**
+ * Public procedure gated per data domain
+ *
+ * Anonymous callers get UNAUTHORIZED unless every listed domain is public in
+ * Edge Config. Signed-in callers skip the Edge Config read entirely.
+ */
+export const dataProcedure = (...domains: PublicDataDomain[]) =>
+  publicProcedure.use(async ({ ctx, next }) => {
+    if (!(await canViewData(ctx.session, ...domains))) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Sign in required to view this data",
+      });
+    }
+    return next();
+  });
 
 /**
  * Protected (authenticated) procedure

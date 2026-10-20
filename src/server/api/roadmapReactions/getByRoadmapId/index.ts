@@ -1,9 +1,9 @@
 import { ReviewReactionType } from "@/generated/prisma/enums";
 import { z } from "zod";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 
-export const getByRoadmapId = publicProcedure
+export const getByRoadmapId = dataProcedure("publicRoadmaps")
   .input(
     z.object({
       roadmapId: z.string(),

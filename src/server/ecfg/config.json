@@ -6,6 +6,13 @@
   "enableReviewSort": true,
   "enableReviewFilter": true,
   "enableReviewReactions": true,
+  "publicData": {
+    "classData": false,
+    "reviews": false,
+    "courses": false,
+    "professors": false,
+    "publicRoadmaps": false
+  },
   "chat": {
     "quotaPerMonth": 20,
     "nudgeAt": 16,

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
-export const getByAcadTerm = publicProcedure
+export const getByAcadTerm = dataProcedure("classData")
   .input(
     z.object({
       acadTermId: z.string(),

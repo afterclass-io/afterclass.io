@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { PUBLIC_CLASS_FIELDS } from "@/server/api/classes/constants";
 import { getCurrentWindowLogic } from "@/server/api/bidWindows/getCurrentWindow/helpers";
 
-export const getAll = publicProcedure
+export const getAll = dataProcedure("classData")
   .input(
     z.object({
       id: z.string().optional(),

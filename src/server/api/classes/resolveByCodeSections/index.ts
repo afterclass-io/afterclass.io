@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { getCurrentWindowLogic } from "@/server/api/bidWindows/getCurrentWindow/helpers";
 
-export const resolveByCodeSections = publicProcedure
+export const resolveByCodeSections = dataProcedure("classData")
   .input(
     z.object({
       items: z

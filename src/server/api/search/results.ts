@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MAX_QUERY_LEN } from "@/common/tools/query-normalize";
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import {
   DEFAULT_UNIVERSITY_ABBRV,
   searchCourses,
@@ -13,7 +13,7 @@ const input = z.object({
   limit: z.number().int().min(1).max(50).default(20),
 });
 
-export const courseResults = publicProcedure
+export const courseResults = dataProcedure("courses")
   .input(input)
   .query(async ({ ctx, input }) => {
     const { rows, total } = await searchCourses(ctx.db, {
@@ -37,7 +37,7 @@ export const courseResults = publicProcedure
     };
   });
 
-export const professorResults = publicProcedure
+export const professorResults = dataProcedure("professors")
   .input(input)
   .query(async ({ ctx, input }) => {
     const { rows, total } = await searchProfessors(ctx.db, {
