@@ -9,7 +9,10 @@ import { getCurrentWindow } from "./getCurrentWindow";
 
 // Anonymous callers need the data domains public; setup only.
 vi.mock("@/server/ecfg/edge-config", () => ({
-  getEdgeConfig: () => Promise.resolve({ publicData: { classData: true } }),
+  getEdgeConfig: () =>
+    Promise.resolve({
+      publicData: { courses: true, professors: true, classData: true },
+    }),
 }));
 
 const router = createTRPCRouter({ getByAcadTerm, getCurrentWindow });

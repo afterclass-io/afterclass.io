@@ -3,8 +3,10 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+// The entity is public; reviews are public to signed-in viewers only.
 vi.mock("@/server/ecfg/public-data", () => ({
-  canViewData: async () => true,
+  canViewData: async (session: unknown, ...domains: string[]) =>
+    Boolean(session) || !domains.includes("reviews"),
 }));
 
 const { authMock, getAllByTypeMock, getMetadataForCourseMock } = vi.hoisted(
@@ -24,6 +26,7 @@ vi.mock("@/common/tools/trpc/server", () => ({
 }));
 vi.mock("next/navigation", () => ({
   usePathname: () => null,
+  useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ push: vi.fn() }),
 }));
 // CtaButton/ProgressLink inside LockedOverlay need the progress context.
@@ -41,7 +44,7 @@ describe("CourseRating (@rating/course/[code])", () => {
     getAllByTypeMock.mockResolvedValue(courseLabels);
   });
 
-  it("renders locked placeholders and skips metadata when signed out", async () => {
+  it("renders locked placeholders and skips metadata while reviews are private", async () => {
     authMock.mockResolvedValue(null);
 
     const element = await CourseRating({

@@ -18,7 +18,10 @@ import { searchCourses } from "./searchCourses";
 
 // Anonymous callers need `classData` public; setup only.
 vi.mock("@/server/ecfg/edge-config", () => ({
-  getEdgeConfig: () => Promise.resolve({ publicData: { classData: true } }),
+  getEdgeConfig: () =>
+    Promise.resolve({
+      publicData: { courses: true, professors: true, classData: true },
+    }),
 }));
 
 const router = createTRPCRouter({

@@ -11,9 +11,12 @@ export default async function ProfessorFilter(props: {
   const params = await props.params;
   const session = await auth();
   if (!(await canViewData(session, "professors"))) return null;
-  if (!session) {
+  // The tabs list the courses this professor teaches.
+  if (!(await canViewData(session, "courses"))) {
     return <FilterToggleSection filterType={ReviewType.COURSE} isLocked />;
   }
+  // A review count is a review figure, so it needs `reviews`.
+  const canViewReviews = await canViewData(session, "reviews");
 
   const coursesTaughtByThisProf = await api.courses.getByProfSlug({
     slug: params.slug,
@@ -28,7 +31,9 @@ export default async function ProfessorFilter(props: {
         sublabel: course.code,
         value: course.code,
         filterStats: [
-          { icon: <PencilIcon />, stat: course._count.reviews },
+          ...(canViewReviews
+            ? [{ icon: <PencilIcon />, stat: course._count.reviews }]
+            : []),
           { icon: <GraduationCapIcon />, stat: course._count.classes },
         ],
       }))}

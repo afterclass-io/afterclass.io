@@ -22,7 +22,8 @@ type BaseReviewItemLoaderProps = {
   /**
    * Whether the server resolved a session for this request. It picks the
    * procedure, so the query key never changes after hydration and the page the
-   * server prefetched is the page this component reads.
+   * server prefetched is the page this component reads. The page renders this
+   * loader only when the viewer may read reviews, so no card is ever locked.
    */
   isAuthenticated: boolean;
 };
@@ -141,14 +142,13 @@ export const ReviewItemLoader = (props: ReviewItemLoaderProps) => {
             key={review.id}
             variant={props.variant}
             review={review}
-            isLocked={!isAuthenticated}
             seeMore={pathname === "/"}
           />,
           <Separator key={`hr-${review.id}`} />,
         ])
         .slice(0, -1)}
 
-      {isAuthenticated && hasNextPage && (
+      {hasNextPage && (
         <>
           <Separator />
           <InView

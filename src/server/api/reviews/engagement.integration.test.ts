@@ -23,7 +23,10 @@ import { getEngagement } from "./getEngagement";
 
 // Anonymous callers need the data domains public; setup only.
 vi.mock("@/server/ecfg/edge-config", () => ({
-  getEdgeConfig: () => Promise.resolve({ publicData: { reviews: true } }),
+  getEdgeConfig: () =>
+    Promise.resolve({
+      publicData: { courses: true, professors: true, reviews: true },
+    }),
 }));
 
 const router = createTRPCRouter({

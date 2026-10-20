@@ -11,7 +11,7 @@ import { getByUser as votesByUser } from "../roadmapVotes/getByUser";
 // Anonymous callers need the data domains public; setup only.
 vi.mock("@/server/ecfg/edge-config", () => ({
   getEdgeConfig: () =>
-    Promise.resolve({ publicData: { publicRoadmaps: true } }),
+    Promise.resolve({ publicData: { courses: true, publicRoadmaps: true } }),
 }));
 
 const router = createTRPCRouter({ getByRoadmapId, votesCount, votesByUser });

@@ -11,6 +11,7 @@ type MockState = {
   memberQuery: Mock;
   refetch: Mock;
   pages: Page[];
+  hasNextPage: boolean;
 };
 
 const m = vi.hoisted((): MockState => ({
@@ -20,6 +21,7 @@ const m = vi.hoisted((): MockState => ({
   memberQuery: vi.fn(),
   refetch: vi.fn(),
   pages: [],
+  hasNextPage: false,
 }));
 
 vi.mock("next/navigation", () => ({
@@ -37,7 +39,7 @@ vi.mock("next-auth/react", () => ({
 vi.mock("@/common/tools/trpc/react", () => {
   const result = () => [
     { pages: m.pages },
-    { fetchNextPage: vi.fn(), hasNextPage: false, refetch: m.refetch },
+    { fetchNextPage: vi.fn(), hasNextPage: m.hasNextPage, refetch: m.refetch },
   ];
   return {
     api: {
@@ -59,16 +61,8 @@ vi.mock("@/common/tools/trpc/react", () => {
   };
 });
 vi.mock("../ReviewItem", () => ({
-  ReviewItem: ({
-    review,
-    isLocked,
-  }: {
-    review: { id: string };
-    isLocked: boolean;
-  }) => (
-    <div data-testid="review" data-locked={String(isLocked)}>
-      {review.id}
-    </div>
+  ReviewItem: ({ review }: { review: { id: string } }) => (
+    <div data-testid="review">{review.id}</div>
   ),
 }));
 vi.mock("@/common/components/progress-link", () => ({
@@ -82,6 +76,7 @@ beforeEach(() => {
   m.search = "";
   m.sessionStatus = "loading";
   m.pages = [{ items: [{ id: "r1" }, { id: "r2" }] }];
+  m.hasNextPage = false;
 });
 
 describe("ReviewItemLoader", () => {
@@ -113,7 +108,26 @@ describe("ReviewItemLoader", () => {
       { filterFor: "all", sortBy: "latest" },
       expect.anything(),
     );
-    expect(screen.getAllByTestId("review")[0]?.dataset.locked).toBe("true");
+    expect(screen.getAllByTestId("review")).toHaveLength(2);
+  });
+
+  it("lets a signed-out viewer load more pages", () => {
+    // jsdom has no IntersectionObserver; the sentinel only needs to mount.
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        observe = vi.fn();
+        unobserve = vi.fn();
+        disconnect = vi.fn();
+      },
+    );
+    m.hasNextPage = true;
+    const { container } = render(
+      <ReviewItemLoader variant="home" isAuthenticated={false} />,
+    );
+    expect(
+      container.querySelector('[data-test="review-load-more-sentinel"]'),
+    ).not.toBeNull();
   });
 
   it("puts the filter and sort from the URL in the query input", () => {
@@ -137,8 +151,8 @@ describe("ReviewItemLoader", () => {
     expect(m.refetch).not.toHaveBeenCalled();
   });
 
-  it("shows unlocked reviews to a signed-in viewer on the first paint", () => {
+  it("shows reviews to a signed-in viewer on the first paint", () => {
     render(<ReviewItemLoader variant="home" isAuthenticated />);
-    expect(screen.getAllByTestId("review")[0]?.dataset.locked).toBe("false");
+    expect(screen.getAllByTestId("review")).toHaveLength(2);
   });
 });

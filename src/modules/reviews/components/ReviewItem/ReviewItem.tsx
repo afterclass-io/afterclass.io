@@ -1,4 +1,3 @@
-import { LockedOverlay } from "@/common/components/locked-overlay";
 import { type Review } from "@/common/types/reviews";
 
 import { ReviewerGroup } from "./ReviewerGroup";
@@ -7,12 +6,9 @@ import { ReviewBody } from "./ReviewBody";
 import { ReviewFooter } from "./ReviewFooter";
 import { ReviewModal } from "./ReviewModal";
 import { ReviewItemViewEventTracker } from "../ReviewItemViewEventTracker";
-import { FullWidthEnforcer } from "@/common/components/full-width-enforcer";
 
 export type ReviewItemProps = {
   review: Review;
-  /** Decided by the server-resolved session, so the first paint is final. */
-  isLocked?: boolean;
   variant?: "home" | "professor" | "course";
   isMocked?: boolean; // for testing purposes only
   seeMore?: boolean;
@@ -20,7 +16,6 @@ export type ReviewItemProps = {
 
 export const ReviewItem = ({
   review,
-  isLocked,
   variant = "home",
   isMocked = false,
   seeMore,
@@ -32,18 +27,7 @@ export const ReviewItem = ({
     </div>
   );
 
-  return isLocked ? (
-    <div
-      className="focus-ring flex h-fit max-w-prose cursor-pointer flex-col items-start gap-2 rounded-md p-4 text-left md:gap-4"
-      data-test="review"
-    >
-      {reviewHeader}
-      <div className="text-muted-foreground relative line-clamp-5 flex h-16 w-full self-stretch overflow-hidden rounded-sm border wrap-anywhere md:line-clamp-3 md:text-sm">
-        <LockedOverlay ctaType="review" />
-        <FullWidthEnforcer />
-      </div>
-    </div>
-  ) : (
+  return (
     <ReviewModal review={review} variant={variant} seeMore={seeMore}>
       <div
         className="focus-ring hover:bg-accent flex h-fit max-w-prose cursor-pointer flex-col items-start gap-2 rounded-md p-4 text-left md:gap-4"

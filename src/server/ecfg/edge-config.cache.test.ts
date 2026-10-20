@@ -46,7 +46,7 @@ describe("getEdgeConfig caching", () => {
 
     expect(EDGE_CONFIG_CACHE_TAG).toBe("edge-config");
     expect(m.cacheOptions?.tags).toEqual([EDGE_CONFIG_CACHE_TAG]);
-    expect(m.cacheOptions?.revalidate).toBeGreaterThanOrEqual(3600);
+    expect(m.cacheOptions?.revalidate).toBe(60);
   });
 
   it("does not cache a failed read, so the fallback is not pinned", async () => {

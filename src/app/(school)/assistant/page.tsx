@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation";
 import { type Metadata } from "next";
 
+import { AuthWall } from "@/common/components/auth-wall";
 import { auth } from "@/server/auth";
 import { getSupabaseAccessToken } from "@/server/auth/supabase-access-token";
 import { getAssistantStatus } from "@/server/assistant/status";
@@ -14,9 +14,17 @@ export const metadata: Metadata = {
 
 export default async function AssistantPage() {
   const session = await auth();
+  // The assistant runs on a per-user quota, so it is members-only whatever
+  // `publicData` says. The wall matches the other signed-in-only pages.
   if (!session?.user) {
-    redirect(
-      `/account/auth/login?callbackUrl=${encodeURIComponent("/assistant")}`,
+    return (
+      <div className="flex w-full max-w-5xl flex-col gap-6 pt-4">
+        <AuthWall
+          feature="the assistant"
+          description="Sign in with your university account to chat with the AfterClass assistant about courses, bids and timetables."
+          callbackUrl="/assistant"
+        />
+      </div>
     );
   }
   const status = await getAssistantStatus(

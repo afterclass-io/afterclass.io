@@ -1,5 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { ReviewEventType } from "@/generated/prisma/enums";
 
 import { env } from "@/env";
@@ -22,6 +23,7 @@ export const ReviewShareButton = ({
 }: ReviewShareButtonProps) => {
   const pathname = usePathname();
   const ecfg = useEdgeConfigs();
+  const { status } = useSession();
   const { copy } = useCopyToClipboard();
 
   const { mutate: track } = api.reviewEvents.track.useMutation({
@@ -46,7 +48,12 @@ export const ReviewShareButton = ({
           errorMessage: "Failed to copy link",
           toastId: review.id,
         });
-        if (ok && ecfg.enableReviewEventsTracking) {
+        // Anyone can copy the link; only a member's share is recorded.
+        if (
+          ok &&
+          ecfg.enableReviewEventsTracking &&
+          status === "authenticated"
+        ) {
           track({
             reviewId: review.id,
             eventType: ReviewEventType.SHARE,

@@ -12,6 +12,7 @@ const m = vi.hoisted(() => ({
   getProfessorPageData: vi.fn(),
   prefetchReviewFeed: vi.fn(),
   getAllByType: vi.fn(),
+  professorsByCourse: vi.fn(),
 }));
 
 vi.mock("@/server/auth", () => ({ auth: m.auth }));
@@ -20,7 +21,10 @@ vi.mock("@/server/ecfg/public-data", () => ({
     m.canViewData(session, ...domains),
 }));
 vi.mock("@/common/tools/trpc/server", () => ({
-  api: { labels: { getAllByType: m.getAllByType } },
+  api: {
+    labels: { getAllByType: m.getAllByType },
+    professors: { getByCourseCode: m.professorsByCourse },
+  },
   HydrateClient: ({ children }: { children: React.ReactNode }) => children,
 }));
 vi.mock("@/modules/reviews/functions/getCourseByCode", () => ({
@@ -40,6 +44,7 @@ vi.mock("@/modules/reviews/functions/prefetchReviewFeed", () => ({
 }));
 vi.mock("@/modules/reviews/components/ReviewItemLoader", () => ({
   ReviewItemLoader: () => <div>review feed</div>,
+  LockedReviewFeed: () => <div>locked review feed</div>,
 }));
 vi.mock("@/modules/reviews/components/ReviewModalFocused", () => ({
   ReviewModalFocused: () => null,
@@ -54,6 +59,23 @@ vi.mock("@/modules/reviews/components/ReviewSection", () => ({
 vi.mock("@/modules/reviews/components/InformationSection/DetailCard", () => ({
   DetailCard: ({ canViewClassData }: { canViewClassData: boolean }) => (
     <div>{`detail card classData=${canViewClassData}`}</div>
+  ),
+}));
+// Exposes the tab data so a test can see which stats reach the client.
+vi.mock("@/modules/reviews/components/FilterToggleSection", () => ({
+  FilterToggleSection: (props: {
+    isLocked?: boolean;
+    dataToFilter?: { label: string; filterStats: { stat: number }[] }[];
+  }) => (
+    <div>
+      {props.isLocked
+        ? "locked tabs"
+        : props.dataToFilter
+            ?.map(
+              (d) => `${d.label}:${d.filterStats.map((f) => f.stat).join(",")}`,
+            )
+            .join(";")}
+    </div>
   ),
 }));
 vi.mock("@/common/components/json-ld", () => ({ JsonLd: () => null }));
@@ -90,7 +112,10 @@ const slug = { params: Promise.resolve({ slug: "lee-wei" }) };
 const courseReviewProps = { ...code, searchParams: Promise.resolve({}) };
 const professorReviewProps = { ...slug, searchParams: Promise.resolve({}) };
 
-/** Anonymous viewer; only the listed domains are public. */
+/**
+ * Anonymous viewer; only the listed domains are effectively public (the
+ * hierarchy is resolved inside the real `canViewData`, tested on its own).
+ */
 function publicDomains(...allowed: string[]) {
   m.canViewData.mockImplementation((_session, ...domains) =>
     domains.every((d) => allowed.includes(d)),
@@ -125,6 +150,9 @@ describe("reviews pages gating", () => {
     });
     m.getCoursePageData.mockResolvedValue(pageData);
     m.getProfessorPageData.mockResolvedValue(pageData);
+    m.professorsByCourse.mockResolvedValue([
+      { name: "Lee Wei", slug: "lee-wei", _count: { reviews: 7, classes: 3 } },
+    ]);
   });
 
   describe("everything private", () => {
@@ -164,9 +192,9 @@ describe("reviews pages gating", () => {
       expect(m.getProfessorPageData).not.toHaveBeenCalled();
     });
 
-    it("walls the home feed", async () => {
+    it("shows the locked placeholder feed on the home page", async () => {
       render(await Home({}));
-      expect(screen.getByText("Sign in to view reviews")).toBeVisible();
+      expect(screen.getByText("locked review feed")).toBeVisible();
       expect(m.prefetchReviewFeed).not.toHaveBeenCalled();
     });
   });
@@ -174,28 +202,77 @@ describe("reviews pages gating", () => {
   describe("catalogue public, reviews private", () => {
     beforeEach(() => publicDomains("courses", "professors"));
 
-    it("renders the course header and walls only the review slot", async () => {
+    it("renders the course header and locks only the review slot", async () => {
       render(await CourseHeader(code));
       expect(screen.getByRole("heading", { name: "Computing" })).toBeVisible();
 
       render(await CourseReviews(courseReviewProps));
-      expect(screen.getByText("Sign in to view course reviews")).toBeVisible();
+      expect(screen.getByText("locked review feed")).toBeVisible();
       expect(m.prefetchReviewFeed).not.toHaveBeenCalled();
-      expect(await courseMetadata(code)).toMatchObject({
-        robots: { index: false, follow: false },
-      });
     });
 
-    it("walls the professor review slot", async () => {
+    it("indexes the course and professor by name, without review figures", async () => {
+      const course = await courseMetadata(code);
+      expect(course.robots).toBeUndefined();
+      expect(course.title).toBe("Computing (CS1010)");
+      expect(course.description).toBeUndefined();
+      const professor = await professorMetadata(slug);
+      expect(professor.robots).toBeUndefined();
+      expect(professor.title).toBe("Lee Wei");
+      expect(m.getCoursePageData).not.toHaveBeenCalled();
+      expect(m.getProfessorPageData).not.toHaveBeenCalled();
+    });
+
+    it("locks the professor review slot", async () => {
       render(await ProfessorReviews(professorReviewProps));
-      expect(
-        screen.getByText("Sign in to view professor reviews"),
-      ).toBeVisible();
+      expect(screen.getByText("locked review feed")).toBeVisible();
+    });
+
+    it("lists the professor tabs without review counts", async () => {
+      render((await CourseFilter(code)) ?? <></>);
+      expect(screen.getByText("Lee Wei:3")).toBeVisible();
+    });
+
+    it("locks the ratings without reading review metadata", async () => {
+      render(await CourseRating(code));
+      expect(screen.getAllByText("to see rating").length).toBeGreaterThan(0);
     });
 
     it("hides class data from the detail card", async () => {
       render(await CourseInfo(code));
       expect(screen.getByText("detail card classData=false")).toBeVisible();
+    });
+  });
+
+  describe("courses and reviews public, professors private", () => {
+    beforeEach(() => publicDomains("courses", "reviews"));
+
+    it("renders the course feed without professor narrowing or figures", async () => {
+      render(
+        await CourseReviews({
+          ...code,
+          searchParams: Promise.resolve({ professor: "lee-wei" }),
+        }),
+      );
+      expect(screen.getByText("review feed")).toBeVisible();
+      expect(m.prefetchReviewFeed).toHaveBeenCalledWith(
+        { variant: "course", code: "CS1010", slugs: undefined },
+        expect.anything(),
+        false,
+      );
+      expect(m.getCoursePageData).not.toHaveBeenCalled();
+    });
+
+    it("locks the professor filter tabs on the course page", async () => {
+      render((await CourseFilter(code)) ?? <></>);
+      expect(screen.getByText("locked tabs")).toBeVisible();
+      expect(m.professorsByCourse).not.toHaveBeenCalled();
+    });
+
+    it("walls the professor page itself", async () => {
+      render(await ProfessorHeader(slug));
+      expect(screen.getByText("Sign in to view professor pages")).toBeVisible();
+      expect(await ProfessorReviews(professorReviewProps)).toBeNull();
     });
   });
 
@@ -220,6 +297,11 @@ describe("reviews pages gating", () => {
     it("renders the home feed", async () => {
       render(await Home({}));
       expect(screen.getByText("review feed")).toBeVisible();
+    });
+
+    it("lists the professor tabs with review counts", async () => {
+      render((await CourseFilter(code)) ?? <></>);
+      expect(screen.getByText("Lee Wei:7,3")).toBeVisible();
     });
 
     it("passes class data visibility to the detail card", async () => {

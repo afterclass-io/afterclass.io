@@ -4,7 +4,7 @@ This directory contains files used for Vercel's Edge Config store.
 
 Why use Vercel Edge Config?
 
-- Config changes need no code change or deployment. A change reaches the app after a flush or after the 24 hour cache window (see Caching and flush).
+- Config changes need no code change or deployment. A change reaches the app within a minute, or at once after a flush (see Caching and flush).
 - Easier rollback of features.
 - Faster load times: Edge Config takes single-digit ms to load.
 - Simple JSON fallback when Edge Config is unreachable.
@@ -27,10 +27,10 @@ Edge Config updates follow a **seed-only** model:
 
 ## Caching and flush
 
-`getEdgeConfig()` caches the raw store read for 24 hours (`EDGE_CONFIG_REVALIDATE_SECONDS` in `edge-config.ts`). The cache saves Edge Config read billing.
+`getEdgeConfig()` caches the raw store read for 60 seconds (`EDGE_CONFIG_REVALIDATE_SECONDS` in `edge-config.ts`). The cache saves Edge Config read billing: about one read per minute per region instead of one per render.
 
-- A console change does not apply at once. It applies when the 24 hour window ends or after a flush.
-- This covers every key: the kill switches (`chatEnabled`, `widgetEnabled`, `mcpEnabled`), the tunables and the flags. Flush after each console change.
+- A console change applies when the one minute window ends, or at once after a flush.
+- This covers every key: the kill switches (`chatEnabled`, `widgetEnabled`, `mcpEnabled`), the tunables and the flags. Flush when a change cannot wait a minute.
 - To flush, call the operator route. It drops the cached read, so the next request reads the live store:
 
 ```bash
@@ -38,10 +38,28 @@ curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://<host>/api/revalida
 ```
 
 - The route is `POST /api/revalidate/edge-config`. It uses the same bearer secret as the cron routes. A missing secret returns 500 and a wrong secret returns 401.
-- A failed store read is never cached, so an outage does not pin the fallback for 24 hours on a live server.
+- A failed store read is never cached, so an outage does not pin the fallback on a live server.
 - A build that cannot reach Edge Config bakes the `config.json` fallback into the static pages. Those pages keep the fallback values until their own revalidation window ends or until a flush.
 
-## Usage
+## `publicData` visibility
+
+`publicData` decides what signed-out visitors see. Signed-in users always see every domain. Each flag is private unless the store sets it to `true`.
+
+The flags form a hierarchy, resolved once in `src/server/ecfg/public-data.ts` (`PUBLIC_DATA_PARENTS`). A child is public only when its own flag and every parent are on:
+
+| Domain           | Also needs              | Why                                                |
+| ---------------- | ----------------------- | -------------------------------------------------- |
+| `courses`        | -                       |                                                    |
+| `professors`     | -                       |                                                    |
+| `classData`      | `courses`, `professors` | A class is a course section taught by a professor. |
+| `reviews`        | `courses`               | Every review names its course.                     |
+| `publicRoadmaps` | `courses`               | A roadmap is a list of courses.                    |
+
+A review can also name a professor. While `professors` is off, signed-out visitors get course-only reviews: professor reviews are left out of feeds, rating figures and direct links.
+
+Pages and procedures name only the domain of the data they show, for example `canViewData(session, "reviews")`. They never list parents themselves.
+
+While `reviews` is off, signed-out visitors see placeholder cards under a "Login to see review" overlay. No review data is sent.
 
 ### Adding New Configs
 

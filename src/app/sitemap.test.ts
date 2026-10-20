@@ -54,11 +54,17 @@ describe("sitemap", () => {
     expect(m.listPublic).not.toHaveBeenCalled();
   });
 
-  it("omits course and professor URLs unless courses, professors and reviews are public", async () => {
-    publicDomains("courses", "professors");
-    const result = await urls();
-    expect(result).not.toContain("https://x.test/course/IS215");
+  it("lists course and professor URLs by their own domain, whatever reviews say", async () => {
+    publicDomains("courses");
+    let result = await urls();
+    expect(result).toContain("https://x.test/course/IS215");
     expect(result).not.toContain("https://x.test/professor/john-doe");
+    expect(m.getAllProfessors).not.toHaveBeenCalled();
+
+    publicDomains("professors");
+    result = await urls();
+    expect(result).not.toContain("https://x.test/course/IS215");
+    expect(result).toContain("https://x.test/professor/john-doe");
   });
 
   it("lists each domain's URLs when it is public", async () => {

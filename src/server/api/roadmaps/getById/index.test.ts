@@ -8,7 +8,7 @@ import { getById } from "./index";
 // Anonymous callers need the data domain public; setup only.
 vi.mock("@/server/ecfg/edge-config", () => ({
   getEdgeConfig: () =>
-    Promise.resolve({ publicData: { publicRoadmaps: true } }),
+    Promise.resolve({ publicData: { courses: true, publicRoadmaps: true } }),
 }));
 
 const router = createTRPCRouter({ getById });

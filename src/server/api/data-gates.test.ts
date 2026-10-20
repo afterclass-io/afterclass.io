@@ -5,6 +5,7 @@ import {
   DEFAULT_PUBLIC_DATA,
   type PublicDataDomain,
 } from "@/server/ecfg/config";
+import { PUBLIC_DATA_PARENTS } from "@/server/ecfg/public-data";
 
 const mockGetEdgeConfig = vi.fn<() => Promise<unknown>>();
 vi.mock("@/server/ecfg/edge-config", () => ({
@@ -33,6 +34,12 @@ const storeWith = (publicData: Partial<Record<PublicDataDomain, boolean>>) =>
     publicData: { ...DEFAULT_PUBLIC_DATA, ...publicData },
   });
 
+/** The store flags that make `domain` effectively public: it and its parents. */
+const withParents = (domain: PublicDataDomain) =>
+  Object.fromEntries(
+    [domain, ...PUBLIC_DATA_PARENTS[domain]].map((d) => [d, true]),
+  );
+
 describe("dataProcedure (publicData Edge Config gates)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -46,14 +53,27 @@ describe("dataProcedure (publicData Edge Config gates)", () => {
       });
     });
 
-    it("allows anonymous callers when the domain is public", async () => {
-      storeWith({ [domain]: true });
+    it("allows anonymous callers when the domain and its parents are public", async () => {
+      storeWith(withParents(domain));
       await expect(anonymous()[domain]()).resolves.toBe("ok");
     });
 
+    it("stays private while a parent is private", async () => {
+      for (const parent of PUBLIC_DATA_PARENTS[domain]) {
+        storeWith({ ...withParents(domain), [parent]: false });
+        await expect(anonymous()[domain]()).rejects.toMatchObject({
+          code: "UNAUTHORIZED",
+        });
+      }
+    });
+
     it("keeps the other domains private when only this one is public", async () => {
-      storeWith({ [domain]: true });
-      for (const other of domains.filter((d) => d !== domain)) {
+      storeWith(withParents(domain));
+      const parents: readonly PublicDataDomain[] = PUBLIC_DATA_PARENTS[domain];
+      const others = domains.filter(
+        (d) => d !== domain && !parents.includes(d),
+      );
+      for (const other of others) {
         await expect(anonymous()[other]()).rejects.toMatchObject({
           code: "UNAUTHORIZED",
         });

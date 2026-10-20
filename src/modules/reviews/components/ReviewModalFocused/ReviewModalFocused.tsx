@@ -1,7 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import { ReviewModal } from "../ReviewItem/ReviewModal";
 import { api } from "@/common/tools/trpc/react";
@@ -13,24 +12,16 @@ export const ReviewModalFocused = ({
   variant: "home" | "professor" | "course";
 }) => {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const reviewId = searchParams?.get("review_id") ?? null;
-  const router = useRouter();
-  const { status: sessionStatus } = useSession();
 
+  // Pages render this only for a viewer who may read reviews (a member, or
+  // anyone while `reviews` is public), so the link opens for signed-out
+  // visitors too. A signed-out visitor on a locked feed sees the overlay.
   // Every hook runs on every render. Conditions go in `enabled` and the
   // effects, never in an early return above a hook.
   const reviewQuery = api.reviews.getById.useQuery(reviewId ?? "", {
-    enabled: reviewId !== null && sessionStatus === "authenticated",
+    enabled: reviewId !== null,
   });
-
-  const signedOut = sessionStatus === "unauthenticated";
-  const queryString = searchParams?.toString() ?? "";
-  useEffect(() => {
-    if (!reviewId || !signedOut) return;
-    const here = queryString ? `${pathname}?${queryString}` : pathname;
-    router.push(`/account/auth/login?callbackUrl=${encodeURIComponent(here)}`);
-  }, [reviewId, signedOut, pathname, queryString, router]);
 
   const queryFailed = reviewQuery.status === "error";
   useEffect(() => {

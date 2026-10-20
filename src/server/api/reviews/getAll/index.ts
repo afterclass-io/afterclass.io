@@ -1,9 +1,10 @@
 import { dataProcedure } from "@/server/api/trpc";
 import { listReviews, reviewListInputs } from "../service";
+import { publicReviewViewer } from "../viewer";
 
 export const getAll = dataProcedure("reviews")
   .input(reviewListInputs.all)
-  .query(({ ctx, input }) =>
+  .query(async ({ ctx, input }) =>
     listReviews(ctx.db, {
       scope: {
         kind: "all",
@@ -12,6 +13,6 @@ export const getAll = dataProcedure("reviews")
         profId: input.profId,
       },
       page: input,
-      viewer: { kind: "public" },
+      viewer: await publicReviewViewer(),
     }),
   );

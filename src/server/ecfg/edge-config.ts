@@ -14,10 +14,12 @@ const edgeConfigKeys = Object.keys(edgeConfigSchema.shape) as EdgeConfigKey[];
 /** Tag for on-demand invalidation, see `/api/revalidate/edge-config`. */
 export const EDGE_CONFIG_CACHE_TAG = "edge-config";
 
-// A window of 24 hours is safe because an operator can push a change at once
-// by revalidating the tag. Edge Config bills per read, and this call sat in
-// the root layout, so it used to run on every server render of every route.
-const EDGE_CONFIG_REVALIDATE_SECONDS = 86_400;
+// A one minute window lets a console change (kill switches, `publicData`)
+// apply on its own within a minute, while still collapsing reads to about one
+// per minute per region. Edge Config bills per read, and this call sits in the
+// root layout, so uncached it would run on every server render of every route.
+// An operator can still apply a change at once by revalidating the tag.
+const EDGE_CONFIG_REVALIDATE_SECONDS = 60;
 
 // Only the raw store read is cached. A failed read throws before anything is
 // stored, so a transient outage never pins the `config.json` fallback for the

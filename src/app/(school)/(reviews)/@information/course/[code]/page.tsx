@@ -23,14 +23,10 @@ export default async function CourseInfo(props: {
     <div className="grid w-full grid-cols-25 gap-4 md:gap-6">
       <div className="col-span-25 md:col-span-16">
         <InformationCard courseDesc={course.description}>
-          {!session ? (
-            <InformationCard.LoginButton />
-          ) : (
-            <InformationCard.Modal
-              courseName={course.name}
-              courseDesc={course.description}
-            />
-          )}
+          <InformationCard.Modal
+            courseName={course.name}
+            courseDesc={course.description}
+          />
         </InformationCard>
       </div>
       <div className="col-span-25 md:col-span-9">
