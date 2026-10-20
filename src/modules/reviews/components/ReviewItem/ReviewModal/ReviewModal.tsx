@@ -1,5 +1,6 @@
 "use client";
 import { useRef } from "react";
+import { useSession } from "next-auth/react";
 
 import { ReviewEventType, ReviewType } from "@/generated/prisma/enums";
 
@@ -40,6 +41,7 @@ export const ReviewModal = ({
   defaultOpen?: boolean;
 }) => {
   const ecfg = useEdgeConfigs();
+  const { status } = useSession();
   const contentRef = useRef<HTMLDivElement>(null);
 
   const reviewPath =
@@ -54,7 +56,8 @@ export const ReviewModal = ({
       defaultOpen={defaultOpen}
       onOpenChange={(isOpen) => {
         if (!isOpen) return;
-        if (ecfg.enableReviewEventsTracking) {
+        // `reviewEvents.track` is members-only.
+        if (ecfg.enableReviewEventsTracking && status === "authenticated") {
           track({
             reviewId: review.id,
             eventType: ReviewEventType.INTERACTION,

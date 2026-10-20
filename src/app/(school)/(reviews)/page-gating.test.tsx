@@ -12,6 +12,7 @@ const m = vi.hoisted(() => ({
   getProfessorPageData: vi.fn(),
   prefetchReviewFeed: vi.fn(),
   getAllByType: vi.fn(),
+  professorsByCourse: vi.fn(),
 }));
 
 vi.mock("@/server/auth", () => ({ auth: m.auth }));
@@ -20,7 +21,10 @@ vi.mock("@/server/ecfg/public-data", () => ({
     m.canViewData(session, ...domains),
 }));
 vi.mock("@/common/tools/trpc/server", () => ({
-  api: { labels: { getAllByType: m.getAllByType } },
+  api: {
+    labels: { getAllByType: m.getAllByType },
+    professors: { getByCourseCode: m.professorsByCourse },
+  },
   HydrateClient: ({ children }: { children: React.ReactNode }) => children,
 }));
 vi.mock("@/modules/reviews/functions/getCourseByCode", () => ({
@@ -55,6 +59,23 @@ vi.mock("@/modules/reviews/components/ReviewSection", () => ({
 vi.mock("@/modules/reviews/components/InformationSection/DetailCard", () => ({
   DetailCard: ({ canViewClassData }: { canViewClassData: boolean }) => (
     <div>{`detail card classData=${canViewClassData}`}</div>
+  ),
+}));
+// Exposes the tab data so a test can see which stats reach the client.
+vi.mock("@/modules/reviews/components/FilterToggleSection", () => ({
+  FilterToggleSection: (props: {
+    isLocked?: boolean;
+    dataToFilter?: { label: string; filterStats: { stat: number }[] }[];
+  }) => (
+    <div>
+      {props.isLocked
+        ? "locked tabs"
+        : props.dataToFilter
+            ?.map(
+              (d) => `${d.label}:${d.filterStats.map((f) => f.stat).join(",")}`,
+            )
+            .join(";")}
+    </div>
   ),
 }));
 vi.mock("@/common/components/json-ld", () => ({ JsonLd: () => null }));
@@ -129,6 +150,9 @@ describe("reviews pages gating", () => {
     });
     m.getCoursePageData.mockResolvedValue(pageData);
     m.getProfessorPageData.mockResolvedValue(pageData);
+    m.professorsByCourse.mockResolvedValue([
+      { name: "Lee Wei", slug: "lee-wei", _count: { reviews: 7, classes: 3 } },
+    ]);
   });
 
   describe("everything private", () => {
@@ -204,6 +228,11 @@ describe("reviews pages gating", () => {
       expect(screen.getByText("locked review feed")).toBeVisible();
     });
 
+    it("lists the professor tabs without review counts", async () => {
+      render((await CourseFilter(code)) ?? <></>);
+      expect(screen.getByText("Lee Wei:3")).toBeVisible();
+    });
+
     it("locks the ratings without reading review metadata", async () => {
       render(await CourseRating(code));
       expect(screen.getAllByText("to see rating").length).toBeGreaterThan(0);
@@ -235,11 +264,9 @@ describe("reviews pages gating", () => {
     });
 
     it("locks the professor filter tabs on the course page", async () => {
-      // The mocked server api has no professors router, so reaching the
-      // professor lookup would throw: the locked tabs render without it.
-      const { container } = render(await CourseFilter(code));
-      expect(container.innerHTML).not.toBe("");
-      expect(screen.queryByText("Lee Wei")).toBeNull();
+      render((await CourseFilter(code)) ?? <></>);
+      expect(screen.getByText("locked tabs")).toBeVisible();
+      expect(m.professorsByCourse).not.toHaveBeenCalled();
     });
 
     it("walls the professor page itself", async () => {
@@ -270,6 +297,11 @@ describe("reviews pages gating", () => {
     it("renders the home feed", async () => {
       render(await Home({}));
       expect(screen.getByText("review feed")).toBeVisible();
+    });
+
+    it("lists the professor tabs with review counts", async () => {
+      render((await CourseFilter(code)) ?? <></>);
+      expect(screen.getByText("Lee Wei:7,3")).toBeVisible();
     });
 
     it("passes class data visibility to the detail card", async () => {

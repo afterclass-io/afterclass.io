@@ -16,6 +16,8 @@ export default async function CourseFilter(props: {
   if (!(await canViewData(session, "professors"))) {
     return <FilterToggleSection filterType={ReviewType.PROFESSOR} isLocked />;
   }
+  // A review count is a review figure, so it needs `reviews`.
+  const canViewReviews = await canViewData(session, "reviews");
 
   // assuming all course codes are uppercase
   const courseCode = params.code.toUpperCase();
@@ -30,7 +32,9 @@ export default async function CourseFilter(props: {
         label: professor.name,
         value: professor.slug,
         filterStats: [
-          { icon: <PencilIcon />, stat: professor._count.reviews },
+          ...(canViewReviews
+            ? [{ icon: <PencilIcon />, stat: professor._count.reviews }]
+            : []),
           { icon: <BooksIcon />, stat: professor._count.classes },
         ],
       }))}

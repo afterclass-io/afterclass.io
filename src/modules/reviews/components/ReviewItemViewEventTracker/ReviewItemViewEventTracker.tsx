@@ -1,4 +1,5 @@
 "use client";
+import { useSession } from "next-auth/react";
 import { ReviewEventType } from "@/generated/prisma/enums";
 
 import { useEdgeConfigs } from "@/common/hooks";
@@ -10,10 +11,14 @@ export const ReviewItemViewEventTracker = (props: {
   eventType?: ReviewEventType;
 }) => {
   const ecfg = useEdgeConfigs();
+  const { status } = useSession();
   const { mutate: track } = api.reviewEvents.track.useMutation();
 
+  // `reviewEvents.track` is members-only; signed-out readers of a public
+  // review are not tracked.
   return (
-    ecfg.enableReviewEventsTracking && (
+    ecfg.enableReviewEventsTracking &&
+    status === "authenticated" && (
       <ViewEventTracker
         onChange={(inView, _) =>
           inView &&
