@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 
-export const getProfessorsByClassId = publicProcedure // Renamed for clarity
+export const getProfessorsByClassId = dataProcedure("classData") // Renamed for clarity
   .input(
     z.object({
       classId: z.string(), // Requires the ID of the class

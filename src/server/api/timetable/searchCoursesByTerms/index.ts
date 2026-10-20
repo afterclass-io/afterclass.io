@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import * as searchService from "@/server/search/search-service";
 
 /** Per-term row cap, equal to the cap of `timetable.searchCourses`. */
@@ -12,7 +12,7 @@ const MAX_TERMS = 5;
  * its own top 20, ranked as `timetable.searchCourses` ranks a single term,
  * so a caller that looped over `searchCourses` gets the same rows per term.
  */
-export const searchCoursesByTerms = publicProcedure
+export const searchCoursesByTerms = dataProcedure("classData")
   .input(
     z.object({
       acadTermIds: z.array(z.string()).min(1).max(MAX_TERMS),

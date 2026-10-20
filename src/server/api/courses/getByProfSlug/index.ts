@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { DEFAULT_PAGE_SIZE, PUBLIC_COURSE_FIELDS } from "../constants";
 
-export const getByProfSlug = publicProcedure
+export const getByProfSlug = dataProcedure("courses", "professors")
   .input(
     z.object({
       page: z.number().default(1),

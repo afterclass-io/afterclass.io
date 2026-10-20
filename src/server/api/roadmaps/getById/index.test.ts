@@ -5,6 +5,12 @@ import { createTRPCRouter } from "@/server/api/trpc";
 
 import { getById } from "./index";
 
+// Anonymous callers need the data domain public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () =>
+    Promise.resolve({ publicData: { publicRoadmaps: true } }),
+}));
+
 const router = createTRPCRouter({ getById });
 
 function makeRoadmapRow(overrides: Record<string, unknown> = {}) {

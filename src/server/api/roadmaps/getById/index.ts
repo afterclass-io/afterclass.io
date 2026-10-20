@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { censorProfanity, censorProfanityOrNull } from "@/server/profanity";
 
-export const getById = publicProcedure
+export const getById = dataProcedure("publicRoadmaps")
   .input(z.object({ id: z.string() }))
   .query(async ({ ctx, input }) => {
     const roadmap = await ctx.db.userRoadmap.findUnique({

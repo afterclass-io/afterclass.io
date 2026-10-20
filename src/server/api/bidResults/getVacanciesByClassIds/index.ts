@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { getAcadYearCutoff } from "@/server/api/bidResults/acad-year-window";
 
-export const getVacanciesByClassIds = publicProcedure
+export const getVacanciesByClassIds = dataProcedure("classData")
   .input(
     z.object({
       classIds: z.array(z.string().min(1)).min(1).max(100),

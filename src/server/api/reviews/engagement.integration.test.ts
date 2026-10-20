@@ -9,7 +9,7 @@ import {
 } from "@/server/api/integration-test-helpers";
 import { createTRPCRouter } from "@/server/api/trpc";
 import { makeCaller } from "@/server/api/trpc-test-helpers";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { countEvent } from "../reviewEvents/countEvent";
 import { getByReviewId as reactionsByReviewId } from "../reviewReactions/getByReviewId";
@@ -20,6 +20,11 @@ import { getAll } from "./getAll";
 import { getAllProtected } from "./getAllProtected";
 import { getById } from "./getById";
 import { getEngagement } from "./getEngagement";
+
+// Anonymous callers need the data domains public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () => Promise.resolve({ publicData: { reviews: true } }),
+}));
 
 const router = createTRPCRouter({
   getAll,

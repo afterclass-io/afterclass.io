@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { idb as db, seedUser } from "@/server/api/integration-test-helpers";
 import { makeCaller } from "@/server/api/trpc-test-helpers";
@@ -7,6 +7,12 @@ import { createTRPCRouter } from "@/server/api/trpc";
 import { getByRoadmapId } from "../roadmapReactions/getByRoadmapId";
 import { count as votesCount } from "../roadmapVotes/count";
 import { getByUser as votesByUser } from "../roadmapVotes/getByUser";
+
+// Anonymous callers need the data domains public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () =>
+    Promise.resolve({ publicData: { publicRoadmaps: true } }),
+}));
 
 const router = createTRPCRouter({ getByRoadmapId, votesCount, votesByUser });
 

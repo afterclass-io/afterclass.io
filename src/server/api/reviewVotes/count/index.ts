@@ -1,7 +1,7 @@
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { z } from "zod";
 
-export const count = publicProcedure
+export const count = dataProcedure("reviews")
   .input(
     z.object({
       reviewId: z.string(),

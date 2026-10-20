@@ -2,10 +2,10 @@ import { type Prisma } from "@/generated/prisma/client";
 import { ReviewType } from "@/generated/prisma/enums";
 import { z } from "zod";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { getReviewMetadataSummary } from "../metadata";
 
-export const getMetadataForCourse = publicProcedure
+export const getMetadataForCourse = dataProcedure("reviews")
   .input(
     z.object({
       code: z.string(),

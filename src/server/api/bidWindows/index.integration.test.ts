@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { idb as db, seedAcadTerm } from "@/server/api/integration-test-helpers";
 import { makeCaller } from "@/server/api/trpc-test-helpers";
@@ -6,6 +6,11 @@ import { createTRPCRouter } from "@/server/api/trpc";
 
 import { getByAcadTerm } from "./getByAcadTerm";
 import { getCurrentWindow } from "./getCurrentWindow";
+
+// Anonymous callers need the data domains public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () => Promise.resolve({ publicData: { classData: true } }),
+}));
 
 const router = createTRPCRouter({ getByAcadTerm, getCurrentWindow });
 

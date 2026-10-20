@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import * as searchService from "@/server/search/search-service";
 
-export const searchCourses = publicProcedure
+export const searchCourses = dataProcedure("courses")
   .input(z.object({ query: z.string().min(1).max(200) }))
   .query(async ({ ctx, input }) => {
     const { rows } = await searchService.searchCourses(ctx.db, {

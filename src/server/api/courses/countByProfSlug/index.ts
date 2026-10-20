@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 
-export const countByProfSlug = publicProcedure
+export const countByProfSlug = dataProcedure("courses", "professors")
   .input(
     z.object({
       slug: z.string(),

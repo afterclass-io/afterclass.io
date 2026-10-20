@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { PUBLIC_COURSE_FIELDS } from "../constants";
 
-export const getByCourseCode = publicProcedure
+export const getByCourseCode = dataProcedure("courses")
   .input(z.object({ code: z.string() }))
   .query(
     async ({ ctx, input }) =>

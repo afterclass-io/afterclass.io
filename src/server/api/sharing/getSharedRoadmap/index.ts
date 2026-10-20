@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 import { publicProcedure } from "@/server/api/trpc";
+import { canViewData } from "@/server/ecfg/public-data";
 import { censorProfanity } from "@/server/profanity";
 import { assertSharedLinkWithinLimit } from "@/server/api/sharing/throttle-shared-link";
 
@@ -39,6 +40,19 @@ export const getSharedRoadmap = publicProcedure
 
     if (!roadmap) {
       throw new TRPCError({ code: "NOT_FOUND" });
+    }
+
+    // UNLISTED links always need login; PUBLIC ones follow `publicRoadmaps`.
+    // Visibility is probed only for anonymous callers, so the page selection
+    // stays limited to the fields it uses.
+    if (!ctx.session?.user) {
+      const isPublic = await ctx.db.userRoadmap.findUnique({
+        where: { id: roadmap.id, visibility: "PUBLIC" },
+        select: { id: true },
+      });
+      if (!isPublic || !(await canViewData(null, "publicRoadmaps"))) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
     }
 
     const ownerUsername = censorProfanity(roadmap.user.username);

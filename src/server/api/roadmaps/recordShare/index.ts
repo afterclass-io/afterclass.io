@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 import { incrementEngagement } from "@/server/api/roadmaps/incrementEngagement";
 
 /**
@@ -10,7 +10,7 @@ import { incrementEngagement } from "@/server/api/roadmaps/incrementEngagement";
  * Gate: only PUBLIC published roadmaps. Rate-limited to 5 increments per
  * client per minute to deter naive share-count farming.
  */
-export const recordShare = publicProcedure
+export const recordShare = dataProcedure("publicRoadmaps")
   .input(z.object({ roadmapId: z.string() }))
   .mutation(async ({ ctx, input }) => {
     return {

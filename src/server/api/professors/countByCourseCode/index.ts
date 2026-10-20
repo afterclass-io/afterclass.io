@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 
-export const countByCourseCode = publicProcedure
+export const countByCourseCode = dataProcedure("courses", "professors")
   .input(z.object({ courseCode: z.string() }))
   .query(
     async ({ input, ctx }) =>

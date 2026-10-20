@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { beforeAll, describe, expect, inject, it } from "vitest";
+import { beforeAll, describe, expect, inject, it, vi } from "vitest";
 
 import {
   idb as db,
@@ -12,6 +12,12 @@ import { createTRPCRouter } from "@/server/api/trpc";
 import { getById } from "./getById";
 import { getMine } from "./getMine";
 import { searchCourses } from "./searchCourses";
+
+// Anonymous callers need the data domains public; setup only.
+vi.mock("@/server/ecfg/edge-config", () => ({
+  getEdgeConfig: () =>
+    Promise.resolve({ publicData: { publicRoadmaps: true, courses: true } }),
+}));
 
 const router = createTRPCRouter({ getById, getMine, searchCourses });
 

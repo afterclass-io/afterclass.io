@@ -2,9 +2,9 @@ import { z } from "zod";
 import { type Prisma } from "@/generated/prisma/client";
 import { UniversityAbbreviation } from "@/generated/prisma/enums";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { dataProcedure } from "@/server/api/trpc";
 
-export const getAllByUniAbbrv = publicProcedure
+export const getAllByUniAbbrv = dataProcedure("courses")
   .input(
     z.object({
       universityAbbrv: z.enum(UniversityAbbreviation),
