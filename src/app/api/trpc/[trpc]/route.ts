@@ -22,13 +22,15 @@ const handler = (req: NextRequest) =>
     req,
     router: appRouter,
     createContext: () => createContext(req),
-    responseMeta: ({ type, paths, errors, eagerGeneration }) => ({
+    responseMeta: ({ ctx, type, paths, errors, eagerGeneration }) => ({
       headers: new Headers(
         getCacheControlForTrpcRequest({
           type,
           paths,
           errors,
           eagerGeneration,
+          // A missing ctx fails closed as signed in.
+          signedIn: !ctx || !!ctx.session?.user,
         }) as Record<string, string>,
       ),
     }),
