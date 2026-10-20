@@ -76,7 +76,7 @@ export type PublicDataDomain = keyof typeof DEFAULT_PUBLIC_DATA;
 
 // Partial remote object merged over the private defaults, so a missing key or
 // a missing section still parses and stays private.
-export const publicDataSchema = z
+const publicDataSchema = z
   .object({
     classData: z.boolean(),
     reviews: z.boolean(),
