@@ -6,6 +6,8 @@
   "enableReviewSort": true,
   "enableReviewFilter": true,
   "enableReviewReactions": true,
+  "requireAuthForBidding": false,
+  "requireAuthForClasses": false,
   "chat": {
     "quotaPerMonth": 20,
     "nudgeAt": 16,

@@ -79,6 +79,12 @@ export const edgeConfigSchema = z.object({
   // key would fail validation and discard the whole remote config).
   // Remote-only: no env override, so it cannot be bypassed.
   enableContentModeration: z.boolean().default(true),
+  // Gates historical bidding data, statistics, and predictions behind authentication.
+  // Defaults to false (publicly accessible).
+  requireAuthForBidding: z.boolean().default(false),
+  // Gates class sections, timetable search, and venue/schedule details behind authentication.
+  // Defaults to false (publicly accessible).
+  requireAuthForClasses: z.boolean().default(false),
   // A config whose remote Edge Config hasn't been updated with `chat` yet must
   // still parse. NOTE (zod 4.5+): an inner schema's `.default()` is now applied
   // even when the key is absent/undefined, so `chat` is always populated (with

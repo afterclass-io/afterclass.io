@@ -14,6 +14,7 @@ import { Button } from "@/common/components/button";
 import { Card, CardContent } from "@/common/components/card";
 import { DateRangePicker } from "@/common/components/date-range-picker";
 import { EmptyState } from "@/common/components/empty-state";
+import { AuthWall } from "@/common/components/auth-wall";
 import {
   Form,
   FormControl,
@@ -327,19 +328,9 @@ export function CreatePollForm() {
   if (sessionStatus !== "loading" && !session) {
     return (
       <div className="py-8">
-        <EmptyState
-          icon={<Users className="size-8" />}
+        <AuthWall
           title="Sign in required"
           description="You need to sign in with your university account to create a meeting."
-          action={
-            <Button asChild>
-              <Link
-                href={`/account/auth/login?callbackUrl=${encodeURIComponent("/meetings/new")}`}
-              >
-                Sign In
-              </Link>
-            </Button>
-          }
         />
       </div>
     );

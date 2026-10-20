@@ -1,12 +1,16 @@
 import { type Metadata } from "next";
 
 import { api } from "@/common/tools/trpc/server";
+import { auth } from "@/server/auth";
+import { getEdgeConfig } from "@/server/ecfg/edge-config";
+import { AuthWall } from "@/common/components/auth-wall";
 import { BiddingEntryView } from "@/modules/bidding/components/BiddingEntryView";
 import type { ComboboxOption } from "@/common/components/combobox";
 
 // `course` and `prof` filter a view of this page, so they are dropped.
 export const metadata: Metadata = {
   alternates: { canonical: "/bidding" },
+  robots: { index: false, follow: false },
 };
 
 export default async function BiddingHistoryPage({
@@ -14,6 +18,22 @@ export default async function BiddingHistoryPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
+  const [session, ecfg] = await Promise.all([
+    auth(),
+    getEdgeConfig().catch(() => null),
+  ]);
+
+  if (
+    (ecfg?.requireAuthForBidding || ecfg?.requireAuthForClasses) &&
+    !session?.user
+  ) {
+    return (
+      <div className="flex w-full max-w-5xl flex-col gap-6 pt-4">
+        <AuthWall variant="full" feature="bidding history" />
+      </div>
+    );
+  }
+
   const _searchParams = await searchParams;
   const courseCode = _searchParams.course;
   const profSlug = _searchParams.prof;

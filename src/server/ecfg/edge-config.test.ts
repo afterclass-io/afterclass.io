@@ -24,6 +24,8 @@ const validStore = {
   enableReviewSort: false,
   enableReviewFilter: false,
   enableReviewReactions: false,
+  requireAuthForBidding: true,
+  requireAuthForClasses: true,
   chat: { quotaPerMonth: 55 },
 };
 
@@ -64,6 +66,8 @@ describe("getEdgeConfig", () => {
     expect(config.enableReviewReactions).toBe(false);
     expect(config.enablePasswordLogin).toBe(true);
     expect(config.enableContentModeration).toBe(false);
+    expect(config.requireAuthForBidding).toBe(true);
+    expect(config.requireAuthForClasses).toBe(true);
     expect(config.chat?.quotaPerMonth).toBe(55);
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(String(warnSpy.mock.calls[0]?.[0])).toContain("enableReviewSort");
@@ -144,6 +148,8 @@ describe("getEdgeConfig", () => {
       enableReviewSort: fallbackConfig.enableReviewSort,
       enableReviewFilter: fallbackConfig.enableReviewFilter,
       enableReviewReactions: fallbackConfig.enableReviewReactions,
+      requireAuthForBidding: fallbackConfig.requireAuthForBidding,
+      requireAuthForClasses: fallbackConfig.requireAuthForClasses,
     });
     expect(config.chat).toMatchObject(fallbackConfig.chat);
   });
@@ -167,5 +173,8 @@ describe("getEdgeConfig", () => {
     const config = await getEdgeConfig();
 
     expect(config.enableReviewSort).toBe(fallbackConfig.enableReviewSort);
+    expect(config.enablePasswordLogin).toBe(fallbackConfig.enablePasswordLogin);
+    expect(config.chat).toMatchObject(fallbackConfig.chat);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
   });
 });

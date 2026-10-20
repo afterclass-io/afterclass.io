@@ -4,10 +4,11 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Calendar, Plus, Users } from "lucide-react";
+import { Calendar, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/common/components/button";
+import { AuthWall } from "@/common/components/auth-wall";
 import { EmptyState } from "@/common/components/empty-state";
 import { PageTitle } from "@/common/components/page-title";
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
@@ -83,19 +84,9 @@ export function MeetingsDashboardView() {
       </div>
 
       {sessionStatus !== "loading" && !session && (
-        <EmptyState
-          icon={<Users className="size-8" />}
-          title="Sign in to view your meetings"
+        <AuthWall
+          feature="your meetings"
           description="Sign in with your university account to coordinate meeting schedules and view polls you've created or joined."
-          action={
-            <Button asChild>
-              <Link
-                href={`/account/auth/login?callbackUrl=${encodeURIComponent("/meetings")}`}
-              >
-                Sign In
-              </Link>
-            </Button>
-          }
         />
       )}
 

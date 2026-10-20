@@ -1,5 +1,8 @@
 import { type Metadata } from "next";
 import { api } from "@/common/tools/trpc/server";
+import { auth } from "@/server/auth";
+import { getEdgeConfig } from "@/server/ecfg/edge-config";
+import { AuthWall } from "@/common/components/auth-wall";
 import {
   Card,
   CardContent,
@@ -23,6 +26,7 @@ import { formatDateSGT } from "@/common/functions/format-date-sgt";
 // facet of this page, so the canonical drops them.
 export const metadata: Metadata = {
   alternates: { canonical: "/bidding/analytics" },
+  robots: { index: false, follow: false },
 };
 
 export default async function BiddingHistoryPage({
@@ -30,6 +34,19 @@ export default async function BiddingHistoryPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
+  const [session, ecfg] = await Promise.all([
+    auth(),
+    getEdgeConfig().catch(() => null),
+  ]);
+
+  if (ecfg?.requireAuthForBidding && !session?.user) {
+    return (
+      <div className="flex w-full max-w-5xl flex-col gap-6 pt-4">
+        <AuthWall variant="full" feature="bidding analytics" />
+      </div>
+    );
+  }
+
   const _searchParams = await searchParams;
   let classId = _searchParams.classId;
   let courseCode = _searchParams.course;

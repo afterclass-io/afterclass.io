@@ -1,12 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { LogIn } from "lucide-react";
 
-import { Button } from "@/common/components/button";
-import { EmptyState } from "@/common/components/empty-state";
+import { AuthWall } from "@/common/components/auth-wall";
 import { PageTitle } from "@/common/components/page-title";
 import { ToggleGroup, ToggleGroupItem } from "@/common/components/toggle-group";
 import { PublicRoadmapsGallery } from "@/modules/roadmaps/components/PublicRoadmapsGallery";
@@ -22,10 +19,6 @@ export type RoadmapsExplorerProps = {
   initialView: RoadmapsView;
   isLoggedIn: boolean;
 };
-
-const LOGIN_CALLBACK = `/account/auth/login?callbackUrl=${encodeURIComponent(
-  "/roadmaps?view=mine",
-)}`;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -95,16 +88,10 @@ export function RoadmapsExplorer({
       ) : isLoggedIn ? (
         <MyRoadmapsEditor />
       ) : (
-        <EmptyState
+        <AuthWall
           className="py-16"
-          icon={<LogIn />}
-          title="Log in to see your roadmaps"
+          feature="your roadmaps"
           description="You must be logged in to create and manage roadmaps."
-          action={
-            <Button asChild variant="outline" size="sm">
-              <Link href={LOGIN_CALLBACK}>Log in</Link>
-            </Button>
-          }
         />
       )}
     </div>

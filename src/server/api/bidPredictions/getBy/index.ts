@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { publicProcedure } from "@/server/api/trpc";
+import { biddingProcedure } from "@/server/api/trpc";
 
-export const getBy = publicProcedure
+export const getBy = biddingProcedure
   .input(
     z.object({
       classId: z.string().optional(),

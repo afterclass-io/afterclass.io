@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import { publicProcedure } from "@/server/api/trpc";
+import { classesProcedure } from "@/server/api/trpc";
 import * as searchService from "@/server/search/search-service";
 
-export const searchCourses = publicProcedure
+export const searchCourses = classesProcedure
   .input(
     z.object({
       acadTermId: z.string(),

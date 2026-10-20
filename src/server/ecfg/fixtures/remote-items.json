@@ -28,6 +28,14 @@
     "value": true
   },
   {
+    "key": "requireAuthForBidding",
+    "value": false
+  },
+  {
+    "key": "requireAuthForClasses",
+    "value": false
+  },
+  {
     "key": "chat",
     "value": {
       "quotaPerMonth": 20,

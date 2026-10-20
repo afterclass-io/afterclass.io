@@ -13,6 +13,7 @@ import { z, ZodError } from "zod";
 import * as Sentry from "@sentry/nextjs";
 
 import { db } from "@/server/db";
+import { getEdgeConfig } from "@/server/ecfg/edge-config";
 
 /**
  * 1. CONTEXT
@@ -132,6 +133,40 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 export const publicProcedure = t.procedure
   .use(sentryMiddleware)
   .use(timingMiddleware);
+
+/**
+ * Creates a procedure middleware that enforces Edge Config-driven auth gates
+ * on sensitive university operational data (e.g. bidding curves, section timings).
+ *
+ * Fast path: if the user is already authenticated (session?.user exists),
+ * the Edge Config lookup is bypassed entirely (0ms overhead).
+ */
+const operationalGate = (
+  flagKey: "requireAuthForBidding" | "requireAuthForClasses",
+  label: string,
+) =>
+  publicProcedure.use(async ({ ctx, next }) => {
+    if (!ctx.session?.user) {
+      const ecfg = await getEdgeConfig().catch(() => null);
+      if (ecfg?.[flagKey]) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: `Sign in required to view ${label}`,
+        });
+      }
+    }
+    return next();
+  });
+
+export const biddingProcedure = operationalGate(
+  "requireAuthForBidding",
+  "bidding data",
+);
+
+export const classesProcedure = operationalGate(
+  "requireAuthForClasses",
+  "class schedule data",
+);
 
 /**
  * Protected (authenticated) procedure
