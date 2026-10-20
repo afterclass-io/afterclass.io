@@ -118,7 +118,7 @@ const asReviewer = () =>
 const asAnon = () => makeCaller(router.createCaller, db, null);
 
 describe("reviews.getByCourseCode (integration)", () => {
-  it("filters to the given course + professor slugs and blanks private fields", async () => {
+  it("filters to the given course + professor slugs and returns the full review", async () => {
     const res = await asAnon().getByCourseCode({
       ...list,
       code,
@@ -133,10 +133,11 @@ describe("reviews.getByCourseCode (integration)", () => {
       university: "SMU",
       reviewFor: ReviewType.PROFESSOR,
       professorSlug: slug,
-      rating: 0,
-      body: "",
-      tips: "",
     });
+    // `reviews` is public, so an anonymous caller reads the review itself.
+    expect(res.items[0]!.rating).toBeGreaterThan(0);
+    expect(res.items[0]!.body).not.toBe("");
+    expect(res.items[0]!.engagement).toBeUndefined();
   });
 
   it("with no slugs, returns course and professor reviews", async () => {
@@ -175,7 +176,7 @@ describe("reviews.getByCourseCodeProtected (integration)", () => {
 });
 
 describe("reviews.getByProfSlug (integration)", () => {
-  it("returns only that professor's reviews with private fields blanked", async () => {
+  it("returns only that professor's reviews in full", async () => {
     const res = await asAnon().getByProfSlug({ ...list, slug, limit: 10 });
     expect(res.items.map((r) => r.id).sort()).toEqual(
       [profReviewId, profReview2Id].sort(),
@@ -183,9 +184,9 @@ describe("reviews.getByProfSlug (integration)", () => {
     expect(res.items[0]).toMatchObject({
       professorSlug: slug,
       reviewFor: ReviewType.PROFESSOR,
-      rating: 0,
-      body: "",
     });
+    expect(res.items[0]!.rating).toBeGreaterThan(0);
+    expect(res.items[0]!.body).not.toBe("");
   });
 });
 
