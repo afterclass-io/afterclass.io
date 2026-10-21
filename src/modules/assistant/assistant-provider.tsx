@@ -109,14 +109,24 @@ export function AssistantProvider() {
 
   useEffect(() => {
     if (authStatus === "loading") return;
+    // A signed-out request still in flight at login must not overwrite the
+    // signed-in result; no later route change would repair it.
+    let stale = false;
     fetch("/api/assistant/status")
       .then((r) => r.json() as Promise<Status>)
-      .then((s) => setStatus(s))
-      .catch(() => setStatus(null));
+      .then((s) => {
+        if (!stale) setStatus(s);
+      })
+      .catch(() => {
+        if (!stale) setStatus(null);
+      });
     // Deps: re-fetch when the auth state changes - login uses client-side
     // router.push, so this provider stays mounted and must pick up the new
     // auth state. Not on every route change: each fetch is a function
     // invocation, and the open-refetch below re-asks before each use.
+    return () => {
+      stale = true;
+    };
   }, [authStatus]);
 
   // Refetch every time the widget OPENS (in addition to the auth
