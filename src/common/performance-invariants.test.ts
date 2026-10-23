@@ -283,7 +283,10 @@ describe("performance invariants", () => {
       "src/modules/reviews/components/ReviewItem/RevieweeGroup/RevieweeCourse.tsx",
       "src/modules/search/components/SearchResult/SearchResultItem/SearchResultItem.tsx",
     ])("%s does not prefetch", (file) => {
-      expect(read(file)).toContain("prefetch={false}");
+      // Every link element in the file opts out, not just one of them.
+      const links = read(file).match(/<ProgressLink\b[\s\S]*?\n\s*>/g) ?? [];
+      expect(links.length).toBeGreaterThan(0);
+      for (const link of links) expect(link).toContain("prefetch={false}");
     });
   });
 

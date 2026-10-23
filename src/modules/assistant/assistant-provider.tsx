@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -106,27 +106,26 @@ export function AssistantProvider() {
   const { status: authStatus } = useSession();
   const [status, setStatus] = useState<Status>(null);
   const [open, setOpen] = useState(false);
+  // Only the most recently started status request may write: a signed-out
+  // response still in flight at login must not overwrite the signed-in
+  // result, and no later route change would repair it.
+  const latestStatusRequest = useRef(0);
 
   useEffect(() => {
     if (authStatus === "loading") return;
-    // A signed-out request still in flight at login must not overwrite the
-    // signed-in result; no later route change would repair it.
-    let stale = false;
+    const request = ++latestStatusRequest.current;
     fetch("/api/assistant/status")
       .then((r) => r.json() as Promise<Status>)
       .then((s) => {
-        if (!stale) setStatus(s);
+        if (request === latestStatusRequest.current) setStatus(s);
       })
       .catch(() => {
-        if (!stale) setStatus(null);
+        if (request === latestStatusRequest.current) setStatus(null);
       });
     // Deps: re-fetch when the auth state changes - login uses client-side
     // router.push, so this provider stays mounted and must pick up the new
     // auth state. Not on every route change: each fetch is a function
     // invocation, and the open-refetch below re-asks before each use.
-    return () => {
-      stale = true;
-    };
   }, [authStatus]);
 
   // Refetch every time the widget OPENS (in addition to the auth
@@ -135,9 +134,12 @@ export function AssistantProvider() {
   // still composes first (fully hidden beats the notice).
   useEffect(() => {
     if (!open) return;
+    const request = ++latestStatusRequest.current;
     fetch("/api/assistant/status")
       .then((r) => r.json() as Promise<Status>)
-      .then((s) => setStatus(s))
+      .then((s) => {
+        if (request === latestStatusRequest.current) setStatus(s);
+      })
       // Best-effort re-ask: keep the last status on failure.
       .catch(() => undefined);
   }, [open]);
