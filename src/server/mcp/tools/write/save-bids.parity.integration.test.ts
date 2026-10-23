@@ -67,7 +67,10 @@ describe("save-bids parity (baseline 6ea5ba90 contract)", () => {
       }
     }
 
-    // 3. Seed bid windows
+    // 3. Seed bid windows. save-bids reads its term from the current window,
+    // the first active one by opensAt. Window 9102 (T2) opens a day after
+    // 9101 (T1) so that is always 9101: with equal opensAt the pick fell to
+    // Postgres row order and the term flipped to T2 between runs.
     for (const win of seedData.bidWindows) {
       try {
         await db.bidWindow.create({
