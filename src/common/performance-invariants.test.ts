@@ -273,6 +273,20 @@ describe("performance invariants", () => {
     });
   });
 
+  describe("list link prefetching", () => {
+    // Review cards and search results render many course and professor
+    // links. Prefetching each one as it scrolls into view runs the dynamic
+    // route's function (twice per link in production logs), while the
+    // route's loading.tsx already covers the wait on click.
+    it.each([
+      "src/modules/reviews/components/ReviewItem/RevieweeGroup/RevieweeGroup.tsx",
+      "src/modules/reviews/components/ReviewItem/RevieweeGroup/RevieweeCourse.tsx",
+      "src/modules/search/components/SearchResult/SearchResultItem/SearchResultItem.tsx",
+    ])("%s does not prefetch", (file) => {
+      expect(read(file)).toContain("prefetch={false}");
+    });
+  });
+
   describe("publicly cached OG images", () => {
     // The CDN cache key carries no cookies, so a session-dependent gate
     // would serve an image drawn for a member to anonymous viewers.

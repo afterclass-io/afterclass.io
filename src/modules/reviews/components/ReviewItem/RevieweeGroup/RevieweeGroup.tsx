@@ -23,6 +23,7 @@ export const RevieweeGroup = ({ review, variant }: RevieweeGroupProps) => {
           <ProgressLink
             variant="link"
             href={`/professor/${review.professorSlug}`}
+            prefetch={false}
             className="hover:text-primary text-muted-foreground h-auto min-h-9 min-w-0 shrink break-words whitespace-normal hover:no-underline"
             data-test="review-professor-label"
           >
