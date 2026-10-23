@@ -257,3 +257,66 @@ describe("embedded /api/mcp views", () => {
     // ~15 RPCs + asset GETs; generous budget for full-suite contention.
   }, 120_000);
 });
+
+// Wire contract with the real mcp-use server behind the route wrapper (see
+// src/mcp/subscriptions.ts): a 2026-07-28 client reads the change flags from
+// server/discover to decide whether to open a listen stream, and a listen
+// that still arrives must not hold the function open.
+describe("embedded /api/mcp subscriptions opt-out", () => {
+  const modern = (method: string, id: string, params: object = {}) =>
+    new Request("http://localhost/api/mcp", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+        "mcp-method": method,
+        "mcp-protocol-version": "2026-07-28",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id,
+        method,
+        params: {
+          _meta: {
+            "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+            "io.modelcontextprotocol/clientInfo": { name: "t", version: "1" },
+            "io.modelcontextprotocol/clientCapabilities": {},
+          },
+          ...params,
+        },
+      }),
+    });
+
+  it("server/discover advertises no change notifications", async () => {
+    vi.stubEnv("MCP_DEV_BYPASS", "true");
+    const route = await import("./route");
+    const res = await route.POST(modern("server/discover", "d1"));
+    expect(res.status).toBe(200);
+    const payload = parseRpcBody(await res.text()) as {
+      result?: { capabilities?: Record<string, Record<string, boolean>> };
+    };
+    const caps = payload.result?.capabilities;
+    expect(caps?.tools?.listChanged).toBe(false);
+    expect(caps?.prompts?.listChanged).toBe(false);
+    expect(caps?.resources?.listChanged).toBe(false);
+    expect(caps?.resources?.subscribe).toBe(false);
+    vi.unstubAllEnvs();
+  });
+
+  it("subscriptions/listen is declined at once instead of streaming", async () => {
+    vi.stubEnv("MCP_DEV_BYPASS", "true");
+    const route = await import("./route");
+    const res = await route.POST(
+      modern("subscriptions/listen", "listen:0", {
+        notifications: { toolsListChanged: true },
+      }),
+    );
+    expect(res.status).toBe(404);
+    expect(res.headers.get("content-type")).not.toContain("text/event-stream");
+    expect(await res.json()).toMatchObject({
+      id: "listen:0",
+      error: { code: -32601 },
+    });
+    vi.unstubAllEnvs();
+  });
+});

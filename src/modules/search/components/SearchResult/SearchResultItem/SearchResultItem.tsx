@@ -25,6 +25,7 @@ export const SearchResultItem = ({
   return (
     <ProgressLink
       href={href}
+      prefetch={false}
       variant="outline"
       className="bg-card flex h-fit w-full items-center justify-between gap-2 rounded-lg border p-3 whitespace-normal has-[>svg]:px-5 md:gap-4 md:p-4"
       data-test="search-result"

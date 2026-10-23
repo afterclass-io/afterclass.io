@@ -27,6 +27,10 @@ export const createQueryClient = () =>
         // With SSR, we usually want to set some default staleTime
         // above 0 to avoid refetching immediately on the client
         staleTime: 30 * 1000,
+        // Every focus refetch of a stale query is a /api/trpc function
+        // invocation on Vercel. Mutations invalidate what they change, so
+        // queries that must follow outside changes opt back in per query.
+        refetchOnWindowFocus: false,
         retry: shouldRetryQuery,
       },
       dehydrate: {
