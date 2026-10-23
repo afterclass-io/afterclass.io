@@ -258,4 +258,50 @@ describe("performance invariants", () => {
       );
     });
   });
+
+  describe("background function invocations", () => {
+    it("does not refetch the session on every tab focus", () => {
+      expect(read("src/common/providers/AuthProvider.tsx")).toContain(
+        "<SessionProvider refetchOnWindowFocus={false}>",
+      );
+    });
+
+    it("fetches assistant status on auth changes, not on every route change", () => {
+      const provider = read("src/modules/assistant/assistant-provider.tsx");
+      expect(provider).toContain("}, [authStatus]);");
+      expect(provider).not.toContain("}, [pathname]);");
+    });
+  });
+
+  describe("list link prefetching", () => {
+    // Review cards and search results render many course and professor
+    // links. Prefetching each one as it scrolls into view runs the dynamic
+    // route's function (twice per link in production logs), while the
+    // route's loading.tsx already covers the wait on click.
+    it.each([
+      "src/modules/reviews/components/ReviewItem/RevieweeGroup/RevieweeGroup.tsx",
+      "src/modules/reviews/components/ReviewItem/RevieweeGroup/RevieweeCourse.tsx",
+      "src/modules/search/components/SearchResult/SearchResultItem/SearchResultItem.tsx",
+    ])("%s does not prefetch", (file) => {
+      // Every link element in the file opts out, not just one of them.
+      const links = read(file).match(/<ProgressLink\b[\s\S]*?\n\s*>/g) ?? [];
+      expect(links.length).toBeGreaterThan(0);
+      for (const link of links) expect(link).toContain("prefetch={false}");
+    });
+  });
+
+  describe("publicly cached OG images", () => {
+    // The CDN cache key carries no cookies, so a session-dependent gate
+    // would serve an image drawn for a member to anonymous viewers.
+    it.each([
+      "src/app/(school)/(reviews)/@reviews/course/[code]/opengraph-image.tsx",
+      "src/app/(school)/(reviews)/@reviews/professor/[slug]/opengraph-image.tsx",
+    ])("%s gates on public data alone", (file) => {
+      const source = read(file);
+      expect(source).toContain("OG_IMAGE_HEADERS");
+      expect(source).toContain("await isDataPublic(");
+      expect(source).not.toContain("canViewData");
+      expect(source).not.toContain("@/server/auth");
+    });
+  });
 });

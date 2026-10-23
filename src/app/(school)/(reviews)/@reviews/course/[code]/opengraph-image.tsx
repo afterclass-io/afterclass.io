@@ -9,8 +9,7 @@ import {
   toOgStatItems,
 } from "@/modules/opengraph/functions/ogFigures";
 import { getCoursePageData } from "@/modules/reviews/functions/getCoursePageData";
-import { auth } from "@/server/auth";
-import { canViewData } from "@/server/ecfg/public-data";
+import { isDataPublic } from "@/server/ecfg/public-data";
 
 export const runtime = "nodejs";
 
@@ -62,7 +61,10 @@ export default async function Image({
   const courseCode = code.toUpperCase();
 
   // The figures on the image are course, professor and review data.
-  if (!(await canViewData(await auth(), "courses", "professors", "reviews"))) {
+  // The CDN caches this image publicly (OG_IMAGE_HEADERS) without keying on
+  // cookies, so the gate ignores the session: an image drawn for a signed-in
+  // viewer would otherwise be served to anonymous viewers.
+  if (!(await isDataPublic("courses", "professors", "reviews"))) {
     return null;
   }
 

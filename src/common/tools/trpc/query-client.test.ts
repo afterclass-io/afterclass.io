@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { shouldRetryQuery } from "./query-client";
+import { createQueryClient, shouldRetryQuery } from "./query-client";
 
 const trpcError = (code: string) => ({ data: { code } });
 
@@ -21,5 +21,12 @@ describe("shouldRetryQuery", () => {
   it("retries errors that carry no tRPC code (e.g. network failures)", () => {
     expect(shouldRetryQuery(0, new Error("fetch failed"))).toBe(true);
     expect(shouldRetryQuery(0, null)).toBe(true);
+  });
+});
+
+describe("createQueryClient", () => {
+  it("does not refetch queries on window focus by default", () => {
+    const queries = createQueryClient().getDefaultOptions().queries;
+    expect(queries?.refetchOnWindowFocus).toBe(false);
   });
 });
