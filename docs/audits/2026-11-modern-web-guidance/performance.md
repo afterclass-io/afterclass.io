@@ -1,0 +1,127 @@
+# Performance audit
+Guides reviewed: 26 (performance/performance, performance/batch-analytics-events, performance/break-up-long-tasks, performance/calculate-total-foreground-time, performance/conditional-async-dependencies, performance/defer-rendering-heavy-content, performance/defer-work-until-scroll-ends, performance/deliver-optimized-decorative-images, performance/deprioritize-background-fetches, performance/detect-initial-visibility-state, performance/efficient-background-processing, performance/faster-spa-view-transitions, performance/flicker-free-client-side-ab-testing, performance/full-session-analytics, performance/identify-heavy-scripts, performance/identify-inp-causes, performance/improve-next-page-load-performance, performance/interaction-paint-timing, performance/interactions-in-complex-layouts, performance/lazy-load-video-and-audio, performance/optimize-image-priority, performance/optimize-preload-priority, performance/optimize-script-priority, performance/out-of-order-html-streaming, performance/resolution-optimized-pseudo-elements, performance/schedule-tasks-by-priority)
+
+Context: the app has no web fonts, no hero or content images (the LCP element is text on every route), and no video or audio. Its CWV risk is in JavaScript: what every route ships and hydrates, and main-thread work during interactions. The repo already pins several performance decisions in `src/common/performance-invariants.test.ts`. The findings below are gaps that file does not cover.
+
+## Findings
+
+### [High] The assistant chat (AI SDK, react-markdown, remark-gfm) is bundled and mounted on every route, even while the widget is closed
+- Guide: `performance/performance`: "**DO use dynamic imports**: Split routes or heavy UI libraries using standard `import()` specifications." and "**DON'T load invisible or unreachable CSS/JS**"
+- Where: `src/app/layout.tsx:20,85` (`<AssistantProvider />` in the root layout); `src/modules/assistant/assistant-provider.tsx:8` (static `import { ChatPanel }`), `:75-90` (ChatPanel is rendered inside the widget whether it is open or closed); `src/modules/assistant/assistant-widget.tsx:70-76` (a closed panel is only `hidden` with CSS); `src/modules/assistant/chat-panel.tsx:4-5` (`@ai-sdk/react`, `ai`), `:101-105` (`hydrate()` on mount), `:111` (`useChat` on mount); `src/modules/assistant/message.tsx:4` → `markdown.tsx:3-4` (`react-markdown` and `remark-gfm`, which pull in the unified/micromark/mdast tree); `src/modules/assistant/chat-store.ts:28-36` (reads every stored chat session from IndexedDB, then sorts them).
+- Problem: The root layout is shared by every page, so its client graph statically includes the whole chat stack. That stack is `ai`, `@ai-sdk/react`, react-markdown, remark-gfm, the markdown/GFM parsers, and the tool cards, likely around 100 KB gzipped of JS. Every page downloads, parses and hydrates it. For signed-in users, the closed widget also mounts `ChatPanel`. Mounting it creates a `useChat` instance, reads and deserialises every IndexedDB chat session on the main thread, subscribes to `useSearchParams`/`usePathname` (`use-page-context.ts`), and attaches a subtree `MutationObserver` (`use-chat-scroll.ts:59-73`). All of this happens during or right after hydration on every hard load, when the user has not touched the assistant. It delays hydration and adds input delay to early taps, which hurts INP.
+- Fix: Load the panel on demand and mount it only after the first open:
+  ```tsx
+  // assistant-provider.tsx
+  const ChatPanel = dynamic(() => import("./chat-panel").then((m) => m.ChatPanel), { ssr: false });
+  const [hasOpened, setHasOpened] = useState(false); // set true in onOpenChange(true)
+  ...{hasOpened && <ChatPanel … />}
+  ```
+  Keep the panel mounted after the first open so the conversation survives closing the widget. Warm the chunk on intent with `onPointerEnter`/`onFocus={() => void import("./chat-panel")}` on the launcher. Move `hydrate()` so it runs when the panel first mounts, which it then does after the first open. Optionally add a perf-invariant test asserting that `assistant-provider.tsx` has no static `./chat-panel` import.
+
+### [High] Sentry Session Replay is in the pre-hydration bundle and records 100% of sessions in buffer mode
+- Guide: `performance/performance`: "Third-party scripts (analytics, ads, chat widgets) are the primary source of main thread congestion." and "**DON'T load invisible or unreachable CSS/JS**"
+- Where: `instrumentation-client.ts:15-19` (`Sentry.replayIntegration(...)` passed eagerly to `Sentry.init`), `:37` (`replaysOnErrorSampleRate: 1.0`), `:34` (`replaysSessionSampleRate: 0.01` in production); `next.config.js:178-180` (`bundleSizeOptimizations` sets only `excludeDebugStatements`).
+- Problem: Next.js runs `instrumentation-client.ts` after the HTML loads and before React hydration. The Replay integration (rrweb recorder plus compression worker setup) is therefore on the critical path of every route. It typically adds tens of KB gzipped. Because `replaysOnErrorSampleRate` is 1.0, Replay runs in buffer mode for every session, not only the sampled 1%. In buffer mode, rrweb serialises every DOM mutation into an in-memory ring buffer for the whole visit. That work competes with interaction handling on DOM-heavy pages: the infinite review feed, the streaming chat (one mutation per token batch) and the meeting availability grid.
+- Fix: Take Replay out of `Sentry.init` and add it after load, at idle:
+  ```ts
+  Sentry.init({ /* …, integrations: [] */ });
+  requestIdleCallback?.(async () => {
+    const replay = await Sentry.lazyLoadIntegration("replayIntegration");
+    Sentry.addIntegration(replay({ maskAllText: true, blockAllMedia: true }));
+  });
+  ```
+  `lazyLoadIntegration` fetches from Sentry's CDN, so allow that host in any CSP. Wrap `requestIdleCallback` in a `setTimeout` fallback, because Safari lacks it. Also consider lowering `replaysOnErrorSampleRate`, for example to 0.1–0.25, to reduce the share of sessions recording continuously. Add `excludeReplayIframe: true, excludeReplayShadowDom: true` to `bundleSizeOptimizations`, because the app uses neither iframes nor shadow DOM in recorded UI.
+
+### [Medium] The chat re-parses the markdown of every message on every streamed chunk and on every widget drag move
+- Guide: `performance/break-up-long-tasks`: "Heavy computations or long loops can block the main thread, delaying event handlers and causing poor Interaction to Next Paint (INP) responsiveness." `performance/performance`: "**DO debounce or throttle rapid event listeners**: Limit the execution frequency of handlers attached to `scroll`, `resize`, or rapid `input` events."
+- Where: `src/modules/assistant/chat-panel.tsx:113` and `chat-page.tsx:64` (`throttle: 32`, about 30 renders per second while streaming); `message-list.tsx:16-22` and `message.tsx:8,37` (neither `MessageList`/`Message` is memoised, and there is no React Compiler); `markdown.tsx:13-28` (inline `remarkPlugins={[remarkGfm]}` and `components={{…}}` objects, so every render re-runs the full remark/GFM parse); `assistant-provider.tsx:65` (widget geometry state lives in `SignedInAssistant`, the parent of `<ChatPanel>`); `use-widget-position.ts:167-189` (`setPosition` on every `pointermove`), `:131-144` (`localStorage.setItem` + `JSON.stringify` on every position change); `use-viewport.ts:13-15` (an unthrottled `resize` listener sets state).
+- Problem: Each 32 ms streaming update re-renders every message in the thread, and each message re-parses its full markdown. The cost grows with the length of the conversation, and long threads produce long tasks that block typing and scrolling while the answer streams. Dragging or resizing the widget does the same once per `pointermove`, because each move re-renders `SignedInAssistant` → `ChatPanel` → all messages. Each move also writes to `localStorage` synchronously.
+- Fix: Wrap `Message` in `React.memo`. The AI SDK keeps earlier message objects referentially stable, so only the streaming message re-renders. Hoist `remarkPlugins` and the `components` map to module constants. Move `useWidgetPosition`/`useViewport` into `AssistantWidget`, or memoise `ChatPanel`, so geometry changes do not re-render the thread. Persist geometry in `onPointerUp`, not in an effect on every position. Throttle the resize handler with `requestAnimationFrame`.
+
+### [Medium] Review "view" analytics sends one un-batched, full-priority tRPC mutation per card, every time the card re-enters the viewport
+- Guide: `performance/batch-analytics-events`: "**DO** use `fetchLater()` with the `activateAfter` option set to batch multiple analytics events that occur within close proximity of each other." `performance/deprioritize-background-fetches`: "**DO** use `priority: 'low'` for analytics, beacons, or telemetry data that isn't required for the current view."
+- Where: `src/modules/reviews/components/ReviewItem/ReviewItem.tsx:39`; `src/modules/reviews/components/ReviewItemViewEventTracker/ReviewItemViewEventTracker.tsx:15,22-29` (`api.reviewEvents.track.useMutation()` once per card, fired from `onChange`); `src/modules/tracker/components/ViewEventTracker/ViewEventTracker.tsx:8` (`<InView>` without `triggerOnce`); transport in `src/common/tools/trpc/react.tsx:51-62` (default fetch priority).
+- Problem: For signed-in users, scrolling the feed fires a separate `POST /api/trpc/reviewEvents.track` for each card that scrolls into view. Scrolling back up fires the same events again. Each request is a function invocation, and each competes at default priority with the feed's own `fetchNextPage` request, triggered by the sentinel at `ReviewItemLoader.tsx:154-158`. That slows infinite-scroll pagination on mobile connections.
+- Fix: Deduplicate with `triggerOnce` and a module-level `Set` of review IDs already sent. Queue events in a small client module and flush them as one batched payload, using a new `reviewEvents.trackMany` procedure or route handler. Send the flush with `fetchLater(url, { method: "POST", body, activateAfter: 10_000 })`. `fetchLater` has limited availability (Chrome/Edge 135), so ship the guide's `globalThis.fetchLater ??=` polyfill (fetch `keepalive` / `sendBeacon` on `visibilitychange`). Where a plain `fetch` remains, pass `priority: "low"`. That option is Baseline Newly available, a progressive enhancement that needs no fallback.
+
+### [Medium] The infinite review feed (and search results) never skip rendering for off-screen cards
+- Guide: `performance/defer-rendering-heavy-content`: "**DO** target large, self-contained layout blocks that are strictly **below the initial fold** (e.g., card items in an infinite feed, trailing comments, or bottom-heavy layout sections)." and "You MUST pair `content-visibility: auto` with `contain-intrinsic-size`."
+- Where: `src/modules/reviews/components/ReviewItemLoader/ReviewItemLoader.tsx:139-149` (unbounded `pages.flatMap` list of `ReviewItem`s); `src/modules/reviews/components/ReviewItem/ReviewItem.tsx:33-36` (the card root: header, body, footer with votes, NumberFlow and reactions, plus an `InView` tracker); `src/modules/search/components/SearchResult/SearchResultContent/SearchResultContent.tsx:121-140` and `SearchResultItem.tsx:30` (also infinite). No file in `src/` uses `content-visibility`.
+- Problem: The home, course and professor feeds keep every loaded card in the render tree. After a few pages, each style recalculation and layout covers hundreds of off-screen cards. That includes the layout triggered by voting, opening the review dialog and theme switches, so presentation delay and INP rise the longer the user scrolls.
+- Fix: Add a class to the card wrapper, excluding the first one or two cards, which are above the fold:
+  ```css
+  .review-card { content-visibility: auto; contain-intrinsic-size: auto none auto 14rem; }
+  ```
+  In Tailwind: `[content-visibility:auto] [contain-intrinsic-size:auto_none_auto_14rem]`. Derive the size from the typical card height. Do the same for search result items with a smaller estimate (about 6rem). The property is Baseline Newly available (2025-09-15), and `auto` needs no fallback because unsupported browsers ignore it. Check keyboard tab order through the off-screen cards, as the guide requires.
+
+### [Medium] The Timetable route renders its main content entirely on the client, behind a request waterfall
+- Guide: `performance/performance`: "**DON'T implement complex JavaScript loaders for the hero section**: Client-side rendering of the LCP element introduces substantial request chains (HTML -> JS -> Execution -> Image Request)."
+- Where: `src/app/(school)/timetable/page.tsx:1` (`"use client"` on the whole page), `:227` (`useSession`, which fetches `/api/auth/session` on the client), `:319-323` (`timetable.listMine` waits for `selectedTermId`), `:356-363` (`getArrangement` waits for `activeTimetableId`), `:589-595` (a 500 px skeleton until all of these resolve); `src/modules/timetable/atoms/timetable.ts:5` (`selectedTermIdAtom` starts `null`) and `src/modules/timetable/components/TermPicker.tsx:43-46` (the term is chosen only after the `acadTerms.list`/`current` and `bidWindows.getCurrentWindow` queries resolve).
+- Problem: The grid, the page's primary content, appears only after HTML → JS → hydration → session and term queries → `listMine` → `getArrangement`, which is at least three sequential client round-trips. The review routes already avoid this pattern by prefetching on the server and using `HydrateClient` (`@reviews/page.tsx:42-49`), and the timetable route is the outlier.
+- Fix: Make `page.tsx` a server component that awaits `auth()`. On the server, resolve the current term and prefetch `acadTerms.current`, `timetable.listMine` and the active plan's `getArrangement` through the server tRPC helper. Render the existing client body (moved to `TimetableClient.tsx`) inside `<HydrateClient>`, with the initial term passed as a prop to seed `selectedTermIdAtom`.
+
+### [Low] The assistant status request fires on every hard load, after the session request, at default priority
+- Guide: `performance/deprioritize-background-fetches`: "**DO NOT** use `priority: 'low'` for fetches that are critical to the user experience." The reverse case applies here: the request is not critical but is not deprioritised. Also "**DO** use `priority: 'low'` for 'prefetching' data that the user *might* need later".
+- Where: `src/modules/assistant/assistant-provider.tsx:114-129` (`fetch("/api/assistant/status")` once `useSession` leaves `loading`); `src/common/providers/AuthProvider.tsx:10` (no server-provided session, so `/api/auth/session` is fetched first).
+- Problem: Every page load makes a chained session → status request for a closed widget. It contends with the page's own tRPC queries during hydration and costs a function invocation each time.
+- Fix: Pass `priority: "low"` (a progressive enhancement), and/or defer the request to idle or to the first launcher hover or open. This fits with lazy-mounting the panel (first High finding).
+
+### [Low] Field Core Web Vitals carry no INP attribution, and each metric is a separate Umami event that is dropped if Umami has not loaded
+- Guide: `performance/identify-inp-causes`: "**DO** use INP subparts initially to identify whether the delay is already running JavaScript (input delay), the event handlers JavaScript for the interaction (processing duration), or the subsequent rendering (presentation delay)." `performance/identify-heavy-scripts`: "**DO** send the required information to an analytics service in production."
+- Where: `src/modules/home/components/WebVitalsReporter/WebVitalsReporter.tsx:25-37` (sends only metric, value, rating and navigation), `:46` (`event(...)` once per metric); `src/common/hooks/use-umami.ts:124-128` (warns and drops the event when `window.umami` is absent, for example under an ad blocker or before the `afterInteractive` script loads).
+- Problem: An INP regression can be detected but not diagnosed: there is no interaction target, no subpart split and no long-animation-frame script attribution. Metrics finalised on page hide also rely on Umami's own transport, so whether they reach the server is unverified.
+- Fix: The repo deliberately avoids a `web-vitals` dependency (pinned in `performance-invariants.test.ts:247-259`). Within that rule, derive attribution from `metric.entries` (Event Timing entries: `target`, `startTime`, `processingStart`, `processingEnd`, `duration`) to compute input delay, processing time and presentation delay. Add an optional `PerformanceObserver({ type: "long-animation-frame", buffered: true })` summary of the worst script `sourceURL`. LoAF has limited availability, is ignored where unsupported, and needs no fallback. Send it through a first-party endpoint with `fetchLater` (with the polyfill). Soft-navigation LCP (`performance/interaction-paint-timing`, Chrome 151+) is an optional later addition behind a `supportedEntryTypes` check.
+
+### [Low] Sentry React component annotation adds data attributes to every rendered element
+- Guide: `performance/performance`: "**DON'T load invisible or unreachable CSS/JS**: Ensure build tools apply tree-shaking and CSS minification to drop unreachable code before deployment."
+- Where: `next.config.js:182-186` (`_experimental.turbopackReactComponentAnnotation.enabled: true`).
+- Problem: The annotation injects `data-sentry-component`, `data-sentry-element` and `data-sentry-source-file` attributes into JSX. That inflates HTML and RSC payload bytes and DOM size on every route, for breadcrumb and Replay naming only. Confirm the size by viewing source in production.
+- Fix: Weigh the debugging value against the bytes. Disable it, or enable it only in preview builds (`enabled: process.env.VERCEL_ENV !== "production"`).
+
+### [Low] The always-visible header avatar is lazy-loaded
+- Guide: `performance/performance`: "**DON'T lazy load above-the-fold images**: This directly harms LCP. Visible images must use `loading=\"eager\"` (the default)."
+- Where: `src/common/components/user-profile.tsx:32` → `src/common/components/avatar.tsx:82-97` (`next/image` defaults to `loading="lazy"`).
+- Problem: The 24 px avatar in the sticky header is in the viewport on every page. Lazy loading only delays the swap from initials to photo. It does not affect LCP, because the avatar is too small to be the LCP element.
+- Fix: Pass `loading="eager"` from `UserProfile`. `AvatarImage` already spreads `...props`. Do not add `fetchPriority="high"`, because it is not an LCP image.
+
+### [Low] Every click on a ProgressLink, and every 750 ms tick during navigation, re-renders all ProgressLinks
+- Guide: `performance/identify-inp-causes`: "Processing Duration (delays due as a direct result of the interaction)"
+- Where: `src/common/providers/ProgressProvider.tsx:25-28` (the context value is a new object on every state change); `src/common/hooks/use-transition-mount.ts:76-84` (`setInterval` every 750 ms), `:106`; consumers at `src/common/components/progress-link.tsx:43` (dozens of instances on feed pages), `SearchCmdk.tsx:59`, `ReviewForm.tsx:47`, `GlobalProgressBar.tsx:7`.
+- Problem: `progress.start()` in a link's click handler re-renders every `ProgressLink` on the page inside the click task. While navigation is in progress, every tick re-renders them again. The cost is small per link but grows with the feed length.
+- Fix: Split the context. One context holds stable actions (`start`/`done`/`reset` wrapped in `useCallback`, value from `useMemo`) for links and forms. A second holds `{ state, value }` and is read only by `GlobalProgressBar`.
+
+### [Low] Dynamically rendered HTML documents likely get `Cache-Control: no-store`, which can block bfcache (verify)
+- Guide: `performance/performance`: "**DON'T use `Cache-Control: no-store` for non-sensitive resources**: This directive prevents the browser from storing the page in the **Back-Forward Cache (bfcache)**"
+- Where: most routes call `auth()` on the server and so render dynamically (for example `src/app/(school)/(reviews)/@reviews/page.tsx:28`, `search/page.tsx`, `bidding/page.tsx`). For dynamic routes, Next.js sends `private, no-cache, no-store, max-age=0, must-revalidate` by default. I could not verify this against production: the sandbox proxy blocked afterclass.io.
+- Problem: Back and forward navigation to the public review pages can miss bfcache in browsers that exclude `no-store` documents. Users then get a full reload instead of an instant restore. There is no `unload` handler, so this header is the remaining blocker.
+- Fix: Check with `curl -I https://afterclass.io/course/<code>`. If the header is confirmed, the realistic path in Next.js is to make the anonymous shell static or partially prerendered (Cache Components / `use cache`, with the session read in a Suspense hole), so the document is no longer `no-store`. `headers()` in `next.config.js` cannot override page `Cache-Control`.
+
+## Done well
+- No web fonts at all: the system font stack means no render-blocking or FOIT font loads. `performance-invariants.test.ts:53-88` guards this and the favicon size.
+- Heavy libraries are already split per route: recharts (`BidAnalyticsClient.tsx:23-26`, `dynamic` with a fixed-aspect skeleton), @xyflow/react (`LazyRoadmapTimeline.tsx:8-14`) and driver.js (`common/tour/tour.ts:33`). `optimizePackageImports` covers the remaining barrel packages.
+- Images go through `next/image` with explicit dimensions and AVIF/WebP (`next.config.js:19-41`, `avatar.tsx:82-87`). Umami loads via `next/script` `afterInteractive` from a same-origin rewrite (`Umami/UmamiProvider.tsx`, `next.config.js:120-130`).
+- Streaming and caching: review feeds are prefetched on the server with `HydrateClient`. Slow cards sit behind `Suspense` (`(reviews)/layout.tsx:30-32`), and `loading.tsx` is used where it helps. Anonymous tRPC reads are CDN-cached with `s-maxage`/`stale-while-revalidate` (`api/trpc/[trpc]/caching.ts`). Link prefetching is turned off on long lists to avoid function storms.
+- Interaction hygiene: there are no `unload` handlers, and `beforeunload` is attached only while roadmap edits are unsaved (`RoadmapGrid.tsx:175-183`). The heatmap hover uses one delegated listener instead of per-cell state (`HeatmapHoverCard.tsx:70-95`). Catalog search is debounced and server-side (`useSearchCatalog.ts`), and chat streaming is throttled.
+
+## Guides with no applicable code
+- performance/deliver-optimized-decorative-images: no CSS `background-image`/`mask-image` raster images.
+- performance/resolution-optimized-pseudo-elements: no images in `::before`/`::after`.
+- performance/lazy-load-video-and-audio: no `<video>`/`<audio>` elements.
+- performance/optimize-preload-priority: no manual `<link rel="preload">`; there are no fonts or hero images to preload.
+- performance/optimize-script-priority: the only page script is Umami, injected `async` via `next/script` after hydration (already low priority). No render-critical classic scripts.
+- performance/optimize-image-priority: there is no LCP image on any route (LCP is text). The only image use is the 24 px avatar, covered above.
+- performance/flicker-free-client-side-ab-testing: feature flags are resolved on the server from Edge Config (`EdgeConfigProvider`). There is no client A/B script.
+- performance/conditional-async-dependencies: no runtime polyfills or conditional module loading. Bundling is handled by Next.js.
+- performance/improve-next-page-load-performance: App Router navigations are client-side (the guide says "DO NOT use speculation rules on Single Page Applications"). `next/link` prefetch covers this.
+- performance/out-of-order-html-streaming: native `<template for>` is Chrome-only. React/Next Suspense streaming already provides out-of-order streaming.
+- performance/faster-spa-view-transitions: the only view toggle (timetable grid and bids table) switches between two light views. There is no multi-view tab shell where caching would pay off.
+- performance/efficient-background-processing: no canvas, WebGL or polling loops. `CurrentTimeIndicator` ticks once a minute.
+- performance/defer-work-until-scroll-ends: scroll listeners are trivial (chat stick-to-bottom check, heatmap tooltip clear). No heavy work runs during scroll.
+- performance/detect-initial-visibility-state, performance/calculate-total-foreground-time: no engagement or time-on-page metrics. `next/web-vitals` already handles background-loaded pages.
+- performance/schedule-tasks-by-priority: no client-side multi-priority work queues.
+- performance/interactions-in-complex-layouts: the roadmap drag-and-drop grid is at most 5×4 cells, and the meeting grid uses delegation. Containment would give negligible benefit.
+- performance/full-session-analytics: covered in the Web Vitals and review-analytics findings above. There is no other session-long beaconing.
+
+## Noted outside this area (for the relevant owners)
+- `src/modules/search/components/SearchCmdk/SearchCmdk.tsx:76-86`: a global `keydown` listener calls `preventDefault()` on every "/" without checking whether focus is in a text field. Users cannot type "/" in any input or textarea, such as review bodies ("and/or") or the search box itself. Typing it toggles the search dialog instead.
+- `src/common/components/progress-link.tsx:50-52`: the click handler always calls `e.preventDefault()` and then `router.push`, which breaks Cmd/Ctrl/middle-click open-in-new-tab on every `ProgressLink`.
